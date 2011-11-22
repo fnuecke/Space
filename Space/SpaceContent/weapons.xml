@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="SpaceData.WeaponData[]">
+    <Item>
+      <Name>Cheap Laser</Name>
+      <Size>Small</Size>
+      <Damage>5</Damage>
+      <FireRate>0.5</FireRate>
+    </Item>
+  </Asset>
+</XnaContent>

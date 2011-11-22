@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="SpaceData.ShipData[]">
+    <Item>
+      <Name>Sparrow</Name>
+
+      <Radius>5</Radius>
+      <Texture>Textures/ship</Texture>
+      
+      <Health>50</Health>
+      <Fuel>100</Fuel>
+
+      <Acceleration>0.1</Acceleration>
+      <RotationSpeed>0.1</RotationSpeed>
+
+      <SmallWeapons>1</SmallWeapons>
+      <ItemSlots>2</ItemSlots>
+    </Item>
+  </Asset>
+</XnaContent>

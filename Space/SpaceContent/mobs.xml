@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="SpaceData.MobData[]">
+    <Item>
+      <Name>Speedy Clueless Bandit</Name>
+      <Level>0</Level>
+      <ShipName>Sparrow</ShipName>
+      <Weapons>
+        <Item>Cheap Laser</Item>
+      </Weapons>
+      <Items>
+        <Item>Thrusters</Item>
+      </Items>
+      <Drops>
+        <Item>Tier0_CheapLaser</Item>
+      </Drops>
+    </Item>
+  </Asset>
+</XnaContent>
