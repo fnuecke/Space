@@ -184,6 +184,12 @@ namespace Engine.Util
         private string inputBackup;
 
         /// <summary>
+        /// Text we had before pressing tab the first time, to allow cycling through
+        /// possible solutions.
+        /// </summary>
+        private string inputBeforeTab;
+
+        /// <summary>
         /// Last time a key was pressed (to suppress blinking for a bit while / after typing).
         /// </summary>
         private DateTime lastKeyPress = DateTime.MinValue;
@@ -197,6 +203,11 @@ namespace Engine.Util
         /// The current scrolling offset.
         /// </summary>
         private int scroll;
+
+        /// <summary>
+        /// Index of last used tab completion option.
+        /// </summary>
+        private int tabCompleteIndex = -1;
 
 #endregion
 
@@ -452,9 +463,9 @@ namespace Engine.Util
             }
 
             foreach (var line in lines)
-	        {
+            {
                 OnLineWritten(line);
-	        }
+            }
         }
 
 #endregion
@@ -476,12 +487,14 @@ namespace Engine.Util
                             --cursor;
                             input.Remove(cursor, 1);
                         }
+                        ResetTabCompletion();
                         break;
                     case Keys.Delete:
                         if (cursor < input.Length)
                         {
                             input.Remove(cursor, 1);
                         }
+                        ResetTabCompletion();
                         break;
                     case Keys.Down:
                         if (historyIndex >= 0)
@@ -497,26 +510,28 @@ namespace Engine.Util
                             {
                                 input.Append(history[historyIndex]);
                             }
+                            ResetTabCompletion();
                         }
                         break;
                     case Keys.End:
                         cursor = input.Length;
+                        ResetTabCompletion();
                         break;
                     case Keys.Enter:
                         Execute(input.ToString());
-                        inputBackup = null;
-                        historyIndex = -1;
-                        cursor = 0;
-                        input.Clear();
+                        ResetInput();
                         break;
                     case Keys.Escape:
                         IsOpen = false;
+                        ResetInput();
                         break;
                     case Keys.Home:
                         cursor = 0;
+                        ResetTabCompletion();
                         break;
                     case Keys.Left:
                         cursor = System.Math.Max(0, cursor - 1);
+                        ResetTabCompletion();
                         break;
                     case Keys.PageDown:
                         if (shift)
@@ -540,8 +555,50 @@ namespace Engine.Util
                         break;
                     case Keys.Right:
                         cursor = System.Math.Min(input.Length, cursor + 1);
+                        ResetTabCompletion();
                         break;
                     case Keys.Tab:
+                        if (cursor > 0)
+                        {
+                            if (inputBeforeTab == null)
+                            {
+                                inputBeforeTab = input.ToString().Substring(0, cursor).Trim();
+                            }
+                            if (inputBeforeTab.Length > 0)
+                            {
+                                int numMatches = -1;
+                                bool testIfLast = false;
+                                foreach (var command in commands)
+                                {
+                                    if (command.Key.StartsWith(inputBeforeTab))
+                                    {
+                                        ++numMatches;
+                                        if (!testIfLast && tabCompleteIndex < numMatches)
+                                        {
+                                            // Found a match we can use.
+                                            input.Clear();
+                                            input.Append(command.Key);
+                                            cursor = input.Length;
+                                            tabCompleteIndex = numMatches;
+                                            testIfLast = true;
+                                        }
+                                        else if (testIfLast)
+                                        {
+                                            testIfLast = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (testIfLast)
+                                {
+                                    tabCompleteIndex = -1;
+                                }
+                            }
+                            else
+                            {
+                                ResetTabCompletion();
+                            }
+                        }
                         break;
                     case Keys.Up:
                         if (historyIndex < history.Count - 1)
@@ -555,6 +612,7 @@ namespace Engine.Util
                             cursor = 0;
                             input.Clear();
                             input.Append(history[historyIndex]);
+                            ResetTabCompletion();
                         }
                         break;
                     default:
@@ -563,6 +621,7 @@ namespace Engine.Util
                         {
                             input.Insert(cursor, c);
                             ++cursor;
+                            ResetTabCompletion();
                         }
                         break;
                 }
@@ -772,6 +831,21 @@ namespace Engine.Util
             {
                 return FindSplit(text, low, mid, false, width);
             }
+        }
+
+        private void ResetInput()
+        {
+            inputBackup = null;
+            historyIndex = -1;
+            cursor = 0;
+            input.Clear();
+            ResetTabCompletion();
+        }
+
+        private void ResetTabCompletion()
+        {
+            inputBeforeTab = null;
+            tabCompleteIndex = -1;
         }
 
         private void OnLineWritten(string line)

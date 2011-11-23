@@ -61,6 +61,7 @@ namespace Space
             console.AddCommand("leave", HandleConsoleLeave,
                 "Leave the current game.");
             
+
             console.LineWritten += new LineWrittenEventHandler(delegate(string line)
             {
                 Console.WriteLine(line);
