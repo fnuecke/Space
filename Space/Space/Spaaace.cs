@@ -33,6 +33,7 @@ namespace Space
 
         TSS<GameState, IGameObject> simulation;
         UdpProtocol protocol;
+        ISession session;
         IServerSession server;
         IClientSession client;
         bool isServer;
@@ -49,18 +50,47 @@ namespace Space
             keyboardInput = new KeyboardInputManager(this);
             console = new GameConsole(this);
 
-            console.AddCommand("server", HandleConsoleServer,
+            console.AddCommand("server", args =>
+            {
+                StartNewSession(true);
+            },
                 "Switch to server mode (host a new game).");
-            console.AddCommand("client", HandleConsoleClient,
+            console.AddCommand("client", args =>
+            {
+                StartNewSession(false);
+            },
                 "Switch to client mode.");
-            console.AddCommand("search", HandleConsoleSearch,
+            console.AddCommand("search", args =>
+            {
+                client.Search();
+            },
                 "Search for games available on the local subnet.");
-            console.AddCommand("connect", HandleConsoleJoin,
+            console.AddCommand("connect", args =>
+            {
+                client.Join(new IPEndPoint(IPAddress.Parse(args[0]), ushort.Parse(args[1])), "test", null);
+            },
                 "Joins a game at the given host.",
                 "connect <host> <port> - join the host with the given hostname or IP.");
-            console.AddCommand("leave", HandleConsoleLeave,
+            console.AddCommand("leave", args =>
+            {
+                client.Leave();
+            },
                 "Leave the current game.");
-            
+
+            console.AddCommand("send", args =>
+            {
+                int player = int.Parse(args[0]);
+                string text = String.Join(" ", args, 1, args.Length - 1).Trim();
+                if (String.IsNullOrWhiteSpace(text))
+                {
+                    return;
+                }
+                Packet packet = new Packet();
+                packet.Write(text);
+                console.WriteLine("Sending text: " + text);
+                session.Send(player, packet);
+            }, "Send a command to another player.",
+               "send <player> <message>");
 
             console.LineWritten += new LineWrittenEventHandler(delegate(string line)
             {
@@ -133,11 +163,11 @@ namespace Space
                 client.Dispose();
                 client = null;
             }
+            session = null;
 
             simulation = new TSS<GameState, IGameObject>(new int[] { 50 });
 
             isServer = asHost;
-            ISession session;
             if (asHost)
             {
                 server = SessionFactory.StartServer(protocol, 8);
@@ -160,31 +190,6 @@ namespace Space
             session.PlayerJoined += HandlePlayerJoined;
             session.PlayerLeft += HandlePlayerLeft;
             session.PlayerData += HandlePlayerData;
-        }
-
-        private void HandleConsoleServer(string[] args)
-        {
-            StartNewSession(true);
-        }
-
-        private void HandleConsoleClient(string[] args)
-        {
-            StartNewSession(false);
-        }
-
-        private void HandleConsoleSearch(string[] args)
-        {
-            client.Search();
-        }
-
-        private void HandleConsoleJoin(string[] args)
-        {
-            client.Join(new IPEndPoint(IPAddress.Parse(args[0]), ushort.Parse(args[1])), "test", null);
-        }
-
-        private void HandleConsoleLeave(string[] args)
-        {
-            client.Leave();
         }
 
         private void HandleJoinResponse(bool success, JoinResponseReason reason, Packet data)
@@ -216,7 +221,7 @@ namespace Space
 
         private bool HandlePlayerData(Player player, Packet data)
         {
-            console.WriteLine(String.Format("Got data from {0}.", player));
+            console.WriteLine(String.Format("Got data from {0}: {1}", player, data.ReadString()));
             return true;
         }
 
@@ -239,12 +244,6 @@ namespace Space
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Allows the game to exit
-            if (!console.IsOpen && Keyboard.GetState(PlayerIndex.One).GetPressedKeys().Contains(Keys.Escape))
-            {
-                //this.Exit();
-            }
-
             if (!simulation.WaitingForSynchronization)
             {
                 var pressedKeys = Keyboard.GetState(PlayerIndex.One).GetPressedKeys();
@@ -337,25 +336,6 @@ namespace Space
                 simulation.Step();
             }
 */
-
-            //if (Keyboard.GetState(PlayerIndex.One).GetPressedKeys().Contains(Keys.A))
-            //{
-            //    TextMessageCommand command = new TextMessageCommand(gameTime.ElapsedGameTime.Ticks, "zomfgrofl");
-            //    Console.WriteLine("Sending command");
-            //    connection.broadcast(command);
-            //}
-
-            //var commands = connection.Receive();
-            //if (commands != null)
-            //{
-            //    foreach (var command in commands)
-            //    {
-            //        if (command is TextMessageCommand)
-            //        {
-            //            Console.WriteLine(((TextMessageCommand)command).Message);
-            //        }
-            //    }
-            //}
 
             base.Update(gameTime);
         }

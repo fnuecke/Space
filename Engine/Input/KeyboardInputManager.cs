@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Input;
 namespace Engine.Input
 {
 
-    public delegate void KeyPressedEventHandler(Keys key, bool alt, bool control, bool shift);
+    public delegate void KeyPressedEventHandler(Keys key, KeyModifier modifier);
     public delegate void KeyReleasedEventHandler(Keys key);
 
     /// <summary>
@@ -18,7 +18,7 @@ namespace Engine.Input
     public sealed class KeyboardInputManager : GameComponent
     {
 
-#region Events
+        #region Events
 
         /// <summary>
         /// Fired when a key is newly pressed, or is repeated as set via RepeatDelay/RepeatRate.
@@ -30,9 +30,9 @@ namespace Engine.Input
         /// </summary>
         public event KeyReleasedEventHandler Released;
 
-#endregion
+        #endregion
 
-#region Properties
+        #region Properties
 
         /// <summary>
         /// The delay before a key start to trigger repeatedly.
@@ -44,15 +44,15 @@ namespace Engine.Input
         /// </summary>
         public int RepeatRate { get; set; }
 
-#endregion
+        #endregion
 
-#region Fields
+        #region Fields
 
         private Keys lastPressedKey;
         private DateTime lastRepeat;
         private KeyboardState previousState;
 
-#endregion
+        #endregion
 
         /// <summary>
         /// Creates a new keyboard manager for the given game.
@@ -68,7 +68,7 @@ namespace Engine.Input
             game.Services.AddService(typeof(KeyboardInputManager), this);
         }
 
-#region Logic
+        #region Logic
 
         /// <summary>
         /// Implements key press / repeat / release logic.
@@ -82,12 +82,22 @@ namespace Engine.Input
                 var currentTime = DateTime.Now;
                 foreach (var key in currentState.GetPressedKeys())
                 {
-                    bool alt = currentState.GetPressedKeys().Contains(Keys.LeftAlt) ||
-                        currentState.GetPressedKeys().Contains(Keys.RightAlt);
-                    bool control = currentState.GetPressedKeys().Contains(Keys.LeftControl) ||
-                        currentState.GetPressedKeys().Contains(Keys.RightControl);
-                    bool shift = currentState.GetPressedKeys().Contains(Keys.LeftShift) ||
-                        currentState.GetPressedKeys().Contains(Keys.RightShift);
+                    KeyModifier modifier = KeyModifier.None;
+                    if (currentState.GetPressedKeys().Contains(Keys.LeftAlt) ||
+                        currentState.GetPressedKeys().Contains(Keys.RightAlt))
+                    {
+                        modifier |= KeyModifier.Alt;
+                    }
+                    if (currentState.GetPressedKeys().Contains(Keys.LeftControl) ||
+                        currentState.GetPressedKeys().Contains(Keys.RightControl))
+                    {
+                        modifier |= KeyModifier.Control;
+                    }
+                    if (currentState.GetPressedKeys().Contains(Keys.LeftShift) ||
+                        currentState.GetPressedKeys().Contains(Keys.RightShift))
+                    {
+                        modifier |= KeyModifier.Shift;
+                    }
 
                     if (previousState.GetPressedKeys().Contains(key))
                     {
@@ -97,7 +107,7 @@ namespace Engine.Input
                             if (key == lastPressedKey && new TimeSpan(currentTime.Ticks - lastRepeat.Ticks).TotalMilliseconds > RepeatRate)
                             {
                                 lastRepeat = currentTime;
-                                OnPressed(key, alt, control, shift);
+                                OnPressed(key, modifier);
                             }
                         }
                     }
@@ -109,7 +119,7 @@ namespace Engine.Input
                             lastPressedKey = key;
                             lastRepeat = currentTime.AddMilliseconds(RepeatDelay);
                         }
-                        OnPressed(key, alt, control, shift);
+                        OnPressed(key, modifier);
                     }
                 }
                 foreach (var key in previousState.GetPressedKeys().Except(currentState.GetPressedKeys()))
@@ -128,11 +138,11 @@ namespace Engine.Input
             base.Update(gameTime);
         }
 
-        private void OnPressed(Keys key, bool alt, bool control, bool shift)
+        private void OnPressed(Keys key, KeyModifier modifier)
         {
             if (Pressed != null)
             {
-                Pressed(key, alt, control, shift);
+                Pressed(key, modifier);
             }
         }
 
@@ -144,7 +154,7 @@ namespace Engine.Input
             }
         }
 
-#endregion
+        #endregion
 
     }
 }

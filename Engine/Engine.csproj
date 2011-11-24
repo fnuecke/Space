@@ -107,6 +107,8 @@
     <Compile Include="Commands\GameStateQueryCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Input\KeyboardInputManager.cs" />
+    <Compile Include="Input\KeyMap.cs" />
+    <Compile Include="Input\KeyModifier.cs" />
     <Compile Include="Session\AbstractSession.cs" />
     <Compile Include="Session\ClientSession.cs" />
     <Compile Include="Session\IClientSession.cs" />

@@ -53,25 +53,25 @@ namespace Engine.Util
     public class GameConsole : DrawableGameComponent
     {
 
-#region Constants
+        #region Constants
 
         /// <summary>
         /// Overall padding of the console.
         /// </summary>
         private const int Padding = 4;
 
-#endregion
+        #endregion
 
-#region Events
+        #region Events
 
         /// <summary>
         /// Fired when an entry is added via WriteLine().
         /// </summary>
         public event LineWrittenEventHandler LineWritten;
 
-#endregion
+        #endregion
 
-#region Properties
+        #region Properties
 
         /// <summary>
         /// The texture used as the console background.
@@ -130,6 +130,11 @@ namespace Engine.Util
         public bool IsOpen { get; set; }
 
         /// <summary>
+        /// The key map to use for resolving Xna key presses to chars.
+        /// </summary>
+        public KeyMap KeyMap { get; set; }
+
+        /// <summary>
         /// SpriteBatch used for rendering.
         /// </summary>
         public SpriteBatch SpriteBatch { get; set; }
@@ -139,9 +144,9 @@ namespace Engine.Util
         /// </summary>
         public Color TextColor { get; set; }
 
-#endregion
+        #endregion
 
-#region Fields
+        #region Fields
 
         /// <summary>
         /// Internal line buffer (lines of text).
@@ -209,7 +214,7 @@ namespace Engine.Util
         /// </summary>
         private int tabCompleteIndex = -1;
 
-#endregion
+        #endregion
 
         /// <summary>
         /// Creates a new game console.
@@ -223,6 +228,7 @@ namespace Engine.Util
             TextColor = Color.WhiteSmoke;
             CaretColor = new Color(0.4f, 0.4f, 0.4f, 0.4f);
             HotKey = Keys.OemTilde;
+            KeyMap = KeyMap.KeyMapByLocale("en-US");
 
             // Add inbuilt functions.
             AddCommand(new[] { "help", "?", "commands", "cmdlist" },
@@ -240,7 +246,7 @@ namespace Engine.Util
             game.Services.AddService(typeof(GameConsole), this);
         }
 
-#region Init / Update
+        #region Init / Update
 
         public override void Initialize()
         {
@@ -262,7 +268,7 @@ namespace Engine.Util
         {
             if (IsOpen && BackgroundColor != null && SpriteBatch != null && Font != null)
             {
-                
+
                 Rectangle bounds = ComputeBounds();
                 int numBufferLines = ComputeNumberOfVisibleLines() - 1;
 
@@ -350,9 +356,9 @@ namespace Engine.Util
             base.Draw(gameTime);
         }
 
-#endregion
+        #endregion
 
-#region Public interface
+        #region Public interface
 
         /// <summary>
         /// Register a new command with the given name.
@@ -416,7 +422,7 @@ namespace Engine.Util
                 return;
             }
             command = command.Trim();
-            
+
             history.Remove(command);
             history.Insert(0, command);
             WriteLine("> " + input.ToString());
@@ -468,14 +474,14 @@ namespace Engine.Util
             }
         }
 
-#endregion
+        #endregion
 
-#region Input
+        #region Input
 
         /// <summary>
         /// Handle keyboard input.
         /// </summary>
-        private void HandleKeyPressed(Keys key, bool alt, bool control, bool shift)
+        private void HandleKeyPressed(Keys key, KeyModifier modifier)
         {
             if (IsOpen)
             {
@@ -504,7 +510,7 @@ namespace Engine.Util
                             input.Clear();
                             if (historyIndex == -1)
                             {
-                            input.Append(inputBackup);
+                                input.Append(inputBackup);
                             }
                             else
                             {
@@ -534,7 +540,7 @@ namespace Engine.Util
                         ResetTabCompletion();
                         break;
                     case Keys.PageDown:
-                        if (shift)
+                        if (modifier == KeyModifier.Shift)
                         {
                             scroll = 0;
                         }
@@ -544,7 +550,7 @@ namespace Engine.Util
                         }
                         break;
                     case Keys.PageUp:
-                        if (shift)
+                        if (modifier == KeyModifier.Shift)
                         {
                             scroll = System.Math.Max(0, buffer.Count - 1);
                         }
@@ -616,12 +622,15 @@ namespace Engine.Util
                         }
                         break;
                     default:
-                        char c = KeysToChar(key, shift);
-                        if ((int)c > 0)
+                        if (KeyMap != null)
                         {
-                            input.Insert(cursor, c);
-                            ++cursor;
-                            ResetTabCompletion();
+                            char ch = KeyMap[modifier, key];
+                            if (ch != '\0')
+                            {
+                                input.Insert(cursor, ch);
+                                ++cursor;
+                                ResetTabCompletion();
+                            }
                         }
                         break;
                 }
@@ -637,151 +646,9 @@ namespace Engine.Util
             }
         }
 
-        private char KeysToChar(Keys key, bool shift)
-        {
-            switch (key)
-            {
-                case Keys.A:
-                    return shift ? 'A' : 'a';
-                case Keys.B:
-                    return shift ? 'B' : 'b';
-                case Keys.C:
-                    return shift ? 'C' : 'c';
-                case Keys.D:
-                    return shift ? 'D' : 'd';
-                case Keys.D0:
-                    return shift ? ')' : '0';
-                case Keys.D1:
-                    return shift ? '!' : '1';
-                case Keys.D2:
-                    return shift ? '@' : '2';
-                case Keys.D3:
-                    return shift ? '#' : '3';
-                case Keys.D4:
-                    return shift ? '$' : '4';
-                case Keys.D5:
-                    return shift ? '%' : '5';
-                case Keys.D6:
-                    return shift ? '^' : '6';
-                case Keys.D7:
-                    return shift ? '&' : '7';
-                case Keys.D8:
-                    return shift ? '*' : '8';
-                case Keys.D9:
-                    return shift ? '(' : '9';
-                case Keys.E:
-                    return shift ? 'E' : 'e';
-                case Keys.F:
-                    return shift ? 'F' : 'f';
-                case Keys.G:
-                    return shift ? 'G' : 'g';
-                case Keys.H:
-                    return shift ? 'H' : 'h';
-                case Keys.I:
-                    return shift ? 'I' : 'i';
-                case Keys.J:
-                    return shift ? 'J' : 'j';
-                case Keys.K:
-                    return shift ? 'K' : 'k';
-                case Keys.L:
-                    return shift ? 'L' : 'l';
-                case Keys.M:
-                    return shift ? 'M' : 'm';
-                case Keys.N:
-                    return shift ? 'N' : 'n';
-                case Keys.O:
-                    return shift ? 'O' : 'o';
-                case Keys.P:
-                    return shift ? 'P' : 'p';
-                case Keys.Q:
-                    return shift ? 'Q' : 'q';
-                case Keys.R:
-                    return shift ? 'R' : 'r';
-                case Keys.S:
-                    return shift ? 'S' : 's';
-                case Keys.T:
-                    return shift ? 'T' : 't';
-                case Keys.U:
-                    return shift ? 'U' : 'u';
-                case Keys.V:
-                    return shift ? 'V' : 'v';
-                case Keys.W:
-                    return shift ? 'W' : 'w';
-                case Keys.X:
-                    return shift ? 'X' : 'x';
-                case Keys.Y:
-                    return shift ? 'Y' : 'y';
-                case Keys.Z:
-                    return shift ? 'Z' : 'z';
+        #endregion
 
-                case Keys.Space:
-                    return ' ';
-
-                case Keys.NumPad0:
-                    return '0';
-                case Keys.NumPad1:
-                    return '1';
-                case Keys.NumPad2:
-                    return '2';
-                case Keys.NumPad3:
-                    return '3';
-                case Keys.NumPad4:
-                    return '4';
-                case Keys.NumPad5:
-                    return '5';
-                case Keys.NumPad6:
-                    return '6';
-                case Keys.NumPad7:
-                    return '7';
-                case Keys.NumPad8:
-                    return '8';
-                case Keys.NumPad9:
-                    return '9';
-
-                case Keys.Add:
-                    return '+';
-                case Keys.Decimal:
-                    return '.';
-                case Keys.Divide:
-                    return '/';
-                case Keys.Multiply:
-                    return '*';
-                case Keys.Separator:
-                    return '|';
-                case Keys.Subtract:
-                    return '-';
-
-                case Keys.OemBackslash:
-                    return shift ? '|' : '\\';
-                case Keys.OemCloseBrackets:
-                    return shift ? '}' : ']';
-                case Keys.OemComma:
-                    return shift ? '<' : ',';
-                case Keys.OemMinus:
-                    return shift ? '_' : '-';
-                case Keys.OemOpenBrackets:
-                    return shift ? '{' : '[';
-                case Keys.OemPeriod:
-                    return shift ? '>' : '.';
-                case Keys.OemPipe:
-                    return shift ? '|' : '\\';
-                case Keys.OemPlus:
-                    return shift ? '+' : '=';
-                case Keys.OemQuestion:
-                    return shift ? '?' : '/';
-                case Keys.OemQuotes:
-                    return shift ? '"' : '\'';
-                case Keys.OemSemicolon:
-                    return shift ? ':' : ';';
-                case Keys.OemTilde:
-                    return shift ? '~' : '`';
-            }
-            return (char)0;
-        }
-
-#endregion
-
-#region Utility methods
+        #region Utility methods
 
         private Rectangle ComputeBounds()
         {
@@ -856,9 +723,9 @@ namespace Engine.Util
             }
         }
 
-#endregion
+        #endregion
 
-#region Inbuilt commands
+        #region Inbuilt commands
 
         private void HandleShowHelp(string[] args)
         {
@@ -888,18 +755,18 @@ namespace Engine.Util
                 }
             }
         }
-        
+
         private void HandleExit(string[] args)
         {
             Game.Exit();
         }
-        
+
         private void HandleClear(string[] args)
         {
             Clear();
         }
 
-#endregion
+        #endregion
 
     }
 
