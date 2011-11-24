@@ -20,9 +20,9 @@ namespace Engine.Util
     /// <item>custom background / foreground color.</item>
     /// <item>custom font (not necessarily monospace).</item>
     /// <item>automatic line wrapping.</item>
-    /// <item>scrolling through the buffer (page up / page down).</item>
+    /// <item>scrolling through the buffer ([shift+]page up / [shift+]page down).</item>
     /// <item>command history (up / down).</item>
-    /// <item>navigation in and manipulation of current input (left / right / home / end / delete / backspace).</item>
+    /// <item>navigation in and manipulation of current input ([ctrl+]left / [ctrl+]right / home / end / delete / backspace).</item>
     /// <item>command completion (tab, only command names, not parameters).</item>
     /// </list>
     /// 
@@ -285,10 +285,12 @@ namespace Engine.Util
                         bounds.Width - Padding, bounds.Height - Padding),
                     BackgroundColor);
 
-                // Command line.
+                // Command line. We need to know the number of lines we have to properly render the background.
+                List<String> inputWrapped = WrapText("> " + input, bounds.Width - Padding * 2);
+
                 SpriteBatch.Draw(pixelTexture,
-                    new Rectangle(bounds.X + Padding, bounds.Y + Padding + numBufferLines * Font.LineSpacing,
-                        bounds.Width - Padding * 2, Font.LineSpacing),
+                    new Rectangle(bounds.X + Padding, bounds.Y + Padding + (numBufferLines - inputWrapped.Count + 1) * Font.LineSpacing,
+                        bounds.Width - Padding * 2, Font.LineSpacing * inputWrapped.Count),
                     BackgroundColor);
 
                 // Draw text. From bottom to top, for line wrapping.
@@ -298,11 +300,9 @@ namespace Engine.Util
 
                 // Draw the current command line.
                 {
-                    List<String> wrapped = WrapText("> " + input, bounds.Width - Padding * 2);
-
-                    for (int i = wrapped.Count - 1; i >= 0 && numBufferLines >= 0; --i, --numBufferLines)
+                    for (int i = inputWrapped.Count - 1; i >= 0 && numBufferLines >= 0; --i, --numBufferLines)
                     {
-                        SpriteBatch.DrawString(Font, wrapped[i], position, TextColor);
+                        SpriteBatch.DrawString(Font, inputWrapped[i], position, TextColor);
                         position.Y -= Font.LineSpacing;
                     }
 
@@ -310,25 +310,21 @@ namespace Engine.Util
                     if (((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (lastKeyPress != null && new TimeSpan(DateTime.Now.Ticks - lastKeyPress.Ticks).TotalSeconds < 1))
                     {
                         int cursorLine;
-                        int cursorCounter = cursor;
-                        for (cursorLine = 0; cursorLine < wrapped.Count - 1; ++cursorLine)
+                        int cursorCounter = cursor + 2;
+                        for (cursorLine = 0; cursorLine < inputWrapped.Count - 1; ++cursorLine)
                         {
-                            if (cursorCounter < wrapped[cursorLine].Length)
+                            if (cursorCounter < inputWrapped[cursorLine].Length)
                             {
                                 break;
                             }
-                            cursorCounter -= wrapped[cursorLine].Length;
+                            cursorCounter -= inputWrapped[cursorLine].Length;
                         }
-                        int cursorX = bounds.X + Padding + (int)Font.MeasureString(wrapped[cursorLine].Substring(0, cursorCounter)).X;
-                        if (cursorLine == 0)
-                        {
-                            cursorX += (int)Font.MeasureString("> ").X;
-                        }
-                        int cursorY = bounds.Y + Padding + (ComputeNumberOfVisibleLines() - 1) * Font.LineSpacing - (wrapped.Count - cursorLine);
+                        int cursorX = bounds.X + Padding + (int)Font.MeasureString(inputWrapped[cursorLine].Substring(0, cursorCounter)).X;
+                        int cursorY = bounds.Y + Padding + (ComputeNumberOfVisibleLines() - (inputWrapped.Count - cursorLine)) * Font.LineSpacing;
                         int cursorWidth;
-                        if (wrapped[cursorLine].Length > cursorCounter)
+                        if (inputWrapped[cursorLine].Length > cursorCounter)
                         {
-                            cursorWidth = (int)Font.MeasureString(wrapped[cursorLine][cursorCounter].ToString()).X;
+                            cursorWidth = (int)Font.MeasureString(inputWrapped[cursorLine][cursorCounter].ToString()).X;
                         }
                         else
                         {
@@ -536,7 +532,27 @@ namespace Engine.Util
                         ResetTabCompletion();
                         break;
                     case Keys.Left:
-                        cursor = System.Math.Max(0, cursor - 1);
+                        if (modifier == KeyModifier.Control)
+                        {
+                            int startIndex = System.Math.Max(0, cursor - 1);
+                            while (startIndex > 0 && startIndex < input.Length && input[startIndex] == ' ')
+	                        {
+                                --startIndex;
+	                        }
+                            int index = input.ToString().LastIndexOf(' ', startIndex);
+                            if (index == -1)
+                            {
+                                cursor = 0;
+                            }
+                            else
+                            {
+                                cursor = System.Math.Min(input.Length, index + 1);
+                            }
+                        }
+                        else
+                        {
+                            cursor = System.Math.Max(0, cursor - 1);
+                        }
                         ResetTabCompletion();
                         break;
                     case Keys.PageDown:
@@ -560,7 +576,26 @@ namespace Engine.Util
                         }
                         break;
                     case Keys.Right:
-                        cursor = System.Math.Min(input.Length, cursor + 1);
+                        if (modifier == KeyModifier.Control)
+                        {
+                            int index = input.ToString().IndexOf(' ', cursor);
+                            if (index == -1)
+                            {
+                                cursor = input.Length;
+                            }
+                            else
+                            {
+                                cursor = System.Math.Min(input.Length, index + 1);
+                                while (cursor < input.Length && input[cursor] == ' ')
+                                {
+                                    ++cursor;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            cursor = System.Math.Min(input.Length, cursor + 1);
+                        }
                         ResetTabCompletion();
                         break;
                     case Keys.Tab:
