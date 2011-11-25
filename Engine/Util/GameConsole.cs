@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using Engine.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,8 +10,21 @@ using Microsoft.Xna.Framework.Input;
 namespace Engine.Util
 {
 
+    #region Delegates
+
+    /// <summary>
+    /// Signature for command handler functions.
+    /// </summary>
+    /// <param name="args">the arguments for the command (space separated strings).</param>
     public delegate void CommandHandler(string[] args);
+
+    /// <summary>
+    /// Signature for event handlers called when a line is written to the console.
+    /// </summary>
+    /// <param name="line">the text on the line that was written.</param>
     public delegate void LineWrittenEventHandler(string line);
+
+    #endregion
 
     /// <summary>
     /// This is a simple console which can easily be plugged into an XNA game.
@@ -24,12 +38,13 @@ namespace Engine.Util
     /// <item>command history (up / down).</item>
     /// <item>navigation in and manipulation of current input ([ctrl+]left / [ctrl+]right / home / end / delete / backspace).</item>
     /// <item>command completion (tab, only command names, not parameters).</item>
+    /// <item>string literals ("").</item>
     /// </list>
     /// 
     /// It does not support:
     /// <list type="bullet">
     /// <item>animation on open / close.</item>
-    /// <item>custom size.</item>
+    /// <item>custom size / layout.</item>
     /// </list>
     /// 
     /// </summary>
@@ -59,6 +74,25 @@ namespace Engine.Util
         /// Overall padding of the console.
         /// </summary>
         private const int Padding = 4;
+
+        /// <summary>
+        /// Regex used to parse parameters from input.
+        /// </summary>
+        private static readonly Regex ArgPattern = new Regex(@"
+            \s*             # Leading whitespace.
+            (               # Capture a string literal.
+                ""              # String literal - open.
+                (?:
+                    \\.         # Either something escaped (e.g. ""s).
+                    |           # or...
+                    [^\\""]     # Anything not an escape start or a "".
+                )*              # As often as there are escapes.
+                ""              # String literal - close.
+            |               # Or just text.
+                (?:
+                    [^\s]       # Anything that isn't whitespace.
+                )*
+            )", RegexOptions.IgnorePatternWhitespace);
 
         #endregion
 
@@ -216,6 +250,8 @@ namespace Engine.Util
 
         #endregion
 
+        #region Constructor
+
         /// <summary>
         /// Creates a new game console.
         /// </summary>
@@ -245,6 +281,8 @@ namespace Engine.Util
             game.Components.Add(this);
             game.Services.AddService(typeof(GameConsole), this);
         }
+
+        #endregion
 
         #region Init / Update
 
@@ -413,31 +451,41 @@ namespace Engine.Util
         /// <param name="command">the command to execute.</param>
         public void Execute(string command)
         {
+            // Verify and cleanup input.
             if (String.IsNullOrWhiteSpace(command))
             {
                 return;
             }
             command = command.Trim();
 
+            // Push it to our history, output it and scroll down.
             history.Remove(command);
             history.Insert(0, command);
-            WriteLine("> " + input.ToString());
+            WriteLine("> " + command);
             scroll = 0;
 
-            string[] parts = command.Split(new[] { ' ' }, 2);
+            // Parse the input into separate strings, allowing for string literals.
+            var matches = ArgPattern.Matches(command);
+            List<string> args = new List<string>();
+            for (int i = 0; i < matches.Count; ++i)
+            {
+                string match = matches[i].Groups[1].Value;
+                if (match.Length > 1 && match[0] == '"' && match[match.Length - 1] == '"')
+                {
+                    match = match.Substring(1, match.Length - 2);
+                }
+                if (match.Length > 0)
+                {
+                    args.Add(match);
+                }
+            }
 
-            if (commands.ContainsKey(parts[0]))
+            // Do we know that command?
+            if (commands.ContainsKey(args[0]))
             {
                 try
                 {
-                    if (parts.Length > 1)
-                    {
-                        commands[parts[0]].handler(parts[1].Split(' '));
-                    }
-                    else
-                    {
-                        commands[parts[0]].handler(new string[0]);
-                    }
+                    commands[args[0]].handler(args.ToArray());
                 }
                 catch (Exception e)
                 {
@@ -446,7 +494,7 @@ namespace Engine.Util
             }
             else
             {
-                WriteLine("Error: unknown command '" + parts[0] + "'. Try 'help' to see a list of available commands.");
+                WriteLine("Error: unknown command '" + args[0] + "'. Try 'help' to see a list of available commands.");
             }
         }
 
@@ -502,7 +550,6 @@ namespace Engine.Util
                         if (historyIndex >= 0)
                         {
                             --historyIndex;
-                            cursor = 0;
                             input.Clear();
                             if (historyIndex == -1)
                             {
@@ -512,6 +559,7 @@ namespace Engine.Util
                             {
                                 input.Append(history[historyIndex]);
                             }
+                            cursor = input.Length;
                             ResetTabCompletion();
                         }
                         break;
@@ -536,9 +584,9 @@ namespace Engine.Util
                         {
                             int startIndex = System.Math.Max(0, cursor - 1);
                             while (startIndex > 0 && startIndex < input.Length && input[startIndex] == ' ')
-	                        {
+                            {
                                 --startIndex;
-	                        }
+                            }
                             int index = input.ToString().LastIndexOf(' ', startIndex);
                             if (index == -1)
                             {
@@ -650,9 +698,9 @@ namespace Engine.Util
                                 inputBackup = input.ToString();
                             }
                             ++historyIndex;
-                            cursor = 0;
                             input.Clear();
                             input.Append(history[historyIndex]);
+                            cursor = input.Length;
                             ResetTabCompletion();
                         }
                         break;
@@ -805,12 +853,32 @@ namespace Engine.Util
 
     }
 
+    #region Command helper
+
+    /// <summary>
+    /// Utility class that represents a single known command with all
+    /// its aliases, handler and help text.
+    /// </summary>
     class CommandInfo
     {
+        /// <summary>
+        /// All names for this command.
+        /// </summary>
         public readonly string[] names;
+
+        /// <summary>
+        /// The handler method for this command.
+        /// </summary>
         public readonly CommandHandler handler;
+
+        /// <summary>
+        /// Help text to display via the help command.
+        /// </summary>
         public readonly string[] help;
 
+        /// <summary>
+        /// Creates a new helper object with the given values.
+        /// </summary>
         public CommandInfo(string[] names, CommandHandler handler, string[] help)
         {
             this.names = names;
@@ -818,4 +886,7 @@ namespace Engine.Util
             this.help = help;
         }
     }
+
+    #endregion
+
 }

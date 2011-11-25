@@ -67,7 +67,7 @@ namespace Space
                 "Search for games available on the local subnet.");
             console.AddCommand("connect", args =>
             {
-                client.Join(new IPEndPoint(IPAddress.Parse(args[0]), ushort.Parse(args[1])), "test", null);
+                client.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), "test", null);
             },
                 "Joins a game at the given host.",
                 "connect <host> <port> - join the host with the given hostname or IP.");
@@ -79,8 +79,8 @@ namespace Space
 
             console.AddCommand("send", args =>
             {
-                int player = int.Parse(args[0]);
-                string text = String.Join(" ", args, 1, args.Length - 1).Trim();
+                int player = int.Parse(args[1]);
+                string text = args[2].Trim();
                 if (String.IsNullOrWhiteSpace(text))
                 {
                     return;
