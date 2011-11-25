@@ -141,6 +141,7 @@
     <Compile Include="Simulation\TSS.cs" />
     <Compile Include="Simulation\PhysicsEnabledState.cs" />
     <Compile Include="Util\GameConsole.cs" />
+    <Compile Include="Util\IGameConsole.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="EngineKey.snk" />

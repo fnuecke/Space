@@ -10,22 +10,6 @@ using Microsoft.Xna.Framework.Input;
 namespace Engine.Util
 {
 
-    #region Delegates
-
-    /// <summary>
-    /// Signature for command handler functions.
-    /// </summary>
-    /// <param name="args">the arguments for the command (space separated strings).</param>
-    public delegate void CommandHandler(string[] args);
-
-    /// <summary>
-    /// Signature for event handlers called when a line is written to the console.
-    /// </summary>
-    /// <param name="line">the text on the line that was written.</param>
-    public delegate void LineWrittenEventHandler(string line);
-
-    #endregion
-
     /// <summary>
     /// This is a simple console which can easily be plugged into an XNA game.
     /// 
@@ -46,7 +30,6 @@ namespace Engine.Util
     /// <item>animation on open / close.</item>
     /// <item>custom size / layout.</item>
     /// </list>
-    /// 
     /// </summary>
     /// <example>
     /// <code>
@@ -65,7 +48,7 @@ namespace Engine.Util
     ///   }
     /// </code>
     /// </example>
-    public class GameConsole : DrawableGameComponent
+    public class GameConsole : DrawableGameComponent, IGameConsole
     {
 
         #region Constants
@@ -279,7 +262,7 @@ namespace Engine.Util
 
             // Register with game.
             game.Components.Add(this);
-            game.Services.AddService(typeof(GameConsole), this);
+            game.Services.AddService(typeof(IGameConsole), this);
         }
 
         #endregion
