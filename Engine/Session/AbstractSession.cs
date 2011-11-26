@@ -45,6 +45,11 @@ namespace Engine.Session
         PlayerLeft,
 
         /// <summary>
+        /// Test if connection is still alive and accumulate data for ping.
+        /// </summary>
+        Ping,
+
+        /// <summary>
         /// Data packet to be handled by someone else.
         /// </summary>
         Data
@@ -55,6 +60,8 @@ namespace Engine.Session
     /// </summary>
     abstract class AbstractSession : ISession
     {
+        #region Constants
+
         /// <summary>
         /// The default port we'll use to listen for multicast messages (asking for open games).
         /// </summary>
@@ -65,20 +72,28 @@ namespace Engine.Session
         /// </summary>
         protected readonly IPAddress DefaultMulticastAddress = new IPAddress(new byte[] { 224, 1, 33, 7 });
 
+        #endregion
+
+        #region Events
+
         /// <summary>
         /// Called when a new player joins the session.
         /// </summary>
-        public event EventHandler PlayerJoined;
+        public event EventHandler<EventArgs> PlayerJoined;
 
         /// <summary>
         /// Called when a player left the session.
         /// </summary>
-        public event EventHandler PlayerLeft;
+        public event EventHandler<EventArgs> PlayerLeft;
 
         /// <summary>
         /// Called when a player sent data.
         /// </summary>
-        public event EventHandler PlayerData;
+        public event EventHandler<EventArgs> PlayerData;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Number of the local player.
@@ -95,6 +110,10 @@ namespace Engine.Session
         /// </summary>
         public int MaxPlayers { get; protected set; }
 
+        #endregion
+
+        #region Fields
+
         /// <summary>
         /// The underlying protocol that's being used.
         /// </summary>
@@ -109,6 +128,8 @@ namespace Engine.Session
         /// List of all the player structs.
         /// </summary>
         protected Player[] players;
+
+        #endregion
 
         public AbstractSession(IProtocol protocol)
         {

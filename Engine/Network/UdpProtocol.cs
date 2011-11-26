@@ -15,6 +15,7 @@ namespace Engine.Network
     /// </remarks>
     public sealed class UdpProtocol : IProtocol
     {
+        #region Events
 
         /// <summary>
         /// Register here to be notified of connections being closed.
@@ -26,10 +27,25 @@ namespace Engine.Network
         /// </summary>
         public event EventHandler Data;
 
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// The ping frequency, i.e. how often (every <c>PingFrequency</c> milliseconds)
+        /// to send pings to known remote hosts. This is used to detect failed connections
+        /// as well as accumulate ping values on near-idle connections.
+        /// </summary>
+        public uint PingFrequency { get; set; }
+
         /// <summary>
         /// The timeout (in milliseconds) after which to stop resending a packet and instead dispatching a timeout event.
         /// </summary>
         public uint Timeout { get; set; }
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// The header for the protocol used via this connection (serves to identify relevant packages).
@@ -52,6 +68,15 @@ namespace Engine.Network
         private Dictionary<long, UdpPendingMessage> awaitingAck = new Dictionary<long, UdpPendingMessage>();
 
         /// <summary>
+        /// Last time we sind our collective ping.
+        /// </summary>
+        private long lastPing = 0;
+
+        #endregion
+
+        #region Constructor / Cleanup
+
+        /// <summary>
         /// Creates a new UDP socket listening on the given port for the given protocol.
         /// </summary>
         /// <param name="port">the port to listen on/send through.</param>
@@ -60,6 +85,7 @@ namespace Engine.Network
         {
             this.messages = new UdpMessageFactory(protocolHeader);
             this.Timeout = 5000;
+            this.PingFrequency = 500;
 
             // Create our actual udp socket.
             udp = new UdpClient(port);
@@ -73,6 +99,27 @@ namespace Engine.Network
             connections.Clear();
             awaitingAck.Clear();
             udp.Close();
+        }
+
+        #endregion
+
+        #region Public API
+
+        /// <summary>
+        /// Get the ping for the given remote end point, if possible.
+        /// </summary>
+        /// <param name="remote">return the averaged ping to the remote host, or 0 if unknown.</param>
+        public int GetPing(IPEndPoint remote)
+        {
+            UdpRemoteInfo connection = GetConnection(remote);
+            if (connection == null)
+            {
+                return 0;
+            }
+            else
+            {
+                return connection.Ping;
+            }
         }
 
         /// <summary>
@@ -133,15 +180,32 @@ namespace Engine.Network
                     message.lastSent = time;
                     udp.Send(message.data.Buffer, message.data.Length, message.remote);
                 }
-	        }
+            }
             // Do actual removal after iteration, as this modifies the collection.
             foreach (var remote in toRemove)
             {
                 RemoveConnection(remote);
                 OnTimeout(new ProtocolEventArgs(remote));
             }
+            // Do pings for known connections once in a while.
+            if (new TimeSpan(time - lastPing).TotalMilliseconds > PingFrequency)
+            {
+                foreach (var item in connections.Values)
+                {
+                    int messageNumber;
+                    Packet message = messages.MakePing(out messageNumber);
+                    awaitingAck.Add(messageNumber, new UdpPendingMessage(message, item.Remote, PingFrequency));
+                }
+                lastPing = time;
+            }
         }
 
+        /// <summary>
+        /// Inject a message, handle it like it was received via the protocol itself.
+        /// This method is thread safe.
+        /// </summary>
+        /// <param name="buffer">the data to inject.</param>
+        /// <param name="remote">the remote host the message was received from.</param>
         public void Inject(byte[] buffer, IPEndPoint remote)
         {
             // Can we parse it? The values below are set as context dictates.
@@ -154,67 +218,69 @@ namespace Engine.Network
                 return;
             }
 
-            // Get the connection associated with this remote machine. Only create a new one
-            // if it's a data packet.
-            UdpRemoteInfo connection = null;
-            if (!GetConnection(remote, out connection))
+            // This block is synchronized, to avoid inconsistencies when messages
+            // get pushed from outside sources.
+            lock (this)
             {
-                // We couldn't get the raw IP.
-                return;
-            }
+                // Get the connection associated with this remote machine. Only create a new one
+                // if it's a data packet.
+                UdpRemoteInfo connection = GetConnection(remote);
+                if (connection == null)
+                {
+                    // We couldn't get the raw IP.
+                    return;
+                }
 
-            // Act based on type.
-            switch (type)
-            {
-                case SocketMessage.Invalid:
-                    break;
-                case SocketMessage.Ack:
-                    // It's an ack.
-                    awaitingAck.Remove(messageNumber);
-                    break;
-                case SocketMessage.Acked:
-                    // Acked data.
-                    if (connection != null)
-                    {
-
-                        // Only handle these once, as they may have been resent (ack didn't get back quick enough).
-                        bool result;
-                        if (connection.IsAlreadyHandled(messageNumber, out result))
+                // Act based on type.
+                switch (type)
+                {
+                    case SocketMessage.Ack:
+                        // It's an ack.
+                        connection.PushPing((int)new TimeSpan(DateTime.Now.Ticks - awaitingAck[messageNumber].timeCreated).TotalMilliseconds / 2);
+                        awaitingAck.Remove(messageNumber);
+                        break;
+                    case SocketMessage.Acked:
+                        // Acked data.
+                        if (connection != null)
                         {
-                            // If this wasn't handled before, don't send an ack now, either.
-                            if (!result)
+                            // Only handle these once, as they may have been resent (ack didn't get back quick enough).
+                            bool result;
+                            if (connection.IsAlreadyHandled(messageNumber, out result))
                             {
-                                return;
+                                // If this wasn't handled before, don't send an ack now, either.
+                                if (!result)
+                                {
+                                    return;
+                                }
                             }
-                        }
-                        else
-                        {
-                            var dataArgs = new ProtocolDataEventArgs(remote, data);
-                            OnData(dataArgs);
-                            connection.MarkHandled(messageNumber, dataArgs.WasConsumed);
-                        }
+                            else
+                            {
+                                var dataArgs = new ProtocolDataEventArgs(remote, data);
+                                OnData(dataArgs);
+                                connection.MarkHandled(messageNumber, dataArgs.WasConsumed);
+                            }
 
-                        Packet ack = messages.MakeAck(messageNumber);
-                        udp.Send(ack.Buffer, ack.Length, remote);
-                    }
-                    break;
-                case SocketMessage.Unacked:
-                    // Unacked data, this is only sent once, presumably.
-                    OnData(new ProtocolDataEventArgs(remote, data));
-                    break;
-                default:
-                    break;
-            }
-            if (type == SocketMessage.Ack)
-            {
-            }
-            else if (type == SocketMessage.Unacked)
-            {
-            }
-            else if (type == SocketMessage.Acked)
-            {
+                            Packet ack = messages.MakeAck(messageNumber);
+                            udp.Send(ack.Buffer, ack.Length, remote);
+                        }
+                        break;
+                    case SocketMessage.Ping:
+                        Packet pong = messages.MakeAck(messageNumber);
+                        udp.Send(pong.Buffer, pong.Length, remote);
+                        break;
+                    case SocketMessage.Unacked:
+                        // Unacked data, this is only sent once, presumably.
+                        OnData(new ProtocolDataEventArgs(remote, data));
+                        break;
+                    default:
+                        break;
+                }
             }
         }
+
+        #endregion
+
+        #region Utility methods
 
         private void RemoveConnection(IPEndPoint remote)
         {
@@ -259,28 +325,23 @@ namespace Engine.Network
             return true;
         }
 
-        private bool GetConnection(IPEndPoint remote, out UdpRemoteInfo connection)
+        private UdpRemoteInfo GetConnection(IPEndPoint remote)
         {
-            // Satisfy outs.
-            connection = null;
-
             // Get remote IP address in raw format.
             long remoteIp;
             if (!GetRawIp(remote.Address, out remoteIp))
             {
-                return false;
+                return null;
             }
 
             // OK, if we may and need, create a connection object.
             if (!connections.ContainsKey(remoteIp))
             {
-                connections.Add(remoteIp, new UdpRemoteInfo());
+                connections.Add(remoteIp, new UdpRemoteInfo(remote));
             }
 
             // And return it.
-            connection = connections[remoteIp];
-
-            return true;
+            return connections[remoteIp];
         }
 
         private void OnData(ProtocolDataEventArgs e)
@@ -298,7 +359,11 @@ namespace Engine.Network
                 MessageTimeout(this, e);
             }
         }
+
+        #endregion
     }
+
+    #region Utility classes
 
     enum SocketMessage
     {
@@ -311,16 +376,22 @@ namespace Engine.Network
         /// The message is an ack for a message we sent to the remote machine.
         /// </summary>
         Ack,
-
+        
         /// <summary>
         /// This message requires us to send an ack.
         /// </summary>
         Acked,
 
         /// <summary>
+        /// Low-level acked message, used to test aliveness of connections, and
+        /// build up samples for the ping of that connection.
+        /// </summary>
+        Ping,
+
+        /// <summary>
         /// This message does not require us to send an ack.
         /// </summary>
-        Unacked
+        Unacked,
     }
 
     /// <summary>
@@ -376,6 +447,13 @@ namespace Engine.Network
             return MakeMessage(SocketMessage.Acked, wrapper);
         }
 
+        public Packet MakePing(out int messageNumber)
+        {
+            messageNumber = nextMessageNumber++;
+            Packet wrapper = new Packet(4);
+            wrapper.Write(messageNumber);
+            return MakeMessage(SocketMessage.Ping, wrapper);
+        }
         /// <summary>
         /// Create an unacked message, i.e. one that we'll only send once and don't need an ack for.
         /// </summary>
@@ -419,7 +497,7 @@ namespace Engine.Network
                 Packet body = message.ReadPacket();
 
                 // If it's an ack or an acked message we have a message number.
-                if (type == SocketMessage.Acked || type == SocketMessage.Ack)
+                if (type == SocketMessage.Acked || type == SocketMessage.Ack || type == SocketMessage.Ping)
                 {
                     if (!body.HasInt32())
                     {
@@ -520,17 +598,33 @@ namespace Engine.Network
     /// </summary>
     sealed class UdpRemoteInfo
     {
-            
+        /// <summary>
+        /// The average ping of this connection.
+        /// </summary>
+        public int Ping { get { return pingAverage.Measure(); } }
+
+        /// <summary>
+        /// The remote address this info is about.
+        /// </summary>
+        public IPEndPoint Remote { get; private set; }
+
         /// <summary>
         /// List of messages already handled recently.
         /// </summary>
         private Dictionary<int, bool> handledMessages = new Dictionary<int, bool>();
 
         /// <summary>
+        /// Average ping to this client, i.e. half round trip time for acked messages,
+        /// over the last 20 messages.
+        /// </summary>
+        private Average pingAverage = new Average(20);
+
+        /// <summary>
         /// Creates a new instance to track the state for an endpoint.
         /// </summary>
-        public UdpRemoteInfo()
+        public UdpRemoteInfo(IPEndPoint remote)
         {
+            this.Remote = remote;
         }
 
         /// <summary>
@@ -560,6 +654,68 @@ namespace Engine.Network
         {
             handledMessages.Add(messageNumber, result);
         }
+
+        /// <summary>
+        /// Push a new ping value for this connection.
+        /// </summary>
+        /// <param name="pingValue">the value of the ping to push.</param>
+        public void PushPing(int pingValue)
+        {
+            pingAverage.Add(pingValue);
+        }
     }
 
+    /// <summary>
+    /// Utility class to measure the average over a set number of integers.
+    /// </summary>
+    sealed class Average
+    {
+        /// <summary>
+        /// The list of samples.
+        /// </summary>
+        private int[] samples;
+
+        /// <summary>
+        /// Next index to write new values.
+        /// </summary>
+        private int writeIndex = 0;
+
+        /// <summary>
+        /// Creates a new averaging object for the given number of samples.
+        /// </summary>
+        /// <param name="samples">number of samples to keep track of.</param>
+        public Average(int samples)
+        {
+            this.samples = new int[samples];
+        }
+
+        /// <summary>
+        /// Push a new sample to the list.
+        /// </summary>
+        /// <param name="sample">the sample to push.</param>
+        public void Add(int sample)
+        {
+            samples[writeIndex++] = sample;
+            if (writeIndex == samples.Length)
+            {
+                writeIndex = 0;
+            }
+        }
+
+        /// <summary>
+        /// Measure the average based on the last <c>n</c> pushed samples.
+        /// </summary>
+        /// <returns>the average over the last samples.</returns>
+        public int Measure()
+        {
+            int sum = 0;
+            foreach (var sample in samples)
+            {
+                sum += sample;
+            }
+            return sum / samples.Length;
+        }
+    }
+
+    #endregion
 }

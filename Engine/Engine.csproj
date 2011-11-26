@@ -100,19 +100,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\AckCommand.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\CommandType.cs" />
     <Compile Include="Commands\GameStateCommand.cs" />
     <Compile Include="Commands\GameStateQueryCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Input\KeyboardInputEventArgs.cs" />
+    <Compile Include="Input\IKeyboardInputManager.cs" />
     <Compile Include="Input\KeyboardInputManager.cs" />
     <Compile Include="Input\KeyMap.cs" />
     <Compile Include="Input\KeyModifier.cs" />
     <Compile Include="Network\EventArgs.cs" />
     <Compile Include="Session\AbstractSession.cs" />
     <Compile Include="Session\ClientSession.cs" />
-    <Compile Include="Session\EventArgs.cs" />
+    <Compile Include="Session\SessionEventArgs.cs" />
     <Compile Include="Session\IClientSession.cs" />
     <Compile Include="Network\IProtocol.cs" />
     <Compile Include="Session\IServerSession.cs" />

@@ -5,30 +5,25 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Engine.Input
 {
-
-    public delegate void KeyPressedEventHandler(Keys key, KeyModifier modifier);
-    public delegate void KeyReleasedEventHandler(Keys key);
-
     /// <summary>
     /// This class may be used to get an event driven access to user key presses.
     /// 
     /// Upon creation, this class registers itself as a service with the game it
     /// is created for, so it can be accessed by any other component.
     /// </summary>
-    public sealed class KeyboardInputManager : GameComponent
+    public sealed class KeyboardInputManager : GameComponent, IKeyboardInputManager
     {
-
         #region Events
 
         /// <summary>
         /// Fired when a key is newly pressed, or is repeated as set via RepeatDelay/RepeatRate.
         /// </summary>
-        public event KeyPressedEventHandler Pressed;
+        public event EventHandler<EventArgs> Pressed;
 
         /// <summary>
         /// Fired when a key is released.
         /// </summary>
-        public event KeyReleasedEventHandler Released;
+        public event EventHandler<EventArgs> Released;
 
         #endregion
 
@@ -65,7 +60,7 @@ namespace Engine.Input
             RepeatRate = 40;
 
             game.Components.Add(this);
-            game.Services.AddService(typeof(KeyboardInputManager), this);
+            game.Services.AddService(typeof(IKeyboardInputManager), this);
         }
 
         #region Logic
@@ -75,30 +70,35 @@ namespace Engine.Input
         /// </summary>
         public override void Update(GameTime gameTime)
         {
+            // Get a shortcut to the current keyboard state.
             var currentState = Keyboard.GetState();
 
             if (previousState != null)
             {
+                // Active keyboard modifier combo.
+                KeyModifier modifier = KeyModifier.None;
+                if (currentState.GetPressedKeys().Contains(Keys.LeftAlt) ||
+                    currentState.GetPressedKeys().Contains(Keys.RightAlt))
+                {
+                    modifier |= KeyModifier.Alt;
+                }
+                if (currentState.GetPressedKeys().Contains(Keys.LeftControl) ||
+                    currentState.GetPressedKeys().Contains(Keys.RightControl))
+                {
+                    modifier |= KeyModifier.Control;
+                }
+                if (currentState.GetPressedKeys().Contains(Keys.LeftShift) ||
+                    currentState.GetPressedKeys().Contains(Keys.RightShift))
+                {
+                    modifier |= KeyModifier.Shift;
+                }
+
+                // The current time, used to check for repeats.
                 var currentTime = DateTime.Now;
+
+                // Test each key that's down.
                 foreach (var key in currentState.GetPressedKeys())
                 {
-                    KeyModifier modifier = KeyModifier.None;
-                    if (currentState.GetPressedKeys().Contains(Keys.LeftAlt) ||
-                        currentState.GetPressedKeys().Contains(Keys.RightAlt))
-                    {
-                        modifier |= KeyModifier.Alt;
-                    }
-                    if (currentState.GetPressedKeys().Contains(Keys.LeftControl) ||
-                        currentState.GetPressedKeys().Contains(Keys.RightControl))
-                    {
-                        modifier |= KeyModifier.Control;
-                    }
-                    if (currentState.GetPressedKeys().Contains(Keys.LeftShift) ||
-                        currentState.GetPressedKeys().Contains(Keys.RightShift))
-                    {
-                        modifier |= KeyModifier.Shift;
-                    }
-
                     if (previousState.GetPressedKeys().Contains(key))
                     {
                         // Key was held.
@@ -107,7 +107,7 @@ namespace Engine.Input
                             if (key == lastPressedKey && new TimeSpan(currentTime.Ticks - lastRepeat.Ticks).TotalMilliseconds > RepeatRate)
                             {
                                 lastRepeat = currentTime;
-                                OnPressed(key, modifier);
+                                OnPressed(new KeyboardInputEventArgs(key, modifier));
                             }
                         }
                     }
@@ -119,9 +119,11 @@ namespace Engine.Input
                             lastPressedKey = key;
                             lastRepeat = currentTime.AddMilliseconds(RepeatDelay);
                         }
-                        OnPressed(key, modifier);
+                        OnPressed(new KeyboardInputEventArgs(key, modifier));
                     }
                 }
+
+                // Test all keys that were released.
                 foreach (var key in previousState.GetPressedKeys().Except(currentState.GetPressedKeys()))
                 {
                     // Key was released.
@@ -129,7 +131,7 @@ namespace Engine.Input
                     {
                         lastPressedKey = Keys.None;
                     }
-                    OnReleased(key);
+                    OnReleased(new KeyboardInputEventArgs(key, modifier));
                 }
             }
 
@@ -138,23 +140,22 @@ namespace Engine.Input
             base.Update(gameTime);
         }
 
-        private void OnPressed(Keys key, KeyModifier modifier)
+        private void OnPressed(KeyboardInputEventArgs e)
         {
             if (Pressed != null)
             {
-                Pressed(key, modifier);
+                Pressed(this, e);
             }
         }
 
-        private void OnReleased(Keys key)
+        private void OnReleased(KeyboardInputEventArgs e)
         {
             if (Released != null)
             {
-                Released(key);
+                Released(this, e);
             }
         }
 
         #endregion
-
     }
 }

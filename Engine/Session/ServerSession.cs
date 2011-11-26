@@ -12,8 +12,8 @@ namespace Engine.Session
     /// </summary>
     sealed class ServerSession : AbstractSession, IServerSession
     {
-        public event EventHandler GameInfoRequested;
-        public event EventHandler JoinRequested;
+        public event EventHandler<EventArgs> GameInfoRequested;
+        public event EventHandler<EventArgs> JoinRequested;
 
         /// <summary>
         /// Keep track of free slots (use the first free on on joins).
@@ -190,7 +190,8 @@ namespace Engine.Session
 
                             // Store the player's info.
                             playerAddresses[playerNumber] = args.Remote;
-                            players[playerNumber] = new Player(playerNumber, playerName, playerData);
+                            players[playerNumber] = new Player(playerNumber, playerName, playerData,
+                                delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
                             slots[playerNumber] = true;
                             ++NumPlayers;
 

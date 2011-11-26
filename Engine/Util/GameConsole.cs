@@ -84,7 +84,7 @@ namespace Engine.Util
         /// <summary>
         /// Fired when an entry is added via WriteLine().
         /// </summary>
-        public event EventHandler LineWritten;
+        public event EventHandler<EventArgs> LineWritten;
 
         #endregion
 
@@ -267,11 +267,11 @@ namespace Engine.Util
 
         #endregion
 
-        #region Init / Update
+        #region Init / Update / Cleanup
 
         public override void Initialize()
         {
-            KeyboardInputManager input = (KeyboardInputManager)Game.Services.GetService(typeof(KeyboardInputManager));
+            var input = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
             input.Pressed += HandleKeyPressed;
 
             base.Initialize();
@@ -283,6 +283,13 @@ namespace Engine.Util
             pixelTexture.SetData(new[] { Color.White });
 
             base.LoadContent();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            var input = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
+            input.Pressed -= HandleKeyPressed;
+            base.Dispose(disposing);
         }
 
         public override void Draw(GameTime gameTime)
@@ -472,7 +479,11 @@ namespace Engine.Util
                 }
                 catch (Exception e)
                 {
+#if DEBUG
                     WriteLine("Error: " + e.ToString());
+#else
+                    WriteLine("Error: " + e.Message);
+#endif
                 }
             }
             else
@@ -508,11 +519,12 @@ namespace Engine.Util
         /// <summary>
         /// Handle keyboard input.
         /// </summary>
-        private void HandleKeyPressed(Keys key, KeyModifier modifier)
+        private void HandleKeyPressed(object sender, EventArgs e)
         {
+            var args = (KeyboardInputEventArgs)e;
             if (IsOpen)
             {
-                switch (key)
+                switch (args.Key)
                 {
                     case Keys.Back:
                         if (cursor > 0)
@@ -563,7 +575,7 @@ namespace Engine.Util
                         ResetTabCompletion();
                         break;
                     case Keys.Left:
-                        if (modifier == KeyModifier.Control)
+                        if (args.Modifier == KeyModifier.Control)
                         {
                             int startIndex = System.Math.Max(0, cursor - 1);
                             while (startIndex > 0 && startIndex < input.Length && input[startIndex] == ' ')
@@ -587,7 +599,7 @@ namespace Engine.Util
                         ResetTabCompletion();
                         break;
                     case Keys.PageDown:
-                        if (modifier == KeyModifier.Shift)
+                        if (args.Modifier == KeyModifier.Shift)
                         {
                             scroll = 0;
                         }
@@ -597,7 +609,7 @@ namespace Engine.Util
                         }
                         break;
                     case Keys.PageUp:
-                        if (modifier == KeyModifier.Shift)
+                        if (args.Modifier == KeyModifier.Shift)
                         {
                             scroll = System.Math.Max(0, buffer.Count - 1);
                         }
@@ -607,7 +619,7 @@ namespace Engine.Util
                         }
                         break;
                     case Keys.Right:
-                        if (modifier == KeyModifier.Control)
+                        if (args.Modifier == KeyModifier.Control)
                         {
                             int index = input.ToString().IndexOf(' ', cursor);
                             if (index == -1)
@@ -690,7 +702,7 @@ namespace Engine.Util
                     default:
                         if (KeyMap != null)
                         {
-                            char ch = KeyMap[modifier, key];
+                            char ch = KeyMap[args.Modifier, args.Key];
                             if (ch != '\0')
                             {
                                 input.Insert(cursor, ch);
@@ -705,7 +717,7 @@ namespace Engine.Util
             }
             else
             {
-                if (key.Equals(HotKey))
+                if (args.Key.Equals(HotKey))
                 {
                     IsOpen = true;
                 }

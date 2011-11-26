@@ -22,13 +22,13 @@ namespace Engine.Session
         /// Called when we receive information about an open game.
         /// Only possibly called after Search() was called.
         /// </summary>
-        event EventHandler GameInfoReceived;
+        event EventHandler<EventArgs> GameInfoReceived;
 
         /// <summary>
         /// Called when we successfully joined a server (i.e. Join() was
         /// called and the server accepted us).
         /// </summary>
-        event EventHandler JoinResponse;
+        event EventHandler<EventArgs> JoinResponse;
 
         /// <summary>
         /// Current state of this session.

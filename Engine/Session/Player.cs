@@ -7,7 +7,6 @@ namespace Engine.Session
     /// </summary>
     public class Player
     {
-
         /// <summary>
         /// The player's number in the game he's in.
         /// </summary>
@@ -19,21 +18,31 @@ namespace Engine.Session
         public string Name { get; private set; }
 
         /// <summary>
+        /// The average ping to this player.
+        /// </summary>
+        public int Ping { get { return pingGetter(); } }
+
+        /// <summary>
         /// Some arbitrary data associated with the player.
         /// </summary>
         public byte[] Data { get; set; }
 
-        public Player(int number, string name, byte[] data)
+        /// <summary>
+        /// The session this player belongs to.
+        /// </summary>
+        private Func<int> pingGetter;
+
+        internal Player(int number, string name, byte[] data, Func<int> pingGetter)
         {
             this.Number = number;
             this.Name = name;
             this.Data = data;
+            this.pingGetter = pingGetter;
         }
 
         public override string ToString()
         {
             return String.Format("Player {0} ({1})", Number, Name);
         }
-
     }
 }

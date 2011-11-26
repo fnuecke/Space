@@ -43,7 +43,7 @@ namespace Engine.Util
         /// Fired when an entry is added via WriteLine(). Event args are of type
         /// <see cref="LineWrittenEventArgs"/>.
         /// </summary>
-        event EventHandler LineWritten;
+        event EventHandler<EventArgs> LineWritten;
 
         /// <summary>
         /// Register a new command with the given name.

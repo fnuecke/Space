@@ -11,8 +11,8 @@ namespace Engine.Session
     sealed class ClientSession : AbstractSession, IClientSession
     {
 
-        public event EventHandler GameInfoReceived;
-        public event EventHandler JoinResponse;
+        public event EventHandler<EventArgs> GameInfoReceived;
+        public event EventHandler<EventArgs> JoinResponse;
 
         /// <summary>
         /// Current state of this session.
@@ -325,8 +325,9 @@ namespace Engine.Session
                             IPEndPoint playerEndPoint = new IPEndPoint(playerAddress, data.ReadInt32());
 
                             // All OK, add the player.
-                            players[playerNumber] = new Player(playerNumber, playerName, playerData);
                             playerAddresses[playerNumber] = playerEndPoint;
+                            players[playerNumber] = new Player(playerNumber, playerName, playerData,
+                                delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
                         }
 
                         // Get other game relevant data (e.g. game state).
@@ -419,8 +420,9 @@ namespace Engine.Session
                         IPEndPoint playerEndPoint = new IPEndPoint(playerAddress, data.ReadInt32());
 
                         // All OK, add the player.
-                        players[playerNumber] = new Player(playerNumber, playerName, playerData);
                         playerAddresses[playerNumber] = playerEndPoint;
+                        players[playerNumber] = new Player(playerNumber, playerName, playerData,
+                                delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
 
                         // The the local program about it.
                         OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));

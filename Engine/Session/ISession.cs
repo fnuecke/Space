@@ -11,17 +11,17 @@ namespace Engine.Session
         /// <summary>
         /// Called when a new player joins the session.
         /// </summary>
-        event EventHandler PlayerJoined;
+        event EventHandler<EventArgs> PlayerJoined;
 
         /// <summary>
         /// Called when a player left the session.
         /// </summary>
-        event EventHandler PlayerLeft;
+        event EventHandler<EventArgs> PlayerLeft;
 
         /// <summary>
         /// Called when a player sent data.
         /// </summary>
-        event EventHandler PlayerData;
+        event EventHandler<EventArgs> PlayerData;
 
         /// <summary>
         /// Number of the local player.

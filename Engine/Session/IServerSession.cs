@@ -12,13 +12,13 @@ namespace Engine.Session
         /// 
         /// IMPORTANT: this may be called asynchronously!
         /// </summary>
-        event EventHandler GameInfoRequested;
+        event EventHandler<EventArgs> GameInfoRequested;
 
         /// <summary>
         /// A player is joining the game. Fill in any arbitrary data to send
         /// back to the joining client here.
         /// </summary>
-        event EventHandler JoinRequested;
+        event EventHandler<EventArgs> JoinRequested;
 
         /// <summary>
         /// Kick a player from the session.

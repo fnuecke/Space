@@ -19,6 +19,12 @@ namespace Engine.Network
         /// Register here to be notified of incoming data packets.
         /// </summary>
         event EventHandler Data;
+        
+        /// <summary>
+        /// Get the ping for the given remote end point, if possible.
+        /// </summary>
+        /// <param name="remote">return the averaged ping to the remote host, or 0 if unknown.</param>
+        int GetPing(IPEndPoint remote);
 
         /// <summary>
         /// Send some data to a remote host.
@@ -34,6 +40,7 @@ namespace Engine.Network
 
         /// <summary>
         /// Inject a message, handle it like it was received via the protocol itself.
+        /// This method is thread safe.
         /// </summary>
         /// <param name="buffer">the data to inject.</param>
         /// <param name="remote">the remote host the message was received from.</param>

@@ -1,15 +1,11 @@
 using System;
-using System.Linq;
 using System.Net;
 using Engine.Input;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Space.Control;
-using Space.Model;
-using SpaceData;
 
 namespace Space
 {
@@ -20,26 +16,16 @@ namespace Space
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
-
-        KeyboardInputManager keyboardInput;
         GameConsole console;
-
-        ShipData[] ships;
-        Ship player;
-
         Server server;
         Client client;
-
-        Texture2D background;
-
-        private Keys[] previouslyPressedKeys = new Keys[0];
 
         public Spaaace()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            keyboardInput = new KeyboardInputManager(this);
+            new KeyboardInputManager(this);
             console = new GameConsole(this);
 
             console.AddCommand("server", args =>
@@ -92,10 +78,10 @@ namespace Space
             }, "Send a command to another player.",
                "send <player> <message>");
 
-            console.LineWritten += new EventHandler(delegate(object sender, EventArgs e)
+            console.LineWritten += delegate(object sender, EventArgs e)
             {
                 Console.WriteLine(((LineWrittenEventArgs)e).Message);
-            });
+            };
         }
 
         /// <summary>
@@ -123,35 +109,7 @@ namespace Space
             console.SpriteBatch = spriteBatch;
             console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
 
-            console.WriteLine("test text");
-            console.WriteLine("test text that is long and should probably be wrapped somewhen about now... ok maybe not. some more text ole ole ole! now that should suffice.");
-
-            // TODO: use this.Content to load your game content here
-
-            ships = Content.Load<ShipData[]>("Data/ships");
-
-            background = Content.Load<Texture2D>("Textures/stars");
-        }
-
-        /// <summary>
-        /// UnloadContent will be called once per game and is the place to unload
-        /// all content.
-        /// </summary>
-        protected override void UnloadContent()
-        {
-            // TODO: Unload any non ContentManager content here
-        }
-
-        private bool StartedPressing(Keys key)
-        {
-            return Keyboard.GetState(PlayerIndex.One).GetPressedKeys().Contains(key) &&
-                !previouslyPressedKeys.Contains(key);
-        }
-
-        private bool StoppedPressing(Keys key)
-        {
-            return !Keyboard.GetState(PlayerIndex.One).GetPressedKeys().Contains(key) &&
-                   previouslyPressedKeys.Contains(key);
+            console.WriteLine("Space Game Console. Type 'help' for available commands.");
         }
 
         /// <summary>
@@ -173,6 +131,12 @@ namespace Space
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // TODO: Add your drawing code here
+
+            if (server != null)
+            {
+                server.DEBUG_DrawInfo(spriteBatch);
+            }
+
 /*
 
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
