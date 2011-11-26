@@ -11,8 +11,8 @@ namespace Engine.Session
     sealed class ClientSession : AbstractSession, IClientSession
     {
 
-        public event GameInfoReceivedEventHandler GameInfoReceived;
-        public event JoinResponseEventHandler JoinResponse;
+        public event EventHandler GameInfoReceived;
+        public event EventHandler JoinResponse;
 
         /// <summary>
         /// Current state of this session.
@@ -70,46 +70,47 @@ namespace Engine.Session
             MaxPlayers = 0;
         }
 
-        protected override void HandlePlayerTimeout(IPEndPoint remote)
+        protected override void HandlePlayerTimeout(object sender, EventArgs e)
         {
+            var args = (ProtocolEventArgs)e;
+
             if (ConnectionState != ClientState.Unconnected)
             {
-                if (remote.Equals(host))
+                if (args.Remote.Equals(host))
                 {
                     // Lost connection to host :(
                     if (ConnectionState == ClientState.Connecting)
                     {
                         Leave();
-                        OnJoinResponse(false, JoinResponseReason.ConnectionFailed, null);
+                        OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.ConnectionFailed, null));
                     }
                     else
                     {
                         Player player = players[LocalPlayer];
                         Leave();
-                        OnPlayerLeft(player);
+                        OnPlayerLeft(new PlayerEventArgs(player));
                     }
                 } // else could not send to other client -> not so bad
             }
         }
 
-        protected override bool HandlePlayerData(IPEndPoint remote, Packet data)
+        protected override void HandlePlayerData(object sender, EventArgs e)
         {
+            var args = (ProtocolDataEventArgs)e;
+
             // Get the message type.
-            if (!data.HasByte())
+            if (!args.Data.HasByte())
             {
                 Console.WriteLine("Received invalid packet, no SessionMessage type.");
-                return false;
+                return;
             }
-            SessionMessage type = (SessionMessage)data.ReadByte();
+            SessionMessage type = (SessionMessage)args.Data.ReadByte();
 
             // Get additional data.
-            if (data.HasPacket())
+            Packet data = null;
+            if (args.Data.HasPacket())
             {
-                data = data.ReadPacket();
-            }
-            else
-            {
-                data = null;
+                data = args.Data.ReadPacket();
             }
 
             switch (type)
@@ -120,7 +121,7 @@ namespace Engine.Session
                         if (!data.HasInt32())
                         {
                             Console.WriteLine("Received invalid GameInfoResponse, no maxPlayers.");
-                            return false;
+                            return;
                         }
                         int maxPlayers = data.ReadInt32();
 
@@ -128,7 +129,7 @@ namespace Engine.Session
                         if (!data.HasInt32())
                         {
                             Console.WriteLine("Received invalid GameInfoResponse, no numPlayers.");
-                            return false;
+                            return;
                         }
                         int numPlayers = data.ReadInt32();
 
@@ -136,24 +137,24 @@ namespace Engine.Session
                         if (!data.HasPacket())
                         {
                             Console.WriteLine("Received invalid GameInfoResponse, no customData.");
-                            return false;
+                            return;
                         }
                         Packet customData = data.ReadPacket();
 
                         // Propagate to local program.
-                        OnGameInfoReceived(remote, numPlayers, maxPlayers, customData);
+                        OnGameInfoReceived(new GameInfoReceivedEventArgs(args.Remote, numPlayers, maxPlayers, customData));
                     }
                     break;
                 case SessionMessage.JoinResponse:
-                    if (ConnectionState == ClientState.Connecting && remote.Equals(host))
+                    if (ConnectionState == ClientState.Connecting && args.Remote.Equals(host))
                     {
                         // Success or not?
                         if (!data.HasBoolean())
                         {
                             Console.WriteLine("Received invalid JoinResponse, no success info.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
                         bool success = data.ReadBoolean();
 
@@ -164,13 +165,13 @@ namespace Engine.Session
                             // Do we at least know why?
                             if (data.HasByte())
                             {
-                                OnJoinResponse(false, (JoinResponseReason)data.ReadByte(), null);
+                                OnJoinResponse(new JoinResponseEventArgs(false, (JoinResponseReason)data.ReadByte(), null));
                             }
                             else
                             {
-                                OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
+                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
                             }
-                            return false;
+                            return;
                         }
 
                         // Get our number.
@@ -178,8 +179,8 @@ namespace Engine.Session
                         {
                             Console.WriteLine("Received invalid JoinResponse, no player number.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
                         LocalPlayer = data.ReadInt32();
 
@@ -188,8 +189,8 @@ namespace Engine.Session
                         {
                             Console.WriteLine("Received invalid JoinResponse, invalid local player number.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
 
                         // Get info about other players in the session.
@@ -197,8 +198,8 @@ namespace Engine.Session
                         {
                             Console.WriteLine("Received invalid JoinResponse, no number of other players.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
                         NumPlayers = data.ReadInt32();
 
@@ -207,8 +208,8 @@ namespace Engine.Session
                         {
                             Console.WriteLine("Received invalid JoinResponse, negative number of other players.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
 
                         // Maximum number of players in the session?
@@ -216,8 +217,8 @@ namespace Engine.Session
                         {
                             Console.WriteLine("Received invalid JoinResponse, no number of max players.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
                         MaxPlayers = data.ReadInt32();
 
@@ -226,22 +227,22 @@ namespace Engine.Session
                         {
                             Console.WriteLine("Received invalid JoinResponse, negative number of max players.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
                         if (MaxPlayers < NumPlayers)
                         {
                             Console.WriteLine("Received invalid JoinResponse, number of max players smaller than number of players.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
                         if (LocalPlayer >= MaxPlayers)
                         {
                             Console.WriteLine("Received invalid JoinResponse, local player number larger than max players.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
 
                         // Allocate arrays for the players in the session.
@@ -255,8 +256,8 @@ namespace Engine.Session
                             {
                                 Console.WriteLine("Received invalid JoinResponse, no player number.");
                                 Leave();
-                                OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                                return false;
+                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                                return;
                             }
                             int playerNumber = data.ReadInt32();
 
@@ -265,22 +266,22 @@ namespace Engine.Session
                             {
                                 Console.WriteLine("Received invalid JoinResponse, negative player number.");
                                 Leave();
-                                OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                                return false;
+                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                                return;
                             }
                             if (playerNumber >= MaxPlayers)
                             {
                                 Console.WriteLine("Received invalid JoinResponse, player number larger than max players.");
                                 Leave();
-                                OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                                return false;
+                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                                return;
                             }
                             if (players[playerNumber] != null)
                             {
                                 Console.WriteLine("Received invalid JoinResponse, duplicate player info.");
                                 Leave();
-                                OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                                return false;
+                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                                return;
                             }
 
                             // Get player name.
@@ -288,8 +289,8 @@ namespace Engine.Session
                             {
                                 Console.WriteLine("Received invalid JoinResponse, no player name.");
                                 Leave();
-                                OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                                return false;
+                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                                return;
                             }
                             string playerName = data.ReadString().Trim();
 
@@ -298,8 +299,8 @@ namespace Engine.Session
                             {
                                 Console.WriteLine("Received invalid JoinResponse, no player data.");
                                 Leave();
-                                OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                                return false;
+                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                                return;
                             }
                             byte[] playerData = data.ReadByteArray();
 
@@ -308,8 +309,8 @@ namespace Engine.Session
                             {
                                 Console.WriteLine("Received invalid JoinResponse, no player address.");
                                 Leave();
-                                OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                                return false;
+                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                                return;
                             }
                             IPAddress playerAddress = new IPAddress(data.ReadByteArray());
 
@@ -318,8 +319,8 @@ namespace Engine.Session
                             {
                                 Console.WriteLine("Received invalid JoinResponse, no player port.");
                                 Leave();
-                                OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                                return false;
+                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                                return;
                             }
                             IPEndPoint playerEndPoint = new IPEndPoint(playerAddress, data.ReadInt32());
 
@@ -333,8 +334,8 @@ namespace Engine.Session
                         {
                             Console.WriteLine("Received invalid JoinResponse, no join data.");
                             Leave();
-                            OnJoinResponse(false, JoinResponseReason.InvalidServerData, null);
-                            return false;
+                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            return;
                         }
                         Packet joinData = data.ReadPacket();
 
@@ -342,7 +343,7 @@ namespace Engine.Session
                         ConnectionState = ClientState.Connected;
 
                         // OK, let the program know.
-                        OnJoinResponse(true, JoinResponseReason.Success, joinData);
+                        OnJoinResponse(new JoinResponseEventArgs(true, JoinResponseReason.Success, joinData));
                         
                         // Also, fire one join event for each player in the game. Except for
                         // the local player, because that'll likely need special treatment anyway.
@@ -350,20 +351,21 @@ namespace Engine.Session
                         {
                             if (i != LocalPlayer && players[i] != null)
                             {
-                                OnPlayerJoined(players[i]);
+                                OnPlayerJoined(new PlayerEventArgs(players[i]));
                             }
                         }
-                        return true;
+
+                        args.Consume();
                     }
                     break;
                 case SessionMessage.PlayerJoined:
-                    if (ConnectionState == ClientState.Connected && remote.Equals(host))
+                    if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
                     {
                         // Get player number.
                         if (!data.HasInt32())
                         {
                             Console.WriteLine("Received invalid PlayerJoined, no player number.");
-                            return false;
+                            return;
                         }
                         int playerNumber = data.ReadInt32();
 
@@ -371,24 +373,24 @@ namespace Engine.Session
                         if (playerNumber < 0)
                         {
                             Console.WriteLine("Received invalid PlayerJoined, negative player number.");
-                            return false;
+                            return;
                         }
                         if (playerNumber >= MaxPlayers)
                         {
                             Console.WriteLine("Received invalid PlayerJoined, player number larger than max players.");
-                            return false;
+                            return;
                         }
                         if (players[playerNumber] != null)
                         {
                             Console.WriteLine("Received invalid PlayerJoined, duplicate player info.");
-                            return false;
+                            return;
                         }
 
                         // Get player name.
                         if (!data.HasString())
                         {
                             Console.WriteLine("Received invalid PlayerJoined, no player name.");
-                            return false;
+                            return;
                         }
                         string playerName = data.ReadString().Trim();
 
@@ -396,7 +398,7 @@ namespace Engine.Session
                         if (!data.HasByteArray())
                         {
                             Console.WriteLine("Received invalid PlayerJoined, no player data.");
-                            return false;
+                            return;
                         }
                         byte[] playerData = data.ReadByteArray();
 
@@ -404,7 +406,7 @@ namespace Engine.Session
                         if (!data.HasByteArray())
                         {
                             Console.WriteLine("Received invalid PlayerJoined, no player address.");
-                            return false;
+                            return;
                         }
                         IPAddress playerAddress = new IPAddress(data.ReadByteArray());
 
@@ -412,7 +414,7 @@ namespace Engine.Session
                         if (!data.HasInt32())
                         {
                             Console.WriteLine("Received invalid PlayerJoined, no player port.");
-                            return false;
+                            return;
                         }
                         IPEndPoint playerEndPoint = new IPEndPoint(playerAddress, data.ReadInt32());
 
@@ -421,19 +423,19 @@ namespace Engine.Session
                         playerAddresses[playerNumber] = playerEndPoint;
 
                         // The the local program about it.
-                        OnPlayerJoined(players[playerNumber]);
+                        OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
 
-                        return true;
+                        args.Consume();
                     }
                     break;
                 case SessionMessage.PlayerLeft:
-                    if (ConnectionState == ClientState.Connected && remote.Equals(host))
+                    if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
                     {
                         // Get player number.
                         if (!data.HasInt32())
                         {
                             Console.WriteLine("Received invalid PlayerLeft, no player number.");
-                            return false;
+                            return;
                         }
                         int playerNumber = data.ReadInt32();
 
@@ -441,17 +443,17 @@ namespace Engine.Session
                         if (playerNumber < 0)
                         {
                             Console.WriteLine("Received invalid PlayerLeft, negative player number.");
-                            return false;
+                            return;
                         }
                         if (playerNumber >= MaxPlayers)
                         {
                             Console.WriteLine("Received invalid PlayerLeft, player number larger than max players.");
-                            return false;
+                            return;
                         }
                         if (players[playerNumber] == null)
                         {
                             Console.WriteLine("Received invalid PlayerLeft, no such player.");
-                            return false;
+                            return;
                         }
 
                         // OK, remove the player.
@@ -460,16 +462,16 @@ namespace Engine.Session
                         playerAddresses[playerNumber] = null;
 
                         // Tell the local program about it.
-                        OnPlayerLeft(player);
+                        OnPlayerLeft(new PlayerEventArgs(player));
 
-                        return true;
+                        args.Consume();
                     }
                     break;
                 case SessionMessage.Data:
                     if (ConnectionState == ClientState.Connected)
                     {
                         // Custom data, just forward it if we're in a game.
-                        return base.HandlePlayerData(remote, data);
+                        ConditionalOnPlayerData(args, data);
                     }
                     break;
                 case SessionMessage.GameInfoRequest:
@@ -482,22 +484,21 @@ namespace Engine.Session
                     Console.WriteLine("Received packet with unknown session message type {0}.", type);
                     break;
             }
-            return false;
         }
 
-        private void OnGameInfoReceived(IPEndPoint host, int numPlayers, int maxPlayers, Packet data)
+        private void OnGameInfoReceived(GameInfoReceivedEventArgs e)
         {
             if (GameInfoReceived != null)
             {
-                GameInfoReceived(host, numPlayers, maxPlayers, data);
+                GameInfoReceived(this, e);
             }
         }
 
-        private void OnJoinResponse(bool success, JoinResponseReason reason, Packet data)
+        private void OnJoinResponse(JoinResponseEventArgs e)
         {
             if (JoinResponse != null)
             {
-                JoinResponse(success, reason, data);
+                JoinResponse(this, e);
             }
         }
     }

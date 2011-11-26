@@ -84,7 +84,7 @@ namespace Engine.Util
         /// <summary>
         /// Fired when an entry is added via WriteLine().
         /// </summary>
-        public event LineWrittenEventHandler LineWritten;
+        public event EventHandler LineWritten;
 
         #endregion
 
@@ -497,7 +497,7 @@ namespace Engine.Util
 
             foreach (var line in lines)
             {
-                OnLineWritten(line);
+                OnLineWritten(new LineWrittenEventArgs(line));
             }
         }
 
@@ -781,11 +781,11 @@ namespace Engine.Util
             tabCompleteIndex = -1;
         }
 
-        private void OnLineWritten(string line)
+        private void OnLineWritten(LineWrittenEventArgs e)
         {
             if (LineWritten != null)
             {
-                LineWritten(line);
+                LineWritten(this, e);
             }
         }
 

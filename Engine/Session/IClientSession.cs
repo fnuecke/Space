@@ -1,49 +1,8 @@
-﻿using System.Net;
-using Engine.Serialization;
+﻿using System;
+using System.Net;
 
 namespace Engine.Session
 {
-    public enum JoinResponseReason
-    {
-        /// <summary>
-        /// Join was successful!
-        /// </summary>
-        Success,
-
-        /// <summary>
-        /// Unknown reason a join failed (invalid packet?).
-        /// </summary>
-        Unknown,
-
-        /// <summary>
-        /// The game we tried to join is already full.
-        /// </summary>
-        GameFull,
-
-        /// <summary>
-        /// Server says we're already in the game we're trying to join.
-        /// </summary>
-        AlreadyInGame,
-
-        /// <summary>
-        /// The name we provided was refused by the server (e.g. because it was empty?).
-        /// </summary>
-        InvalidName,
-
-        /// <summary>
-        /// Response we got from the server was invalid.
-        /// </summary>
-        InvalidServerData,
-
-        /// <summary>
-        /// Failed establishing a connection to the server.
-        /// </summary>
-        ConnectionFailed
-    }
-
-    public delegate void GameInfoReceivedEventHandler(IPEndPoint host, int numPlayers, int maxPlayers, Packet data);
-    public delegate void JoinResponseEventHandler(bool success, JoinResponseReason reason, Packet data);
-
     /// <summary>
     /// Possible connection states for the client.
     /// </summary>
@@ -54,20 +13,22 @@ namespace Engine.Session
         Connected
     }
 
+    /// <summary>
+    /// Interface for client side representations of a session.
+    /// </summary>
     public interface IClientSession : ISession
     {
-
         /// <summary>
         /// Called when we receive information about an open game.
         /// Only possibly called after Search() was called.
         /// </summary>
-        event GameInfoReceivedEventHandler GameInfoReceived;
+        event EventHandler GameInfoReceived;
 
         /// <summary>
         /// Called when we successfully joined a server (i.e. Join() was
         /// called and the server accepted us).
         /// </summary>
-        event JoinResponseEventHandler JoinResponse;
+        event EventHandler JoinResponse;
 
         /// <summary>
         /// Current state of this session.
@@ -91,6 +52,5 @@ namespace Engine.Session
         /// Leave the session.
         /// </summary>
         void Leave();
-
     }
 }

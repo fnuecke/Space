@@ -19,12 +19,12 @@ namespace Engine.Network
         /// <summary>
         /// Register here to be notified of connections being closed.
         /// </summary>
-        public event TimeoutEventHandler MessageTimeout;
+        public event EventHandler MessageTimeout;
 
         /// <summary>
         /// Register here to be notified of incoming data packets.
         /// </summary>
-        public event DataEventHandler Data;
+        public event EventHandler Data;
 
         /// <summary>
         /// The timeout (in milliseconds) after which to stop resending a packet and instead dispatching a timeout event.
@@ -138,7 +138,7 @@ namespace Engine.Network
             foreach (var remote in toRemove)
             {
                 RemoveConnection(remote);
-                OnTimeout(remote);
+                OnTimeout(new ProtocolEventArgs(remote));
             }
         }
 
@@ -189,7 +189,9 @@ namespace Engine.Network
                         }
                         else
                         {
-                            connection.MarkHandled(messageNumber, OnData(remote, data));
+                            var dataArgs = new ProtocolDataEventArgs(remote, data);
+                            OnData(dataArgs);
+                            connection.MarkHandled(messageNumber, dataArgs.WasConsumed);
                         }
 
                         Packet ack = messages.MakeAck(messageNumber);
@@ -198,7 +200,7 @@ namespace Engine.Network
                     break;
                 case SocketMessage.Unacked:
                     // Unacked data, this is only sent once, presumably.
-                    OnData(remote, data);
+                    OnData(new ProtocolDataEventArgs(remote, data));
                     break;
                 default:
                     break;
@@ -281,23 +283,19 @@ namespace Engine.Network
             return true;
         }
 
-        private bool OnData(IPEndPoint remote, Packet packet)
+        private void OnData(ProtocolDataEventArgs e)
         {
             if (Data != null)
             {
-                return Data(remote, packet);
-            }
-            else
-            {
-                return false;
+                Data(this, e);
             }
         }
 
-        private void OnTimeout(IPEndPoint remote)
+        private void OnTimeout(ProtocolEventArgs e)
         {
             if (MessageTimeout != null)
             {
-                MessageTimeout(remote);
+                MessageTimeout(this, e);
             }
         }
     }

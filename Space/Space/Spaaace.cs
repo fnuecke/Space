@@ -92,9 +92,9 @@ namespace Space
             }, "Send a command to another player.",
                "send <player> <message>");
 
-            console.LineWritten += new LineWrittenEventHandler(delegate(string line)
+            console.LineWritten += new EventHandler(delegate(object sender, EventArgs e)
             {
-                Console.WriteLine(line);
+                Console.WriteLine(((LineWrittenEventArgs)e).Message);
             });
             //*/
 
@@ -192,37 +192,42 @@ namespace Space
             session.PlayerData += HandlePlayerData;
         }
 
-        private void HandleJoinResponse(bool success, JoinResponseReason reason, Packet data)
+        private void HandleJoinResponse(object sender, EventArgs e)
         {
-            console.WriteLine(string.Format("Join response: {0} ({1})", success, Enum.GetName(typeof(JoinResponseReason), reason)));
+            var args = (JoinResponseEventArgs)e;
+            console.WriteLine(string.Format("Join response: {0} ({1})", args.WasSuccess, Enum.GetName(typeof(JoinResponseReason), args.Reason)));
         }
 
-        private void HandleGameInfoRequested(out Packet data)
+        private void HandleGameInfoRequested(object sender, EventArgs e)
         {
-            data = new Packet();
-            data.Write("testdata");
+            var args = (RequestEventArgs)e;
+            args.Data.Write("testdata");
         }
 
-        private void HandleGameFound(IPEndPoint host, int numPlayers, int maxPlayers, Packet gameInfo)
+        private void HandleGameFound(object sender, EventArgs e)
         {
-            var info = gameInfo.ReadString();
-            console.WriteLine(String.Format("Found a game: [{0}] {1} ({2}/{3})", host.ToString(), info, numPlayers, maxPlayers));
+            var args = (GameInfoReceivedEventArgs)e;
+            var info = args.Data.ReadString();
+            console.WriteLine(String.Format("Found a game: [{0}] {1} ({2}/{3})", args.Host.ToString(), info, args.NumPlayers, args.MaxPlayers));
         }
 
-        private void HandlePlayerJoined(Player player)
+        private void HandlePlayerJoined(object sender, EventArgs e)
         {
-            console.WriteLine(String.Format("{0} joined.", player));
+            var args = (PlayerEventArgs)e;
+            console.WriteLine(String.Format("{0} joined.", args.Player));
         }
 
-        private void HandlePlayerLeft(Player player)
+        private void HandlePlayerLeft(object sender, EventArgs e)
         {
-            console.WriteLine(String.Format("{0} left.", player));
+            var args = (PlayerEventArgs)e;
+            console.WriteLine(String.Format("{0} left.", args.Player));
         }
 
-        private bool HandlePlayerData(Player player, Packet data)
+        private void HandlePlayerData(object sender, EventArgs e)
         {
-            console.WriteLine(String.Format("Got data from {0}: {1}", player, data.ReadString()));
-            return true;
+            var args = (PlayerDataEventArgs)e;
+            console.WriteLine(String.Format("Got data from {0}: {1}", args.Player, args.Data.ReadString()));
+            args.Consume();
         }
 
         private bool StartedPressing(Keys key)

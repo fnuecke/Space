@@ -50,14 +50,35 @@ namespace Engine.Session
         Data
     }
 
+    /// <summary>
+    /// Base implementation for server and client side sessions, i.e. functionality used by both.
+    /// </summary>
     abstract class AbstractSession : ISession
     {
+        /// <summary>
+        /// The default port we'll use to listen for multicast messages (asking for open games).
+        /// </summary>
         protected const ushort DefaultMulticastPort = 50000;
+
+        /// <summary>
+        /// The default multicast group address we'll use for searching games.
+        /// </summary>
         protected readonly IPAddress DefaultMulticastAddress = new IPAddress(new byte[] { 224, 1, 33, 7 });
 
-        public event PlayerJoinedEventHandler PlayerJoined;
-        public event PlayerLeftEventHandler PlayerLeft;
-        public event PlayerDataEventHandler PlayerData;
+        /// <summary>
+        /// Called when a new player joins the session.
+        /// </summary>
+        public event EventHandler PlayerJoined;
+
+        /// <summary>
+        /// Called when a player left the session.
+        /// </summary>
+        public event EventHandler PlayerLeft;
+
+        /// <summary>
+        /// Called when a player sent data.
+        /// </summary>
+        public event EventHandler PlayerData;
 
         /// <summary>
         /// Number of the local player.
@@ -175,55 +196,50 @@ namespace Engine.Session
         /// <summary>
         /// Handle disconnects to players due to timeouts.
         /// </summary>
-        /// <param name="remote">the remote machine to which the connection failed.</param>
-        protected abstract void HandlePlayerTimeout(IPEndPoint remote);
+        protected abstract void HandlePlayerTimeout(object sender, EventArgs e);
 
         /// <summary>
         /// Handle data received from a remote machine.
         /// </summary>
-        /// <param name="remote">the machine that sent the data.</param>
-        /// <param name="data">the data we got.</param>
-        protected virtual bool HandlePlayerData(IPEndPoint remote, Packet data)
+        protected virtual void HandlePlayerData(object sender, EventArgs e)
+        {
+            ProtocolDataEventArgs args = (ProtocolDataEventArgs)e;
+            ConditionalOnPlayerData(args, args.Data);
+        }
+
+        protected void ConditionalOnPlayerData(ProtocolDataEventArgs args, Packet data)
         {
             // Check if this is a player of this session.
-            int player = Array.IndexOf(playerAddresses, remote);
+            int player = Array.IndexOf(playerAddresses, args.Remote);
 
             // If it is, forward the data.
             if (player >= 0)
             {
-                return OnPlayerData(players[player], data);
-            }
-            else
-            {
-                return false;
+                OnPlayerData(new PlayerDataEventArgs(players[player], args, data));
             }
         }
 
-        protected void OnPlayerJoined(Player player)
+        protected void OnPlayerJoined(PlayerEventArgs e)
         {
             if (PlayerJoined != null)
             {
-                PlayerJoined(player);
+                PlayerJoined(this, e);
             }
         }
 
-        protected void OnPlayerLeft(Player player)
+        protected void OnPlayerLeft(PlayerEventArgs e)
         {
             if (PlayerLeft != null)
             {
-                PlayerLeft(player);
+                PlayerLeft(this, e);
             }
         }
 
-        protected bool OnPlayerData(Player player, Packet data)
+        protected void OnPlayerData(PlayerDataEventArgs e)
         {
             if (PlayerData != null)
             {
-                return PlayerData(player, data);
-            }
-            else
-            {
-                return false;
+                PlayerData(this, e);
             }
         }
     }

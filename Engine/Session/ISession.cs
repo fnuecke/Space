@@ -3,28 +3,25 @@ using Engine.Serialization;
 
 namespace Engine.Session
 {
-
-    public delegate void PlayerJoinedEventHandler(Player player);
-    public delegate void PlayerLeftEventHandler(Player player);
-    public delegate bool PlayerDataEventHandler(Player player, Packet data);
-
+    /// <summary>
+    /// Common interface for sessions of either server or client type.
+    /// </summary>
     public interface ISession : IDisposable
     {
-
         /// <summary>
         /// Called when a new player joins the session.
         /// </summary>
-        event PlayerJoinedEventHandler PlayerJoined;
+        event EventHandler PlayerJoined;
 
         /// <summary>
         /// Called when a player left the session.
         /// </summary>
-        event PlayerLeftEventHandler PlayerLeft;
+        event EventHandler PlayerLeft;
 
         /// <summary>
         /// Called when a player sent data.
         /// </summary>
-        event PlayerDataEventHandler PlayerData;
+        event EventHandler PlayerData;
 
         /// <summary>
         /// Number of the local player.

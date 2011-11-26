@@ -1,4 +1,5 @@
-﻿namespace Engine.Util
+﻿using System;
+namespace Engine.Util
 {
 
     #region Delegates
@@ -46,9 +47,10 @@
     {
 
         /// <summary>
-        /// Fired when an entry is added via WriteLine().
+        /// Fired when an entry is added via WriteLine(). Event args are of type
+        /// <see cref="LineWrittenEventArgs"/>.
         /// </summary>
-        event LineWrittenEventHandler LineWritten;
+        event EventHandler LineWritten;
 
         /// <summary>
         /// Register a new command with the given name.

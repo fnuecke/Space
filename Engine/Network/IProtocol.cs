@@ -5,32 +5,20 @@ using Engine.Serialization;
 namespace Engine.Network
 {
     /// <summary>
-    /// Notifies of a connection that died. The <code>timeout</code> parameter tells
-    /// if this was due to a timeout or not.
+    /// Interface for all (network) protocols.
     /// </summary>
-    /// <param name="remote">the remote machine that got disconnected (either voluntarily or due to timeout).</param>
-    public delegate void TimeoutEventHandler(IPEndPoint remote);
-
-    /// <summary>
-    /// Notifies when data is received from a remote machine.
-    /// </summary>
-    /// <param name="remote">the remote machine that send the data.</param>
-    /// <param name="data">the data that was received.</param>
-    /// <returns>whether the received data was <em>successfully</em> handled.</returns>
-    public delegate bool DataEventHandler(IPEndPoint remote, Packet data);
-
     public interface IProtocol : IDisposable
     {
 
         /// <summary>
         /// Register here to be notified of messages timing out (failed to deliver acked message).
         /// </summary>
-        event TimeoutEventHandler MessageTimeout;
+        event EventHandler MessageTimeout;
 
         /// <summary>
         /// Register here to be notified of incoming data packets.
         /// </summary>
-        event DataEventHandler Data;
+        event EventHandler Data;
 
         /// <summary>
         /// Send some data to a remote host.

@@ -109,15 +109,17 @@
     <Compile Include="Input\KeyboardInputManager.cs" />
     <Compile Include="Input\KeyMap.cs" />
     <Compile Include="Input\KeyModifier.cs" />
+    <Compile Include="Network\EventArgs.cs" />
     <Compile Include="Session\AbstractSession.cs" />
     <Compile Include="Session\ClientSession.cs" />
+    <Compile Include="Session\EventArgs.cs" />
     <Compile Include="Session\IClientSession.cs" />
     <Compile Include="Network\IProtocol.cs" />
     <Compile Include="Session\IServerSession.cs" />
     <Compile Include="Session\ISession.cs" />
     <Compile Include="Session\Player.cs" />
     <Compile Include="Session\ServerSession.cs" />
-    <Compile Include="Session\Session.cs" />
+    <Compile Include="Session\SessionFactory.cs" />
     <Compile Include="Serialization\Packet.cs" />
     <Compile Include="Commands\SimulationCommand.cs" />
     <Compile Include="Network\UdpProtocol.cs" />
@@ -142,6 +144,7 @@
     <Compile Include="Simulation\PhysicsEnabledState.cs" />
     <Compile Include="Util\GameConsole.cs" />
     <Compile Include="Util\IGameConsole.cs" />
+    <Compile Include="Util\LineWrittenEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="EngineKey.snk" />

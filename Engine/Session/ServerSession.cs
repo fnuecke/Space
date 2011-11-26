@@ -12,8 +12,8 @@ namespace Engine.Session
     /// </summary>
     sealed class ServerSession : AbstractSession, IServerSession
     {
-        public event GameInfoRequestedEventHandler GameInfoRequested;
-        public event JoinRequestedEventHandler JoinRequested;
+        public event EventHandler GameInfoRequested;
+        public event EventHandler JoinRequested;
 
         /// <summary>
         /// Keep track of free slots (use the first free on on joins).
@@ -57,9 +57,10 @@ namespace Engine.Session
             RemovePlayer(playerNumber);
         }
 
-        protected override void HandlePlayerTimeout(IPEndPoint remote)
+        protected override void HandlePlayerTimeout(object sender, EventArgs e)
         {
-            int playerNumber = Array.IndexOf(playerAddresses, remote);
+            var args = (ProtocolEventArgs)e;
+            int playerNumber = Array.IndexOf(playerAddresses, args.Remote);
             if (playerNumber >= 0)
             {
                 RemovePlayer(playerNumber);
@@ -81,23 +82,26 @@ namespace Engine.Session
             SendAll(SessionMessage.PlayerLeft, packet, 100);
 
             // Tell the local program the player is gone.
-            OnPlayerLeft(player);
+            OnPlayerLeft(new PlayerEventArgs(player));
         }
 
-        protected override bool HandlePlayerData(IPEndPoint remote, Packet data)
+        protected override void HandlePlayerData(object sender, EventArgs e)
         {
+            var args = (ProtocolDataEventArgs)e;
+
             // Get the message type.
-            if (!data.HasByte())
+            if (!args.Data.HasByte())
             {
                 Console.WriteLine("Received invalid packet, no SessionMessage type.");
-                return false;
+                return;
             }
-            SessionMessage type = (SessionMessage)data.ReadByte();
+            SessionMessage type = (SessionMessage)args.Data.ReadByte();
 
             // Get additional data.
-            if (data.HasPacket())
+            Packet data = null;
+            if (args.Data.HasPacket())
             {
-                data = data.ReadPacket();
+                data = args.Data.ReadPacket();
             }
             else
             {
@@ -109,26 +113,27 @@ namespace Engine.Session
                 case SessionMessage.GameInfoRequest:
                     // Game info was requested. Wrap it up and send it to the one asking.
                     {
-                        Packet customData;
-                        OnGameInfoRequested(out customData); //< Get custom data to send, if any.
-                        Packet response = new Packet(12 + (customData != null ? customData.Length : 0));
+                        RequestEventArgs requestArgs = new RequestEventArgs();
+                        OnGameInfoRequested(requestArgs); //< Get custom data to send, if any.
+                        Packet response = new Packet(12 + requestArgs.Data.Length);
                         response.Write(MaxPlayers);
                         response.Write(NumPlayers);
-                        response.Write(customData);
-                        Send(remote, SessionMessage.GameInfoResponse, response);
+                        response.Write(requestArgs.Data);
+                        Send(args.Remote, SessionMessage.GameInfoResponse, response);
                     }
-                    return true;
+                    args.Consume();
+                    break;
                 case SessionMessage.JoinRequest:
                     // Player wants to join.
                     {
                         // Check if the player is already in the game.
-                        if (Array.IndexOf(playerAddresses, remote) >= 0)
+                        if (Array.IndexOf(playerAddresses, args.Remote) >= 0)
                         {
                             // Player already in the game.
                             Packet fail = new Packet(2);
                             fail.Write(false);
                             fail.Write((byte)JoinResponseReason.AlreadyInGame);
-                            Send(remote, SessionMessage.JoinResponse, fail);
+                            Send(args.Remote, SessionMessage.JoinResponse, fail);
                         }
                         // Or if the game is already full.
                         else if (NumPlayers >= MaxPlayers)
@@ -137,7 +142,7 @@ namespace Engine.Session
                             Packet fail = new Packet(2);
                             fail.Write(false);
                             fail.Write((byte)JoinResponseReason.GameFull);
-                            Send(remote, SessionMessage.JoinResponse, fail);
+                            Send(args.Remote, SessionMessage.JoinResponse, fail);
                         }
                         else
                         {
@@ -148,7 +153,7 @@ namespace Engine.Session
                             if (!data.HasString())
                             {
                                 Console.WriteLine("Received invalid JoinRequest, no player name.");
-                                return false;
+                                return;
                             }
                             string playerName = data.ReadString().Trim();
 
@@ -158,8 +163,9 @@ namespace Engine.Session
                                 Packet fail = new Packet(2);
                                 fail.Write(false);
                                 fail.Write((byte)JoinResponseReason.InvalidName);
-                                Send(remote, SessionMessage.JoinResponse, fail);
-                                return true;
+                                Send(args.Remote, SessionMessage.JoinResponse, fail);
+                                args.Consume();
+                                return;
                             }
 
                             // Anyone else already using that name?
@@ -178,12 +184,12 @@ namespace Engine.Session
                             if (!data.HasByteArray())
                             {
                                 Console.WriteLine("Received invalid JoinRequest, no player data.");
-                                return false;
+                                return;
                             }
                             byte[] playerData = data.ReadByteArray();
 
                             // Store the player's info.
-                            playerAddresses[playerNumber] = remote;
+                            playerAddresses[playerNumber] = args.Remote;
                             players[playerNumber] = new Player(playerNumber, playerName, playerData);
                             slots[playerNumber] = true;
                             ++NumPlayers;
@@ -212,41 +218,43 @@ namespace Engine.Session
                             }
 
                             // Add other game relevant data (e.g. game state).
-                            Packet joinData;
-                            OnJoinRequested(out joinData);
-                            response.Write(joinData);
+                            RequestEventArgs requestArgs = new RequestEventArgs();
+                            OnJoinRequested(requestArgs);
+                            response.Write(requestArgs.Data);
 
                             // Send the response!
-                            Send(remote, SessionMessage.JoinResponse, response, 100);
+                            Send(args.Remote, SessionMessage.JoinResponse, response, 100);
 
                             // Tell the other players.
                             response = new Packet();
                             response.Write(playerNumber);
                             response.Write(playerName);
                             response.Write(playerData);
-                            response.Write(remote.Address.GetAddressBytes());
-                            response.Write(remote.Port);
+                            response.Write(args.Remote.Address.GetAddressBytes());
+                            response.Write(args.Remote.Port);
                             SendAll(SessionMessage.PlayerJoined, response, 100);
 
                             // Tell the local program the player has joined.
-                            OnPlayerJoined(players[playerNumber]);
+                            OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
                         }
                     }
-                    return true;
+                    args.Consume();
+                    break;
                 case SessionMessage.Leave:
                     // Player wants to leave the session.
                     {
-                        int playerNumber = Array.IndexOf(playerAddresses, remote);
+                        int playerNumber = Array.IndexOf(playerAddresses, args.Remote);
                         if (playerNumber >= 0)
                         {
                             RemovePlayer(playerNumber);
-                            return true;
+                            args.Consume();
                         }
                     }
                     break;
                 case SessionMessage.Data:
                     // Custom data, just forward it.
-                    return base.HandlePlayerData(remote, data);
+                    ConditionalOnPlayerData(args, data);
+                    break;
                 case SessionMessage.GameInfoResponse:
                 case SessionMessage.JoinResponse:
                 case SessionMessage.PlayerJoined:
@@ -258,7 +266,6 @@ namespace Engine.Session
                     Console.WriteLine("Received packet wit unknown session message type {0}.", type);
                     break;
             }
-            return false;
         }
 
         private void HandleMulticastReceived(IAsyncResult result)
@@ -303,27 +310,19 @@ namespace Engine.Session
             throw new InvalidOperationException("Game is already full.");
         }
 
-        private void OnJoinRequested(out Packet data)
+        private void OnJoinRequested(RequestEventArgs e)
         {
             if (JoinRequested != null)
             {
-                JoinRequested(out data);
-            }
-            else
-            {
-                data = null;
+                JoinRequested(this, e);
             }
         }
 
-        private void OnGameInfoRequested(out Packet data)
+        private void OnGameInfoRequested(RequestEventArgs e)
         {
             if (GameInfoRequested != null)
             {
-                GameInfoRequested(out data);
-            }
-            else
-            {
-                data = null;
+                GameInfoRequested(this, e);
             }
         }
 

@@ -108,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Game\GameInfo.cs" />
+    <Compile Include="Game\Server.cs" />
     <Compile Include="Simulation\Commands\GameCommandType.cs" />
     <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />
     <Compile Include="Simulation\GameState.cs" />
