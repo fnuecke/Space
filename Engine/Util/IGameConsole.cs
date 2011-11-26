@@ -1,7 +1,7 @@
 ﻿using System;
+
 namespace Engine.Util
 {
-
     #region Delegates
 
     /// <summary>
@@ -9,12 +9,6 @@ namespace Engine.Util
     /// </summary>
     /// <param name="args">the arguments for the command (space separated strings).</param>
     public delegate void CommandHandler(string[] args);
-
-    /// <summary>
-    /// Signature for event handlers called when a line is written to the console.
-    /// </summary>
-    /// <param name="line">the text on the line that was written.</param>
-    public delegate void LineWrittenEventHandler(string line);
 
     #endregion
 
@@ -45,7 +39,6 @@ namespace Engine.Util
     /// </summary>
     public interface IGameConsole
     {
-
         /// <summary>
         /// Fired when an entry is added via WriteLine(). Event args are of type
         /// <see cref="LineWrittenEventArgs"/>.
@@ -84,6 +77,5 @@ namespace Engine.Util
         /// </summary>
         /// <param name="message">the message to log.</param>
         void WriteLine(string message);
-
     }
 }

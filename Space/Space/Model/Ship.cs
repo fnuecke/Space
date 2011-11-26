@@ -1,12 +1,12 @@
 ﻿using Engine.Math;
 using Engine.Physics;
-using Space.Simulation;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using SpaceData;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using Space.Simulation;
+using SpaceData;
 
-namespace Space.Game
+namespace Space.Model
 {
     class Ship : Sphere<IGameObject>, IGameObject
     {

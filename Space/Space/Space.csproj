@@ -107,15 +107,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Game\GameInfo.cs" />
-    <Compile Include="Game\Server.cs" />
+    <Compile Include="Control\Client.cs" />
+    <Compile Include="Control\Server.cs" />
+    <Compile Include="Model\StaticWorld.cs" />
     <Compile Include="Simulation\Commands\GameCommandType.cs" />
     <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />
-    <Compile Include="Simulation\GameState.cs" />
-    <Compile Include="Game\Ship.cs" />
+    <Compile Include="Model\GameState.cs" />
+    <Compile Include="Model\Ship.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Simulation\IGameObject.cs" />
+    <Compile Include="Model\IGameObject.cs" />
     <Compile Include="Spaaace.cs" />
   </ItemGroup>
   <ItemGroup>

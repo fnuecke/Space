@@ -1,8 +1,9 @@
-Content\ships.xnb
-Content\weapons.xnb
-Content\items.xnb
-Content\drops.xnb
-Content\mobs.xnb
+Content\Data\ships.xnb
+Content\Data\weapons.xnb
+Content\Data\items.xnb
+Content\Data\drops.xnb
+Content\Data\mobs.xnb
+Content\Data\world.xnb
 Content\Textures\ship.xnb
 Content\Textures\stars.xnb
 Content\Fonts\quartz_ms.xnb

@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Space.Simulation
+namespace Space.Model
 {
     interface IGameObject : IPhysicsSteppable<IGameObject>
     {

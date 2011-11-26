@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using Engine.Commands;
 using Engine.Simulation;
-using Space.Game;
 using Space.Simulation.Commands;
 
-namespace Space.Simulation
+namespace Space.Model
 {
     class GameState : PhysicsEnabledState<IGameObject>
     {
