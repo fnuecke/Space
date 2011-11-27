@@ -2,6 +2,7 @@
 using System.Net;
 using Engine.Network;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
@@ -24,8 +25,8 @@ namespace Engine.Session
         /// </summary>
         private IPEndPoint host;
 
-        public ClientSession(IProtocol protocol)
-            : base(protocol)
+        public ClientSession(Game game, IProtocol protocol)
+            : base(game, protocol)
         {
             ConnectionState = ClientState.Unconnected;
         }

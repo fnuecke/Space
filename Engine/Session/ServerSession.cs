@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using Engine.Network;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
@@ -26,8 +27,8 @@ namespace Engine.Session
         /// </summary>
         private UdpClient multicast;
 
-        public ServerSession(IProtocol protocol, int maxPlayers)
-            : base(protocol)
+        public ServerSession(Game game, IProtocol protocol, int maxPlayers)
+            : base(game, protocol)
         {
             this.NumPlayers = 0;
             this.MaxPlayers = maxPlayers;
@@ -37,13 +38,24 @@ namespace Engine.Session
             
             multicast = new UdpClient(DefaultMulticastPort);
             multicast.JoinMulticastGroup(DefaultMulticastAddress);
-            multicast.BeginReceive(new AsyncCallback(HandleMulticastReceived), this);
         }
 
         public override void Dispose()
         {
             multicast.Close();
+
             base.Dispose();
+        }
+
+        /// <summary>
+        /// Drives the multicast checking.
+        /// </summary>
+        public override void Update(GameTime gameTime)
+        {
+            // Drive multicast.
+            MulticastReceive();
+
+            base.Update(gameTime);
         }
 
         public void Kick(int playerNumber)
@@ -278,28 +290,17 @@ namespace Engine.Session
             }
         }
 
-        private void HandleMulticastReceived(IAsyncResult result)
+        /// <summary>
+        /// Check for incoming messages on our multicast socket (game info requests).
+        /// </summary>
+        private void MulticastReceive()
         {
-            try
+            var remote = new IPEndPoint(0, 0);
+            while (multicast.Available > 0)
             {
                 // Try to finish receiving and forward the packet to the protocol.
-                IPEndPoint remote = new IPEndPoint(0, 0);
-                protocol.Inject(multicast.EndReceive(result, ref remote), remote);
-
-                // Wait for the next package.
-                multicast.BeginReceive(new AsyncCallback(HandleMulticastReceived), this);
-            }
-            catch (SocketException e)
-            {
-                // Don't know when this can happen, maybe when the connection gets disabled in the OS?
-                Console.WriteLine("Error (multicast socket died): {0} {1}", e.ErrorCode, e.Message);
-
-                // Anyway, unusable, so close it.
-                multicast.Close();
-            }
-            catch (ObjectDisposedException)
-            {
-                // Socket was closed. Just stop.
+                byte[] buffer = multicast.Receive(ref remote);
+                protocol.Inject(buffer, remote);
             }
         }
 

@@ -105,6 +105,8 @@
     <Compile Include="Commands\GameStateCommand.cs" />
     <Compile Include="Commands\GameStateQueryCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Controller\AbstractUdpClient.cs" />
+    <Compile Include="Controller\AbstractUdpServer.cs" />
     <Compile Include="Input\KeyboardInputEventArgs.cs" />
     <Compile Include="Input\IKeyboardInputManager.cs" />
     <Compile Include="Input\KeyboardInputManager.cs" />

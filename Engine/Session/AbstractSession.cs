@@ -2,6 +2,7 @@
 using System.Net;
 using Engine.Network;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
@@ -58,7 +59,7 @@ namespace Engine.Session
     /// <summary>
     /// Base implementation for server and client side sessions, i.e. functionality used by both.
     /// </summary>
-    abstract class AbstractSession : ISession
+    abstract class AbstractSession : GameComponent, ISession
     {
         #region Constants
 
@@ -131,13 +132,16 @@ namespace Engine.Session
 
         #endregion
 
-        public AbstractSession(IProtocol protocol)
+        public AbstractSession(Game game, IProtocol protocol)
+            : base(game)
         {
             LocalPlayer = 0;
             this.protocol = protocol;
 
             protocol.MessageTimeout += HandlePlayerTimeout;
             protocol.Data += HandlePlayerData;
+
+            Game.Components.Add(this);
         }
 
         /// <summary>
@@ -148,6 +152,8 @@ namespace Engine.Session
         {
             protocol.MessageTimeout -= HandlePlayerTimeout;
             protocol.Data -= HandlePlayerData;
+
+            Game.Components.Remove(this);
         }
 
         /// <summary>
