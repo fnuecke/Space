@@ -58,6 +58,11 @@ namespace Engine.Session
             base.Update(gameTime);
         }
 
+        public override void Send(Packet data, uint pollRate = 0)
+        {
+            throw new InvalidOperationException("Server cannot send messages to itself. Use a more direct design.");
+        }
+
         public void Kick(int playerNumber)
         {
             // Let him know.

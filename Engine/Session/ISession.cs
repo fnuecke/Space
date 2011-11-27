@@ -46,19 +46,28 @@ namespace Engine.Session
         Player GetPlayer(int player);
 
         /// <summary>
+        /// Send some data to the server.
+        /// </summary>
+        /// <param name="data">the data to send.</param>
+        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
+        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
+        void Send(Packet data, uint pollRate = 0);
+
+        /// <summary>
         /// Send some data to a specific player.
         /// </summary>
         /// <param name="player">the player to send the data to.</param>
         /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">lower (but > 0) means more urgent, if the protocol supports it.
+        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
         /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
         void Send(int player, Packet data, uint pollRate = 0);
 
         /// <summary>
-        /// Send a message to all players in the game.
+        /// Send a message to all players in the game, and the server.
         /// </summary>
         /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">see Send()</param>
+        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
+        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
         void SendAll(Packet data, uint pollrate = 0);
     }
 }

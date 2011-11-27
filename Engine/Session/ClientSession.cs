@@ -31,6 +31,11 @@ namespace Engine.Session
             ConnectionState = ClientState.Unconnected;
         }
 
+        public override void Send(Packet data, uint pollRate = 0)
+        {
+            Send(host, SessionMessage.Data, data, pollRate);
+        }
+
         public void Search()
         {
             Packet packet = new Packet(1);
