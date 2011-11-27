@@ -9,9 +9,20 @@ namespace Engine.Physics
     /// This means the objects have a position, an orientation and a
     /// movement vector (speed / acceleration).
     /// </summary>
-    public abstract class PhysicalObject<TSteppable>
-        where TSteppable : IPhysicsSteppable<TSteppable>
+    public abstract class PhysicalObject<TState, TSteppable>
+        where TState : IPhysicsEnabledState<TState, TSteppable>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable>
     {
+        #region Properties
+
+        /// <summary>
+        /// The actual state the object is currently assigned to.
+        /// </summary>
+        public virtual TState State { get; set; }
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// Current position of the object.
@@ -43,7 +54,7 @@ namespace Engine.Physics
         /// </summary>
         protected Fixed speedRotation;
 
-        public virtual IPhysicsEnabledState<TSteppable> State { get; set; }
+        #endregion
 
         public virtual void PreUpdate()
         {

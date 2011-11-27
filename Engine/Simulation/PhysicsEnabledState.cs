@@ -1,38 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using Engine.Commands;
+﻿using System.Collections.Generic;
 using Engine.Physics;
 
 namespace Engine.Simulation
 {
-
     /// <summary>
     /// Base class for states that takes care of some common functionality.
-    /// 
-    /// State implementations sub-classing this base class must take care of
-    /// (at least) two things:
-    /// - Handling of commands (via the HandleCommand function).
-    /// - Cloning of the state (may use CloneTo to take care of the basics).
     /// </summary>
-    public abstract class PhysicsEnabledState<TSteppable> : IPhysicsEnabledState<TSteppable>
-        where TSteppable : IPhysicsSteppable<TSteppable>
+    public abstract class PhysicsEnabledState<TState, TSteppable> : AbstractState<TState, TSteppable>, IPhysicsEnabledState<TState, TSteppable>
+        where TState : PhysicsEnabledState<TState, TSteppable>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable>
     {
 
         /// <summary>
-        /// Enumerator over all children.
+        /// List of collideables in the state (they register themselves upon being adding).
         /// </summary>
-        public IEnumerator<TSteppable> Children { get { return steppables.GetEnumerator(); } }
-
-        /// <summary>
-        /// List of child updateables this state drives.
-        /// </summary>
-        protected List<TSteppable> steppables = new List<TSteppable>();
-
-        /// <summary>
-        /// List of queued commands to execute in the future.
-        /// </summary>
-        protected SortedDictionary<long, List<ISimulationCommand>> commands =
-            new SortedDictionary<long, List<ISimulationCommand>>();
+        public ICollection<ICollideable> Collideables { get; private set; }
 
         protected PhysicsEnabledState()
         {
@@ -40,51 +22,14 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Implement this to handle commands. This will be called for each command
-        /// at the moment it should be applied.
+        /// Override update to introduce pre- and post-update steppes for resolving collisions.
         /// </summary>
-        /// <param name="command">the command to handle.</param>
-        protected abstract void HandleCommand(ISimulationCommand command);
-
-        /// <summary>
-        /// Call this from the implemented Clone() method to clone basic properties.
-        /// </summary>
-        /// <param name="clone"></param>
-        protected object CloneTo(PhysicsEnabledState<TSteppable> clone)
+        public override void Update()
         {
-            foreach (var steppable in steppables)
-            {
-                clone.steppables.Add((TSteppable)steppable.Clone());
-            }
-            foreach (var keyValue in commands)
-            {
-                clone.commands.Add(keyValue.Key, new List<ISimulationCommand>(keyValue.Value));
-            }
-            clone.CurrentFrame = CurrentFrame;
-            // Collideables will be filled automatically by clones of updateables.
-            return clone;
-        }
+            // Increment frame number.
+            ++CurrentFrame;
 
-#region IState implementation
-
-        public long CurrentFrame { get; protected set; }
-
-        public ICollection<ICollideable> Collideables { get; private set; }
-
-        public void Add(TSteppable steppable)
-        {
-            steppables.Add(steppable);
-            steppable.State = this;
-        }
-
-        public void Remove(TSteppable steppable)
-        {
-            steppables.Remove(steppable);
-            steppable.State = null;
-        }
-
-        public void Update()
-        {
+            // Execute any commands for the current frame.
             if (commands.ContainsKey(CurrentFrame))
             {
                 foreach (var command in commands[CurrentFrame])
@@ -93,6 +38,8 @@ namespace Engine.Simulation
                 }
                 commands.Remove(CurrentFrame);
             }
+
+            // Update all objects in this state.
             foreach (var steppable in steppables)
             {
                 steppable.PreUpdate();
@@ -105,25 +52,6 @@ namespace Engine.Simulation
             {
                 steppable.PostUpdate();
             }
-            ++CurrentFrame;
         }
-
-        public void PushCommand(ISimulationCommand command)
-        {
-            if (command.Frame <= CurrentFrame)
-            {
-                throw new ArgumentException("Command is from a frame in the past.");
-            }
-            if (!commands.ContainsKey(command.Frame))
-            {
-                commands.Add(command.Frame, new List<ISimulationCommand>());
-            }
-            commands[command.Frame].Add(command);
-        }
-
-        public abstract object Clone();
-
-#endregion
-
     }
 }

@@ -7,8 +7,9 @@ namespace Engine.Physics
     /// <summary>
     /// Base class for spherical world objects.
     /// </summary>
-    public abstract class Sphere<TSteppable> : Collideable<TSteppable>
-        where TSteppable : IPhysicsSteppable<TSteppable>
+    public abstract class Sphere<TState, TSteppable> : Collideable<TState, TSteppable>
+        where TState : IPhysicsEnabledState<TState, TSteppable>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable>
     {
 
         /// <summary>

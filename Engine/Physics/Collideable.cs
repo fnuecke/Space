@@ -6,16 +6,16 @@ namespace Engine.Physics
     /// <summary>
     /// Base implementation for collideable types.
     /// </summary>
-    public abstract class Collideable<TSteppable> : PhysicalObject<TSteppable>, ICollideable
-        where TSteppable : IPhysicsSteppable<TSteppable>
+    public abstract class Collideable<TState, TSteppable> : PhysicalObject<TState, TSteppable>, ICollideable
+        where TState : IPhysicsEnabledState<TState, TSteppable>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable>
     {
-
-        private IPhysicsEnabledState<TSteppable> _State;
+        #region Properties
 
         /// <summary>
         /// Implements registering / unregistering self with the associated state.
         /// </summary>
-        public override IPhysicsEnabledState<TSteppable> State
+        public override TState State
         {
             get
             {
@@ -35,6 +35,19 @@ namespace Engine.Physics
             }
         }
 
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// Holds actual value of <c>State</c>.
+        /// </summary>
+        private TState _State;
+
+        #endregion
+
+        #region Public
+
         public abstract bool Intersects(ref FPoint extents, ref FPoint previousPosition, ref FPoint position);
 
         public abstract bool Intersects(Fixed radius, ref FPoint previousPosition, ref FPoint position);
@@ -42,6 +55,8 @@ namespace Engine.Physics
         public abstract void NotifyOfCollision();
 
         public abstract object Clone();
+
+        #endregion
 
     }
 }

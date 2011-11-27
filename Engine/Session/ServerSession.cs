@@ -146,100 +146,109 @@ namespace Engine.Session
                         }
                         else
                         {
-                            // OK, allow the player to join. Get the number he'll hold.
-                            int playerNumber = FindFreePlayerNumber();
-
-                            // First, get the name he wishes to use.
-                            if (!data.HasString())
+                            try
                             {
-                                Console.WriteLine("Received invalid JoinRequest, no player name.");
-                                return;
-                            }
-                            string playerName = data.ReadString().Trim();
+                                // OK, allow the player to join. Get the number he'll hold.
+                                int playerNumber = FindFreePlayerNumber();
 
-                            // Valid name?
-                            if (String.IsNullOrEmpty(playerName))
-                            {
-                                Packet fail = new Packet(2);
-                                fail.Write(false);
-                                fail.Write((byte)JoinResponseReason.InvalidName);
-                                Send(args.Remote, SessionMessage.JoinResponse, fail);
-                                args.Consume();
-                                return;
-                            }
+                                // First, get the name he wishes to use.
+                                string playerName = data.ReadString().Trim();
 
-                            // Anyone else already using that name?
-                            for (int i = 0; i < MaxPlayers; ++i)
-                            {
-                                if (!slots[i]) continue;
-
-                                if (players[i].Name.Equals(playerName))
+                                // Valid name?
+                                if (String.IsNullOrEmpty(playerName))
                                 {
-                                    // Already taken. Rename him.
-                                    playerName = playerName + playerNumber;
+                                    Packet fail = new Packet(2);
+                                    fail.Write(false);
+                                    fail.Write((byte)JoinResponseReason.InvalidName);
+                                    Send(args.Remote, SessionMessage.JoinResponse, fail);
+                                    args.Consume();
+                                    return;
                                 }
-                            }
 
-                            // Get custom player data.
-                            if (!data.HasByteArray())
+                                // Anyone else already using that name?
+                                for (int i = 0; i < MaxPlayers; ++i)
+                                {
+                                    if (!slots[i]) continue;
+
+                                    if (players[i].Name.Equals(playerName))
+                                    {
+                                        // Already taken. Rename him.
+                                        playerName = playerName + playerNumber;
+                                    }
+                                }
+
+                                // Get custom player data.
+                                byte[] playerData = data.ReadByteArray();
+
+                                // Store the player's info.
+                                playerAddresses[playerNumber] = args.Remote;
+                                players[playerNumber] = new Player(playerNumber, playerName, playerData,
+                                    delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
+                                slots[playerNumber] = true;
+                                ++NumPlayers;
+
+                                // Build the response.
+                                Packet response = new Packet();
+                                response.Write(true);
+
+                                // Tell the player his number.
+                                response.Write(playerNumber);
+
+                                // Send info about all players in the game (including himself).
+                                response.Write(NumPlayers);
+                                response.Write(MaxPlayers);
+                                for (int i = 0; i < MaxPlayers; i++)
+                                {
+                                    // Skip empty slots.
+                                    if (!slots[i]) continue;
+
+                                    Player p = GetPlayer(i);
+                                    response.Write(p.Number);
+                                    response.Write(p.Name);
+                                    response.Write(p.Data);
+                                    response.Write(playerAddresses[i].Address.GetAddressBytes());
+                                    response.Write(playerAddresses[i].Port);
+                                }
+
+                                // Add other game relevant data (e.g. game state).
+                                RequestEventArgs requestArgs = new RequestEventArgs();
+                                OnJoinRequested(requestArgs);
+                                response.Write(requestArgs.Data);
+
+                                // Send the response!
+                                Send(args.Remote, SessionMessage.JoinResponse, response, 100);
+
+                                // Tell the other players, but *only* the other players.
+                                var joined = new Packet();
+                                joined.Write(playerNumber);
+                                joined.Write(playerName);
+                                joined.Write(playerData);
+                                joined.Write(args.Remote.Address.GetAddressBytes());
+                                joined.Write(args.Remote.Port);
+                                for (int i = 0; i < MaxPlayers; ++i)
+                                {
+                                    if (playerAddresses[i] != null && i != playerNumber)
+                                    {
+                                        Send(playerAddresses[i], SessionMessage.PlayerJoined, joined, 100);
+                                    }
+                                }
+
+                                // Tell the local program the player has joined.
+                                OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
+
+                                // OK, we handled it.
+                                args.Consume();
+                            }
+                            catch (PacketException ex)
                             {
-                                Console.WriteLine("Received invalid JoinRequest, no player data.");
-                                return;
+#if DEBUG
+                                Console.WriteLine("Invalid JoinRequest: " + ex.ToString());
+#else
+                                //Console.WriteLine("Invalid JoinRequest: " + ex.Message);
+#endif
                             }
-                            byte[] playerData = data.ReadByteArray();
-
-                            // Store the player's info.
-                            playerAddresses[playerNumber] = args.Remote;
-                            players[playerNumber] = new Player(playerNumber, playerName, playerData,
-                                delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
-                            slots[playerNumber] = true;
-                            ++NumPlayers;
-
-                            // Build the response.
-                            Packet response = new Packet();
-                            response.Write(true);
-
-                            // Tell the player his number.
-                            response.Write(playerNumber);
-
-                            // Send info about all players in the game (including himself).
-                            response.Write(NumPlayers);
-                            response.Write(MaxPlayers);
-                            for (int i = 0; i < MaxPlayers; i++)
-                            {
-                                // Skip empty slots.
-                                if (!slots[i]) continue;
-
-                                Player p = GetPlayer(i);
-                                response.Write(p.Number);
-                                response.Write(p.Name);
-                                response.Write(p.Data);
-                                response.Write(playerAddresses[i].Address.GetAddressBytes());
-                                response.Write(playerAddresses[i].Port);
-                            }
-
-                            // Add other game relevant data (e.g. game state).
-                            RequestEventArgs requestArgs = new RequestEventArgs();
-                            OnJoinRequested(requestArgs);
-                            response.Write(requestArgs.Data);
-
-                            // Send the response!
-                            Send(args.Remote, SessionMessage.JoinResponse, response, 100);
-
-                            // Tell the other players.
-                            response = new Packet();
-                            response.Write(playerNumber);
-                            response.Write(playerName);
-                            response.Write(playerData);
-                            response.Write(args.Remote.Address.GetAddressBytes());
-                            response.Write(args.Remote.Port);
-                            SendAll(SessionMessage.PlayerJoined, response, 100);
-
-                            // Tell the local program the player has joined.
-                            OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
                         }
                     }
-                    args.Consume();
                     break;
                 case SessionMessage.Leave:
                     // Player wants to leave the session.

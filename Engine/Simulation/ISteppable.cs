@@ -9,9 +9,10 @@ namespace Engine.Simulation
     /// all non-constant references (constant references may for
     /// example be things such as settings / read only value).
     /// </summary>
-    public interface ISteppable<TState> : ICloneable
+    public interface ISteppable<TState, TSteppable> : ICloneable
+        where TState : IState<TState, TSteppable>
+        where TSteppable : ISteppable<TState, TSteppable>
     {
-
         /// <summary>
         /// The world (simulation) this object is associated with.
         /// </summary>
@@ -21,6 +22,5 @@ namespace Engine.Simulation
         /// Perform one simulation step. 
         /// </summary>
         void Update();
-
     }
 }

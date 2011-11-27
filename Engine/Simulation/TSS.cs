@@ -4,25 +4,56 @@ using Engine.Commands;
 
 namespace Engine.Simulation
 {
-
     /// <summary>
     /// Implements a Trailing State Synchronization.
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
     public class TSS<TState, TSteppable> : IReversibleState<TState, TSteppable>
-        where TState : IState<TSteppable>, new()
-        where TSteppable : ICloneable
+        where TState : IState<TState, TSteppable>, new()
+        where TSteppable : ISteppable<TState, TSteppable>
     {
+        #region Events
+        /// <summary>
+        /// Dispatched when the state needs to roll back further than it can
+        /// to accommodate an authoritative command. The handler must trigger the
+        /// process of getting a valid snapshot, which is fed back to this
+        /// state using the <c>Synchronize()</c> method.
+        /// </summary>
+        public event EventHandler<EventArgs> ThresholdExceeded;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Enumerator over all children of the leading state.
         /// </summary>
-        public IEnumerator<TSteppable> Children { get { return states[0].Children; } }
+        public IEnumerator<TSteppable> Children { get { return LeadingState.Children; } }
+
+        /// <summary>
+        /// The current frame of the leading state.
+        /// </summary>
+        public long CurrentFrame { get; protected set; }
+
+        /// <summary>
+        /// The frame when the last complete synchronization took place,
+        /// i.e. the point we don't roll back past.
+        /// </summary>
+        public long LastSynchronization { get; protected set; }
 
         /// <summary>
         /// Get the leading state.
         /// </summary>
         public TState LeadingState { get { return states[0]; } }
+
+        /// <summary>
+        /// Tells if the state is currently waiting to be synchronized.
+        /// </summary>
+        public bool WaitingForSynchronization { get; protected set; }
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// The list of running states. They are ordered in in increasing delay, i.e.
@@ -40,6 +71,8 @@ namespace Engine.Simulation
         /// </summary>
         protected Dictionary<long, List<TSteppable>> delayedAdds =
             new Dictionary<long, List<TSteppable>>();
+
+        #endregion
 
         /// <summary>
         /// Creates a new TSS based meta state.
@@ -60,13 +93,6 @@ namespace Engine.Simulation
             WaitingForSynchronization = true;
         }
 
-#region IState implementation
-
-        /// <summary>
-        /// The current frame of the leading state.
-        /// </summary>
-        public long CurrentFrame { get; protected set; }
-
         /// <summary>
         /// Add a new object.
         /// 
@@ -79,7 +105,7 @@ namespace Engine.Simulation
             // Do not allow changes while waiting for synchronization.
             if (WaitingForSynchronization)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Waiting for synchronization.");
             }
 
             if (!delayedAdds.ContainsKey(CurrentFrame + 1))
@@ -107,44 +133,47 @@ namespace Engine.Simulation
             // Do not allow changes while waiting for synchronization.
             if (WaitingForSynchronization)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Waiting for synchronization.");
             }
 
             // Advance the simulation.
             ++CurrentFrame;
 
-            // Update sub states. We can orient ourselves on the leading frame,
-            // because it will be the one rolled back the furthest (in case of
-            // a roll back due to a past command being received).
-            while (states[0].CurrentFrame < CurrentFrame)
+            // Update states.
+            for (int i = states.Length - 1; i >= 0; --i)
             {
-                // Update states.
-                for (int i = states.Length - 1; i >= 0; --i)
+                // Update while we're still delaying.
+                while (states[i].CurrentFrame + delays[i] < CurrentFrame)
                 {
-                    // Don't update if still delaying.
-                    if (states[i].CurrentFrame + delays[i] < CurrentFrame)
+                    // Check if we need to push a new object.
+                    if (delayedAdds.ContainsKey(states[i].CurrentFrame))
                     {
-                        // Check if we need to push a new object.
-                        if (delayedAdds.ContainsKey(states[i].CurrentFrame))
+                        // Add a copy of it.
+                        foreach (var steppable in delayedAdds[states[i].CurrentFrame])
                         {
-                            // Add a copy of it.
-                            foreach (var steppable in delayedAdds[states[i].CurrentFrame])
-                            {
-                                states[i].Add((TSteppable)steppable.Clone());
-                            }
-
-                            // Are we the last state?
-                            if (i == states.Length - 1)
-                            {
-                                // Yes, so we don't need to keep track of that add any longer.
-                                //delayedAdds.Remove(states[i].CurrentFrame);
-                            }
+                            states[i].Add((TSteppable)steppable.Clone());
                         }
-
-                        // Do the actual stepping for the state.
-                        states[i].Update();
                     }
+
+                    // Do the actual stepping for the state.
+                    states[i].Update();
                 }
+            }
+
+            // Remove commands from the to-add list that have been added
+            // to the state trailing furthest behind at this point.
+            long trailingFrame = states[states.Length - 1].CurrentFrame;
+            List<long> deprecatedKeys = new List<long>();
+            foreach (var key in delayedAdds.Keys)
+            {
+                if (key < trailingFrame)
+                {
+                    deprecatedKeys.Add(key);
+                }
+            }
+            foreach (var key in deprecatedKeys)
+            {
+                delayedAdds.Remove(key);
             }
         }
 
@@ -164,8 +193,11 @@ namespace Engine.Simulation
                 throw new InvalidOperationException();
             }
 
-            // Ignore frames past the last synchronization.
-            if (command.Frame < LastSynchronization)
+            // Ignore frames past the last synchronization and tentative
+            // commands past our trailing frame.
+            if (command.Frame <= LastSynchronization ||
+               (command.Frame <= states[states.Length - 1].CurrentFrame &&
+                command.IsTentative))
             {
                 return;
             }
@@ -175,7 +207,7 @@ namespace Engine.Simulation
             {
                 if (states[i].CurrentFrame < command.Frame)
                 {
-                    // Success, push it and mirror the state to all past ones.
+                    // Success, push it and mirror the state to all newer ones.
                     states[i].PushCommand(command);
                     for (int j = i - 1; j >= 0; --j)
                     {
@@ -194,21 +226,16 @@ namespace Engine.Simulation
                     {
                         states[j].PushCommand(command);
                     }
+
+                    // Done.
                     return;
                 }
             }
 
-            // If we come here, all states are past the command's frame.
-            if (command.IsTentative)
-            {
-                // Ignore tentative commands in that case.
-                return;
-            }
-
-            // Otherwise it's a command the server accepted, and we need to
-            // resynchronize our complete state.
+            // We need to resynchronize our complete state, we couldn't handle
+            // an authoritative command.
             WaitingForSynchronization = true;
-            OnThresholdExceeded(CurrentFrame);
+            OnThresholdExceeded(new ThresholdExceededEventArgs(CurrentFrame));
         }
 
         /// <summary>
@@ -218,16 +245,6 @@ namespace Engine.Simulation
         {
             throw new NotImplementedException();
         }
-
-#endregion
-
-#region IReversibleState implementation
-
-        public event ThresholdExceededEventHandler OnThresholdExceeded;
-
-        public bool WaitingForSynchronization { get; protected set; }
-
-        public long LastSynchronization { get; protected set; }
 
         public void Synchronize(TState state)
         {
@@ -245,7 +262,13 @@ namespace Engine.Simulation
 
         }
 
-#endregion
+        protected void OnThresholdExceeded(ThresholdExceededEventArgs e)
+        {
+            if (ThresholdExceeded != null)
+            {
+                ThresholdExceeded(this, e);
+            }
+        }
 
     }
 }

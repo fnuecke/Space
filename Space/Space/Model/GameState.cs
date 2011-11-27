@@ -5,8 +5,10 @@ using Space.Simulation.Commands;
 
 namespace Space.Model
 {
-    class GameState : PhysicsEnabledState<IGameObject>
+    class GameState : PhysicsEnabledState<GameState, IGameObject>
     {
+
+        protected override GameState ThisState { get { return this; } }
 
         private Dictionary<int, Ship> players = new Dictionary<int, Ship>();
 

@@ -72,6 +72,8 @@ namespace Space.Control
             Session.PlayerJoined += HandlePlayerJoined;
             Session.PlayerLeft += HandlePlayerLeft;
 
+            Game.Components.Remove(this);
+
             base.Initialize();
         }
 

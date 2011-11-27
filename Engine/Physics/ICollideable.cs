@@ -7,7 +7,6 @@ namespace Engine.Physics
     /// </summary>
     public interface ICollideable
     {
-
         /// <summary>
         /// Test for a collision with a moving AABB.
         /// </summary>

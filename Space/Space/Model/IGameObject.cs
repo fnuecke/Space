@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.Model
 {
-    interface IGameObject : IPhysicsSteppable<IGameObject>
+    interface IGameObject : IPhysicsSteppable<GameState, IGameObject>
     {
         void Draw(GameTime gameTime, Vector2 translation, SpriteBatch spriteBatch);
     }

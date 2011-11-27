@@ -116,363 +116,223 @@ namespace Engine.Session
             switch (type)
             {
                 case SessionMessage.GameInfoResponse:
+                    try
                     {
                         // Get number of max players.
-                        if (!data.HasInt32())
-                        {
-                            Console.WriteLine("Received invalid GameInfoResponse, no maxPlayers.");
-                            return;
-                        }
                         int maxPlayers = data.ReadInt32();
 
                         // Get number of current players.
-                        if (!data.HasInt32())
-                        {
-                            Console.WriteLine("Received invalid GameInfoResponse, no numPlayers.");
-                            return;
-                        }
                         int numPlayers = data.ReadInt32();
 
                         // Get additional data.
-                        if (!data.HasPacket())
-                        {
-                            Console.WriteLine("Received invalid GameInfoResponse, no customData.");
-                            return;
-                        }
                         Packet customData = data.ReadPacket();
 
                         // Propagate to local program.
                         OnGameInfoReceived(new GameInfoReceivedEventArgs(args.Remote, numPlayers, maxPlayers, customData));
+
+                        // OK, handled it (not really necessary in current implementation,
+                        // as it's unacked, but it can't hurt).
+                        args.Consume();
                     }
+#if DEBUG
+                    catch (PacketException ex)
+                    {
+                        Console.WriteLine("Invalid GameInfoResponse: " + ex.ToString());
+                    }
+#else
+                    catch (PacketException)
+                    {
+                    }
+#endif
                     break;
                 case SessionMessage.JoinResponse:
                     if (ConnectionState == ClientState.Connecting && args.Remote.Equals(host))
                     {
-                        // Success or not?
-                        if (!data.HasBoolean())
+                        try
                         {
-                            Console.WriteLine("Received invalid JoinResponse, no success info.");
-                            Leave();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
-                        }
-                        bool success = data.ReadBoolean();
-
-                        if (!success)
-                        {
-                            // Joining failed :(
-                            Leave();
-                            // Do we at least know why?
-                            if (data.HasByte())
+                            // Success or not?
+                            if (!data.ReadBoolean())
                             {
-                                OnJoinResponse(new JoinResponseEventArgs(false, (JoinResponseReason)data.ReadByte(), null));
-                            }
-                            else
-                            {
-                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            }
-                            return;
-                        }
-
-                        // Get our number.
-                        if (!data.HasInt32())
-                        {
-                            Console.WriteLine("Received invalid JoinResponse, no player number.");
-                            Leave();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
-                        }
-                        LocalPlayer = data.ReadInt32();
-
-                        // Sanity check.
-                        if (LocalPlayer < 0)
-                        {
-                            Console.WriteLine("Received invalid JoinResponse, invalid local player number.");
-                            Leave();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
-                        }
-
-                        // Get info about other players in the session.
-                        if (!data.HasInt32())
-                        {
-                            Console.WriteLine("Received invalid JoinResponse, no number of other players.");
-                            Leave();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
-                        }
-                        NumPlayers = data.ReadInt32();
-
-                        // Sanity check.
-                        if (NumPlayers < 0)
-                        {
-                            Console.WriteLine("Received invalid JoinResponse, negative number of other players.");
-                            Leave();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
-                        }
-
-                        // Maximum number of players in the session?
-                        if (!data.HasInt32())
-                        {
-                            Console.WriteLine("Received invalid JoinResponse, no number of max players.");
-                            Leave();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
-                        }
-                        MaxPlayers = data.ReadInt32();
-
-                        // Sanity check.
-                        if (MaxPlayers < 0)
-                        {
-                            Console.WriteLine("Received invalid JoinResponse, negative number of max players.");
-                            Leave();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
-                        }
-                        if (MaxPlayers < NumPlayers)
-                        {
-                            Console.WriteLine("Received invalid JoinResponse, number of max players smaller than number of players.");
-                            Leave();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
-                        }
-                        if (LocalPlayer >= MaxPlayers)
-                        {
-                            Console.WriteLine("Received invalid JoinResponse, local player number larger than max players.");
-                            Leave();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
-                        }
-
-                        // Allocate arrays for the players in the session.
-                        playerAddresses = new IPEndPoint[MaxPlayers];
-                        players = new Player[MaxPlayers];
-
-                        for (int i = 0; i < NumPlayers; i++)
-                        {
-                            // Get player number.
-                            if (!data.HasInt32())
-                            {
-                                Console.WriteLine("Received invalid JoinResponse, no player number.");
+                                // Joining failed :(
                                 Leave();
-                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                                OnJoinResponse(new JoinResponseEventArgs(false, (JoinResponseReason)data.ReadByte(), null));
                                 return;
                             }
-                            int playerNumber = data.ReadInt32();
+
+                            // Get our number.
+                            LocalPlayer = data.ReadInt32();
+
+                            // Get info about other players in the session.
+                            NumPlayers = data.ReadInt32();
+
+                            // Maximum number of players in the session?
+                            MaxPlayers = data.ReadInt32();
 
                             // Sanity checks.
-                            if (playerNumber < 0)
+                            if (LocalPlayer < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers || LocalPlayer >= MaxPlayers)
                             {
-                                Console.WriteLine("Received invalid JoinResponse, negative player number.");
-                                Leave();
-                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                                return;
-                            }
-                            if (playerNumber >= MaxPlayers)
-                            {
-                                Console.WriteLine("Received invalid JoinResponse, player number larger than max players.");
-                                Leave();
-                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                                return;
-                            }
-                            if (players[playerNumber] != null)
-                            {
-                                Console.WriteLine("Received invalid JoinResponse, duplicate player info.");
-                                Leave();
-                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                                return;
+                                throw new PacketException("Inconsistent session info.");
                             }
 
-                            // Get player name.
-                            if (!data.HasString())
-                            {
-                                Console.WriteLine("Received invalid JoinResponse, no player name.");
-                                Leave();
-                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                                return;
-                            }
-                            string playerName = data.ReadString().Trim();
+                            // Allocate arrays for the players in the session.
+                            playerAddresses = new IPEndPoint[MaxPlayers];
+                            players = new Player[MaxPlayers];
 
-                            // Get additional player data.
-                            if (!data.HasByteArray())
+                            // Get info on players already in the session.
+                            for (int i = 0; i < NumPlayers; i++)
                             {
-                                Console.WriteLine("Received invalid JoinResponse, no player data.");
-                                Leave();
-                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                                return;
-                            }
-                            byte[] playerData = data.ReadByteArray();
+                                // Get player number.
+                                int playerNumber = data.ReadInt32();
 
-                            // Get players IP address.
-                            if (!data.HasByteArray())
+                                // Get player name.
+                                string playerName = data.ReadString().Trim();
+
+                                // Get additional player data.
+                                byte[] playerData = data.ReadByteArray();
+
+                                // Get players IP address.
+                                IPAddress playerAddress = new IPAddress(data.ReadByteArray());
+
+                                // And the port, making up the full endpoint.
+                                IPEndPoint playerEndPoint = new IPEndPoint(playerAddress, data.ReadInt32());
+
+                                // Sanity checks.
+                                if (playerNumber < 0 || playerNumber >= MaxPlayers || players[playerNumber] != null)
+                                {
+                                    throw new PacketException("Invalid player number.");
+                                }
+
+                                // All OK, add the player.
+                                playerAddresses[playerNumber] = playerEndPoint;
+                                players[playerNumber] = new Player(playerNumber, playerName, playerData,
+                                    delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
+                            }
+
+                            // Get other game relevant data (e.g. game state).
+                            Packet joinData = data.ReadPacket();
+
+                            // New state :)
+                            ConnectionState = ClientState.Connected;
+
+                            // OK, let the program know.
+                            OnJoinResponse(new JoinResponseEventArgs(true, JoinResponseReason.Success, joinData));
+
+                            // Also, fire one join event for each player in the game. Except for
+                            // the local player, because that'll likely need special treatment anyway.
+                            for (int i = 0; i < MaxPlayers; ++i)
                             {
-                                Console.WriteLine("Received invalid JoinResponse, no player address.");
-                                Leave();
-                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                                return;
+                                if (i != LocalPlayer && players[i] != null)
+                                {
+                                    OnPlayerJoined(new PlayerEventArgs(players[i]));
+                                }
                             }
-                            IPAddress playerAddress = new IPAddress(data.ReadByteArray());
 
-                            // And the port.
-                            if (!data.HasInt32())
-                            {
-                                Console.WriteLine("Received invalid JoinResponse, no player port.");
-                                Leave();
-                                OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                                return;
-                            }
-                            IPEndPoint playerEndPoint = new IPEndPoint(playerAddress, data.ReadInt32());
-
-                            // All OK, add the player.
-                            playerAddresses[playerNumber] = playerEndPoint;
-                            players[playerNumber] = new Player(playerNumber, playerName, playerData,
-                                delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
+                            // OK, handled.
+                            args.Consume();
                         }
-
-                        // Get other game relevant data (e.g. game state).
-                        if (!data.HasPacket())
+#if DEBUG
+                        catch (PacketException ex)
                         {
-                            Console.WriteLine("Received invalid JoinResponse, no join data.");
+                            Console.WriteLine("Invalid JoinResponse: " + ex.ToString());
+#else
+                        catch (PacketException)
+                        {
+#endif
                             Leave();
                             OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
-                            return;
                         }
-                        Packet joinData = data.ReadPacket();
-
-                        // New state :)
-                        ConnectionState = ClientState.Connected;
-
-                        // OK, let the program know.
-                        OnJoinResponse(new JoinResponseEventArgs(true, JoinResponseReason.Success, joinData));
-                        
-                        // Also, fire one join event for each player in the game. Except for
-                        // the local player, because that'll likely need special treatment anyway.
-                        for (int i = 0; i < MaxPlayers; ++i)
-                        {
-                            if (i != LocalPlayer && players[i] != null)
-                            {
-                                OnPlayerJoined(new PlayerEventArgs(players[i]));
-                            }
-                        }
-
-                        args.Consume();
                     }
                     break;
                 case SessionMessage.PlayerJoined:
                     if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
                     {
-                        // Get player number.
-                        if (!data.HasInt32())
+                        try
                         {
-                            Console.WriteLine("Received invalid PlayerJoined, no player number.");
-                            return;
-                        }
-                        int playerNumber = data.ReadInt32();
+                            // Get player number.
+                            int playerNumber = data.ReadInt32();
 
-                        // Sanity checks.
-                        if (playerNumber < 0)
+                            // Get player name.
+                            string playerName = data.ReadString().Trim();
+
+                            // Get additional player data.
+                            byte[] playerData = data.ReadByteArray();
+
+                            // Get players IP address.
+                            IPAddress playerAddress = new IPAddress(data.ReadByteArray());
+
+                            // And the port, making up the full endpoint.
+                            IPEndPoint playerEndPoint = new IPEndPoint(playerAddress, data.ReadInt32());
+
+                            // Sanity checks.
+                            if (playerNumber < 0 || playerNumber >= MaxPlayers || players[playerNumber] != null)
+                            {
+                                throw new PacketException("Invalid player number.");
+                            }
+
+                            // All OK, add the player.
+                            playerAddresses[playerNumber] = playerEndPoint;
+                            players[playerNumber] = new Player(playerNumber, playerName, playerData,
+                                    delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
+
+                            // The the local program about it.
+                            OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
+
+                            // OK, handled it.
+                            args.Consume();
+                        }
+#if DEBUG
+                        catch (PacketException ex)
                         {
-                            Console.WriteLine("Received invalid PlayerJoined, negative player number.");
-                            return;
+                            Console.WriteLine("Invalid PlayerJoined: " + ex.ToString());
                         }
-                        if (playerNumber >= MaxPlayers)
+#else
+                        catch (PacketException)
                         {
-                            Console.WriteLine("Received invalid PlayerJoined, player number larger than max players.");
-                            return;
                         }
-                        if (players[playerNumber] != null)
-                        {
-                            Console.WriteLine("Received invalid PlayerJoined, duplicate player info.");
-                            return;
-                        }
-
-                        // Get player name.
-                        if (!data.HasString())
-                        {
-                            Console.WriteLine("Received invalid PlayerJoined, no player name.");
-                            return;
-                        }
-                        string playerName = data.ReadString().Trim();
-
-                        // Get additional player data.
-                        if (!data.HasByteArray())
-                        {
-                            Console.WriteLine("Received invalid PlayerJoined, no player data.");
-                            return;
-                        }
-                        byte[] playerData = data.ReadByteArray();
-
-                        // Get players IP address.
-                        if (!data.HasByteArray())
-                        {
-                            Console.WriteLine("Received invalid PlayerJoined, no player address.");
-                            return;
-                        }
-                        IPAddress playerAddress = new IPAddress(data.ReadByteArray());
-
-                        // And the port.
-                        if (!data.HasInt32())
-                        {
-                            Console.WriteLine("Received invalid PlayerJoined, no player port.");
-                            return;
-                        }
-                        IPEndPoint playerEndPoint = new IPEndPoint(playerAddress, data.ReadInt32());
-
-                        // All OK, add the player.
-                        playerAddresses[playerNumber] = playerEndPoint;
-                        players[playerNumber] = new Player(playerNumber, playerName, playerData,
-                                delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
-
-                        // The the local program about it.
-                        OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
-
-                        args.Consume();
+#endif
                     }
                     break;
                 case SessionMessage.PlayerLeft:
                     if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
                     {
-                        // Get player number.
-                        if (!data.HasInt32())
+                        try
                         {
-                            Console.WriteLine("Received invalid PlayerLeft, no player number.");
-                            return;
-                        }
-                        int playerNumber = data.ReadInt32();
+                            // Get player number.
+                            int playerNumber = data.ReadInt32();
 
-                        // Sanity checks.
-                        if (playerNumber < 0)
+                            // Sanity checks.
+                            if (playerNumber < 0 || playerNumber >= MaxPlayers || players[playerNumber] == null)
+                            {
+                                throw new PacketException("Invalid player number.");
+                            }
+
+                            // OK, remove the player.
+                            Player player = players[playerNumber];
+                            players[playerNumber] = null;
+                            playerAddresses[playerNumber] = null;
+
+                            // Tell the local program about it.
+                            OnPlayerLeft(new PlayerEventArgs(player));
+
+                            // OK, handled it.
+                            args.Consume();
+                        }
+#if DEBUG
+                        catch (PacketException ex)
                         {
-                            Console.WriteLine("Received invalid PlayerLeft, negative player number.");
-                            return;
+                            Console.WriteLine("Invalid PlayerLeft: " + ex.ToString());
                         }
-                        if (playerNumber >= MaxPlayers)
+#else
+                        catch (PacketException)
                         {
-                            Console.WriteLine("Received invalid PlayerLeft, player number larger than max players.");
-                            return;
                         }
-                        if (players[playerNumber] == null)
-                        {
-                            Console.WriteLine("Received invalid PlayerLeft, no such player.");
-                            return;
-                        }
-
-                        // OK, remove the player.
-                        Player player = players[playerNumber];
-                        players[playerNumber] = null;
-                        playerAddresses[playerNumber] = null;
-
-                        // Tell the local program about it.
-                        OnPlayerLeft(new PlayerEventArgs(player));
-
-                        args.Consume();
+#endif
                     }
                     break;
                 case SessionMessage.Data:
                     if (ConnectionState == ClientState.Connected)
                     {
-                        // Custom data, just forward it if we're in a game.
+                        // Custom data, just forward it if we're in a session.
                         ConditionalOnPlayerData(args, data);
                     }
                     break;
@@ -483,7 +343,9 @@ namespace Engine.Session
                     break;
                 default:
                     // Invalid packet.
+#if DEBUG
                     Console.WriteLine("Received packet with unknown session message type {0}.", type);
+#endif
                     break;
             }
         }

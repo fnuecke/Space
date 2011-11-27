@@ -7,9 +7,10 @@ namespace Engine.Simulation
     /// <summary>
     /// Minimal interface to be implemented by simulation states.
     /// </summary>
-    public interface IState<TSteppable> : ICloneable where TSteppable : ICloneable
+    public interface IState<TState, TSteppable> : ICloneable
+        where TState : IState<TState, TSteppable>
+        where TSteppable : ISteppable<TState, TSteppable>
     {
-
         /// <summary>
         /// The current frame of the simulation the state represents.
         /// </summary>
@@ -42,6 +43,5 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="command">the command to apply.</param>
         void PushCommand(ISimulationCommand command);
-
     }
 }

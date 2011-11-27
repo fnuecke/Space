@@ -86,6 +86,8 @@ namespace Space.Control
             protocol.Dispose();
             Session.Dispose();
 
+            Game.Components.Remove(this);
+
             base.Dispose(disposing);
         }
 
@@ -96,7 +98,7 @@ namespace Space.Control
             protocol.Flush();
 
             // Drive game logic.
-
+            simulation.Update();
 
             base.Update(gameTime);
         }
