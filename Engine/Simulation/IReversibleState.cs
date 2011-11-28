@@ -8,15 +8,16 @@ namespace Engine.Simulation
     /// pushed that was issued earlier than the current frame (if the command
     /// was authoritative, i.e. not tentative).
     /// </summary>
-    interface IReversibleState<TState, TSteppable> : IState<TState, TSteppable>
-        where TState : IState<TState, TSteppable>
-        where TSteppable : ISteppable<TState, TSteppable>
+    interface IReversibleState<TState, TSteppable, TCommandType> : IState<TState, TSteppable, TCommandType>
+        where TState : IState<TState, TSteppable, TCommandType>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+        where TCommandType : struct
     {
         /// <summary>
         /// Dispatched when the state needs to roll back further than it can
         /// to accommodate a server command. The handler must trigger the
-        /// process of getting a valid snapshot, which is fed back to this
-        /// state using the Synchronize() method.
+        /// process of getting a valid snapshot, and feed it back to the
+        /// state (e.g. using Depacketize()).
         /// </summary>
         event EventHandler<EventArgs> ThresholdExceeded;
 
@@ -30,12 +31,5 @@ namespace Engine.Simulation
         /// Tells if the state is currently waiting to be synchronized.
         /// </summary>
         bool WaitingForSynchronization { get; }
-
-        /// <summary>
-        /// Resynchronize the state to the server using the given snapshot,
-        /// which must be an authoritative snapshot.
-        /// </summary>
-        /// <param name="state">the authoritative snapshot to use for resynchronization.</param>
-        void Synchronize(TState state);
     }
 }

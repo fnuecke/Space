@@ -1,4 +1,4 @@
-﻿namespace Space.Simulation.Commands
+﻿namespace Space.Commands
 {
     enum GameCommandType
     {

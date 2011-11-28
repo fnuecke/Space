@@ -101,9 +101,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\Command.cs" />
-    <Compile Include="Commands\CommandType.cs" />
-    <Compile Include="Commands\GameStateCommand.cs" />
-    <Compile Include="Commands\GameStateQueryCommand.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Controller\AbstractUdpClient.cs" />
     <Compile Include="Controller\AbstractUdpServer.cs" />
@@ -113,7 +110,9 @@
     <Compile Include="Input\KeyMap.cs" />
     <Compile Include="Input\KeyModifier.cs" />
     <Compile Include="Network\EventArgs.cs" />
+    <Compile Include="Serialization\IPacketizable.cs" />
     <Compile Include="Serialization\PacketException.cs" />
+    <Compile Include="Serialization\Packetizer.cs" />
     <Compile Include="Session\AbstractSession.cs" />
     <Compile Include="Session\ClientSession.cs" />
     <Compile Include="Session\SessionEventArgs.cs" />
@@ -128,6 +127,7 @@
     <Compile Include="Commands\SimulationCommand.cs" />
     <Compile Include="Network\UdpProtocol.cs" />
     <Compile Include="Simulation\AbstractState.cs" />
+    <Compile Include="Simulation\AbstractSteppable.cs" />
     <Compile Include="Simulation\IPhysicsEnabledState.cs" />
     <Compile Include="Simulation\IPhysicsSteppable.cs" />
     <Compile Include="Simulation\IReversibleState.cs" />
@@ -148,6 +148,7 @@
     <Compile Include="Simulation\ThresholdExceededEventArgs.cs" />
     <Compile Include="Simulation\TSS.cs" />
     <Compile Include="Simulation\PhysicsEnabledState.cs" />
+    <Compile Include="Util\Direction.cs" />
     <Compile Include="Util\GameConsole.cs" />
     <Compile Include="Util\IGameConsole.cs" />
     <Compile Include="Util\LineWrittenEventArgs.cs" />

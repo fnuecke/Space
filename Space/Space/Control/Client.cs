@@ -3,6 +3,7 @@ using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation;
 using Microsoft.Xna.Framework;
+using Space.Commands;
 using Space.Model;
 
 namespace Space.Control
@@ -17,14 +18,14 @@ namespace Space.Control
         /// <summary>
         /// The game state representing the current game world.
         /// </summary>
-        private TSS<GameState, IGameObject> simulation;
+        private TSS<GameState, IGameObject, GameCommandType> simulation;
 
         #endregion
 
         public Client(Game game)
             : base(game)
         {
-            simulation = new TSS<GameState, IGameObject>(new int[] { 50 });
+            simulation = new TSS<GameState, IGameObject, GameCommandType>(new int[] { 50 });
         }
 
         public override void Update(GameTime gameTime)

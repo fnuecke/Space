@@ -148,12 +148,14 @@ namespace Engine.Session
         /// Close this session, detaching it from the underlying protocol and
         /// making it invalid for further use.
         /// </summary>
-        public virtual void Dispose()
+        protected override void Dispose(bool disposing)
         {
             protocol.MessageTimeout -= HandlePlayerTimeout;
             protocol.Data -= HandlePlayerData;
 
             Game.Components.Remove(this);
+
+            base.Dispose(disposing);
         }
 
         /// <summary>

@@ -498,6 +498,8 @@ namespace Engine.Math
 
     public struct FPoint
     {
+        public static readonly FPoint Zero = FPoint.Create((Fixed)0, (Fixed)0);
+
         public Fixed X;
         public Fixed Y;
 

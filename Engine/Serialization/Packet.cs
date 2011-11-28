@@ -217,6 +217,12 @@ namespace Engine.Serialization
             Write(Encoding.UTF8.GetBytes(data));
         }
 
+        public void Write(FPoint data)
+        {
+            Write(data.X);
+            Write(data.Y);
+        }
+
         #endregion
 
         #region Reading
@@ -383,6 +389,14 @@ namespace Engine.Serialization
                 throw new PacketException("Cannot read string.");
             }
             return Encoding.UTF8.GetString(ReadByteArray());
+        }
+
+        public FPoint ReadFPoint()
+        {
+            FPoint result;
+            result.X = ReadFixed();
+            result.Y = ReadFixed();
+            return result;
         }
 
         #endregion
@@ -612,6 +626,11 @@ namespace Engine.Serialization
         public bool HasString()
         {
             return HasByteArray();
+        }
+
+        public bool HasFPoint()
+        {
+            return Available >= (sizeof(long) * 2);
         }
 
         #endregion

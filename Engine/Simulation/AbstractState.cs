@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Commands;
+using Engine.Serialization;
 
 namespace Engine.Simulation
 {
@@ -14,10 +15,13 @@ namespace Engine.Simulation
     /// - Cloning of the state (may use CloneTo to take care of the basics).
     /// </para>
     /// </summary>
-    public abstract class AbstractState<TState, TSteppable> : IState<TState, TSteppable>
-        where TState : AbstractState<TState, TSteppable>
-        where TSteppable : ISteppable<TState, TSteppable>
+    public abstract class AbstractState<TState, TSteppable, TCommandType> : IState<TState, TSteppable, TCommandType>
+        where TState : AbstractState<TState, TSteppable, TCommandType>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+        where TCommandType : struct
     {
+        #region Properties
+
         /// <summary>
         /// The current frame of the simulation the state represents.
         /// </summary>
@@ -33,16 +37,23 @@ namespace Engine.Simulation
         /// </summary>
         protected abstract TState ThisState { get; }
 
-        /// <summary>
-        /// List of child updateables this state drives.
-        /// </summary>
-        protected List<TSteppable> steppables = new List<TSteppable>();
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// List of queued commands to execute in the future.
         /// </summary>
-        protected SortedDictionary<long, List<ISimulationCommand>> commands =
-            new SortedDictionary<long, List<ISimulationCommand>>();
+        protected SortedDictionary<long, List<ISimulationCommand<TCommandType>>> commands = new SortedDictionary<long, List<ISimulationCommand<TCommandType>>>();
+
+        /// <summary>
+        /// List of child steppables this state drives.
+        /// </summary>
+        protected List<TSteppable> steppables = new List<TSteppable>();
+
+        #endregion
+
+        #region Accessors
 
         /// <summary>
         /// Add an steppable object to the list of participants of this state.
@@ -63,6 +74,25 @@ namespace Engine.Simulation
             steppables.Remove(steppable);
             steppable.State = null;
         }
+
+        /// <summary>
+        /// Apply a given command to the simulation state.
+        /// </summary>
+        /// <param name="command">the command to apply.</param>
+        public virtual void PushCommand(ISimulationCommand<TCommandType> command)
+        {
+            if (command.Frame <= CurrentFrame)
+            {
+                throw new ArgumentException("Command is from a frame in the past.");
+            }
+            if (!commands.ContainsKey(command.Frame))
+            {
+                commands.Add(command.Frame, new List<ISimulationCommand<TCommandType>>());
+            }
+            commands[command.Frame].Add(command);
+        }
+
+        #endregion
 
         /// <summary>
         /// Advance the simulation by one frame.
@@ -89,40 +119,88 @@ namespace Engine.Simulation
             }
         }
 
-        /// <summary>
-        /// Apply a given command to the simulation state.
-        /// </summary>
-        /// <param name="command">the command to apply.</param>
-        public virtual void PushCommand(ISimulationCommand command)
+        public abstract object Clone();
+
+        public virtual void Packetize(Packet packet)
         {
-            if (command.Frame <= CurrentFrame)
+            packet.Write(CurrentFrame);
+
+            int totalCommands = 0;
+            foreach (var list in commands.Values)
             {
-                throw new ArgumentException("Command is from a frame in the past.");
+                totalCommands += list.Count;
             }
-            if (!commands.ContainsKey(command.Frame))
+            packet.Write(totalCommands);
+            foreach (var kv in commands)
             {
-                commands.Add(command.Frame, new List<ISimulationCommand>());
+                foreach (var command in kv.Value)
+                {
+                    Packetizer.Packetize(command, packet);
+                }
             }
-            commands[command.Frame].Add(command);
+
+            packet.Write(steppables.Count);
+            foreach (var steppable in steppables)
+            {
+                Packetizer.Packetize(steppable, packet);
+            }
         }
 
-        public abstract object Clone();
+        public virtual void Depacketize(Packet packet)
+        {
+            // Get the current frame of the simulation.
+            CurrentFrame = packet.ReadInt64();
+
+            // Find commands that our out of date now, but keep newer ones.
+            List<long> toRemove = new List<long>();
+            foreach (var kv in commands)
+            {
+                if (kv.Key <= CurrentFrame)
+                {
+                    toRemove.Add(kv.Key);
+                }
+            }
+            foreach (var frame in toRemove)
+            {
+                commands.Remove(frame);
+            }
+
+            // Continue with reading the list of commands.
+            int numCommands = packet.ReadInt32();
+            for (int j = 0; j < numCommands; ++j)
+            {
+                PushCommand(Packetizer.Depacketize<ISimulationCommand<TCommandType>>(packet));
+            }
+
+            // And finally the objects. Remove the one we know before that.
+            steppables.Clear();
+            int numSteppables = packet.ReadInt32();
+            for (int i = 0; i < numSteppables; ++i)
+            {
+                Add(Packetizer.Depacketize<TSteppable>(packet));
+            }
+        }
 
         /// <summary>
         /// Call this from the implemented Clone() method to clone basic properties.
         /// </summary>
         /// <param name="clone"></param>
-        protected virtual object CloneTo(AbstractState<TState, TSteppable> clone)
+        protected virtual object CloneTo(AbstractState<TState, TSteppable, TCommandType> clone)
         {
+            clone.CurrentFrame = CurrentFrame;
+
+            clone.commands.Clear();
+            foreach (var keyValue in commands)
+            {
+                clone.commands.Add(keyValue.Key, new List<ISimulationCommand<TCommandType>>(keyValue.Value));
+            }
+
+            clone.steppables.Clear();
             foreach (var steppable in steppables)
             {
                 clone.steppables.Add((TSteppable)steppable.Clone());
             }
-            foreach (var keyValue in commands)
-            {
-                clone.commands.Add(keyValue.Key, new List<ISimulationCommand>(keyValue.Value));
-            }
-            clone.CurrentFrame = CurrentFrame;
+
             return clone;
         }
 
@@ -131,6 +209,6 @@ namespace Engine.Simulation
         /// at the moment it should be applied.
         /// </summary>
         /// <param name="command">the command to handle.</param>
-        protected abstract void HandleCommand(ISimulationCommand command);
+        protected abstract void HandleCommand(ISimulationCommand<TCommandType> command);
     }
 }

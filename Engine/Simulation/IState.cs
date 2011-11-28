@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Commands;
+using Engine.Serialization;
 
 namespace Engine.Simulation
 {
     /// <summary>
     /// Minimal interface to be implemented by simulation states.
     /// </summary>
-    public interface IState<TState, TSteppable> : ICloneable
-        where TState : IState<TState, TSteppable>
-        where TSteppable : ISteppable<TState, TSteppable>
+    /// <typeparam name="TState">the type of state the object will be used together with.</typeparam>
+    /// <typeparam name="TSteppable">the type of steppable used in the state.</typeparam>
+    public interface IState<TState, TSteppable, TCommandType> : ICloneable, IPacketizable
+        where TState : IState<TState, TSteppable, TCommandType>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+        where TCommandType : struct
     {
         /// <summary>
         /// The current frame of the simulation the state represents.
@@ -42,6 +46,6 @@ namespace Engine.Simulation
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        void PushCommand(ISimulationCommand command);
+        void PushCommand(ISimulationCommand<TCommandType> command);
     }
 }

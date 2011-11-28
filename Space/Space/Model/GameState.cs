@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using Engine.Commands;
+using Engine.Serialization;
 using Engine.Simulation;
-using Space.Simulation.Commands;
+using Space.Commands;
 
 namespace Space.Model
 {
-    class GameState : PhysicsEnabledState<GameState, IGameObject>
+    class GameState : PhysicsEnabledState<GameState, IGameObject, GameCommandType>
     {
 
         protected override GameState ThisState { get { return this; } }
@@ -36,11 +37,11 @@ namespace Space.Model
             }
         }
 
-        protected override void HandleCommand(ISimulationCommand command)
+        protected override void HandleCommand(ISimulationCommand<GameCommandType> command)
         {
             switch (command.Type)
             {
-                case 50:
+                case GameCommandType.PlayerInput:
                     {
                         var inputCommand = (PlayerInputCommand)command;
                         Ship ship = GetPlayerShip(command.Player);
@@ -52,10 +53,7 @@ namespace Space.Model
                         switch (inputCommand.Input)
                         {
                             case PlayerInputCommand.PlayerInput.Accelerate:
-                                ship.Accelerate();
-                                break;
-                            case PlayerInputCommand.PlayerInput.Decelerate:
-                                ship.Decelerate();
+                                ship.Accelerate(inputCommand.Direction);
                                 break;
                             case PlayerInputCommand.PlayerInput.StopMovement:
                                 ship.StopMovement();
@@ -84,5 +82,14 @@ namespace Space.Model
             return CloneTo(clone);
         }
 
+        public override void Packetize(Packet packet)
+        {
+            base.Packetize(packet);
+        }
+
+        public override void Depacketize(Packet packet)
+        {
+            base.Packetize(packet);
+        }
     }
 }

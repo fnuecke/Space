@@ -40,11 +40,11 @@ namespace Engine.Session
             multicast.JoinMulticastGroup(DefaultMulticastAddress);
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
             multicast.Close();
 
-            base.Dispose();
+            base.Dispose(disposing);
         }
 
         /// <summary>

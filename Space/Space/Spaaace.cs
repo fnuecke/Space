@@ -6,6 +6,7 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
+using Space.Model;
 
 namespace Space
 {
@@ -19,6 +20,11 @@ namespace Space
         GameConsole console;
         Server server;
         Client client;
+
+        static Spaaace()
+        {
+            Packetizer.Register<Ship>();
+        }
 
         public Spaaace()
         {

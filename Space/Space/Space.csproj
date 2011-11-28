@@ -110,8 +110,8 @@
     <Compile Include="Control\Client.cs" />
     <Compile Include="Control\Server.cs" />
     <Compile Include="Model\StaticWorld.cs" />
-    <Compile Include="Simulation\Commands\GameCommandType.cs" />
-    <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />
+    <Compile Include="Commands\GameCommandType.cs" />
+    <Compile Include="Commands\PlayerInputCommand.cs" />
     <Compile Include="Model\GameState.cs" />
     <Compile Include="Model\Ship.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

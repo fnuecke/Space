@@ -5,13 +5,14 @@ namespace Engine.Commands
     /// <summary>
     /// Minimal interface for commands.
     /// </summary>
-    public interface ICommand
+    /// <typeparam name="T">the enum type to use to differentiate commands.</typeparam>
+    public interface ICommand<T> : IPacketizable
+        where T : struct
     {
-
         /// <summary>
         /// The type of the command, used to determine which handler to use for it.
         /// </summary>
-        uint Type { get; }
+        T Type { get; }
 
         /// <summary>
         /// Whether the command is signed (e.g. by a server) (<code>false</code>)
@@ -24,12 +25,5 @@ namespace Engine.Commands
         /// for received commands.
         /// </summary>
         int Player { get; set; }
-
-        /// <summary>
-        /// Serialize the command to the given packet.
-        /// </summary>
-        /// <param name="packet">the packet to serialize the command to.</param>
-        void Write(Packet packet);
-
     }
 }

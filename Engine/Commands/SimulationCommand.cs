@@ -2,27 +2,45 @@
 
 namespace Engine.Commands
 {
-    public class SimulationCommand : Command, ISimulationCommand
+    public class SimulationCommand<T> : Command<T>, ISimulationCommand<T>
+        where T : struct
     {
+        #region Properties
 
         public long Frame { get; private set; }
 
-        protected SimulationCommand(uint type, long frame)
+        #endregion
+
+        #region Constructor
+
+        protected SimulationCommand()
+        {
+        }
+
+        protected SimulationCommand(T type, long frame)
             : base(type)
         {
             this.Frame = frame;
         }
 
-        protected SimulationCommand(Packet packet)
-            : base(packet)
+        #endregion
+
+        #region Serialization
+
+        public override void Packetize(Packet packet)
         {
-            Frame = packet.ReadInt64();
+            packet.Write(Frame);
+
+            base.Packetize(packet);
         }
 
-        override public void Write(Packet packet)
+        public override void Depacketize(Packet packet)
         {
-            base.Write(packet);
-            packet.Write(Frame);
+            Frame = packet.ReadInt64();
+
+            base.Depacketize(packet);
         }
+
+        #endregion
     }
 }

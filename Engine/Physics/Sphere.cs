@@ -7,22 +7,46 @@ namespace Engine.Physics
     /// <summary>
     /// Base class for spherical world objects.
     /// </summary>
-    public abstract class Sphere<TState, TSteppable> : Collideable<TState, TSteppable>
-        where TState : IPhysicsEnabledState<TState, TSteppable>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable>
+    public abstract class Sphere<TState, TSteppable, TCommandType> : Collideable<TState, TSteppable, TCommandType>
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType>
+        where TCommandType : struct
     {
+        #region Properties
+
+        /// <summary>
+        /// The minimal AABB surrounding this object.
+        /// </summary>
+        public FRectangle Bounds { get { return FRectangle.Create(position, radius * 2, radius * 2); } }
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// Radius of the object.
         /// </summary>
         protected Fixed radius;
 
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// For deserializing.
+        /// </summary>
+        protected Sphere()
+        {
+        }
+
         protected Sphere(Fixed radius)
         {
             this.radius = radius;
         }
 
-        public FRectangle Bounds { get { return FRectangle.Create(position, radius * 2, radius * 2); } }
+        #endregion
+
+        #region Intersection
 
         public override bool Intersects(ref FPoint extents, ref FPoint previousPosition, ref FPoint position)
         {
@@ -34,5 +58,24 @@ namespace Engine.Physics
             return SphereSweep.Test(this.radius, ref this.previousPosition, ref this.position, radius, ref previousPosition, ref position);
         }
 
+        #endregion
+
+        #region Serialization
+
+        public override void Packetize(Serialization.Packet packet)
+        {
+            packet.Write(radius);
+
+            base.Packetize(packet);
+        }
+
+        public override void Depacketize(Serialization.Packet packet)
+        {
+            radius = packet.ReadFixed();
+
+            base.Depacketize(packet);
+        }
+
+        #endregion
     }
 }

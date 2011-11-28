@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Commands;
+using Engine.Serialization;
 
 namespace Engine.Simulation
 {
@@ -8,9 +9,10 @@ namespace Engine.Simulation
     /// Implements a Trailing State Synchronization.
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
-    public class TSS<TState, TSteppable> : IReversibleState<TState, TSteppable>
-        where TState : IState<TState, TSteppable>, new()
-        where TSteppable : ISteppable<TState, TSteppable>
+    public class TSS<TState, TSteppable, TCommandType> : IReversibleState<TState, TSteppable, TCommandType>
+        where TState : IState<TState, TSteppable, TCommandType>, new()
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+        where TCommandType : struct
     {
         #region Events
         /// <summary>
@@ -87,10 +89,9 @@ namespace Engine.Simulation
             // Generate initial states.
             states = new TState[this.delays.Length];
 
-
-            // Create state instances to avoid nullpointers, but wait for initial sync.
-            Synchronize(new TState());
-            WaitingForSynchronization = true;
+            // Initialize to empty state.
+            states[states.Length - 1] = new TState();
+            Synchronize();
         }
 
         /// <summary>
@@ -185,7 +186,7 @@ namespace Engine.Simulation
         /// the next Step().
         /// </summary>
         /// <param name="command">the command to push.</param>
-        public void PushCommand(ISimulationCommand command)
+        public void PushCommand(ISimulationCommand<TCommandType> command)
         {
             // Do not allow changes while waiting for synchronization.
             if (WaitingForSynchronization)
@@ -239,6 +240,49 @@ namespace Engine.Simulation
         }
 
         /// <summary>
+        /// Serialize a state to a packet.
+        /// </summary>
+        /// <param name="packet">the packet to write the data to.</param>
+        public void Packetize(Packet packet)
+        {
+            packet.Write(CurrentFrame);
+            packet.Write(delayedAdds.Count);
+            foreach (var add in delayedAdds)
+            {
+                packet.Write(add.Key);
+                packet.Write(add.Value.Count);
+                foreach (var item in add.Value)
+                {
+                    Packetizer.Packetize(item, packet);
+                }
+            }
+            states[states.Length - 1].Packetize(packet);
+        }
+
+        /// <summary>
+        /// Deserialize a state from a packet.
+        /// </summary>
+        /// <param name="packet">the packet to read the data from.</param>
+        /// <returns>deserialzed state.</returns>
+        public void Depacketize(Packet packet)
+        {
+            CurrentFrame = packet.ReadInt64();
+            int numDelayedAdds = packet.ReadInt32();
+            for (int delayedAdd = 0; delayedAdd < numDelayedAdds; ++delayedAdd)
+            {
+                long key = packet.ReadInt64();
+                int numValues = packet.ReadInt32();
+                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                {
+                    TSteppable value = Packetizer.Depacketize<TSteppable>(packet);
+                }
+            }
+            states[states.Length - 1].Depacketize(packet);
+
+            Synchronize();
+        }
+
+        /// <summary>
         /// Not available for TSS.
         /// </summary>
         public object Clone()
@@ -246,20 +290,19 @@ namespace Engine.Simulation
             throw new NotImplementedException();
         }
 
-        public void Synchronize(TState state)
+        public void Synchronize()
         {
-            for (int i = 0; i < states.Length; ++i)
+            for (int i = states.Length - 2; i >= 0; --i)
             {
-                states[i] = (TState)state.Clone();
+                states[i] = (TState)states[states.Length - 1].Clone();
             }
-            CurrentFrame = state.CurrentFrame;
+            
             LastSynchronization = CurrentFrame;
             WaitingForSynchronization = false;
 
 #if DEBUG
             Console.WriteLine("Synchronized to state @ " + CurrentFrame);
 #endif
-
         }
 
         protected void OnThresholdExceeded(ThresholdExceededEventArgs e)
@@ -269,6 +312,5 @@ namespace Engine.Simulation
                 ThresholdExceeded(this, e);
             }
         }
-
     }
 }

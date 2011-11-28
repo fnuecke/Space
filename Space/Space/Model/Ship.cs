@@ -1,15 +1,17 @@
 ﻿using Engine.Math;
 using Engine.Physics;
+using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Space.Commands;
 using SpaceData;
 
 namespace Space.Model
 {
-    class Ship : Sphere<GameState, IGameObject>, IGameObject
+    class Ship : Sphere<GameState, IGameObject, GameCommandType>, IGameObject
     {
-
         /// <summary>
         /// Time in ticks it takes before a ship may respawn.
         /// </summary>
@@ -30,6 +32,10 @@ namespace Space.Model
 
         private Texture2D texture;
 
+        public Ship()
+        {
+        }
+
         public Ship(ContentManager content, ShipData data, int player)
             : base(data.Radius)
         {
@@ -38,19 +44,14 @@ namespace Space.Model
             texture = content.Load<Texture2D>(data.Texture);
         }
 
-        public void Accelerate()
+        public void Accelerate(Direction direction)
         {
-            accelerationPosition = data.Acceleration;
-        }
-
-        public void Decelerate()
-        {
-            accelerationPosition = -data.Acceleration / 2;
+            acceleration = DirectionConversion.DirectionToFPoint(direction) * data.Acceleration;
         }
 
         public void StopMovement()
         {
-            accelerationPosition = (Fixed)0;
+            acceleration = FPoint.Zero;
         }
 
         public void TurnLeft()
@@ -110,11 +111,20 @@ namespace Space.Model
                               texture.Width, texture.Height),
                 null,
                 Color.White,
-                (float)orientation.DoubleValue,
+                (float)rotation.DoubleValue,
                 new Vector2(texture.Width / 2, texture.Height / 2),
                 SpriteEffects.None,
                 0);
         }
 
+        public override void Packetize(Packet packet)
+        {
+            base.Packetize(packet);
+        }
+
+        public override void Depacketize(Packet packet)
+        {
+            base.Packetize(packet);
+        }
     }
 }

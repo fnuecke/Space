@@ -4,6 +4,7 @@ using Engine.Session;
 using Engine.Simulation;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Space.Commands;
 using Space.Model;
 using SpaceData;
 
@@ -24,7 +25,7 @@ namespace Space.Control
         /// <summary>
         /// The game state representing the current game world.
         /// </summary>
-        private TSS<GameState, IGameObject> simulation;
+        private TSS<GameState, IGameObject, GameCommandType> simulation;
 
         #endregion
 
@@ -32,8 +33,7 @@ namespace Space.Control
             : base(game, maxPlayers)
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
-            simulation = new TSS<GameState, IGameObject>(new int[] { 50 });
-            simulation.Synchronize(new GameState());
+            simulation = new TSS<GameState, IGameObject, GameCommandType>(new int[] { 50 });
         }
 
         public override void Update(GameTime gameTime)
@@ -54,6 +54,10 @@ namespace Space.Control
         protected override void HandleJoinRequested(object sender, EventArgs e)
         {
             console.WriteLine("SRV.NET: Join request.");
+
+            // Send current game state to client.
+            var args = (RequestEventArgs)e;
+            simulation.Packetize(args.Data);
         }
 
         protected override void HandlePlayerData(object sender, EventArgs e)

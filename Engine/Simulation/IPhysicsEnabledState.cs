@@ -3,9 +3,10 @@ using Engine.Physics;
 
 namespace Engine.Simulation
 {
-    public interface IPhysicsEnabledState<TState, TSteppable> : IState<TState, TSteppable>
-        where TState : IPhysicsEnabledState<TState, TSteppable>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable>
+    public interface IPhysicsEnabledState<TState, TSteppable, TCommandType> : IState<TState, TSteppable, TCommandType>
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType>
+        where TCommandType : struct
     {
 
         /// <summary>

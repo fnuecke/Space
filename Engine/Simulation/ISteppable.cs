@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.Serialization;
 
 namespace Engine.Simulation
 {
@@ -7,16 +8,22 @@ namespace Engine.Simulation
     /// 
     /// IMPORTANT: implementations must perform a deep copy for
     /// all non-constant references (constant references may for
-    /// example be things such as settings / read only value).
+    /// example be things such as settings / read only values).
     /// </summary>
-    public interface ISteppable<TState, TSteppable> : ICloneable
-        where TState : IState<TState, TSteppable>
-        where TSteppable : ISteppable<TState, TSteppable>
+    public interface ISteppable<TState, TSteppable, TCommandType> : ICloneable, IPacketizable
+        where TState : IState<TState, TSteppable, TCommandType>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+        where TCommandType : struct
     {
         /// <summary>
         /// The world (simulation) this object is associated with.
         /// </summary>
         TState State { get; set; }
+
+        /// <summary>
+        /// A globally unique id for this object.
+        /// </summary>
+        long UID { get; }
 
         /// <summary>
         /// Perform one simulation step. 
