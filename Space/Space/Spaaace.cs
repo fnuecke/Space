@@ -59,7 +59,7 @@ namespace Space
                 "Search for games available on the local subnet.");
             console.AddCommand("connect", args =>
             {
-                client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), "test", null);
+                client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), "test", new PlayerInfo());
             },
                 "Joins a game at the given host.",
                 "connect <host> <port> - join the host with the given hostname or IP.");

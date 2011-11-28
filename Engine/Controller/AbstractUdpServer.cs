@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Engine.Network;
+using Engine.Serialization;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -10,14 +11,15 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for game servers using the UDP network protocol.
     /// </summary>
-    public abstract class AbstractUdpServer : GameComponent
+    public abstract class AbstractUdpServer<TPlayerData> : GameComponent
+        where TPlayerData : IPacketizable, new()
     {
         #region Properties
 
         /// <summary>
         /// The underlying server session being used.
         /// </summary>
-        public IServerSession Session { get; private set; }
+        public IServerSession<TPlayerData> Session { get; private set; }
 
         #endregion
 
@@ -41,7 +43,7 @@ namespace Engine.Controller
             : base(game)
         {
             protocol = new UdpProtocol(8442, Encoding.ASCII.GetBytes("5p4c3"));
-            Session = SessionFactory.StartServer(game, protocol, maxPlayers);
+            Session = SessionFactory.StartServer<TPlayerData>(game, protocol, maxPlayers);
 
             console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
 

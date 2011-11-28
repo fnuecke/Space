@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using Engine.Serialization;
 
 namespace Engine.Session
 {
@@ -16,7 +17,8 @@ namespace Engine.Session
     /// <summary>
     /// Interface for client side representations of a session.
     /// </summary>
-    public interface IClientSession : ISession
+    public interface IClientSession<TPlayerData> : ISession<TPlayerData>
+        where TPlayerData : IPacketizable
     {
         /// <summary>
         /// Called when we receive information about an open game.
@@ -46,7 +48,7 @@ namespace Engine.Session
         /// <param name="remote">the remote host that runs the session.</param>
         /// <param name="playerName">the with which to register.</param>
         /// <param name="data">additional data to be associated with our player (Player.Data).</param>
-        void Join(IPEndPoint remote, string playerName, byte[] data);
+        void Join(IPEndPoint remote, string playerName, TPlayerData data);
 
         /// <summary>
         /// Leave the session.

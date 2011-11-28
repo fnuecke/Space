@@ -109,6 +109,7 @@
   <ItemGroup>
     <Compile Include="Control\Client.cs" />
     <Compile Include="Control\Server.cs" />
+    <Compile Include="Model\PlayerInfo.cs" />
     <Compile Include="Model\StaticWorld.cs" />
     <Compile Include="Commands\GameCommandType.cs" />
     <Compile Include="Commands\PlayerInputCommand.cs" />
@@ -118,6 +119,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Model\IGameObject.cs" />
     <Compile Include="Spaaace.cs" />
+    <Compile Include="WorldRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />

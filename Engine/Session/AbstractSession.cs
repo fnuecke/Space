@@ -59,7 +59,8 @@ namespace Engine.Session
     /// <summary>
     /// Base implementation for server and client side sessions, i.e. functionality used by both.
     /// </summary>
-    abstract class AbstractSession : GameComponent, ISession
+    abstract class AbstractSession<TPlayerData> : GameComponent, ISession<TPlayerData>
+        where TPlayerData : IPacketizable
     {
         #region Constants
 
@@ -128,7 +129,7 @@ namespace Engine.Session
         /// <summary>
         /// List of all the player structs.
         /// </summary>
-        protected Player[] players;
+        protected Player<TPlayerData>[] players;
 
         #endregion
 
@@ -163,7 +164,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">the number of the player.</param>
         /// <returns>information on the player.</returns>
-        public Player GetPlayer(int player)
+        public Player<TPlayerData> GetPlayer(int player)
         {
             return players[player];
         }
@@ -254,11 +255,11 @@ namespace Engine.Session
             // If it is, forward the data.
             if (player >= 0)
             {
-                OnPlayerData(new PlayerDataEventArgs(players[player], args, data));
+                OnPlayerData(new PlayerDataEventArgs<TPlayerData>(players[player], args, data));
             }
         }
 
-        protected void OnPlayerJoined(PlayerEventArgs e)
+        protected void OnPlayerJoined(PlayerEventArgs<TPlayerData> e)
         {
             if (PlayerJoined != null)
             {
@@ -266,7 +267,7 @@ namespace Engine.Session
             }
         }
 
-        protected void OnPlayerLeft(PlayerEventArgs e)
+        protected void OnPlayerLeft(PlayerEventArgs<TPlayerData> e)
         {
             if (PlayerLeft != null)
             {
@@ -274,7 +275,7 @@ namespace Engine.Session
             }
         }
 
-        protected void OnPlayerData(PlayerDataEventArgs e)
+        protected void OnPlayerData(PlayerDataEventArgs<TPlayerData> e)
         {
             if (PlayerData != null)
             {

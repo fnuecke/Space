@@ -6,7 +6,8 @@ namespace Engine.Session
     /// <summary>
     /// Common interface for sessions of either server or client type.
     /// </summary>
-    public interface ISession : IDisposable
+    public interface ISession<TPlayerData> : IDisposable
+        where TPlayerData : IPacketizable
     {
         /// <summary>
         /// Called when a new player joins the session.
@@ -43,7 +44,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">the number of the player.</param>
         /// <returns>information on the player.</returns>
-        Player GetPlayer(int player);
+        Player<TPlayerData> GetPlayer(int player);
 
         /// <summary>
         /// Send some data to the server.

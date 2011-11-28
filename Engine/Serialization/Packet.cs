@@ -83,7 +83,7 @@ namespace Engine.Serialization
             Length = length;
             readPointer = 0;
         }
-        
+
         /// <summary>
         /// Resets this packet, setting length and read/write position to zero.
         /// </summary>
@@ -221,6 +221,11 @@ namespace Engine.Serialization
         {
             Write(data.X);
             Write(data.Y);
+        }
+
+        public void Write(IPacketizable data)
+        {
+            data.Packetize(this);
         }
 
         #endregion
@@ -397,6 +402,11 @@ namespace Engine.Serialization
             result.X = ReadFixed();
             result.Y = ReadFixed();
             return result;
+        }
+
+        public void ReadPacketizable(IPacketizable packetizable)
+        {
+            packetizable.Depacketize(this);
         }
 
         #endregion

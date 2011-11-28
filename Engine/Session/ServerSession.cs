@@ -11,10 +11,25 @@ namespace Engine.Session
     /// <summary>
     /// Used for hosting a session.
     /// </summary>
-    sealed class ServerSession : AbstractSession, IServerSession
+    sealed class ServerSession<TPlayerData> : AbstractSession<TPlayerData>, IServerSession<TPlayerData>
+        where TPlayerData : IPacketizable, new()
     {
+        #region Events
+
+        /// <summary>
+        /// Called when an unconnected client requests game info.
+        /// </summary>
         public event EventHandler<EventArgs> GameInfoRequested;
+
+        /// <summary>
+        /// A player is joining the game. Fill in any arbitrary data to send
+        /// back to the joining client here.
+        /// </summary>
         public event EventHandler<EventArgs> JoinRequested;
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// Keep track of free slots (use the first free on on joins).
@@ -27,15 +42,19 @@ namespace Engine.Session
         /// </summary>
         private UdpClient multicast;
 
+        #endregion
+
+        #region Constructor / Cleanup
+
         public ServerSession(Game game, IProtocol protocol, int maxPlayers)
             : base(game, protocol)
         {
             this.NumPlayers = 0;
             this.MaxPlayers = maxPlayers;
             playerAddresses = new IPEndPoint[maxPlayers];
-            players = new Player[maxPlayers];
+            players = new Player<TPlayerData>[maxPlayers];
             slots = new BitArray(maxPlayers, false);
-            
+
             multicast = new UdpClient(DefaultMulticastPort);
             multicast.JoinMulticastGroup(DefaultMulticastAddress);
         }
@@ -47,22 +66,19 @@ namespace Engine.Session
             base.Dispose(disposing);
         }
 
-        /// <summary>
-        /// Drives the multicast checking.
-        /// </summary>
-        public override void Update(GameTime gameTime)
-        {
-            // Drive multicast.
-            MulticastReceive();
+        #endregion
 
-            base.Update(gameTime);
-        }
+        #region Public API
 
         public override void Send(Packet data, uint pollRate = 0)
         {
             throw new InvalidOperationException("Server cannot send messages to itself. Use a more direct design.");
         }
 
+        /// <summary>
+        /// Kick a player from the session.
+        /// </summary>
+        /// <param name="player">the number of the player to kick.</param>
         public void Kick(int playerNumber)
         {
             // Let him know.
@@ -87,7 +103,7 @@ namespace Engine.Session
         private void RemovePlayer(int playerNumber)
         {
             // Erase the player from the session.
-            Player player = players[playerNumber];
+            Player<TPlayerData> player = players[playerNumber];
             playerAddresses[playerNumber] = null;
             players[playerNumber] = null;
             slots[playerNumber] = false;
@@ -99,7 +115,22 @@ namespace Engine.Session
             SendAll(SessionMessage.PlayerLeft, packet, 100);
 
             // Tell the local program the player is gone.
-            OnPlayerLeft(new PlayerEventArgs(player));
+            OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
+        }
+
+        #endregion
+
+        #region Logic / Event handling
+
+        /// <summary>
+        /// Drives the multicast checking.
+        /// </summary>
+        public override void Update(GameTime gameTime)
+        {
+            // Drive multicast.
+            MulticastReceive();
+
+            base.Update(gameTime);
         }
 
         protected override void HandlePlayerData(object sender, EventArgs e)
@@ -195,11 +226,12 @@ namespace Engine.Session
                                 }
 
                                 // Get custom player data.
-                                byte[] playerData = data.ReadByteArray();
+                                TPlayerData playerData = new TPlayerData();
+                                data.ReadPacketizable(playerData);
 
                                 // Store the player's info.
                                 playerAddresses[playerNumber] = args.Remote;
-                                players[playerNumber] = new Player(playerNumber, playerName, playerData,
+                                players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData,
                                     delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
                                 slots[playerNumber] = true;
                                 ++NumPlayers;
@@ -219,7 +251,7 @@ namespace Engine.Session
                                     // Skip empty slots.
                                     if (!slots[i]) continue;
 
-                                    Player p = GetPlayer(i);
+                                    Player<TPlayerData> p = GetPlayer(i);
                                     response.Write(p.Number);
                                     response.Write(p.Name);
                                     response.Write(p.Data);
@@ -251,7 +283,7 @@ namespace Engine.Session
                                 }
 
                                 // Tell the local program the player has joined.
-                                OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
+                                OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[playerNumber]));
 
                                 // OK, we handled it.
                                 args.Consume();
@@ -309,6 +341,10 @@ namespace Engine.Session
             }
         }
 
+        #endregion
+
+        #region Utility
+
         /// <summary>
         /// Gets the first free ID in this game (to fill up holes left by leaving players).
         /// </summary>
@@ -342,5 +378,6 @@ namespace Engine.Session
             }
         }
 
+        #endregion
     }
 }

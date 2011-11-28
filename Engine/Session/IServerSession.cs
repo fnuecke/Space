@@ -1,16 +1,16 @@
 ﻿using System;
+using Engine.Serialization;
 
 namespace Engine.Session
 {
     /// <summary>
     /// Interface for server side session implementations.
     /// </summary>
-    public interface IServerSession : ISession
+    public interface IServerSession<TPlayerData> : ISession<TPlayerData>
+        where TPlayerData : IPacketizable
     {
         /// <summary>
         /// Called when an unconnected client requests game info.
-        /// 
-        /// IMPORTANT: this may be called asynchronously!
         /// </summary>
         event EventHandler<EventArgs> GameInfoRequested;
 

@@ -11,7 +11,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class Client : AbstractUdpClient
+    class Client : AbstractUdpClient<PlayerInfo>
     {
         #region Fields
 
@@ -59,20 +59,20 @@ namespace Space.Control
 
         protected override void HandlePlayerData(object sender, EventArgs e)
         {
-            var args = (PlayerDataEventArgs)e;
+            var args = (PlayerDataEventArgs<PlayerInfo>)e;
             console.WriteLine(String.Format("CLT.NET: Got data from {0}: {1}", args.Player, args.Data.ReadString()));
             args.Consume();
         }
 
         protected override void HandlePlayerJoined(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs)e;
+            var args = (PlayerEventArgs<PlayerInfo>)e;
             console.WriteLine(String.Format("CLT.NET: {0} joined.", args.Player));
         }
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs)e;
+            var args = (PlayerEventArgs<PlayerInfo>)e;
             console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
         }
     }

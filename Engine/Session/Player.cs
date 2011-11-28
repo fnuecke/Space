@@ -1,11 +1,13 @@
 ﻿using System;
+using Engine.Serialization;
 
 namespace Engine.Session
 {
     /// <summary>
     /// This class is used to represent a single player in a Session.
     /// </summary>
-    public class Player
+    public sealed class Player<TData>
+        where TData : IPacketizable
     {
         /// <summary>
         /// The player's number in the game he's in.
@@ -25,14 +27,14 @@ namespace Engine.Session
         /// <summary>
         /// Some arbitrary data associated with the player.
         /// </summary>
-        public byte[] Data { get; set; }
+        public TData Data { get; set; }
 
         /// <summary>
         /// The session this player belongs to.
         /// </summary>
         private Func<int> pingGetter;
 
-        internal Player(int number, string name, byte[] data, Func<int> pingGetter)
+        internal Player(int number, string name, TData data, Func<int> pingGetter)
         {
             this.Number = number;
             this.Name = name;

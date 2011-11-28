@@ -13,7 +13,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class Server : AbstractUdpServer
+    class Server : AbstractUdpServer<PlayerInfo>
     {
         #region Fields
 
@@ -62,14 +62,14 @@ namespace Space.Control
 
         protected override void HandlePlayerData(object sender, EventArgs e)
         {
-            var args = (PlayerDataEventArgs)e;
+            var args = (PlayerDataEventArgs<PlayerInfo>)e;
             console.WriteLine(String.Format("SRV.NET: Got data from {0}: {1}", args.Player, args.Data.ReadString()));
             args.Consume();
         }
 
         protected override void HandlePlayerJoined(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs)e;
+            var args = (PlayerEventArgs<PlayerInfo>)e;
             console.WriteLine(String.Format("SRV.NET: {0} joined.", args.Player));
 
             
@@ -77,7 +77,7 @@ namespace Space.Control
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs)e;
+            var args = (PlayerEventArgs<PlayerInfo>)e;
             console.WriteLine(String.Format("SRV.NET: {0} left.", args.Player));
         }
 
@@ -89,7 +89,7 @@ namespace Space.Control
             string text = "Server (" + Session.NumPlayers + "/" + Session.MaxPlayers + ")";
             for (int i = 0; i < Session.NumPlayers; ++i)
             {
-                Player player = Session.GetPlayer(i);
+                var player = Session.GetPlayer(i);
                 text += "\n#" + player.Number + ": " + player.Name + " [" + player.Ping + "]";
             }
 

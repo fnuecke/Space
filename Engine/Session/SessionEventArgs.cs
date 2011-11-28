@@ -9,14 +9,15 @@ namespace Engine.Session
     /// Event args used for <see cref="Engine.Session.ISession#PlayerJoined"/> and
     /// <see cref="Engine.Session.ISession#PlayerLeft"/>.
     /// </summary>
-    public class PlayerEventArgs : EventArgs
+    public class PlayerEventArgs<TPlayerData> : EventArgs
+        where TPlayerData : IPacketizable
     {
         /// <summary>
         /// The player the event applies to.
         /// </summary>
-        public Player Player { get; private set; }
+        public Player<TPlayerData> Player { get; private set; }
         
-        public PlayerEventArgs(Player player)
+        public PlayerEventArgs(Player<TPlayerData> player)
         {
             this.Player = player;
         }
@@ -25,7 +26,8 @@ namespace Engine.Session
     /// <summary>
     /// Event args used for <see cref="Engine.Session.ISession#PlayerData"/>.
     /// </summary>
-    public class PlayerDataEventArgs : PlayerEventArgs
+    public class PlayerDataEventArgs<TPlayerData> : PlayerEventArgs<TPlayerData>
+        where TPlayerData : IPacketizable
     {
         /// <summary>
         /// The data received from the player.
@@ -37,7 +39,7 @@ namespace Engine.Session
         /// </summary>
         private ProtocolDataEventArgs innerArgs;
 
-        public PlayerDataEventArgs(Player player, ProtocolDataEventArgs innerArgs, Packet data)
+        public PlayerDataEventArgs(Player<TPlayerData> player, ProtocolDataEventArgs innerArgs, Packet data)
             : base(player)
         {
             this.innerArgs = innerArgs;

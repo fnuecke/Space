@@ -2,6 +2,7 @@
 using System.Text;
 using Engine.Input;
 using Engine.Network;
+using Engine.Serialization;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -11,14 +12,15 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients using the UDP network protocol.
     /// </summary>
-    public abstract class AbstractUdpClient : GameComponent
+    public abstract class AbstractUdpClient<TPlayerData> : GameComponent
+        where TPlayerData : IPacketizable, new()
     {
         #region Properties
 
         /// <summary>
         /// The underlying client session being used.
         /// </summary>
-        public IClientSession Session { get; private set; }
+        public IClientSession<TPlayerData> Session { get; private set; }
 
         #endregion
 
@@ -47,7 +49,7 @@ namespace Engine.Controller
             : base(game)
         {
             protocol = new UdpProtocol(8443, Encoding.ASCII.GetBytes("5p4c3"));
-            Session = SessionFactory.StartClient(game, protocol);
+            Session = SessionFactory.StartClient<TPlayerData>(game, protocol);
 
             game.Components.Add(this);
         }

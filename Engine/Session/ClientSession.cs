@@ -9,21 +9,44 @@ namespace Engine.Session
     /// <summary>
     /// Used for joining sessions.
     /// </summary>
-    sealed class ClientSession : AbstractSession, IClientSession
+    sealed class ClientSession<TPlayerData> : AbstractSession<TPlayerData>, IClientSession<TPlayerData>
+        where TPlayerData : IPacketizable, new()
     {
+        #region Events
 
+        /// <summary>
+        /// Called when we receive information about an open game.
+        /// Only possibly called after Search() was called.
+        /// </summary>
         public event EventHandler<EventArgs> GameInfoReceived;
+
+        /// <summary>
+        /// Called when we successfully joined a server (i.e. Join() was
+        /// called and the server accepted us).
+        /// </summary>
         public event EventHandler<EventArgs> JoinResponse;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Current state of this session.
         /// </summary>
         public ClientState ConnectionState { get; set; }
 
+        #endregion
+
+        #region Fields
+
         /// <summary>
         /// The actual host address of the game we're in / trying to join.
         /// </summary>
         private IPEndPoint host;
+
+        #endregion
+
+        #region Constructor
 
         public ClientSession(Game game, IProtocol protocol)
             : base(game, protocol)
@@ -31,11 +54,18 @@ namespace Engine.Session
             ConnectionState = ClientState.Unconnected;
         }
 
+        #endregion
+
+        #region Public API
+
         public override void Send(Packet data, uint pollRate = 0)
         {
             Send(host, SessionMessage.Data, data, pollRate);
         }
 
+        /// <summary>
+        /// Send a ping into the local network, looking for open games.
+        /// </summary>
         public void Search()
         {
             Packet packet = new Packet(1);
@@ -44,7 +74,13 @@ namespace Engine.Session
             protocol.Send(packet, new IPEndPoint(DefaultMulticastAddress, DefaultMulticastPort));
         }
 
-        public void Join(IPEndPoint remote, string playerName, byte[] data)
+        /// <summary>
+        /// Join a game on the given host.
+        /// </summary>
+        /// <param name="remote">the remote host that runs the session.</param>
+        /// <param name="playerName">the with which to register.</param>
+        /// <param name="data">additional data to be associated with our player (Player.Data).</param>
+        public void Join(IPEndPoint remote, string playerName, TPlayerData data)
         {
             if (ConnectionState == ClientState.Unconnected)
             {
@@ -61,6 +97,9 @@ namespace Engine.Session
             }
         }
 
+        /// <summary>
+        /// Leave the session.
+        /// </summary>
         public void Leave()
         {
             if (ConnectionState != ClientState.Unconnected)
@@ -75,6 +114,10 @@ namespace Engine.Session
             NumPlayers = 0;
             MaxPlayers = 0;
         }
+
+        #endregion
+
+        #region Logic / Event handling
 
         protected override void HandlePlayerTimeout(object sender, EventArgs e)
         {
@@ -92,9 +135,9 @@ namespace Engine.Session
                     }
                     else
                     {
-                        Player player = players[LocalPlayer];
+                        Player<TPlayerData> player = players[LocalPlayer];
                         Leave();
-                        OnPlayerLeft(new PlayerEventArgs(player));
+                        OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
                     }
                 } // else could not send to other client -> not so bad
             }
@@ -182,7 +225,7 @@ namespace Engine.Session
 
                             // Allocate arrays for the players in the session.
                             playerAddresses = new IPEndPoint[MaxPlayers];
-                            players = new Player[MaxPlayers];
+                            players = new Player<TPlayerData>[MaxPlayers];
 
                             // Get info on players already in the session.
                             for (int i = 0; i < NumPlayers; i++)
@@ -194,7 +237,8 @@ namespace Engine.Session
                                 string playerName = data.ReadString().Trim();
 
                                 // Get additional player data.
-                                byte[] playerData = data.ReadByteArray();
+                                TPlayerData playerData = new TPlayerData();
+                                data.ReadPacketizable(playerData);
 
                                 // Get players IP address.
                                 IPAddress playerAddress = new IPAddress(data.ReadByteArray());
@@ -210,7 +254,7 @@ namespace Engine.Session
 
                                 // All OK, add the player.
                                 playerAddresses[playerNumber] = playerEndPoint;
-                                players[playerNumber] = new Player(playerNumber, playerName, playerData,
+                                players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData,
                                     delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
                             }
 
@@ -229,7 +273,7 @@ namespace Engine.Session
                             {
                                 if (i != LocalPlayer && players[i] != null)
                                 {
-                                    OnPlayerJoined(new PlayerEventArgs(players[i]));
+                                    OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[i]));
                                 }
                             }
 
@@ -261,7 +305,8 @@ namespace Engine.Session
                             string playerName = data.ReadString().Trim();
 
                             // Get additional player data.
-                            byte[] playerData = data.ReadByteArray();
+                            TPlayerData playerData = new TPlayerData();
+                            data.ReadPacketizable(playerData);
 
                             // Get players IP address.
                             IPAddress playerAddress = new IPAddress(data.ReadByteArray());
@@ -277,11 +322,11 @@ namespace Engine.Session
 
                             // All OK, add the player.
                             playerAddresses[playerNumber] = playerEndPoint;
-                            players[playerNumber] = new Player(playerNumber, playerName, playerData,
+                            players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData,
                                     delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
 
                             // The the local program about it.
-                            OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
+                            OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[playerNumber]));
 
                             // OK, handled it.
                             args.Consume();
@@ -313,12 +358,12 @@ namespace Engine.Session
                             }
 
                             // OK, remove the player.
-                            Player player = players[playerNumber];
+                            Player<TPlayerData> player = players[playerNumber];
                             players[playerNumber] = null;
                             playerAddresses[playerNumber] = null;
 
                             // Tell the local program about it.
-                            OnPlayerLeft(new PlayerEventArgs(player));
+                            OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
 
                             // OK, handled it.
                             args.Consume();
@@ -356,6 +401,10 @@ namespace Engine.Session
             }
         }
 
+        #endregion
+
+        #region Utility methods
+
         private void OnGameInfoReceived(GameInfoReceivedEventArgs e)
         {
             if (GameInfoReceived != null)
@@ -371,5 +420,7 @@ namespace Engine.Session
                 JoinResponse(this, e);
             }
         }
+
+        #endregion
     }
 }
