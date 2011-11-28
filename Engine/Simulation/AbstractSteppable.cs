@@ -18,7 +18,7 @@ namespace Engine.Simulation
         /// <summary>
         /// A globally unique id for this object.
         /// </summary>
-        public long UID { get; private set; }
+        public long UID { get; set; }
 
         /// <summary>
         /// The world (simulation) this object is associated with.

@@ -29,6 +29,7 @@ namespace Space.Commands
         /// For deserialization.
         /// </summary>
         public PlayerInputCommand()
+            : base(GameCommandType.PlayerInput)
         {
         }
 

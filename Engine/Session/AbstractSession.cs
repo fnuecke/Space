@@ -141,8 +141,6 @@ namespace Engine.Session
 
             protocol.MessageTimeout += HandlePlayerTimeout;
             protocol.Data += HandlePlayerData;
-
-            Game.Components.Add(this);
         }
 
         /// <summary>

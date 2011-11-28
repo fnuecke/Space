@@ -1,12 +1,13 @@
 ﻿using System;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
     /// <summary>
     /// Common interface for sessions of either server or client type.
     /// </summary>
-    public interface ISession<TPlayerData> : IDisposable
+    public interface ISession<TPlayerData> : IGameComponent, IDisposable
         where TPlayerData : IPacketizable
     {
         /// <summary>

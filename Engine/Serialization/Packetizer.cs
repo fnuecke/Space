@@ -46,7 +46,7 @@ namespace Engine.Serialization
             }
             else
             {
-                throw new ArgumentException("Unknown type, register");
+                throw new ArgumentException("Unknown type, register it first.");
             }
         }
 

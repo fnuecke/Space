@@ -13,7 +13,8 @@ namespace Engine.Commands
 
         #region Constructor
 
-        protected SimulationCommand()
+        protected SimulationCommand(T type)
+            : base(type)
         {
         }
 

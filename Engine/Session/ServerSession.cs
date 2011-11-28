@@ -72,7 +72,7 @@ namespace Engine.Session
 
         public override void Send(Packet data, uint pollRate = 0)
         {
-            throw new InvalidOperationException("Server cannot send messages to itself. Use a more direct design.");
+            //throw new InvalidOperationException("Server cannot send messages to itself. Use a more direct design.");
         }
 
         /// <summary>
@@ -332,12 +332,15 @@ namespace Engine.Session
         /// </summary>
         private void MulticastReceive()
         {
-            var remote = new IPEndPoint(0, 0);
-            while (multicast.Available > 0)
+            if (multicast.Client != null)
             {
-                // Try to finish receiving and forward the packet to the protocol.
-                byte[] buffer = multicast.Receive(ref remote);
-                protocol.Inject(buffer, remote);
+                var remote = new IPEndPoint(0, 0);
+                while (multicast.Available > 0)
+                {
+                    // Try to finish receiving and forward the packet to the protocol.
+                    byte[] buffer = multicast.Receive(ref remote);
+                    protocol.Inject(buffer, remote);
+                }
             }
         }
 

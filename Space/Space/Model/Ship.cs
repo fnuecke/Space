@@ -3,7 +3,6 @@ using Engine.Physics;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
 using SpaceData;
@@ -36,12 +35,12 @@ namespace Space.Model
         {
         }
 
-        public Ship(ContentManager content, ShipData data, int player)
+        public Ship(ShipData data, Texture2D texture, int player)
             : base(data.Radius)
         {
             this.data = data;
+            this.texture = texture;
             this.Player = player;
-            texture = content.Load<Texture2D>(data.Texture);
         }
 
         public void Accelerate(Direction direction)

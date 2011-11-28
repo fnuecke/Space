@@ -5,6 +5,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Space.Commands;
 using Space.Control;
 using Space.Model;
 
@@ -24,6 +25,8 @@ namespace Space
         static Spaaace()
         {
             Packetizer.Register<Ship>();
+            Packetizer.Register<AddPlayerCommand>();
+            Packetizer.Register<PlayerInputCommand>();
         }
 
         public Spaaace()
@@ -31,8 +34,10 @@ namespace Space
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            new KeyboardInputManager(this);
+            Components.Add(new GameObjectFactory(this));
+            Components.Add(new KeyboardInputManager(this));
             console = new GameConsole(this);
+            Components.Add(console);
 
             console.AddCommand("server", args =>
             {
@@ -69,21 +74,6 @@ namespace Space
             },
                 "Leave the current game.");
 
-            console.AddCommand("send", args =>
-            {
-                int player = int.Parse(args[1]);
-                string text = args[2].Trim();
-                if (String.IsNullOrWhiteSpace(text))
-                {
-                    return;
-                }
-                Packet packet = new Packet();
-                packet.Write(text);
-                console.WriteLine("Sending text: " + text);
-                client.Session.Send(player, packet);
-            }, "Send a command to another player.",
-               "send <player> <message>");
-
             console.LineWritten += delegate(object sender, EventArgs e)
             {
                 Console.WriteLine(((LineWrittenEventArgs)e).Message);
@@ -112,10 +102,12 @@ namespace Space
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            Services.AddService(typeof(SpriteBatch), spriteBatch);
+
             console.SpriteBatch = spriteBatch;
             console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
 
-            console.WriteLine("Space Game Console. Type 'help' for available commands.");
+            console.WriteLine("Game Console. Type 'help' for available commands.");
         }
 
         /// <summary>
@@ -125,6 +117,19 @@ namespace Space
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            if (server == null)
+            {
+                server = new Server(this, 8, 10, 0);
+                client = new Client(this);
+
+                Components.Add(server);
+                Components.Add(client);
+
+                PlayerInfo info = new PlayerInfo();
+                info.ShipName = "Sparrow";
+                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 8442), "player", info);
+            }
+
             base.Update(gameTime);
         }
 
@@ -144,7 +149,15 @@ namespace Space
             }
 
             spriteBatch.Begin();
-            spriteBatch.DrawString(console.Font, (System.Math.Ceiling(1 / (float)gameTime.ElapsedGameTime.TotalSeconds)).ToString(), new Vector2(10, 10), Color.White);
+
+            string info = String.Format("FPS: {0:f} | Slow: {1}\nServerframe: {2}\nClientframe: {3}",
+                System.Math.Ceiling(1 / (float)gameTime.ElapsedGameTime.TotalSeconds),
+                gameTime.IsRunningSlowly,
+                (server == null) ? 0 : server.DEBUG_CurrentFrame,
+                (client == null) ? 0 : client.DEBUG_CurrentFrame);
+
+            spriteBatch.DrawString(console.Font, info, new Vector2(10, 10), Color.White);
+
             spriteBatch.End();
 
 /*

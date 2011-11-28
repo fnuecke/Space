@@ -59,7 +59,6 @@ namespace Engine.Input
             RepeatDelay = 300;
             RepeatRate = 40;
 
-            game.Components.Add(this);
             game.Services.AddService(typeof(IKeyboardInputManager), this);
         }
 

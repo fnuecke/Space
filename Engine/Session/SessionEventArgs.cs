@@ -33,7 +33,12 @@ namespace Engine.Session
         /// The data received from the player.
         /// </summary>
         public Packet Data { get; private set; }
-        
+
+        /// <summary>
+        /// This data was sent by the server (also means <c>Player == null</c>).
+        /// </summary>
+        public bool IsFromServer { get; private set; }
+
         /// <summary>
         /// Inner event args that triggered this one.
         /// </summary>
@@ -42,8 +47,9 @@ namespace Engine.Session
         public PlayerDataEventArgs(Player<TPlayerData> player, ProtocolDataEventArgs innerArgs, Packet data)
             : base(player)
         {
-            this.innerArgs = innerArgs;
             this.Data = data;
+            this.innerArgs = innerArgs;
+            this.IsFromServer = (player == null);
         }
 
         /// <summary>

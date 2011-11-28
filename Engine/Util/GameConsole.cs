@@ -261,7 +261,6 @@ namespace Engine.Util
                 "Clears the console screen.");
 
             // Register with game.
-            game.Components.Add(this);
             game.Services.AddService(typeof(IGameConsole), this);
         }
 

@@ -2,7 +2,9 @@
 using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation;
+using Engine.Util;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Space.Commands;
 using Space.Model;
 
@@ -11,7 +13,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class Client : AbstractUdpClient<PlayerInfo>
+    class Client : AbstractUdpClient<PlayerInfo, GameCommandType>
     {
         #region Fields
 
@@ -20,28 +22,80 @@ namespace Space.Control
         /// </summary>
         private TSS<GameState, IGameObject, GameCommandType> simulation;
 
+        /// <summary>
+        /// Last known player movement direction.
+        /// </summary>
+        private Direction lastDirection = Direction.Invalid;
+
         #endregion
 
         public Client(Game game)
-            : base(game)
+            : base(game, 8443, "5p4c3")
         {
-            simulation = new TSS<GameState, IGameObject, GameCommandType>(new[] { 50, 100 });
+            simulation = new TSS<GameState, IGameObject, GameCommandType>(new[] { 50, 100 }, new GameState(game, Session));
         }
 
         public override void Update(GameTime gameTime)
         {
-            // Drive game logic.
-
-
             base.Update(gameTime);
-        }
 
-        protected override void HandleKeyReleased(object sender, EventArgs e)
-        {
-        }
+            if (Session.ConnectionState == ClientState.Connected && !simulation.WaitingForSynchronization)
+            {
+                Direction direction = Direction.Invalid;
+                if (Keyboard.GetState().IsKeyDown(Keys.Up))
+                {
+                    direction |= Direction.North;
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.Right))
+                {
+                    direction |= Direction.East;
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.Down))
+                {
+                    direction |= Direction.South;
+                }
+                if (Keyboard.GetState().IsKeyDown(Keys.Left))
+                {
+                    direction |= Direction.West;
+                }
+                switch (direction)
+                {
+                    case Direction.North:
+                    case Direction.NorthAlt:
+                    case Direction.East:
+                    case Direction.EastAlt:
+                    case Direction.South:
+                    case Direction.SouthAlt:
+                    case Direction.West:
+                    case Direction.WestAlt:
+                    case Direction.NorthEast:
+                    case Direction.NorthWest:
+                    case Direction.SouthEast:
+                    case Direction.SouthWest:
+                        break;
+                    default:
+                        direction = Direction.Invalid;
+                        break;
+                }
+                if (direction != lastDirection)
+                {
+                    lastDirection = direction;
+                    PlayerInputCommand command;
+                    if (direction == Direction.Invalid)
+                    {
+                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.StopMovement, direction, simulation.CurrentFrame + 1);
+                    }
+                    else
+                    {
+                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.Accelerate, direction, simulation.CurrentFrame + 1);
+                    }
+                    simulation.PushCommand(command);
+                    SendAll(command, 20);
+                }
 
-        protected override void HandleKeyPressed(object sender, EventArgs e)
-        {
+                // Drive game logic.
+                simulation.Update();
+            }
         }
 
         protected override void HandleGameInfoReceived(object sender, EventArgs e)
@@ -54,14 +108,17 @@ namespace Space.Control
         protected override void HandleJoinResponse(object sender, EventArgs e)
         {
             var args = (JoinResponseEventArgs)e;
-            console.WriteLine(string.Format("CLT.NET: Join response: {0} ({1})", args.WasSuccess, Enum.GetName(typeof(JoinResponseReason), args.Reason)));
-        }
 
-        protected override void HandlePlayerData(object sender, EventArgs e)
-        {
-            var args = (PlayerDataEventArgs<PlayerInfo>)e;
-            console.WriteLine(String.Format("CLT.NET: Got data from {0}: {1}", args.Player, args.Data.ReadString()));
-            args.Consume();
+            console.WriteLine(string.Format("CLT.NET: Join response: {0} ({1})", args.WasSuccess, Enum.GetName(typeof(JoinResponseReason), args.Reason)));
+
+            if (args.WasSuccess)
+            {
+                simulation.Depacketize(args.Data);
+            }
+            else
+            {
+                // TODO
+            }
         }
 
         protected override void HandlePlayerJoined(object sender, EventArgs e)
@@ -75,5 +132,11 @@ namespace Space.Control
             var args = (PlayerEventArgs<PlayerInfo>)e;
             console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
         }
+
+#region Debugging stuff
+
+        public long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+
+#endregion
     }
 }

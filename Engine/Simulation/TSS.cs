@@ -10,7 +10,7 @@ namespace Engine.Simulation
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
     public class TSS<TState, TSteppable, TCommandType> : IReversibleState<TState, TSteppable, TCommandType>
-        where TState : IState<TState, TSteppable, TCommandType>, new()
+        where TState : IState<TState, TSteppable, TCommandType>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType>
         where TCommandType : struct
     {
@@ -44,14 +44,20 @@ namespace Engine.Simulation
         public long LastSynchronization { get; protected set; }
 
         /// <summary>
-        /// Get the leading state.
+        /// The frame number of the trailing state, i.e. the point we cannot roll
+        /// back past.
         /// </summary>
-        public TState LeadingState { get { return states[0]; } }
+        public long TrailingFrame { get { return states[states.Length - 1].CurrentFrame; } }
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
         /// </summary>
         public bool WaitingForSynchronization { get; protected set; }
+
+        /// <summary>
+        /// Get the leading state.
+        /// </summary>
+        public TState LeadingState { get { return states[0]; } }
 
         #endregion
 
@@ -84,7 +90,7 @@ namespace Engine.Simulation
         /// Creates a new TSS based meta state.
         /// </summary>
         /// <param name="delays">The delays to use for trailing states, with the delays in frames.</param>
-        public TSS(int[] delays)
+        public TSS(int[] delays, TState initialState)
         {
             this.delays = new int[delays.Length + 1];
             delays.CopyTo(this.delays, 1);
@@ -94,7 +100,7 @@ namespace Engine.Simulation
             states = new TState[this.delays.Length];
 
             // Initialize to empty state.
-            states[states.Length - 1] = new TState();
+            states[states.Length - 1] = (TState)initialState.Clone();
             Synchronize();
         }
 

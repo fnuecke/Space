@@ -381,10 +381,17 @@ namespace Engine.Session
                     }
                     break;
                 case SessionMessage.Data:
+                    // Custom data, just forward it if we're in a session.
                     if (ConnectionState == ClientState.Connected)
                     {
-                        // Custom data, just forward it if we're in a session.
-                        ConditionalOnPlayerData(args, data);
+                        if (args.Remote.Equals(host))
+                        {
+                            OnPlayerData(new PlayerDataEventArgs<TPlayerData>(null, args, data));
+                        }
+                        else
+                        {
+                            ConditionalOnPlayerData(args, data);
+                        }
                     }
                     break;
                 case SessionMessage.GameInfoRequest:

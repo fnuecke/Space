@@ -103,6 +103,7 @@
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Controller\AbstractUdpClient.cs" />
+    <Compile Include="Controller\AbstractUdpController.cs" />
     <Compile Include="Controller\AbstractUdpServer.cs" />
     <Compile Include="Input\KeyboardInputEventArgs.cs" />
     <Compile Include="Input\IKeyboardInputManager.cs" />
@@ -110,6 +111,7 @@
     <Compile Include="Input\KeyMap.cs" />
     <Compile Include="Input\KeyModifier.cs" />
     <Compile Include="Network\EventArgs.cs" />
+    <Compile Include="Network\ProtocolInfo.cs" />
     <Compile Include="Serialization\IPacketizable.cs" />
     <Compile Include="Serialization\PacketException.cs" />
     <Compile Include="Serialization\Packetizer.cs" />
@@ -148,6 +150,7 @@
     <Compile Include="Simulation\ThresholdExceededEventArgs.cs" />
     <Compile Include="Simulation\TSS.cs" />
     <Compile Include="Simulation\PhysicsEnabledState.cs" />
+    <Compile Include="Util\Average.cs" />
     <Compile Include="Util\Direction.cs" />
     <Compile Include="Util\GameConsole.cs" />
     <Compile Include="Util\IGameConsole.cs" />
