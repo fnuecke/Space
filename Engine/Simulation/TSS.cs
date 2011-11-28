@@ -71,8 +71,12 @@ namespace Engine.Simulation
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<long, List<TSteppable>> delayedAdds =
-            new Dictionary<long, List<TSteppable>>();
+        protected Dictionary<long, List<TSteppable>> adds = new Dictionary<long, List<TSteppable>>();
+
+        /// <summary>
+        /// List of object ids to remove from delayed states when they reach the given frame.
+        /// </summary>
+        protected Dictionary<long, List<long>> removes = new Dictionary<long, List<long>>();
 
         #endregion
 
@@ -109,21 +113,56 @@ namespace Engine.Simulation
                 throw new InvalidOperationException("Waiting for synchronization.");
             }
 
-            if (!delayedAdds.ContainsKey(CurrentFrame + 1))
+            LeadingState.Add(steppable);
+            if (!adds.ContainsKey(CurrentFrame))
             {
-                delayedAdds.Add(CurrentFrame + 1, new List<TSteppable>());
+                adds.Add(CurrentFrame, new List<TSteppable>());
             }
-            delayedAdds[CurrentFrame + 1].Add((TSteppable)steppable.Clone());
+            adds[CurrentFrame].Add((TSteppable)steppable.Clone());
         }
 
         /// <summary>
-        /// Not supported for TSS. All objects must remove themselves from their actual
-        /// state.
+        /// Not supported for TSS.
         /// </summary>
-        /// <param name="updateable"></param>
         public void Remove(TSteppable steppable)
         {
             throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Remove a steppable object by its id.
+        /// </summary>
+        /// <param name="steppableUid">the remove object.</param>
+        public TSteppable Remove(long steppableUid)
+        {
+            // Do not allow changes while waiting for synchronization.
+            if (WaitingForSynchronization)
+            {
+                throw new InvalidOperationException("Waiting for synchronization.");
+            }
+
+            var result = LeadingState.Remove(steppableUid);
+            if (result != null)
+            {
+                // If the removal was a success in the leading state, schedule the removal
+                // all trailing states.
+                if (!removes.ContainsKey(CurrentFrame))
+                {
+                    removes.Add(CurrentFrame, new List<long>());
+                }
+                removes[CurrentFrame].Add(steppableUid);
+            }
+            return result;
+        }
+        
+        /// <summary>
+        /// Get a steppable's current representation in this state by its id.
+        /// </summary>
+        /// <param name="steppableUid">the id of the steppable to look up.</param>
+        /// <returns>the current representation in this state.</returns>
+        public TSteppable Get(long steppableUid)
+        {
+            return LeadingState.Get(steppableUid);
         }
 
         /// <summary>
@@ -146,35 +185,61 @@ namespace Engine.Simulation
                 // Update while we're still delaying.
                 while (states[i].CurrentFrame + delays[i] < CurrentFrame)
                 {
-                    // Check if we need to push a new object.
-                    if (delayedAdds.ContainsKey(states[i].CurrentFrame))
+                    // Do the actual stepping for the state.
+                    states[i].Update();
+
+                    // Check if we need to add objects.
+                    if (adds.ContainsKey(states[i].CurrentFrame))
                     {
                         // Add a copy of it.
-                        foreach (var steppable in delayedAdds[states[i].CurrentFrame])
+                        foreach (var steppable in adds[states[i].CurrentFrame])
                         {
                             states[i].Add((TSteppable)steppable.Clone());
                         }
                     }
 
-                    // Do the actual stepping for the state.
-                    states[i].Update();
+                    // Check if we need to remove objects.
+                    if (removes.ContainsKey(states[i].CurrentFrame))
+                    {
+                        // Add a copy of it.
+                        foreach (var steppableUid in removes[states[i].CurrentFrame])
+                        {
+                            states[i].Remove(steppableUid);
+                        }
+                    }
                 }
             }
 
-            // Remove commands from the to-add list that have been added
+            // Remove adds / removes from the to-add list that have been added
             // to the state trailing furthest behind at this point.
             long trailingFrame = states[states.Length - 1].CurrentFrame;
-            List<long> deprecatedKeys = new List<long>();
-            foreach (var key in delayedAdds.Keys)
+
+            List<long> deprecated = new List<long>();
+
+            foreach (var key in adds.Keys)
             {
                 if (key < trailingFrame)
                 {
-                    deprecatedKeys.Add(key);
+                    deprecated.Add(key);
                 }
             }
-            foreach (var key in deprecatedKeys)
+            foreach (var key in deprecated)
             {
-                delayedAdds.Remove(key);
+                adds.Remove(key);
+            }
+
+            deprecated.Clear();
+
+            foreach (var key in removes.Keys)
+            {
+                if (key < trailingFrame)
+                {
+                    deprecated.Add(key);
+                }
+            }
+            foreach (var key in deprecated)
+            {
+                removes.Remove(key);
             }
         }
 
@@ -246,8 +311,9 @@ namespace Engine.Simulation
         public void Packetize(Packet packet)
         {
             packet.Write(CurrentFrame);
-            packet.Write(delayedAdds.Count);
-            foreach (var add in delayedAdds)
+
+            packet.Write(adds.Count);
+            foreach (var add in adds)
             {
                 packet.Write(add.Key);
                 packet.Write(add.Value.Count);
@@ -256,6 +322,18 @@ namespace Engine.Simulation
                     Packetizer.Packetize(item, packet);
                 }
             }
+
+            packet.Write(removes.Count);
+            foreach (var remove in removes)
+            {
+                packet.Write(remove.Key);
+                packet.Write(remove.Value.Count);
+                foreach (var item in remove.Value)
+                {
+                    packet.Write(item);
+                }
+            }
+
             states[states.Length - 1].Packetize(packet);
         }
 
@@ -263,20 +341,63 @@ namespace Engine.Simulation
         /// Deserialize a state from a packet.
         /// </summary>
         /// <param name="packet">the packet to read the data from.</param>
-        /// <returns>deserialzed state.</returns>
         public void Depacketize(Packet packet)
         {
+            // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
-            int numDelayedAdds = packet.ReadInt32();
-            for (int delayedAdd = 0; delayedAdd < numDelayedAdds; ++delayedAdd)
+
+            // Find adds / removes that our out of date now, but keep newer ones.
+            List<long> deprecated = new List<long>();
+            foreach (var key in adds.Keys)
+            {
+                if (key <= CurrentFrame)
+                {
+                    deprecated.Add(key);
+                }
+            }
+            foreach (var frame in deprecated)
+            {
+                adds.Remove(frame);
+            }
+
+            deprecated.Clear();
+            foreach (var key in removes.Keys)
+            {
+                if (key <= CurrentFrame)
+                {
+                    deprecated.Add(key);
+                }
+            }
+            foreach (var frame in deprecated)
+            {
+                removes.Remove(frame);
+            }
+
+            // Continue with reading the list of adds / removes.
+            int numAdds = packet.ReadInt32();
+            for (int addIdx = 0; addIdx < numAdds; ++addIdx)
             {
                 long key = packet.ReadInt64();
+                adds.Add(key, new List<TSteppable>());
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    TSteppable value = Packetizer.Depacketize<TSteppable>(packet);
+                    adds[key].Add(Packetizer.Depacketize<TSteppable>(packet));
                 }
             }
+
+            int numRemoves = packet.ReadInt32();
+            for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
+            {
+                long key = packet.ReadInt64();
+                removes.Add(key, new List<long>());
+                int numValues = packet.ReadInt32();
+                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                {
+                    removes[key].Add(packet.ReadInt64());
+                }
+            }
+
             states[states.Length - 1].Depacketize(packet);
 
             Synchronize();
@@ -290,7 +411,7 @@ namespace Engine.Simulation
             throw new NotImplementedException();
         }
 
-        public void Synchronize()
+        private void Synchronize()
         {
             for (int i = states.Length - 2; i >= 0; --i)
             {

@@ -2,6 +2,8 @@
 {
     enum GameCommandType
     {
-        PlayerInput = 50
+        PlayerInput,
+        AddPlayerShip,
+        RemovePlayerShip
     }
 }

@@ -33,7 +33,7 @@ namespace Space.Control
             : base(game, maxPlayers)
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
-            simulation = new TSS<GameState, IGameObject, GameCommandType>(new int[] { 50 });
+            simulation = new TSS<GameState, IGameObject, GameCommandType>(new[] { 50 });
         }
 
         public override void Update(GameTime gameTime)
@@ -71,6 +71,8 @@ namespace Space.Control
         {
             var args = (PlayerEventArgs)e;
             console.WriteLine(String.Format("SRV.NET: {0} joined.", args.Player));
+
+            
         }
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)

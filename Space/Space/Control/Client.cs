@@ -25,7 +25,7 @@ namespace Space.Control
         public Client(Game game)
             : base(game)
         {
-            simulation = new TSS<GameState, IGameObject, GameCommandType>(new int[] { 50 });
+            simulation = new TSS<GameState, IGameObject, GameCommandType>(new[] { 50, 100 });
         }
 
         public override void Update(GameTime gameTime)

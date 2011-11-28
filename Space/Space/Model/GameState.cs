@@ -11,30 +11,15 @@ namespace Space.Model
 
         protected override GameState ThisState { get { return this; } }
 
-        private Dictionary<int, Ship> players = new Dictionary<int, Ship>();
+        private Dictionary<int, long> playerShips = new Dictionary<int, long>();
 
         public Ship GetPlayerShip(int player)
         {
-            if (!players.ContainsKey(player))
+            if (playerShips.ContainsKey(player))
             {
-                foreach (var child in steppables)
-                {
-                    if (child is Ship)
-                    {
-                        var ship = (Ship)child;
-                        if (ship.Player == player)
-                        {
-                            players.Add(player, ship);
-                            return ship;
-                        }
-                    }
-                }
-                return null;
+                return (Ship)Get(playerShips[player]);
             }
-            else
-            {
-                return players[player];
-            }
+            return null;
         }
 
         protected override void HandleCommand(ISimulationCommand<GameCommandType> command)
@@ -69,6 +54,10 @@ namespace Space.Model
                                 break;
                         }
                     }
+                    break;
+                case GameCommandType.AddPlayerShip:
+                    break;
+                case GameCommandType.RemovePlayerShip:
                     break;
                 default:
                     break;

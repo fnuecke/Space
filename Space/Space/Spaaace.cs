@@ -143,6 +143,10 @@ namespace Space
                 server.DEBUG_DrawInfo(spriteBatch);
             }
 
+            spriteBatch.Begin();
+            spriteBatch.DrawString(console.Font, (System.Math.Ceiling(1 / (float)gameTime.ElapsedGameTime.TotalSeconds)).ToString(), new Vector2(10, 10), Color.White);
+            spriteBatch.End();
+
 /*
 
             spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);

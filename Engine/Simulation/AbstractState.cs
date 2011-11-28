@@ -59,7 +59,7 @@ namespace Engine.Simulation
         /// Add an steppable object to the list of participants of this state.
         /// </summary>
         /// <param name="updateable">the object to add.</param>
-        public virtual void Add(TSteppable steppable)
+        public void Add(TSteppable steppable)
         {
             steppables.Add(steppable);
             steppable.State = ThisState;
@@ -69,10 +69,44 @@ namespace Engine.Simulation
         /// Remove an steppable object to the list of participants of this state.
         /// </summary>
         /// <param name="updateable">the object to remove.</param>
-        public virtual void Remove(TSteppable steppable)
+        public void Remove(TSteppable steppable)
         {
             steppables.Remove(steppable);
             steppable.State = null;
+        }
+
+        /// <summary>
+        /// Remove a steppable object by its id.
+        /// </summary>
+        /// <param name="steppableUid">the remove object.</param>
+        public TSteppable Remove(long steppableUid)
+        {
+            for (int i = 0; i < steppables.Count; i++)
+            {
+                if (steppables[i].UID == steppableUid) {
+                    TSteppable steppable = steppables[i];
+                    steppables.RemoveAt(i);
+                    return steppable;
+                }
+            }
+            return default(TSteppable);
+        }
+
+        /// <summary>
+        /// Get a steppable's current representation in this state by its id.
+        /// </summary>
+        /// <param name="steppableUid">the id of the steppable to look up.</param>
+        /// <returns>the current representation in this state.</returns>
+        public TSteppable Get(long steppableUid)
+        {
+            for (int i = 0; i < steppables.Count; i++)
+            {
+                if (steppables[i].UID == steppableUid)
+                {
+                    return steppables[i];
+                }
+            }
+            return default(TSteppable);
         }
 
         /// <summary>
@@ -152,15 +186,15 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Find commands that our out of date now, but keep newer ones.
-            List<long> toRemove = new List<long>();
-            foreach (var kv in commands)
+            List<long> deprecated = new List<long>();
+            foreach (var key in commands.Keys)
             {
-                if (kv.Key <= CurrentFrame)
+                if (key <= CurrentFrame)
                 {
-                    toRemove.Add(kv.Key);
+                    deprecated.Add(key);
                 }
             }
-            foreach (var frame in toRemove)
+            foreach (var frame in deprecated)
             {
                 commands.Remove(frame);
             }
