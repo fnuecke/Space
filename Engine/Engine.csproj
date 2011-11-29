@@ -134,6 +134,7 @@
     <Compile Include="Simulation\IPhysicsSteppable.cs" />
     <Compile Include="Simulation\IReversibleState.cs" />
     <Compile Include="Commands\ISimulationCommand.cs" />
+    <Compile Include="Simulation\IReversibleSubstate.cs" />
     <Compile Include="Simulation\IState.cs" />
     <Compile Include="Simulation\ISteppable.cs" />
     <Compile Include="Math\Fixed.cs" />

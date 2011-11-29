@@ -15,7 +15,7 @@ namespace Engine.Util
         /// <summary>
         /// Generates a random key.
         /// </summary>
-        /// <return>a new, random key.</return>
+        /// <returns>a new, random key.</returns>
         static public byte[] GenerateKey()
         {
             using (RijndaelManaged rm = new RijndaelManaged())
@@ -28,7 +28,7 @@ namespace Engine.Util
         /// <summary>
         /// Generates a random initialization vector.
         /// </summary>
-        /// <return>a new, random initialization vector.</return>
+        /// <returns>a new, random initialization vector.</returns>
         static public byte[] GenerateVector()
         {
             using (RijndaelManaged rm = new RijndaelManaged())
@@ -83,7 +83,7 @@ namespace Engine.Util
         /// Encrypts a complete byte array.
         /// </summary>
         /// <param name="bytes">the byte array to encrypt.</param>
-        /// <return>the encrypted data.</return>
+        /// <returns>the encrypted data.</returns>
         public byte[] Encrypt(byte[] bytes)
         {
             return Encrypt(bytes, 0, bytes.Length);
@@ -95,7 +95,7 @@ namespace Engine.Util
         /// <param name="bytes">the byte array to encrypt.</param>
         /// <param name="start">the position to start reading at.</param>
         /// <param name="length">the number of bytes to read.</param>
-        /// <return>the encrypted data.</return>
+        /// <returns>the encrypted data.</returns>
         public byte[] Encrypt(byte[] bytes, int start, int length)
         {
             if (bytes == null || bytes.Length <= 0)
@@ -117,7 +117,7 @@ namespace Engine.Util
         /// Decrypts a complete byte array.
         /// </summary>
         /// <param name="bytes">the byte array to decrypt.</param>
-        /// <return>the decrypted data.</return>
+        /// <returns>the decrypted data.</returns>
         public byte[] Decrypt(byte[] bytes)
         {
             return Decrypt(bytes, 0, bytes.Length);
@@ -129,7 +129,7 @@ namespace Engine.Util
         /// <param name="bytes">the byte array to decrypt.</param>
         /// <param name="start">the position to start reading at.</param>
         /// <param name="length">the number of bytes to read.</param>
-        /// <return>the decrypted data.</return>
+        /// <returns>the decrypted data.</returns>
         public byte[] Decrypt(byte[] bytes, int start, int length)
         {
             if (bytes == null || bytes.Length <= 0)
@@ -147,7 +147,7 @@ namespace Engine.Util
                     }
                     return output.ToArray();
                 }
-                catch (CryptographicException ex)
+                catch (CryptographicException)
                 {
                     return null;
                 }

@@ -10,7 +10,7 @@ namespace Engine.Simulation
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
     public class TSS<TState, TSteppable, TCommandType, TPlayerData> : IReversibleState<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : IState<TState, TSteppable, TCommandType, TPlayerData>
+        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
         where TPlayerData : IPacketizable
@@ -39,12 +39,6 @@ namespace Engine.Simulation
         public long CurrentFrame { get; protected set; }
 
         /// <summary>
-        /// The frame when the last complete synchronization took place,
-        /// i.e. the point we don't roll back past.
-        /// </summary>
-        public long LastSynchronization { get; protected set; }
-
-        /// <summary>
         /// The frame number of the trailing state, i.e. the point we cannot roll
         /// back past.
         /// </summary>
@@ -59,6 +53,12 @@ namespace Engine.Simulation
         /// Get the leading state.
         /// </summary>
         public TState LeadingState { get { return states[0]; } }
+
+        /// <summary>
+        /// The frame when the last complete synchronization took place,
+        /// i.e. the point we don't roll back past.
+        /// </summary>
+        private long LastSynchronization { get; set; }
 
         #endregion
 
@@ -189,9 +189,21 @@ namespace Engine.Simulation
             // Update states.
             for (int i = states.Length - 1; i >= 0; --i)
             {
+                // Check if we need to rewind because the trailing state was left
+                // with a tentative command.
+                bool needsRewind = false;
+
                 // Update while we're still delaying.
                 while (states[i].CurrentFrame + delays[i] < CurrentFrame)
                 {
+                    // If this is the trailing state, don't bring in tentative
+                    // commands. Prune them instead. If there were any, rewind
+                    // to apply that removal retroactively.
+                    if (i == states.Length - 1 && states[i].SkipTentativeCommands())
+                    {
+                        needsRewind = true;
+                    }
+
                     // Do the actual stepping for the state.
                     states[i].Update();
 
@@ -215,6 +227,12 @@ namespace Engine.Simulation
                         }
                     }
                 }
+
+                // Check if we had trailing tentative commands.
+                if (needsRewind)
+                {
+                    Rewind();
+                }
             }
 
             // Remove adds / removes from the to-add list that have been added
@@ -225,7 +243,7 @@ namespace Engine.Simulation
 
             foreach (var key in adds.Keys)
             {
-                if (key < trailingFrame)
+                if (key <= trailingFrame)
                 {
                     deprecated.Add(key);
                 }
@@ -239,7 +257,7 @@ namespace Engine.Simulation
 
             foreach (var key in removes.Keys)
             {
-                if (key < trailingFrame)
+                if (key <= trailingFrame)
                 {
                     deprecated.Add(key);
                 }
@@ -410,20 +428,20 @@ namespace Engine.Simulation
         {
             throw new NotImplementedException();
         }
-
+        
         private void Synchronize()
+        {
+            Rewind();
+            LastSynchronization = CurrentFrame;
+            WaitingForSynchronization = false;
+        }
+
+        private void Rewind()
         {
             for (int i = states.Length - 2; i >= 0; --i)
             {
                 states[i] = (TState)states[states.Length - 1].Clone();
             }
-            
-            LastSynchronization = CurrentFrame;
-            WaitingForSynchronization = false;
-
-#if DEBUG
-            Console.WriteLine("Synchronized to state @ " + CurrentFrame);
-#endif
         }
 
         protected void OnThresholdExceeded(ThresholdExceededEventArgs e)

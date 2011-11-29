@@ -1,4 +1,5 @@
-﻿using Engine.Commands;
+﻿using System.Collections.Generic;
+using Engine.Commands;
 using Engine.Session;
 using Engine.Simulation;
 using Microsoft.Xna.Framework;
@@ -6,7 +7,7 @@ using Space.Commands;
 
 namespace Space.Model
 {
-    class GameState : PhysicsEnabledState<GameState, IGameObject, GameCommandType, PlayerInfo>
+    class GameState : PhysicsEnabledState<GameState, IGameObject, GameCommandType, PlayerInfo>, IReversibleSubstate<GameState, IGameObject, GameCommandType, PlayerInfo>
     {
         protected override GameState ThisState { get { return this; } }
 
@@ -84,6 +85,24 @@ namespace Space.Model
             var clone = new GameState(game, session);
 
             return CloneTo(clone);
+        }
+
+        public bool SkipTentativeCommands()
+        {
+            bool hadTentative = false;
+            if (commands.ContainsKey(CurrentFrame + 1))
+            {
+                List<ISimulationCommand<GameCommandType, PlayerInfo>> list = commands[CurrentFrame + 1];
+                for (int i = list.Count - 1; i >= 0; --i)
+                {
+                    if (list[i].IsTentative)
+                    {
+                        hadTentative = true;
+                        list.RemoveAt(i);
+                    }
+                }
+            }
+            return hadTentative;
         }
     }
 }

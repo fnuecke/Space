@@ -41,6 +41,7 @@ namespace Engine.Commands
 
         protected Command(T type, Player<TPlayerData> player)
         {
+            this.IsTentative = true;
             this.Type = type;
             this.Player = player;
         }

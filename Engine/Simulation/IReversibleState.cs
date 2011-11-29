@@ -10,7 +10,7 @@ namespace Engine.Simulation
     /// was authoritative, i.e. not tentative).
     /// </summary>
     interface IReversibleState<TState, TSteppable, TCommandType, TPlayerData> : IState<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : IState<TState, TSteppable, TCommandType, TPlayerData>
+        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
         where TPlayerData : IPacketizable
@@ -22,12 +22,6 @@ namespace Engine.Simulation
         /// state (e.g. using Depacketize()).
         /// </summary>
         event EventHandler<EventArgs> ThresholdExceeded;
-
-        /// <summary>
-        /// The frame when the last complete synchronization took place,
-        /// i.e. the point we don't roll back past.
-        /// </summary>
-        long LastSynchronization { get; }
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.

@@ -31,9 +31,10 @@ namespace Space.Control
         #endregion
 
         public Client(Game game)
-            : base(game, 8443, "5p4c3")
+            : base(game, 8443, "5p4c3!")
         {
             simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new[] { 50, 100 }, new GameState(game, Session));
+            simulation.ThresholdExceeded += HandleThresholdExceeded;
         }
 
         public override void Update(GameTime gameTime)
@@ -167,6 +168,10 @@ namespace Space.Control
                     }
                     break;
             }
+        }
+
+        private void HandleThresholdExceeded(object sender, EventArgs e)
+        {
         }
 
 #region Debugging stuff

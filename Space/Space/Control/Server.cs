@@ -32,7 +32,7 @@ namespace Space.Control
         #endregion
 
         public Server(Game game, int maxPlayers, byte worldSize, long worldSeed)
-            : base(game, maxPlayers, 8442, "5p4c3")
+            : base(game, maxPlayers, 8442, "5p4c3!")
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
             simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new[] { 50 }, new GameState(game, Session));
@@ -61,6 +61,7 @@ namespace Space.Control
 
         protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo> command)
         {
+            command.IsTentative = false;
             switch (command.Type)
             {
                 case GameCommandType.PlayerInput:
@@ -68,7 +69,9 @@ namespace Space.Control
                         var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo>)command;
                         if (simulationCommand.Frame > simulation.TrailingFrame)
                         {
+                            // OK, in allowed timeframe, send it to all clients.
                             simulation.PushCommand(simulationCommand);
+                            SendAll(command);
                         }
                         else
                         {
@@ -85,6 +88,7 @@ namespace Space.Control
             console.WriteLine(String.Format("SRV.NET: {0} joined.", args.Player));
 
             var command = new AddPlayerCommand(args.Player, simulation.CurrentFrame + 1);
+            command.IsTentative = false;
             simulation.PushCommand(command);
             SendAll(command, 50);
         }
