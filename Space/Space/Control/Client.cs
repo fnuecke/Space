@@ -33,7 +33,7 @@ namespace Space.Control
         public Client(Game game)
             : base(game, 8443, "5p4c3!")
         {
-            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new[] { 50, 100 }, new GameState(game, Session));
+            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new uint[] { 50, 100 }, new GameState(game, Session));
             simulation.ThresholdExceeded += HandleThresholdExceeded;
         }
 
@@ -179,8 +179,15 @@ namespace Space.Control
         internal void DEBUG_DrawInfo(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
             spriteBatch.Begin();
+            var translation = new Vector2(100, 0);
 
-            // Draw player 0 ship.
+            foreach (var child in simulation.Children)
+            {
+                child.Draw(null, translation, spriteBatch);
+            }
+
+            // Draw own player ship.
+            /*
             {
                 var player = Session.LocalPlayer;
                 if (player != null)
@@ -192,11 +199,12 @@ namespace Space.Control
                     }
                 }
             }
+            */
 
             spriteBatch.End();
         }
 
-        internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+        internal ulong DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
 
 #endregion
     }

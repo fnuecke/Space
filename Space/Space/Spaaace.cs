@@ -64,7 +64,9 @@ namespace Space
                 "Search for games available on the local subnet.");
             console.AddCommand("connect", args =>
             {
-                client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), "test", new PlayerInfo());
+                PlayerInfo info = new PlayerInfo();
+                info.ShipName = "Sparrow";
+                client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
             },
                 "Joins a game at the given host.",
                 "connect <host> <port> - join the host with the given hostname or IP.");
@@ -125,9 +127,9 @@ namespace Space
                 Components.Add(server);
                 Components.Add(client);
 
-                PlayerInfo info = new PlayerInfo();
-                info.ShipName = "Sparrow";
-                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 8442), "player", info);
+                //PlayerInfo info = new PlayerInfo();
+                //info.ShipName = "Sparrow";
+                //client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 8442), "player", info);
             }
 
             base.Update(gameTime);

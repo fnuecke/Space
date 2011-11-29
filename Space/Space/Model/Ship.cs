@@ -19,7 +19,7 @@ namespace Space.Model
         /// <summary>
         /// The last frame this ship was destroyed in.
         /// </summary>
-        protected long lastDestroyed;
+        protected ulong lastDestroyed;
 
         public bool IsAlive { get { return true /* State.CurrentFrame - lastDestroyed > RespawnTime */; } }
 
@@ -123,7 +123,7 @@ namespace Space.Model
 
         public override void Depacketize(Packet packet)
         {
-            base.Packetize(packet);
+            base.Depacketize(packet);
         }
     }
 }

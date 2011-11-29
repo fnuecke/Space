@@ -35,7 +35,7 @@ namespace Space.Control
             : base(game, maxPlayers, 8442, "5p4c3!")
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
-            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new[] { 50 }, new GameState(game, Session));
+            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new uint[] { 50 }, new GameState(game, Session));
         }
 
         public override void Update(GameTime gameTime)
@@ -252,23 +252,17 @@ namespace Space.Control
                 }
             }
 
-            // Draw player 0 ship.
+            // Draw world elements.
+            foreach (var child in simulation.Children)
             {
-                var player = Session.GetPlayer(0);
-                if (player != null)
-                {
-                    var ship = (Ship)simulation.Get(player.Data.ShipUID);
-                    if (ship != null)
-                    {
-                        ship.Draw(null, new Vector2(), spriteBatch);
-                    }
-                }
+                child.Draw(null, Vector2.Zero, spriteBatch);
             }
+
 
             spriteBatch.End();
         }
 
-        internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+        internal ulong DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
 
         #endregion
     }

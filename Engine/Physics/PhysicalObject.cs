@@ -94,7 +94,7 @@ namespace Engine.Physics
             speedMovement = packet.ReadFPoint();
             speedRotation = packet.ReadFixed();
 
-            base.Packetize(packet);
+            base.Depacketize(packet);
         }
 
         #endregion

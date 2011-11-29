@@ -11,7 +11,7 @@ namespace Space.Commands
         {
         }
 
-        public GameCommand(GameCommandType type, Player<PlayerInfo> player, long frame)
+        public GameCommand(GameCommandType type, Player<PlayerInfo> player, ulong frame)
             : base(type, player, frame)
         {
         }

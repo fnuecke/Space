@@ -4,26 +4,26 @@ using Space.Model;
 namespace Space.Commands
 {
     /// <summary>
-    /// Used by server to tell players about a new player spawn.
+    /// Used by server to tell players about a player despawn.
     /// </summary>
-    class AddPlayerCommand : GameCommand
+    class RemovePlayerCommand : GameCommand
     {
         /// <summary>
         /// For deserialization.
         /// </summary>
-        public AddPlayerCommand()
-            : base(GameCommandType.AddPlayerShip)
+        public RemovePlayerCommand()
+            : base(GameCommandType.RemovePlayerShip)
         {
         }
 
         /// <summary>
-        /// Construct new player add command, spawning a ship for the given player
+        /// Construct new player removal command, removing a ship of the given player
         /// at the given time.
         /// </summary>
         /// <param name="player">the player for whom to spawn a ship.</param>
         /// <param name="frame">the frame in which to spawn the ship.</param>
-        public AddPlayerCommand(Player<PlayerInfo> player, ulong frame)
-            : base(GameCommandType.AddPlayerShip, player, frame)
+        public RemovePlayerCommand(Player<PlayerInfo> player, ulong frame)
+            : base(GameCommandType.RemovePlayerShip, player, frame)
         {
         }
     }

@@ -26,12 +26,12 @@ namespace Engine.Simulation
         /// <summary>
         /// The current frame of the simulation the state represents.
         /// </summary>
-        public long CurrentFrame { get; protected set; }
+        public ulong CurrentFrame { get; protected set; }
 
         /// <summary>
         /// Enumerator over all children.
         /// </summary>
-        public IEnumerator<TSteppable> Children { get { return steppables.GetEnumerator(); } }
+        public IEnumerable<TSteppable> Children { get { return steppables; } }
 
         /// <summary>
         /// Getter to return <c>this</c> pointer of actual implementation type... damn generics.
@@ -45,7 +45,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of queued commands to execute in the future.
         /// </summary>
-        protected SortedDictionary<long, List<ISimulationCommand<TCommandType, TPlayerData>>> commands = new SortedDictionary<long, List<ISimulationCommand<TCommandType, TPlayerData>>>();
+        protected Dictionary<ulong, List<ISimulationCommand<TCommandType, TPlayerData>>> commands = new Dictionary<ulong, List<ISimulationCommand<TCommandType, TPlayerData>>>();
 
         /// <summary>
         /// List of child steppables this state drives.
@@ -201,10 +201,10 @@ namespace Engine.Simulation
         public virtual void Depacketize(Packet packet)
         {
             // Get the current frame of the simulation.
-            CurrentFrame = packet.ReadInt64();
+            CurrentFrame = packet.ReadUInt64();
 
             // Find commands that our out of date now, but keep newer ones.
-            List<long> deprecated = new List<long>();
+            List<ulong> deprecated = new List<ulong>();
             foreach (var key in commands.Keys)
             {
                 if (key <= CurrentFrame)

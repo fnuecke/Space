@@ -31,18 +31,30 @@ namespace Engine.Simulation
         /// <summary>
         /// Enumerator over all children of the leading state.
         /// </summary>
-        public IEnumerator<TSteppable> Children { get { return LeadingState.Children; } }
+        public IEnumerable<TSteppable> Children { get { return LeadingState.Children; } }
 
         /// <summary>
         /// The current frame of the leading state.
         /// </summary>
-        public long CurrentFrame { get; protected set; }
+        public ulong CurrentFrame { get; protected set; }
+
+        /// <summary>
+        /// The maximum allowed frame to run to. This serves as an upper bound to
+        /// synchronize to remote states. Zero means this check is disabled.
+        /// </summary>
+        public ulong MaximumFrame { get; set; }
+
+        /// <summary>
+        /// The minimum allowed frame to run to. This serves as a lower bound to
+        /// synchronize to remote states. Zero means this check is disabled.
+        /// </summary>
+        public ulong MinimumFrame { get; set; }
 
         /// <summary>
         /// The frame number of the trailing state, i.e. the point we cannot roll
         /// back past.
         /// </summary>
-        public long TrailingFrame { get { return states[states.Length - 1].CurrentFrame; } }
+        public ulong TrailingFrame { get { return states[states.Length - 1].CurrentFrame; } }
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
@@ -58,7 +70,7 @@ namespace Engine.Simulation
         /// The frame when the last complete synchronization took place,
         /// i.e. the point we don't roll back past.
         /// </summary>
-        private long LastSynchronization { get; set; }
+        private ulong lastSynchronization;
 
         #endregion
 
@@ -73,17 +85,17 @@ namespace Engine.Simulation
         /// <summary>
         /// The delays of the individual states.
         /// </summary>
-        protected int[] delays;
+        protected ulong[] delays;
 
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<long, List<TSteppable>> adds = new Dictionary<long, List<TSteppable>>();
+        protected Dictionary<ulong, List<TSteppable>> adds = new Dictionary<ulong, List<TSteppable>>();
 
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<long, List<long>> removes = new Dictionary<long, List<long>>();
+        protected Dictionary<ulong, List<long>> removes = new Dictionary<ulong, List<long>>();
 
         #endregion
 
@@ -91,9 +103,9 @@ namespace Engine.Simulation
         /// Creates a new TSS based meta state.
         /// </summary>
         /// <param name="delays">The delays to use for trailing states, with the delays in frames.</param>
-        public TSS(int[] delays, TState initialState)
+        public TSS(uint[] delays, TState initialState)
         {
-            this.delays = new int[delays.Length + 1];
+            this.delays = new ulong[delays.Length + 1];
             delays.CopyTo(this.delays, 1);
             Array.Sort(this.delays);
 
@@ -185,6 +197,14 @@ namespace Engine.Simulation
 
             // Advance the simulation.
             ++CurrentFrame;
+            if (MinimumFrame > CurrentFrame)
+            {
+                CurrentFrame = MinimumFrame;
+            }
+            if (MaximumFrame > 0 && MaximumFrame < CurrentFrame)
+            {
+                CurrentFrame = MaximumFrame;
+            }
 
             // Update states.
             for (int i = states.Length - 1; i >= 0; --i)
@@ -237,13 +257,10 @@ namespace Engine.Simulation
 
             // Remove adds / removes from the to-add list that have been added
             // to the state trailing furthest behind at this point.
-            long trailingFrame = states[states.Length - 1].CurrentFrame;
-
-            List<long> deprecated = new List<long>();
-
+            List<ulong> deprecated = new List<ulong>();
             foreach (var key in adds.Keys)
             {
-                if (key <= trailingFrame)
+                if (key <= TrailingFrame)
                 {
                     deprecated.Add(key);
                 }
@@ -254,10 +271,9 @@ namespace Engine.Simulation
             }
 
             deprecated.Clear();
-
             foreach (var key in removes.Keys)
             {
-                if (key <= trailingFrame)
+                if (key <= TrailingFrame)
                 {
                     deprecated.Add(key);
                 }
@@ -286,7 +302,7 @@ namespace Engine.Simulation
 
             // Ignore frames past the last synchronization and tentative
             // commands past our trailing frame.
-            if (command.Frame <= LastSynchronization ||
+            if (command.Frame <= lastSynchronization ||
                (command.Frame <= states[states.Length - 1].CurrentFrame &&
                 command.IsTentative))
             {
@@ -362,10 +378,10 @@ namespace Engine.Simulation
         public void Depacketize(Packet packet)
         {
             // Get the current frame of the simulation.
-            CurrentFrame = packet.ReadInt64();
+            CurrentFrame = packet.ReadUInt64();
 
             // Find adds / removes that our out of date now, but keep newer ones.
-            List<long> deprecated = new List<long>();
+            List<ulong> deprecated = new List<ulong>();
             foreach (var key in adds.Keys)
             {
                 if (key <= CurrentFrame)
@@ -395,7 +411,7 @@ namespace Engine.Simulation
             int numAdds = packet.ReadInt32();
             for (int addIdx = 0; addIdx < numAdds; ++addIdx)
             {
-                long key = packet.ReadInt64();
+                ulong key = packet.ReadUInt64();
                 adds.Add(key, new List<TSteppable>());
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
@@ -407,7 +423,7 @@ namespace Engine.Simulation
             int numRemoves = packet.ReadInt32();
             for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
             {
-                long key = packet.ReadInt64();
+                ulong key = packet.ReadUInt64();
                 removes.Add(key, new List<long>());
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
@@ -432,7 +448,7 @@ namespace Engine.Simulation
         private void Synchronize()
         {
             Rewind();
-            LastSynchronization = CurrentFrame;
+            lastSynchronization = CurrentFrame;
             WaitingForSynchronization = false;
         }
 
