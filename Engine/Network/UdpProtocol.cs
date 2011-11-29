@@ -428,6 +428,22 @@ namespace Engine.Network
     /// </summary>
     sealed class UdpMessageFactory
     {
+        /// <summary>
+        /// We'll just use the same key engine globally, as this isn't meant
+        /// as a waterproof security anyways. Just make it easier to stay
+        /// honest, so to say ;)
+        /// </summary>
+        private static readonly byte[] key = new byte[] { 58, 202, 84, 179, 32, 50, 8, 252, 238, 91, 233, 209, 25, 203, 183, 237, 33, 159, 103, 243, 93, 46, 67, 2, 169, 100, 96, 33, 196, 195, 244, 113 };
+
+        /// <summary>
+        /// Globally used initial vector.
+        /// </summary>
+        private static readonly byte[] vector = new byte[] { 112, 155, 187, 151, 110, 190, 166, 5, 137, 147, 104, 79, 199, 129, 24, 187 };
+
+        /// <summary>
+        /// Cryptography instance we'll use for mangling our packets.
+        /// </summary>
+        private static readonly SimpleCrypto crypto = new SimpleCrypto(key, vector);
 
         /// <summary>
         /// The header we use for all messages.
@@ -509,8 +525,10 @@ namespace Engine.Network
             data = null;
 
             // Check the header.
-            if (message.HasByteArray() && IsHeaderValid(message.ReadByteArray()))
+            if (IsHeaderValid(message.Buffer))
             {
+                message = new Packet(crypto.Decrypt(message.Buffer, header.Length, message.Length - header.Length));
+
                 // Get the type of the message.
                 if (!message.HasByte())
                 {
@@ -591,11 +609,15 @@ namespace Engine.Network
                     }
                 }
             }
-            Packet wrapper = new Packet(9 + header.Length + length);
-            wrapper.Write(header);
+            Packet wrapper = new Packet(5 + length);
             wrapper.Write((byte)type);
             wrapper.Write(data);
-            return wrapper;
+
+            byte[] encrypted = crypto.Encrypt(wrapper.Buffer);
+            byte[] final = new byte[header.Length + encrypted.Length];
+            header.CopyTo(final, 0);
+            encrypted.CopyTo(final, header.Length);
+            return new Packet(final);
         }
 
         private bool IsHeaderValid(byte[] buffer)

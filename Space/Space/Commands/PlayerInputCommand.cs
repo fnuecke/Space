@@ -6,7 +6,7 @@ using Space.Model;
 
 namespace Space.Commands
 {
-    class PlayerInputCommand : SimulationCommand<GameCommandType, PlayerInfo>
+    class PlayerInputCommand : GameCommand
     {
         public enum PlayerInput
         {
@@ -26,7 +26,7 @@ namespace Space.Commands
         /// Based on the player input, this is the corresponding direction (for Acceleration).
         /// </summary>
         public Direction Direction { get; private set; }
-        
+
         /// <summary>
         /// For deserialization.
         /// </summary>
@@ -41,6 +41,8 @@ namespace Space.Commands
             this.Input = input;
             this.Direction = direction;
         }
+
+        #region Serialization
 
         public override void Packetize(Packet packet)
         {
@@ -57,5 +59,19 @@ namespace Space.Commands
 
             base.Depacketize(packet);
         }
+
+        #endregion
+
+        #region Equality
+
+        public override bool Equals(ICommand<GameCommandType, PlayerInfo> other)
+        {
+            return other is PlayerInputCommand &&
+                base.Equals(other) &&
+                ((PlayerInputCommand)other).Input == this.Input &&
+                ((PlayerInputCommand)other).Direction == this.Direction;
+        }
+
+        #endregion
     }
 }

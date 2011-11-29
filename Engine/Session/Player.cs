@@ -34,6 +34,10 @@ namespace Engine.Session
         /// </summary>
         private Func<int> pingGetter;
 
+        public Player()
+        {
+        }
+
         internal Player(int number, string name, TData data, Func<int> pingGetter)
         {
             this.Number = number;

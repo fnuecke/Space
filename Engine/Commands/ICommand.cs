@@ -1,4 +1,5 @@
-﻿using Engine.Serialization;
+﻿using System;
+using Engine.Serialization;
 using Engine.Session;
 
 namespace Engine.Commands
@@ -7,7 +8,7 @@ namespace Engine.Commands
     /// Minimal interface for commands.
     /// </summary>
     /// <typeparam name="T">the enum type to use to differentiate commands.</typeparam>
-    public interface ICommand<T, TPlayerData> : IPacketizable
+    public interface ICommand<T, TPlayerData> : IPacketizable, IEquatable<ICommand<T, TPlayerData>>
         where T : struct
         where TPlayerData : IPacketizable
     {

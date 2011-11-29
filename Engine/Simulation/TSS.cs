@@ -287,13 +287,6 @@ namespace Engine.Simulation
                         states[j] = (TState)states[i].Clone();
                     }
 
-#if DEBUG
-                    if (i > 0)
-                    {
-                        Console.WriteLine("Rolled back to state " + i);
-                    }
-#endif
-
                     // Also apply it to the remaining trailing states, no checks.
                     for (int j = i + 1; j < states.Length; ++j)
                     {

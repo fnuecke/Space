@@ -95,7 +95,7 @@ namespace Space.Control
             console.WriteLine(String.Format("SRV.NET: {0} left.", args.Player));
         }
 
-#region Debugging stuff
+        #region Debugging stuff
 
         private Texture2D pixelTexture;
 
@@ -168,7 +168,7 @@ namespace Space.Control
             string netInfo = String.Format("in: {0}|{1}|{2} - {3:f}kB/s\nout: {4}|{5}|{6} - {7:f}kB/s", minIncoming, maxIncoming, avgIncoming, avgIncoming / 1024f, minOutgoing, maxOutgoing, avgOutgoing, avgOutgoing / 1024f);
             var netInfoMeasure = font.MeasureString(netInfo);
 
-            int graphWidth = 120, graphHeight = 40;
+            int graphWidth = 180, graphHeight = 40;
 
             var netInfoPosition = new Vector2(sessionInfoPosition.X + sessionInfoMeasure.X + 10, Game.GraphicsDevice.Viewport.Height - graphHeight - netInfoMeasure.Y - 10);
 
@@ -198,9 +198,9 @@ namespace Space.Control
                     float yAny = incoming[TrafficType.Any] * graphNormY;
                     float yData = incoming[TrafficType.Data] * graphNormY;
                     float yProto = incoming[TrafficType.Protocol] * graphNormY;
-                    values[x - 1][0] = Tuple.Create(yAny, Color.Red);
+                    values[x - 1][0] = Tuple.Create(yProto, Color.Yellow);
                     values[x - 1][1] = Tuple.Create(yData, Color.Orange);
-                    values[x - 1][2] = Tuple.Create(yProto, Color.Yellow);
+                    values[x - 1][2] = Tuple.Create(yAny, Color.Red);
                 }
                 x++;
             }
@@ -213,20 +213,22 @@ namespace Space.Control
                     float yAny = outgoing[TrafficType.Any] * graphNormY;
                     float yData = outgoing[TrafficType.Data] * graphNormY;
                     float yProto = outgoing[TrafficType.Protocol] * graphNormY;
-                    values[x - 1][3] = Tuple.Create(yAny, Color.Green);
+                    values[x - 1][3] = Tuple.Create(yProto, Color.Blue);
                     values[x - 1][4] = Tuple.Create(yData, Color.Turquoise);
-                    values[x - 1][5] = Tuple.Create(yProto, Color.Blue);
+                    values[x - 1][5] = Tuple.Create(yAny, Color.Green);
                 }
                 x++;
             }
 
             for (x = 0; x < values.Length - 1; ++x)
             {
-                Array.Sort(values[x], (a, b) => {
+                Array.Sort(values[x], (a, b) =>
+                {
                     if (a.Equals(b))
                     {
                         return 0;
-                    } else if (a.Item1 < b.Item1)
+                    }
+                    else if (a.Item1 < b.Item1)
                     {
                         return 1;
                     }
@@ -264,6 +266,6 @@ namespace Space.Control
 
         internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
 
-#endregion
+        #endregion
     }
 }

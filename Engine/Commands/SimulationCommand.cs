@@ -6,7 +6,7 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands that can be injected into running simulations.
     /// </summary>
-    public class SimulationCommand<T, TPlayerData> : Command<T, TPlayerData>, ISimulationCommand<T, TPlayerData>
+    public abstract class SimulationCommand<T, TPlayerData> : Command<T, TPlayerData>, ISimulationCommand<T, TPlayerData>
         where T : struct
         where TPlayerData : IPacketizable
     {
@@ -24,12 +24,6 @@ namespace Engine.Commands
         protected SimulationCommand(T type)
             : base(type)
         {
-        }
-
-        protected SimulationCommand(T type, long frame)
-            : base(type)
-        {
-            this.Frame = frame;
         }
 
         protected SimulationCommand(T type, Player<TPlayerData> player, long frame)
@@ -54,6 +48,17 @@ namespace Engine.Commands
             Frame = packet.ReadInt64();
 
             base.Depacketize(packet);
+        }
+
+        #endregion
+
+        #region Equality
+
+        public override bool Equals(ICommand<T, TPlayerData> other)
+        {
+            return other is ISimulationCommand<T, TPlayerData> &&
+                base.Equals(other) &&
+                ((ISimulationCommand<T, TPlayerData>)other).Frame == this.Frame;
         }
 
         #endregion

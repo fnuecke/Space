@@ -34,10 +34,6 @@ namespace Engine.Commands
 
         #region Constructor
 
-        protected Command()
-        {
-        }
-
         protected Command(T type)
         {
             Type = type;
@@ -59,6 +55,16 @@ namespace Engine.Commands
 
         public virtual void Depacketize(Packet packet)
         {
+        }
+
+        #endregion
+
+        #region Equality
+
+        public virtual bool Equals(ICommand<T, TPlayerData> other)
+        {
+            return other != null && other.Type.Equals(this.Type) &&
+                other.Player.Number == this.Player.Number;
         }
 
         #endregion

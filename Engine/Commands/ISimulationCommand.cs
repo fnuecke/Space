@@ -1,4 +1,5 @@
 ﻿using Engine.Serialization;
+
 namespace Engine.Commands
 {
     /// <summary>

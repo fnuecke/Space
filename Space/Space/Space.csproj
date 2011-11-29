@@ -108,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\AddPlayerCommand.cs" />
+    <Compile Include="Commands\GameCommand.cs" />
     <Compile Include="Control\Client.cs" />
     <Compile Include="Control\GameMessage.cs" />
     <Compile Include="Control\Server.cs" />

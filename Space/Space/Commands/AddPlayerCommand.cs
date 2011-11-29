@@ -1,10 +1,9 @@
-﻿using Engine.Commands;
-using Engine.Session;
+﻿using Engine.Session;
 using Space.Model;
 
 namespace Space.Commands
 {
-    class AddPlayerCommand : SimulationCommand<GameCommandType, PlayerInfo>
+    class AddPlayerCommand : GameCommand
     {
         /// <summary>
         /// For deserialization.
@@ -15,9 +14,8 @@ namespace Space.Commands
         }
 
         public AddPlayerCommand(Player<PlayerInfo> player, long frame)
-            : base(GameCommandType.AddPlayerShip, frame)
+            : base(GameCommandType.AddPlayerShip, player, frame)
         {
-            this.Player = player;
         }
     }
 }

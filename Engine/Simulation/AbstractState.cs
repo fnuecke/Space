@@ -123,8 +123,25 @@ namespace Engine.Simulation
             if (!commands.ContainsKey(command.Frame))
             {
                 commands.Add(command.Frame, new List<ISimulationCommand<TCommandType, TPlayerData>>());
+                commands[command.Frame].Add(command);
             }
-            commands[command.Frame].Add(command);
+            else
+            {
+                // At least that frame is known, so there's a chance we have that
+                // command in a tentative version. Let's check.
+                var list = commands[command.Frame];
+                int known = list.FindIndex(x => x.Equals(command));
+                if (known >= 0)
+                {
+                    // Already there! Use the authoritative one (or if neither is do nothing).
+                    var existing = list[known];
+                    if (existing.IsTentative && !command.IsTentative)
+                    {
+                        list.RemoveAt(known);
+                        list.Add(command);
+                    }
+                }
+            }
         }
 
         #endregion

@@ -156,6 +156,7 @@
     <Compile Include="Util\GameConsole.cs" />
     <Compile Include="Util\IGameConsole.cs" />
     <Compile Include="Util\LineWrittenEventArgs.cs" />
+    <Compile Include="Util\SimpleCrypto.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="EngineKey.snk" />
