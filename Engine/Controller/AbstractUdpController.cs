@@ -13,7 +13,7 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for UDP driven clients and servers.
     /// </summary>
-    public class AbstractUdpController<TSession, TPlayerData, TCommandType> : GameComponent
+    public abstract class AbstractUdpController<TSession, TPlayerData, TCommandType> : GameComponent
         where TSession : ISession<TPlayerData>
         where TPlayerData : IPacketizable, new()
         where TCommandType : struct
