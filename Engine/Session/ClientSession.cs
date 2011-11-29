@@ -110,7 +110,7 @@ namespace Engine.Session
             ConnectionState = ClientState.Unconnected;
             playerAddresses = null;
             host = null;
-            LocalPlayer = 0;
+            LocalPlayerNumber = 0;
             NumPlayers = 0;
             MaxPlayers = 0;
         }
@@ -135,7 +135,7 @@ namespace Engine.Session
                     }
                     else
                     {
-                        Player<TPlayerData> player = players[LocalPlayer];
+                        Player<TPlayerData> player = players[LocalPlayerNumber];
                         Leave();
                         OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
                     }
@@ -209,7 +209,7 @@ namespace Engine.Session
                             }
 
                             // Get our number.
-                            LocalPlayer = data.ReadInt32();
+                            LocalPlayerNumber = data.ReadInt32();
 
                             // Get info about other players in the session.
                             NumPlayers = data.ReadInt32();
@@ -218,7 +218,7 @@ namespace Engine.Session
                             MaxPlayers = data.ReadInt32();
 
                             // Sanity checks.
-                            if (LocalPlayer < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers || LocalPlayer >= MaxPlayers)
+                            if (LocalPlayerNumber < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers || LocalPlayerNumber >= MaxPlayers)
                             {
                                 throw new PacketException("Inconsistent session info.");
                             }
@@ -271,7 +271,7 @@ namespace Engine.Session
                             // the local player, because that'll likely need special treatment anyway.
                             for (int i = 0; i < MaxPlayers; ++i)
                             {
-                                if (i != LocalPlayer && players[i] != null)
+                                if (i != LocalPlayerNumber && players[i] != null)
                                 {
                                     OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[i]));
                                 }

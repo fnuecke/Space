@@ -1,15 +1,17 @@
 ﻿using System.Collections.Generic;
 using Engine.Physics;
+using Engine.Serialization;
 
 namespace Engine.Simulation
 {
     /// <summary>
     /// Base class for states that takes care of some common functionality.
     /// </summary>
-    public abstract class PhysicsEnabledState<TState, TSteppable, TCommandType> : AbstractState<TState, TSteppable, TCommandType>, IPhysicsEnabledState<TState, TSteppable, TCommandType>
-        where TState : PhysicsEnabledState<TState, TSteppable, TCommandType>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType>
+    public abstract class PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData> : AbstractState<TState, TSteppable, TCommandType, TPlayerData>, IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
+        where TState : PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
         #region Properties
 

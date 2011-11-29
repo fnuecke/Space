@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
 using Engine.Physics;
+using Engine.Serialization;
 
 namespace Engine.Simulation
 {
-    public interface IPhysicsEnabledState<TState, TSteppable, TCommandType> : IState<TState, TSteppable, TCommandType>
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType>
+    public interface IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData> : IState<TState, TSteppable, TCommandType, TPlayerData>
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
 
         /// <summary>

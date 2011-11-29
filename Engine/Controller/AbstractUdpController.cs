@@ -108,9 +108,10 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="command">the command to send.</param>
         /// <param name="pollRate">resend interval until ack arrived.</param>
-        public void Send(ICommand<TCommandType> command, uint pollRate = 0)
+        public void Send(ICommand<TCommandType, TPlayerData> command, uint pollRate = 0)
         {
             Packet packet = new Packet();
+            packet.Write(command.Player.Number);
             Packetizer.Packetize(command, packet);
             Session.Send(packet, pollRate);
         }
@@ -121,9 +122,10 @@ namespace Engine.Controller
         /// <param name="player">the player to send the command to.</param>
         /// <param name="command">the command to send.</param>
         /// <param name="pollRate">resend interval until ack arrived.</param>
-        public void Send(int player, ICommand<TCommandType> command, uint pollRate = 0)
+        public void Send(int player, ICommand<TCommandType, TPlayerData> command, uint pollRate = 0)
         {
             Packet packet = new Packet();
+            packet.Write(command.Player.Number);
             Packetizer.Packetize(command, packet);
             Session.Send(player, packet, pollRate);
         }
@@ -133,9 +135,10 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="command">the command to send.</param>
         /// <param name="pollRate">resend interval until ack arrived.</param>
-        public void SendAll(ICommand<TCommandType> command, uint pollRate = 0)
+        public void SendAll(ICommand<TCommandType, TPlayerData> command, uint pollRate = 0)
         {
             Packet packet = new Packet();
+            packet.Write(command.Player.Number);
             Packetizer.Packetize(command, packet);
             Session.SendAll(packet, pollRate);
         }
@@ -157,7 +160,10 @@ namespace Engine.Controller
             try
             {
                 var args = (PlayerDataEventArgs<TPlayerData>)e;
-                ICommand<TCommandType> command = Packetizer.Depacketize<ICommand<TCommandType>>(args.Data);
+                Player<TPlayerData> player = Session.GetPlayer(args.Data.ReadInt32());
+                ICommand<TCommandType, TPlayerData> command = Packetizer.Depacketize<ICommand<TCommandType, TPlayerData>>(args.Data);
+                command.IsTentative = !args.IsFromServer;
+                command.Player = player;
                 HandleCommand(command);
                 args.Consume();
             }
@@ -181,7 +187,7 @@ namespace Engine.Controller
         {
         }
 
-        protected virtual void HandleCommand(ICommand<TCommandType> command)
+        protected virtual void HandleCommand(ICommand<TCommandType, TPlayerData> command)
         {
         }
 

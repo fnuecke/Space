@@ -1,10 +1,12 @@
 ﻿using Engine.Commands;
 using Engine.Serialization;
+using Engine.Session;
 using Engine.Util;
+using Space.Model;
 
 namespace Space.Commands
 {
-    class PlayerInputCommand : SimulationCommand<GameCommandType>
+    class PlayerInputCommand : SimulationCommand<GameCommandType, PlayerInfo>
     {
         public enum PlayerInput
         {
@@ -33,8 +35,8 @@ namespace Space.Commands
         {
         }
 
-        public PlayerInputCommand(PlayerInput input, Direction direction, long frame)
-            : base(GameCommandType.PlayerInput, frame)
+        public PlayerInputCommand(Player<PlayerInfo> player, long frame, PlayerInput input, Direction direction)
+            : base(GameCommandType.PlayerInput, player, frame)
         {
             this.Input = input;
             this.Direction = direction;

@@ -1,20 +1,33 @@
-﻿using System;
-using Engine.Serialization;
+﻿using Engine.Serialization;
+using Engine.Session;
 
 namespace Engine.Commands
 {
     /// <summary>
     /// Base class for commands.
     /// </summary>
-    public abstract class Command<T> : ICommand<T>
+    public abstract class Command<T, TPlayerData> : ICommand<T, TPlayerData>
         where T : struct
+        where TPlayerData : IPacketizable
     {
         #region Properties
 
+        /// <summary>
+        /// Whether the command is signed (e.g. by a server) (<c>false</c>)
+        /// or came from an untrustworthy source (e.g. another client) (<c>true</c>).
+        /// 
+        /// IMPORTANT: must be set externally, when receiving a command.
+        /// </summary>
         public bool IsTentative { get; set; }
 
-        public int Player { get; set; }
+        /// <summary>
+        /// The player that issued the command.
+        /// </summary>
+        public Player<TPlayerData> Player { get; set; }
 
+        /// <summary>
+        /// The type of the command.
+        /// </summary>
         public T Type { get; private set; }
 
         #endregion
@@ -30,22 +43,22 @@ namespace Engine.Commands
             Type = type;
         }
 
+        protected Command(T type, Player<TPlayerData> player)
+        {
+            this.Type = type;
+            this.Player = player;
+        }
+
         #endregion
 
         #region Serialization
 
         public virtual void Packetize(Packet packet)
         {
-            packet.Write(IsTentative);
-            packet.Write(Player);
-            packet.Write(Enum.GetName(typeof(T), Type));
         }
 
         public virtual void Depacketize(Packet packet)
         {
-            IsTentative = packet.ReadBoolean();
-            Player = packet.ReadInt32();
-            Type = (T)Enum.Parse(typeof(T), packet.ReadString());
         }
 
         #endregion

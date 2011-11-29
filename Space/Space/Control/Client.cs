@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.Commands;
 using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation;
@@ -20,7 +21,7 @@ namespace Space.Control
         /// <summary>
         /// The game state representing the current game world.
         /// </summary>
-        private TSS<GameState, IGameObject, GameCommandType> simulation;
+        private TSS<GameState, IGameObject, GameCommandType, PlayerInfo> simulation;
 
         /// <summary>
         /// Last known player movement direction.
@@ -32,7 +33,7 @@ namespace Space.Control
         public Client(Game game)
             : base(game, 8443, "5p4c3")
         {
-            simulation = new TSS<GameState, IGameObject, GameCommandType>(new[] { 50, 100 }, new GameState(game, Session));
+            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new[] { 50, 100 }, new GameState(game, Session));
         }
 
         public override void Update(GameTime gameTime)
@@ -83,11 +84,13 @@ namespace Space.Control
                     PlayerInputCommand command;
                     if (direction == Direction.Invalid)
                     {
-                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.StopMovement, direction, simulation.CurrentFrame + 1);
+                        command = new PlayerInputCommand(Session.LocalPlayer, simulation.CurrentFrame + 1,
+                            PlayerInputCommand.PlayerInput.StopMovement, direction);
                     }
                     else
                     {
-                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.Accelerate, direction, simulation.CurrentFrame + 1);
+                        command = new PlayerInputCommand(Session.LocalPlayer, simulation.CurrentFrame + 1,
+                            PlayerInputCommand.PlayerInput.Accelerate, direction);
                     }
                     simulation.PushCommand(command);
                     SendAll(command, 20);
@@ -133,9 +136,62 @@ namespace Space.Control
             console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
         }
 
+        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo> command)
+        {
+            switch (command.Type)
+            {
+                case GameCommandType.PlayerInput:
+                    {
+                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo>)command;
+                        if (simulationCommand.Frame > simulation.TrailingFrame)
+                        {
+                            simulation.PushCommand(simulationCommand);
+                        }
+                        else
+                        {
+                            console.WriteLine("Got a command we couldn't use, " + simulationCommand.Frame + "<" + simulation.TrailingFrame);
+                        }
+                    }
+                    break;
+                case GameCommandType.AddPlayerShip:
+                    {
+                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo>)command;
+                        if (simulationCommand.Frame > simulation.TrailingFrame)
+                        {
+                            simulation.PushCommand(simulationCommand);
+                        }
+                        else
+                        {
+                            console.WriteLine("Got a command we couldn't use, " + simulationCommand.Frame + "<" + simulation.TrailingFrame);
+                        }
+                    }
+                    break;
+            }
+        }
+
 #region Debugging stuff
 
-        public long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+        internal void DEBUG_DrawInfo(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
+        {
+            spriteBatch.Begin();
+
+            // Draw player 0 ship.
+            {
+                var player = Session.LocalPlayer;
+                if (player != null)
+                {
+                    var ship = (Ship)simulation.Get(player.Data.ShipUID);
+                    if (ship != null)
+                    {
+                        ship.Draw(null, new Vector2(100, 0), spriteBatch);
+                    }
+                }
+            }
+
+            spriteBatch.End();
+        }
+
+        internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
 
 #endregion
     }

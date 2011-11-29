@@ -148,6 +148,11 @@ namespace Space
                 server.DEBUG_DrawInfo(spriteBatch);
             }
 
+            if (client != null)
+            {
+                client.DEBUG_DrawInfo(spriteBatch);
+            }
+
             spriteBatch.Begin();
 
             string info = String.Format("FPS: {0:f} | Slow: {1}\nServerframe: {2}\nClientframe: {3}",

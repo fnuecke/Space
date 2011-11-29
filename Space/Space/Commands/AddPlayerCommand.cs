@@ -1,12 +1,11 @@
 ﻿using Engine.Commands;
-using Engine.Serialization;
+using Engine.Session;
+using Space.Model;
 
 namespace Space.Commands
 {
-    class AddPlayerCommand : SimulationCommand<GameCommandType>
+    class AddPlayerCommand : SimulationCommand<GameCommandType, PlayerInfo>
     {
-        public int PlayerNumber { get; private set; }
-        
         /// <summary>
         /// For deserialization.
         /// </summary>
@@ -15,24 +14,10 @@ namespace Space.Commands
         {
         }
 
-        public AddPlayerCommand(int playerNumber, long frame)
+        public AddPlayerCommand(Player<PlayerInfo> player, long frame)
             : base(GameCommandType.AddPlayerShip, frame)
         {
-            this.PlayerNumber = playerNumber;
-        }
-
-        public override void Packetize(Packet packet)
-        {
-            packet.Write(PlayerNumber);
-
-            base.Packetize(packet);
-        }
-
-        public override void Depacketize(Packet packet)
-        {
-            PlayerNumber = packet.ReadInt32();
-
-            base.Depacketize(packet);
+            this.Player = player;
         }
     }
 }

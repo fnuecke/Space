@@ -9,7 +9,7 @@ using SpaceData;
 
 namespace Space.Model
 {
-    class Ship : Sphere<GameState, IGameObject, GameCommandType>, IGameObject
+    class Ship : Sphere<GameState, IGameObject, GameCommandType, PlayerInfo>, IGameObject
     {
         /// <summary>
         /// Time in ticks it takes before a ship may respawn.

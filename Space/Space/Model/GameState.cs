@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Engine.Commands;
-using Engine.Serialization;
+﻿using Engine.Commands;
 using Engine.Session;
 using Engine.Simulation;
 using Microsoft.Xna.Framework;
@@ -8,15 +6,13 @@ using Space.Commands;
 
 namespace Space.Model
 {
-    class GameState : PhysicsEnabledState<GameState, IGameObject, GameCommandType>
+    class GameState : PhysicsEnabledState<GameState, IGameObject, GameCommandType, PlayerInfo>
     {
         protected override GameState ThisState { get { return this; } }
 
         private Game game;
 
         private ISession<PlayerInfo> session;
-
-        private Dictionary<int, long> playerShips = new Dictionary<int, long>();
 
         public GameState()
         {
@@ -28,23 +24,14 @@ namespace Space.Model
             this.session = session;
         }
 
-        public Ship GetPlayerShip(int player)
-        {
-            if (playerShips.ContainsKey(player))
-            {
-                return (Ship)Get(playerShips[player]);
-            }
-            return null;
-        }
-
-        protected override void HandleCommand(ISimulationCommand<GameCommandType> command)
+        protected override void HandleCommand(ISimulationCommand<GameCommandType, PlayerInfo> command)
         {
             switch (command.Type)
             {
                 case GameCommandType.PlayerInput:
                     {
                         var inputCommand = (PlayerInputCommand)command;
-                        Ship ship = GetPlayerShip(command.Player);
+                        Ship ship = (Ship)Get(command.Player.Data.ShipUID);
                         if (ship == null)
                         {
                             // No ship for this player.
@@ -73,17 +60,15 @@ namespace Space.Model
                 case GameCommandType.AddPlayerShip:
                     {
                         var addCommand = (AddPlayerCommand)command;
-                        var player = session.GetPlayer(addCommand.PlayerNumber);
-                        var ship = ((GameObjectFactory)game.Services.GetService(typeof(IGameObjectFactory))).CreateShip(player.Data.ShipName, player.Number);
-                        if (player.Data.ShipUID > 0)
+                        var ship = ((GameObjectFactory)game.Services.GetService(typeof(IGameObjectFactory))).CreateShip(addCommand.Player.Data.ShipName, addCommand.Player.Number);
+                        if (addCommand.Player.Data.ShipUID > 0)
                         {
-                            ship.UID = player.Data.ShipUID;
+                            ship.UID = addCommand.Player.Data.ShipUID;
                         }
                         else
                         {
-                            player.Data.ShipUID = ship.UID;
+                            addCommand.Player.Data.ShipUID = ship.UID;
                         }
-                        playerShips[command.Player] = ship.UID;
                         Add(ship);
                     }
                     break;
@@ -97,38 +82,8 @@ namespace Space.Model
         public override object Clone()
         {
             var clone = new GameState(game, session);
-            foreach (var key in playerShips.Keys)
-            {
-                clone.playerShips[key] = playerShips[key];
-            }
 
             return CloneTo(clone);
-        }
-
-        public override void Packetize(Packet packet)
-        {
-            packet.Write(playerShips.Count);
-            foreach (var kv in playerShips)
-            {
-                packet.Write(kv.Key);
-                packet.Write(kv.Value);
-            }
-
-            base.Packetize(packet);
-        }
-
-        public override void Depacketize(Packet packet)
-        {
-            playerShips.Clear();
-            int numPlayerShips = packet.ReadInt32();
-            for (int i = 0; i < numPlayerShips; ++i)
-            {
-                int key = packet.ReadInt32();
-                long value = packet.ReadInt64();
-                playerShips[key] = value;
-            }
-
-            base.Depacketize(packet);
         }
     }
 }

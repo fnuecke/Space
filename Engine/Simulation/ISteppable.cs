@@ -10,10 +10,11 @@ namespace Engine.Simulation
     /// all non-constant references (constant references may for
     /// example be things such as settings / read only values).
     /// </summary>
-    public interface ISteppable<TState, TSteppable, TCommandType> : ICloneable, IPacketizable
-        where TState : IState<TState, TSteppable, TCommandType>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+    public interface ISteppable<TState, TSteppable, TCommandType, TPlayerData> : ICloneable, IPacketizable
+        where TState : IState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
         /// <summary>
         /// The world (simulation) this object is associated with.

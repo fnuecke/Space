@@ -98,9 +98,15 @@ namespace Engine.Session
         #region Properties
 
         /// <summary>
+        /// Reference to the data struct with info about the local player.
+        /// </summary>
+        /// <remarks>Shortcut for <c>session.GetPlayer(session.LocalPlayerNumber)</c>.</remarks>
+        public Player<TPlayerData> LocalPlayer { get { return GetPlayer(LocalPlayerNumber); } }
+
+        /// <summary>
         /// Number of the local player.
         /// </summary>
-        public int LocalPlayer { get; protected set; }
+        public int LocalPlayerNumber { get; protected set; }
 
         /// <summary>
         /// Number of players currently in the game.
@@ -136,7 +142,7 @@ namespace Engine.Session
         public AbstractSession(Game game, IProtocol protocol)
             : base(game)
         {
-            LocalPlayer = 0;
+            LocalPlayerNumber = 0;
             this.protocol = protocol;
 
             protocol.MessageTimeout += HandlePlayerTimeout;
@@ -164,7 +170,7 @@ namespace Engine.Session
         /// <returns>information on the player.</returns>
         public Player<TPlayerData> GetPlayer(int player)
         {
-            return players[player];
+            return (players == null) ? null : players[player];
         }
 
         /// <summary>

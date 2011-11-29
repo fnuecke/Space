@@ -26,9 +26,15 @@ namespace Engine.Session
         event EventHandler<EventArgs> PlayerData;
 
         /// <summary>
+        /// Reference to the data struct with info about the local player.
+        /// </summary>
+        /// <remarks>Shortcut for <c>session.GetPlayer(session.LocalPlayerNumber)</c>.</remarks>
+        Player<TPlayerData> LocalPlayer { get; }
+
+        /// <summary>
         /// Number of the local player.
         /// </summary>
-        int LocalPlayer { get; }
+        int LocalPlayerNumber { get; }
 
         /// <summary>
         /// Number of players currently in the game.

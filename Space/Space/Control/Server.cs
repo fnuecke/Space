@@ -27,7 +27,7 @@ namespace Space.Control
         /// <summary>
         /// The game state representing the current game world.
         /// </summary>
-        private TSS<GameState, IGameObject, GameCommandType> simulation;
+        private TSS<GameState, IGameObject, GameCommandType, PlayerInfo> simulation;
 
         #endregion
 
@@ -35,7 +35,7 @@ namespace Space.Control
             : base(game, maxPlayers, 8442, "5p4c3")
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
-            simulation = new TSS<GameState, IGameObject, GameCommandType>(new[] { 50 }, new GameState(game, Session));
+            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new[] { 50 }, new GameState(game, Session));
         }
 
         public override void Update(GameTime gameTime)
@@ -59,13 +59,13 @@ namespace Space.Control
             simulation.Packetize(args.Data);
         }
 
-        protected override void HandleCommand(ICommand<GameCommandType> command)
+        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo> command)
         {
             switch (command.Type)
             {
                 case GameCommandType.PlayerInput:
                     {
-                        var simulationCommand = (ISimulationCommand<GameCommandType>)command;
+                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo>)command;
                         if (simulationCommand.Frame > simulation.TrailingFrame)
                         {
                             simulation.PushCommand(simulationCommand);
@@ -84,9 +84,9 @@ namespace Space.Control
             var args = (PlayerEventArgs<PlayerInfo>)e;
             console.WriteLine(String.Format("SRV.NET: {0} joined.", args.Player));
 
-            var command = new AddPlayerCommand(args.Player.Number, simulation.CurrentFrame + 1);
+            var command = new AddPlayerCommand(args.Player, simulation.CurrentFrame + 1);
             simulation.PushCommand(command);
-            SendAll(command);
+            SendAll(command, 50);
         }
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)
@@ -262,7 +262,7 @@ namespace Space.Control
             spriteBatch.End();
         }
 
-        public long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+        internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
 
 #endregion
     }

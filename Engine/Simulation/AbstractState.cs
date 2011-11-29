@@ -15,10 +15,11 @@ namespace Engine.Simulation
     /// - Cloning of the state (may use CloneTo to take care of the basics).
     /// </para>
     /// </summary>
-    public abstract class AbstractState<TState, TSteppable, TCommandType> : IState<TState, TSteppable, TCommandType>
-        where TState : AbstractState<TState, TSteppable, TCommandType>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+    public abstract class AbstractState<TState, TSteppable, TCommandType, TPlayerData> : IState<TState, TSteppable, TCommandType, TPlayerData>
+        where TState : AbstractState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
         #region Properties
 
@@ -44,7 +45,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of queued commands to execute in the future.
         /// </summary>
-        protected SortedDictionary<long, List<ISimulationCommand<TCommandType>>> commands = new SortedDictionary<long, List<ISimulationCommand<TCommandType>>>();
+        protected SortedDictionary<long, List<ISimulationCommand<TCommandType, TPlayerData>>> commands = new SortedDictionary<long, List<ISimulationCommand<TCommandType, TPlayerData>>>();
 
         /// <summary>
         /// List of child steppables this state drives.
@@ -113,7 +114,7 @@ namespace Engine.Simulation
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        public virtual void PushCommand(ISimulationCommand<TCommandType> command)
+        public virtual void PushCommand(ISimulationCommand<TCommandType, TPlayerData> command)
         {
             if (command.Frame <= CurrentFrame)
             {
@@ -121,7 +122,7 @@ namespace Engine.Simulation
             }
             if (!commands.ContainsKey(command.Frame))
             {
-                commands.Add(command.Frame, new List<ISimulationCommand<TCommandType>>());
+                commands.Add(command.Frame, new List<ISimulationCommand<TCommandType, TPlayerData>>());
             }
             commands[command.Frame].Add(command);
         }
@@ -203,7 +204,7 @@ namespace Engine.Simulation
             int numCommands = packet.ReadInt32();
             for (int j = 0; j < numCommands; ++j)
             {
-                PushCommand(Packetizer.Depacketize<ISimulationCommand<TCommandType>>(packet));
+                PushCommand(Packetizer.Depacketize<ISimulationCommand<TCommandType, TPlayerData>>(packet));
             }
 
             // And finally the objects. Remove the one we know before that.
@@ -219,14 +220,14 @@ namespace Engine.Simulation
         /// Call this from the implemented Clone() method to clone basic properties.
         /// </summary>
         /// <param name="clone"></param>
-        protected virtual object CloneTo(AbstractState<TState, TSteppable, TCommandType> clone)
+        protected virtual object CloneTo(AbstractState<TState, TSteppable, TCommandType, TPlayerData> clone)
         {
             clone.CurrentFrame = CurrentFrame;
 
             clone.commands.Clear();
             foreach (var keyValue in commands)
             {
-                clone.commands.Add(keyValue.Key, new List<ISimulationCommand<TCommandType>>(keyValue.Value));
+                clone.commands.Add(keyValue.Key, new List<ISimulationCommand<TCommandType, TPlayerData>>(keyValue.Value));
             }
 
             clone.steppables.Clear();
@@ -243,6 +244,6 @@ namespace Engine.Simulation
         /// at the moment it should be applied.
         /// </summary>
         /// <param name="command">the command to handle.</param>
-        protected abstract void HandleCommand(ISimulationCommand<TCommandType> command);
+        protected abstract void HandleCommand(ISimulationCommand<TCommandType, TPlayerData> command);
     }
 }

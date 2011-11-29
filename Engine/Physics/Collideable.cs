@@ -1,4 +1,5 @@
 ﻿using Engine.Math;
+using Engine.Serialization;
 using Engine.Simulation;
 
 namespace Engine.Physics
@@ -6,10 +7,11 @@ namespace Engine.Physics
     /// <summary>
     /// Base implementation for collideable types.
     /// </summary>
-    public abstract class Collideable<TState, TSteppable, TCommandType> : PhysicalObject<TState, TSteppable, TCommandType>, ICollideable
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType>
+    public abstract class Collideable<TState, TSteppable, TCommandType, TPlayerData> : PhysicalObject<TState, TSteppable, TCommandType, TPlayerData>, ICollideable
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
         #region Properties
 

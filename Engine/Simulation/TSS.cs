@@ -9,10 +9,11 @@ namespace Engine.Simulation
     /// Implements a Trailing State Synchronization.
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
-    public class TSS<TState, TSteppable, TCommandType> : IReversibleState<TState, TSteppable, TCommandType>
-        where TState : IState<TState, TSteppable, TCommandType>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+    public class TSS<TState, TSteppable, TCommandType, TPlayerData> : IReversibleState<TState, TSteppable, TCommandType, TPlayerData>
+        where TState : IState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
         #region Events
         /// <summary>
@@ -257,7 +258,7 @@ namespace Engine.Simulation
         /// the next Step().
         /// </summary>
         /// <param name="command">the command to push.</param>
-        public void PushCommand(ISimulationCommand<TCommandType> command)
+        public void PushCommand(ISimulationCommand<TCommandType, TPlayerData> command)
         {
             // Do not allow changes while waiting for synchronization.
             if (WaitingForSynchronization)

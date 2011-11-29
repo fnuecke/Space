@@ -10,10 +10,11 @@ namespace Engine.Physics
     /// This means the objects have a position, an orientation and a
     /// movement vector (speed / acceleration).
     /// </summary>
-    public abstract class PhysicalObject<TState, TSteppable, TCommandType> : AbstractSteppable<TState, TSteppable, TCommandType>, IPacketizable
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType>
+    public abstract class PhysicalObject<TState, TSteppable, TCommandType, TPlayerData> : AbstractSteppable<TState, TSteppable, TCommandType, TPlayerData>, IPacketizable
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
         #region Fields
 

@@ -8,10 +8,11 @@ namespace Engine.Simulation
     /// </summary>
     /// <typeparam name="TState">the type of state the object will be used together with.</typeparam>
     /// <typeparam name="TSteppable">the type of steppable used in the state.</typeparam>
-    public abstract class AbstractSteppable<TState, TSteppable, TCommandType> : ISteppable<TState, TSteppable, TCommandType>
-        where TState : IState<TState, TSteppable, TCommandType>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+    public abstract class AbstractSteppable<TState, TSteppable, TCommandType, TPlayerData> : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
+        where TState : IState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
         #region Properties
 

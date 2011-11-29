@@ -51,6 +51,7 @@ namespace Engine.Session
         {
             this.NumPlayers = 0;
             this.MaxPlayers = maxPlayers;
+            this.LocalPlayerNumber = -1;
             playerAddresses = new IPEndPoint[maxPlayers];
             players = new Player<TPlayerData>[maxPlayers];
             slots = new BitArray(maxPlayers, false);

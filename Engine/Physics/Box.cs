@@ -1,5 +1,6 @@
 ﻿using Engine.Math;
 using Engine.Physics.Intersection;
+using Engine.Serialization;
 using Engine.Simulation;
 
 namespace Engine.Physics
@@ -7,10 +8,11 @@ namespace Engine.Physics
     /// <summary>
     /// Base class for box shaped world objects.
     /// </summary>
-    public abstract class Box<TState, TSteppable, TCommandType> : Collideable<TState, TSteppable, TCommandType>
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType>
+    public abstract class Box<TState, TSteppable, TCommandType, TPlayerData> : Collideable<TState, TSteppable, TCommandType, TPlayerData>
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
         #region Properties
 

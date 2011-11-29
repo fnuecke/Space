@@ -1,12 +1,20 @@
 ﻿using Engine.Serialization;
+using Engine.Session;
 
 namespace Engine.Commands
 {
-    public class SimulationCommand<T> : Command<T>, ISimulationCommand<T>
+    /// <summary>
+    /// Base class for commands that can be injected into running simulations.
+    /// </summary>
+    public class SimulationCommand<T, TPlayerData> : Command<T, TPlayerData>, ISimulationCommand<T, TPlayerData>
         where T : struct
+        where TPlayerData : IPacketizable
     {
         #region Properties
 
+        /// <summary>
+        /// The frame this command applies to.
+        /// </summary>
         public long Frame { get; private set; }
 
         #endregion
@@ -20,6 +28,12 @@ namespace Engine.Commands
 
         protected SimulationCommand(T type, long frame)
             : base(type)
+        {
+            this.Frame = frame;
+        }
+
+        protected SimulationCommand(T type, Player<TPlayerData> player, long frame)
+            : base(type, player)
         {
             this.Frame = frame;
         }

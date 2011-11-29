@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.Serialization;
 
 namespace Engine.Simulation
 {
@@ -8,10 +9,11 @@ namespace Engine.Simulation
     /// pushed that was issued earlier than the current frame (if the command
     /// was authoritative, i.e. not tentative).
     /// </summary>
-    interface IReversibleState<TState, TSteppable, TCommandType> : IState<TState, TSteppable, TCommandType>
-        where TState : IState<TState, TSteppable, TCommandType>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType>
+    interface IReversibleState<TState, TSteppable, TCommandType, TPlayerData> : IState<TState, TSteppable, TCommandType, TPlayerData>
+        where TState : IState<TState, TSteppable, TCommandType, TPlayerData>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
         where TCommandType : struct
+        where TPlayerData : IPacketizable
     {
         /// <summary>
         /// Dispatched when the state needs to roll back further than it can

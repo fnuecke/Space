@@ -250,8 +250,11 @@ namespace Engine.Network
                     case SocketMessage.Ack:
                         // It's an ack.
                         Information.Incoming(buffer.Length, TrafficType.Protocol);
-                        connection.PushPing((int)new TimeSpan(DateTime.Now.Ticks - awaitingAck[messageNumber].timeCreated).TotalMilliseconds / 2);
-                        awaitingAck.Remove(messageNumber);
+                        if (awaitingAck.ContainsKey(messageNumber))
+                        {
+                            connection.PushPing((int)new TimeSpan(DateTime.Now.Ticks - awaitingAck[messageNumber].timeCreated).TotalMilliseconds / 2);
+                            awaitingAck.Remove(messageNumber);
+                        }
                         break;
                     case SocketMessage.Acked:
                         // Acked data.
@@ -385,33 +388,39 @@ namespace Engine.Network
 
     #region Utility classes
 
+    [Flags]
     enum SocketMessage
     {
         /// <summary>
         /// Used as a default value.
         /// </summary>
-        Invalid,
+        Invalid = 0,
 
         /// <summary>
         /// The message is an ack for a message we sent to the remote machine.
         /// </summary>
-        Ack,
+        Ack = 1,
         
         /// <summary>
         /// This message requires us to send an ack.
         /// </summary>
-        Acked,
+        Acked = 2,
 
         /// <summary>
         /// Low-level acked message, used to test aliveness of connections, and
         /// build up samples for the ping of that connection.
         /// </summary>
-        Ping,
+        Ping = 4,
 
         /// <summary>
         /// This message does not require us to send an ack.
         /// </summary>
-        Unacked,
+        Unacked = 8,
+
+        /// <summary>
+        /// Indicates that further data in this packet is gzip compressed.
+        /// </summary>
+        Compressed = 16
     }
 
     /// <summary>
@@ -510,11 +519,25 @@ namespace Engine.Network
                 type = (SocketMessage)message.ReadByte();
 
                 // Get the message body.
-                if (!message.HasPacket())
+                Packet body;
+                if ((type & SocketMessage.Compressed) > 0)
                 {
-                    return false;
+                    type &= ~SocketMessage.Compressed;
+                    if (!message.HasByteArray())
+                    {
+                        return false;
+                    }
+                    byte[] compressed = message.ReadByteArray();
+                    body = new Packet(Compression.Decompress(compressed));
                 }
-                Packet body = message.ReadPacket();
+                else
+                {
+                    if (!message.HasPacket())
+                    {
+                        return false;
+                    }
+                    body = message.ReadPacket();
+                }
 
                 // If it's an ack or an acked message we have a message number.
                 if (type == SocketMessage.Acked || type == SocketMessage.Ack || type == SocketMessage.Ping)
@@ -548,10 +571,30 @@ namespace Engine.Network
 
         private Packet MakeMessage(SocketMessage type, Packet packet)
         {
-            Packet wrapper = new Packet(9 + header.Length + (packet != null ? packet.Length : 0));
+            byte[] data = null;
+            int length = 0;
+            if (packet != null)
+            {
+                data = packet.Buffer;
+                length = packet.Length;
+                // If packets are large, try compressing them, see if it helps.
+                // Only start after a certain size. General overhead for gzip
+                // seems to be around 130byte, so make sure we're well beyond that.
+                if (packet.Length > 256)
+                {
+                    byte[] compressed = Compression.Compress(packet.Buffer, packet.Length);
+                    if (compressed.Length < packet.Length)
+                    {
+                        type |= SocketMessage.Compressed;
+                        data = compressed;
+                        length = compressed.Length;
+                    }
+                }
+            }
+            Packet wrapper = new Packet(9 + header.Length + length);
             wrapper.Write(header);
             wrapper.Write((byte)type);
-            wrapper.Write(packet);
+            wrapper.Write(data);
             return wrapper;
         }
 
