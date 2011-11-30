@@ -7,11 +7,11 @@ namespace Engine.Simulation
     /// <summary>
     /// Base class for states that takes care of some common functionality.
     /// </summary>
-    public abstract class PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData> : AbstractState<TState, TSteppable, TCommandType, TPlayerData>, IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public abstract class PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>, IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TState : PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Properties
 
@@ -24,7 +24,8 @@ namespace Engine.Simulation
 
         #region Constructor
 
-        protected PhysicsEnabledState()
+        protected PhysicsEnabledState(IPacketizer<TPacketizerContext> packetizer)
+            : base(packetizer)
         {
             Collideables = new List<ICollideable>();
         }

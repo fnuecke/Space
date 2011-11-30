@@ -7,7 +7,7 @@ namespace Space.Commands
     /// <summary>
     /// Used by server to tell players about a new player spawn.
     /// </summary>
-    class GameStateResponseCommand : Command<GameCommandType, PlayerInfo>
+    class GameStateResponseCommand : Command<GameCommandType, PlayerInfo, PacketizerContext>
     {
         #region Properties
         
@@ -33,7 +33,7 @@ namespace Space.Commands
         /// Creates a new response by serializing the given gamestate.
         /// </summary>
         /// <param name="gameState">the game state to serialize.</param>
-        public GameStateResponseCommand(IPacketizable gameState)
+        public GameStateResponseCommand(IPacketizable<PacketizerContext> gameState)
             : base(GameCommandType.GameStateResponse)
         {
             this.GameState = new Packet();
@@ -51,11 +51,11 @@ namespace Space.Commands
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet)
+        public override void Depacketize(Packet packet, PacketizerContext context)
         {
             GameState = packet.ReadPacket();
 
-            base.Depacketize(packet);
+            base.Depacketize(packet, context);
         }
 
         #endregion

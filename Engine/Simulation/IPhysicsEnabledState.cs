@@ -4,11 +4,11 @@ using Engine.Serialization;
 
 namespace Engine.Simulation
 {
-    public interface IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData> : IState<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public interface IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
 
         /// <summary>

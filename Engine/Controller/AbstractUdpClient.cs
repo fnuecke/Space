@@ -8,8 +8,8 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients using the UDP network protocol.
     /// </summary>
-    public abstract class AbstractUdpClient<TPlayerData, TCommandType> : AbstractUdpController<IClientSession<TPlayerData>, TPlayerData, TCommandType>
-        where TPlayerData : IPacketizable, new()
+    public abstract class AbstractUdpClient<TPlayerData, TCommandType, TPacketizerContext> : AbstractUdpController<IClientSession<TPlayerData, TPacketizerContext>, TPlayerData, TCommandType, TPacketizerContext>
+        where TPlayerData : IPacketizable<TPacketizerContext>, new()
         where TCommandType : struct
     {
         #region Construction / Destruction
@@ -17,7 +17,7 @@ namespace Engine.Controller
         public AbstractUdpClient(Game game, ushort port, string header)
             : base(game, port, header)
         {
-            Session = SessionFactory.StartClient<TPlayerData>(game, protocol);
+            Session = SessionFactory.StartClient<TPlayerData, TPacketizerContext>(game, protocol);
         }
 
         public override void Initialize()

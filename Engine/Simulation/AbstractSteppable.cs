@@ -7,11 +7,11 @@ namespace Engine.Simulation
     /// </summary>
     /// <typeparam name="TState">the type of state the object will be used together with.</typeparam>
     /// <typeparam name="TSteppable">the type of steppable used in the state.</typeparam>
-    public abstract class AbstractSteppable<TState, TSteppable, TCommandType, TPlayerData> : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : IState<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public abstract class AbstractSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Properties
 
@@ -53,7 +53,7 @@ namespace Engine.Simulation
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">the packet to read from.</param>
-        public virtual void Depacketize(Packet packet)
+        public virtual void Depacketize(Packet packet, TPacketizerContext context)
         {
             UID = packet.ReadInt64();
         }

@@ -7,8 +7,8 @@ namespace Engine.Session
     /// <summary>
     /// Common interface for sessions of either server or client type.
     /// </summary>
-    public interface ISession<TPlayerData> : IGameComponent, IDisposable
-        where TPlayerData : IPacketizable
+    public interface ISession<TPlayerData, TPacketizerContext> : IGameComponent, IDisposable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         /// <summary>
         /// Called when a new player joins the session.
@@ -29,7 +29,7 @@ namespace Engine.Session
         /// Reference to the data struct with info about the local player.
         /// </summary>
         /// <remarks>Shortcut for <c>session.GetPlayer(session.LocalPlayerNumber)</c>.</remarks>
-        Player<TPlayerData> LocalPlayer { get; }
+        Player<TPlayerData, TPacketizerContext> LocalPlayer { get; }
 
         /// <summary>
         /// Number of the local player.
@@ -51,7 +51,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">the number of the player.</param>
         /// <returns>information on the player.</returns>
-        Player<TPlayerData> GetPlayer(int player);
+        Player<TPlayerData, TPacketizerContext> GetPlayer(int player);
 
         /// <summary>
         /// Check if the player with the given number exists.

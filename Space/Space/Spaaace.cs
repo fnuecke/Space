@@ -24,19 +24,26 @@ namespace Space
 
         static Spaaace()
         {
-            Packetizer.Register<Ship>();
-            Packetizer.Register<AddPlayerCommand>();
-            Packetizer.Register<GameStateRequestCommand>();
-            Packetizer.Register<GameStateResponseCommand>();
-            Packetizer.Register<PlayerInputCommand>();
-            Packetizer.Register<RemovePlayerCommand>();
-            Packetizer.Register<SynchronizeCommand>();
         }
 
         public Spaaace()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            PacketizerContext context = new PacketizerContext();
+            context.game = this;
+            Packetizer<PacketizerContext> packetizer = new Packetizer<PacketizerContext>(context);
+
+            Services.AddService(typeof(IPacketizer<PacketizerContext>), packetizer);
+
+            packetizer.Register<Ship>();
+            packetizer.Register<AddPlayerCommand>();
+            packetizer.Register<GameStateRequestCommand>();
+            packetizer.Register<GameStateResponseCommand>();
+            packetizer.Register<PlayerInputCommand>();
+            packetizer.Register<RemovePlayerCommand>();
+            packetizer.Register<SynchronizeCommand>();
 
             Components.Add(new GameObjectFactory(this));
             Components.Add(new KeyboardInputManager(this));

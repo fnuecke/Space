@@ -59,8 +59,8 @@ namespace Engine.Session
     /// <summary>
     /// Base implementation for server and client side sessions, i.e. functionality used by both.
     /// </summary>
-    abstract class AbstractSession<TPlayerData> : GameComponent, ISession<TPlayerData>
-        where TPlayerData : IPacketizable
+    abstract class AbstractSession<TPlayerData, TPacketizerContext> : GameComponent, ISession<TPlayerData, TPacketizerContext>
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Constants
 
@@ -101,7 +101,7 @@ namespace Engine.Session
         /// Reference to the data struct with info about the local player.
         /// </summary>
         /// <remarks>Shortcut for <c>session.GetPlayer(session.LocalPlayerNumber)</c>.</remarks>
-        public Player<TPlayerData> LocalPlayer { get { return GetPlayer(LocalPlayerNumber); } }
+        public Player<TPlayerData, TPacketizerContext> LocalPlayer { get { return GetPlayer(LocalPlayerNumber); } }
 
         /// <summary>
         /// Number of the local player.
@@ -123,6 +123,11 @@ namespace Engine.Session
         #region Fields
 
         /// <summary>
+        /// Packetizer used for this session's game.
+        /// </summary>
+        protected IPacketizer<TPacketizerContext> packetizer;
+
+        /// <summary>
         /// The underlying protocol that's being used.
         /// </summary>
         protected IProtocol protocol;
@@ -135,7 +140,7 @@ namespace Engine.Session
         /// <summary>
         /// List of all the player structs.
         /// </summary>
-        protected Player<TPlayerData>[] players;
+        protected Player<TPlayerData, TPacketizerContext>[] players;
 
         #endregion
 
@@ -149,6 +154,13 @@ namespace Engine.Session
             protocol.Data += HandlePlayerData;
         }
 
+        public override void Initialize()
+        {
+            packetizer = (IPacketizer<TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPacketizerContext>));
+
+            base.Initialize();
+        }
+
         /// <summary>
         /// Close this session, detaching it from the underlying protocol and
         /// making it invalid for further use.
@@ -158,8 +170,6 @@ namespace Engine.Session
             protocol.MessageTimeout -= HandlePlayerTimeout;
             protocol.Data -= HandlePlayerData;
 
-            Game.Components.Remove(this);
-
             base.Dispose(disposing);
         }
 
@@ -168,7 +178,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">the number of the player.</param>
         /// <returns>information on the player.</returns>
-        public Player<TPlayerData> GetPlayer(int player)
+        public Player<TPlayerData, TPacketizerContext> GetPlayer(int player)
         {
             return HasPlayer(player) ? players[player] : null;
         }
@@ -269,11 +279,11 @@ namespace Engine.Session
             // If it is, forward the data.
             if (player >= 0)
             {
-                OnPlayerData(new PlayerDataEventArgs<TPlayerData>(players[player], args, data));
+                OnPlayerData(new PlayerDataEventArgs<TPlayerData, TPacketizerContext>(players[player], args, data));
             }
         }
 
-        protected void OnPlayerJoined(PlayerEventArgs<TPlayerData> e)
+        protected void OnPlayerJoined(PlayerEventArgs<TPlayerData, TPacketizerContext> e)
         {
             if (PlayerJoined != null)
             {
@@ -281,7 +291,7 @@ namespace Engine.Session
             }
         }
 
-        protected void OnPlayerLeft(PlayerEventArgs<TPlayerData> e)
+        protected void OnPlayerLeft(PlayerEventArgs<TPlayerData, TPacketizerContext> e)
         {
             if (PlayerLeft != null)
             {
@@ -289,7 +299,7 @@ namespace Engine.Session
             }
         }
 
-        protected void OnPlayerData(PlayerDataEventArgs<TPlayerData> e)
+        protected void OnPlayerData(PlayerDataEventArgs<TPlayerData, TPacketizerContext> e)
         {
             if (PlayerData != null)
             {

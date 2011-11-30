@@ -8,7 +8,7 @@ namespace Space.Commands
     /// Used to synchronize game clocks (leading simulation frames).
     /// </summary>
     /// <seealso cref="http://www.mine-control.com/zack/timesync/timesync.html"/>
-    class SynchronizeCommand : Command<GameCommandType, PlayerInfo>
+    class SynchronizeCommand : Command<GameCommandType, PlayerInfo, PacketizerContext>
     {
         #region Properties
         
@@ -59,12 +59,12 @@ namespace Space.Commands
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet)
+        public override void Depacketize(Packet packet, PacketizerContext context)
         {
             ClientFrame = packet.ReadInt64();
             ServerFrame = packet.ReadInt64();
 
-            base.Depacketize(packet);
+            base.Depacketize(packet, context);
         }
 
         #endregion

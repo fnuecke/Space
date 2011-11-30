@@ -9,11 +9,11 @@ namespace Engine.Simulation
     /// Implements a Trailing State Synchronization.
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
-    public class TSS<TState, TSteppable, TCommandType, TPlayerData> : IReversibleState<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public class TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : IReversibleState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Events
         /// <summary>
@@ -41,7 +41,12 @@ namespace Engine.Simulation
         /// <summary>
         /// The steppable factory to be used in this state. Not available for TSS.
         /// </summary>
-        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData> SteppableFactory { get { throw new NotSupportedException(); } }
+        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> SteppableFactory { get { throw new NotSupportedException(); } }
+
+        /// <summary>
+        /// Packetizer used for serialization purposes.
+        /// </summary>
+        public IPacketizer<TPacketizerContext> Packetizer { get { throw new NotSupportedException(); } }
 
         /// <summary>
         /// The frame number of the trailing state, i.e. the point we cannot roll
@@ -224,7 +229,7 @@ namespace Engine.Simulation
         /// the next Step().
         /// </summary>
         /// <param name="command">the command to push.</param>
-        public void PushCommand(ISimulationCommand<TCommandType, TPlayerData> command)
+        public void PushCommand(ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
             // Do not allow changes while waiting for synchronization.
             if (WaitingForSynchronization)
@@ -294,7 +299,7 @@ namespace Engine.Simulation
         /// Deserialize a state from a packet.
         /// </summary>
         /// <param name="packet">the packet to read the data from.</param>
-        public void Depacketize(Packet packet)
+        public void Depacketize(Packet packet, TPacketizerContext context)
         {
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
@@ -352,7 +357,7 @@ namespace Engine.Simulation
             }
 
             // Unwrap the trailing state and mirror it to all the newer ones.
-            states[states.Length - 1].Depacketize(packet);
+            states[states.Length - 1].Depacketize(packet, context);
             MirrorState(states[states.Length - 1], states.Length - 2);
 
             lastSynchronization = CurrentFrame;

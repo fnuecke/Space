@@ -22,7 +22,7 @@ namespace Space.Commands
         /// </summary>
         /// <param name="player">the player for whom to spawn a ship.</param>
         /// <param name="frame">the frame in which to spawn the ship.</param>
-        public AddPlayerCommand(Player<PlayerInfo> player, long frame)
+        public AddPlayerCommand(Player<PlayerInfo, PacketizerContext> player, long frame)
             : base(GameCommandType.AddPlayerShip, player, frame)
         {
         }

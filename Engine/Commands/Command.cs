@@ -6,9 +6,9 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands.
     /// </summary>
-    public abstract class Command<T, TPlayerData> : ICommand<T, TPlayerData>
+    public abstract class Command<T, TPlayerData, TPacketizerContext> : ICommand<T, TPlayerData, TPacketizerContext>
         where T : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Properties
 
@@ -23,7 +23,7 @@ namespace Engine.Commands
         /// <summary>
         /// The player that issued the command.
         /// </summary>
-        public Player<TPlayerData> Player { get; set; }
+        public Player<TPlayerData, TPacketizerContext> Player { get; set; }
 
         /// <summary>
         /// The type of the command.
@@ -39,7 +39,7 @@ namespace Engine.Commands
             Type = type;
         }
 
-        protected Command(T type, Player<TPlayerData> player)
+        protected Command(T type, Player<TPlayerData, TPacketizerContext> player)
         {
             this.IsTentative = true;
             this.Type = type;
@@ -54,7 +54,7 @@ namespace Engine.Commands
         {
         }
 
-        public virtual void Depacketize(Packet packet)
+        public virtual void Depacketize(Packet packet, TPacketizerContext context)
         {
         }
 
@@ -62,7 +62,7 @@ namespace Engine.Commands
 
         #region Equality
 
-        public virtual bool Equals(ICommand<T, TPlayerData> other)
+        public virtual bool Equals(ICommand<T, TPlayerData, TPacketizerContext> other)
         {
             return other != null && other.Type.Equals(this.Type) &&
                 other.Player.Number == this.Player.Number;

@@ -6,7 +6,7 @@ namespace Space.Commands
     /// <summary>
     /// Used by server to tell players about a new player spawn.
     /// </summary>
-    class GameStateRequestCommand : Command<GameCommandType, PlayerInfo>
+    class GameStateRequestCommand : Command<GameCommandType, PlayerInfo, PacketizerContext>
     {
         /// <summary>
         /// For deserialization.

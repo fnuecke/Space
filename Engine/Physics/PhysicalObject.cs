@@ -10,11 +10,11 @@ namespace Engine.Physics
     /// This means the objects have a position, an orientation and a
     /// movement vector (speed / acceleration).
     /// </summary>
-    public abstract class PhysicalObject<TState, TSteppable, TCommandType, TPlayerData> : AbstractSteppable<TState, TSteppable, TCommandType, TPlayerData>, IPacketizable
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public abstract class PhysicalObject<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>, IPacketizable<TPacketizerContext>
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Fields
 
@@ -85,7 +85,7 @@ namespace Engine.Physics
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet)
+        public override void Depacketize(Packet packet, TPacketizerContext context)
         {
             position = packet.ReadFPoint();
             previousPosition = packet.ReadFPoint();
@@ -94,7 +94,7 @@ namespace Engine.Physics
             speedMovement = packet.ReadFPoint();
             speedRotation = packet.ReadFixed();
 
-            base.Depacketize(packet);
+            base.Depacketize(packet, context);
         }
 
         #endregion

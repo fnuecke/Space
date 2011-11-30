@@ -10,11 +10,11 @@ namespace Engine.Simulation
     /// </summary>
     /// <typeparam name="TState">the type of state the object will be used together with.</typeparam>
     /// <typeparam name="TSteppable">the type of steppable used in the state.</typeparam>
-    public interface IState<TState, TSteppable, TCommandType, TPlayerData> : ICloneable, IPacketizable
-        where TState : IState<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public interface IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ICloneable, IPacketizable<TPacketizerContext>
+        where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         /// <summary>
         /// The current frame of the simulation the state represents.
@@ -29,7 +29,12 @@ namespace Engine.Simulation
         /// <summary>
         /// The steppable factory to be used in this state.
         /// </summary>
-        ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData> SteppableFactory { get; }
+        ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> SteppableFactory { get; }
+
+        /// <summary>
+        /// Packetizer used for serialization purposes.
+        /// </summary>
+        IPacketizer<TPacketizerContext> Packetizer { get; }
 
         /// <summary>
         /// Add an steppable object to the list of participants of this state.
@@ -65,6 +70,6 @@ namespace Engine.Simulation
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        void PushCommand(ISimulationCommand<TCommandType, TPlayerData> command);
+        void PushCommand(ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> command);
     }
 }

@@ -8,11 +8,11 @@ namespace Engine.Physics
     /// <summary>
     /// Base class for spherical world objects.
     /// </summary>
-    public abstract class Sphere<TState, TSteppable, TCommandType, TPlayerData> : Collideable<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public abstract class Sphere<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : Collideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Properties
 
@@ -71,11 +71,11 @@ namespace Engine.Physics
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Serialization.Packet packet)
+        public override void Depacketize(Serialization.Packet packet, TPacketizerContext context)
         {
             radius = packet.ReadFixed();
 
-            base.Depacketize(packet);
+            base.Depacketize(packet, context);
         }
 
         #endregion

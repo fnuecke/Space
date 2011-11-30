@@ -14,14 +14,14 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class Client : AbstractUdpClient<PlayerInfo, GameCommandType>
+    class Client : AbstractUdpClient<PlayerInfo, GameCommandType, PacketizerContext>
     {
         #region Fields
 
         /// <summary>
         /// The game state representing the current game world.
         /// </summary>
-        private TSS<GameState, IGameObject, GameCommandType, PlayerInfo> simulation;
+        private TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext> simulation;
 
         /// <summary>
         /// Last known player movement direction.
@@ -43,7 +43,7 @@ namespace Space.Control
         public Client(Game game)
             : base(game, 8443, "5p4c3!")
         {
-            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new uint[] { 50, 100 }, new GameState(game, Session));
+            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>(new uint[] { 50, 100 }, new GameState(game, Session));
             simulation.ThresholdExceeded += HandleThresholdExceeded;
         }
 
@@ -135,7 +135,7 @@ namespace Space.Control
 
             if (args.WasSuccess)
             {
-                simulation.Depacketize(args.Data);
+                simulation.Depacketize(args.Data, packetizer.Context);
             }
             else
             {
@@ -145,17 +145,17 @@ namespace Space.Control
 
         protected override void HandlePlayerJoined(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo>)e;
+            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
             console.WriteLine(String.Format("CLT.NET: {0} joined.", args.Player));
         }
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo>)e;
+            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
             console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
         }
 
-        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo> command)
+        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
             switch (command.Type)
             {
@@ -173,14 +173,14 @@ namespace Space.Control
                 case GameCommandType.GameStateResponse:
                     if (!command.IsTentative)
                     {
-                        simulation.Depacketize(((GameStateResponseCommand)command).GameState);
+                        simulation.Depacketize(((GameStateResponseCommand)command).GameState, packetizer.Context);
                     }
                     break;
                 case GameCommandType.AddPlayerShip:
                 case GameCommandType.PlayerInput:
                 case GameCommandType.RemovePlayerShip:
                     {
-                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo>)command;
+                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext>)command;
                         simulation.PushCommand(simulationCommand);
                     }
                     break;

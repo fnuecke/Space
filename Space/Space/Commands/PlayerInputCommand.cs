@@ -35,7 +35,7 @@ namespace Space.Commands
         {
         }
 
-        public PlayerInputCommand(Player<PlayerInfo> player, long frame, PlayerInput input, Direction direction)
+        public PlayerInputCommand(Player<PlayerInfo, PacketizerContext> player, long frame, PlayerInput input, Direction direction)
             : base(GameCommandType.PlayerInput, player, frame)
         {
             this.Input = input;
@@ -52,19 +52,19 @@ namespace Space.Commands
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet)
+        public override void Depacketize(Packet packet, PacketizerContext context)
         {
             Input = (PlayerInput)packet.ReadByte();
             Direction = (Direction)packet.ReadByte();
 
-            base.Depacketize(packet);
+            base.Depacketize(packet, context);
         }
 
         #endregion
 
         #region Equality
 
-        public override bool Equals(ICommand<GameCommandType, PlayerInfo> other)
+        public override bool Equals(ICommand<GameCommandType, PlayerInfo, PacketizerContext> other)
         {
             return other is PlayerInputCommand &&
                 base.Equals(other) &&

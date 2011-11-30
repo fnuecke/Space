@@ -15,7 +15,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class Server : AbstractUdpServer<PlayerInfo, GameCommandType>
+    class Server : AbstractUdpServer<PlayerInfo, GameCommandType, PacketizerContext>
     {
         #region Fields
 
@@ -27,7 +27,7 @@ namespace Space.Control
         /// <summary>
         /// The game state representing the current game world.
         /// </summary>
-        private TSS<GameState, IGameObject, GameCommandType, PlayerInfo> simulation;
+        private TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext> simulation;
 
         #endregion
 
@@ -35,7 +35,7 @@ namespace Space.Control
             : base(game, maxPlayers, 8442, "5p4c3!")
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
-            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo>(new uint[] { 50 }, new GameState(game, Session));
+            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>(new uint[] { 50 }, new GameState(game, Session));
         }
 
         public override void Update(GameTime gameTime)
@@ -59,7 +59,7 @@ namespace Space.Control
             simulation.Packetize(args.Data);
         }
 
-        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo> command)
+        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
             switch (command.Type)
             {
@@ -73,7 +73,7 @@ namespace Space.Control
                 case GameCommandType.PlayerInput:
                     // Player sent input.
                     {
-                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo>)command;
+                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext>)command;
                         if (simulationCommand.Frame > simulation.TrailingFrame)
                         {
                             // OK, in allowed timeframe, mark as valid and send it to all clients.
@@ -100,7 +100,7 @@ namespace Space.Control
 
         protected override void HandlePlayerJoined(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo>)e;
+            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
             console.WriteLine(String.Format("SRV.NET: {0} joined.", args.Player));
 
             var command = new AddPlayerCommand(args.Player, simulation.CurrentFrame + 1);
@@ -111,7 +111,7 @@ namespace Space.Control
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo>)e;
+            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
             console.WriteLine(String.Format("SRV.NET: {0} left.", args.Player));
         }
 

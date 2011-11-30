@@ -5,7 +5,7 @@ using Space.Commands;
 
 namespace Space.Model
 {
-    interface IGameObject : IPhysicsSteppable<GameState, IGameObject, GameCommandType, PlayerInfo>
+    interface IGameObject : IPhysicsSteppable<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
     {
         void Draw(GameTime gameTime, Vector2 translation, SpriteBatch spriteBatch);
     }

@@ -11,8 +11,8 @@ namespace Engine.Session
     /// <summary>
     /// Used for hosting a session.
     /// </summary>
-    sealed class ServerSession<TPlayerData> : AbstractSession<TPlayerData>, IServerSession<TPlayerData>
-        where TPlayerData : IPacketizable, new()
+    sealed class ServerSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IServerSession<TPlayerData, TPacketizerContext>
+        where TPlayerData : IPacketizable<TPacketizerContext>, new()
     {
         #region Events
 
@@ -53,7 +53,7 @@ namespace Engine.Session
             this.MaxPlayers = maxPlayers;
             this.LocalPlayerNumber = -1;
             playerAddresses = new IPEndPoint[maxPlayers];
-            players = new Player<TPlayerData>[maxPlayers];
+            players = new Player<TPlayerData, TPacketizerContext>[maxPlayers];
             slots = new BitArray(maxPlayers, false);
 
             multicast = new UdpClient(DefaultMulticastPort);
@@ -104,7 +104,7 @@ namespace Engine.Session
         private void RemovePlayer(int playerNumber)
         {
             // Erase the player from the session.
-            Player<TPlayerData> player = players[playerNumber];
+            Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
             playerAddresses[playerNumber] = null;
             players[playerNumber] = null;
             slots[playerNumber] = false;
@@ -116,7 +116,7 @@ namespace Engine.Session
             SendAll(SessionMessage.PlayerLeft, packet, 100);
 
             // Tell the local program the player is gone.
-            OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
+            OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
         }
 
         #endregion
@@ -228,11 +228,11 @@ namespace Engine.Session
 
                                 // Get custom player data.
                                 TPlayerData playerData = new TPlayerData();
-                                data.ReadPacketizable(playerData);
+                                data.ReadPacketizable(playerData, packetizer.Context);
 
                                 // Store the player's info.
                                 playerAddresses[playerNumber] = args.Remote;
-                                players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData,
+                                players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData,
                                     delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
                                 slots[playerNumber] = true;
                                 ++NumPlayers;
@@ -252,7 +252,7 @@ namespace Engine.Session
                                     // Skip empty slots.
                                     if (!slots[i]) continue;
 
-                                    Player<TPlayerData> p = GetPlayer(i);
+                                    Player<TPlayerData, TPacketizerContext> p = GetPlayer(i);
                                     response.Write(p.Number);
                                     response.Write(p.Name);
                                     response.Write(p.Data);
@@ -284,7 +284,7 @@ namespace Engine.Session
                                 }
 
                                 // Tell the local program the player has joined.
-                                OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[playerNumber]));
+                                OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(players[playerNumber]));
 
                                 // OK, we handled it.
                                 args.Consume();

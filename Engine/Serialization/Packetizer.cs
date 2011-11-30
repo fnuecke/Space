@@ -8,18 +8,28 @@ namespace Engine.Serialization
     /// serialization / deserialization if the code triggering the deserialization
     /// does not know the actual type to expect in the data.
     /// </summary>
-    public static class Packetizer
+    public sealed class Packetizer<TPacketizerContext> : IPacketizer<TPacketizerContext>
     {
+        /// <summary>
+        /// The context used by depacketize methods.
+        /// </summary>
+        public TPacketizerContext Context { get; private set; }
+
         /// <summary>
         /// Keep track of registered types.
         /// </summary>
-        private static Dictionary<string, Func<IPacketizable>> constructors = new Dictionary<string, Func<IPacketizable>>();
+        private Dictionary<string, Func<IPacketizable<TPacketizerContext>>> constructors = new Dictionary<string, Func<IPacketizable<TPacketizerContext>>>();
+
+        public Packetizer(TPacketizerContext context)
+        {
+            this.Context = context;
+        }
 
         /// <summary>
         /// Register a new type for serializing / deserializing.
         /// </summary>
         /// <typeparam name="T">the type to register.</typeparam>
-        public static void Register<T>() where T : IPacketizable, new()
+        public void Register<T>() where T : IPacketizable<TPacketizerContext>, new()
         {
             Type type = typeof(T);
             if (!constructors.ContainsKey(type.FullName))
@@ -36,7 +46,7 @@ namespace Engine.Serialization
         /// <param name="value">the object to write.</param>
         /// <param name="packet">the packet to write to.</param>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        public static void Packetize<T>(T value, Packet packet) where T : IPacketizable
+        public void Packetize<T>(T value, Packet packet) where T : IPacketizable<TPacketizerContext>
         {
             Type type = value.GetType();
             if (constructors.ContainsKey(type.FullName))
@@ -46,7 +56,7 @@ namespace Engine.Serialization
             }
             else
             {
-                throw new ArgumentException("Unknown type, register it first.");
+                throw new ArgumentException("T");
             }
         }
 
@@ -57,18 +67,18 @@ namespace Engine.Serialization
         /// <param name="packet">the packet to read from.</param>
         /// <returns>the deserialized object.</returns>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        public static T Depacketize<T>(Packet packet) where T : IPacketizable
+        public T Depacketize<T>(Packet packet) where T : IPacketizable<TPacketizerContext>
         {
             string fullName = packet.ReadString();
             if (constructors.ContainsKey(fullName))
             {
-                IPacketizable result = constructors[fullName]();
-                result.Depacketize(packet);
+                IPacketizable<TPacketizerContext> result = constructors[fullName]();
+                result.Depacketize(packet, Context);
                 return (T)result;
             }
             else
             {
-                throw new ArgumentException("Unknown type, register");
+                throw new ArgumentException("T");
             }
         }
     }

@@ -17,8 +17,8 @@ namespace Engine.Session
     /// <summary>
     /// Interface for client side representations of a session.
     /// </summary>
-    public interface IClientSession<TPlayerData> : ISession<TPlayerData>
-        where TPlayerData : IPacketizable
+    public interface IClientSession<TPlayerData, TPacketizerContext> : ISession<TPlayerData, TPacketizerContext>
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         /// <summary>
         /// Called when we receive information about an open game.

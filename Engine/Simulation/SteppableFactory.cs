@@ -6,11 +6,11 @@ namespace Engine.Simulation
     /// Factory class used in states to produce steppable instances.
     /// This allows a central tracking of UIDs for steppables.
     /// </summary>
-    public sealed class SteppableFactory<TState, TSteppable, TCommandType, TPlayerData> : ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : IState<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public sealed class SteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Fields
 
@@ -65,7 +65,7 @@ namespace Engine.Simulation
 
         public object Clone()
         {
-            return new SteppableFactory<TState, TSteppable, TCommandType, TPlayerData>(lastUid);
+            return new SteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>(lastUid);
         }
 
         public void Packetize(Packet packet)
@@ -73,7 +73,7 @@ namespace Engine.Simulation
             packet.Write(lastUid);
         }
 
-        public void Depacketize(Packet packet)
+        public void Depacketize(Packet packet, TPacketizerContext context)
         {
             lastUid = packet.ReadInt64();
         }

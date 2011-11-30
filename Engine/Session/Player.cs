@@ -6,8 +6,8 @@ namespace Engine.Session
     /// <summary>
     /// This class is used to represent a single player in a Session.
     /// </summary>
-    public sealed class Player<TData>
-        where TData : IPacketizable
+    public sealed class Player<TData, TPacketizerContext>
+        where TData : IPacketizable<TPacketizerContext>
     {
         /// <summary>
         /// The player's number in the game he's in.

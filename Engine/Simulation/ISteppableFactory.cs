@@ -6,7 +6,7 @@ namespace Engine.Simulation
     /// <summary>
     /// Interface to steppable factories, as used in states.
     /// </summary>
-    public interface ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData> : ICloneable, IPacketizable
+    public interface ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ICloneable, IPacketizable<TPacketizerContext>
     {
         /// <summary>
         /// Gets a unique ID for a steppable. Code pattern should look like this:

@@ -9,7 +9,7 @@ using SpaceData;
 
 namespace Space.Model
 {
-    class Ship : Sphere<GameState, IGameObject, GameCommandType, PlayerInfo>, IGameObject
+    class Ship : Sphere<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>, IGameObject
     {
         /// <summary>
         /// Time in ticks it takes before a ship may respawn.
@@ -23,7 +23,7 @@ namespace Space.Model
 
         public bool IsAlive { get { return true /* State.CurrentFrame - lastDestroyed > RespawnTime */; } }
 
-        public int Player { get; private set; }
+        public int PlayerNumber { get; private set; }
 
         public FPoint Position { get { return position; } }
 
@@ -40,7 +40,7 @@ namespace Space.Model
         {
             this.data = data;
             this.texture = texture;
-            this.Player = player;
+            this.PlayerNumber = player;
         }
 
         public void Accelerate(Direction direction)
@@ -118,12 +118,20 @@ namespace Space.Model
 
         public override void Packetize(Packet packet)
         {
+            packet.Write(data.Name);
+            packet.Write(PlayerNumber);
+
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet)
+        public override void Depacketize(Packet packet, PacketizerContext context)
         {
-            base.Depacketize(packet);
+            string name = packet.ReadString();
+            //context.game.
+
+            PlayerNumber = packet.ReadInt32();
+
+            base.Depacketize(packet, context);
         }
     }
 }

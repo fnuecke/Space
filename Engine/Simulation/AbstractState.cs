@@ -15,11 +15,11 @@ namespace Engine.Simulation
     /// - Cloning of the state (may use CloneTo to take care of the basics).
     /// </para>
     /// </summary>
-    public abstract class AbstractState<TState, TSteppable, TCommandType, TPlayerData> : IState<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : AbstractState<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public abstract class AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TState : AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Properties
 
@@ -36,7 +36,12 @@ namespace Engine.Simulation
         /// <summary>
         /// The steppable factory to be used in this state.
         /// </summary>
-        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData> SteppableFactory { get; protected set; }
+        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> SteppableFactory { get; protected set; }
+
+        /// <summary>
+        /// Packetizer used for serialization purposes.
+        /// </summary>
+        public IPacketizer<TPacketizerContext> Packetizer { get; protected set; }
 
         /// <summary>
         /// Getter to return <c>this</c> pointer of actual implementation type... damn generics.
@@ -50,7 +55,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of queued commands to execute in the future.
         /// </summary>
-        protected Dictionary<long, List<ISimulationCommand<TCommandType, TPlayerData>>> commands = new Dictionary<long, List<ISimulationCommand<TCommandType, TPlayerData>>>();
+        protected Dictionary<long, List<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>> commands = new Dictionary<long, List<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>>();
 
         /// <summary>
         /// List of child steppables this state drives.
@@ -61,9 +66,10 @@ namespace Engine.Simulation
 
         #region Constructor
 
-        protected AbstractState()
+        protected AbstractState(IPacketizer<TPacketizerContext> packetizer)
         {
-            SteppableFactory = new SteppableFactory<TState, TSteppable, TCommandType, TPlayerData>();
+            this.SteppableFactory = new SteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>();
+            this.Packetizer = packetizer;
         }
 
         #endregion
@@ -128,7 +134,7 @@ namespace Engine.Simulation
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        public virtual void PushCommand(ISimulationCommand<TCommandType, TPlayerData> command)
+        public virtual void PushCommand(ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
             if (command.Frame <= CurrentFrame)
             {
@@ -136,7 +142,7 @@ namespace Engine.Simulation
             }
             if (!commands.ContainsKey(command.Frame))
             {
-                commands.Add(command.Frame, new List<ISimulationCommand<TCommandType, TPlayerData>>());
+                commands.Add(command.Frame, new List<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>());
                 commands[command.Frame].Add(command);
             }
             else
@@ -214,13 +220,13 @@ namespace Engine.Simulation
             }
         }
 
-        public virtual void Depacketize(Packet packet)
+        public virtual void Depacketize(Packet packet, TPacketizerContext context)
         {
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
 
             // Read factory state.
-            SteppableFactory.Depacketize(packet);
+            SteppableFactory.Depacketize(packet, context);
 
             // Find commands that our out of date now, but keep newer ones.
             List<long> deprecated = new List<long>();
@@ -240,7 +246,7 @@ namespace Engine.Simulation
             int numCommands = packet.ReadInt32();
             for (int j = 0; j < numCommands; ++j)
             {
-                PushCommand(Packetizer.Depacketize<ISimulationCommand<TCommandType, TPlayerData>>(packet));
+                PushCommand(Packetizer.Depacketize<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>(packet));
             }
 
             // And finally the objects. Remove the one we know before that.
@@ -256,16 +262,18 @@ namespace Engine.Simulation
         /// Call this from the implemented Clone() method to clone basic properties.
         /// </summary>
         /// <param name="clone"></param>
-        protected virtual object CloneTo(AbstractState<TState, TSteppable, TCommandType, TPlayerData> clone)
+        protected virtual object CloneTo(AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> clone)
         {
             clone.CurrentFrame = CurrentFrame;
 
-            clone.SteppableFactory = (ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData>)SteppableFactory.Clone();
+            clone.SteppableFactory = (ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>)SteppableFactory.Clone();
+
+            clone.Packetizer = Packetizer;
 
             clone.commands.Clear();
             foreach (var keyValue in commands)
             {
-                clone.commands.Add(keyValue.Key, new List<ISimulationCommand<TCommandType, TPlayerData>>(keyValue.Value));
+                clone.commands.Add(keyValue.Key, new List<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>(keyValue.Value));
             }
 
             clone.steppables.Clear();
@@ -282,6 +290,6 @@ namespace Engine.Simulation
         /// at the moment it should be applied.
         /// </summary>
         /// <param name="command">the command to handle.</param>
-        protected abstract void HandleCommand(ISimulationCommand<TCommandType, TPlayerData> command);
+        protected abstract void HandleCommand(ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> command);
     }
 }

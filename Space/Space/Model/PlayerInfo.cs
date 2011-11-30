@@ -2,7 +2,7 @@
 
 namespace Space.Model
 {
-    class PlayerInfo : IPacketizable
+    class PlayerInfo : IPacketizable<PacketizerContext>
     {
         public long ShipUID { get; set; }
 
@@ -13,7 +13,7 @@ namespace Space.Model
             packet.Write(ShipName);
         }
 
-        public void Depacketize(Packet packet)
+        public void Depacketize(Packet packet, PacketizerContext context)
         {
             ShipName = packet.ReadString();
         }

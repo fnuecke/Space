@@ -9,8 +9,8 @@ namespace Engine.Session
     /// <summary>
     /// Used for joining sessions.
     /// </summary>
-    sealed class ClientSession<TPlayerData> : AbstractSession<TPlayerData>, IClientSession<TPlayerData>
-        where TPlayerData : IPacketizable, new()
+    sealed class ClientSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IClientSession<TPlayerData, TPacketizerContext>
+        where TPlayerData : IPacketizable<TPacketizerContext>, new()
     {
         #region Events
 
@@ -135,9 +135,9 @@ namespace Engine.Session
                     }
                     else
                     {
-                        Player<TPlayerData> player = players[LocalPlayerNumber];
+                        Player<TPlayerData, TPacketizerContext> player = players[LocalPlayerNumber];
                         Leave();
-                        OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
+                        OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
                     }
                 } // else could not send to other client -> not so bad
             }
@@ -225,7 +225,7 @@ namespace Engine.Session
 
                             // Allocate arrays for the players in the session.
                             playerAddresses = new IPEndPoint[MaxPlayers];
-                            players = new Player<TPlayerData>[MaxPlayers];
+                            players = new Player<TPlayerData, TPacketizerContext>[MaxPlayers];
 
                             // Get info on players already in the session.
                             for (int i = 0; i < NumPlayers; i++)
@@ -238,7 +238,7 @@ namespace Engine.Session
 
                                 // Get additional player data.
                                 TPlayerData playerData = new TPlayerData();
-                                data.ReadPacketizable(playerData);
+                                data.ReadPacketizable(playerData, packetizer.Context);
 
                                 // Get players IP address.
                                 IPAddress playerAddress = new IPAddress(data.ReadByteArray());
@@ -254,7 +254,7 @@ namespace Engine.Session
 
                                 // All OK, add the player.
                                 playerAddresses[playerNumber] = playerEndPoint;
-                                players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData,
+                                players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData,
                                     delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
                             }
 
@@ -273,7 +273,7 @@ namespace Engine.Session
                             {
                                 if (i != LocalPlayerNumber && players[i] != null)
                                 {
-                                    OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[i]));
+                                    OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(players[i]));
                                 }
                             }
 
@@ -306,7 +306,7 @@ namespace Engine.Session
 
                             // Get additional player data.
                             TPlayerData playerData = new TPlayerData();
-                            data.ReadPacketizable(playerData);
+                            data.ReadPacketizable(playerData, packetizer.Context);
 
                             // Get players IP address.
                             IPAddress playerAddress = new IPAddress(data.ReadByteArray());
@@ -322,11 +322,11 @@ namespace Engine.Session
 
                             // All OK, add the player.
                             playerAddresses[playerNumber] = playerEndPoint;
-                            players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData,
+                            players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData,
                                     delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
 
                             // The the local program about it.
-                            OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[playerNumber]));
+                            OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(players[playerNumber]));
 
                             // OK, handled it.
                             args.Consume();
@@ -358,12 +358,12 @@ namespace Engine.Session
                             }
 
                             // OK, remove the player.
-                            Player<TPlayerData> player = players[playerNumber];
+                            Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
                             players[playerNumber] = null;
                             playerAddresses[playerNumber] = null;
 
                             // Tell the local program about it.
-                            OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
+                            OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
 
                             // OK, handled it.
                             args.Consume();
@@ -386,7 +386,7 @@ namespace Engine.Session
                     {
                         if (args.Remote.Equals(host))
                         {
-                            OnPlayerData(new PlayerDataEventArgs<TPlayerData>(null, args, data));
+                            OnPlayerData(new PlayerDataEventArgs<TPlayerData, TPacketizerContext>(null, args, data));
                         }
                         else
                         {

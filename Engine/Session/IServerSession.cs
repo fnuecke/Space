@@ -6,8 +6,8 @@ namespace Engine.Session
     /// <summary>
     /// Interface for server side session implementations.
     /// </summary>
-    public interface IServerSession<TPlayerData> : ISession<TPlayerData>
-        where TPlayerData : IPacketizable
+    public interface IServerSession<TPlayerData, TPacketizerContext> : ISession<TPlayerData, TPacketizerContext>
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         /// <summary>
         /// Called when an unconnected client requests game info.

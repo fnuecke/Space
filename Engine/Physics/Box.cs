@@ -8,11 +8,11 @@ namespace Engine.Physics
     /// <summary>
     /// Base class for box shaped world objects.
     /// </summary>
-    public abstract class Box<TState, TSteppable, TCommandType, TPlayerData> : Collideable<TState, TSteppable, TCommandType, TPlayerData>
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData>
+    public abstract class Box<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : Collideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable
+        where TPlayerData : IPacketizable<TPacketizerContext>
     {
         #region Properties
 
@@ -64,18 +64,18 @@ namespace Engine.Physics
 
         #region Serialization
 
-        public override void Packetize(Serialization.Packet packet)
+        public override void Packetize(Packet packet)
         {
             packet.Write(size);
 
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Serialization.Packet packet)
+        public override void Depacketize(Packet packet, TPacketizerContext context)
         {
             size = packet.ReadFPoint();
 
-            base.Depacketize(packet);
+            base.Depacketize(packet, context);
         }
 
         #endregion

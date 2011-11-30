@@ -117,6 +117,7 @@
     <Compile Include="Control\GameMessage.cs" />
     <Compile Include="Control\Server.cs" />
     <Compile Include="Model\IGameObjectFactory.cs" />
+    <Compile Include="Model\PacketizerContext.cs" />
     <Compile Include="Model\PlayerInfo.cs" />
     <Compile Include="Model\GameObjectFactory.cs" />
     <Compile Include="Model\StaticWorld.cs" />
@@ -178,7 +179,9 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Services\" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>

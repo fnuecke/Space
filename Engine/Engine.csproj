@@ -113,6 +113,7 @@
     <Compile Include="Network\EventArgs.cs" />
     <Compile Include="Network\ProtocolInfo.cs" />
     <Compile Include="Serialization\IPacketizable.cs" />
+    <Compile Include="Serialization\IPacketizer.cs" />
     <Compile Include="Serialization\PacketException.cs" />
     <Compile Include="Serialization\Packetizer.cs" />
     <Compile Include="Session\AbstractSession.cs" />

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Commands;
+using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
 using Microsoft.Xna.Framework;
@@ -8,25 +9,22 @@ using Space.Commands;
 
 namespace Space.Model
 {
-    class GameState : PhysicsEnabledState<GameState, IGameObject, GameCommandType, PlayerInfo>, IReversibleSubstate<GameState, IGameObject, GameCommandType, PlayerInfo>
+    class GameState : PhysicsEnabledState<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>, IReversibleSubstate<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
     {
         protected override GameState ThisState { get { return this; } }
 
         private Game game;
 
-        private ISession<PlayerInfo> session;
+        private ISession<PlayerInfo, PacketizerContext> session;
 
-        public GameState()
-        {
-        }
-
-        public GameState(Game game, ISession<PlayerInfo> session)
+        public GameState(Game game, ISession<PlayerInfo, PacketizerContext> session)
+            : base((IPacketizer<PacketizerContext>)game.Services.GetService(typeof(IPacketizer<PacketizerContext>)))
         {
             this.game = game;
             this.session = session;
         }
 
-        protected override void HandleCommand(ISimulationCommand<GameCommandType, PlayerInfo> command)
+        protected override void HandleCommand(ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
             switch (command.Type)
             {
@@ -94,7 +92,7 @@ namespace Space.Model
             bool hadTentative = false;
             if (commands.ContainsKey(CurrentFrame + 1))
             {
-                List<ISimulationCommand<GameCommandType, PlayerInfo>> list = commands[CurrentFrame + 1];
+                List<ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext>> list = commands[CurrentFrame + 1];
                 for (int i = list.Count - 1; i >= 0; --i)
                 {
                     if (list[i].IsTentative)
