@@ -5,9 +5,11 @@ using Engine.Session;
 using Engine.Simulation;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Space.Commands;
 using Space.Model;
+using Space.View;
 
 namespace Space.Control
 {
@@ -41,7 +43,7 @@ namespace Space.Control
         #endregion
 
         public Client(Game game)
-            : base(game, 8443, "5p4c3!")
+            : base(game, 50101, "5p4c3!")
         {
             simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>(new uint[] { 50, 100 }, new GameState(game, Session));
             simulation.ThresholdExceeded += HandleThresholdExceeded;
@@ -248,30 +250,22 @@ namespace Space.Control
 
         internal void DEBUG_DrawInfo(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
+            // Draw world elements.
             spriteBatch.Begin();
-            var translation = new Vector2(100, 0);
-
             foreach (var child in simulation.Children)
             {
-                child.Draw(null, translation, spriteBatch);
+                child.Draw(null, Vector2.Zero, spriteBatch);
             }
-
-            // Draw own player ship.
-            /*
-            {
-                var player = Session.LocalPlayer;
-                if (player != null)
-                {
-                    var ship = (Ship)simulation.Get(player.Data.ShipUID);
-                    if (ship != null)
-                    {
-                        ship.Draw(null, new Vector2(100, 0), spriteBatch);
-                    }
-                }
-            }
-            */
-
             spriteBatch.End();
+
+            // Draw debug stuff.
+            SpriteFont font = Game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
+
+            var ngOffset = new Vector2(Game.GraphicsDevice.Viewport.Width - 200, Game.GraphicsDevice.Viewport.Height - 100);
+            var sessionOffset = new Vector2(Game.GraphicsDevice.Viewport.Width - 340, Game.GraphicsDevice.Viewport.Height - 100);
+
+            SessionInfo.Draw("Client", Session, sessionOffset, font, spriteBatch);
+            NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
         }
 
         internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }

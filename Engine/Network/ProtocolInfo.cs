@@ -32,12 +32,26 @@ namespace Engine.Network
         /// <summary>
         /// Represents incoming traffic over a certain interval of time, tracked by type, and stored as number of bytes.
         /// </summary>
-        public LinkedList<Dictionary<TrafficType, int>> IncomingTraffic { get { return incoming; } }
+        public LinkedList<Dictionary<TrafficType, int>> IncomingTraffic
+        {
+            get
+            {
+                UpdateLists();
+                return incoming;
+            }
+        }
 
         /// <summary>
         /// Represents outgoing traffic over a certain interval of time, tracked by type, and stored as number of bytes.
         /// </summary>
-        public LinkedList<Dictionary<TrafficType, int>> OutgoingTraffic { get { return outgoing; } }
+        public LinkedList<Dictionary<TrafficType, int>> OutgoingTraffic
+        {
+            get
+            {
+                UpdateLists();
+                return outgoing;
+            }
+        }
 
         #endregion
 

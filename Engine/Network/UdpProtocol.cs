@@ -140,8 +140,14 @@ namespace Engine.Network
                 var remote = new IPEndPoint(0, 0);
                 while (udp.Available > 0)
                 {
-                    byte[] buffer = udp.Receive(ref remote);
-                    Inject(buffer, remote);
+                    try
+                    {
+                        byte[] buffer = udp.Receive(ref remote);
+                        Inject(buffer, remote);
+                    }
+                    catch (SocketException)
+                    {
+                    }
                 }
             }
         }

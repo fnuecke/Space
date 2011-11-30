@@ -57,8 +57,10 @@ namespace Space
                 if (server != null)
                 {
                     server.Dispose();
+                    Components.Remove(server);
                 }
                 server = new Server(this, 8, 10, 0);
+                Components.Add(server);
             },
                 "Switch to server mode (host a new game).");
             console.AddCommand("client", args =>
@@ -66,8 +68,10 @@ namespace Space
                 if (client != null)
                 {
                     client.Dispose();
+                    Components.Remove(client);
                 }
                 client = new Client(this);
+                Components.Add(client);
             },
                 "Switch to client mode.");
             console.AddCommand("search", args =>
@@ -93,7 +97,7 @@ namespace Space
             {
                 PlayerInfo info = new PlayerInfo();
                 info.ShipType = "Sparrow";
-                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 8442), "player", info);
+                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
             },
                 "autojoin fn");
 
@@ -149,17 +153,15 @@ namespace Space
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (server == null)
+            //if (server == null)
+            //{
+            //    server = new Server(this, 8, 10, 0);
+            //    Components.Add(server);
+            //}
+            if (client == null)
             {
-                server = new Server(this, 8, 10, 0);
                 client = new Client(this);
-
-                Components.Add(server);
                 Components.Add(client);
-
-                //PlayerInfo info = new PlayerInfo();
-                //info.ShipName = "Sparrow";
-                //client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 8442), "player", info);
             }
 
             base.Update(gameTime);
@@ -173,8 +175,6 @@ namespace Space
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
-
             if (server != null)
             {
                 server.DEBUG_DrawInfo(spriteBatch);
@@ -187,11 +187,16 @@ namespace Space
 
             spriteBatch.Begin();
 
-            string info = String.Format("FPS: {0:f} | Slow: {1}\nServerframe: {2}\nClientframe: {3}",
-                System.Math.Ceiling(1 / (float)gameTime.ElapsedGameTime.TotalSeconds),
-                gameTime.IsRunningSlowly,
-                (server == null) ? 0 : server.DEBUG_CurrentFrame,
-                (client == null) ? 0 : client.DEBUG_CurrentFrame);
+            string info = String.Format("FPS: {0:f} | Slow: {1}",
+                System.Math.Ceiling(1 / (float)gameTime.ElapsedGameTime.TotalSeconds), gameTime.IsRunningSlowly);
+            if (server != null)
+            {
+                info += String.Format("\nServerframe: {0}", server.DEBUG_CurrentFrame);
+            }
+            if (client != null)
+            {
+                info += String.Format("\nClientframe: {0}", client.DEBUG_CurrentFrame);
+            }
 
             spriteBatch.DrawString(console.Font, info, new Vector2(10, 10), Color.White);
 
