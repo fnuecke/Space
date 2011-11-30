@@ -36,25 +36,18 @@ namespace Engine.Simulation
         /// <summary>
         /// The current frame of the leading state.
         /// </summary>
-        public ulong CurrentFrame { get; protected set; }
+        public long CurrentFrame { get; protected set; }
 
         /// <summary>
-        /// The maximum allowed frame to run to. This serves as an upper bound to
-        /// synchronize to remote states. Zero means this check is disabled.
+        /// The steppable factory to be used in this state. Not available for TSS.
         /// </summary>
-        public ulong MaximumFrame { get; set; }
-
-        /// <summary>
-        /// The minimum allowed frame to run to. This serves as a lower bound to
-        /// synchronize to remote states. Zero means this check is disabled.
-        /// </summary>
-        public ulong MinimumFrame { get; set; }
+        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData> SteppableFactory { get { throw new NotSupportedException(); } }
 
         /// <summary>
         /// The frame number of the trailing state, i.e. the point we cannot roll
         /// back past.
         /// </summary>
-        public ulong TrailingFrame { get { return states[states.Length - 1].CurrentFrame; } }
+        public long TrailingFrame { get { return states[states.Length - 1].CurrentFrame; } }
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
@@ -70,7 +63,7 @@ namespace Engine.Simulation
         /// The frame when the last complete synchronization took place,
         /// i.e. the point we don't roll back past.
         /// </summary>
-        private ulong lastSynchronization;
+        private long lastSynchronization;
 
         #endregion
 
@@ -85,17 +78,17 @@ namespace Engine.Simulation
         /// <summary>
         /// The delays of the individual states.
         /// </summary>
-        protected ulong[] delays;
+        protected uint[] delays;
 
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<ulong, List<TSteppable>> adds = new Dictionary<ulong, List<TSteppable>>();
+        protected Dictionary<long, List<TSteppable>> adds = new Dictionary<long, List<TSteppable>>();
 
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<ulong, List<long>> removes = new Dictionary<ulong, List<long>>();
+        protected Dictionary<long, List<long>> removes = new Dictionary<long, List<long>>();
 
         #endregion
 
@@ -105,7 +98,7 @@ namespace Engine.Simulation
         /// <param name="delays">The delays to use for trailing states, with the delays in frames.</param>
         public TSS(uint[] delays, TState initialState)
         {
-            this.delays = new ulong[delays.Length + 1];
+            this.delays = new uint[delays.Length + 1];
             delays.CopyTo(this.delays, 1);
             Array.Sort(this.delays);
 
@@ -113,8 +106,7 @@ namespace Engine.Simulation
             states = new TState[this.delays.Length];
 
             // Initialize to empty state.
-            states[states.Length - 1] = (TState)initialState.Clone();
-            Synchronize();
+            MirrorState(initialState, states.Length - 1);
         }
 
         /// <summary>
@@ -139,7 +131,7 @@ namespace Engine.Simulation
             }
             adds[CurrentFrame].Add((TSteppable)steppable.Clone());
         }
-
+        
         /// <summary>
         /// Not supported for TSS.
         /// </summary>
@@ -189,98 +181,38 @@ namespace Engine.Simulation
         /// </summary>
         public void Update()
         {
+            // Advance the simulation.
+            Play(CurrentFrame++);
+        }
+
+        /// <summary>
+        /// Run the simulation to the given frame, which may be in the past.
+        /// </summary>
+        /// <param name="frame">the frame to run to.</param>
+        public void RunToFrame(long frame)
+        {
             // Do not allow changes while waiting for synchronization.
             if (WaitingForSynchronization)
             {
                 throw new InvalidOperationException("Waiting for synchronization.");
             }
 
-            // Advance the simulation.
-            ++CurrentFrame;
-            if (MinimumFrame > CurrentFrame)
+            if (frame >= CurrentFrame)
             {
-                CurrentFrame = MinimumFrame;
+                // Moving forward, just run.
+                Play(frame);
+                CurrentFrame = frame;
             }
-            if (MaximumFrame > 0 && MaximumFrame < CurrentFrame)
+            else if (CurrentFrame < TrailingFrame)
             {
-                CurrentFrame = MaximumFrame;
+                // Cannot rewind that far, request resync.
+                OnThresholdExceeded(new ThresholdExceededEventArgs(CurrentFrame));
             }
-
-            // Update states.
-            for (int i = states.Length - 1; i >= 0; --i)
+            else
             {
-                // Check if we need to rewind because the trailing state was left
-                // with a tentative command.
-                bool needsRewind = false;
-
-                // Update while we're still delaying.
-                while (states[i].CurrentFrame + delays[i] < CurrentFrame)
-                {
-                    // If this is the trailing state, don't bring in tentative
-                    // commands. Prune them instead. If there were any, rewind
-                    // to apply that removal retroactively.
-                    if (i == states.Length - 1 && states[i].SkipTentativeCommands())
-                    {
-                        needsRewind = true;
-                    }
-
-                    // Do the actual stepping for the state.
-                    states[i].Update();
-
-                    // Check if we need to add objects.
-                    if (adds.ContainsKey(states[i].CurrentFrame))
-                    {
-                        // Add a copy of it.
-                        foreach (var steppable in adds[states[i].CurrentFrame])
-                        {
-                            states[i].Add((TSteppable)steppable.Clone());
-                        }
-                    }
-
-                    // Check if we need to remove objects.
-                    if (removes.ContainsKey(states[i].CurrentFrame))
-                    {
-                        // Add a copy of it.
-                        foreach (var steppableUid in removes[states[i].CurrentFrame])
-                        {
-                            states[i].Remove(steppableUid);
-                        }
-                    }
-                }
-
-                // Check if we had trailing tentative commands.
-                if (needsRewind)
-                {
-                    Rewind();
-                }
-            }
-
-            // Remove adds / removes from the to-add list that have been added
-            // to the state trailing furthest behind at this point.
-            List<ulong> deprecated = new List<ulong>();
-            foreach (var key in adds.Keys)
-            {
-                if (key <= TrailingFrame)
-                {
-                    deprecated.Add(key);
-                }
-            }
-            foreach (var key in deprecated)
-            {
-                adds.Remove(key);
-            }
-
-            deprecated.Clear();
-            foreach (var key in removes.Keys)
-            {
-                if (key <= TrailingFrame)
-                {
-                    deprecated.Add(key);
-                }
-            }
-            foreach (var key in deprecated)
-            {
-                removes.Remove(key);
+                // In range for reverting.
+                Rewind(frame);
+                CurrentFrame = frame;
             }
         }
 
@@ -300,42 +232,29 @@ namespace Engine.Simulation
                 throw new InvalidOperationException();
             }
 
-            // Ignore frames past the last synchronization and tentative
-            // commands past our trailing frame.
-            if (command.Frame <= lastSynchronization ||
-               (command.Frame <= states[states.Length - 1].CurrentFrame &&
-                command.IsTentative))
+            // Ignore frames past the last synchronization.
+            if (command.Frame <= lastSynchronization)
             {
                 return;
             }
 
-            // Find first state that's not past the command.
-            for (int i = 0; i < states.Length; ++i)
+            // Check if we have a chance of applying this state.
+            if (command.Frame <= TrailingFrame)
             {
-                if (states[i].CurrentFrame < command.Frame)
+                // Not a chance. If it's a server command we have to rewind.
+                if (!command.IsTentative)
                 {
-                    // Success, push it and mirror the state to all newer ones.
-                    states[i].PushCommand(command);
-                    for (int j = i - 1; j >= 0; --j)
-                    {
-                        states[j] = (TState)states[i].Clone();
-                    }
-
-                    // Also apply it to the remaining trailing states, no checks.
-                    for (int j = i + 1; j < states.Length; ++j)
-                    {
-                        states[j].PushCommand(command);
-                    }
-
-                    // Done.
-                    return;
+                    OnThresholdExceeded(new ThresholdExceededEventArgs(CurrentFrame));
                 }
+                return;
             }
 
-            // We need to resynchronize our complete state, we couldn't handle
-            // an authoritative command.
-            WaitingForSynchronization = true;
-            OnThresholdExceeded(new ThresholdExceededEventArgs(CurrentFrame));
+            // Passed checks, so rewinding will work.
+            Rewind(command.Frame);
+            for (int i = 0; i < states.Length; ++i)
+            {
+                states[i].PushCommand(command);
+            }
         }
 
         /// <summary>
@@ -378,10 +297,10 @@ namespace Engine.Simulation
         public void Depacketize(Packet packet)
         {
             // Get the current frame of the simulation.
-            CurrentFrame = packet.ReadUInt64();
+            CurrentFrame = packet.ReadInt64();
 
             // Find adds / removes that our out of date now, but keep newer ones.
-            List<ulong> deprecated = new List<ulong>();
+            List<long> deprecated = new List<long>();
             foreach (var key in adds.Keys)
             {
                 if (key <= CurrentFrame)
@@ -411,7 +330,7 @@ namespace Engine.Simulation
             int numAdds = packet.ReadInt32();
             for (int addIdx = 0; addIdx < numAdds; ++addIdx)
             {
-                ulong key = packet.ReadUInt64();
+                long key = packet.ReadInt64();
                 adds.Add(key, new List<TSteppable>());
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
@@ -423,7 +342,7 @@ namespace Engine.Simulation
             int numRemoves = packet.ReadInt32();
             for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
             {
-                ulong key = packet.ReadUInt64();
+                long key = packet.ReadInt64();
                 removes.Add(key, new List<long>());
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
@@ -432,9 +351,12 @@ namespace Engine.Simulation
                 }
             }
 
+            // Unwrap the trailing state and mirror it to all the newer ones.
             states[states.Length - 1].Depacketize(packet);
+            MirrorState(states[states.Length - 1], states.Length - 2);
 
-            Synchronize();
+            lastSynchronization = CurrentFrame;
+            WaitingForSynchronization = false;
         }
 
         /// <summary>
@@ -445,26 +367,139 @@ namespace Engine.Simulation
             throw new NotImplementedException();
         }
         
-        private void Synchronize()
-        {
-            Rewind();
-            lastSynchronization = CurrentFrame;
-            WaitingForSynchronization = false;
-        }
-
-        private void Rewind()
-        {
-            for (int i = states.Length - 2; i >= 0; --i)
-            {
-                states[i] = (TState)states[states.Length - 1].Clone();
-            }
-        }
-
         protected void OnThresholdExceeded(ThresholdExceededEventArgs e)
         {
+            WaitingForSynchronization = true;
             if (ThresholdExceeded != null)
             {
                 ThresholdExceeded(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Update the simulation by advancing forwards.
+        /// </summary>
+        /// <param name="frame">the frame up to which to run.</param>
+        private void Play(long frame)
+        {
+            // Update states. Run back to front, to allow rewinding future states
+            // if the trailing state must skip tentative commands all in one go.
+            for (int i = states.Length - 1; i >= 0; --i)
+            {
+                // Check if we need to rewind because the trailing state was left
+                // with a tentative command.
+                bool needsRewind = false;
+
+                // Update while we're still delaying.
+                while (states[i].CurrentFrame + delays[i] < frame)
+                {
+                    // If this is the trailing state, don't bring in tentative
+                    // commands. Prune them instead. If there were any, rewind
+                    // to apply that removal retroactively.
+                    if (i == states.Length - 1 && states[i].SkipTentativeCommands())
+                    {
+                        needsRewind = true;
+                    }
+
+                    // Do the actual stepping for the state.
+                    states[i].Update();
+
+                    // Check if we need to add objects.
+                    if (adds.ContainsKey(states[i].CurrentFrame))
+                    {
+                        // Add a copy of it.
+                        foreach (var steppable in adds[states[i].CurrentFrame])
+                        {
+                            states[i].Add((TSteppable)steppable.Clone());
+                        }
+                    }
+
+                    // Check if we need to remove objects.
+                    if (removes.ContainsKey(states[i].CurrentFrame))
+                    {
+                        // Add a copy of it.
+                        foreach (var steppableUid in removes[states[i].CurrentFrame])
+                        {
+                            states[i].Remove(steppableUid);
+                        }
+                    }
+                }
+
+                // Check if we had trailing tentative commands.
+                if (needsRewind)
+                {
+                    MirrorState(states[states.Length - 1], states.Length - 2);
+                }
+            }
+
+            // Clean up stuff that's too old to keep.
+            PrunePastEvents();
+        }
+
+        /// <summary>
+        /// Rewind the simulation to the given frame. If this fails (too far
+        /// in the past) this will trigger a resync request.
+        /// </summary>
+        /// <param name="frame">the frame to rewind to.</param>
+        private void Rewind(long frame)
+        {
+            // Find first state that's not past the frame.
+            for (int i = 0; i < states.Length; ++i)
+            {
+                if (states[i].CurrentFrame < frame)
+                {
+                    // Success, mirror the state to all newer ones.
+                    MirrorState(states[i], i - 1);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Mirror the given frame to all more recent frames.
+        /// </summary>
+        /// <param name="state">the state to mirror.</param>
+        /// <param name="start">the index to start at.</param>
+        private void MirrorState(TState state, int start)
+        {
+            for (int i = start; i >= 0; --i)
+            {
+                states[i] = (TState)state.Clone();
+            }
+        }
+
+        /// <summary>
+        /// Some cleanup, removing old adds/removes, that will never
+        /// be checked again.
+        /// </summary>
+        private void PrunePastEvents()
+        {
+            // Remove adds / removes from the to-add list that have been added
+            // to the state trailing furthest behind at this point.
+            List<long> deprecated = new List<long>();
+            foreach (var key in adds.Keys)
+            {
+                if (key <= TrailingFrame)
+                {
+                    deprecated.Add(key);
+                }
+            }
+            foreach (var key in deprecated)
+            {
+                adds.Remove(key);
+            }
+
+            deprecated.Clear();
+            foreach (var key in removes.Keys)
+            {
+                if (key <= TrailingFrame)
+                {
+                    deprecated.Add(key);
+                }
+            }
+            foreach (var key in deprecated)
+            {
+                removes.Remove(key);
             }
         }
     }

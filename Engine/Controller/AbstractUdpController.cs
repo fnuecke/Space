@@ -111,7 +111,7 @@ namespace Engine.Controller
         public void Send(ICommand<TCommandType, TPlayerData> command, uint pollRate = 0)
         {
             Packet packet = new Packet();
-            packet.Write(command.Player.Number);
+            packet.Write((command.Player == null) ? Session.LocalPlayerNumber : command.Player.Number);
             Packetizer.Packetize(command, packet);
             Session.Send(packet, pollRate);
         }
@@ -125,7 +125,7 @@ namespace Engine.Controller
         public void Send(int player, ICommand<TCommandType, TPlayerData> command, uint pollRate = 0)
         {
             Packet packet = new Packet();
-            packet.Write(command.Player.Number);
+            packet.Write((command.Player == null) ? Session.LocalPlayerNumber : command.Player.Number);
             Packetizer.Packetize(command, packet);
             Session.Send(player, packet, pollRate);
         }
@@ -138,7 +138,7 @@ namespace Engine.Controller
         public void SendAll(ICommand<TCommandType, TPlayerData> command, uint pollRate = 0)
         {
             Packet packet = new Packet();
-            packet.Write(command.Player.Number);
+            packet.Write((command.Player == null) ? Session.LocalPlayerNumber : command.Player.Number);
             Packetizer.Packetize(command, packet);
             Session.SendAll(packet, pollRate);
         }
@@ -160,11 +160,28 @@ namespace Engine.Controller
             try
             {
                 var args = (PlayerDataEventArgs<TPlayerData>)e;
-                Player<TPlayerData> player = Session.GetPlayer(args.Data.ReadInt32());
+
+                // Get the player that issued the command.
+                int playerNumber = args.Data.ReadInt32();
+                if (!args.IsFromServer)
+                {
+                    // Avoid clients injecting commands for other clients.
+                    playerNumber = args.Player.Number;
+                }
+
+                // Parse the actual command.
                 ICommand<TCommandType, TPlayerData> command = Packetizer.Depacketize<ICommand<TCommandType, TPlayerData>>(args.Data);
+
+                // Flag it accordingly to where it came from.
                 command.IsTentative = !args.IsFromServer;
-                command.Player = player;
+
+                // Set the issuing player.
+                command.Player = Session.GetPlayer(playerNumber);
+
+                // Handle it.
                 HandleCommand(command);
+
+                // If this was successful (no exception), mark it as consumed.
                 args.Consume();
             }
 #if DEBUG
@@ -172,8 +189,15 @@ namespace Engine.Controller
             {
                 Console.WriteLine("Error handling received player data: " + ex);
             }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine("Error handling received player data: " + ex);
+            }
 #else
             catch (PacketException)
+            {
+            }
+            catch (ArgumentException)
             {
             }
 #endif

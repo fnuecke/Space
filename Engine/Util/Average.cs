@@ -1,10 +1,9 @@
-﻿
-namespace Engine.Util
+﻿namespace Engine.Util
 {
     /// <summary>
     /// Utility class to measure the average over a set number of integers.
     /// </summary>
-    sealed class Average
+    public sealed class Average
     {
         /// <summary>
         /// The list of samples.
@@ -52,5 +51,4 @@ namespace Engine.Util
             return sum / samples.Length;
         }
     }
-
 }

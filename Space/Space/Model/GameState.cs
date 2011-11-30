@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.Commands;
 using Engine.Session;
 using Engine.Simulation;
@@ -59,9 +60,10 @@ namespace Space.Model
                     }
                     break;
                 case GameCommandType.AddPlayerShip:
+                    Console.WriteLine("add ship");
                     {
                         var addCommand = (AddPlayerCommand)command;
-                        var ship = ((GameObjectFactory)game.Services.GetService(typeof(IGameObjectFactory))).CreateShip(addCommand.Player.Data.ShipName, addCommand.Player.Number);
+                        var ship = ((GameObjectFactory)game.Services.GetService(typeof(IGameObjectFactory))).CreateShip(addCommand.Player.Data.ShipName, addCommand.Player.Number, this);
                         if (addCommand.Player.Data.ShipUID > 0)
                         {
                             ship.UID = addCommand.Player.Data.ShipUID;

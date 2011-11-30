@@ -15,7 +15,7 @@ namespace Engine.Commands
         /// <summary>
         /// The frame this command applies to.
         /// </summary>
-        public ulong Frame { get; private set; }
+        public long Frame { get; private set; }
 
         #endregion
 
@@ -26,7 +26,7 @@ namespace Engine.Commands
         {
         }
 
-        protected SimulationCommand(T type, Player<TPlayerData> player, ulong frame)
+        protected SimulationCommand(T type, Player<TPlayerData> player, long frame)
             : base(type, player)
         {
             this.Frame = frame;
@@ -45,7 +45,7 @@ namespace Engine.Commands
 
         public override void Depacketize(Packet packet)
         {
-            Frame = packet.ReadUInt64();
+            Frame = packet.ReadInt64();
 
             base.Depacketize(packet);
         }

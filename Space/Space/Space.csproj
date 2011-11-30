@@ -108,6 +108,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\AddPlayerCommand.cs" />
+    <Compile Include="Commands\GameStateResponseCommand.cs" />
+    <Compile Include="Commands\GameStateRequestCommand.cs" />
     <Compile Include="Commands\RemovePlayerCommand.cs" />
     <Compile Include="Commands\GameCommand.cs" />
     <Compile Include="Commands\SynchronizeCommand.cs" />

@@ -29,9 +29,9 @@ namespace Space.Model
             base.LoadContent();
         }
 
-        public Ship CreateShip(string name, int player)
+        public Ship CreateShip(string name, int player, GameState state)
         {
-            return new Ship(ships[name], textures[name], player);
+            return state.SteppableFactory.GetUniqueId(new Ship(ships[name], textures[name], player));
         }
     }
 }

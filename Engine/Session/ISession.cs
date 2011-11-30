@@ -54,6 +54,13 @@ namespace Engine.Session
         Player<TPlayerData> GetPlayer(int player);
 
         /// <summary>
+        /// Check if the player with the given number exists.
+        /// </summary>
+        /// <param name="player">the number of the player to check.</param>
+        /// <returns><c>true</c> if such a player exists.</returns>
+        bool HasPlayer(int player);
+
+        /// <summary>
         /// Send some data to the server.
         /// </summary>
         /// <param name="data">the data to send.</param>

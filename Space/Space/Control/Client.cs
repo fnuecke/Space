@@ -28,6 +28,16 @@ namespace Space.Control
         /// </summary>
         private Direction lastDirection = Direction.Invalid;
 
+        /// <summary>
+        /// Last time we sent a sync command to the server.
+        /// </summary>
+        private long lastSyncTime = 0;
+
+        /// <summary>
+        /// Averages frame deltas, used for clock sync.
+        /// </summary>
+        private Average frameDeltas = new Average(20);
+
         #endregion
 
         public Client(Game game)
@@ -100,6 +110,14 @@ namespace Space.Control
                 // Drive game logic.
                 simulation.Update();
             }
+
+            // Send sync command every now and then, to keep game clock synched.
+            if (Session.ConnectionState == ClientState.Connected &&
+                new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > 200)
+            {
+                lastSyncTime = DateTime.Now.Ticks;
+                Send(new SynchronizeCommand(simulation.CurrentFrame), 0);
+            }
         }
 
         protected override void HandleGameInfoReceived(object sender, EventArgs e)
@@ -141,37 +159,39 @@ namespace Space.Control
         {
             switch (command.Type)
             {
-                case GameCommandType.PlayerInput:
+                case GameCommandType.Synchronize:
+                    if (!command.IsTentative)
                     {
-                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo>)command;
-                        if (simulationCommand.Frame > simulation.TrailingFrame)
-                        {
-                            simulation.PushCommand(simulationCommand);
-                        }
-                        else
-                        {
-                            console.WriteLine("Got a command we couldn't use, " + simulationCommand.Frame + "<" + simulation.TrailingFrame);
-                        }
+                        SynchronizeCommand syncCommand = (SynchronizeCommand)command;
+                        long latency = (simulation.CurrentFrame - syncCommand.ClientFrame) / 2;
+                        long clientServerDelta = (syncCommand.ServerFrame - simulation.CurrentFrame);
+                        long frameDelta = clientServerDelta + latency / 2;
+                        Console.WriteLine("Correcting for " + frameDelta + " frames.");
+                        simulation.RunToFrame(simulation.CurrentFrame + frameDelta);
+                    }
+                    break;
+                case GameCommandType.GameStateResponse:
+                    if (!command.IsTentative)
+                    {
+                        simulation.Depacketize(((GameStateResponseCommand)command).GameState);
                     }
                     break;
                 case GameCommandType.AddPlayerShip:
+                case GameCommandType.PlayerInput:
+                case GameCommandType.RemovePlayerShip:
                     {
                         var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo>)command;
-                        if (simulationCommand.Frame > simulation.TrailingFrame)
-                        {
-                            simulation.PushCommand(simulationCommand);
-                        }
-                        else
-                        {
-                            console.WriteLine("Got a command we couldn't use, " + simulationCommand.Frame + "<" + simulation.TrailingFrame);
-                        }
+                        simulation.PushCommand(simulationCommand);
                     }
                     break;
+                default:
+                    throw new ArgumentException("command");
             }
         }
 
         private void HandleThresholdExceeded(object sender, EventArgs e)
         {
+            Send(new GameStateRequestCommand(), 200);
         }
 
 #region Debugging stuff
@@ -204,7 +224,7 @@ namespace Space.Control
             spriteBatch.End();
         }
 
-        internal ulong DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+        internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
 
 #endregion
     }

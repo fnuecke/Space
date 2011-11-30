@@ -2,6 +2,6 @@
 {
     interface IGameObjectFactory
     {
-        Ship CreateShip(string name, int player);
+        Ship CreateShip(string name, int player, GameState state);
     }
 }

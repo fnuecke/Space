@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 
 namespace Engine.Simulation
 {
@@ -25,24 +24,6 @@ namespace Engine.Simulation
         /// The world (simulation) this object is associated with.
         /// </summary>
         public virtual TState State { get; set; }
-
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        /// Counter used to distribute ids.
-        /// </summary>
-        private static long lastUid = 0;
-
-        #endregion
-
-        #region Constructor
-
-        protected AbstractSteppable()
-        {
-            UID = Interlocked.Increment(ref lastUid);
-        }
 
         #endregion
 

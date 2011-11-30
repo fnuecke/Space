@@ -148,6 +148,8 @@
     <Compile Include="Physics\Sphere.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\Serialization.cs" />
+    <Compile Include="Simulation\ISteppableFactory.cs" />
+    <Compile Include="Simulation\SteppableFactory.cs" />
     <Compile Include="Simulation\ThresholdExceededEventArgs.cs" />
     <Compile Include="Simulation\TSS.cs" />
     <Compile Include="Simulation\PhysicsEnabledState.cs" />

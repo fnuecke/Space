@@ -1,18 +1,30 @@
 ﻿using Engine.Commands;
+using Engine.Serialization;
 using Space.Model;
 
 namespace Space.Commands
 {
     /// <summary>
-    /// Used by the server to send current frame to clients, used to synchronize
-    /// run speeds of clients to server.
+    /// Used to synchronize game clocks (leading simulation frames).
     /// </summary>
+    /// <seealso cref="http://www.mine-control.com/zack/timesync/timesync.html"/>
     class SynchronizeCommand : Command<GameCommandType, PlayerInfo>
     {
+        #region Properties
+        
         /// <summary>
         /// The frame to synchronize to.
         /// </summary>
-        public ulong Frame { get; private set; }
+        public long ClientFrame { get; private set; }
+
+        /// <summary>
+        /// The frame to synchronize to.
+        /// </summary>
+        public long ServerFrame { get; private set; }
+
+        #endregion
+
+        #region Constructor
 
         /// <summary>
         /// For deserialization.
@@ -26,25 +38,35 @@ namespace Space.Commands
         /// Construct new synchronize command, telling players to synchronize
         /// to the server, by telling them the servers current frame.
         /// </summary>
-        /// <param name="frame">the current leading frame on the server.</param>
-        public SynchronizeCommand(ulong frame)
+        /// <param name="clientFrame">the current frame on the client when the sync was initialized.</param>
+        /// <param name="serverFrame">the current frame on the server when it responded.</param>
+        public SynchronizeCommand(long clientFrame, long serverFrame = 0)
             : base(GameCommandType.Synchronize)
         {
-            this.Frame = frame;
+            this.ClientFrame = clientFrame;
+            this.ServerFrame = serverFrame;
         }
 
-        public override void Packetize(Engine.Serialization.Packet packet)
+        #endregion
+
+        #region Serialization
+
+        public override void Packetize(Packet packet)
         {
-            packet.Write(Frame);
+            packet.Write(ClientFrame);
+            packet.Write(ServerFrame);
 
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Engine.Serialization.Packet packet)
+        public override void Depacketize(Packet packet)
         {
-            Frame = packet.ReadUInt64();
+            ClientFrame = packet.ReadInt64();
+            ServerFrame = packet.ReadInt64();
 
             base.Depacketize(packet);
         }
+
+        #endregion
     }
 }

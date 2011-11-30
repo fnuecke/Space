@@ -4,9 +4,9 @@ namespace Engine.Simulation
 {
     public class ThresholdExceededEventArgs : EventArgs
     {
-        public ulong Frame { get; private set; }
+        public long Frame { get; private set; }
 
-        public ThresholdExceededEventArgs(ulong frame)
+        public ThresholdExceededEventArgs(long frame)
         {
             this.Frame = frame;
         }

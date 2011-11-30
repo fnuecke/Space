@@ -61,15 +61,23 @@ namespace Space.Control
 
         protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo> command)
         {
-            command.IsTentative = false;
             switch (command.Type)
             {
+                case GameCommandType.Synchronize:
+                    // Client resyncing.
+                    {
+                        SynchronizeCommand syncCommand = (SynchronizeCommand)command;
+                        Send(command.Player.Number, new SynchronizeCommand(syncCommand.ClientFrame, simulation.CurrentFrame));
+                    }
+                    break;
                 case GameCommandType.PlayerInput:
+                    // Player sent input.
                     {
                         var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo>)command;
                         if (simulationCommand.Frame > simulation.TrailingFrame)
                         {
-                            // OK, in allowed timeframe, send it to all clients.
+                            // OK, in allowed timeframe, mark as valid and send it to all clients.
+                            simulationCommand.IsTentative = false;
                             simulation.PushCommand(simulationCommand);
                             SendAll(command);
                         }
@@ -79,6 +87,14 @@ namespace Space.Control
                         }
                     }
                     break;
+                case GameCommandType.GameStateRequest:
+                    // Client needs game state.
+                    {
+                        Send(command.Player.Number, new GameStateResponseCommand(simulation), 200);
+                    }
+                    break;
+                default:
+                    throw new ArgumentException("command");
             }
         }
 
@@ -262,7 +278,7 @@ namespace Space.Control
             spriteBatch.End();
         }
 
-        internal ulong DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+        internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
 
         #endregion
     }

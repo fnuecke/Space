@@ -24,16 +24,10 @@ namespace Engine.Simulation
         event EventHandler<EventArgs> ThresholdExceeded;
 
         /// <summary>
-        /// The maximum allowed frame to run to. This serves as an upper bound to
-        /// synchronize to remote states. Zero means this check is disabled.
+        /// Run the simulation to the given frame, which may be in the past.
         /// </summary>
-        ulong MaximumFrame { get; set; }
-
-        /// <summary>
-        /// The minimum allowed frame to run to. This serves as a lower bound to
-        /// synchronize to remote states. Zero means this check is disabled.
-        /// </summary>
-        ulong MinimumFrame { get; set; }
+        /// <param name="frame">the frame to run to.</param>
+        void RunToFrame(long frame);
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.

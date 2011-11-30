@@ -26,12 +26,17 @@ namespace Engine.Simulation
         /// <summary>
         /// The current frame of the simulation the state represents.
         /// </summary>
-        public ulong CurrentFrame { get; protected set; }
+        public long CurrentFrame { get; protected set; }
 
         /// <summary>
         /// Enumerator over all children.
         /// </summary>
         public IEnumerable<TSteppable> Children { get { return steppables; } }
+
+        /// <summary>
+        /// The steppable factory to be used in this state.
+        /// </summary>
+        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData> SteppableFactory { get; protected set; }
 
         /// <summary>
         /// Getter to return <c>this</c> pointer of actual implementation type... damn generics.
@@ -45,12 +50,21 @@ namespace Engine.Simulation
         /// <summary>
         /// List of queued commands to execute in the future.
         /// </summary>
-        protected Dictionary<ulong, List<ISimulationCommand<TCommandType, TPlayerData>>> commands = new Dictionary<ulong, List<ISimulationCommand<TCommandType, TPlayerData>>>();
+        protected Dictionary<long, List<ISimulationCommand<TCommandType, TPlayerData>>> commands = new Dictionary<long, List<ISimulationCommand<TCommandType, TPlayerData>>>();
 
         /// <summary>
         /// List of child steppables this state drives.
         /// </summary>
         protected List<TSteppable> steppables = new List<TSteppable>();
+
+        #endregion
+
+        #region Constructor
+
+        protected AbstractState()
+        {
+            SteppableFactory = new SteppableFactory<TState, TSteppable, TCommandType, TPlayerData>();
+        }
 
         #endregion
 
@@ -177,6 +191,8 @@ namespace Engine.Simulation
         {
             packet.Write(CurrentFrame);
 
+            SteppableFactory.Packetize(packet);
+
             int totalCommands = 0;
             foreach (var list in commands.Values)
             {
@@ -201,10 +217,13 @@ namespace Engine.Simulation
         public virtual void Depacketize(Packet packet)
         {
             // Get the current frame of the simulation.
-            CurrentFrame = packet.ReadUInt64();
+            CurrentFrame = packet.ReadInt64();
+
+            // Read factory state.
+            SteppableFactory.Depacketize(packet);
 
             // Find commands that our out of date now, but keep newer ones.
-            List<ulong> deprecated = new List<ulong>();
+            List<long> deprecated = new List<long>();
             foreach (var key in commands.Keys)
             {
                 if (key <= CurrentFrame)
@@ -240,6 +259,8 @@ namespace Engine.Simulation
         protected virtual object CloneTo(AbstractState<TState, TSteppable, TCommandType, TPlayerData> clone)
         {
             clone.CurrentFrame = CurrentFrame;
+
+            clone.SteppableFactory = (ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData>)SteppableFactory.Clone();
 
             clone.commands.Clear();
             foreach (var keyValue in commands)

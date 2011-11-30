@@ -19,12 +19,17 @@ namespace Engine.Simulation
         /// <summary>
         /// The current frame of the simulation the state represents.
         /// </summary>
-        ulong CurrentFrame { get; }
+        long CurrentFrame { get; }
 
         /// <summary>
         /// Iterator over all steppables registered with this simulation.
         /// </summary>
         IEnumerable<TSteppable> Children { get; }
+
+        /// <summary>
+        /// The steppable factory to be used in this state.
+        /// </summary>
+        ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData> SteppableFactory { get; }
 
         /// <summary>
         /// Add an steppable object to the list of participants of this state.

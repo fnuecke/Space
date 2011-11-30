@@ -26,7 +26,11 @@ namespace Space
         {
             Packetizer.Register<Ship>();
             Packetizer.Register<AddPlayerCommand>();
+            Packetizer.Register<GameStateRequestCommand>();
+            Packetizer.Register<GameStateResponseCommand>();
             Packetizer.Register<PlayerInputCommand>();
+            Packetizer.Register<RemovePlayerCommand>();
+            Packetizer.Register<SynchronizeCommand>();
         }
 
         public Spaaace()

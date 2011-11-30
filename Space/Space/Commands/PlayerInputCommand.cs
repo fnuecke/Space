@@ -35,7 +35,7 @@ namespace Space.Commands
         {
         }
 
-        public PlayerInputCommand(Player<PlayerInfo> player, ulong frame, PlayerInput input, Direction direction)
+        public PlayerInputCommand(Player<PlayerInfo> player, long frame, PlayerInput input, Direction direction)
             : base(GameCommandType.PlayerInput, player, frame)
         {
             this.Input = input;

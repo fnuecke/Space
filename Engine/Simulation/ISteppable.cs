@@ -24,7 +24,7 @@ namespace Engine.Simulation
         /// <summary>
         /// A globally unique id for this object.
         /// </summary>
-        long UID { get; }
+        long UID { get; set; }
 
         /// <summary>
         /// Perform one simulation step. 

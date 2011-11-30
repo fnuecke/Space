@@ -19,7 +19,7 @@ namespace Space.Model
         /// <summary>
         /// The last frame this ship was destroyed in.
         /// </summary>
-        protected ulong lastDestroyed;
+        protected long lastDestroyed;
 
         public bool IsAlive { get { return true /* State.CurrentFrame - lastDestroyed > RespawnTime */; } }
 

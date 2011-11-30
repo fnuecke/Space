@@ -170,7 +170,17 @@ namespace Engine.Session
         /// <returns>information on the player.</returns>
         public Player<TPlayerData> GetPlayer(int player)
         {
-            return (players == null) ? null : players[player];
+            return HasPlayer(player) ? players[player] : null;
+        }
+
+        /// <summary>
+        /// Check if the player with the given number exists.
+        /// </summary>
+        /// <param name="player">the number of the player to check.</param>
+        /// <returns><c>true</c> if such a player exists.</returns>
+        public bool HasPlayer(int player)
+        {
+            return (players != null && player >= 0 && player < MaxPlayers && players[player] != null);
         }
 
         /// <summary>
