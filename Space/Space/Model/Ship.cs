@@ -35,11 +35,12 @@ namespace Space.Model
         {
         }
 
-        public Ship(ShipData data, Texture2D texture, int player)
-            : base(data.Radius)
+        public Ship(string name, int player, PacketizerContext context)
         {
+            ShipData data = context.shipData[name];
+            this.radius = data.Radius;
             this.data = data;
-            this.texture = texture;
+            this.texture = context.shipTextures[name];
             this.PlayerNumber = player;
         }
 
@@ -127,7 +128,8 @@ namespace Space.Model
         public override void Depacketize(Packet packet, PacketizerContext context)
         {
             string name = packet.ReadString();
-            //context.game.
+            data = context.shipData[name];
+            texture = context.game.Content.Load<Texture2D>(data.Texture);
 
             PlayerNumber = packet.ReadInt32();
 

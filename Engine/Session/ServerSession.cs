@@ -261,7 +261,7 @@ namespace Engine.Session
                                 }
 
                                 // Add other game relevant data (e.g. game state).
-                                RequestEventArgs requestArgs = new RequestEventArgs();
+                                var requestArgs = new JoinRequestEventArgs<TPlayerData, TPacketizerContext>(playerData);
                                 OnJoinRequested(requestArgs);
                                 response.Write(requestArgs.Data);
 
@@ -366,7 +366,7 @@ namespace Engine.Session
             throw new InvalidOperationException("Game is already full.");
         }
 
-        private void OnJoinRequested(RequestEventArgs e)
+        private void OnJoinRequested(JoinRequestEventArgs<TPlayerData, TPacketizerContext> e)
         {
             if (JoinRequested != null)
             {

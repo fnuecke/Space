@@ -93,6 +93,14 @@ namespace Engine.Serialization
             readPointer = 0;
         }
 
+        /// <summary>
+        /// Restart reading from the beginning.
+        /// </summary>
+        public void Rewind()
+        {
+            readPointer = 0;
+        }
+
         #endregion
 
         #region Writing

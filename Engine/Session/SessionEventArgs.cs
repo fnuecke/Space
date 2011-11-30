@@ -177,4 +177,21 @@ namespace Engine.Session
             this.Data = new Packet();
         }
     }
+
+    /// <summary>
+    /// Event args for handling join or info requests on servers.
+    /// </summary>
+    public class JoinRequestEventArgs<TPlayerData, TPacketizerContext> : RequestEventArgs
+        where TPlayerData : IPacketizable<TPacketizerContext>
+    {
+        /// <summary>
+        /// Data that should be sent should be written to this packet.
+        /// </summary>
+        public TPlayerData PlayerData { get; set; }
+
+        public JoinRequestEventArgs(TPlayerData playerData)
+        {
+            this.PlayerData = playerData;
+        }
+    }
 }

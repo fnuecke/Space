@@ -41,12 +41,12 @@ namespace Engine.Simulation
         /// <summary>
         /// The steppable factory to be used in this state. Not available for TSS.
         /// </summary>
-        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> SteppableFactory { get { throw new NotSupportedException(); } }
+        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> SteppableFactory { get { return LeadingState.SteppableFactory; } }
 
         /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
-        public IPacketizer<TPacketizerContext> Packetizer { get { throw new NotSupportedException(); } }
+        public IPacketizer<TPacketizerContext> Packetizer { get { return LeadingState.Packetizer; } }
 
         /// <summary>
         /// The frame number of the trailing state, i.e. the point we cannot roll
@@ -63,12 +63,6 @@ namespace Engine.Simulation
         /// Get the leading state.
         /// </summary>
         public TState LeadingState { get { return states[0]; } }
-
-        /// <summary>
-        /// The frame when the last complete synchronization took place,
-        /// i.e. the point we don't roll back past.
-        /// </summary>
-        private long lastSynchronization;
 
         #endregion
 
@@ -88,7 +82,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<long, List<TSteppable>> adds = new Dictionary<long, List<TSteppable>>();
+        protected Dictionary<long, List<Tuple<TSteppable, bool>>> adds = new Dictionary<long, List<Tuple<TSteppable, bool>>>();
 
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
@@ -120,8 +114,9 @@ namespace Engine.Simulation
         /// This will add the object to the leading state, and add it to the delayed
         /// states when they reach the current frame of the leading state.
         /// </summary>
-        /// <param name="updateable">the object to add.</param>
-        public void Add(TSteppable steppable)
+        /// <param name="steppable">the object to add.</param>
+        /// <param name="keepUid">keep the objects UID, just increment the factories counter.</param>
+        public void Add(TSteppable steppable, bool keepUid = false)
         {
             // Do not allow changes while waiting for synchronization.
             if (WaitingForSynchronization)
@@ -129,12 +124,12 @@ namespace Engine.Simulation
                 throw new InvalidOperationException("Waiting for synchronization.");
             }
 
-            LeadingState.Add(steppable);
+            LeadingState.Add(steppable, keepUid);
             if (!adds.ContainsKey(CurrentFrame))
             {
-                adds.Add(CurrentFrame, new List<TSteppable>());
+                adds.Add(CurrentFrame, new List<Tuple<TSteppable, bool>>());
             }
-            adds[CurrentFrame].Add((TSteppable)steppable.Clone());
+            adds[CurrentFrame].Add(Tuple.Create((TSteppable)steppable.Clone(), keepUid));
         }
         
         /// <summary>
@@ -237,12 +232,6 @@ namespace Engine.Simulation
                 throw new InvalidOperationException();
             }
 
-            // Ignore frames past the last synchronization.
-            if (command.Frame <= lastSynchronization)
-            {
-                return;
-            }
-
             // Check if we have a chance of applying this state.
             if (command.Frame <= TrailingFrame)
             {
@@ -277,7 +266,8 @@ namespace Engine.Simulation
                 packet.Write(add.Value.Count);
                 foreach (var item in add.Value)
                 {
-                    Packetizer.Packetize(item, packet);
+                    Packetizer.Packetize(item.Item1, packet);
+                    packet.Write(item.Item2);
                 }
             }
 
@@ -336,11 +326,13 @@ namespace Engine.Simulation
             for (int addIdx = 0; addIdx < numAdds; ++addIdx)
             {
                 long key = packet.ReadInt64();
-                adds.Add(key, new List<TSteppable>());
+                adds.Add(key, new List<Tuple<TSteppable, bool>>());
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    adds[key].Add(Packetizer.Depacketize<TSteppable>(packet));
+                    TSteppable steppable = Packetizer.Depacketize<TSteppable>(packet);
+                    bool keepId = packet.ReadBoolean();
+                    adds[key].Add(Tuple.Create(steppable, keepId));
                 }
             }
 
@@ -360,7 +352,6 @@ namespace Engine.Simulation
             states[states.Length - 1].Depacketize(packet, context);
             MirrorState(states[states.Length - 1], states.Length - 2);
 
-            lastSynchronization = CurrentFrame;
             WaitingForSynchronization = false;
         }
 
@@ -415,7 +406,7 @@ namespace Engine.Simulation
                         // Add a copy of it.
                         foreach (var steppable in adds[states[i].CurrentFrame])
                         {
-                            states[i].Add((TSteppable)steppable.Clone());
+                            states[i].Add((TSteppable)steppable.Item1.Clone(), steppable.Item2);
                         }
                     }
 

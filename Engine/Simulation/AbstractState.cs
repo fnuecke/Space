@@ -79,9 +79,19 @@ namespace Engine.Simulation
         /// <summary>
         /// Add an steppable object to the list of participants of this state.
         /// </summary>
-        /// <param name="updateable">the object to add.</param>
-        public void Add(TSteppable steppable)
+        /// <param name="steppable">the object to add.</param>
+        /// <param name="keepUid">keep the objects UID, just increment the factories counter.</param>
+        public void Add(TSteppable steppable, bool keepUid = false)
         {
+            if (keepUid)
+            {
+                SteppableFactory.Increment();
+            }
+            else
+            {
+                SteppableFactory.GetUniqueId(steppable);
+            }
+
             steppables.Add(steppable);
             steppable.State = ThisState;
         }
@@ -89,7 +99,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Remove an steppable object to the list of participants of this state.
         /// </summary>
-        /// <param name="updateable">the object to remove.</param>
+        /// <param name="steppable">the object to remove.</param>
         public void Remove(TSteppable steppable)
         {
             steppables.Remove(steppable);
@@ -102,12 +112,16 @@ namespace Engine.Simulation
         /// <param name="steppableUid">the remove object.</param>
         public TSteppable Remove(long steppableUid)
         {
-            for (int i = 0; i < steppables.Count; i++)
+            if (steppableUid >= 0)
             {
-                if (steppables[i].UID == steppableUid) {
-                    TSteppable steppable = steppables[i];
-                    steppables.RemoveAt(i);
-                    return steppable;
+                for (int i = 0; i < steppables.Count; i++)
+                {
+                    if (steppables[i].UID == steppableUid)
+                    {
+                        TSteppable steppable = steppables[i];
+                        steppables.RemoveAt(i);
+                        return steppable;
+                    }
                 }
             }
             return default(TSteppable);
@@ -254,7 +268,7 @@ namespace Engine.Simulation
             int numSteppables = packet.ReadInt32();
             for (int i = 0; i < numSteppables; ++i)
             {
-                Add(Packetizer.Depacketize<TSteppable>(packet));
+                Add(Packetizer.Depacketize<TSteppable>(packet), true);
             }
         }
 

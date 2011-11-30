@@ -2,20 +2,28 @@
 
 namespace Space.Model
 {
+    enum PlayerInfoField
+    {
+        ShipId,
+        ShipType
+    }
+
     class PlayerInfo : IPacketizable<PacketizerContext>
     {
         public long ShipUID { get; set; }
 
-        public string ShipName { get; set; }
+        public string ShipType { get; set; }
 
         public void Packetize(Packet packet)
         {
-            packet.Write(ShipName);
+            packet.Write(ShipUID);
+            packet.Write(ShipType);
         }
 
         public void Depacketize(Packet packet, PacketizerContext context)
         {
-            ShipName = packet.ReadString();
+            ShipUID = packet.ReadInt64();
+            ShipType = packet.ReadString();
         }
     }
 }

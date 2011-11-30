@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.Commands;
 using Engine.Serialization;
 using Engine.Session;
@@ -29,51 +28,38 @@ namespace Space.Model
             switch (command.Type)
             {
                 case GameCommandType.PlayerInput:
+                    // Player input command, apply it.
                     {
-                        var inputCommand = (PlayerInputCommand)command;
                         Ship ship = (Ship)Get(command.Player.Data.ShipUID);
-                        if (ship == null)
+                        if (ship != null)
                         {
-                            // No ship for this player.
-                            return;
-                        }
-                        switch (inputCommand.Input)
-                        {
-                            case PlayerInputCommand.PlayerInput.Accelerate:
-                                ship.Accelerate(inputCommand.Direction);
-                                break;
-                            case PlayerInputCommand.PlayerInput.StopMovement:
-                                ship.StopMovement();
-                                break;
-                            case PlayerInputCommand.PlayerInput.TurnLeft:
-                                ship.TurnLeft();
-                                break;
-                            case PlayerInputCommand.PlayerInput.TurnRight:
-                                ship.TurnRight();
-                                break;
-                            case PlayerInputCommand.PlayerInput.StopRotation:
-                                ship.StopRotating();
-                                break;
+                            // What did he do?
+                            var inputCommand = (PlayerInputCommand)command;
+                            switch (inputCommand.Input)
+                            {
+                                case PlayerInputCommand.PlayerInput.Accelerate:
+                                    // Start accelerating in the given direction.
+                                    ship.Accelerate(inputCommand.Direction);
+                                    break;
+                                case PlayerInputCommand.PlayerInput.StopMovement:
+                                    // Stop accelerating.
+                                    ship.StopMovement();
+                                    break;
+                                case PlayerInputCommand.PlayerInput.TurnLeft:
+                                    // Begin turning to the left.
+                                    ship.TurnLeft();
+                                    break;
+                                case PlayerInputCommand.PlayerInput.TurnRight:
+                                    // Begin turning to the right.
+                                    ship.TurnRight();
+                                    break;
+                                case PlayerInputCommand.PlayerInput.StopRotation:
+                                    // Stop turning.
+                                    ship.StopRotating();
+                                    break;
+                            }
                         }
                     }
-                    break;
-                case GameCommandType.AddPlayerShip:
-                    Console.WriteLine("add ship");
-                    {
-                        var addCommand = (AddPlayerCommand)command;
-                        var ship = ((GameObjectFactory)game.Services.GetService(typeof(IGameObjectFactory))).CreateShip(addCommand.Player.Data.ShipName, addCommand.Player.Number, this);
-                        if (addCommand.Player.Data.ShipUID > 0)
-                        {
-                            ship.UID = addCommand.Player.Data.ShipUID;
-                        }
-                        else
-                        {
-                            addCommand.Player.Data.ShipUID = ship.UID;
-                        }
-                        Add(ship);
-                    }
-                    break;
-                case GameCommandType.RemovePlayerShip:
                     break;
                 default:
                     break;

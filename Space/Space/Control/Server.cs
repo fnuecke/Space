@@ -2,6 +2,7 @@
 using Engine.Commands;
 using Engine.Controller;
 using Engine.Network;
+using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
 using Microsoft.Xna.Framework;
@@ -55,8 +56,11 @@ namespace Space.Control
         protected override void HandleJoinRequested(object sender, EventArgs e)
         {
             // Send current game state to client.
-            var args = (RequestEventArgs)e;
+            var args = (JoinRequestEventArgs<PlayerInfo, PacketizerContext>)e;
             simulation.Packetize(args.Data);
+
+            // Validate player data.
+            args.PlayerData.ShipUID = 0;
         }
 
         protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
@@ -103,16 +107,37 @@ namespace Space.Control
             var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
             console.WriteLine(String.Format("SRV.NET: {0} joined.", args.Player));
 
-            var command = new AddPlayerCommand(args.Player, simulation.CurrentFrame + 1);
-            command.IsTentative = false;
-            simulation.PushCommand(command);
-            SendAll(command, 50);
+            // New player joined the game, create a ship for him.
+            var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, packetizer.Context);
+            simulation.Add(ship);
+            Console.WriteLine("{0} => ship id: {1}", args.Player, ship.UID);
+            SetPlayerShipUid(args.Player, ship.UID);
+            SendObjectAdded(ship);
+        }
+
+        private void SetPlayerShipUid(Player<PlayerInfo, PacketizerContext> player, long id)
+        {
+            player.Data.ShipUID = id;
+            Packet packet = new Packet();
+            packet.Write(id);
+            SendAll(new PlayerDataChangedCommand(player, PlayerInfoField.ShipId, packet), 100);
+        }
+
+        private void SendObjectAdded(IGameObject obj)
+        {
+            Packet packet = new Packet();
+            packetizer.Packetize(obj, packet);
+            SendAll(new AddGameObjectCommand(packet, simulation.CurrentFrame), 100);
         }
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
             console.WriteLine(String.Format("SRV.NET: {0} left.", args.Player));
+
+            // Player left the game, remove his ship.
+            simulation.Remove(args.Player.Data.ShipUID);
+            SendAll(new RemoveGameObjectCommand(args.Player.Data.ShipUID, simulation.CurrentFrame), 200);
         }
 
         #region Debugging stuff
@@ -131,10 +156,13 @@ namespace Space.Control
             SpriteFont font = Game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
 
             string sessionInfo = "Server (" + Session.NumPlayers + "/" + Session.MaxPlayers + ")";
-            for (int i = 0; i < Session.NumPlayers; ++i)
+            for (int i = 0; i < Session.MaxPlayers; ++i)
             {
                 var player = Session.GetPlayer(i);
-                sessionInfo += "\n#" + player.Number + ": " + player.Name + " [" + player.Ping + "]";
+                if (player != null)
+                {
+                    sessionInfo += "\n#" + player.Number + ": " + player.Name + " [" + player.Ping + "]";
+                }
             }
 
             var sessionInfoMeasure = font.MeasureString(sessionInfo);

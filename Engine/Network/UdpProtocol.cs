@@ -261,23 +261,27 @@ namespace Engine.Network
                         Information.Incoming(buffer.Length, TrafficType.Data);
                         if (connection != null)
                         {
-                            // Only handle these once, as they may have been resent (ack didn't get back quick enough).
-                            bool result;
-                            if (connection.IsAlreadyHandled(messageNumber, out result))
+                            // Only handle these once successfully, as they may have been resent
+                            // (ack didn't get back quick enough or failed handling before).
+                            if (!connection.IsAlreadyHandled(messageNumber))
                             {
-                                // If this wasn't handled before, don't send an ack now, either.
-                                if (!result)
-                                {
-                                    return;
-                                }
-                            }
-                            else
-                            {
+                                // Failed last time, retry because some other packet might have
+                                // arrived in the meantime, changing the handler's state.
                                 var dataArgs = new ProtocolDataEventArgs(remote, data);
                                 OnData(dataArgs);
-                                connection.MarkHandled(messageNumber, dataArgs.WasConsumed);
-                            }
+                                if (dataArgs.WasConsumed)
+                                {
+                                    // Success! Remember that.
+                                    connection.MarkHandled(messageNumber);
+                                }
+                                else
+                                {
+                                    // Failed handling, don't send ack.
+                                    return;
+                                }
+                            } // else handled successfully before, resend ack.
 
+                            // Send ack if we get here.
                             Packet ack = messages.MakeAck(messageNumber);
                             Information.Outgoing(ack.Length, TrafficType.Protocol);
                             udp.Send(ack.Buffer, ack.Length, remote);
@@ -702,7 +706,7 @@ namespace Engine.Network
         /// <summary>
         /// List of messages already handled recently.
         /// </summary>
-        private Dictionary<int, bool> handledMessages = new Dictionary<int, bool>();
+        private HashSet<int> handledMessages = new HashSet<int>();
 
         /// <summary>
         /// Average ping to this client, i.e. half round trip time for acked messages,
@@ -723,27 +727,18 @@ namespace Engine.Network
         /// </summary>
         /// <param name="messageNumber">the message to check.</param>
         /// <returns><code>true</code> if <code>MarkHandled(messageNumber)</code> has been called before.</returns>
-        public bool IsAlreadyHandled(int messageNumber, out bool result)
+        public bool IsAlreadyHandled(int messageNumber)
         {
-            if (handledMessages.ContainsKey(messageNumber))
-            {
-                result = handledMessages[messageNumber];
-                return true;
-            }
-            else
-            {
-                result = false; //< Satisfy out.
-                return false;
-            }
+            return handledMessages.Contains(messageNumber);
         }
 
         /// <summary>
         /// Mark a message as handled, meaning it won't be broadcast upon further reception.
         /// </summary>
         /// <param name="messageNumber">the number of the message to mark as handled.</param>
-        public void MarkHandled(int messageNumber, bool result)
+        public void MarkHandled(int messageNumber)
         {
-            handledMessages.Add(messageNumber, result);
+            handledMessages.Add(messageNumber);
         }
 
         /// <summary>

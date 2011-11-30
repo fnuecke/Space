@@ -15,9 +15,10 @@ namespace Engine.Simulation
         #region Fields
 
         /// <summary>
-        /// Counter used to distribute ids.
+        /// Counter used to distribute ids. Start with one to avoid accessing
+        /// the first instance due to uninitialized "pointers".
         /// </summary>
-        private long lastUid = 0;
+        private long lastUid = 1;
 
         #endregion
 
@@ -57,6 +58,15 @@ namespace Engine.Simulation
         {
             value.UID = lastUid++;
             return value;
+        }
+
+        /// <summary>
+        /// Simply increment the internal counter by one. This is useful if
+        /// a state gets an existing object, which already has an id.
+        /// </summary>
+        public void Increment()
+        {
+            ++lastUid;
         }
 
         #endregion

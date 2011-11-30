@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
 using Space.Control;
 using Space.Model;
+using SpaceData;
 
 namespace Space
 {
@@ -17,6 +18,7 @@ namespace Space
     public class Spaaace : Microsoft.Xna.Framework.Game
     {
         GraphicsDeviceManager graphics;
+        PacketizerContext context;
         SpriteBatch spriteBatch;
         GameConsole console;
         Server server;
@@ -31,21 +33,21 @@ namespace Space
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            PacketizerContext context = new PacketizerContext();
+            context = new PacketizerContext();
             context.game = this;
             Packetizer<PacketizerContext> packetizer = new Packetizer<PacketizerContext>(context);
 
             Services.AddService(typeof(IPacketizer<PacketizerContext>), packetizer);
 
             packetizer.Register<Ship>();
-            packetizer.Register<AddPlayerCommand>();
+            packetizer.Register<AddGameObjectCommand>();
             packetizer.Register<GameStateRequestCommand>();
             packetizer.Register<GameStateResponseCommand>();
+            packetizer.Register<PlayerDataChangedCommand>();
             packetizer.Register<PlayerInputCommand>();
-            packetizer.Register<RemovePlayerCommand>();
+            packetizer.Register<RemoveGameObjectCommand>();
             packetizer.Register<SynchronizeCommand>();
 
-            Components.Add(new GameObjectFactory(this));
             Components.Add(new KeyboardInputManager(this));
             console = new GameConsole(this);
             Components.Add(console);
@@ -76,7 +78,7 @@ namespace Space
             console.AddCommand("connect", args =>
             {
                 PlayerInfo info = new PlayerInfo();
-                info.ShipName = "Sparrow";
+                info.ShipType = "Sparrow";
                 client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
             },
                 "Joins a game at the given host.",
@@ -86,6 +88,14 @@ namespace Space
                 client.Session.Leave();
             },
                 "Leave the current game.");
+
+            console.AddCommand("join", args =>
+            {
+                PlayerInfo info = new PlayerInfo();
+                info.ShipType = "Sparrow";
+                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 8442), "player", info);
+            },
+                "autojoin fn");
 
             console.LineWritten += delegate(object sender, EventArgs e)
             {
@@ -116,6 +126,15 @@ namespace Space
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             Services.AddService(typeof(SpriteBatch), spriteBatch);
+
+            var shipdata = Content.Load<ShipData[]>("Data/ships");
+            foreach (var ship in shipdata)
+            {
+                context.shipData[ship.Name] = ship;
+                context.shipTextures[ship.Name] = Content.Load<Texture2D>(ship.Texture);
+            }
+
+            context.game = this;
 
             console.SpriteBatch = spriteBatch;
             console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");

@@ -157,28 +157,78 @@ namespace Space.Control
 
         protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
+            if (Session.ConnectionState != ClientState.Connected)
+            {
+                throw new InvalidOperationException();
+            }
             switch (command.Type)
             {
                 case GameCommandType.Synchronize:
+                    // Only accept these when they come from the server.
                     if (!command.IsTentative)
                     {
                         SynchronizeCommand syncCommand = (SynchronizeCommand)command;
                         long latency = (simulation.CurrentFrame - syncCommand.ClientFrame) / 2;
                         long clientServerDelta = (syncCommand.ServerFrame - simulation.CurrentFrame);
                         long frameDelta = clientServerDelta + latency / 2;
-                        Console.WriteLine("Correcting for " + frameDelta + " frames.");
-                        simulation.RunToFrame(simulation.CurrentFrame + frameDelta);
+                        if (frameDelta != 0)
+                        {
+                            Console.WriteLine("Correcting for " + frameDelta + " frames.");
+                            simulation.RunToFrame(simulation.CurrentFrame + frameDelta);
+                        }
                     }
                     break;
                 case GameCommandType.GameStateResponse:
+                    // Only accept these when they come from the server.
                     if (!command.IsTentative)
                     {
                         simulation.Depacketize(((GameStateResponseCommand)command).GameState, packetizer.Context);
                     }
                     break;
-                case GameCommandType.AddPlayerShip:
+                case GameCommandType.PlayerDataChanged:
+                    // Only accept these when they come from the server.
+                    if (!command.IsTentative)
+                    {
+                        if (command.Player == null)
+                        {
+                            throw new ArgumentException("command.Player");
+                        }
+                        Console.WriteLine("CLT: player data");
+                        var changeCommand = (PlayerDataChangedCommand)command;
+                        switch (changeCommand.Field)
+                        {
+                            case PlayerInfoField.ShipId:
+                                changeCommand.Player.Data.ShipUID = changeCommand.Value.ReadInt64();
+                                break;
+                            case PlayerInfoField.ShipType:
+                                changeCommand.Player.Data.ShipType = changeCommand.Value.ReadString();
+                                break;
+                        }
+                    }
+                    break;
+                case GameCommandType.AddGameObject:
+                    // Only accept these when they come from the server.
+                    if (!command.IsTentative)
+                    {
+                        Console.WriteLine("CLT: add object");
+                        var addCommand = (AddGameObjectCommand)command;
+                        addCommand.GameObject.Rewind();
+                        IGameObject obj = packetizer.Depacketize<IGameObject>(addCommand.GameObject);
+                        simulation.RunToFrame(addCommand.Frame);
+                        simulation.Add(obj, true);
+                    }
+                    break;
+                case GameCommandType.RemoveGameObject:
+                    // Only accept these when they come from the server.
+                    if (!command.IsTentative)
+                    {
+                        Console.WriteLine("CLT: remove object");
+                        var removeCommand = (RemoveGameObjectCommand)command;
+                        simulation.RunToFrame(removeCommand.Frame);
+                        simulation.Remove(removeCommand.GameObjectUID);
+                    }
+                    break;
                 case GameCommandType.PlayerInput:
-                case GameCommandType.RemovePlayerShip:
                     {
                         var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext>)command;
                         simulation.PushCommand(simulationCommand);

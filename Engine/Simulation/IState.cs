@@ -39,8 +39,9 @@ namespace Engine.Simulation
         /// <summary>
         /// Add an steppable object to the list of participants of this state.
         /// </summary>
-        /// <param name="updateable">the object to add.</param>
-        void Add(TSteppable steppable);
+        /// <param name="steppable">the object to add.</param>
+        /// <param name="keepUid">keep the objects UID, just increment the factories counter.</param>
+        void Add(TSteppable steppable, bool keepUid = false);
 
         /// <summary>
         /// Remove an steppable object to the list of participants of this state.

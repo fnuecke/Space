@@ -20,5 +20,11 @@ namespace Engine.Simulation
         /// <param name="value">the object for which to get a unique id.</param>
         /// <returns>the same steppable instance, now with a unique id.</returns>
         T GetUniqueId<T>(T value) where T : TSteppable;
+
+        /// <summary>
+        /// Simply increment the internal counter by one. This is useful if
+        /// a state gets an existing object, which already has an id.
+        /// </summary>
+        void Increment();
     }
 }

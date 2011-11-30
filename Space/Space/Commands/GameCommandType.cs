@@ -25,13 +25,18 @@
         PlayerInput,
 
         /// <summary>
-        /// Server tells players about a new player spawn.
+        /// Server tells players about a new object to insert into the simulation.
         /// </summary>
-        AddPlayerShip,
+        AddGameObject,
 
         /// <summary>
-        /// Server tells players about a player removal.
+        /// Server tells players to remove an object from the simulation.
         /// </summary>
-        RemovePlayerShip
+        RemoveGameObject,
+
+        /// <summary>
+        /// Player's data has changed somehow.
+        /// </summary>
+        PlayerDataChanged
     }
 }

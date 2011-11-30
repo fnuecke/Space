@@ -107,19 +107,18 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\AddPlayerCommand.cs" />
+    <Compile Include="Commands\AddGameObjectCommand.cs" />
+    <Compile Include="Commands\PlayerDataChangedCommand.cs" />
     <Compile Include="Commands\GameStateResponseCommand.cs" />
     <Compile Include="Commands\GameStateRequestCommand.cs" />
-    <Compile Include="Commands\RemovePlayerCommand.cs" />
+    <Compile Include="Commands\RemoveGameObjectCommand.cs" />
     <Compile Include="Commands\GameCommand.cs" />
     <Compile Include="Commands\SynchronizeCommand.cs" />
     <Compile Include="Control\Client.cs" />
     <Compile Include="Control\GameMessage.cs" />
     <Compile Include="Control\Server.cs" />
-    <Compile Include="Model\IGameObjectFactory.cs" />
     <Compile Include="Model\PacketizerContext.cs" />
     <Compile Include="Model\PlayerInfo.cs" />
-    <Compile Include="Model\GameObjectFactory.cs" />
     <Compile Include="Model\StaticWorld.cs" />
     <Compile Include="Commands\GameCommandType.cs" />
     <Compile Include="Commands\PlayerInputCommand.cs" />
@@ -179,9 +178,7 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>

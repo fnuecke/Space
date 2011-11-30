@@ -174,7 +174,7 @@ namespace Engine.Controller
                     // Avoid clients injecting commands for other clients.
                     playerNumber = args.Player.Number;
                 }
-
+                
                 // Parse the actual command.
                 ICommand<TCommandType, TPlayerData, TPacketizerContext> command = packetizer.Depacketize<ICommand<TCommandType, TPlayerData, TPacketizerContext>>(args.Data);
 
