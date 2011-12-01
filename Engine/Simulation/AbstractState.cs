@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.Commands;
 using Engine.Serialization;
 
@@ -48,9 +47,9 @@ namespace Engine.Simulation
         #region Fields
 
         /// <summary>
-        /// List of queued commands to execute in the future.
+        /// List of queued commands to execute in the next step.
         /// </summary>
-        protected Dictionary<long, List<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>> commands = new Dictionary<long, List<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>>();
+        protected List<ICommand<TCommandType, TPlayerData, TPacketizerContext>> commands = new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>();
 
         /// <summary>
         /// List of child steppables this state drives.
@@ -132,34 +131,20 @@ namespace Engine.Simulation
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        public virtual void PushCommand(ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        public virtual void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
-            if (command.Frame <= CurrentFrame)
+            // There's a chance we have that command in a tentative version. Let's check.
+            int known = commands.FindIndex(x => x.Equals(command));
+            if (known >= 0)
             {
-                throw new ArgumentException("Command is from a frame in the past.");
-            }
-            if (!commands.ContainsKey(command.Frame))
-            {
-                commands.Add(command.Frame, new List<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>());
-                commands[command.Frame].Add(command);
-            }
-            else
-            {
-                // At least that frame is known, so there's a chance we have that
-                // command in a tentative version. Let's check.
-                var list = commands[command.Frame];
-                int known = list.FindIndex(x => x.Equals(command));
-                if (known >= 0)
+                // Already there! Use the authoritative one (or if neither is do nothing).
+                var existing = commands[known];
+                if (existing.IsTentative && !command.IsTentative)
                 {
-                    // Already there! Use the authoritative one (or if neither is do nothing).
-                    var existing = list[known];
-                    if (existing.IsTentative && !command.IsTentative)
-                    {
-                        list.RemoveAt(known);
-                        list.Add(command);
-                    }
+                    commands.RemoveAt(known);
                 }
             }
+            commands.Add(command);
         }
 
         #endregion
@@ -173,14 +158,11 @@ namespace Engine.Simulation
             ++CurrentFrame;
 
             // Execute any commands for the current frame.
-            if (commands.ContainsKey(CurrentFrame))
+            foreach (var command in commands)
             {
-                foreach (var command in commands[CurrentFrame])
-                {
-                    HandleCommand(command);
-                }
-                commands.Remove(CurrentFrame);
+                HandleCommand(command);
             }
+            commands.Clear();
 
             // Update all objects in this state.
             foreach (var steppable in steppables)
@@ -195,18 +177,10 @@ namespace Engine.Simulation
         {
             packet.Write(CurrentFrame);
 
-            int totalCommands = 0;
-            foreach (var list in commands.Values)
+            packet.Write(commands.Count);
+            foreach (var command in commands)
             {
-                totalCommands += list.Count;
-            }
-            packet.Write(totalCommands);
-            foreach (var kv in commands)
-            {
-                foreach (var command in kv.Value)
-                {
-                    Packetizer.Packetize(command, packet);
-                }
+                Packetizer.Packetize(command, packet);
             }
 
             packet.Write(steppables.Count);
@@ -221,21 +195,8 @@ namespace Engine.Simulation
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
 
-            // Find commands that our out of date now, but keep newer ones.
-            List<long> deprecated = new List<long>();
-            foreach (var key in commands.Keys)
-            {
-                if (key <= CurrentFrame)
-                {
-                    deprecated.Add(key);
-                }
-            }
-            foreach (var frame in deprecated)
-            {
-                commands.Remove(frame);
-            }
-
             // Continue with reading the list of commands.
+            commands.Clear();
             int numCommands = packet.ReadInt32();
             for (int j = 0; j < numCommands; ++j)
             {
@@ -263,12 +224,11 @@ namespace Engine.Simulation
 
             clone.Packetizer = Packetizer;
 
+            // Commands are immutable, so just copy the reference.
             clone.commands.Clear();
-            foreach (var keyValue in commands)
-            {
-                clone.commands.Add(keyValue.Key, new List<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>(keyValue.Value));
-            }
+            clone.commands.AddRange(commands);
 
+            // Object however need to add clones!
             clone.steppables.Clear();
             foreach (var steppable in steppables)
             {
@@ -283,6 +243,6 @@ namespace Engine.Simulation
         /// at the moment it should be applied.
         /// </summary>
         /// <param name="command">the command to handle.</param>
-        protected abstract void HandleCommand(ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> command);
+        protected abstract void HandleCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command);
     }
 }

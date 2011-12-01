@@ -84,6 +84,11 @@ namespace Engine.Simulation
         /// </summary>
         protected Dictionary<long, List<long>> removes = new Dictionary<long, List<long>>();
 
+        /// <summary>
+        /// List of commands to execute in delayed states when they reach the given frame.
+        /// </summary>
+        protected Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>> commands = new Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>>();
+
         #endregion
 
         /// <summary>
@@ -101,6 +106,18 @@ namespace Engine.Simulation
 
             // Initialize to empty state.
             MirrorState(initialState, states.Length - 1);
+        }
+
+        /// <summary>
+        /// Add a new object.
+        /// 
+        /// This will add the object to the leading state, and add it to the delayed
+        /// states when they reach the current frame of the leading state.
+        /// </summary>
+        /// <param name="steppable">the object to add.</param>
+        public void Add(TSteppable steppable)
+        {
+            Add(steppable, CurrentFrame);
         }
 
         /// <summary>
@@ -141,15 +158,21 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Add a new object.
-        /// 
-        /// This will add the object to the leading state, and add it to the delayed
-        /// states when they reach the current frame of the leading state.
+        /// Not supported for TSS.
         /// </summary>
-        /// <param name="steppable">the object to add.</param>
-        public void Add(TSteppable steppable)
+        public void Remove(TSteppable steppable)
         {
-            Add(steppable, CurrentFrame);
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Remove a steppable object by its id. Will always return <c>null</c> for TSS.
+        /// </summary>
+        /// <param name="steppableUid">the remove object.</param>
+        public TSteppable Remove(long steppableUid)
+        {
+            Remove(steppableUid, CurrentFrame);
+            return default(TSteppable);
         }
 
         /// <summary>
@@ -189,25 +212,6 @@ namespace Engine.Simulation
             }
         }
 
-        /// <summary>
-        /// Not supported for TSS.
-        /// </summary>
-        public void Remove(TSteppable steppable)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Remove a steppable object by its id. Will always return <c>null</c> for TSS.
-        /// </summary>
-        /// <param name="steppableUid">the remove object.</param>
-        public TSteppable Remove(long steppableUid)
-        {
-            Remove(steppableUid, CurrentFrame);
-
-            return default(TSteppable);
-        }
-        
         /// <summary>
         /// Get a steppable's current representation in this state by its id.
         /// </summary>
@@ -266,30 +270,61 @@ namespace Engine.Simulation
         /// the next Step().
         /// </summary>
         /// <param name="command">the command to push.</param>
-        public void PushCommand(ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        public void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
-            // Do not allow changes while waiting for synchronization.
-            if (WaitingForSynchronization)
+            PushCommand(command, CurrentFrame + 1);
+        }
+
+        /// <summary>
+        /// Push a command to be executed at the given frame.  This will roll
+        /// back, if necessary, to remove the object, meaning it can trigger
+        /// desyncs.
+        /// </summary>
+        /// <param name="command">the command to push.</param>
+        /// <param name="frame">the frame in which to execute the command.</param>
+        public void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, long frame)
+        {
+            // Remember original frame.
+            long currentFrame = CurrentFrame;
+
+            if (frame <= CurrentFrame)
             {
-                throw new InvalidOperationException();
+                // Rewind to the frame we need to insert in.
+                Rewind(frame - 1);
             }
 
-            // Check if we have a chance of applying this state.
-            if (command.Frame <= TrailingFrame)
+            if (frame == CurrentFrame + 1)
             {
-                // Not a chance. If it's a server command we have to rewind.
-                if (!command.IsTentative)
+                // Live insert, add to current state, too.
+                LeadingState.PushCommand(command);
+            }
+
+            // Store it to be removed in trailing states.
+            if (!commands.ContainsKey(frame))
+            {
+                commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
+            }
+            else
+            {
+                var list = commands[frame];
+                int known = list.FindIndex(x => x.Equals(command));
+                if (known >= 0)
                 {
-                    OnThresholdExceeded(new ThresholdExceededEventArgs());
+                    // Already there! Use the authoritative one (or if neither is do nothing).
+                    var existing = list[known];
+                    if (existing.IsTentative && !command.IsTentative)
+                    {
+                        list.RemoveAt(known);
+                        list.Add(command);
+                    }
                 }
-                return;
             }
+            commands[frame].Add(command);
 
-            // Passed checks, so rewinding will work.
-            Rewind(command.Frame);
-            for (int i = 0; i < states.Length; ++i)
+            // Fast forward again.
+            if (!WaitingForSynchronization)
             {
-                states[i].PushCommand(command);
+                FastForward(currentFrame);
             }
         }
 
@@ -324,6 +359,17 @@ namespace Engine.Simulation
                     packet.Write(item);
                 }
             }
+
+            packet.Write(commands.Count);
+            foreach (var command in commands)
+            {
+                packet.Write(command.Key);
+                packet.Write(command.Value.Count);
+                foreach (var item in command.Value)
+                {
+                    Packetizer.Packetize(item, packet);
+                }
+            }
         }
 
         /// <summary>
@@ -335,9 +381,23 @@ namespace Engine.Simulation
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
 
-            // Find adds / removes that our out of date now, but keep newer ones.
+            // Find adds / removes / commands that our out of date now, but keep newer ones.
             List<long> deprecated = new List<long>();
             foreach (var key in adds.Keys)
+            {
+                if (key <= CurrentFrame)
+                {
+                    deprecated.Add(key);
+                }
+            }
+            foreach (var key in removes.Keys)
+            {
+                if (key <= CurrentFrame)
+                {
+                    deprecated.Add(key);
+                }
+            }
+            foreach (var key in commands.Keys)
             {
                 if (key <= CurrentFrame)
                 {
@@ -347,26 +407,15 @@ namespace Engine.Simulation
             foreach (var frame in deprecated)
             {
                 adds.Remove(frame);
-            }
-
-            deprecated.Clear();
-            foreach (var key in removes.Keys)
-            {
-                if (key <= CurrentFrame)
-                {
-                    deprecated.Add(key);
-                }
-            }
-            foreach (var frame in deprecated)
-            {
                 removes.Remove(frame);
+                commands.Remove(frame);
             }
 
             // Unwrap the trailing state and mirror it to all the newer ones.
             states[states.Length - 1].Depacketize(packet, context);
             MirrorState(states[states.Length - 1], states.Length - 2);
 
-            // Continue with reading the list of adds / removes.
+            // Continue with reading the list of adds.
             int numAdds = packet.ReadInt32();
             for (int addIdx = 0; addIdx < numAdds; ++addIdx)
             {
@@ -382,6 +431,7 @@ namespace Engine.Simulation
                 }
             }
 
+            // Then the removes.
             int numRemoves = packet.ReadInt32();
             for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
             {
@@ -397,6 +447,22 @@ namespace Engine.Simulation
                 }
             }
 
+            // And finally the commands.
+            int numCommands = packet.ReadInt32();
+            for (int commandIdx = 0; commandIdx < numCommands; ++commandIdx)
+            {
+                long key = packet.ReadInt64();
+                if (!commands.ContainsKey(key))
+                {
+                    commands.Add(key, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
+                }
+                int numValues = packet.ReadInt32();
+                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                {
+                    commands[key].Add(Packetizer.Depacketize<ICommand<TCommandType, TPlayerData, TPacketizerContext>>(packet));
+                }
+            }
+
             WaitingForSynchronization = false;
         }
 
@@ -407,7 +473,7 @@ namespace Engine.Simulation
         {
             throw new NotImplementedException();
         }
-        
+
         protected void OnThresholdExceeded(ThresholdExceededEventArgs e)
         {
             WaitingForSynchronization = true;
@@ -440,6 +506,15 @@ namespace Engine.Simulation
                     if (i == states.Length - 1 && states[i].SkipTentativeCommands())
                     {
                         needsRewind = true;
+                    }
+
+                    // Check if we have commands to execute in that frame.
+                    if (commands.ContainsKey(states[i].CurrentFrame))
+                    {
+                        foreach (var command in commands[states[i].CurrentFrame])
+                        {
+                            states[i].PushCommand(command);
+                        }
                     }
 
                     // Do the actual stepping for the state.

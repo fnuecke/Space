@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.Commands;
 using Engine.Serialization;
 
 namespace Engine.Simulation
@@ -44,6 +45,15 @@ namespace Engine.Simulation
         /// <param name="steppableUid">the id of the object to remove.</param>
         /// <param name="frame">the frame to remove it at.</param>
         void Remove(long steppableUid, long frame);
+
+        /// <summary>
+        /// Push a command to be executed at the given frame.  This will roll
+        /// back, if necessary, to remove the object, meaning it can trigger
+        /// desyncs.
+        /// </summary>
+        /// <param name="command">the command to push.</param>
+        /// <param name="frame">the frame in which to execute the command.</param>
+        void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, long frame);
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.

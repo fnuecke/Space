@@ -119,14 +119,11 @@ namespace Engine.Network
         public int GetPing(IPEndPoint remote)
         {
             UdpRemoteInfo connection = GetConnection(remote);
-            if (connection == null)
-            {
-                return 0;
-            }
-            else
+            if (connection != null)
             {
                 return connection.Ping;
             }
+            return -1;
         }
 
         /// <summary>
@@ -163,6 +160,10 @@ namespace Engine.Network
         /// <code>Flush()</code> is called.</param>
         public void Send(Packet data, IPEndPoint remote, uint pollRate = 0)
         {
+            if (remote == null)
+            {
+                throw new ArgumentNullException("remote");
+            }
             if (pollRate > 0)
             {
                 int messageNumber;
@@ -196,7 +197,14 @@ namespace Engine.Network
                 {
                     message.lastSent = time;
                     Information.Outgoing(message.data.Length, (message.type == SocketMessage.Acked) ? TrafficType.Data : TrafficType.Protocol);
-                    udp.Send(message.data.Buffer, message.data.Length, message.remote);
+                    try
+                    {
+                        udp.Send(message.data.Buffer, message.data.Length, message.remote);
+                    }
+                    catch (SocketException)
+                    {
+                        toRemove.Add(message.remote);
+                    }
                 }
             }
 
@@ -210,11 +218,15 @@ namespace Engine.Network
             // Do pings for known connections once in a while.
             if (new TimeSpan(time - lastPing).TotalMilliseconds > PingFrequency)
             {
+                Packet message = messages.MakePing();
                 foreach (var item in connections.Values)
                 {
-                    Packet message = messages.MakePing();
-                    Information.Outgoing(message.Length, TrafficType.Protocol);
-                    udp.Send(message.Buffer, message.Length, item.Remote);
+                    // Only ping remote hosts that sent us a message (replied) recently.
+                    if ((DateTime.Now - item.LastReceived).TotalMilliseconds < PingFrequency * 2)
+                    {
+                        Information.Outgoing(message.Length, TrafficType.Protocol);
+                        udp.Send(message.Buffer, message.Length, item.Remote);
+                    }
                 }
                 lastPing = time;
             }
@@ -245,12 +257,13 @@ namespace Engine.Network
             {
                 // Get the connection associated with this remote machine. Only create a new one
                 // if it's a data packet.
-                UdpRemoteInfo connection = GetConnection(remote);
+                UdpRemoteInfo connection = GetConnection(remote, true);
                 if (connection == null)
                 {
                     // We couldn't get the raw IP.
                     return;
                 }
+                connection.LastReceived = DateTime.Now;
 
                 // Act based on type.
                 switch (type)
@@ -374,7 +387,7 @@ namespace Engine.Network
             return true;
         }
 
-        private UdpRemoteInfo GetConnection(IPEndPoint remote)
+        private UdpRemoteInfo GetConnection(IPEndPoint remote, bool dueToReceived = false)
         {
             // Get remote IP address in raw format.
             long remoteIp;
@@ -386,7 +399,14 @@ namespace Engine.Network
             // OK, if we may and need, create a connection object.
             if (!connections.ContainsKey(remoteIp))
             {
-                connections.Add(remoteIp, new UdpRemoteInfo(remote));
+                if (dueToReceived)
+                {
+                    connections.Add(remoteIp, new UdpRemoteInfo(remote, DateTime.Now));
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             // And return it.
@@ -426,7 +446,7 @@ namespace Engine.Network
         /// The message is an ack for a message we sent to the remote machine.
         /// </summary>
         Ack = 1,
-        
+
         /// <summary>
         /// This message requires us to send an ack.
         /// </summary>
@@ -737,6 +757,11 @@ namespace Engine.Network
         public IPEndPoint Remote { get; private set; }
 
         /// <summary>
+        /// The last time we received a packet from this host.
+        /// </summary>
+        public DateTime LastReceived { get; set; }
+
+        /// <summary>
         /// List of messages already handled recently.
         /// </summary>
         private HashSet<int> handledMessages = new HashSet<int>();
@@ -750,8 +775,9 @@ namespace Engine.Network
         /// <summary>
         /// Creates a new instance to track the state for an endpoint.
         /// </summary>
-        public UdpRemoteInfo(IPEndPoint remote)
+        public UdpRemoteInfo(IPEndPoint remote, DateTime lastReceived)
         {
+            this.LastReceived = lastReceived;
             this.Remote = remote;
         }
 

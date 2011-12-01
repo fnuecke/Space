@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Xna.Framework.Input;
 
 namespace Engine.Input
 {
@@ -17,5 +18,14 @@ namespace Engine.Input
         /// Fired when a key is released.
         /// </summary>
         event EventHandler<EventArgs> Released;
+
+        /// <summary>
+        /// Get a representation for a specific key-combination, which can be used
+        /// to register for events on specific combinations of keys only.
+        /// </summary>
+        /// <param name="keys">the list of keys that have to be pressed.</param>
+        /// <param name="modifier">the modifier that has to be active.</param>
+        /// <returns>an object that represents this keyboard combination.</returns>
+        KeyCombo Combo(Keys[] keys, KeyModifier modifier = KeyModifier.None);
     }
 }

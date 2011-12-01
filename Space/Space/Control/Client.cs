@@ -1,9 +1,9 @@
 ﻿using System;
 using Engine.Commands;
 using Engine.Controller;
+using Engine.Input;
 using Engine.Session;
 using Engine.Simulation;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -37,11 +37,6 @@ namespace Space.Control
         private TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext> simulation;
 
         /// <summary>
-        /// Last known player movement direction.
-        /// </summary>
-        private Direction lastDirection = Direction.Invalid;
-
-        /// <summary>
         /// Last time we sent a sync command to the server.
         /// </summary>
         private long lastSyncTime = 0;
@@ -49,7 +44,7 @@ namespace Space.Control
         #endregion
 
         #region Constructor
-        
+
         /// <summary>
         /// Creates a new game client, ready to connect to an open game.
         /// </summary>
@@ -71,60 +66,6 @@ namespace Space.Control
 
             if (Session.ConnectionState == ClientState.Connected && !simulation.WaitingForSynchronization)
             {
-                Direction direction = Direction.Invalid;
-                if (Keyboard.GetState().IsKeyDown(Keys.Up))
-                {
-                    direction |= Direction.North;
-                }
-                if (Keyboard.GetState().IsKeyDown(Keys.Right))
-                {
-                    direction |= Direction.East;
-                }
-                if (Keyboard.GetState().IsKeyDown(Keys.Down))
-                {
-                    direction |= Direction.South;
-                }
-                if (Keyboard.GetState().IsKeyDown(Keys.Left))
-                {
-                    direction |= Direction.West;
-                }
-                switch (direction)
-                {
-                    case Direction.North:
-                    case Direction.NorthAlt:
-                    case Direction.East:
-                    case Direction.EastAlt:
-                    case Direction.South:
-                    case Direction.SouthAlt:
-                    case Direction.West:
-                    case Direction.WestAlt:
-                    case Direction.NorthEast:
-                    case Direction.NorthWest:
-                    case Direction.SouthEast:
-                    case Direction.SouthWest:
-                        break;
-                    default:
-                        direction = Direction.Invalid;
-                        break;
-                }
-                if (direction != lastDirection)
-                {
-                    lastDirection = direction;
-                    PlayerInputCommand command;
-                    if (direction == Direction.Invalid)
-                    {
-                        command = new PlayerInputCommand(Session.LocalPlayer, simulation.CurrentFrame + 1,
-                            PlayerInputCommand.PlayerInput.StopMovement, direction);
-                    }
-                    else
-                    {
-                        command = new PlayerInputCommand(Session.LocalPlayer, simulation.CurrentFrame + 1,
-                            PlayerInputCommand.PlayerInput.Accelerate, direction);
-                    }
-                    simulation.PushCommand(command);
-                    SendAll(command, 10);
-                }
-
                 // Drive game logic.
                 //simulation.Update();
                 // Compensate for dynamic timestep.
@@ -229,7 +170,7 @@ namespace Space.Control
                 case GameCommandType.PlayerInput:
                     {
                         var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext>)command;
-                        simulation.PushCommand(simulationCommand);
+                        simulation.PushCommand(simulationCommand, simulationCommand.Frame);
                     }
                     break;
                 default:
@@ -240,7 +181,7 @@ namespace Space.Control
         #endregion
 
         #region Events
-        
+
         /// <summary>
         /// Got info about an open game.
         /// </summary>
@@ -302,6 +243,106 @@ namespace Space.Control
         {
             // So we request it.
             Send(new GameStateRequestCommand(), 100);
+        }
+
+        /// <summary>
+        /// Player pressed a key.
+        /// </summary>
+        protected override void HandleKeyPressed(object sender, EventArgs e)
+        {
+            if (Session.ConnectionState != ClientState.Connected)
+            {
+                return;
+            }
+
+            var args = (KeyboardInputEventArgs)e;
+
+            PlayerInputCommand command = null;
+            switch (args.Key)
+            {
+                case Keys.Down:
+                case Keys.S:
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.AccelerateDown);
+                    break;
+                case Keys.Left:
+                case Keys.A:
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.AccelerateLeft);
+                    break;
+                case Keys.Right:
+                case Keys.D:
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.AccelerateRight);
+                    break;
+                case Keys.Up:
+                case Keys.W:
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.AccelerateUp);
+                    break;
+                default:
+                    break;
+            }
+
+            if (command != null)
+            {
+                simulation.PushCommand(command);
+                SendAll(command, 10);
+            }
+        }
+
+        /// <summary>
+        /// Player released a key.
+        /// </summary>
+        protected override void HandleKeyReleased(object sender, EventArgs e)
+        {
+            if (Session.ConnectionState != ClientState.Connected)
+            {
+                return;
+            }
+
+            var args = (KeyboardInputEventArgs)e;
+
+            PlayerInputCommand command = null;
+            switch (args.Key)
+            {
+                case Keys.Down:
+                case Keys.S:
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.StopDown);
+                    break;
+                case Keys.Left:
+                case Keys.A:
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.StopLeft);
+                    break;
+                case Keys.Right:
+                case Keys.D:
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.StopRight);
+                    break;
+                case Keys.Up:
+                case Keys.W:
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.StopUp);
+                    break;
+                default:
+                    break;
+            }
+
+            if (command != null)
+            {
+                simulation.PushCommand(command);
+                SendAll(command, 10);
+            }
         }
 
         #endregion

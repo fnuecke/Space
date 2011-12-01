@@ -1,7 +1,6 @@
 ﻿using Engine.Commands;
 using Engine.Serialization;
 using Engine.Session;
-using Engine.Util;
 using Space.Model;
 
 namespace Space.Commands
@@ -10,8 +9,14 @@ namespace Space.Commands
     {
         public enum PlayerInput
         {
-            Accelerate,
-            StopMovement,
+            AccelerateUp,
+            AccelerateRight,
+            AccelerateDown,
+            AccelerateLeft,
+            StopUp,
+            StopRight,
+            StopDown,
+            StopLeft,
             TurnLeft,
             TurnRight,
             StopRotation
@@ -23,11 +28,6 @@ namespace Space.Commands
         public PlayerInput Input { get; private set; }
 
         /// <summary>
-        /// Based on the player input, this is the corresponding direction (for Acceleration).
-        /// </summary>
-        public Direction Direction { get; private set; }
-
-        /// <summary>
         /// For deserialization.
         /// </summary>
         public PlayerInputCommand()
@@ -35,11 +35,10 @@ namespace Space.Commands
         {
         }
 
-        public PlayerInputCommand(Player<PlayerInfo, PacketizerContext> player, long frame, PlayerInput input, Direction direction)
+        public PlayerInputCommand(Player<PlayerInfo, PacketizerContext> player, long frame, PlayerInput input)
             : base(GameCommandType.PlayerInput, player, frame)
         {
             this.Input = input;
-            this.Direction = direction;
         }
 
         #region Serialization
@@ -47,7 +46,6 @@ namespace Space.Commands
         public override void Packetize(Packet packet)
         {
             packet.Write((byte)Input);
-            packet.Write((byte)Direction);
 
             base.Packetize(packet);
         }
@@ -55,7 +53,6 @@ namespace Space.Commands
         public override void Depacketize(Packet packet, PacketizerContext context)
         {
             Input = (PlayerInput)packet.ReadByte();
-            Direction = (Direction)packet.ReadByte();
 
             base.Depacketize(packet, context);
         }
@@ -68,8 +65,7 @@ namespace Space.Commands
         {
             return other is PlayerInputCommand &&
                 base.Equals(other) &&
-                ((PlayerInputCommand)other).Input == this.Input &&
-                ((PlayerInputCommand)other).Direction == this.Direction;
+                ((PlayerInputCommand)other).Input == this.Input;
         }
 
         #endregion

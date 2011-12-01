@@ -105,9 +105,11 @@
     <Compile Include="Controller\AbstractUdpClient.cs" />
     <Compile Include="Controller\AbstractUdpController.cs" />
     <Compile Include="Controller\AbstractUdpServer.cs" />
+    <Compile Include="Input\KeyComboEventArgs.cs" />
     <Compile Include="Input\KeyboardInputEventArgs.cs" />
     <Compile Include="Input\IKeyboardInputManager.cs" />
     <Compile Include="Input\KeyboardInputManager.cs" />
+    <Compile Include="Input\KeyCombo.cs" />
     <Compile Include="Input\KeyMap.cs" />
     <Compile Include="Input\KeyModifier.cs" />
     <Compile Include="Network\EventArgs.cs" />

@@ -43,14 +43,11 @@ namespace Engine.Simulation
             ++CurrentFrame;
 
             // Execute any commands for the current frame.
-            if (commands.ContainsKey(CurrentFrame))
+            foreach (var command in commands)
             {
-                foreach (var command in commands[CurrentFrame])
-                {
-                    HandleCommand(command);
-                }
-                commands.Remove(CurrentFrame);
+                HandleCommand(command);
             }
+            commands.Clear();
 
             // Update all objects in this state.
             foreach (var steppable in steppables)

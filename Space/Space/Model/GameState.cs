@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Engine.Commands;
+﻿using Engine.Commands;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.Commands;
 
@@ -23,7 +23,7 @@ namespace Space.Model
             this.session = session;
         }
 
-        protected override void HandleCommand(ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
             switch (command.Type)
             {
@@ -37,24 +37,44 @@ namespace Space.Model
                             var inputCommand = (PlayerInputCommand)command;
                             switch (inputCommand.Input)
                             {
-                                case PlayerInputCommand.PlayerInput.Accelerate:
-                                    // Start accelerating in the given direction.
-                                    ship.Accelerate(inputCommand.Direction);
+                                // Start accelerating in the given direction.
+                                case PlayerInputCommand.PlayerInput.AccelerateUp:
+                                    ship.Accelerate(Direction.North);
                                     break;
-                                case PlayerInputCommand.PlayerInput.StopMovement:
-                                    // Stop accelerating.
-                                    ship.StopMovement();
+                                case PlayerInputCommand.PlayerInput.AccelerateRight:
+                                    ship.Accelerate(Direction.East);
                                     break;
+                                case PlayerInputCommand.PlayerInput.AccelerateDown:
+                                    ship.Accelerate(Direction.South);
+                                    break;
+                                case PlayerInputCommand.PlayerInput.AccelerateLeft:
+                                    ship.Accelerate(Direction.West);
+                                    break;
+
+                                // Stop accelerating in the given direction.
+                                case PlayerInputCommand.PlayerInput.StopUp:
+                                    ship.Stop(Direction.North);
+                                    break;
+                                case PlayerInputCommand.PlayerInput.StopRight:
+                                    ship.Stop(Direction.East);
+                                    break;
+                                case PlayerInputCommand.PlayerInput.StopDown:
+                                    ship.Stop(Direction.South);
+                                    break;
+                                case PlayerInputCommand.PlayerInput.StopLeft:
+                                    ship.Stop(Direction.West);
+                                    break;
+
+                                // Begin turning to the left.
                                 case PlayerInputCommand.PlayerInput.TurnLeft:
-                                    // Begin turning to the left.
                                     ship.TurnLeft();
                                     break;
+                                // Begin turning to the right.
                                 case PlayerInputCommand.PlayerInput.TurnRight:
-                                    // Begin turning to the right.
                                     ship.TurnRight();
                                     break;
+                                // Stop turning.
                                 case PlayerInputCommand.PlayerInput.StopRotation:
-                                    // Stop turning.
                                     ship.StopRotating();
                                     break;
                             }
@@ -76,16 +96,12 @@ namespace Space.Model
         public bool SkipTentativeCommands()
         {
             bool hadTentative = false;
-            if (commands.ContainsKey(CurrentFrame + 1))
+            for (int i = commands.Count - 1; i >= 0; --i)
             {
-                List<ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext>> list = commands[CurrentFrame + 1];
-                for (int i = list.Count - 1; i >= 0; --i)
+                if (commands[i].IsTentative)
                 {
-                    if (list[i].IsTentative)
-                    {
-                        hadTentative = true;
-                        list.RemoveAt(i);
-                    }
+                    hadTentative = true;
+                    commands.RemoveAt(i);
                 }
             }
             return hadTentative;

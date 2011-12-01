@@ -62,6 +62,18 @@ namespace Engine.Input
             game.Services.AddService(typeof(IKeyboardInputManager), this);
         }
 
+        /// <summary>
+        /// Get a representation for a specific key-combination, which can be used
+        /// to register for events on specific combinations of keys only.
+        /// </summary>
+        /// <param name="keys">the list of keys that have to be pressed.</param>
+        /// <param name="modifier">the modifier that has to be active.</param>
+        /// <returns>an object that represents this keyboard combination.</returns>
+        public KeyCombo Combo(Keys[] keys, KeyModifier modifier = KeyModifier.None)
+        {
+            return new KeyCombo(this, keys, modifier);
+        }
+
         #region Logic
 
         /// <summary>
@@ -106,7 +118,7 @@ namespace Engine.Input
                             if (key == lastPressedKey && new TimeSpan(currentTime.Ticks - lastRepeat.Ticks).TotalMilliseconds > RepeatRate)
                             {
                                 lastRepeat = currentTime;
-                                OnPressed(new KeyboardInputEventArgs(key, modifier));
+                                OnPressed(new KeyboardInputEventArgs(key, modifier, currentState));
                             }
                         }
                     }
@@ -118,7 +130,7 @@ namespace Engine.Input
                             lastPressedKey = key;
                             lastRepeat = currentTime.AddMilliseconds(RepeatDelay);
                         }
-                        OnPressed(new KeyboardInputEventArgs(key, modifier));
+                        OnPressed(new KeyboardInputEventArgs(key, modifier, currentState));
                     }
                 }
 
@@ -130,7 +142,7 @@ namespace Engine.Input
                     {
                         lastPressedKey = Keys.None;
                     }
-                    OnReleased(new KeyboardInputEventArgs(key, modifier));
+                    OnReleased(new KeyboardInputEventArgs(key, modifier, currentState));
                 }
             }
 

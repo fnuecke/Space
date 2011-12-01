@@ -65,6 +65,6 @@ namespace Engine.Simulation
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        void PushCommand(ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> command);
+        void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command);
     }
 }
