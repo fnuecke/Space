@@ -39,11 +39,6 @@ namespace Engine.Simulation
         public long CurrentFrame { get; protected set; }
 
         /// <summary>
-        /// The steppable factory to be used in this state. Not available for TSS.
-        /// </summary>
-        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> SteppableFactory { get { return LeadingState.SteppableFactory; } }
-
-        /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
         public IPacketizer<TPacketizerContext> Packetizer { get { return LeadingState.Packetizer; } }
@@ -82,7 +77,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<long, List<Tuple<TSteppable, bool>>> adds = new Dictionary<long, List<Tuple<TSteppable, bool>>>();
+        protected Dictionary<long, List<TSteppable>> adds = new Dictionary<long, List<TSteppable>>();
 
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
@@ -109,29 +104,91 @@ namespace Engine.Simulation
         }
 
         /// <summary>
+        /// Add an object in a specific time frame. This will roll back, if
+        /// necessary, to insert the object, meaning it can trigger desyncs.
+        /// </summary>
+        /// <param name="steppable">the object to insert.</param>
+        /// <param name="frame">the frame to insert it at.</param>
+        public void Add(TSteppable steppable, long frame)
+        {
+            // Remember original frame.
+            long currentFrame = CurrentFrame;
+
+            if (frame < CurrentFrame)
+            {
+                // Rewind to the frame we need to insert in.
+                Rewind(frame);
+            }
+
+            if (frame == CurrentFrame)
+            {
+                // Live insert, add to current state, too.
+                LeadingState.Add((TSteppable)steppable.Clone());
+            }
+
+            // Store it to be inserted in trailing states.
+            if (!adds.ContainsKey(frame))
+            {
+                adds.Add(frame, new List<TSteppable>());
+            }
+            adds[frame].Add((TSteppable)steppable.Clone());
+
+            // Fast forward again.
+            if (!WaitingForSynchronization)
+            {
+                FastForward(currentFrame);
+            }
+        }
+
+        /// <summary>
         /// Add a new object.
         /// 
         /// This will add the object to the leading state, and add it to the delayed
         /// states when they reach the current frame of the leading state.
         /// </summary>
         /// <param name="steppable">the object to add.</param>
-        /// <param name="keepUid">keep the objects UID, just increment the factories counter.</param>
-        public void Add(TSteppable steppable, bool keepUid = false)
+        public void Add(TSteppable steppable)
         {
-            // Do not allow changes while waiting for synchronization.
-            if (WaitingForSynchronization)
+            Add(steppable, CurrentFrame);
+        }
+
+        /// <summary>
+        /// Remove an object in a specific time frame. This will roll back, if
+        /// necessary, to remove the object, meaning it can trigger desyncs.
+        /// </summary>
+        /// <param name="steppableId">the id of the object to remove.</param>
+        /// <param name="frame">the frame to remove it at.</param>
+        public void Remove(long steppableUid, long frame)
+        {
+            // Remember original frame.
+            long currentFrame = CurrentFrame;
+
+            if (frame < CurrentFrame)
             {
-                throw new InvalidOperationException("Waiting for synchronization.");
+                // Rewind to the frame we need to insert in.
+                Rewind(frame);
             }
 
-            LeadingState.Add(steppable, keepUid);
-            if (!adds.ContainsKey(CurrentFrame))
+            if (frame == CurrentFrame)
             {
-                adds.Add(CurrentFrame, new List<Tuple<TSteppable, bool>>());
+                // Live insert, add to current state, too.
+                LeadingState.Remove(steppableUid);
             }
-            adds[CurrentFrame].Add(Tuple.Create((TSteppable)steppable.Clone(), keepUid));
+
+            // Store it to be removed in trailing states.
+            if (!removes.ContainsKey(frame))
+            {
+                removes.Add(frame, new List<long>());
+            }
+            removes[frame].Add(steppableUid);
+
+            // Fast forward again.
+            if (!WaitingForSynchronization)
+            {
+                FastForward(currentFrame);
+            }
         }
-        
+
         /// <summary>
         /// Not supported for TSS.
         /// </summary>
@@ -141,29 +198,14 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Remove a steppable object by its id.
+        /// Remove a steppable object by its id. Will always return <c>null</c> for TSS.
         /// </summary>
         /// <param name="steppableUid">the remove object.</param>
         public TSteppable Remove(long steppableUid)
         {
-            // Do not allow changes while waiting for synchronization.
-            if (WaitingForSynchronization)
-            {
-                throw new InvalidOperationException("Waiting for synchronization.");
-            }
+            Remove(steppableUid, CurrentFrame);
 
-            var result = LeadingState.Remove(steppableUid);
-            if (result != null)
-            {
-                // If the removal was a success in the leading state, schedule the removal
-                // all trailing states.
-                if (!removes.ContainsKey(CurrentFrame))
-                {
-                    removes.Add(CurrentFrame, new List<long>());
-                }
-                removes[CurrentFrame].Add(steppableUid);
-            }
-            return result;
+            return default(TSteppable);
         }
         
         /// <summary>
@@ -182,7 +224,7 @@ namespace Engine.Simulation
         public void Update()
         {
             // Advance the simulation.
-            Play(CurrentFrame++);
+            FastForward(++CurrentFrame);
         }
 
         /// <summary>
@@ -200,13 +242,13 @@ namespace Engine.Simulation
             if (frame >= CurrentFrame)
             {
                 // Moving forward, just run.
-                Play(frame);
+                FastForward(frame);
                 CurrentFrame = frame;
             }
             else if (CurrentFrame < TrailingFrame)
             {
                 // Cannot rewind that far, request resync.
-                OnThresholdExceeded(new ThresholdExceededEventArgs(CurrentFrame));
+                OnThresholdExceeded(new ThresholdExceededEventArgs());
             }
             else
             {
@@ -238,7 +280,7 @@ namespace Engine.Simulation
                 // Not a chance. If it's a server command we have to rewind.
                 if (!command.IsTentative)
                 {
-                    OnThresholdExceeded(new ThresholdExceededEventArgs(CurrentFrame));
+                    OnThresholdExceeded(new ThresholdExceededEventArgs());
                 }
                 return;
             }
@@ -259,6 +301,8 @@ namespace Engine.Simulation
         {
             packet.Write(CurrentFrame);
 
+            states[states.Length - 1].Packetize(packet);
+
             packet.Write(adds.Count);
             foreach (var add in adds)
             {
@@ -266,8 +310,7 @@ namespace Engine.Simulation
                 packet.Write(add.Value.Count);
                 foreach (var item in add.Value)
                 {
-                    Packetizer.Packetize(item.Item1, packet);
-                    packet.Write(item.Item2);
+                    Packetizer.Packetize(item, packet);
                 }
             }
 
@@ -281,8 +324,6 @@ namespace Engine.Simulation
                     packet.Write(item);
                 }
             }
-
-            states[states.Length - 1].Packetize(packet);
         }
 
         /// <summary>
@@ -321,18 +362,23 @@ namespace Engine.Simulation
                 removes.Remove(frame);
             }
 
+            // Unwrap the trailing state and mirror it to all the newer ones.
+            states[states.Length - 1].Depacketize(packet, context);
+            MirrorState(states[states.Length - 1], states.Length - 2);
+
             // Continue with reading the list of adds / removes.
             int numAdds = packet.ReadInt32();
             for (int addIdx = 0; addIdx < numAdds; ++addIdx)
             {
                 long key = packet.ReadInt64();
-                adds.Add(key, new List<Tuple<TSteppable, bool>>());
+                if (!adds.ContainsKey(key))
+                {
+                    adds.Add(key, new List<TSteppable>());
+                }
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    TSteppable steppable = Packetizer.Depacketize<TSteppable>(packet);
-                    bool keepId = packet.ReadBoolean();
-                    adds[key].Add(Tuple.Create(steppable, keepId));
+                    adds[key].Add(Packetizer.Depacketize<TSteppable>(packet));
                 }
             }
 
@@ -340,17 +386,16 @@ namespace Engine.Simulation
             for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
             {
                 long key = packet.ReadInt64();
-                removes.Add(key, new List<long>());
+                if (!removes.ContainsKey(key))
+                {
+                    removes.Add(key, new List<long>());
+                }
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
                     removes[key].Add(packet.ReadInt64());
                 }
             }
-
-            // Unwrap the trailing state and mirror it to all the newer ones.
-            states[states.Length - 1].Depacketize(packet, context);
-            MirrorState(states[states.Length - 1], states.Length - 2);
 
             WaitingForSynchronization = false;
         }
@@ -376,7 +421,7 @@ namespace Engine.Simulation
         /// Update the simulation by advancing forwards.
         /// </summary>
         /// <param name="frame">the frame up to which to run.</param>
-        private void Play(long frame)
+        private void FastForward(long frame)
         {
             // Update states. Run back to front, to allow rewinding future states
             // if the trailing state must skip tentative commands all in one go.
@@ -406,7 +451,7 @@ namespace Engine.Simulation
                         // Add a copy of it.
                         foreach (var steppable in adds[states[i].CurrentFrame])
                         {
-                            states[i].Add((TSteppable)steppable.Item1.Clone(), steppable.Item2);
+                            states[i].Add((TSteppable)steppable.Clone());
                         }
                     }
 

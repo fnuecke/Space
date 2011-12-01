@@ -27,11 +27,6 @@ namespace Engine.Simulation
         IEnumerable<TSteppable> Children { get; }
 
         /// <summary>
-        /// The steppable factory to be used in this state.
-        /// </summary>
-        ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> SteppableFactory { get; }
-
-        /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
         IPacketizer<TPacketizerContext> Packetizer { get; }
@@ -40,8 +35,7 @@ namespace Engine.Simulation
         /// Add an steppable object to the list of participants of this state.
         /// </summary>
         /// <param name="steppable">the object to add.</param>
-        /// <param name="keepUid">keep the objects UID, just increment the factories counter.</param>
-        void Add(TSteppable steppable, bool keepUid = false);
+        void Add(TSteppable steppable);
 
         /// <summary>
         /// Remove an steppable object to the list of participants of this state.

@@ -107,7 +107,7 @@ namespace Engine.Controller
 
         #endregion
 
-        #region Utility methods
+        #region Send methods
 
         /// <summary>
         /// Send a command to the server.

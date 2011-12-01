@@ -18,6 +18,17 @@ namespace Space.Control
     /// </summary>
     class Client : AbstractUdpClient<PlayerInfo, GameCommandType, PacketizerContext>
     {
+        #region Constants
+
+        /// <summary>
+        /// The interval in milliseconds after which to send a synchronization request to the
+        /// server. The lower the value the better the synchronization, but, obviously, also
+        /// more network traffic.
+        /// </summary>
+        private const int SyncInterval = 1000;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -35,19 +46,24 @@ namespace Space.Control
         /// </summary>
         private long lastSyncTime = 0;
 
-        /// <summary>
-        /// Averages frame deltas, used for clock sync.
-        /// </summary>
-        private Average frameDeltas = new Average(20);
-
         #endregion
 
+        #region Constructor
+        
+        /// <summary>
+        /// Creates a new game client, ready to connect to an open game.
+        /// </summary>
+        /// <param name="game"></param>
         public Client(Game game)
             : base(game, 50101, "5p4c3!")
         {
             simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>(new uint[] { 50, 100 }, new GameState(game, Session));
             simulation.ThresholdExceeded += HandleThresholdExceeded;
         }
+
+        #endregion
+
+        #region Logic
 
         public override void Update(GameTime gameTime)
         {
@@ -106,66 +122,40 @@ namespace Space.Control
                             PlayerInputCommand.PlayerInput.Accelerate, direction);
                     }
                     simulation.PushCommand(command);
-                    SendAll(command, 20);
+                    SendAll(command, 10);
                 }
 
                 // Drive game logic.
-                simulation.Update();
-            }
+                //simulation.Update();
+                // Compensate for dynamic timestep.
+                simulation.RunToFrame(simulation.CurrentFrame + (int)Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
 
-            // Send sync command every now and then, to keep game clock synched.
-            if (Session.ConnectionState == ClientState.Connected &&
-                new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > 200)
-            {
-                lastSyncTime = DateTime.Now.Ticks;
-                Send(new SynchronizeCommand(simulation.CurrentFrame), 0);
-            }
-        }
-
-        protected override void HandleGameInfoReceived(object sender, EventArgs e)
-        {
-            var args = (GameInfoReceivedEventArgs)e;
-            var info = args.Data.ReadString();
-            console.WriteLine(String.Format("CLT.NET: Found a game: [{0}] {1} ({2}/{3})", args.Host.ToString(), info, args.NumPlayers, args.MaxPlayers));
-        }
-
-        protected override void HandleJoinResponse(object sender, EventArgs e)
-        {
-            var args = (JoinResponseEventArgs)e;
-
-            console.WriteLine(string.Format("CLT.NET: Join response: {0} ({1})", args.WasSuccess, Enum.GetName(typeof(JoinResponseReason), args.Reason)));
-
-            if (args.WasSuccess)
-            {
-                simulation.Depacketize(args.Data, packetizer.Context);
-            }
-            else
-            {
-                // TODO
+                // Send sync command every now and then, to keep game clock synched.
+                if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
+                {
+                    lastSyncTime = DateTime.Now.Ticks;
+                    Send(new SynchronizeCommand(simulation.CurrentFrame), 0);
+                }
             }
         }
 
-        protected override void HandlePlayerJoined(object sender, EventArgs e)
-        {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-            console.WriteLine(String.Format("CLT.NET: {0} joined.", args.Player));
-        }
-
-        protected override void HandlePlayerLeft(object sender, EventArgs e)
-        {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-            console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
-        }
-
+        /// <summary>
+        /// Got command data from another client or the server.
+        /// </summary>
+        /// <param name="command">the received command.</param>
         protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
+            // This should only happen while we're connected.
             if (Session.ConnectionState != ClientState.Connected)
             {
                 throw new InvalidOperationException();
             }
+
+            // Check what we have.
             switch (command.Type)
             {
                 case GameCommandType.Synchronize:
+                    // Answer to a synchronization request.
                     // Only accept these when they come from the server.
                     if (!command.IsTentative)
                     {
@@ -173,14 +163,16 @@ namespace Space.Control
                         long latency = (simulation.CurrentFrame - syncCommand.ClientFrame) / 2;
                         long clientServerDelta = (syncCommand.ServerFrame - simulation.CurrentFrame);
                         long frameDelta = clientServerDelta + latency / 2;
-                        if (frameDelta != 0)
+                        if (System.Math.Abs(frameDelta) > 2)
                         {
-                            Console.WriteLine("Correcting for " + frameDelta + " frames.");
+                            console.WriteLine("Correcting for " + frameDelta + " frames.");
                             simulation.RunToFrame(simulation.CurrentFrame + frameDelta);
                         }
                     }
                     break;
                 case GameCommandType.GameStateResponse:
+                    // Got a simulation snap shot (normally after requesting it due to
+                    // our simulation going out of scope for an older event).
                     // Only accept these when they come from the server.
                     if (!command.IsTentative)
                     {
@@ -188,14 +180,17 @@ namespace Space.Control
                     }
                     break;
                 case GameCommandType.PlayerDataChanged:
+                    // Player information has somehow changed.
                     // Only accept these when they come from the server.
                     if (!command.IsTentative)
                     {
+                        // The player has to be in the game for this to work... this can
+                        // fail if the message from the server that a client joined reached
+                        // us before the join message.
                         if (command.Player == null)
                         {
                             throw new ArgumentException("command.Player");
                         }
-                        Console.WriteLine("CLT: player data");
                         var changeCommand = (PlayerDataChangedCommand)command;
                         switch (changeCommand.Field)
                         {
@@ -216,8 +211,10 @@ namespace Space.Control
                         var addCommand = (AddGameObjectCommand)command;
                         addCommand.GameObject.Rewind();
                         IGameObject obj = packetizer.Depacketize<IGameObject>(addCommand.GameObject);
-                        simulation.RunToFrame(addCommand.Frame);
-                        simulation.Add(obj, true);
+                        // Make sure we keep the ID as defined by the server.
+                        var id = obj.UID;
+                        simulation.Add(obj, addCommand.Frame);
+                        obj.UID = id;
                     }
                     break;
                 case GameCommandType.RemoveGameObject:
@@ -226,8 +223,7 @@ namespace Space.Control
                     {
                         Console.WriteLine("CLT: remove object");
                         var removeCommand = (RemoveGameObjectCommand)command;
-                        simulation.RunToFrame(removeCommand.Frame);
-                        simulation.Remove(removeCommand.GameObjectUID);
+                        simulation.Remove(removeCommand.GameObjectUID, removeCommand.Frame);
                     }
                     break;
                 case GameCommandType.PlayerInput:
@@ -241,12 +237,76 @@ namespace Space.Control
             }
         }
 
-        private void HandleThresholdExceeded(object sender, EventArgs e)
+        #endregion
+
+        #region Events
+        
+        /// <summary>
+        /// Got info about an open game.
+        /// </summary>
+        protected override void HandleGameInfoReceived(object sender, EventArgs e)
         {
-            Send(new GameStateRequestCommand(), 200);
+            var args = (GameInfoReceivedEventArgs)e;
+
+            var info = args.Data.ReadString();
+            console.WriteLine(String.Format("CLT.NET: Found a game: [{0}] {1} ({2}/{3})", args.Host.ToString(), info, args.NumPlayers, args.MaxPlayers));
         }
 
-#region Debugging stuff
+        /// <summary>
+        /// Got a server response to our request to join it.
+        /// </summary>
+        protected override void HandleJoinResponse(object sender, EventArgs e)
+        {
+            var args = (JoinResponseEventArgs)e;
+
+            console.WriteLine(string.Format("CLT.NET: Join response: {0} ({1})", args.WasSuccess, Enum.GetName(typeof(JoinResponseReason), args.Reason)));
+
+            // Were we allowed to join?
+            if (args.WasSuccess)
+            {
+                // Yes! Use the received simulation information.
+                simulation.Depacketize(args.Data, packetizer.Context);
+            }
+            else
+            {
+                // No :( See if we know why and notify the user.
+                // TODO
+            }
+        }
+
+        /// <summary>
+        /// Got info that a new player joined the game.
+        /// </summary>
+        protected override void HandlePlayerJoined(object sender, EventArgs e)
+        {
+            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
+
+            console.WriteLine(String.Format("CLT.NET: {0} joined.", args.Player));
+        }
+
+        /// <summary>
+        /// Got information that a player has left the game.
+        /// </summary>
+        protected override void HandlePlayerLeft(object sender, EventArgs e)
+        {
+            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
+
+            console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
+        }
+
+        /// <summary>
+        /// Called when our simulation cannot accomodate an update or rollback,
+        /// meaning we have to get a server snapshot.
+        /// </summary>
+        private void HandleThresholdExceeded(object sender, EventArgs e)
+        {
+            // So we request it.
+            Send(new GameStateRequestCommand(), 100);
+        }
+
+        #endregion
+
+        #region Debugging stuff
 
         internal void DEBUG_DrawInfo(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
@@ -270,6 +330,6 @@ namespace Space.Control
 
         internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
 
-#endregion
+        #endregion
     }
 }

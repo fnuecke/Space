@@ -227,7 +227,7 @@ namespace Engine.Session
                             playerAddresses = new IPEndPoint[MaxPlayers];
                             players = new Player<TPlayerData, TPacketizerContext>[MaxPlayers];
 
-                            // Get info on players already in the session.
+                            // Get info on players already in the session, including us.
                             for (int i = 0; i < NumPlayers; i++)
                             {
                                 // Get player number.

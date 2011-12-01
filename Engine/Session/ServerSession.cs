@@ -230,15 +230,51 @@ namespace Engine.Session
                                 TPlayerData playerData = new TPlayerData();
                                 data.ReadPacketizable(playerData, packetizer.Context);
 
+                                // Create the player instance for the player.
+                                var player = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData,
+                                    delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
+
+                                // Request additional info first, as this also triggers
+                                // validation / prepping of the joining player's player
+                                // info, or allow manual override -- disallowing the
+                                // player to join.
+                                var requestArgs = new JoinRequestEventArgs<TPlayerData, TPacketizerContext>(player, playerData);
+                                try
+                                {
+                                    OnJoinRequested(requestArgs);
+                                }
+#if DEBUG
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine("Error in OnJoinRequested: " + ex);
+#else
+                                catch (Exception)
+                                {
+#endif
+                                    // Something went wrong, possible wrong data provided by the client.
+                                    // In any case, block him.
+                                    requestArgs.ShouldBlock = true;
+                                }
+
+                                // Should we block the player?
+                                if (requestArgs.ShouldBlock)
+                                {
+                                    Packet fail = new Packet(2);
+                                    fail.Write(false);
+                                    fail.Write((byte)JoinResponseReason.Unknown);
+                                    Send(args.Remote, SessionMessage.JoinResponse, fail);
+                                    args.Consume();
+                                    return;
+                                }
+
                                 // Store the player's info.
                                 playerAddresses[playerNumber] = args.Remote;
-                                players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData,
-                                    delegate() { return protocol.GetPing(playerAddresses[playerNumber]); });
+                                players[playerNumber] = player;
                                 slots[playerNumber] = true;
                                 ++NumPlayers;
 
                                 // Build the response.
-                                Packet response = new Packet();
+                                Packet response = new Packet(ushort.MaxValue);
                                 response.Write(true);
 
                                 // Tell the player his number.
@@ -260,13 +296,11 @@ namespace Engine.Session
                                     response.Write(playerAddresses[i].Port);
                                 }
 
-                                // Add other game relevant data (e.g. game state).
-                                var requestArgs = new JoinRequestEventArgs<TPlayerData, TPacketizerContext>(playerData);
-                                OnJoinRequested(requestArgs);
+                                // Now write the other game relevant data (e.g. game state).
                                 response.Write(requestArgs.Data);
 
                                 // Send the response!
-                                Send(args.Remote, SessionMessage.JoinResponse, response, 100);
+                                Send(args.Remote, SessionMessage.JoinResponse, response, 40);
 
                                 // Tell the other players, but *only* the other players.
                                 var joined = new Packet();
@@ -279,7 +313,7 @@ namespace Engine.Session
                                 {
                                     if (playerAddresses[i] != null && i != playerNumber)
                                     {
-                                        Send(playerAddresses[i], SessionMessage.PlayerJoined, joined, 100);
+                                        Send(playerAddresses[i], SessionMessage.PlayerJoined, joined, 40);
                                     }
                                 }
 

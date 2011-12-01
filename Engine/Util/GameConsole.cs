@@ -236,7 +236,7 @@ namespace Engine.Util
         #region Constructor
 
         /// <summary>
-        /// Creates a new game console.
+        /// Creates a new game console and adds it as a service to the game.
         /// </summary>
         /// <param name="game">the game the console will be used in.</param>
         public GameConsole(Game game)
@@ -502,7 +502,7 @@ namespace Engine.Util
             buffer.AddRange(lines);
             if (buffer.Count > BufferSize)
             {
-                buffer.RemoveRange(BufferSize, buffer.Count - BufferSize);
+                buffer.RemoveRange(0, buffer.Count - BufferSize);
             }
 
             foreach (var line in lines)

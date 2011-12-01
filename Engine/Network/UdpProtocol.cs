@@ -199,20 +199,22 @@ namespace Engine.Network
                     udp.Send(message.data.Buffer, message.data.Length, message.remote);
                 }
             }
+
             // Do actual removal after iteration, as this modifies the collection.
             foreach (var remote in toRemove)
             {
                 RemoveConnection(remote);
                 OnTimeout(new ProtocolEventArgs(remote));
             }
+
             // Do pings for known connections once in a while.
             if (new TimeSpan(time - lastPing).TotalMilliseconds > PingFrequency)
             {
                 foreach (var item in connections.Values)
                 {
-                    int messageNumber;
-                    Packet message = messages.MakePing(out messageNumber);
-                    awaitingAck.Add(messageNumber, new UdpPendingMessage(SocketMessage.Ping, message, item.Remote, PingFrequency));
+                    Packet message = messages.MakePing();
+                    Information.Outgoing(message.Length, TrafficType.Protocol);
+                    udp.Send(message.Buffer, message.Length, item.Remote);
                 }
                 lastPing = time;
             }
@@ -239,7 +241,7 @@ namespace Engine.Network
 
             // This block is synchronized, to avoid inconsistencies when messages
             // get pushed from outside sources.
-            lock (this)
+            try
             {
                 // Get the connection associated with this remote machine. Only create a new one
                 // if it's a data packet.
@@ -258,7 +260,7 @@ namespace Engine.Network
                         Information.Incoming(buffer.Length, TrafficType.Protocol);
                         if (awaitingAck.ContainsKey(messageNumber))
                         {
-                            connection.PushPing((int)new TimeSpan(DateTime.Now.Ticks - awaitingAck[messageNumber].timeCreated).TotalMilliseconds / 2);
+                            //connection.PushPing((int)new TimeSpan(DateTime.Now.Ticks - awaitingAck[messageNumber].timeCreated).TotalMilliseconds / 2);
                             awaitingAck.Remove(messageNumber);
                         }
                         break;
@@ -296,9 +298,13 @@ namespace Engine.Network
                     case SocketMessage.Ping:
                         // It's a ping, send a pong.
                         Information.Incoming(buffer.Length, TrafficType.Protocol);
-                        Packet pong = messages.MakeAck(messageNumber);
+                        Packet pong = messages.MakePong(data.ReadInt64());
                         Information.Outgoing(pong.Length, TrafficType.Protocol);
                         udp.Send(pong.Buffer, pong.Length, remote);
+                        break;
+                    case SocketMessage.Pong:
+                        // It's a pong! Calculate latency.
+                        connection.PushPing((int)new TimeSpan((DateTime.Now.Ticks - data.ReadInt64()) / 2).TotalMilliseconds);
                         break;
                     case SocketMessage.Unacked:
                         // Unacked data, this is only sent once, presumably.
@@ -309,6 +315,16 @@ namespace Engine.Network
                         break;
                 }
             }
+#if DEBUG
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+#else
+            catch (Exception)
+            {
+            }
+#endif
         }
 
         #endregion
@@ -417,20 +433,24 @@ namespace Engine.Network
         Acked = 2,
 
         /// <summary>
-        /// Low-level acked message, used to test aliveness of connections, and
-        /// build up samples for the ping of that connection.
+        /// Used to measure latencies to known hosts.
         /// </summary>
         Ping = 4,
 
         /// <summary>
+        /// Reply to a ping.
+        /// </summary>
+        Pong = 8,
+
+        /// <summary>
         /// This message does not require us to send an ack.
         /// </summary>
-        Unacked = 8,
+        Unacked = 16,
 
         /// <summary>
         /// Indicates that further data in this packet is gzip compressed.
         /// </summary>
-        Compressed = 16
+        Compressed = 32
     }
 
     /// <summary>
@@ -502,13 +522,20 @@ namespace Engine.Network
             return MakeMessage(SocketMessage.Acked, wrapper);
         }
 
-        public Packet MakePing(out int messageNumber)
+        public Packet MakePing()
         {
-            messageNumber = nextMessageNumber++;
-            Packet wrapper = new Packet(4);
-            wrapper.Write(messageNumber);
+            Packet wrapper = new Packet(sizeof(long));
+            wrapper.Write(DateTime.Now.Ticks);
             return MakeMessage(SocketMessage.Ping, wrapper);
         }
+
+        public Packet MakePong(long ping)
+        {
+            Packet wrapper = new Packet(sizeof(long));
+            wrapper.Write(ping);
+            return MakeMessage(SocketMessage.Pong, wrapper);
+        }
+
         /// <summary>
         /// Create an unacked message, i.e. one that we'll only send once and don't need an ack for.
         /// </summary>
@@ -568,7 +595,7 @@ namespace Engine.Network
                 }
 
                 // If it's an ack or an acked message we have a message number.
-                if (type == SocketMessage.Acked || type == SocketMessage.Ack || type == SocketMessage.Ping)
+                if (type == SocketMessage.Acked || type == SocketMessage.Ack)
                 {
                     if (!body.HasInt32())
                     {
@@ -586,7 +613,7 @@ namespace Engine.Network
                     }
                     data = body.ReadPacket();
                 }
-                else if (type == SocketMessage.Unacked)
+                else if (type == SocketMessage.Unacked || type == SocketMessage.Ping || type == SocketMessage.Pong)
                 {
                     data = body;
                 }
@@ -702,7 +729,7 @@ namespace Engine.Network
         /// <summary>
         /// The average ping of this connection.
         /// </summary>
-        public int Ping { get { return pingAverage.Measure(); } }
+        public int Ping { get { return pingAverage.Mean(); } }
 
         /// <summary>
         /// The remote address this info is about.
@@ -718,7 +745,7 @@ namespace Engine.Network
         /// Average ping to this client, i.e. half round trip time for acked messages,
         /// over the last 20 messages.
         /// </summary>
-        private Average pingAverage = new Average(20);
+        private Sampling pingAverage = new Sampling(5, 20);
 
         /// <summary>
         /// Creates a new instance to track the state for an endpoint.

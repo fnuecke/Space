@@ -13,7 +13,7 @@ using SpaceData;
 namespace Space
 {
     /// <summary>
-    /// This is the main type for your game
+    /// Main class, sets up services and basic components.
     /// </summary>
     public class Spaaace : Microsoft.Xna.Framework.Game
     {
@@ -24,21 +24,34 @@ namespace Space
         Server server;
         Client client;
 
-        static Spaaace()
-        {
-        }
-
         public Spaaace()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
+            // Suspect for better sync, but not enough experimenting done, yet.
+            //this.TargetElapsedTime = TimeSpan.FromMilliseconds(1000f / 67f);
+            //graphics.SynchronizeWithVerticalRetrace = true;
+
+            // XNAs fixed timestep implementation doesn't suit us, to be gentle.
+            // So we let it be dynamic and adjust for it as necessary, leading
+            // to almost no desyncs at all! Yay!
+            this.IsFixedTimeStep = false;
+
+            // Create our object instantiation context. This must contain
+            // everything a game object might need to rebuild it self from
+            // its serialized data (for game states being sent).
             context = new PacketizerContext();
             context.game = this;
             Packetizer<PacketizerContext> packetizer = new Packetizer<PacketizerContext>(context);
-
+            // Make the packetizer available for all game components.
             Services.AddService(typeof(IPacketizer<PacketizerContext>), packetizer);
 
+            // Make some class available through it. The classes registered here
+            // can be deserialized without the code triggering the deserialization
+            // to actually know what it'll get. This is used in game states, e.g.
+            // where the state only knows it has ISteppables, but not what the
+            // actual implementations are.
             packetizer.Register<Ship>();
             packetizer.Register<AddGameObjectCommand>();
             packetizer.Register<GameStateRequestCommand>();
@@ -48,10 +61,12 @@ namespace Space
             packetizer.Register<RemoveGameObjectCommand>();
             packetizer.Register<SynchronizeCommand>();
 
+            // Add some more utility components.
             Components.Add(new KeyboardInputManager(this));
             console = new GameConsole(this);
             Components.Add(console);
 
+            // Register some commands for our console, making debugging that much easier ;)
             console.AddCommand("server", args =>
             {
                 if (server != null)
@@ -92,8 +107,14 @@ namespace Space
                 client.Session.Leave();
             },
                 "Leave the current game.");
+            console.AddCommand(new[] { "fullscreen", "fs" }, args =>
+            {
+                graphics.ToggleFullScreen();
+            },
+                "Toggles fullscreen mode.");
 
-            console.AddCommand("join", args =>
+            // Just for me, joining default testing server.
+            console.AddCommand("joinfn", args =>
             {
                 PlayerInfo info = new PlayerInfo();
                 info.ShipType = "Sparrow";
@@ -101,6 +122,9 @@ namespace Space
             },
                 "autojoin fn");
 
+            // Copy everything written to our gameconsole to the actual console,
+            // too, so we can inspect it out of game, copy stuff or read it after
+            // the game has crashed.
             console.LineWritten += delegate(object sender, EventArgs e)
             {
                 Console.WriteLine(((LineWrittenEventArgs)e).Message);

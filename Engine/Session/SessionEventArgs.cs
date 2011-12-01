@@ -185,13 +185,25 @@ namespace Engine.Session
         where TPlayerData : IPacketizable<TPacketizerContext>
     {
         /// <summary>
+        /// The player doing the joining.
+        /// </summary>
+        public Player<TPlayerData, TPacketizerContext> Player { get; private set; }
+
+        /// <summary>
         /// Data that should be sent should be written to this packet.
         /// </summary>
-        public TPlayerData PlayerData { get; set; }
+        public TPlayerData PlayerData { get; private set; }
 
-        public JoinRequestEventArgs(TPlayerData playerData)
+        /// <summary>
+        /// May be set to tell the session to not allow this player to join.
+        /// </summary>
+        public bool ShouldBlock { get; set; }
+
+        public JoinRequestEventArgs(Player<TPlayerData, TPacketizerContext> player, TPlayerData playerData)
         {
+            this.Player = player;
             this.PlayerData = playerData;
         }
+
     }
 }

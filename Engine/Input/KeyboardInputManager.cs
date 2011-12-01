@@ -50,7 +50,7 @@ namespace Engine.Input
         #endregion
 
         /// <summary>
-        /// Creates a new keyboard manager for the given game.
+        /// Creates a new keyboard manager for the given game and adds it as a service.
         /// </summary>
         /// <param name="game">the game to create the manager for.</param>
         public KeyboardInputManager(Game game)

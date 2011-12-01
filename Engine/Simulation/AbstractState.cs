@@ -34,11 +34,6 @@ namespace Engine.Simulation
         public IEnumerable<TSteppable> Children { get { return steppables; } }
 
         /// <summary>
-        /// The steppable factory to be used in this state.
-        /// </summary>
-        public ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> SteppableFactory { get; protected set; }
-
-        /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
         public IPacketizer<TPacketizerContext> Packetizer { get; protected set; }
@@ -68,7 +63,6 @@ namespace Engine.Simulation
 
         protected AbstractState(IPacketizer<TPacketizerContext> packetizer)
         {
-            this.SteppableFactory = new SteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>();
             this.Packetizer = packetizer;
         }
 
@@ -80,18 +74,8 @@ namespace Engine.Simulation
         /// Add an steppable object to the list of participants of this state.
         /// </summary>
         /// <param name="steppable">the object to add.</param>
-        /// <param name="keepUid">keep the objects UID, just increment the factories counter.</param>
-        public void Add(TSteppable steppable, bool keepUid = false)
+        public void Add(TSteppable steppable)
         {
-            if (keepUid)
-            {
-                SteppableFactory.Increment();
-            }
-            else
-            {
-                SteppableFactory.GetUniqueId(steppable);
-            }
-
             steppables.Add(steppable);
             steppable.State = ThisState;
         }
@@ -211,8 +195,6 @@ namespace Engine.Simulation
         {
             packet.Write(CurrentFrame);
 
-            SteppableFactory.Packetize(packet);
-
             int totalCommands = 0;
             foreach (var list in commands.Values)
             {
@@ -238,9 +220,6 @@ namespace Engine.Simulation
         {
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
-
-            // Read factory state.
-            SteppableFactory.Depacketize(packet, context);
 
             // Find commands that our out of date now, but keep newer ones.
             List<long> deprecated = new List<long>();
@@ -268,7 +247,9 @@ namespace Engine.Simulation
             int numSteppables = packet.ReadInt32();
             for (int i = 0; i < numSteppables; ++i)
             {
-                Add(Packetizer.Depacketize<TSteppable>(packet), true);
+                var steppable = Packetizer.Depacketize<TSteppable>(packet);
+                steppables.Add(steppable);
+                steppable.State = ThisState;
             }
         }
 
@@ -279,8 +260,6 @@ namespace Engine.Simulation
         protected virtual object CloneTo(AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> clone)
         {
             clone.CurrentFrame = CurrentFrame;
-
-            clone.SteppableFactory = (ISteppableFactory<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>)SteppableFactory.Clone();
 
             clone.Packetizer = Packetizer;
 

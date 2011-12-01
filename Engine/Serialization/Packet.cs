@@ -190,17 +190,24 @@ namespace Engine.Serialization
 
         public void Write(byte[] data)
         {
+            if (data.Length > ushort.MaxValue)
+            {
+                throw new ArgumentException("data");
+            }
+            Write(data, (ushort)data.Length);
+        }
+
+        public void Write(byte[] data, ushort length)
+        {
             if (data == null)
             {
-                Write((int)0);
+                Write((ushort)0);
             }
             else
             {
-                byte[] bytes = BitConverter.GetBytes(data.Length);
-                bytes.CopyTo(Buffer, Length);
-                Length += bytes.Length;
-                data.CopyTo(Buffer, Length);
-                Length += data.Length;
+                Write(length);
+                Array.Copy(data, 0, Buffer, this.Length, length);
+                this.Length += length;
             }
         }
 
@@ -208,15 +215,15 @@ namespace Engine.Serialization
         {
             if (data == null)
             {
-                Write((int)0);
+                Write((ushort)0);
             }
             else
             {
-                byte[] bytes = BitConverter.GetBytes(data.Length);
-                bytes.CopyTo(Buffer, Length);
-                Length += bytes.Length;
-                Array.Copy(data.Buffer, 0, Buffer, Length, data.Length);
-                Length += data.Length;
+                if (data.Length > ushort.MaxValue)
+                {
+                    throw new ArgumentException("data");
+                }
+                Write(data.Buffer, (ushort)data.Length);
             }
         }
 
@@ -378,8 +385,8 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read byte[].");
             }
-            int length = BitConverter.ToInt32(Buffer, readPointer);
-            readPointer += sizeof(int);
+            ushort length = BitConverter.ToUInt16(Buffer, readPointer);
+            readPointer += sizeof(ushort);
             byte[] result = new byte[length];
             Array.Copy(Buffer, readPointer, result, 0, length);
             readPointer += length;
@@ -535,9 +542,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read byte[].");
             }
-            int length = BitConverter.ToInt32(Buffer, readPointer);
+            ushort length = BitConverter.ToUInt16(Buffer, readPointer);
             byte[] result = new byte[length];
-            Array.Copy(Buffer, readPointer + sizeof(int), result, 0, length);
+            Array.Copy(Buffer, readPointer + sizeof(ushort), result, 0, length);
             return result;
         }
 
@@ -625,20 +632,16 @@ namespace Engine.Serialization
 
         public bool HasByteArray()
         {
-            if (HasInt32())
+            if (HasUInt16())
             {
-                return Available >= sizeof(int) + PeekInt32();
+                return Available >= sizeof(ushort) + PeekUInt16();
             }
             return false;
         }
 
         public bool HasPacket()
         {
-            if (HasInt32())
-            {
-                return Available >= sizeof(int) + PeekInt32();
-            }
-            return false;
+            return HasByteArray();
         }
 
         public bool HasString()

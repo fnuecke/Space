@@ -30,6 +30,22 @@ namespace Engine.Simulation
         void RunToFrame(long frame);
 
         /// <summary>
+        /// Add an object in a specific time frame. This will roll back, if
+        /// necessary, to insert the object, meaning it can trigger desyncs.
+        /// </summary>
+        /// <param name="steppable">the object to insert.</param>
+        /// <param name="frame">the frame to insert it at.</param>
+        void Add(TSteppable steppable, long frame);
+
+        /// <summary>
+        /// Remove an object in a specific time frame. This will roll back, if
+        /// necessary, to remove the object, meaning it can trigger desyncs.
+        /// </summary>
+        /// <param name="steppableUid">the id of the object to remove.</param>
+        /// <param name="frame">the frame to remove it at.</param>
+        void Remove(long steppableUid, long frame);
+
+        /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
         /// </summary>
         bool WaitingForSynchronization { get; }

@@ -2,13 +2,15 @@
 
 namespace Engine.Simulation
 {
+    /// <summary>
+    /// Dispatched by the <see cref="TSS"/> to signal it had to roll
+    /// back further than it could, meaning a new authoritative snapshot
+    /// of the state has to be acquired.
+    /// </summary>
     public class ThresholdExceededEventArgs : EventArgs
     {
-        public long Frame { get; private set; }
-
-        public ThresholdExceededEventArgs(long frame)
+        public ThresholdExceededEventArgs()
         {
-            this.Frame = frame;
         }
     }
 }

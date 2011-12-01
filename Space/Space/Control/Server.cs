@@ -30,6 +30,12 @@ namespace Space.Control
         /// </summary>
         private TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext> simulation;
 
+        /// <summary>
+        /// Counter used to distribute ids. Start with one to avoid accessing
+        /// the first instance due to uninitialized "pointers".
+        /// </summary>
+        private long lastUid = 1;
+
         #endregion
 
         public Server(Game game, int maxPlayers, byte worldSize, long worldSeed)
@@ -44,7 +50,9 @@ namespace Space.Control
             base.Update(gameTime);
 
             // Drive game logic.
-            simulation.Update();
+            //simulation.Update();
+            // Compensate for dynamic timestep.
+            simulation.RunToFrame(simulation.CurrentFrame + (int)Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
         }
 
         protected override void HandleGameInfoRequested(object sender, EventArgs e)
@@ -57,10 +65,15 @@ namespace Space.Control
         {
             // Send current game state to client.
             var args = (JoinRequestEventArgs<PlayerInfo, PacketizerContext>)e;
-            simulation.Packetize(args.Data);
 
-            // Validate player data.
-            args.PlayerData.ShipUID = 0;
+            // Create a ship for the player.
+            var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, packetizer.Context);
+            args.Player.Data.ShipUID = ship.UID = lastUid++;
+            AddObjectToSimulation(ship);
+            Console.WriteLine("{0} => ship id: {1}", args.Player, ship.UID);
+
+            // Now serialize the game state, with the player ship in it.
+            simulation.Packetize(args.Data);
         }
 
         protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
@@ -94,7 +107,7 @@ namespace Space.Control
                 case GameCommandType.GameStateRequest:
                     // Client needs game state.
                     {
-                        Send(command.Player.Number, new GameStateResponseCommand(simulation), 200);
+                        Send(command.Player.Number, new GameStateResponseCommand(simulation), 100);
                     }
                     break;
                 default:
@@ -106,28 +119,17 @@ namespace Space.Control
         {
             var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
             console.WriteLine(String.Format("SRV.NET: {0} joined.", args.Player));
-
-            // New player joined the game, create a ship for him.
-            var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, packetizer.Context);
-            simulation.Add(ship);
-            Console.WriteLine("{0} => ship id: {1}", args.Player, ship.UID);
-            SetPlayerShipUid(args.Player, ship.UID);
-            SendObjectAdded(ship);
         }
 
-        private void SetPlayerShipUid(Player<PlayerInfo, PacketizerContext> player, long id)
+        private void AddObjectToSimulation(IGameObject obj)
         {
-            player.Data.ShipUID = id;
-            Packet packet = new Packet();
-            packet.Write(id);
-            SendAll(new PlayerDataChangedCommand(player, PlayerInfoField.ShipId, packet), 100);
-        }
+            // Add it, getting a UID for the object.
+            simulation.Add(obj);
 
-        private void SendObjectAdded(IGameObject obj)
-        {
+            // Notify all players in the game about this.
             Packet packet = new Packet();
             packetizer.Packetize(obj, packet);
-            SendAll(new AddGameObjectCommand(packet, simulation.CurrentFrame), 100);
+            SendAll(new AddGameObjectCommand(packet, simulation.CurrentFrame), 20);
         }
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)
@@ -137,7 +139,7 @@ namespace Space.Control
 
             // Player left the game, remove his ship.
             simulation.Remove(args.Player.Data.ShipUID);
-            SendAll(new RemoveGameObjectCommand(args.Player.Data.ShipUID, simulation.CurrentFrame), 200);
+            SendAll(new RemoveGameObjectCommand(args.Player.Data.ShipUID, simulation.CurrentFrame), 50);
         }
 
         #region Debugging stuff
