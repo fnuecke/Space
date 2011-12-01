@@ -36,7 +36,7 @@ namespace Engine.Network
         /// Keeps track of some network related statistics.
         /// </summary>
         public ProtocolInfo Information { get; private set; }
-
+        
         /// <summary>
         /// The ping frequency, i.e. how often (every <c>PingFrequency</c> milliseconds)
         /// to send pings to known remote hosts. This is used to detect failed connections
@@ -453,19 +453,19 @@ namespace Engine.Network
         Acked = 2,
 
         /// <summary>
+        /// This message does not require us to send an ack.
+        /// </summary>
+        Unacked = 4,
+
+        /// <summary>
         /// Used to measure latencies to known hosts.
         /// </summary>
-        Ping = 4,
+        Ping = 8,
 
         /// <summary>
         /// Reply to a ping.
         /// </summary>
-        Pong = 8,
-
-        /// <summary>
-        /// This message does not require us to send an ack.
-        /// </summary>
-        Unacked = 16,
+        Pong = 16,
 
         /// <summary>
         /// Indicates that further data in this packet is gzip compressed.

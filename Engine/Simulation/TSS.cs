@@ -95,7 +95,7 @@ namespace Engine.Simulation
         /// Creates a new TSS based meta state.
         /// </summary>
         /// <param name="delays">The delays to use for trailing states, with the delays in frames.</param>
-        public TSS(uint[] delays, TState initialState)
+        public TSS(uint[] delays)
         {
             this.delays = new uint[delays.Length + 1];
             delays.CopyTo(this.delays, 1);
@@ -104,8 +104,19 @@ namespace Engine.Simulation
             // Generate initial states.
             states = new TState[this.delays.Length];
 
-            // Initialize to empty state.
-            MirrorState(initialState, states.Length - 1);
+            // Mark us for need of sync.
+            WaitingForSynchronization = true;
+        }
+
+        /// <summary>
+        /// Initialize the TSS to the given state. This also clears the
+        /// <c>WaitingForSynchronization</c> flag.
+        /// </summary>
+        /// <param name="state">the state to initialize this TSS to.</param>
+        public void Initialize(TState state)
+        {
+            MirrorState(state, states.Length - 1);
+            WaitingForSynchronization = false;
         }
 
         /// <summary>
@@ -312,7 +323,7 @@ namespace Engine.Simulation
                 {
                     // Already there! Use the authoritative one (or if neither is do nothing).
                     var existing = list[known];
-                    if (existing.IsTentative && !command.IsTentative)
+                    if (!existing.IsAuthoritative && command.IsAuthoritative)
                     {
                         list.RemoveAt(known);
                         list.Add(command);

@@ -274,7 +274,7 @@ namespace Engine.Session
                                 ++NumPlayers;
 
                                 // Build the response.
-                                Packet response = new Packet(ushort.MaxValue);
+                                Packet response = new Packet();
                                 response.Write(true);
 
                                 // Tell the player his number.

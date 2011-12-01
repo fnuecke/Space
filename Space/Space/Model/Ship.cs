@@ -31,7 +31,8 @@ namespace Space.Model
 
         private Texture2D texture;
 
-        private Direction accelDirection = Direction.Invalid;
+        private Direction accelerationDirection = Direction.Invalid;
+        private Direction rotateDirection = Direction.Invalid;
 
         public Ship()
         {
@@ -48,29 +49,26 @@ namespace Space.Model
 
         public void Accelerate(Direction direction)
         {
-            accelDirection |= direction;
-            acceleration = DirectionConversion.DirectionToFPoint(accelDirection) * data.Acceleration;
+            accelerationDirection |= direction;
+            acceleration = DirectionConversion.DirectionToFPoint(accelerationDirection) * data.Acceleration;
         }
 
-        public void Stop(Direction direction)
+        public void StopAccelerate(Direction direction)
         {
-            accelDirection &= ~direction;
-            acceleration = DirectionConversion.DirectionToFPoint(accelDirection) * data.Acceleration;
+            accelerationDirection &= ~direction;
+            acceleration = DirectionConversion.DirectionToFPoint(accelerationDirection) * data.Acceleration;
         }
 
-        public void TurnLeft()
+        public void Rotate(Direction direction)
         {
-            speedRotation = -data.RotationSpeed;
+            rotateDirection |= direction;
+            speedRotation = DirectionConversion.DirectionToFixed(rotateDirection) * data.RotationSpeed;
         }
 
-        public void TurnRight()
+        public void StopRotate(Direction direction)
         {
-            speedRotation = data.RotationSpeed;
-        }
-
-        public void StopRotating()
-        {
-            speedRotation = (Fixed)0;
+            rotateDirection &= ~direction;
+            speedRotation = DirectionConversion.DirectionToFixed(rotateDirection) * data.RotationSpeed;
         }
 
         public override void Update()

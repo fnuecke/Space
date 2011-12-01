@@ -139,7 +139,7 @@ namespace Engine.Simulation
             {
                 // Already there! Use the authoritative one (or if neither is do nothing).
                 var existing = commands[known];
-                if (existing.IsTentative && !command.IsTentative)
+                if (!existing.IsAuthoritative && command.IsAuthoritative)
                 {
                     commands.RemoveAt(known);
                 }
@@ -200,7 +200,7 @@ namespace Engine.Simulation
             int numCommands = packet.ReadInt32();
             for (int j = 0; j < numCommands; ++j)
             {
-                PushCommand(Packetizer.Depacketize<ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>>(packet));
+                PushCommand(Packetizer.Depacketize<ICommand<TCommandType, TPlayerData, TPacketizerContext>>(packet));
             }
 
             // And finally the objects. Remove the one we know before that.

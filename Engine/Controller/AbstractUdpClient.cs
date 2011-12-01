@@ -8,18 +8,28 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients using the UDP network protocol.
     /// </summary>
-    public abstract class AbstractUdpClient<TPlayerData, TCommandType, TPacketizerContext> : AbstractUdpController<IClientSession<TPlayerData, TPacketizerContext>, TPlayerData, TCommandType, TPacketizerContext>
+    public abstract class AbstractUdpClient<TCommandType, TPlayerData, TPacketizerContext> : AbstractUdpController<IClientSession<TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPacketizerContext>, new()
         where TCommandType : struct
     {
         #region Construction / Destruction
 
+        /// <summary>
+        /// Initializes the underlying session after initializing
+        /// the protocol in the base class.
+        /// </summary>
+        /// <param name="game">the game this belongs to.</param>
+        /// <param name="port">the port to listen on.</param>
+        /// <param name="header">the protocol header.</param>
         public AbstractUdpClient(Game game, ushort port, string header)
             : base(game, port, header)
         {
             Session = SessionFactory.StartClient<TPlayerData, TPacketizerContext>(game, protocol);
         }
 
+        /// <summary>
+        /// Attach ourselves as listeners.
+        /// </summary>
         public override void Initialize()
         {
             Session.GameInfoReceived += HandleGameInfoReceived;
@@ -28,6 +38,9 @@ namespace Engine.Controller
             base.Initialize();
         }
 
+        /// <summary>
+        /// Remove ourselves as listeners.
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             Session.GameInfoReceived -= HandleGameInfoReceived;

@@ -23,11 +23,11 @@ namespace Engine.Input
         /// </summary>
         public KeyboardState State { get; private set; }
 
-        internal KeyboardInputEventArgs(Keys key, KeyModifier modifier, KeyboardState state)
+        internal KeyboardInputEventArgs(KeyboardState state, Keys key, KeyModifier modifier)
         {
+            this.State = state;
             this.Key = key;
             this.Modifier = modifier;
-            this.State = state;
         }
     }
 }

@@ -1,9 +1,7 @@
 ﻿using System;
 using Engine.Commands;
 using Engine.Controller;
-using Engine.Serialization;
 using Engine.Session;
-using Engine.Simulation;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
@@ -16,7 +14,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class Server : AbstractUdpServer<PlayerInfo, GameCommandType, PacketizerContext>
+    class Server : AbstractTssUdpServer<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
     {
         #region Fields
 
@@ -25,34 +23,13 @@ namespace Space.Control
         /// </summary>
         private StaticWorld world;
 
-        /// <summary>
-        /// The game state representing the current game world.
-        /// </summary>
-        private TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext> simulation;
-
-        /// <summary>
-        /// Counter used to distribute ids. Start with one to avoid accessing
-        /// the first instance due to uninitialized "pointers".
-        /// </summary>
-        private long lastUid = 1;
-
         #endregion
 
         public Server(Game game, int maxPlayers, byte worldSize, long worldSeed)
             : base(game, maxPlayers, 50100, "5p4c3!")
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
-            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>(new uint[] { 50 }, new GameState(game, Session));
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            base.Update(gameTime);
-
-            // Drive game logic.
-            //simulation.Update();
-            // Compensate for dynamic timestep.
-            simulation.RunToFrame(simulation.CurrentFrame + (int)Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
+            simulation.Initialize(new GameState(game, Session));
         }
 
         protected override void HandleGameInfoRequested(object sender, EventArgs e)
@@ -68,92 +45,64 @@ namespace Space.Control
 
             // Create a ship for the player.
             var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, packetizer.Context);
-            args.Player.Data.ShipUID = ship.UID = lastUid++;
-            AddObjectToSimulation(ship);
+            args.Player.Data.ShipUID = AddSteppable(ship);
             Console.WriteLine("{0} => ship id: {1}", args.Player, ship.UID);
 
             // Now serialize the game state, with the player ship in it.
             simulation.Packetize(args.Data);
         }
 
-        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override bool HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
             switch (command.Type)
             {
-                case GameCommandType.Synchronize:
-                    // Client resyncing.
-                    {
-                        SynchronizeCommand syncCommand = (SynchronizeCommand)command;
-                        Send(command.Player.Number, new SynchronizeCommand(syncCommand.ClientFrame, simulation.CurrentFrame));
-                    }
-                    break;
                 case GameCommandType.PlayerInput:
                     // Player sent input.
                     {
-                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext>)command;
-                        if (simulationCommand.Frame > simulation.TrailingFrame)
+                        var inputCommand = (PlayerInputCommand)command;
+                        if (inputCommand.Frame > simulation.TrailingFrame)
                         {
                             // OK, in allowed timeframe, mark as valid and send it to all clients.
-                            simulationCommand.IsTentative = false;
-                            simulation.PushCommand(simulationCommand);
+                            inputCommand.IsAuthoritative = true;
+                            simulation.PushCommand(inputCommand);
                             SendAll(command);
                         }
                         else
                         {
-                            console.WriteLine("Got a command we couldn't use, " + simulationCommand.Frame + "<" + simulation.TrailingFrame);
+                            console.WriteLine("Got a command we couldn't use, " + inputCommand.Frame + "<" + simulation.TrailingFrame);
                         }
                     }
-                    break;
-                case GameCommandType.GameStateRequest:
-                    // Client needs game state.
-                    {
-                        Send(command.Player.Number, new GameStateResponseCommand(simulation), 100);
-                    }
-                    break;
+                    return true;
                 default:
-                    throw new ArgumentException("command");
+#if DEBUG
+                    Console.WriteLine("Server: got a command we couldn't handle: " + command.Type);
+#endif
+                    break;
             }
+
+            // Got here -> unhandled.
+            return false;
         }
 
         protected override void HandlePlayerJoined(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-            console.WriteLine(String.Format("SRV.NET: {0} joined.", args.Player));
-        }
-
-        private void AddObjectToSimulation(IGameObject obj)
-        {
-            // Add it, getting a UID for the object.
-            simulation.Add(obj);
-
-            // Notify all players in the game about this.
-            Packet packet = new Packet();
-            packetizer.Packetize(obj, packet);
-            SendAll(new AddGameObjectCommand(packet, simulation.CurrentFrame), 20);
+            console.WriteLine(String.Format("Server: {0} joined.", args.Player));
         }
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-            console.WriteLine(String.Format("SRV.NET: {0} left.", args.Player));
+            console.WriteLine(String.Format("Server: {0} left.", args.Player));
 
             // Player left the game, remove his ship.
-            simulation.Remove(args.Player.Data.ShipUID);
-            SendAll(new RemoveGameObjectCommand(args.Player.Data.ShipUID, simulation.CurrentFrame), 50);
+            RemoveSteppable(args.Player.Data.ShipUID);
         }
 
         #region Debugging stuff
 
         internal void DEBUG_DrawInfo(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
-            // Draw world elements.
-            //spriteBatch.Begin();
-            //foreach (var child in simulation.Children)
-            //{
-            //    child.Draw(null, Vector2.Zero, spriteBatch);
-            //}
-            //spriteBatch.End();
-
             // Draw debug stuff.
             SpriteFont font = Game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
 

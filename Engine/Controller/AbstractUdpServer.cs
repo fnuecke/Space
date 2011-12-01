@@ -8,18 +8,28 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for game servers using the UDP network protocol.
     /// </summary>
-    public abstract class AbstractUdpServer<TPlayerData, TCommandType, TPacketizerContext> : AbstractUdpController<IServerSession<TPlayerData, TPacketizerContext>, TPlayerData, TCommandType, TPacketizerContext>
+    public abstract class AbstractUdpServer<TCommandType, TPlayerData, TPacketizerContext> : AbstractUdpController<IServerSession<TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPacketizerContext>, new()
         where TCommandType : struct
     {
         #region Construction / Destruction
 
+        /// <summary>
+        /// Initializes the session and base classes.
+        /// </summary>
+        /// <param name="game">the game this belongs to.</param>
+        /// <param name="maxPlayers">the number of allowed players in the game.</param>
+        /// <param name="port">the port to listen on.</param>
+        /// <param name="header">the protocol header.</param>
         public AbstractUdpServer(Game game, int maxPlayers, ushort port, string header)
             : base(game, port, header)
         {
             Session = SessionFactory.StartServer<TPlayerData, TPacketizerContext>(game, protocol, maxPlayers);
         }
 
+        /// <summary>
+        /// Attach ourselves as listeners.
+        /// </summary>
         public override void Initialize()
         {
             Session.GameInfoRequested += HandleGameInfoRequested;
@@ -28,6 +38,9 @@ namespace Engine.Controller
             base.Initialize();
         }
 
+        /// <summary>
+        /// Remove ourselves as listeners.
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             Session.GameInfoRequested -= HandleGameInfoRequested;

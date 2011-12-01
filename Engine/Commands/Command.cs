@@ -13,12 +13,10 @@ namespace Engine.Commands
         #region Properties
 
         /// <summary>
-        /// Whether the command is signed (e.g. by a server) (<c>false</c>)
-        /// or came from an untrustworthy source (e.g. another client) (<c>true</c>).
-        /// 
-        /// IMPORTANT: must be set externally, when receiving a command.
+        /// Whether the command is signed (e.g. by a server) (<c>true</c>)
+        /// or came from an untrustworthy source (e.g. another client) (<c>false</c>).
         /// </summary>
-        public bool IsTentative { get; set; }
+        public bool IsAuthoritative { get; set; }
 
         /// <summary>
         /// The player that issued the command.
@@ -41,7 +39,7 @@ namespace Engine.Commands
 
         protected Command(T type, Player<TPlayerData, TPacketizerContext> player)
         {
-            this.IsTentative = true;
+            this.IsAuthoritative = false;
             this.Type = type;
             this.Player = player;
         }

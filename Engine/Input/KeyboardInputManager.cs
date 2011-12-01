@@ -43,8 +43,19 @@ namespace Engine.Input
 
         #region Fields
 
+        /// <summary>
+        /// The last key we pressed, for repeats.
+        /// </summary>
         private Keys lastPressedKey;
+
+        /// <summary>
+        /// Last time we sent a repeated key press.
+        /// </summary>
         private DateTime lastRepeat;
+
+        /// <summary>
+        /// State from the last update, to check for changes.
+        /// </summary>
         private KeyboardState previousState;
 
         #endregion
@@ -118,7 +129,7 @@ namespace Engine.Input
                             if (key == lastPressedKey && new TimeSpan(currentTime.Ticks - lastRepeat.Ticks).TotalMilliseconds > RepeatRate)
                             {
                                 lastRepeat = currentTime;
-                                OnPressed(new KeyboardInputEventArgs(key, modifier, currentState));
+                                OnPressed(new KeyboardInputEventArgs(currentState, key, modifier));
                             }
                         }
                     }
@@ -130,7 +141,7 @@ namespace Engine.Input
                             lastPressedKey = key;
                             lastRepeat = currentTime.AddMilliseconds(RepeatDelay);
                         }
-                        OnPressed(new KeyboardInputEventArgs(key, modifier, currentState));
+                        OnPressed(new KeyboardInputEventArgs(currentState, key, modifier));
                     }
                 }
 
@@ -142,7 +153,7 @@ namespace Engine.Input
                     {
                         lastPressedKey = Keys.None;
                     }
-                    OnReleased(new KeyboardInputEventArgs(key, modifier, currentState));
+                    OnReleased(new KeyboardInputEventArgs(currentState, key, modifier));
                 }
             }
 

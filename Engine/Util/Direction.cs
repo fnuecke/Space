@@ -19,61 +19,73 @@ namespace Engine.Util
         /// North direction, upward vector.
         /// </summary>
         North = 1,
+        Up = North,
 
         /// <summary>
         /// East direction, right pointing vector.
         /// </summary>
         East = 2,
+        Right = East,
 
         /// <summary>
         /// South direction, downward vector.
         /// </summary>
         South = 4,
+        Down = South,
 
         /// <summary>
         /// West direction, left pointing vector.
         /// </summary>
         West = 8,
+        Left = West,
 
         /// <summary>
         /// Combination of north and east.
         /// </summary>
         NorthEast = North | East,
+        UpRight = NorthEast,
 
         /// <summary>
         /// Combination of north and west.
         /// </summary>
         NorthWest = North | West,
+        UpLeft = NorthWest,
 
         /// <summary>
         /// Combination of south and east.
         /// </summary>
         SouthEast = South | East,
+        DownRight = SouthEast,
 
         /// <summary>
         /// Combination of south and west.
         /// </summary>
         SouthWest = South | West,
+        DownLeft = SouthWest,
 
         /// <summary>
         /// Alternative for north, east and west canceling each other out.
         /// </summary>
         NorthAlt = North | East | West,
+        UpAlt = NorthAlt,
 
         /// <summary>
         /// Alternative for east, north and south canceling each other out.
         /// </summary>
         EastAlt = East | North | South,
+        RightAlt = EastAlt,
 
         /// <summary>
         /// Alternative for south, east and west canceling each other out.
         /// </summary>
         SouthAlt = South | East | West,
+        DownAlt = SouthAlt,
 
         /// <summary>
         /// Alternative for west, north and south canceling each other out.
         /// </summary>
-        WestAlt = West | North | South
+        WestAlt = West | North | South,
+        LeftAlt = WestAlt
     }
 
     /// <summary>
@@ -123,6 +135,17 @@ namespace Engine.Util
             {
                 return fpointLookup[Direction.Invalid];
             }
+        }
+
+        /// <summary>
+        /// Intended for use when only one axis is used (left / right or up / down).
+        /// </summary>
+        /// <param name="direction">the direction to convert.</param>
+        /// <returns><c>-1</c> for left / up, <c>1</c> for right / down.</returns>
+        public static Fixed DirectionToFixed(Direction direction)
+        {
+            FPoint point = DirectionToFPoint(direction);
+            return point.X + point.Y;
         }
     }
 }

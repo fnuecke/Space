@@ -107,13 +107,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\AddGameObjectCommand.cs" />
     <Compile Include="Commands\PlayerDataChangedCommand.cs" />
-    <Compile Include="Commands\GameStateResponseCommand.cs" />
-    <Compile Include="Commands\GameStateRequestCommand.cs" />
-    <Compile Include="Commands\RemoveGameObjectCommand.cs" />
     <Compile Include="Commands\GameCommand.cs" />
-    <Compile Include="Commands\SynchronizeCommand.cs" />
     <Compile Include="Control\Client.cs" />
     <Compile Include="Control\GameMessage.cs" />
     <Compile Include="Control\Server.cs" />

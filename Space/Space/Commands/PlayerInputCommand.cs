@@ -19,7 +19,8 @@ namespace Space.Commands
             StopLeft,
             TurnLeft,
             TurnRight,
-            StopRotation
+            StopTurnLeft,
+            StopTurnRight
         }
 
         /// <summary>

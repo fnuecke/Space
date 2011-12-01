@@ -102,9 +102,13 @@
   <ItemGroup>
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Controller\AbstractTssUdpClient.cs" />
+    <Compile Include="Controller\AbstractTssUdpServer.cs" />
     <Compile Include="Controller\AbstractUdpClient.cs" />
     <Compile Include="Controller\AbstractUdpController.cs" />
     <Compile Include="Controller\AbstractUdpServer.cs" />
+    <Compile Include="Controller\TssUdpControllerMessage.cs" />
+    <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />
     <Compile Include="Input\KeyboardInputEventArgs.cs" />
     <Compile Include="Input\IKeyboardInputManager.cs" />
@@ -112,6 +116,8 @@
     <Compile Include="Input\KeyCombo.cs" />
     <Compile Include="Input\KeyMap.cs" />
     <Compile Include="Input\KeyModifier.cs" />
+    <Compile Include="Input\MouseInputEventArgs.cs" />
+    <Compile Include="Input\MouseInputManager.cs" />
     <Compile Include="Network\EventArgs.cs" />
     <Compile Include="Network\ProtocolInfo.cs" />
     <Compile Include="Serialization\IPacketizable.cs" />

@@ -27,6 +27,13 @@ namespace Engine.Simulation
 
         #endregion
 
+        protected AbstractSteppable()
+        {
+            // Init to -1 as a default, so these aren't found due to
+            // badly initialized 'pointers'.
+            this.UID = -1;
+        }
+
         #region Interfaces
 
         /// <summary>

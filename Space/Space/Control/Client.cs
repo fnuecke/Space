@@ -3,7 +3,6 @@ using Engine.Commands;
 using Engine.Controller;
 using Engine.Input;
 using Engine.Session;
-using Engine.Simulation;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -16,30 +15,14 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class Client : AbstractUdpClient<PlayerInfo, GameCommandType, PacketizerContext>
+    class Client : AbstractTssUdpClient<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
     {
-        #region Constants
-
-        /// <summary>
-        /// The interval in milliseconds after which to send a synchronization request to the
-        /// server. The lower the value the better the synchronization, but, obviously, also
-        /// more network traffic.
-        /// </summary>
-        private const int SyncInterval = 1000;
-
-        #endregion
-
         #region Fields
 
         /// <summary>
-        /// The game state representing the current game world.
+        /// Overall background used (spaaace :P).
         /// </summary>
-        private TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext> simulation;
-
-        /// <summary>
-        /// Last time we sent a sync command to the server.
-        /// </summary>
-        private long lastSyncTime = 0;
+        private Texture2D background;
 
         #endregion
 
@@ -52,78 +35,70 @@ namespace Space.Control
         public Client(Game game)
             : base(game, 50101, "5p4c3!")
         {
-            simulation = new TSS<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>(new uint[] { 50, 100 }, new GameState(game, Session));
-            simulation.ThresholdExceeded += HandleThresholdExceeded;
+            simulation.Initialize(new GameState(game, Session));
         }
 
         #endregion
 
         #region Logic
 
-        public override void Update(GameTime gameTime)
+        protected override void LoadContent()
         {
-            base.Update(gameTime);
+            background = Game.Content.Load<Texture2D>("Textures/stars");
 
-            if (Session.ConnectionState == ClientState.Connected && !simulation.WaitingForSynchronization)
+            base.LoadContent();
+        }
+
+        public override void Draw(GameTime gameTime)
+        {
+            if (Session.ConnectionState == ClientState.Connected)
             {
-                // Drive game logic.
-                //simulation.Update();
-                // Compensate for dynamic timestep.
-                simulation.RunToFrame(simulation.CurrentFrame + (int)Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
+                var spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
 
-                // Send sync command every now and then, to keep game clock synched.
-                if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
+                // Get player's ship's position.
+                var translation = Vector2.Zero;
+                Ship ship = (Ship)simulation.Get(Session.LocalPlayer.Data.ShipUID);
+                if (ship != null)
                 {
-                    lastSyncTime = DateTime.Now.Ticks;
-                    Send(new SynchronizeCommand(simulation.CurrentFrame), 0);
+                    translation.X = -ship.Position.X.IntValue + GraphicsDevice.Viewport.Width / 2;
+                    translation.Y = -ship.Position.Y.IntValue + GraphicsDevice.Viewport.Height / 2;
                 }
+
+                spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
+                spriteBatch.Draw(background, Vector2.Zero, new Rectangle(-(int)translation.X, -(int)translation.Y, spriteBatch.GraphicsDevice.Viewport.Width, spriteBatch.GraphicsDevice.Viewport.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                spriteBatch.End();
+
+                // Draw world elements.
+                spriteBatch.Begin();
+                foreach (var child in simulation.Children)
+                {
+                    child.Draw(null, translation, spriteBatch);
+                }
+                spriteBatch.End();
             }
+
+            base.Draw(gameTime);
         }
 
         /// <summary>
         /// Got command data from another client or the server.
         /// </summary>
         /// <param name="command">the received command.</param>
-        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override bool HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
-            // This should only happen while we're connected.
+            // Only handle stuff while we're connected.
             if (Session.ConnectionState != ClientState.Connected)
             {
-                throw new InvalidOperationException();
+                return false;
             }
 
             // Check what we have.
             switch (command.Type)
             {
-                case GameCommandType.Synchronize:
-                    // Answer to a synchronization request.
-                    // Only accept these when they come from the server.
-                    if (!command.IsTentative)
-                    {
-                        SynchronizeCommand syncCommand = (SynchronizeCommand)command;
-                        long latency = (simulation.CurrentFrame - syncCommand.ClientFrame) / 2;
-                        long clientServerDelta = (syncCommand.ServerFrame - simulation.CurrentFrame);
-                        long frameDelta = clientServerDelta + latency / 2;
-                        if (System.Math.Abs(frameDelta) > 2)
-                        {
-                            console.WriteLine("Correcting for " + frameDelta + " frames.");
-                            simulation.RunToFrame(simulation.CurrentFrame + frameDelta);
-                        }
-                    }
-                    break;
-                case GameCommandType.GameStateResponse:
-                    // Got a simulation snap shot (normally after requesting it due to
-                    // our simulation going out of scope for an older event).
-                    // Only accept these when they come from the server.
-                    if (!command.IsTentative)
-                    {
-                        simulation.Depacketize(((GameStateResponseCommand)command).GameState, packetizer.Context);
-                    }
-                    break;
                 case GameCommandType.PlayerDataChanged:
                     // Player information has somehow changed.
                     // Only accept these when they come from the server.
-                    if (!command.IsTentative)
+                    if (command.IsAuthoritative)
                     {
                         // The player has to be in the game for this to work... this can
                         // fail if the message from the server that a client joined reached
@@ -142,40 +117,24 @@ namespace Space.Control
                                 changeCommand.Player.Data.ShipType = changeCommand.Value.ReadString();
                                 break;
                         }
-                    }
-                    break;
-                case GameCommandType.AddGameObject:
-                    // Only accept these when they come from the server.
-                    if (!command.IsTentative)
-                    {
-                        Console.WriteLine("CLT: add object");
-                        var addCommand = (AddGameObjectCommand)command;
-                        addCommand.GameObject.Rewind();
-                        IGameObject obj = packetizer.Depacketize<IGameObject>(addCommand.GameObject);
-                        // Make sure we keep the ID as defined by the server.
-                        var id = obj.UID;
-                        simulation.Add(obj, addCommand.Frame);
-                        obj.UID = id;
-                    }
-                    break;
-                case GameCommandType.RemoveGameObject:
-                    // Only accept these when they come from the server.
-                    if (!command.IsTentative)
-                    {
-                        Console.WriteLine("CLT: remove object");
-                        var removeCommand = (RemoveGameObjectCommand)command;
-                        simulation.Remove(removeCommand.GameObjectUID, removeCommand.Frame);
+                        return true;
                     }
                     break;
                 case GameCommandType.PlayerInput:
                     {
-                        var simulationCommand = (ISimulationCommand<GameCommandType, PlayerInfo, PacketizerContext>)command;
-                        simulation.PushCommand(simulationCommand, simulationCommand.Frame);
+                        var inputCommand = (PlayerInputCommand)command;
+                        simulation.PushCommand(inputCommand, inputCommand.Frame);
                     }
-                    break;
+                    return true;
                 default:
-                    throw new ArgumentException("command");
+#if DEBUG
+                    Console.WriteLine("Client: got a command we couldn't handle: " + command.Type);
+#endif
+                    break;
             }
+
+            // Got here -> unhandled.
+            return false;
         }
 
         #endregion
@@ -236,16 +195,6 @@ namespace Space.Control
         }
 
         /// <summary>
-        /// Called when our simulation cannot accomodate an update or rollback,
-        /// meaning we have to get a server snapshot.
-        /// </summary>
-        private void HandleThresholdExceeded(object sender, EventArgs e)
-        {
-            // So we request it.
-            Send(new GameStateRequestCommand(), 100);
-        }
-
-        /// <summary>
         /// Player pressed a key.
         /// </summary>
         protected override void HandleKeyPressed(object sender, EventArgs e)
@@ -262,28 +211,46 @@ namespace Space.Control
             {
                 case Keys.Down:
                 case Keys.S:
+                    // Accelerate downwards.
                     command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.AccelerateDown);
                     break;
                 case Keys.Left:
                 case Keys.A:
+                    // Accelerate left.
                     command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.AccelerateLeft);
                     break;
                 case Keys.Right:
                 case Keys.D:
+                    // Accelerate right.
                     command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.AccelerateRight);
                     break;
                 case Keys.Up:
                 case Keys.W:
+                    // Accelerate upwards.
                     command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.AccelerateUp);
                     break;
+
+                case Keys.Q:
+                    // Rotate to the left.
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.TurnLeft);
+                    break;
+                case Keys.E:
+                    // Rotate to the right.
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.TurnRight);
+                    break;
+
                 default:
                     break;
             }
@@ -334,6 +301,20 @@ namespace Space.Control
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.StopUp);
                     break;
+
+                case Keys.Q:
+                    // Stop rotating left.
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.StopTurnLeft);
+                    break;
+                case Keys.E:
+                    // Stop rotating right.
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.StopTurnRight);
+                    break;
+
                 default:
                     break;
             }
@@ -345,20 +326,18 @@ namespace Space.Control
             }
         }
 
+        protected override void HandleMouseMoved(object sender, EventArgs e)
+        {
+            var args = (MouseInputEventArgs)e;
+
+        }
+
         #endregion
 
         #region Debugging stuff
 
         internal void DEBUG_DrawInfo(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
-            // Draw world elements.
-            spriteBatch.Begin();
-            foreach (var child in simulation.Children)
-            {
-                child.Draw(null, Vector2.Zero, spriteBatch);
-            }
-            spriteBatch.End();
-
             // Draw debug stuff.
             SpriteFont font = Game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
 

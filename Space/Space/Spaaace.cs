@@ -29,6 +29,9 @@ namespace Space
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
+            Window.Title = "Spaaaaaace. Space. Spaaace. So much space!";
+            IsMouseVisible = true;
+
             // Suspect for better sync, but not enough experimenting done, yet.
             //this.TargetElapsedTime = TimeSpan.FromMilliseconds(1000f / 67f);
             //graphics.SynchronizeWithVerticalRetrace = true;
@@ -53,18 +56,16 @@ namespace Space
             // where the state only knows it has ISteppables, but not what the
             // actual implementations are.
             packetizer.Register<Ship>();
-            packetizer.Register<AddGameObjectCommand>();
-            packetizer.Register<GameStateRequestCommand>();
-            packetizer.Register<GameStateResponseCommand>();
             packetizer.Register<PlayerDataChangedCommand>();
             packetizer.Register<PlayerInputCommand>();
-            packetizer.Register<RemoveGameObjectCommand>();
-            packetizer.Register<SynchronizeCommand>();
 
             // Add some more utility components.
             Components.Add(new KeyboardInputManager(this));
+            Components.Add(new MouseInputManager(this));
             console = new GameConsole(this);
             Components.Add(console);
+
+            console.DrawOrder = 10;
 
             // Register some commands for our console, making debugging that much easier ;)
             console.AddCommand("server", args =>
@@ -199,6 +200,8 @@ namespace Space
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            base.Draw(gameTime);
+
             if (server != null)
             {
                 server.DEBUG_DrawInfo(spriteBatch);
@@ -225,56 +228,6 @@ namespace Space
             spriteBatch.DrawString(console.Font, info, new Vector2(10, 10), Color.White);
 
             spriteBatch.End();
-
-/*
-
-            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
-
-            var ship = simulation.LeadingState.GetPlayerShip(protocol.ClientId);
-            Vector2 translation = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
-            if (ship != null)
-            {
-                translation.X -= (float)ship.Position.X.DoubleValue;
-                translation.Y -= (float)ship.Position.Y.DoubleValue;
-            }
-
-            spriteBatch.Draw(background, Vector2.Zero, new Rectangle(-(int)translation.X, -(int)translation.Y, spriteBatch.GraphicsDevice.Viewport.Width, spriteBatch.GraphicsDevice.Viewport.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-
-            spriteBatch.End();
-
-            spriteBatch.Begin();
-
-            for (var iter = simulation.Children; iter.MoveNext();)
-            {
-                iter.Current.Draw(gameTime, translation, spriteBatch);
-            }
-
-            string status = "Status: ";
-            switch (protocol.State)
-            {
-                case UDPProtocol.ProtocolState.Unconnected:
-                    status += "unconnected";
-                    break;
-                case UDPProtocol.ProtocolState.Host:
-                    status += "host";
-                    break;
-                case UDPProtocol.ProtocolState.Joining:
-                    status += "joining";
-                    break;
-                case UDPProtocol.ProtocolState.Client:
-                    status += "client";
-                    break;
-                default:
-                    break;
-            }
-            status += "\nPlayers: " + numPlayers;
-            status += "\nRequest: " + gotRequest;
-            spriteBatch.DrawString(digitalFont, status, Vector2.Zero, Color.YellowGreen);
-
-            spriteBatch.End();
-*/
-
-            base.Draw(gameTime);
         }
     }
 }

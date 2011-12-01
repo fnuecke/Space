@@ -101,6 +101,20 @@ namespace Engine.Serialization
             readPointer = 0;
         }
 
+        /// <summary>
+        /// Make sure our buffer is large enough.
+        /// </summary>
+        /// <param name="length">the length required.</param>
+        private void EnsureCapacity(int length)
+        {
+            if (Buffer.Length < length)
+            {
+                byte[] buffer = new byte[System.Math.Max(Buffer.Length * 2, length)];
+                Buffer.CopyTo(buffer, 0);
+                Buffer = buffer;
+            }
+        }
+
         #endregion
 
         #region Writing
@@ -108,12 +122,14 @@ namespace Engine.Serialization
         public void Write(bool data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
 
         public void Write(byte data)
         {
+            EnsureCapacity(Length + 1);
             Buffer[Length] = data;
             Length++;
         }
@@ -121,6 +137,7 @@ namespace Engine.Serialization
         public void Write(char data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -128,6 +145,7 @@ namespace Engine.Serialization
         public void Write(double data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -135,6 +153,7 @@ namespace Engine.Serialization
         public void Write(Fixed data)
         {
             byte[] bytes = BitConverter.GetBytes(data.RawValue);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -142,6 +161,7 @@ namespace Engine.Serialization
         public void Write(float data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -149,6 +169,7 @@ namespace Engine.Serialization
         public void Write(int data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -156,6 +177,7 @@ namespace Engine.Serialization
         public void Write(long data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -163,6 +185,7 @@ namespace Engine.Serialization
         public void Write(short data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -170,6 +193,7 @@ namespace Engine.Serialization
         public void Write(uint data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -177,6 +201,7 @@ namespace Engine.Serialization
         public void Write(ushort data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -184,6 +209,7 @@ namespace Engine.Serialization
         public void Write(ulong data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
+            EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
         }
@@ -206,6 +232,7 @@ namespace Engine.Serialization
             else
             {
                 Write(length);
+                EnsureCapacity(Length + length);
                 Array.Copy(data, 0, Buffer, this.Length, length);
                 this.Length += length;
             }

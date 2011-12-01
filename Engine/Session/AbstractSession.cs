@@ -46,11 +46,6 @@ namespace Engine.Session
         PlayerLeft,
 
         /// <summary>
-        /// Test if connection is still alive and accumulate data for ping.
-        /// </summary>
-        Ping,
-
-        /// <summary>
         /// Data packet to be handled by someone else.
         /// </summary>
         Data
@@ -154,13 +149,6 @@ namespace Engine.Session
             protocol.Data += HandlePlayerData;
         }
 
-        public override void Initialize()
-        {
-            packetizer = (IPacketizer<TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPacketizerContext>));
-
-            base.Initialize();
-        }
-
         /// <summary>
         /// Close this session, detaching it from the underlying protocol and
         /// making it invalid for further use.
@@ -171,6 +159,13 @@ namespace Engine.Session
             protocol.Data -= HandlePlayerData;
 
             base.Dispose(disposing);
+        }
+
+        public override void Initialize()
+        {
+            packetizer = (IPacketizer<TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPacketizerContext>));
+
+            base.Initialize();
         }
 
         /// <summary>
@@ -271,6 +266,10 @@ namespace Engine.Session
             ConditionalOnPlayerData(args, args.Data);
         }
 
+        /// <summary>
+        /// Trigger a player data event, but only if the player that sent the packet
+        /// is in the list of known players.
+        /// </summary>
         protected void ConditionalOnPlayerData(ProtocolDataEventArgs args, Packet data)
         {
             // Check if this is a player of this session.

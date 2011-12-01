@@ -53,29 +53,33 @@ namespace Space.Model
 
                                 // Stop accelerating in the given direction.
                                 case PlayerInputCommand.PlayerInput.StopUp:
-                                    ship.Stop(Direction.North);
+                                    ship.StopAccelerate(Direction.North);
                                     break;
                                 case PlayerInputCommand.PlayerInput.StopRight:
-                                    ship.Stop(Direction.East);
+                                    ship.StopAccelerate(Direction.East);
                                     break;
                                 case PlayerInputCommand.PlayerInput.StopDown:
-                                    ship.Stop(Direction.South);
+                                    ship.StopAccelerate(Direction.South);
                                     break;
                                 case PlayerInputCommand.PlayerInput.StopLeft:
-                                    ship.Stop(Direction.West);
+                                    ship.StopAccelerate(Direction.West);
                                     break;
 
                                 // Begin turning to the left.
                                 case PlayerInputCommand.PlayerInput.TurnLeft:
-                                    ship.TurnLeft();
+                                    ship.Rotate(Direction.Left);
                                     break;
                                 // Begin turning to the right.
                                 case PlayerInputCommand.PlayerInput.TurnRight:
-                                    ship.TurnRight();
+                                    ship.Rotate(Direction.Right);
                                     break;
-                                // Stop turning.
-                                case PlayerInputCommand.PlayerInput.StopRotation:
-                                    ship.StopRotating();
+                                // Stop turning left.
+                                case PlayerInputCommand.PlayerInput.StopTurnLeft:
+                                    ship.StopRotate(Direction.Left);
+                                    break;
+                                // Stop turning left.
+                                case PlayerInputCommand.PlayerInput.StopTurnRight:
+                                    ship.StopRotate(Direction.Right);
                                     break;
                             }
                         }
@@ -98,7 +102,7 @@ namespace Space.Model
             bool hadTentative = false;
             for (int i = commands.Count - 1; i >= 0; --i)
             {
-                if (commands[i].IsTentative)
+                if (!commands[i].IsAuthoritative)
                 {
                     hadTentative = true;
                     commands.RemoveAt(i);
