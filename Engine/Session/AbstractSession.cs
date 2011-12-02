@@ -246,7 +246,7 @@ namespace Engine.Session
         /// <param name="type">the type of message that is sent.</param>
         /// <param name="data">the data to send.</param>
         /// <param name="pollrate">see Send()</param>
-        protected void Send(IPEndPoint remote, SessionMessage type, Packet data, uint pollrate = 0)
+        protected virtual void Send(IPEndPoint remote, SessionMessage type, Packet data, uint pollrate = 0)
         {
             Packet wrapper = new Packet(5 + (data != null ? data.Length : 0));
             wrapper.Write((byte)type);
@@ -260,17 +260,7 @@ namespace Engine.Session
         /// <param name="type">the type of message to send.</param>
         /// <param name="data">the data to send.</param>
         /// <param name="pollrate">see Send()</param>
-        protected void SendAll(SessionMessage type, Packet data, uint pollrate = 0)
-        {
-            for (int i = 0; i < MaxPlayers; ++i)
-            {
-                if (playerAddresses[i] != null && i != LocalPlayerNumber)
-                {
-                    Send(playerAddresses[i], type, data, pollrate);
-                }
-            }
-            Send(data, pollrate);
-        }
+        protected abstract void SendAll(SessionMessage type, Packet data, uint pollrate = 0);
 
         /// <summary>
         /// Handle disconnects to players due to timeouts.

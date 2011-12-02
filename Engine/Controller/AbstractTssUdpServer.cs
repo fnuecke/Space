@@ -132,13 +132,22 @@ namespace Engine.Controller
 
         #region Events
 
-        protected virtual void HandleGameInfoRequested(object sender, EventArgs e)
-        {
-        }
+        /// <summary>
+        /// Some remote machine sent a request for open games. Use this callback
+        /// to send back some custom data.
+        /// </summary>
+        /// <param name="sender">the underlying session.</param>
+        /// <param name="e">information of the type <c>RequestEventArgs</c>.</param>
+        protected abstract void HandleGameInfoRequested(object sender, EventArgs e);
 
-        protected virtual void HandleJoinRequested(object sender, EventArgs e)
-        {
-        }
+        /// <summary>
+        /// A player asked to join our game. He passed the session checks (game full,
+        /// data sent was valid). In this callback it is possible to override this,
+        /// and forbid the joining, or send him some custom data with the response.
+        /// </summary>
+        /// <param name="sender">the underlying session.</param>
+        /// <param name="e">information of the type <c>JoinRequestEventArgs</c>.</param>
+        protected abstract void HandleJoinRequested(object sender, EventArgs e);
 
         #endregion
 
@@ -223,11 +232,6 @@ namespace Engine.Controller
         protected override bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
             command = null;
-
-            if (!args.Data.HasByte())
-            {
-                return false;
-            }
             var type = (TssUdpControllerMessage)args.Data.ReadByte();
             switch (type)
             {

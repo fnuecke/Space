@@ -13,6 +13,12 @@ namespace Engine.Controller
     /// This takes care of synchronizing the gamestates between server and
     /// client, and getting the runspeed synchronized as well.
     /// </summary>
+    /// <typeparam name="TState">the type of game state used to represent a simulation.
+    /// This is the simulation run as a substate of the TSS.</typeparam>
+    /// <typeparam name="TSteppable">the type of object we put into our simulation.</typeparam>
+    /// <typeparam name="TCommandType">the type of commands we send around.</typeparam>
+    /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
+    /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
     public abstract class AbstractTssUdpClient<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         : AbstractTssUdpController<IClientSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
@@ -152,13 +158,19 @@ namespace Engine.Controller
 
         #region Events
 
-        protected virtual void HandleGameInfoReceived(object sender, EventArgs e)
-        {
-        }
+        /// <summary>
+        /// We received information about a running game from some host.
+        /// </summary>
+        /// <param name="sender">the underlying session.</param>
+        /// <param name="e">information of the type <c>GameInfoReceivedEventArgs</c>.</param>
+        protected abstract void HandleGameInfoReceived(object sender, EventArgs e);
 
-        protected virtual void HandleJoinResponse(object sender, EventArgs e)
-        {
-        }
+        /// <summary>
+        /// A server sent us a resonse to our request to join his game.
+        /// </summary>
+        /// <param name="sender">the underlying session.</param>
+        /// <param name="e">information of the type <c>JoinResponseEventArgs</c>.</param>
+        protected abstract void HandleJoinResponse(object sender, EventArgs e);
 
         /// <summary>
         /// Called when our simulation cannot accomodate an update or rollback,

@@ -127,6 +127,14 @@ namespace Space
                 client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
             },
                 "autojoin fn");
+            // Just for me, joining default testing server.
+            console.AddCommand("joinlh", args =>
+            {
+                PlayerInfo info = new PlayerInfo();
+                info.ShipType = "Sparrow";
+                client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
+            },
+                "autojoin localhost");
 
             // Copy everything written to our gameconsole to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
@@ -229,8 +237,9 @@ namespace Space
             {
                 info += String.Format("\nClientframe: {0}", client.DEBUG_CurrentFrame);
             }
+            var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - console.Font.MeasureString(info).X, 10);
 
-            spriteBatch.DrawString(console.Font, info, new Vector2(10, 10), Color.White);
+            spriteBatch.DrawString(console.Font, info, infoPosition, Color.White);
 
             spriteBatch.End();
         }

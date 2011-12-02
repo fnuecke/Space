@@ -72,9 +72,33 @@ namespace Engine.Session
 
         #region Public API
 
+        /// <summary>
+        /// Send some data to the server. Not supported for the server.
+        /// </summary>
+        /// <param name="data">the data to send.</param>
+        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
+        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
         public override void Send(Packet data, uint pollRate = 0)
         {
-            //throw new InvalidOperationException("Server cannot send messages to itself. Use a more direct design.");
+            throw new InvalidOperationException("Server cannot send messages to itself. Use a more direct design.");
+        }
+
+        /// <summary>
+        /// As the internal Send, just for SendAll.
+        /// </summary>
+        /// <param name="type">the type of message to send.</param>
+        /// <param name="data">the data to send.</param>
+        /// <param name="pollrate">see Send()</param>
+        protected override void SendAll(SessionMessage type, Packet data, uint pollrate = 0)
+        {
+            // Send to every client.
+            for (int i = 0; i < MaxPlayers; ++i)
+            {
+                if (playerAddresses[i] != null)
+                {
+                    Send(playerAddresses[i], type, data, pollrate);
+                }
+            }
         }
 
         /// <summary>

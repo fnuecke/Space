@@ -59,9 +59,55 @@ namespace Engine.Session
 
         #region Public API
 
+        /// <summary>
+        /// Send some data to the server.
+        /// </summary>
+        /// <param name="data">the data to send.</param>
+        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
+        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
         public override void Send(Packet data, uint pollRate = 0)
         {
             Send(host, SessionMessage.Data, data, pollRate);
+        }
+
+        /// <summary>
+        /// Internal variant for sending data to a specific host.
+        /// </summary>
+        /// <param name="remote">the remote machine to send the data to.</param>
+        /// <param name="type">the type of message that is sent.</param>
+        /// <param name="data">the data to send.</param>
+        /// <param name="pollrate">see Send()</param>
+        protected override void Send(IPEndPoint remote, SessionMessage type, Packet data, uint pollrate = 0)
+        {
+            // Don't send messages to ourself.
+            if (playerAddresses == null || !remote.Equals(playerAddresses[LocalPlayerNumber]))
+            {
+                base.Send(remote, type, data, pollrate);
+            }
+            else
+            {
+                throw new InvalidOperationException("Client cannot send messages to itself. Use a more direct design.");
+            }
+        }
+
+        /// <summary>
+        /// As the internal Send, just for SendAll.
+        /// </summary>
+        /// <param name="type">the type of message to send.</param>
+        /// <param name="data">the data to send.</param>
+        /// <param name="pollrate">see Send()</param>
+        protected override void SendAll(SessionMessage type, Packet data, uint pollrate = 0)
+        {
+            for (int i = 0; i < MaxPlayers; ++i)
+            {
+                // Don't send messages to ourself.
+                if (playerAddresses[i] != null && i != LocalPlayerNumber)
+                {
+                    Send(playerAddresses[i], type, data, pollrate);
+                }
+            }
+            // Also send to host.
+            Send(data, pollrate);
         }
 
         /// <summary>
@@ -138,6 +184,11 @@ namespace Engine.Session
 
         #region Event handling
 
+        /// <summary>
+        /// A client timed out, if it's the host this means we're out. If we're still
+        /// connecting, this means the connection failed. If we're not connected, we
+        /// don't even care.
+        /// </summary>
         protected override void HandlePlayerTimeout(object sender, EventArgs e)
         {
             var args = (ProtocolEventArgs)e;
@@ -162,6 +213,9 @@ namespace Engine.Session
             }
         }
 
+        /// <summary>
+        /// Some remote host send us data, let's see what to do with it.
+        /// </summary>
         protected override void HandlePlayerData(object sender, EventArgs e)
         {
             var args = (ProtocolDataEventArgs)e;

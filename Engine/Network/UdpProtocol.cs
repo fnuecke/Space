@@ -7,7 +7,6 @@ using Engine.Util;
 
 namespace Engine.Network
 {
-
     /// <summary>
     /// Base class for UDP based communication.
     /// </summary>
