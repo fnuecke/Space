@@ -35,6 +35,12 @@
         /// <summary>
         /// Server tells players to remove an object from the simulation.
         /// </summary>
-        RemoveGameObject
+        RemoveGameObject,
+
+        /// <summary>
+        /// Compare the hash of the leading game state at a given frame. If
+        /// the client fails the check, it'll have to request a new snapshot.
+        /// </summary>
+        HashCheck
     }
 }

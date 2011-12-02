@@ -3,11 +3,10 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Engine.Serialization
 {
-
     /// <summary>
     /// This is for reading data in binary format written with the FIntWriter.
     /// </summary>
-    public class FIntReader : ContentTypeReader<Fixed>
+    public class FixedReader : ContentTypeReader<Fixed>
     {
         protected override Fixed Read(ContentReader input, Fixed existingInstance)
         {
@@ -21,5 +20,4 @@ namespace Engine.Serialization
             }
         }
     }
-
 }

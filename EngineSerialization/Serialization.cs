@@ -1,8 +1,8 @@
-﻿using Microsoft.Xna.Framework.Content;
+﻿using Engine.Math;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
-using Engine.Math;
 
 namespace Engine.Serialization
 {
@@ -40,7 +40,7 @@ namespace Engine.Serialization
         }
         public override string GetRuntimeReader(TargetPlatform targetPlatform)
         {
-            return "Engine.Serialization.FIntReader, Engine," +
+            return "Engine.Serialization.FixedReader, Engine," +
                 " Version=1.0.0.0, Culture=neutral";
         }
     }

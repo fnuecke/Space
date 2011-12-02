@@ -11,7 +11,8 @@ namespace Engine.Simulation
         where TState : PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Properties
 
@@ -24,7 +25,7 @@ namespace Engine.Simulation
 
         #region Constructor
 
-        protected PhysicsEnabledState(IPacketizer<TPacketizerContext> packetizer)
+        protected PhysicsEnabledState(IPacketizer<TPlayerData, TPacketizerContext> packetizer)
             : base(packetizer)
         {
             Collideables = new List<ICollideable>();

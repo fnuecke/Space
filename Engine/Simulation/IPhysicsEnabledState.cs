@@ -8,7 +8,8 @@ namespace Engine.Simulation
         where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
 
         /// <summary>

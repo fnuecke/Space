@@ -14,7 +14,8 @@ namespace Engine.Simulation
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// Dispatched when the state needs to roll back further than it can
@@ -23,6 +24,17 @@ namespace Engine.Simulation
         /// state (e.g. using Depacketize()).
         /// </summary>
         event EventHandler<EventArgs> ThresholdExceeded;
+
+        /// <summary>
+        /// Tells if the state is currently waiting to be synchronized.
+        /// </summary>
+        bool WaitingForSynchronization { get; }
+
+        /// <summary>
+        /// Mark the state as invalid (desynchronized). Will trigger a new
+        /// <c>ThresholdExceeded</c> event.
+        /// </summary>
+        void Invalidate();
 
         /// <summary>
         /// Run the simulation to the given frame, which may be in the past.
@@ -54,10 +66,5 @@ namespace Engine.Simulation
         /// <param name="command">the command to push.</param>
         /// <param name="frame">the frame in which to execute the command.</param>
         void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, long frame);
-
-        /// <summary>
-        /// Tells if the state is currently waiting to be synchronized.
-        /// </summary>
-        bool WaitingForSynchronization { get; }
     }
 }

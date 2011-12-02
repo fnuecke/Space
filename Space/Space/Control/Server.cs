@@ -64,8 +64,8 @@ namespace Space.Control
                         {
                             // OK, in allowed timeframe, mark as valid and send it to all clients.
                             inputCommand.IsAuthoritative = true;
-                            simulation.PushCommand(inputCommand);
-                            SendAll(command);
+                            simulation.PushCommand(inputCommand, inputCommand.Frame);
+                            SendAll(command, 30);
                         }
                         else
                         {

@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.Commands;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.Simulation
 {
@@ -18,7 +20,8 @@ namespace Engine.Simulation
         where TState : AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Properties
 
@@ -35,7 +38,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
-        public IPacketizer<TPacketizerContext> Packetizer { get; protected set; }
+        public IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get; protected set; }
 
         /// <summary>
         /// Getter to return <c>this</c> pointer of actual implementation type... damn generics.
@@ -60,7 +63,7 @@ namespace Engine.Simulation
 
         #region Constructor
 
-        protected AbstractState(IPacketizer<TPacketizerContext> packetizer)
+        protected AbstractState(IPacketizer<TPlayerData, TPacketizerContext> packetizer)
         {
             this.Packetizer = packetizer;
         }
@@ -168,6 +171,32 @@ namespace Engine.Simulation
             foreach (var steppable in steppables)
             {
                 steppable.Update();
+            }
+        }
+        
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">the hasher to push data to.</param>
+        public virtual void Hash(Hasher hasher)
+        {
+            hasher.Put(BitConverter.GetBytes(steppables.Count));
+            List<TSteppable> withId = new List<TSteppable>();
+            if (steppables.Count > 0)
+            {
+                foreach (var steppable in steppables)
+                {
+                    if (steppable.UID > 0)
+                    {
+                        withId.Add(steppable);
+                    }
+                }
+            }
+            withId.Sort((a, b) => a.UID.CompareTo(b.UID));
+            foreach (var steppable in withId)
+            {
+                steppable.Hash(hasher);
             }
         }
 

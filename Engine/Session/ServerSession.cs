@@ -12,7 +12,8 @@ namespace Engine.Session
     /// Used for hosting a session.
     /// </summary>
     sealed class ServerSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IServerSession<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPacketizerContext>, new()
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Events
 

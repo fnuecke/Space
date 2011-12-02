@@ -1,7 +1,9 @@
-﻿using Engine.Commands;
+﻿using System;
+using Engine.Commands;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
@@ -15,8 +17,18 @@ namespace Engine.Controller
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>, new()
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
+        #region Constants
+
+        /// <summary>
+        /// The interval in milliseconds after which to send a hashcheck to the clients.
+        /// </summary>
+        private const int HashInterval = 5000;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -28,6 +40,11 @@ namespace Engine.Controller
         /// Counter used to distribute ids.
         /// </summary>
         private long lastUid = 0;
+
+        /// <summary>
+        /// Last time we sent a hash check to our clients.
+        /// </summary>
+        private long lastHashTime = 0;
 
         #endregion
 
@@ -69,6 +86,19 @@ namespace Engine.Controller
                 // Compensate for dynamic timestep.
                 simulation.RunToFrame(simulation.CurrentFrame + (int)System.Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
             }
+
+            // Send hash check every now and then, to check for desyncs.
+            if (new TimeSpan(DateTime.Now.Ticks - lastHashTime).TotalMilliseconds > HashInterval)
+            {
+                lastHashTime = DateTime.Now.Ticks;
+                Packet hashCheck = new Packet(5);
+                hashCheck.Write((byte)TssUdpControllerMessage.HashCheck);
+                hashCheck.Write(simulation.CurrentFrame);
+                Hasher hasher = new Hasher();
+                simulation.Hash(hasher);
+                hashCheck.Write(hasher.Value);
+                Session.SendAll(hashCheck, 0);
+            }
         }
 
         #endregion
@@ -109,7 +139,7 @@ namespace Engine.Controller
             addedInfo.Write((byte)TssUdpControllerMessage.AddGameObject);
             addedInfo.Write(frame);
             packetizer.Packetize(steppable, addedInfo);
-            Session.SendAll(addedInfo, 20);
+            Session.SendAll(addedInfo, 100);
 
             return steppable.UID;
         }
@@ -140,7 +170,7 @@ namespace Engine.Controller
             removedInfo.Write((byte)TssUdpControllerMessage.RemoveGameObject);
             removedInfo.Write(frame);
             removedInfo.Write(steppableUid);
-            Session.SendAll(removedInfo, 20);
+            Session.SendAll(removedInfo, 100);
         }
 
         #endregion
@@ -191,9 +221,6 @@ namespace Engine.Controller
                     return true;
 
                 // Everything else is unhandled on the server.
-                case TssUdpControllerMessage.GameStateResponse:
-                case TssUdpControllerMessage.AddGameObject:
-                case TssUdpControllerMessage.RemoveGameObject:
                 default:
                     break;
             }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Engine.Commands;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.Simulation
 {
@@ -10,11 +11,12 @@ namespace Engine.Simulation
     /// </summary>
     /// <typeparam name="TState">the type of state the object will be used together with.</typeparam>
     /// <typeparam name="TSteppable">the type of steppable used in the state.</typeparam>
-    public interface IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ICloneable, IPacketizable<TPacketizerContext>
+    public interface IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ICloneable, IPacketizable<TPlayerData, TPacketizerContext>, IHashable
         where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// The current frame of the simulation the state represents.
@@ -29,7 +31,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
-        IPacketizer<TPacketizerContext> Packetizer { get; }
+        IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get; }
 
         /// <summary>
         /// Add an steppable object to the list of participants of this state.

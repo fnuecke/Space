@@ -6,9 +6,10 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands.
     /// </summary>
-    public abstract class Command<T, TPlayerData, TPacketizerContext> : ICommand<T, TPlayerData, TPacketizerContext>
-        where T : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+    public abstract class Command<TCommandType, TPlayerData, TPacketizerContext> : ICommand<TCommandType, TPlayerData, TPacketizerContext>
+        where TCommandType : struct
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Properties
 
@@ -26,18 +27,18 @@ namespace Engine.Commands
         /// <summary>
         /// The type of the command.
         /// </summary>
-        public T Type { get; private set; }
+        public TCommandType Type { get; private set; }
 
         #endregion
 
         #region Constructor
 
-        protected Command(T type)
+        protected Command(TCommandType type)
         {
             Type = type;
         }
 
-        protected Command(T type, Player<TPlayerData, TPacketizerContext> player)
+        protected Command(TCommandType type, Player<TPlayerData, TPacketizerContext> player)
         {
             this.IsAuthoritative = false;
             this.Type = type;
@@ -50,17 +51,19 @@ namespace Engine.Commands
 
         public virtual void Packetize(Packet packet)
         {
+            packet.Write(Player != null ? Player.Number : -1);
         }
 
         public virtual void Depacketize(Packet packet, TPacketizerContext context)
         {
+            Player = context.Session.GetPlayer(packet.ReadInt32());
         }
 
         #endregion
 
         #region Equality
 
-        public virtual bool Equals(ICommand<T, TPlayerData, TPacketizerContext> other)
+        public virtual bool Equals(ICommand<TCommandType, TPlayerData, TPacketizerContext> other)
         {
             return other != null && other.Type.Equals(this.Type) &&
                 other.Player.Number == this.Player.Number;

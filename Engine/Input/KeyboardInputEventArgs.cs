@@ -19,15 +19,21 @@ namespace Engine.Input
         public KeyModifier Modifier { get; private set; }
 
         /// <summary>
+        /// Whether this press was generated due to key auto repeat.
+        /// </summary>
+        public bool IsRepeat { get; private set; }
+
+        /// <summary>
         /// The overall keyboard state that's now active.
         /// </summary>
         public KeyboardState State { get; private set; }
 
-        internal KeyboardInputEventArgs(KeyboardState state, Keys key, KeyModifier modifier)
+        internal KeyboardInputEventArgs(KeyboardState state, Keys key, KeyModifier modifier, bool isRepeat)
         {
             this.State = state;
             this.Key = key;
             this.Modifier = modifier;
+            this.IsRepeat = isRepeat;
         }
     }
 }

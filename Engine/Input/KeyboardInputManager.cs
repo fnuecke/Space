@@ -129,7 +129,7 @@ namespace Engine.Input
                             if (key == lastPressedKey && new TimeSpan(currentTime.Ticks - lastRepeat.Ticks).TotalMilliseconds > RepeatRate)
                             {
                                 lastRepeat = currentTime;
-                                OnPressed(new KeyboardInputEventArgs(currentState, key, modifier));
+                                OnPressed(new KeyboardInputEventArgs(currentState, key, modifier, true));
                             }
                         }
                     }
@@ -141,7 +141,7 @@ namespace Engine.Input
                             lastPressedKey = key;
                             lastRepeat = currentTime.AddMilliseconds(RepeatDelay);
                         }
-                        OnPressed(new KeyboardInputEventArgs(currentState, key, modifier));
+                        OnPressed(new KeyboardInputEventArgs(currentState, key, modifier, false));
                     }
                 }
 
@@ -153,7 +153,7 @@ namespace Engine.Input
                     {
                         lastPressedKey = Keys.None;
                     }
-                    OnReleased(new KeyboardInputEventArgs(currentState, key, modifier));
+                    OnReleased(new KeyboardInputEventArgs(currentState, key, modifier, false));
                 }
             }
 

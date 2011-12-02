@@ -12,7 +12,8 @@ namespace Engine.Physics
         where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Properties
 
@@ -52,7 +53,7 @@ namespace Engine.Physics
 
         public override bool Intersects(ref FPoint extents, ref FPoint previousPosition, ref FPoint position)
         {
-            return SphereAABBSweep.Test(radius, ref previousPosition, ref position, ref extents, ref previousPosition, ref position);
+            return SphereAABBSweep.Test(this.radius, ref this.previousPosition, ref this.position, ref extents, ref previousPosition, ref position);
         }
 
         public override bool Intersects(Fixed radius, ref FPoint previousPosition, ref FPoint position)

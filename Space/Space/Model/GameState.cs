@@ -17,7 +17,7 @@ namespace Space.Model
         private ISession<PlayerInfo, PacketizerContext> session;
 
         public GameState(Game game, ISession<PlayerInfo, PacketizerContext> session)
-            : base((IPacketizer<PacketizerContext>)game.Services.GetService(typeof(IPacketizer<PacketizerContext>)))
+            : base(((IPacketizer<PlayerInfo, PacketizerContext>)game.Services.GetService(typeof(IPacketizer<PlayerInfo, PacketizerContext>))).CopyFor(session))
         {
             this.game = game;
             this.session = session;

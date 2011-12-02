@@ -46,9 +46,9 @@ namespace Space
             // its serialized data (for game states being sent).
             context = new PacketizerContext();
             context.game = this;
-            Packetizer<PacketizerContext> packetizer = new Packetizer<PacketizerContext>(context);
+            Packetizer<PlayerInfo, PacketizerContext> packetizer = new Packetizer<PlayerInfo, PacketizerContext>(context);
             // Make the packetizer available for all game components.
-            Services.AddService(typeof(IPacketizer<PacketizerContext>), packetizer);
+            Services.AddService(typeof(IPacketizer<PlayerInfo, PacketizerContext>), packetizer);
 
             // Make some class available through it. The classes registered here
             // can be deserialized without the code triggering the deserialization

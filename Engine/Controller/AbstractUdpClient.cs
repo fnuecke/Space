@@ -9,8 +9,9 @@ namespace Engine.Controller
     /// Base class for clients using the UDP network protocol.
     /// </summary>
     public abstract class AbstractUdpClient<TCommandType, TPlayerData, TPacketizerContext> : AbstractUdpController<IClientSession<TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPacketizerContext>, new()
         where TCommandType : struct
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Construction / Destruction
 

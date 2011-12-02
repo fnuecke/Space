@@ -1,6 +1,8 @@
-﻿using Engine.Math;
+﻿using System;
+using Engine.Math;
 using Engine.Serialization;
 using Engine.Simulation;
+using Engine.Util;
 
 namespace Engine.Physics
 {
@@ -10,12 +12,27 @@ namespace Engine.Physics
     /// This means the objects have a position, an orientation and a
     /// movement vector (speed / acceleration).
     /// </summary>
-    public abstract class PhysicalObject<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>, IPacketizable<TPacketizerContext>
+    public abstract class PhysicalObject<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>, IPacketizable<TPlayerData, TPacketizerContext>
         where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
+        #region Properties
+
+        /// <summary>
+        /// Current position of the object.
+        /// </summary>
+        public FPoint Position { get { return position; } }
+
+        /// <summary>
+        /// The angle of the current orientation.
+        /// </summary>
+        public Fixed Rotation { get { return rotation; } }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -24,14 +41,14 @@ namespace Engine.Physics
         protected FPoint position;
 
         /// <summary>
-        /// Position before the last update.
-        /// </summary>
-        protected FPoint previousPosition;
-
-        /// <summary>
         /// The angle of the current orientation.
         /// </summary>
         protected Fixed rotation;
+
+        /// <summary>
+        /// Position before the last update.
+        /// </summary>
+        protected FPoint previousPosition;
 
         /// <summary>
         /// Current directed acceleration of the object.
@@ -56,17 +73,46 @@ namespace Engine.Physics
         {
         }
 
+        private static readonly Fixed Dampening = Fixed.Create(0.99);
+
         public override void Update()
         {
             rotation += speedRotation;
+            if (rotation < -Fixed.PI)
+            {
+                rotation += Fixed.PI * 2;
+            }
+            else if (rotation > Fixed.PI)
+            {
+                rotation -= Fixed.PI * 2;
+            }
             previousPosition = position;
             speedMovement += acceleration;
-            speedMovement *= Fixed.Create(0.99); // dampening
+            speedMovement *= Dampening;
             position += speedMovement;
         }
 
         public virtual void PostUpdate()
         {
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">the hasher to push data to.</param>
+        public override void Hash(Hasher hasher)
+        {
+            hasher.Put(BitConverter.GetBytes(this.position.X.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.position.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.rotation.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.previousPosition.X.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.previousPosition.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.acceleration.X.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.acceleration.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.speedMovement.X.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.speedMovement.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.speedRotation.RawValue));
         }
 
         #endregion

@@ -10,7 +10,8 @@ namespace Engine.Session
     /// Used for joining sessions.
     /// </summary>
     sealed class ClientSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IClientSession<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPacketizerContext>, new()
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Events
 
@@ -357,14 +358,21 @@ namespace Engine.Session
                                 throw new PacketException("Invalid player number.");
                             }
 
-                            // OK, remove the player.
-                            Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
-                            players[playerNumber] = null;
-                            playerAddresses[playerNumber] = null;
+                            if (playerNumber == LocalPlayerNumber)
+                            {
+                                // We were removed from the game.
+                                Leave();
+                            }
+                            else
+                            {
+                                // OK, remove the player.
+                                Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
+                                players[playerNumber] = null;
+                                playerAddresses[playerNumber] = null;
 
-                            // Tell the local program about it.
-                            OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
-
+                                // Tell the local program about it.
+                                OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
+                            }
                             // OK, handled it.
                             args.Consume();
                         }

@@ -8,7 +8,8 @@ namespace Engine.Session
     /// Common interface for sessions of either server or client type.
     /// </summary>
     public interface ISession<TPlayerData, TPacketizerContext> : IGameComponent, IDisposable
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// Called when a new player joins the session.

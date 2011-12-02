@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.Simulation
 {
@@ -10,11 +11,12 @@ namespace Engine.Simulation
     /// all non-constant references (constant references may for
     /// example be things such as settings / read only values).
     /// </summary>
-    public interface ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ICloneable, IPacketizable<TPacketizerContext>
+    public interface ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ICloneable, IPacketizable<TPlayerData, TPacketizerContext>, IHashable
         where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// The world (simulation) this object is associated with.

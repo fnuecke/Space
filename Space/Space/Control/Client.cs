@@ -2,6 +2,7 @@
 using Engine.Commands;
 using Engine.Controller;
 using Engine.Input;
+using Engine.Math;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -23,6 +24,22 @@ namespace Space.Control
         /// Overall background used (spaaace :P).
         /// </summary>
         private Texture2D background;
+
+        /// <summary>
+        /// Currently rotating towards the mouse cursor?
+        /// </summary>
+        private bool mouseRotating;
+
+        /// <summary>
+        /// Angle we're trying to rotate to due to mouse cursor position.
+        /// </summary>
+        private Fixed targetAngle;
+
+        /// <summary>
+        /// Angle of the ship last time we checked (stop rotating as soon
+        /// as the target is between last and current).
+        /// </summary>
+        private Fixed lastAngle;
 
         #endregion
 
@@ -47,6 +64,35 @@ namespace Space.Control
             background = Game.Content.Load<Texture2D>("Textures/stars");
 
             base.LoadContent();
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+
+            if (mouseRotating)
+            {
+                Ship ship = (Ship)simulation.Get(Session.LocalPlayer.Data.ShipUID);
+                if (ship != null)
+                {
+                    if ((lastAngle < targetAngle && targetAngle < ship.Rotation) ||
+                        (lastAngle > targetAngle && targetAngle > ship.Rotation))
+                    {
+                        // Stop rotating.
+                        var command = new PlayerInputCommand(Session.LocalPlayer,
+                            simulation.CurrentFrame + 1,
+                            PlayerInputCommand.PlayerInput.StopTurnLeft);
+                        simulation.PushCommand(command);
+                        SendAll(command, 30);
+                        command = new PlayerInputCommand(Session.LocalPlayer,
+                            simulation.CurrentFrame + 1,
+                            PlayerInputCommand.PlayerInput.StopTurnRight);
+                        simulation.PushCommand(command);
+                        SendAll(command, 30);
+                        mouseRotating = false;
+                    }
+                }
+            }
         }
 
         public override void Draw(GameTime gameTime)
@@ -122,6 +168,13 @@ namespace Space.Control
                     break;
                 case GameCommandType.PlayerInput:
                     {
+                        // The player has to be in the game for this to work... this can
+                        // fail if the message from the server that a client joined reached
+                        // us before the join message.
+                        if (command.Player == null)
+                        {
+                            throw new ArgumentException("command.Player");
+                        }
                         var inputCommand = (PlayerInputCommand)command;
                         simulation.PushCommand(inputCommand, inputCommand.Frame);
                     }
@@ -206,6 +259,11 @@ namespace Space.Control
 
             var args = (KeyboardInputEventArgs)e;
 
+            if (args.IsRepeat)
+            {
+                return;
+            }
+
             PlayerInputCommand command = null;
             switch (args.Key)
             {
@@ -243,12 +301,14 @@ namespace Space.Control
                     command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.TurnLeft);
+                    mouseRotating = false;
                     break;
                 case Keys.E:
                     // Rotate to the right.
                     command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.TurnRight);
+                    mouseRotating = false;
                     break;
 
                 default:
@@ -258,7 +318,7 @@ namespace Space.Control
             if (command != null)
             {
                 simulation.PushCommand(command);
-                SendAll(command, 10);
+                SendAll(command, 30);
             }
         }
 
@@ -307,12 +367,14 @@ namespace Space.Control
                     command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.StopTurnLeft);
+                    mouseRotating = false;
                     break;
                 case Keys.E:
                     // Stop rotating right.
                     command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.StopTurnRight);
+                    mouseRotating = false;
                     break;
 
                 default:
@@ -322,14 +384,88 @@ namespace Space.Control
             if (command != null)
             {
                 simulation.PushCommand(command);
-                SendAll(command, 10);
+                SendAll(command, 60);
             }
         }
 
         protected override void HandleMouseMoved(object sender, EventArgs e)
         {
+            if (Session.ConnectionState != ClientState.Connected)
+            {
+                return;
+            }
+
+            return;
+
             var args = (MouseInputEventArgs)e;
 
+            Ship ship = (Ship)simulation.Get(Session.LocalPlayer.Data.ShipUID);
+            if (ship != null)
+            {
+                // Get ships current orientation.
+                double shipAngle = ship.Rotation.DoubleValue;
+                // Get angle to middle of screen (position of our ship).
+                int rx = args.X - GraphicsDevice.Viewport.Width / 2;
+                int ry = args.Y - GraphicsDevice.Viewport.Height / 2;
+                double mouseAngle = System.Math.Atan2(ry, rx);
+
+                Console.WriteLine(rx + ", " + ry + ", " + mouseAngle + ", " + shipAngle);
+
+                double deltaAngle = mouseAngle - shipAngle;
+                const double pi2 = System.Math.PI * 2;
+                deltaAngle += (deltaAngle > System.Math.PI) ? -pi2 : (deltaAngle < -System.Math.PI) ? pi2 : 0;
+
+                if (deltaAngle > 10e-3 || deltaAngle < -10e-3)
+                {
+                    targetAngle = Fixed.Create(shipAngle + deltaAngle);
+                    lastAngle = ship.Rotation;
+                    if (deltaAngle > 0)
+                    {
+                        // Rotate right.
+                        var command = new PlayerInputCommand(Session.LocalPlayer,
+                            simulation.CurrentFrame + 1,
+                            PlayerInputCommand.PlayerInput.StopTurnLeft);
+                        simulation.PushCommand(command);
+                        SendAll(command, 30);
+                        command = new PlayerInputCommand(Session.LocalPlayer,
+                            simulation.CurrentFrame + 1,
+                            PlayerInputCommand.PlayerInput.TurnRight);
+                        simulation.PushCommand(command);
+                        SendAll(command, 30);
+                        mouseRotating = true;
+                    }
+                    else
+                    {
+                        // Rotate left.
+                        var command = new PlayerInputCommand(Session.LocalPlayer,
+                            simulation.CurrentFrame + 1,
+                            PlayerInputCommand.PlayerInput.TurnLeft);
+                        simulation.PushCommand(command);
+                        SendAll(command, 30);
+                        command = new PlayerInputCommand(Session.LocalPlayer,
+                            simulation.CurrentFrame + 1,
+                            PlayerInputCommand.PlayerInput.StopTurnRight);
+                        simulation.PushCommand(command);
+                        SendAll(command, 30);
+                        mouseRotating = true;
+                    }
+                }
+                else
+                {
+                    // Stop rotating.
+                    var command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.StopTurnLeft);
+                    simulation.PushCommand(command);
+                    SendAll(command, 30);
+                    command = new PlayerInputCommand(Session.LocalPlayer,
+                        simulation.CurrentFrame + 1,
+                        PlayerInputCommand.PlayerInput.StopTurnRight);
+                    simulation.PushCommand(command);
+                    SendAll(command, 30);
+                    mouseRotating = false;
+                }
+            }
         }
 
         #endregion

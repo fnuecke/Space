@@ -6,9 +6,10 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands that can be injected into running simulations.
     /// </summary>
-    public abstract class SimulationCommand<T, TPlayerData, TPacketizerContext> : Command<T, TPlayerData, TPacketizerContext>, ISimulationCommand<T, TPlayerData, TPacketizerContext>
-        where T : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+    public abstract class SimulationCommand<TCommandType, TPlayerData, TPacketizerContext> : Command<TCommandType, TPlayerData, TPacketizerContext>, ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>
+        where TCommandType : struct
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Properties
 
@@ -21,12 +22,12 @@ namespace Engine.Commands
 
         #region Constructor
 
-        protected SimulationCommand(T type)
+        protected SimulationCommand(TCommandType type)
             : base(type)
         {
         }
 
-        protected SimulationCommand(T type, Player<TPlayerData, TPacketizerContext> player, long frame)
+        protected SimulationCommand(TCommandType type, Player<TPlayerData, TPacketizerContext> player, long frame)
             : base(type, player)
         {
             this.Frame = frame;
@@ -54,11 +55,11 @@ namespace Engine.Commands
 
         #region Equality
 
-        public override bool Equals(ICommand<T, TPlayerData, TPacketizerContext> other)
+        public override bool Equals(ICommand<TCommandType, TPlayerData, TPacketizerContext> other)
         {
-            return other is ISimulationCommand<T, TPlayerData, TPacketizerContext> &&
+            return other is ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> &&
                 base.Equals(other) &&
-                ((ISimulationCommand<T, TPlayerData, TPacketizerContext>)other).Frame == this.Frame;
+                ((ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>)other).Frame == this.Frame;
         }
 
         #endregion

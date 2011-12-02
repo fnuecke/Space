@@ -10,7 +10,8 @@ namespace Engine.Session
     /// <see cref="Engine.Session.ISession#PlayerLeft"/>.
     /// </summary>
     public class PlayerEventArgs<TPlayerData, TPacketizerContext> : EventArgs
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// The player the event applies to.
@@ -27,7 +28,8 @@ namespace Engine.Session
     /// Event args used for <see cref="Engine.Session.ISession#PlayerData"/>.
     /// </summary>
     public class PlayerDataEventArgs<TPlayerData, TPacketizerContext> : PlayerEventArgs<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// The data received from the player.
@@ -182,7 +184,8 @@ namespace Engine.Session
     /// Event args for handling join or info requests on servers.
     /// </summary>
     public class JoinRequestEventArgs<TPlayerData, TPacketizerContext> : RequestEventArgs
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// The player doing the joining.

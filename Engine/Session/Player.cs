@@ -6,8 +6,9 @@ namespace Engine.Session
     /// <summary>
     /// This class is used to represent a single player in a Session.
     /// </summary>
-    public sealed class Player<TData, TPacketizerContext>
-        where TData : IPacketizable<TPacketizerContext>
+    public sealed class Player<TPlayerData, TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// The player's number in the game he's in.
@@ -27,14 +28,14 @@ namespace Engine.Session
         /// <summary>
         /// Some arbitrary data associated with the player.
         /// </summary>
-        public TData Data { get; set; }
+        public TPlayerData Data { get; set; }
 
         /// <summary>
         /// The session this player belongs to.
         /// </summary>
         private Func<int> pingGetter;
 
-        internal Player(int number, string name, TData data, Func<int> pingGetter)
+        internal Player(int number, string name, TPlayerData data, Func<int> pingGetter)
         {
             this.Number = number;
             this.Name = name;

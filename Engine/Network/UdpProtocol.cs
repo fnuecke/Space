@@ -91,7 +91,7 @@ namespace Engine.Network
         {
             this.messages = new UdpMessageFactory(protocolHeader);
             this.Information = new ProtocolInfo(60);
-            this.Timeout = 5000;
+            this.Timeout = 10000;
             this.PingFrequency = 1000;
 
             // Create our actual udp socket.
@@ -142,9 +142,16 @@ namespace Engine.Network
                         byte[] buffer = udp.Receive(ref remote);
                         Inject(buffer, remote);
                     }
+#if DEBUG
+                    catch (SocketException ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+#else
                     catch (SocketException)
                     {
                     }
+#endif
                 }
             }
         }
@@ -211,6 +218,9 @@ namespace Engine.Network
             // Do actual removal after iteration, as this modifies the collection.
             foreach (var remote in toRemove)
             {
+#if DEBUG
+                Console.WriteLine("Udp: timeout for " + remote.ToString());
+#endif
                 RemoveConnection(remote);
                 OnTimeout(new ProtocolEventArgs(remote));
             }
@@ -247,6 +257,9 @@ namespace Engine.Network
             Packet data;
             if (!messages.ParseMessage(packet, out type, out messageNumber, out data))
             {
+#if DEBUG
+                Console.WriteLine("Udp: bad packet, dropping");
+#endif
                 Information.Incoming(buffer.Length, TrafficType.Protocol);
                 return;
             }
@@ -261,6 +274,9 @@ namespace Engine.Network
                 if (connection == null)
                 {
                     // We couldn't get the raw IP.
+#if DEBUG
+                    Console.WriteLine("Udp: cannot get raw ip");
+#endif
                     return;
                 }
                 connection.LastReceived = DateTime.Now;
@@ -273,7 +289,6 @@ namespace Engine.Network
                         Information.Incoming(buffer.Length, TrafficType.Protocol);
                         if (awaitingAck.ContainsKey(messageNumber))
                         {
-                            //connection.PushPing((int)new TimeSpan(DateTime.Now.Ticks - awaitingAck[messageNumber].timeCreated).TotalMilliseconds / 2);
                             awaitingAck.Remove(messageNumber);
                         }
                         break;
@@ -298,6 +313,9 @@ namespace Engine.Network
                                 else
                                 {
                                     // Failed handling, don't send ack.
+#if DEBUG
+                                    Console.WriteLine("Udp: acked failed handling");
+#endif
                                     return;
                                 }
                             } // else handled successfully before, resend ack.

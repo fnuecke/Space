@@ -1,5 +1,4 @@
-﻿using Engine.Math;
-using Engine.Physics;
+﻿using Engine.Physics;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -24,8 +23,6 @@ namespace Space.Model
         public bool IsAlive { get { return true /* State.CurrentFrame - lastDestroyed > RespawnTime */; } }
 
         public int PlayerNumber { get; private set; }
-
-        public FPoint Position { get { return position; } }
 
         private ShipData data;
 

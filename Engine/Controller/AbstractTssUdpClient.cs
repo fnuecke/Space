@@ -3,6 +3,7 @@ using Engine.Commands;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
@@ -15,8 +16,9 @@ namespace Engine.Controller
     public abstract class AbstractTssUdpClient<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractUdpClient<TCommandType, TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPacketizerContext>, new()
         where TCommandType : struct
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Constants
 
@@ -40,6 +42,16 @@ namespace Engine.Controller
         /// Last time we sent a sync command to the server.
         /// </summary>
         private long lastSyncTime = 0;
+
+        /// <summary>
+        /// The last frame we know the server's state hash of.
+        /// </summary>
+        private long hashFrame = -1;
+
+        /// <summary>
+        /// The hash value of the server's state.
+        /// </summary>
+        private int hashValue;
 
         #endregion
 
@@ -103,6 +115,18 @@ namespace Engine.Controller
                     simulation.RunToFrame(simulation.CurrentFrame + (int)System.Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
                 }
 
+                // Hash test.
+                if (simulation.TrailingFrame == hashFrame)
+                {
+                    Hasher hasher = new Hasher();
+                    simulation.TrailingState.Hash(hasher);
+                    if (hasher.Value != hashValue)
+                    {
+                        //console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value + ", re-sync");
+                        //simulation.Invalidate();
+                    }
+                }
+
                 // Send sync command every now and then, to keep game clock synched.
                 if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
@@ -126,9 +150,10 @@ namespace Engine.Controller
         private void HandleThresholdExceeded(object sender, EventArgs e)
         {
             // So we request it.
+            console.WriteLine("Client: insufficient history, re-sync");
             Packet gameStateRequest = new Packet(1);
             gameStateRequest.Write((byte)TssUdpControllerMessage.GameStateRequest);
-            Session.Send(gameStateRequest, 50);
+            Session.Send(gameStateRequest, 200);
         }
 
         #endregion
@@ -213,9 +238,17 @@ namespace Engine.Controller
                         return true;
                     }
                     break;
+                case TssUdpControllerMessage.HashCheck:
+                    // Only accept these when they come from the server.
+                    if (args.IsFromServer)
+                    {
+                        hashFrame = args.Data.ReadInt64();
+                        hashValue = args.Data.ReadInt32();
+                        return true;
+                    }
+                    break;
 
-                // Everything else is unhandled on the server.
-                case TssUdpControllerMessage.GameStateRequest:
+                // Everything else is unhandled on the client.
                 default:
                     break;
             }

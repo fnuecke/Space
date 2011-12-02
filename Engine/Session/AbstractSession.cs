@@ -55,7 +55,8 @@ namespace Engine.Session
     /// Base implementation for server and client side sessions, i.e. functionality used by both.
     /// </summary>
     abstract class AbstractSession<TPlayerData, TPacketizerContext> : GameComponent, ISession<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Constants
 
@@ -120,7 +121,7 @@ namespace Engine.Session
         /// <summary>
         /// Packetizer used for this session's game.
         /// </summary>
-        protected IPacketizer<TPacketizerContext> packetizer;
+        protected IPacketizer<TPlayerData, TPacketizerContext> packetizer;
 
         /// <summary>
         /// The underlying protocol that's being used.
@@ -163,7 +164,7 @@ namespace Engine.Session
 
         public override void Initialize()
         {
-            packetizer = (IPacketizer<TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPacketizerContext>));
+            packetizer = ((IPacketizer<TPlayerData, TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPlayerData, TPacketizerContext>))).CopyFor(this);
 
             base.Initialize();
         }
@@ -244,7 +245,7 @@ namespace Engine.Session
         {
             for (int i = 0; i < MaxPlayers; ++i)
             {
-                if (playerAddresses[i] != null)
+                if (playerAddresses[i] != null && i != LocalPlayerNumber)
                 {
                     Send(playerAddresses[i], type, data, pollrate);
                 }

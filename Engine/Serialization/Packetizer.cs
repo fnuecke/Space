@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.Session;
 
 namespace Engine.Serialization
 {
@@ -8,7 +9,9 @@ namespace Engine.Serialization
     /// serialization / deserialization if the code triggering the deserialization
     /// does not know the actual type to expect in the data.
     /// </summary>
-    public sealed class Packetizer<TPacketizerContext> : IPacketizer<TPacketizerContext>
+    public sealed class Packetizer<TPlayerData, TPacketizerContext> : IPacketizer<TPlayerData, TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// The context used by depacketize methods.
@@ -18,18 +21,23 @@ namespace Engine.Serialization
         /// <summary>
         /// Keep track of registered types.
         /// </summary>
-        private Dictionary<string, Func<IPacketizable<TPacketizerContext>>> constructors = new Dictionary<string, Func<IPacketizable<TPacketizerContext>>>();
+        private Dictionary<string, Func<IPacketizable<TPlayerData, TPacketizerContext>>> constructors = new Dictionary<string, Func<IPacketizable<TPlayerData, TPacketizerContext>>>();
 
         public Packetizer(TPacketizerContext context)
         {
             this.Context = context;
         }
 
+        // For copying.
+        private Packetizer()
+        {
+        }
+
         /// <summary>
         /// Register a new type for serializing / deserializing.
         /// </summary>
         /// <typeparam name="T">the type to register.</typeparam>
-        public void Register<T>() where T : IPacketizable<TPacketizerContext>, new()
+        public void Register<T>() where T : IPacketizable<TPlayerData, TPacketizerContext>, new()
         {
             Type type = typeof(T);
             if (!constructors.ContainsKey(type.FullName))
@@ -46,7 +54,7 @@ namespace Engine.Serialization
         /// <param name="value">the object to write.</param>
         /// <param name="packet">the packet to write to.</param>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        public void Packetize<T>(T value, Packet packet) where T : IPacketizable<TPacketizerContext>
+        public void Packetize<T>(T value, Packet packet) where T : IPacketizable<TPlayerData, TPacketizerContext>
         {
             Type type = value.GetType();
             if (constructors.ContainsKey(type.FullName))
@@ -67,12 +75,12 @@ namespace Engine.Serialization
         /// <param name="packet">the packet to read from.</param>
         /// <returns>the deserialized object.</returns>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        public T Depacketize<T>(Packet packet) where T : IPacketizable<TPacketizerContext>
+        public T Depacketize<T>(Packet packet) where T : IPacketizable<TPlayerData, TPacketizerContext>
         {
             string fullName = packet.ReadString();
             if (constructors.ContainsKey(fullName))
             {
-                IPacketizable<TPacketizerContext> result = constructors[fullName]();
+                IPacketizable<TPlayerData, TPacketizerContext> result = constructors[fullName]();
                 result.Depacketize(packet, Context);
                 return (T)result;
             }
@@ -80,6 +88,20 @@ namespace Engine.Serialization
             {
                 throw new ArgumentException("T");
             }
+        }
+
+        /// <summary>
+        /// Creates a clone of this packetizer, but with it's context set for the given session.
+        /// </summary>
+        /// <param name="session">the session for which to copy the packetizer.</param>
+        /// <returns>a new packetizer for the given session.</returns>
+        public IPacketizer<TPlayerData, TPacketizerContext> CopyFor(ISession<TPlayerData, TPacketizerContext> session)
+        {
+            var copy = new Packetizer<TPlayerData, TPacketizerContext>();
+            copy.Context = (TPacketizerContext)this.Context.Clone();
+            copy.Context.Session = session;
+            copy.constructors = this.constructors;
+            return copy;
         }
     }
 }

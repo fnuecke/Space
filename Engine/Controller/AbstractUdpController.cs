@@ -16,7 +16,8 @@ namespace Engine.Controller
     public abstract class AbstractUdpController<TSession, TCommandType, TPlayerData, TPacketizerContext> : DrawableGameComponent
         where TSession : ISession<TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>, new()
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Properties
 
@@ -47,7 +48,7 @@ namespace Engine.Controller
         /// <summary>
         /// Packetizer used for this session's game.
         /// </summary>
-        protected IPacketizer<TPacketizerContext> packetizer;
+        protected IPacketizer<TPlayerData, TPacketizerContext> packetizer;
 
         /// <summary>
         /// The network protocol we'll use.
@@ -78,7 +79,7 @@ namespace Engine.Controller
             console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
             keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
             mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
-            packetizer = (IPacketizer<TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPacketizerContext>));
+            packetizer = ((IPacketizer<TPlayerData, TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPlayerData, TPacketizerContext>))).CopyFor(Session);
 
             if (keyboard != null)
             {

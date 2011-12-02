@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.Session;
 
 namespace Engine.Serialization
 {
@@ -6,7 +7,9 @@ namespace Engine.Serialization
     /// Interface for the <c>Packetizer</c> class, used for serializing / deserializing objects.
     /// </summary>
     /// <typeparam name="TPacketizerContext"></typeparam>
-    public interface IPacketizer<TPacketizerContext>
+    public interface IPacketizer<TPlayerData, TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// The context used by depacketize methods.
@@ -21,7 +24,7 @@ namespace Engine.Serialization
         /// <param name="value">the object to write.</param>
         /// <param name="packet">the packet to write to.</param>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        void Packetize<T>(T value, Packet packet) where T : IPacketizable<TPacketizerContext>;
+        void Packetize<T>(T value, Packet packet) where T : IPacketizable<TPlayerData, TPacketizerContext>;
 
         /// <summary>
         /// Parse an object of an unknown type at a certain state from a packet.
@@ -30,6 +33,13 @@ namespace Engine.Serialization
         /// <param name="packet">the packet to read from.</param>
         /// <returns>the deserialized object.</returns>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        T Depacketize<T>(Packet packet) where T : IPacketizable<TPacketizerContext>;
+        T Depacketize<T>(Packet packet) where T : IPacketizable<TPlayerData, TPacketizerContext>;
+
+        /// <summary>
+        /// Creates a clone of this packetizer, but with it's context set for the given session.
+        /// </summary>
+        /// <param name="session">the session for which to copy the packetizer.</param>
+        /// <returns>a new packetizer for the given session.</returns>
+        IPacketizer<TPlayerData, TPacketizerContext> CopyFor(ISession<TPlayerData, TPacketizerContext> session);
     }
 }

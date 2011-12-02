@@ -8,21 +8,29 @@ namespace Engine.Math
     /// <see cref="http://stackoverflow.com/questions/605124/fixed-point-math-in-c"/>
     public struct Fixed
     {
+        #region Constants
+
+        public static readonly Fixed PI = Fixed.Create(System.Math.PI);
+
+        #endregion
 
         #region Private constants
+
         private const int SHIFT_AMOUNT = 12; //12 is 4096
         private const long One = 1 << SHIFT_AMOUNT;
         private const int OneI = 1 << SHIFT_AMOUNT;
         private static Fixed OneF = Fixed.Create(1, true);
-        private static Fixed PI = Fixed.Create(12868, false); // PI x 2^12
-        private static Fixed TwoPIF = PI * 2; // radian equivalent of 360 degrees
-        private static Fixed PIOver180F = PI / (Fixed)180; // PI / 180
+        private static Fixed InternalPI = Fixed.Create(12868, false); // PI x 2^12
+        private static Fixed TwoPIF = InternalPI * 2; // radian equivalent of 360 degrees
+        private static Fixed PIOver180F = InternalPI / (Fixed)180; // PI / 180
+
         #endregion
 
         // Actual value holder of this instance.
         public long RawValue;
 
         #region Constructors
+
         public static Fixed Create(long startingRawValue, bool useMultiple)
         {
             Fixed fInt;
@@ -31,6 +39,7 @@ namespace Engine.Math
                 fInt.RawValue = fInt.RawValue << SHIFT_AMOUNT;
             return fInt;
         }
+
         public static Fixed Create(double value)
         {
             Fixed fInt;
@@ -38,9 +47,11 @@ namespace Engine.Math
             fInt.RawValue = (int)System.Math.Round(value);
             return fInt;
         }
+
         #endregion
 
         #region Conversions
+
         public int IntValue
         {
             get { return (int)(this.RawValue >> SHIFT_AMOUNT); }
@@ -50,9 +61,11 @@ namespace Engine.Math
         {
             get { return (double)this.RawValue / (double)One; }
         }
+
         #endregion
 
         #region FromParts
+
         /// <summary>
         /// Create a fixed-int number from parts.  For example, to create 1.5 pass in 1 and 500.
         /// </summary>
@@ -68,9 +81,11 @@ namespace Engine.Math
 
             return f;
         }
+
         #endregion
 
         #region *
+
         public static Fixed operator *(Fixed one, Fixed other)
         {
             Fixed fInt;
@@ -87,9 +102,11 @@ namespace Engine.Math
         {
             return one * (Fixed)scalar;
         }
+
         #endregion
 
         #region /
+
         public static Fixed operator /(Fixed one, Fixed other)
         {
             Fixed fInt;
@@ -106,9 +123,11 @@ namespace Engine.Math
         {
             return (Fixed)divisor / one;
         }
+
         #endregion
 
         #region %
+
         public static Fixed operator %(Fixed one, Fixed other)
         {
             Fixed fInt;
@@ -125,9 +144,11 @@ namespace Engine.Math
         {
             return (Fixed)divisor % one;
         }
+
         #endregion
 
         #region +
+
         public static Fixed operator +(Fixed one, Fixed other)
         {
             Fixed fInt;
@@ -144,9 +165,11 @@ namespace Engine.Math
         {
             return one + (Fixed)other;
         }
+
         #endregion
 
         #region -
+
         public Fixed Inverse
         {
             get { return Fixed.Create(-this.RawValue, false); }
@@ -173,9 +196,11 @@ namespace Engine.Math
         {
             return (Fixed)other - one;
         }
+
         #endregion
 
         #region ==
+
         public static bool operator ==(Fixed one, Fixed other)
         {
             return one.RawValue == other.RawValue;
@@ -190,9 +215,11 @@ namespace Engine.Math
         {
             return (Fixed)other == one;
         }
+
         #endregion
 
         #region !=
+
         public static bool operator !=(Fixed one, Fixed other)
         {
             return one.RawValue != other.RawValue;
@@ -207,9 +234,11 @@ namespace Engine.Math
         {
             return (Fixed)other != one;
         }
+
         #endregion
 
         #region >=
+
         public static bool operator >=(Fixed one, Fixed other)
         {
             return one.RawValue >= other.RawValue;
@@ -224,9 +253,11 @@ namespace Engine.Math
         {
             return (Fixed)other >= one;
         }
+
         #endregion
 
         #region <=
+
         public static bool operator <=(Fixed one, Fixed other)
         {
             return one.RawValue <= other.RawValue;
@@ -241,9 +272,11 @@ namespace Engine.Math
         {
             return (Fixed)other <= one;
         }
+
         #endregion
 
         #region >
+
         public static bool operator >(Fixed one, Fixed other)
         {
             return one.RawValue > other.RawValue;
@@ -258,9 +291,11 @@ namespace Engine.Math
         {
             return (Fixed)other > one;
         }
+
         #endregion
 
         #region <
+
         public static bool operator <(Fixed one, Fixed other)
         {
             return one.RawValue < other.RawValue;
@@ -275,9 +310,11 @@ namespace Engine.Math
         {
             return (Fixed)other < one;
         }
+
         #endregion
 
         #region Casting
+
         public static explicit operator int(Fixed src)
         {
             return (int)(src.RawValue >> SHIFT_AMOUNT);
@@ -297,9 +334,11 @@ namespace Engine.Math
         {
             return Fixed.Create((long)src, true);
         }
+
         #endregion
 
         #region Bitshifts
+
         public static Fixed operator <<(Fixed one, int amount)
         {
             return Fixed.Create(one.RawValue << amount, false);
@@ -309,9 +348,11 @@ namespace Engine.Math
         {
             return Fixed.Create(one.RawValue >> amount, false);
         }
+
         #endregion
 
         #region Sqrt
+
         public static Fixed Sqrt(Fixed f, int numberOfIterations)
         {
             if (f.RawValue < 0) //NaN in Math.Sqrt
@@ -337,9 +378,11 @@ namespace Engine.Math
                 numberOfIterations = 16;
             return Sqrt(f, numberOfIterations);
         }
+
         #endregion
 
         #region Sin
+
         public static Fixed Sin(Fixed f)
         {
             Fixed j = (Fixed)0;
@@ -382,9 +425,11 @@ namespace Engine.Math
             4033, 4045, 4056, 4065, 4073, 4080, 4086, 4090, 4093, 4095, 
             4096
         };
+
         #endregion
 
         #region Cos, Tan, Asin
+
         public static Fixed Cos(Fixed f)
         {
             return Sin(f + Fixed.Create(6435, false));
@@ -408,17 +453,20 @@ namespace Engine.Math
                 Fixed.Create(1420468 >> Fixed.SHIFT_AMOUNT, false), f) -
                 Fixed.Create(3592413 >> Fixed.SHIFT_AMOUNT, false), f) +
                 Fixed.Create(26353447 >> Fixed.SHIFT_AMOUNT, false);
-            Fixed f2 = PI / Fixed.Create(2, true) - (Sqrt(Fixed.OneF - f) * f1);
+            Fixed f2 = InternalPI / Fixed.Create(2, true) - (Sqrt(Fixed.OneF - f) * f1);
 
             return isNegative ? f2.Inverse : f2;
         }
+
         private static Fixed mul(Fixed F1, Fixed F2)
         {
             return F1 * F2;
         }
+
         #endregion
 
         #region ATan, ATan2
+
         public static Fixed Atan(Fixed f)
         {
             return Asin(f / Sqrt(Fixed.OneF + (f * f)));
@@ -435,18 +483,20 @@ namespace Engine.Math
             else if (f2 < 0)
             {
                 if (f1 >= 0)
-                    result = (PI - Atan(Abs(f1 / f2)));
+                    result = (InternalPI - Atan(Abs(f1 / f2)));
                 else
-                    result = (PI - Atan(Abs(f1 / f2))).Inverse;
+                    result = (InternalPI - Atan(Abs(f1 / f2))).Inverse;
             }
             else
-                result = (f1 >= 0 ? PI : PI.Inverse) / Fixed.Create(2, true);
+                result = (f1 >= 0 ? InternalPI : InternalPI.Inverse) / Fixed.Create(2, true);
 
             return result;
         }
+
         #endregion
 
         #region Abs
+
         public static Fixed Abs(Fixed f)
         {
             if (f < 0)
@@ -454,9 +504,11 @@ namespace Engine.Math
             else
                 return f;
         }
+
         #endregion
 
         #region MaxMin
+
         public static Fixed Max(Fixed f1, Fixed f2)
         {
             if (f1 > f2)
@@ -464,6 +516,7 @@ namespace Engine.Math
             else
                 return f2;
         }
+
         public static Fixed Min(Fixed f1, Fixed f2)
         {
             if (f1 < f2)
@@ -471,6 +524,7 @@ namespace Engine.Math
             else
                 return f2;
         }
+
         #endregion
 
         public override bool Equals(object obj)
@@ -501,6 +555,7 @@ namespace Engine.Math
         public static readonly FPoint Zero = FPoint.Create((Fixed)0, (Fixed)0);
 
         public Fixed X;
+
         public Fixed Y;
 
         public static FPoint Create(Fixed x, Fixed y)
@@ -590,6 +645,11 @@ namespace Engine.Math
         #endregion
 
         #endregion
+
+        public override string ToString()
+        {
+            return String.Format("{0:f}, {1:f}", X.DoubleValue, Y.DoubleValue);
+        }
     }
 
     public struct FRectangle

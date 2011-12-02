@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Engine.Commands;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.Simulation
 {
@@ -13,7 +14,8 @@ namespace Engine.Simulation
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Events
         /// <summary>
@@ -41,7 +43,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
-        public IPacketizer<TPacketizerContext> Packetizer { get { return LeadingState.Packetizer; } }
+        public IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get { return LeadingState.Packetizer; } }
 
         /// <summary>
         /// The frame number of the trailing state, i.e. the point we cannot roll
@@ -58,6 +60,11 @@ namespace Engine.Simulation
         /// Get the leading state.
         /// </summary>
         public TState LeadingState { get { return states[0]; } }
+
+        /// <summary>
+        /// Get the trailing state.
+        /// </summary>
+        public TState TrailingState { get { return states[states.Length - 1]; } }
 
         #endregion
 
@@ -117,6 +124,15 @@ namespace Engine.Simulation
         {
             MirrorState(state, states.Length - 1);
             WaitingForSynchronization = false;
+        }
+
+        /// <summary>
+        /// Mark the state as invalid (desynchronized). Will trigger a new
+        /// <c>ThresholdExceeded</c> event.
+        /// </summary>
+        public void Invalidate()
+        {
+            OnThresholdExceeded(EventArgs.Empty);
         }
 
         /// <summary>
@@ -263,7 +279,7 @@ namespace Engine.Simulation
             else if (CurrentFrame < TrailingFrame)
             {
                 // Cannot rewind that far, request resync.
-                OnThresholdExceeded(new ThresholdExceededEventArgs());
+                OnThresholdExceeded(EventArgs.Empty);
             }
             else
             {
@@ -337,6 +353,16 @@ namespace Engine.Simulation
             {
                 FastForward(currentFrame);
             }
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">the hasher to push data to.</param>
+        public virtual void Hash(Hasher hasher)
+        {
+            states[0].Hash(hasher);
         }
 
         /// <summary>
@@ -485,7 +511,7 @@ namespace Engine.Simulation
             throw new NotImplementedException();
         }
 
-        protected void OnThresholdExceeded(ThresholdExceededEventArgs e)
+        protected void OnThresholdExceeded(EventArgs e)
         {
             WaitingForSynchronization = true;
             if (ThresholdExceeded != null)

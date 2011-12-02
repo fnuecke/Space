@@ -8,7 +8,7 @@ namespace Space.Model
         ShipType
     }
 
-    class PlayerInfo : IPacketizable<PacketizerContext>
+    class PlayerInfo : IPacketizable<PlayerInfo, PacketizerContext>
     {
         public long ShipUID { get; set; }
 

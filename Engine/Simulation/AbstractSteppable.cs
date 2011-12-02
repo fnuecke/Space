@@ -1,4 +1,5 @@
 ﻿using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.Simulation
 {
@@ -11,7 +12,8 @@ namespace Engine.Simulation
         where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPacketizerContext>
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
+        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Properties
 
@@ -40,6 +42,13 @@ namespace Engine.Simulation
         /// Perform one simulation step. 
         /// </summary>
         public abstract void Update();
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">the hasher to push data to.</param>
+        public abstract void Hash(Hasher hasher);
 
         /// <summary>
         /// Create a (deep!) copy of the object.

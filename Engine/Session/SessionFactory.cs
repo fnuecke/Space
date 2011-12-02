@@ -17,7 +17,8 @@ namespace Engine.Session
         /// <param name="maxPlayers">the maximum number of players allowed in this game.</param>
         /// <returns>the server session.</returns>
         public static IServerSession<TPlayerData, TPacketizerContext> StartServer<TPlayerData, TPacketizerContext>(Game game, IProtocol protocol, int maxPlayers)
-            where TPlayerData :IPacketizable<TPacketizerContext>, new()
+            where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
+            where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
         {
             return new ServerSession<TPlayerData, TPacketizerContext>(game, protocol, maxPlayers);
         }
@@ -29,7 +30,8 @@ namespace Engine.Session
         /// <param name="protocol">the protocol to use (no protocol should ever be used by more than one session!)</param>
         /// <returns>the client session.</returns>
         public static IClientSession<TPlayerData, TPacketizerContext> StartClient<TPlayerData, TPacketizerContext>(Game game, IProtocol protocol)
-            where TPlayerData : IPacketizable<TPacketizerContext>, new()
+            where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
+            where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
         {
             return new ClientSession<TPlayerData, TPacketizerContext>(game, protocol);
         }
