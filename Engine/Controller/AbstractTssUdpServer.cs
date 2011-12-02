@@ -37,14 +37,20 @@ namespace Engine.Controller
         protected TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> simulation;
 
         /// <summary>
+        /// The remainder of time we did not update last frame, which we'll add to the
+        /// elapsed time in the next frame update.
+        /// </summary>
+        private double lastUpdateRemainder;
+
+        /// <summary>
         /// Counter used to distribute ids.
         /// </summary>
-        private long lastUid = 0;
+        private long lastUid;
 
         /// <summary>
         /// Last time we sent a hash check to our clients.
         /// </summary>
-        private long lastHashTime = 0;
+        private long lastHashTime;
 
         #endregion
 
@@ -84,7 +90,15 @@ namespace Engine.Controller
             else
             {
                 // Compensate for dynamic timestep.
-                simulation.RunToFrame(simulation.CurrentFrame + (int)System.Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
+                double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + lastUpdateRemainder;
+                double target = Game.TargetElapsedTime.TotalMilliseconds;
+                while (elapsed > target)
+                {
+                    elapsed -= target;
+                    simulation.Update();
+                }
+                lastUpdateRemainder = elapsed;
+                //simulation.RunToFrame(simulation.CurrentFrame + (int)System.Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
             }
 
             // Send hash check every now and then, to check for desyncs.

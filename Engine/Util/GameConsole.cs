@@ -121,6 +121,11 @@ namespace Engine.Util
         public Color CaretColor { get; set; }
 
         /// <summary>
+        /// The number of entries to skip when scrolling either via page up / down or the mouse wheel.
+        /// </summary>
+        public int EntriesToScroll { get; set; }
+
+        /// <summary>
         /// The font to use for rendering text on the console.
         /// </summary>
         public SpriteFont Font { get; set; }
@@ -244,6 +249,7 @@ namespace Engine.Util
         {
             // Set defaults.
             BackgroundColor = new Color(0, 0, 0, 0.4f);
+            EntriesToScroll = 3;
             TextColor = Color.WhiteSmoke;
             CaretColor = new Color(0.4f, 0.4f, 0.4f, 0.4f);
             HotKey = Keys.OemTilde;
@@ -270,8 +276,16 @@ namespace Engine.Util
 
         public override void Initialize()
         {
-            var input = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
-            input.Pressed += HandleKeyPressed;
+            var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
+            if (keyboard != null)
+            {
+                keyboard.Pressed += HandleKeyPressed;
+            }
+            var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
+            if (mouse != null)
+            {
+                mouse.Scrolled += HandleMouseScrolled;
+            }
 
             base.Initialize();
         }
@@ -286,8 +300,17 @@ namespace Engine.Util
 
         protected override void Dispose(bool disposing)
         {
-            var input = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
-            input.Pressed -= HandleKeyPressed;
+            var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
+            if (keyboard != null)
+            {
+                keyboard.Pressed -= HandleKeyPressed;
+            }
+            var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
+            if (mouse != null)
+            {
+                mouse.Scrolled -= HandleMouseScrolled;
+            }
+
             base.Dispose(disposing);
         }
 
@@ -604,7 +627,7 @@ namespace Engine.Util
                         }
                         else
                         {
-                            scroll = System.Math.Max(0, scroll - 1);
+                            scroll = System.Math.Max(0, scroll - EntriesToScroll);
                         }
                         break;
                     case Keys.PageUp:
@@ -614,7 +637,7 @@ namespace Engine.Util
                         }
                         else
                         {
-                            scroll = System.Math.Max(0, System.Math.Min(buffer.Count - 1, scroll + 1));
+                            scroll = System.Math.Max(0, System.Math.Min(buffer.Count - 1, scroll + EntriesToScroll));
                         }
                         break;
                     case Keys.Right:
@@ -720,6 +743,17 @@ namespace Engine.Util
                 {
                     IsOpen = true;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handle mouse scrolling of the console buffer
+        /// </summary>
+        private void HandleMouseScrolled(object sender, EventArgs e)
+        {
+            if (IsOpen)
+            {
+                scroll = System.Math.Max(0, System.Math.Min(buffer.Count - 1, scroll - System.Math.Sign(((MouseInputEventArgs)e).ScrollDelta) * EntriesToScroll));
             }
         }
 
@@ -844,7 +878,6 @@ namespace Engine.Util
         }
 
         #endregion
-
     }
 
     #region Command helper

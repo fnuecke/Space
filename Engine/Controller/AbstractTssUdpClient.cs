@@ -39,6 +39,12 @@ namespace Engine.Controller
         protected TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> simulation;
 
         /// <summary>
+        /// The remainder of time we did not update last frame, which we'll add to the
+        /// elapsed time in the next frame update.
+        /// </summary>
+        private double lastUpdateRemainder;
+
+        /// <summary>
         /// Last time we sent a sync command to the server.
         /// </summary>
         private long lastSyncTime = 0;
@@ -112,17 +118,25 @@ namespace Engine.Controller
                 else
                 {
                     // Compensate for dynamic timestep.
-                    simulation.RunToFrame(simulation.CurrentFrame + (int)System.Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
+                    double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + lastUpdateRemainder;
+                    double target = Game.TargetElapsedTime.TotalMilliseconds;
+                    while (elapsed > target)
+                    {
+                        elapsed -= target;
+                        simulation.Update();
+                    }
+                    lastUpdateRemainder = elapsed;
+                    //simulation.RunToFrame(simulation.CurrentFrame + (int)System.Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
                 }
 
                 // Hash test.
+                Hasher hasher = new Hasher();
+                simulation.TrailingState.Hash(hasher);
                 if (simulation.TrailingFrame == hashFrame)
                 {
-                    Hasher hasher = new Hasher();
-                    simulation.TrailingState.Hash(hasher);
                     if (hasher.Value != hashValue)
                     {
-                        //console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value + ", re-sync");
+                        console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value + ", re-sync");
                         //simulation.Invalidate();
                     }
                 }
