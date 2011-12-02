@@ -126,7 +126,6 @@ namespace Engine.Controller
                         simulation.Update();
                     }
                     lastUpdateRemainder = elapsed;
-                    //simulation.RunToFrame(simulation.CurrentFrame + (int)System.Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
                 }
 
                 // Hash test.
@@ -137,7 +136,7 @@ namespace Engine.Controller
                     if (hasher.Value != hashValue)
                     {
                         console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value + ", re-sync");
-                        //simulation.Invalidate();
+                        simulation.Invalidate();
                     }
                 }
 

@@ -98,7 +98,6 @@ namespace Engine.Controller
                     simulation.Update();
                 }
                 lastUpdateRemainder = elapsed;
-                //simulation.RunToFrame(simulation.CurrentFrame + (int)System.Math.Round(gameTime.ElapsedGameTime.TotalMilliseconds / Game.TargetElapsedTime.TotalMilliseconds));
             }
 
             // Send hash check every now and then, to check for desyncs.
@@ -107,9 +106,9 @@ namespace Engine.Controller
                 lastHashTime = DateTime.Now.Ticks;
                 Packet hashCheck = new Packet(5);
                 hashCheck.Write((byte)TssUdpControllerMessage.HashCheck);
-                hashCheck.Write(simulation.CurrentFrame);
+                hashCheck.Write(simulation.TrailingFrame);
                 Hasher hasher = new Hasher();
-                simulation.Hash(hasher);
+                simulation.TrailingState.Hash(hasher);
                 hashCheck.Write(hasher.Value);
                 Session.SendAll(hashCheck, 0);
             }

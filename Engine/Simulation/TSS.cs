@@ -362,7 +362,7 @@ namespace Engine.Simulation
         /// <param name="hasher">the hasher to push data to.</param>
         public virtual void Hash(Hasher hasher)
         {
-            states[0].Hash(hasher);
+            throw new NotSupportedException();
         }
 
         /// <summary>
