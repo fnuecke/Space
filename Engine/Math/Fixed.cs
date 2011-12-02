@@ -11,6 +11,7 @@ namespace Engine.Math
         #region Constants
 
         public static readonly Fixed PI = Fixed.Create(System.Math.PI);
+        public static readonly Fixed Zero = Fixed.Create(0);
 
         #endregion
 
@@ -552,7 +553,7 @@ namespace Engine.Math
 
     public struct FPoint
     {
-        public static readonly FPoint Zero = FPoint.Create((Fixed)0, (Fixed)0);
+        public static readonly FPoint Zero = FPoint.Create(Fixed.Zero, Fixed.Zero);
 
         public Fixed X;
 

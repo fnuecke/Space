@@ -26,7 +26,7 @@ namespace Space.Control
         #endregion
 
         public Server(Game game, int maxPlayers, byte worldSize, long worldSeed)
-            : base(game, maxPlayers, 50105, "5p4c3!")
+            : base(game, maxPlayers, 50100, "5p4c3!")
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
             simulation.Initialize(new GameState(game, Session));

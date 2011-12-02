@@ -95,11 +95,14 @@ namespace Engine.Controller
                 mouse.Moved += HandleMouseMoved;
             }
 
-            Session.PlayerData += HandlePlayerData;
-            Session.PlayerJoined += HandlePlayerJoined;
-            Session.PlayerLeft += HandlePlayerLeft;
+            if (Session != null)
+            {
+                Session.PlayerData += HandlePlayerData;
+                Session.PlayerJoined += HandlePlayerJoined;
+                Session.PlayerLeft += HandlePlayerLeft;
 
-            Game.Components.Add(Session);
+                Game.Components.Add(Session);
+            }
 
             base.Initialize();
         }
@@ -112,14 +115,20 @@ namespace Engine.Controller
             keyboard.Pressed -= HandleKeyPressed;
             keyboard.Released -= HandleKeyReleased;
 
-            Session.PlayerData -= HandlePlayerData;
-            Session.PlayerJoined -= HandlePlayerJoined;
-            Session.PlayerLeft -= HandlePlayerLeft;
+            if (Session != null)
+            {
+                Session.PlayerData -= HandlePlayerData;
+                Session.PlayerJoined -= HandlePlayerJoined;
+                Session.PlayerLeft -= HandlePlayerLeft;
+                Session.Dispose();
 
-            protocol.Dispose();
-            Session.Dispose();
+                Game.Components.Remove(Session);
+            }
 
-            Game.Components.Remove(Session);
+            if (protocol != null)
+            {
+                protocol.Dispose();
+            }
 
             base.Dispose(disposing);
         }

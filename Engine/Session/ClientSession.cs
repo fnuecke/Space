@@ -9,7 +9,7 @@ namespace Engine.Session
     /// <summary>
     /// Used for joining sessions.
     /// </summary>
-    sealed class ClientSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IClientSession<TPlayerData, TPacketizerContext>
+    internal sealed class ClientSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IClientSession<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -105,7 +105,7 @@ namespace Engine.Session
         {
             if (ConnectionState != ClientState.Unconnected)
             {
-                Send(host, SessionMessage.Leave, null);
+                Send(host, SessionMessage.Leave, null, 0);
             }
 
             ConnectionState = ClientState.Unconnected;
@@ -118,7 +118,25 @@ namespace Engine.Session
 
         #endregion
 
-        #region Logic / Event handling
+        #region Logic
+
+        public override void Update(GameTime gameTime)
+        {
+            // Periodically send an acked no-op message, which is used to
+            // check if the server is still alive.
+            if (ConnectionState == ClientState.Connected &&
+                (DateTime.Now - lastConnectionCheck).TotalMilliseconds > ConnectionCheckInterval)
+            {
+                lastConnectionCheck = DateTime.Now;
+                Send(host, SessionMessage.ConnectionTest, new Packet(), ConnectionCheckInterval);
+            }
+
+            base.Update(gameTime);
+        }
+
+        #endregion
+
+        #region Event handling
 
         protected override void HandlePlayerTimeout(object sender, EventArgs e)
         {
@@ -165,7 +183,17 @@ namespace Engine.Session
 
             switch (type)
             {
+                case SessionMessage.ConnectionTest:
+                    // Server wants to know if we're still there.
+                    if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
+                    {
+                        // Yep, still in a session, and this came from it's host. Allow acking.
+                        args.Consume();
+                    }
+                    break;
+
                 case SessionMessage.GameInfoResponse:
+                    // Got some info on a running game.
                     try
                     {
                         // Get number of max players.
@@ -195,7 +223,9 @@ namespace Engine.Session
                     }
 #endif
                     break;
+
                 case SessionMessage.JoinResponse:
+                    // Got a reply from a server for a join response.
                     if (ConnectionState == ClientState.Connecting && args.Remote.Equals(host))
                     {
                         try
@@ -294,7 +324,9 @@ namespace Engine.Session
                         }
                     }
                     break;
+
                 case SessionMessage.PlayerJoined:
+                    // Some player joined the session.
                     if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
                     {
                         try
@@ -344,7 +376,9 @@ namespace Engine.Session
 #endif
                     }
                     break;
+
                 case SessionMessage.PlayerLeft:
+                    // Some player left the session.
                     if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
                     {
                         try
@@ -388,6 +422,7 @@ namespace Engine.Session
 #endif
                     }
                     break;
+
                 case SessionMessage.Data:
                     // Custom data, just forward it if we're in a session.
                     if (ConnectionState == ClientState.Connected)
@@ -402,16 +437,9 @@ namespace Engine.Session
                         }
                     }
                     break;
-                case SessionMessage.GameInfoRequest:
-                case SessionMessage.JoinRequest:
-                case SessionMessage.Leave:
-                    // Ignore as a client.
-                    break;
+
+                // Ignore everything else.
                 default:
-                    // Invalid packet.
-#if DEBUG
-                    Console.WriteLine("Received packet with unknown session message type {0}.", type);
-#endif
                     break;
             }
         }

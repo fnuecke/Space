@@ -35,7 +35,7 @@ namespace Engine.Network
         /// <summary>
         /// Keeps track of some network related statistics.
         /// </summary>
-        public ProtocolInfo Information { get; private set; }
+        public IProtocolInfo Information { get { return info; } }
         
         /// <summary>
         /// The ping frequency, i.e. how often (every <c>PingFrequency</c> milliseconds)
@@ -64,6 +64,11 @@ namespace Engine.Network
         private UdpClient udp;
 
         /// <summary>
+        /// Actual value for protocol info.
+        /// </summary>
+        private ProtocolInfo info = new ProtocolInfo(60);
+
+        /// <summary>
         /// Currently open connections (i.e. packet was sent to or received from this remote end point).
         /// </summary>
         private Dictionary<long, UdpRemoteInfo> connections = new Dictionary<long, UdpRemoteInfo>();
@@ -90,7 +95,6 @@ namespace Engine.Network
         public UdpProtocol(ushort port, byte[] protocolHeader)
         {
             this.messages = new UdpMessageFactory(protocolHeader);
-            this.Information = new ProtocolInfo(60);
             this.Timeout = 10000;
             this.PingFrequency = 1000;
 
@@ -175,12 +179,12 @@ namespace Engine.Network
             {
                 int messageNumber;
                 Packet message = messages.MakeAcked(data, out messageNumber);
-                awaitingAck.Add(messageNumber, new UdpPendingMessage(SocketMessage.Acked, message, remote, pollRate));
+                awaitingAck.Add(messageNumber, new UdpPendingMessage(message, remote, pollRate));
             }
             else
             {
                 Packet message = messages.MakeUnacked(data);
-                Information.Outgoing(message.Length, TrafficType.Data);
+                info.Outgoing(message.Length, TrafficType.Data);
                 udp.Send(message.Buffer, message.Length, remote);
             }
         }
@@ -202,11 +206,17 @@ namespace Engine.Network
                 }
                 else if (new TimeSpan(time - message.lastSent).TotalMilliseconds > message.pollRate)
                 {
-                    message.lastSent = time;
-                    Information.Outgoing(message.data.Length, (message.type == SocketMessage.Acked) ? TrafficType.Data : TrafficType.Protocol);
+                    info.Outgoing(message.data.Length, TrafficType.Data);
                     try
                     {
                         udp.Send(message.data.Buffer, message.data.Length, message.remote);
+                        // Incrementally stretch the time between resends, to avoid flooding
+                        // the adapter for low initial pollrates.
+                        if (message.lastSent != 0)
+                        {
+                            message.pollRate += message.pollRate;
+                        }
+                        message.lastSent = time;
                     }
                     catch (SocketException)
                     {
@@ -234,7 +244,7 @@ namespace Engine.Network
                     // Only ping remote hosts that sent us a message (replied) recently.
                     if ((DateTime.Now - item.LastReceived).TotalMilliseconds < PingFrequency * 2)
                     {
-                        Information.Outgoing(message.Length, TrafficType.Protocol);
+                        info.Outgoing(message.Length, TrafficType.Protocol);
                         udp.Send(message.Buffer, message.Length, item.Remote);
                     }
                 }
@@ -251,16 +261,14 @@ namespace Engine.Network
         public void Inject(byte[] buffer, IPEndPoint remote)
         {
             // Can we parse it? The values below are set as context dictates.
-            Packet packet = new Packet(buffer);
             SocketMessage type;
             int messageNumber;
             Packet data;
-            if (!messages.ParseMessage(packet, out type, out messageNumber, out data))
+
+            // Did we get a valid message.
+            if (!messages.ParseMessage(buffer, out type, out messageNumber, out data))
             {
-#if DEBUG
-                Console.WriteLine("Udp: bad packet, dropping");
-#endif
-                Information.Incoming(buffer.Length, TrafficType.Protocol);
+                info.Incoming(buffer.Length, TrafficType.Invalid);
                 return;
             }
 
@@ -286,15 +294,16 @@ namespace Engine.Network
                 {
                     case SocketMessage.Ack:
                         // It's an ack.
-                        Information.Incoming(buffer.Length, TrafficType.Protocol);
+                        info.Incoming(buffer.Length, TrafficType.Protocol);
                         if (awaitingAck.ContainsKey(messageNumber))
                         {
                             awaitingAck.Remove(messageNumber);
                         }
                         break;
+
                     case SocketMessage.Acked:
                         // Acked data.
-                        Information.Incoming(buffer.Length, TrafficType.Data);
+                        info.Incoming(buffer.Length, TrafficType.Data);
                         if (connection != null)
                         {
                             // Only handle these once successfully, as they may have been resent
@@ -322,24 +331,27 @@ namespace Engine.Network
 
                             // Send ack if we get here.
                             Packet ack = messages.MakeAck(messageNumber);
-                            Information.Outgoing(ack.Length, TrafficType.Protocol);
+                            info.Outgoing(ack.Length, TrafficType.Protocol);
                             udp.Send(ack.Buffer, ack.Length, remote);
                         }
                         break;
+
                     case SocketMessage.Ping:
                         // It's a ping, send a pong.
-                        Information.Incoming(buffer.Length, TrafficType.Protocol);
+                        info.Incoming(buffer.Length, TrafficType.Protocol);
                         Packet pong = messages.MakePong(data.ReadInt64());
-                        Information.Outgoing(pong.Length, TrafficType.Protocol);
+                        info.Outgoing(pong.Length, TrafficType.Protocol);
                         udp.Send(pong.Buffer, pong.Length, remote);
                         break;
+
                     case SocketMessage.Pong:
                         // It's a pong! Calculate latency.
                         connection.PushPing((int)new TimeSpan((DateTime.Now.Ticks - data.ReadInt64()) / 2).TotalMilliseconds);
                         break;
+
                     case SocketMessage.Unacked:
                         // Unacked data, this is only sent once, presumably.
-                        Information.Incoming(buffer.Length, TrafficType.Data);
+                        info.Incoming(buffer.Length, TrafficType.Data);
                         OnData(new ProtocolDataEventArgs(remote, data));
                         break;
                     default:
@@ -587,12 +599,12 @@ namespace Engine.Network
         /// <summary>
         /// Parse received data to check if it's a message we can handle, and parse it.
         /// </summary>
-        /// <param name="buffer"></param>
-        /// <param name="type"></param>
-        /// <param name="messageNumber"></param>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public bool ParseMessage(Packet message, out SocketMessage type, out int messageNumber, out Packet data)
+        /// <param name="message">the data to parse.</param>
+        /// <param name="type">the type of the parsed data.</param>
+        /// <param name="messageNumber">the number of the parsed message.</param>
+        /// <param name="data">the data parsed from the message.</param>
+        /// <returns>if parsing was successful or not.</returns>
+        public bool ParseMessage(byte[] message, out SocketMessage type, out int messageNumber, out Packet data)
         {
             // Satisfy outs.
             type = SocketMessage.Invalid;
@@ -600,36 +612,36 @@ namespace Engine.Network
             data = null;
 
             // Check the header.
-            if (IsHeaderValid(message.Buffer))
+            if (IsHeaderValid(message))
             {
-                message = new Packet(crypto.Decrypt(message.Buffer, header.Length, message.Length - header.Length));
+                var packet = new Packet(crypto.Decrypt(message, header.Length, message.Length - header.Length));
 
                 // Get the type of the message.
-                if (!message.HasByte())
+                if (!packet.HasByte())
                 {
                     return false;
                 }
-                type = (SocketMessage)message.ReadByte();
+                type = (SocketMessage)packet.ReadByte();
 
                 // Get the message body.
                 Packet body;
                 if ((type & SocketMessage.Compressed) > 0)
                 {
                     type &= ~SocketMessage.Compressed;
-                    if (!message.HasByteArray())
+                    if (!packet.HasByteArray())
                     {
                         return false;
                     }
-                    byte[] compressed = message.ReadByteArray();
+                    byte[] compressed = packet.ReadByteArray();
                     body = new Packet(Compression.Decompress(compressed));
                 }
                 else
                 {
-                    if (!message.HasPacket())
+                    if (!packet.HasPacket())
                     {
                         return false;
                     }
-                    body = message.ReadPacket();
+                    body = packet.ReadPacket();
                 }
 
                 // If it's an ack or an acked message we have a message number.
@@ -718,11 +730,6 @@ namespace Engine.Network
     sealed class UdpPendingMessage
     {
         /// <summary>
-        /// Message type.
-        /// </summary>
-        public SocketMessage type;
-
-        /// <summary>
         /// The data that's sent.
         /// </summary>
         public Packet data;
@@ -747,9 +754,8 @@ namespace Engine.Network
         /// </summary>
         public long lastSent;
 
-        public UdpPendingMessage(SocketMessage type, Packet data, IPEndPoint remote, uint pollRate)
+        public UdpPendingMessage(Packet data, IPEndPoint remote, uint pollRate)
         {
-            this.type = type;
             this.data = data;
             this.remote = remote;
             this.pollRate = pollRate;

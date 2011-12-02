@@ -124,7 +124,7 @@ namespace Space
             {
                 PlayerInfo info = new PlayerInfo();
                 info.ShipType = "Sparrow";
-                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50105), "player", info);
+                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
             },
                 "autojoin fn");
 

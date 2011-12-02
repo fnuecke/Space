@@ -4,30 +4,16 @@ using System.Collections.Generic;
 namespace Engine.Network
 {
     /// <summary>
-    /// Represents a type of traffic as tracked in the <c>ProtocolInfo</c> class.
+    /// Represents some statistics for a protocol.
     /// </summary>
-    [Flags]
-    public enum TrafficType
-    {
-        /// <summary>
-        /// Protocol internal traffic, such as acks.
-        /// </summary>
-        Protocol = 1,
-
-        /// <summary>
-        /// Actual data packets, sent from a higher layer.
-        /// </summary>
-        Data = 2,
-
-        /// <summary>
-        /// Any type of packet.
-        /// </summary>
-        Any = Protocol | Data
-    }
-
-    public sealed class ProtocolInfo
+    internal sealed class ProtocolInfo : IProtocolInfo
     {
         #region Properties
+
+        /// <summary>
+        /// Number of seconds that are being tracked in this protocol info.
+        /// </summary>
+        public int HistoryLength { get; private set; }
 
         /// <summary>
         /// Represents incoming traffic over a certain interval of time, tracked by type, and stored as number of bytes.
@@ -60,12 +46,12 @@ namespace Engine.Network
         /// <summary>
         /// Keeps track of incoming traffic over a certain interval of time.
         /// </summary>
-        LinkedList<Dictionary<TrafficType, int>> incoming = new LinkedList<Dictionary<TrafficType, int>>();
+        private LinkedList<Dictionary<TrafficType, int>> incoming = new LinkedList<Dictionary<TrafficType, int>>();
 
         /// <summary>
         /// Keeps track of outgoing traffic over a certain interval of time.
         /// </summary>
-        LinkedList<Dictionary<TrafficType, int>> outgoing = new LinkedList<Dictionary<TrafficType, int>>();
+        private LinkedList<Dictionary<TrafficType, int>> outgoing = new LinkedList<Dictionary<TrafficType, int>>();
 
         /// <summary>
         /// The time we last added something to the history.
@@ -82,11 +68,13 @@ namespace Engine.Network
         /// <param name="history">the length of the history in seconds.</param>
         public ProtocolInfo(int history)
         {
+            HistoryLength = history;
             for (int i = 0; i < history; ++i)
             {
                 var dict = new Dictionary<TrafficType, int>();
                 dict[TrafficType.Data] = 0;
                 dict[TrafficType.Protocol] = 0;
+                dict[TrafficType.Invalid] = 0;
                 dict[TrafficType.Any] = 0;
                 incoming.AddLast(dict);
 
@@ -116,6 +104,9 @@ namespace Engine.Network
                     incoming.First.Value[type] += bytes;
                     break;
                 case TrafficType.Data:
+                    incoming.First.Value[type] += bytes;
+                    break;
+                case TrafficType.Invalid:
                     incoming.First.Value[type] += bytes;
                     break;
                 case TrafficType.Any:

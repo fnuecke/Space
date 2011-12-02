@@ -6,8 +6,16 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
-    enum SessionMessage
+    /// <summary>
+    /// Message types sessions send around for internal logic.
+    /// </summary>
+    internal enum SessionMessage
     {
+        /// <summary>
+        /// Only used internally, to check if players still respond, and can
+        /// therefore be considered in the session.
+        /// </summary>
+        ConnectionTest,
 
         /// <summary>
         /// Client requested the game information.
@@ -54,7 +62,7 @@ namespace Engine.Session
     /// <summary>
     /// Base implementation for server and client side sessions, i.e. functionality used by both.
     /// </summary>
-    abstract class AbstractSession<TPlayerData, TPacketizerContext> : GameComponent, ISession<TPlayerData, TPacketizerContext>
+    internal abstract class AbstractSession<TPlayerData, TPacketizerContext> : GameComponent, ISession<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -69,6 +77,12 @@ namespace Engine.Session
         /// The default multicast group address we'll use for searching games.
         /// </summary>
         protected readonly IPAddress DefaultMulticastAddress = new IPAddress(new byte[] { 224, 1, 33, 7 });
+
+        /// <summary>
+        /// The time in milliseconds to wait between sending connection checks to
+        /// all our connected clients.
+        /// </summary>
+        protected const int ConnectionCheckInterval = 5000;
 
         #endregion
 
@@ -137,6 +151,11 @@ namespace Engine.Session
         /// List of all the player structs.
         /// </summary>
         protected Player<TPlayerData, TPacketizerContext>[] players;
+
+        /// <summary>
+        /// Last time we checked our clients' connections.
+        /// </summary>
+        protected DateTime lastConnectionCheck = DateTime.Now;
 
         #endregion
 
@@ -261,11 +280,7 @@ namespace Engine.Session
         /// <summary>
         /// Handle data received from a remote machine.
         /// </summary>
-        protected virtual void HandlePlayerData(object sender, EventArgs e)
-        {
-            ProtocolDataEventArgs args = (ProtocolDataEventArgs)e;
-            ConditionalOnPlayerData(args, args.Data);
-        }
+        protected abstract void HandlePlayerData(object sender, EventArgs e);
 
         /// <summary>
         /// Trigger a player data event, but only if the player that sent the packet
@@ -277,7 +292,7 @@ namespace Engine.Session
             int player = Array.IndexOf(playerAddresses, args.Remote);
 
             // If it is, forward the data.
-            if (player >= 0)
+            if (HasPlayer(player))
             {
                 OnPlayerData(new PlayerDataEventArgs<TPlayerData, TPacketizerContext>(players[player], args, data));
             }

@@ -13,6 +13,12 @@ namespace Engine.Controller
     /// This takes care of synchronizing the gamestates between server and
     /// client, and getting the runspeed synchronized as well.
     /// </summary>
+    /// <typeparam name="TState">the type of game state used to represent a simulation.
+    /// This is the simulation run as a substate of the TSS.</typeparam>
+    /// <typeparam name="TSteppable">the type of object we put into our simulation.</typeparam>
+    /// <typeparam name="TCommandType">the type of commands we send around.</typeparam>
+    /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
+    /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
     public abstract class AbstractTssUdpServer<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         : AbstractTssUdpController<IServerSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
@@ -65,8 +71,11 @@ namespace Engine.Controller
         /// </summary>
         public override void Initialize()
         {
-            Session.GameInfoRequested += HandleGameInfoRequested;
-            Session.JoinRequested += HandleJoinRequested;
+            if (Session != null)
+            {
+                Session.GameInfoRequested += HandleGameInfoRequested;
+                Session.JoinRequested += HandleJoinRequested;
+            }
 
             base.Initialize();
         }
@@ -76,8 +85,11 @@ namespace Engine.Controller
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            Session.GameInfoRequested -= HandleGameInfoRequested;
-            Session.JoinRequested -= HandleJoinRequested;
+            if (Session != null)
+            {
+                Session.GameInfoRequested -= HandleGameInfoRequested;
+                Session.JoinRequested -= HandleJoinRequested;
+            }
 
             base.Dispose(disposing);
         }
@@ -210,12 +222,19 @@ namespace Engine.Controller
         /// </summary>
         protected override bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
-            var type = (TssUdpControllerMessage)args.Data.ReadByte();
             command = null;
+
+            if (!args.Data.HasByte())
+            {
+                return false;
+            }
+            var type = (TssUdpControllerMessage)args.Data.ReadByte();
             switch (type)
             {
                 case TssUdpControllerMessage.Command:
+                    // Normal command, forward it.
                     return base.UnwrapDataForReceive(args, out command);
+
                 case TssUdpControllerMessage.Synchronize:
                     // Client resyncing.
                     {
@@ -227,6 +246,7 @@ namespace Engine.Controller
                         Session.Send(args.Player.Number, synchronizeResponse, 0);
                     }
                     return true;
+
                 case TssUdpControllerMessage.GameStateRequest:
                     // Client needs game state.
                     {

@@ -75,6 +75,8 @@ namespace Engine.Physics
 
         private static readonly Fixed Dampening = Fixed.Create(0.99);
 
+        private static readonly Fixed Epsilon = Fixed.Create(0.01);
+
         public override void Update()
         {
             rotation += speedRotation;
@@ -87,8 +89,13 @@ namespace Engine.Physics
                 rotation -= Fixed.PI * 2;
             }
             previousPosition = position;
+            Fixed previousSpeed = speedMovement.Norm;
             speedMovement += acceleration;
             speedMovement *= Dampening;
+            if (previousSpeed > Fixed.Zero && speedMovement.Norm < Epsilon)
+            {
+                speedMovement = FPoint.Zero;
+            }
             position += speedMovement;
         }
 

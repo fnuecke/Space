@@ -10,7 +10,7 @@ namespace Space.View
     {
         private static Dictionary<SpriteBatch, Texture2D> pixelTextures = new Dictionary<SpriteBatch, Texture2D>();
 
-        public static void Draw(ProtocolInfo info, Vector2 offset, SpriteFont font, SpriteBatch spriteBatch)
+        public static void Draw(IProtocolInfo info, Vector2 offset, SpriteFont font, SpriteBatch spriteBatch)
         {
             if (!pixelTextures.ContainsKey(spriteBatch))
             {
@@ -32,6 +32,7 @@ namespace Space.View
             {
                 values[i] = new Tuple<int, Color>[]
                 {
+                    Tuple.Create(0, Color.White),
                     Tuple.Create(0, Color.White),
                     Tuple.Create(0, Color.White),
                     Tuple.Create(0, Color.White),
@@ -61,8 +62,9 @@ namespace Space.View
                         avgIncoming += val;
                         subTotal += val;
 
-                        values[i - 1][0] = Tuple.Create(incoming.Value[TrafficType.Protocol], Color.Yellow);
-                        values[i - 1][1] = Tuple.Create(incoming.Value[TrafficType.Data], Color.Red);
+                        values[i - 1][0] = Tuple.Create(incoming.Value[TrafficType.Invalid], Color.Firebrick);
+                        values[i - 1][1] = Tuple.Create(incoming.Value[TrafficType.Protocol], Color.DarkBlue);
+                        values[i - 1][2] = Tuple.Create(incoming.Value[TrafficType.Data], Color.Blue);
                     }
                     {
                         int val = outgoing.Value[TrafficType.Any];
@@ -77,8 +79,8 @@ namespace Space.View
                         avgOutgoing += val;
                         subTotal += val;
 
-                        values[i - 1][2] = Tuple.Create(outgoing.Value[TrafficType.Protocol], Color.Blue);
-                        values[i - 1][3] = Tuple.Create(outgoing.Value[TrafficType.Data], Color.Green);
+                        values[i - 1][3] = Tuple.Create(outgoing.Value[TrafficType.Protocol], Color.Green);
+                        values[i - 1][4] = Tuple.Create(outgoing.Value[TrafficType.Data], Color.LimeGreen);
                     }
                     if (subTotal < minTotal)
                     {
@@ -96,9 +98,9 @@ namespace Space.View
                 }
             }
 
-            avgIncoming /= info.IncomingTraffic.Count - 1;
-            avgOutgoing /= info.OutgoingTraffic.Count - 1;
-            avgTotal /= info.OutgoingTraffic.Count - 1;
+            avgIncoming /= info.HistoryLength - 1;
+            avgOutgoing /= info.HistoryLength - 1;
+            avgTotal /= info.HistoryLength - 1;
 
             string netInfo = String.Format("in: {0}|{1}|{2} - {3:f}kB/s\n" +
                                            "out: {4}|{5}|{6} - {7:f}kB/s\n" +

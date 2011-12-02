@@ -11,7 +11,7 @@ namespace Engine.Session
     /// <summary>
     /// Used for hosting a session.
     /// </summary>
-    sealed class ServerSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IServerSession<TPlayerData, TPacketizerContext>
+    internal sealed class ServerSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IServerSession<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -83,46 +83,21 @@ namespace Engine.Session
         /// <param name="player">the number of the player to kick.</param>
         public void Kick(int playerNumber)
         {
-            // Let him know.
-            Packet packet = new Packet(4);
-            packet.Write(playerNumber);
-            Send(playerAddresses[playerNumber], SessionMessage.PlayerLeft, packet);
-
-            // Erase him.
-            RemovePlayer(playerNumber);
-        }
-
-        protected override void HandlePlayerTimeout(object sender, EventArgs e)
-        {
-            var args = (ProtocolEventArgs)e;
-            int playerNumber = Array.IndexOf(playerAddresses, args.Remote);
-            if (playerNumber >= 0)
+            if (HasPlayer(playerNumber))
             {
+                // Let him know.
+                Packet packet = new Packet(4);
+                packet.Write(playerNumber);
+                Send(playerAddresses[playerNumber], SessionMessage.PlayerLeft, packet);
+
+                // Erase him.
                 RemovePlayer(playerNumber);
-            } // else we don't care.
-        }
-
-        private void RemovePlayer(int playerNumber)
-        {
-            // Erase the player from the session.
-            Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
-            playerAddresses[playerNumber] = null;
-            players[playerNumber] = null;
-            slots[playerNumber] = false;
-            --NumPlayers;
-
-            // Tell the other clients.
-            Packet packet = new Packet(4);
-            packet.Write(playerNumber);
-            SendAll(SessionMessage.PlayerLeft, packet, 100);
-
-            // Tell the local program the player is gone.
-            OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
+            }
         }
 
         #endregion
 
-        #region Logic / Event handling
+        #region Logic
 
         /// <summary>
         /// Drives the multicast checking.
@@ -132,9 +107,41 @@ namespace Engine.Session
             // Drive multicast.
             MulticastReceive();
 
+            // Periodically send an acked no-op message, which is used to
+            // check if clients in the game are still alive.
+            if ((DateTime.Now - lastConnectionCheck).TotalMilliseconds > ConnectionCheckInterval)
+            {
+                lastConnectionCheck = DateTime.Now;
+                SendAll(SessionMessage.ConnectionTest, new Packet(), ConnectionCheckInterval);
+            }
+
             base.Update(gameTime);
         }
 
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// Handle player timeouts by removing them from the session.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected override void HandlePlayerTimeout(object sender, EventArgs e)
+        {
+            var args = (ProtocolEventArgs)e;
+
+            // But only if the player is in the game ;)
+            int playerNumber = Array.IndexOf(playerAddresses, args.Remote);
+            if (playerNumber >= 0)
+            {
+                RemovePlayer(playerNumber);
+            } // else we don't care.
+        }
+
+        /// <summary>
+        /// Got some data from a client in the session.
+        /// </summary>
         protected override void HandlePlayerData(object sender, EventArgs e)
         {
             var args = (ProtocolDataEventArgs)e;
@@ -142,7 +149,9 @@ namespace Engine.Session
             // Get the message type.
             if (!args.Data.HasByte())
             {
+#if DEBUG
                 Console.WriteLine("Received invalid packet, no SessionMessage type.");
+#endif
                 return;
             }
             SessionMessage type = (SessionMessage)args.Data.ReadByte();
@@ -160,6 +169,15 @@ namespace Engine.Session
 
             switch (type)
             {
+                case SessionMessage.ConnectionTest:
+                    // Client wants to know if we're still there.
+                    if (Array.IndexOf(playerAddresses, args.Remote) >= 0)
+                    {
+                        // We know the client to be in the session. Allow acking.
+                        args.Consume();
+                    }
+                    break;
+
                 case SessionMessage.GameInfoRequest:
                     // Game info was requested. Wrap it up and send it to the one asking.
                     {
@@ -173,6 +191,7 @@ namespace Engine.Session
                     }
                     args.Consume();
                     break;
+
                 case SessionMessage.JoinRequest:
                     // Player wants to join.
                     {
@@ -324,17 +343,20 @@ namespace Engine.Session
                                 // OK, we handled it.
                                 args.Consume();
                             }
+#if DEBUG
                             catch (PacketException ex)
                             {
-#if DEBUG
                                 Console.WriteLine("Invalid JoinRequest: " + ex.ToString());
-#else
-                                //Console.WriteLine("Invalid JoinRequest: " + ex.Message);
-#endif
                             }
+#else
+                            catch (PacketException ex)
+                            {
+                            }
+#endif
                         }
                     }
                     break;
+
                 case SessionMessage.Leave:
                     // Player wants to leave the session.
                     {
@@ -346,22 +368,21 @@ namespace Engine.Session
                         }
                     }
                     break;
+
                 case SessionMessage.Data:
                     // Custom data, just forward it.
                     ConditionalOnPlayerData(args, data);
                     break;
-                case SessionMessage.GameInfoResponse:
-                case SessionMessage.JoinResponse:
-                case SessionMessage.PlayerJoined:
-                case SessionMessage.PlayerLeft:
-                    // Ignore as server.
-                    break;
+
+                // Ignore the rest.
                 default:
-                    // Invalid packet.
-                    Console.WriteLine("Received packet wit unknown session message type {0}.", type);
                     break;
             }
         }
+
+        #endregion
+
+        #region Utility
 
         /// <summary>
         /// Check for incoming messages on our multicast socket (game info requests).
@@ -380,9 +401,29 @@ namespace Engine.Session
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Method to actually remove a player from the session. This frees
+        /// his slot and sends the remaining clients the notification that
+        /// that player has left.
+        /// </summary>
+        /// <param name="playerNumber"></param>
+        private void RemovePlayer(int playerNumber)
+        {
+            // Erase the player from the session.
+            Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
+            playerAddresses[playerNumber] = null;
+            players[playerNumber] = null;
+            slots[playerNumber] = false;
+            --NumPlayers;
 
-        #region Utility
+            // Tell the other clients.
+            Packet packet = new Packet(4);
+            packet.Write(playerNumber);
+            SendAll(SessionMessage.PlayerLeft, packet, 100);
+
+            // Tell the local program the player is gone.
+            OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
+        }
 
         /// <summary>
         /// Gets the first free ID in this game (to fill up holes left by leaving players).

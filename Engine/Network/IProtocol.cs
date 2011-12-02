@@ -19,6 +19,11 @@ namespace Engine.Network
         /// Register here to be notified of incoming data packets.
         /// </summary>
         event EventHandler Data;
+
+        /// <summary>
+        /// Keeps track of some network related statistics.
+        /// </summary>
+        IProtocolInfo Information { get; }
         
         /// <summary>
         /// Get the ping for the given remote end point, if possible.

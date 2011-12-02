@@ -6,6 +6,9 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
+    /// <summary>
+    /// Base class for clients and servers using the UDP protocol and a TSS state.
+    /// </summary>
     public abstract class AbstractTssUdpController<TSession, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         : AbstractUdpController<TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>

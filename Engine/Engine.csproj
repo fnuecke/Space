@@ -120,6 +120,7 @@
     <Compile Include="Input\MouseInputEventArgs.cs" />
     <Compile Include="Input\MouseInputManager.cs" />
     <Compile Include="Network\EventArgs.cs" />
+    <Compile Include="Network\IProtocolInfo.cs" />
     <Compile Include="Network\ProtocolInfo.cs" />
     <Compile Include="Serialization\IPacketizable.cs" />
     <Compile Include="Serialization\IPacketizer.cs" />

@@ -70,9 +70,16 @@ namespace Engine.Controller
         /// </summary>
         public override void Initialize()
         {
-            Session.GameInfoReceived += HandleGameInfoReceived;
-            Session.JoinResponse += HandleJoinResponse;
-            simulation.Invalidated += HandleSimulationInvalidated;
+            if (Session != null)
+            {
+                Session.GameInfoReceived += HandleGameInfoReceived;
+                Session.JoinResponse += HandleJoinResponse;
+            }
+
+            if (simulation != null)
+            {
+                simulation.Invalidated += HandleSimulationInvalidated;
+            }
 
             base.Initialize();
         }
@@ -82,9 +89,16 @@ namespace Engine.Controller
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            Session.GameInfoReceived -= HandleGameInfoReceived;
-            Session.JoinResponse -= HandleJoinResponse;
-            simulation.Invalidated -= HandleSimulationInvalidated;
+            if (Session != null)
+            {
+                Session.GameInfoReceived -= HandleGameInfoReceived;
+                Session.JoinResponse -= HandleJoinResponse;
+            }
+
+            if (simulation != null)
+            {
+                simulation.Invalidated -= HandleSimulationInvalidated;
+            }
 
             base.Dispose(disposing);
         }
@@ -153,7 +167,9 @@ namespace Engine.Controller
         private void HandleSimulationInvalidated(object sender, EventArgs e)
         {
             // So we request it.
+#if DEBUG
             console.WriteLine("Client: simulation invalidated, re-sync");
+#endif
             Packet gameStateRequest = new Packet(1);
             gameStateRequest.Write((byte)TssUdpControllerMessage.GameStateRequest);
             Session.Send(gameStateRequest, 200);
@@ -194,7 +210,9 @@ namespace Engine.Controller
             switch (type)
             {
                 case TssUdpControllerMessage.Command:
+                    // Normal command, forward it.
                     return base.UnwrapDataForReceive(args, out command);
+
                 case TssUdpControllerMessage.Synchronize:
                     // Answer to a synchronization request.
                     // Only accept these when they come from the server.
@@ -211,45 +229,48 @@ namespace Engine.Controller
                         long frameDelta = clientServerDelta + latency / 2;
                         if (System.Math.Abs(frameDelta) > 2)
                         {
+#if DEBUG
                             console.WriteLine("Client: correcting for " + frameDelta + " frames.");
+#endif
                             simulation.RunToFrame(simulation.CurrentFrame + frameDelta);
                         }
                         return true;
                     }
                     break;
+
                 case TssUdpControllerMessage.GameStateResponse:
                     // Got a simulation snap shot (normally after requesting it due to
                     // our simulation going out of scope for an older event).
                     // Only accept these when they come from the server.
                     if (args.IsFromServer)
                     {
-                        Console.WriteLine("Client: game state");
                         simulation.Depacketize(args.Data, packetizer.Context);
                         return true;
                     }
                     break;
+
                 case TssUdpControllerMessage.AddGameObject:
                     // Only accept these when they come from the server.
                     if (args.IsFromServer)
                     {
-                        Console.WriteLine("Client: add object");
                         long addFrame = args.Data.ReadInt64();
                         TSteppable steppable = packetizer.Depacketize<TSteppable>(args.Data);
                         simulation.Add(steppable, addFrame);
                         return true;
                     }
                     break;
+
                 case TssUdpControllerMessage.RemoveGameObject:
                     // Only accept these when they come from the server.
                     if (args.IsFromServer)
                     {
-                        Console.WriteLine("Client: remove object");
                         long removeFrame = args.Data.ReadInt64();
                         long steppableUid = args.Data.ReadInt64();
                         simulation.Remove(steppableUid, removeFrame);
                         return true;
                     }
                     break;
+
                 case TssUdpControllerMessage.HashCheck:
                     // Only accept these when they come from the server.
                     if (args.IsFromServer)
