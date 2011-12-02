@@ -4,7 +4,7 @@ using Space.Model;
 
 namespace Space.Commands
 {
-    abstract class GameCommand : SimulationCommand<GameCommandType, PlayerInfo, PacketizerContext>
+    abstract class GameCommand : FrameCommand<GameCommandType, PlayerInfo, PacketizerContext>
     {
         public GameCommand(GameCommandType type)
             : base(type)

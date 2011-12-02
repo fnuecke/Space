@@ -26,7 +26,7 @@ namespace Space.Control
         #endregion
 
         public Server(Game game, int maxPlayers, byte worldSize, long worldSeed)
-            : base(game, maxPlayers, 50100, "5p4c3!")
+            : base(game, maxPlayers, 50105, "5p4c3!")
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
             simulation.Initialize(new GameState(game, Session));
@@ -52,25 +52,14 @@ namespace Space.Control
             simulation.Packetize(args.Data);
         }
 
-        protected override bool HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override bool HandleCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
             switch (command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player sent input.
                     {
-                        var inputCommand = (PlayerInputCommand)command;
-                        if (inputCommand.Frame > simulation.TrailingFrame)
-                        {
-                            // OK, in allowed timeframe, mark as valid and send it to all clients.
-                            inputCommand.IsAuthoritative = true;
-                            simulation.PushCommand(inputCommand, inputCommand.Frame);
-                            SendAll(command, 30);
-                        }
-                        else
-                        {
-                            console.WriteLine("Got a command we couldn't use, " + inputCommand.Frame + "<" + simulation.TrailingFrame);
-                        }
+                        Apply(command, 30);
                     }
                     return true;
                 default:

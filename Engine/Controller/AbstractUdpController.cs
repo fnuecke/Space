@@ -13,8 +13,9 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for UDP driven clients and servers.
     /// </summary>
-    public abstract class AbstractUdpController<TSession, TCommandType, TPlayerData, TPacketizerContext> : DrawableGameComponent
+    public abstract class AbstractUdpController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext> : DrawableGameComponent
         where TSession : ISession<TPlayerData, TPacketizerContext>
+        where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
@@ -141,14 +142,14 @@ namespace Engine.Controller
 
         #endregion
 
-        #region Send methods
+        #region Commands
 
         /// <summary>
         /// Send a command to the server.
         /// </summary>
         /// <param name="command">the command to send.</param>
         /// <param name="pollRate">resend interval until ack arrived.</param>
-        public void Send(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
+        public void Send(TCommand command, uint pollRate = 0)
         {
             Session.Send(WrapDataForSend(command, new Packet()), pollRate);
         }
@@ -159,7 +160,7 @@ namespace Engine.Controller
         /// <param name="player">the player to send the command to.</param>
         /// <param name="command">the command to send.</param>
         /// <param name="pollRate">resend interval until ack arrived.</param>
-        public void Send(int player, ICommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
+        public void Send(int player, TCommand command, uint pollRate = 0)
         {
             Session.Send(player, WrapDataForSend(command, new Packet()), pollRate);
         }
@@ -169,7 +170,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="command">the command to send.</param>
         /// <param name="pollRate">resend interval until ack arrived.</param>
-        public void SendAll(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
+        public void SendAll(TCommand command, uint pollRate = 0)
         {
             Session.SendAll(WrapDataForSend(command, new Packet()), pollRate);
         }
@@ -240,7 +241,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="command">the command to handle.</param>
         /// <returns>whether the command was handled successfully (<c>true</c>) or not (<c>false</c>).</returns>
-        protected virtual bool HandleCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected virtual bool HandleCommand(TCommand command)
         {
             return false;
         }
@@ -267,11 +268,12 @@ namespace Engine.Controller
             {
                 var args = (PlayerDataEventArgs<TPlayerData, TPacketizerContext>)e;
 
-                ICommand<TCommandType, TPlayerData, TPacketizerContext> command;
+                TCommand command;
 
                 // Delegate unwrapping of the message, and if this yields a command object
                 // try to handle it.
-                if (UnwrapDataForReceive(args, out command) && (command == null || HandleCommand(command)))
+                if (UnwrapDataForReceive(args, out command) &&
+                    (command == null || HandleCommand(command)))
                 {
                     // If this was successfully handled, mark it as consumed.
                     args.Consume();
@@ -310,9 +312,9 @@ namespace Engine.Controller
         /// }
         /// </code>
         /// </summary>
-        /// <param name="command"></param>
-        /// <returns></returns>
-        protected virtual Packet WrapDataForSend(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, Packet packet)
+        /// <param name="command">the command to wrap.</param>
+        /// <returns>the given packet, after writing.</returns>
+        protected virtual Packet WrapDataForSend(TCommand command, Packet packet)
         {
             packet.Write((command.Player == null) ? Session.LocalPlayerNumber : command.Player.Number);
             packetizer.Packetize(command, packet);
@@ -328,7 +330,7 @@ namespace Engine.Controller
         /// <param name="command">the parsed command, or null, if the message
         /// was not a command (i.e. some other message type).</param>
         /// <returns>if the message was handled successfully.</returns>
-        protected virtual bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out ICommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected virtual bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out TCommand command)
         {
             // Get the player that issued the command.
             int playerNumber = args.Data.ReadInt32();
@@ -339,7 +341,7 @@ namespace Engine.Controller
             }
 
             // Parse the actual command.
-            command = packetizer.Depacketize<ICommand<TCommandType, TPlayerData, TPacketizerContext>>(args.Data);
+            command = packetizer.Depacketize<TCommand>(args.Data);
 
             // Flag it accordingly to where it came from.
             command.IsAuthoritative = args.IsFromServer;

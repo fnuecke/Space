@@ -82,13 +82,11 @@ namespace Space.Control
                         var command = new PlayerInputCommand(Session.LocalPlayer,
                             simulation.CurrentFrame + 1,
                             PlayerInputCommand.PlayerInput.StopTurnLeft);
-                        simulation.PushCommand(command);
-                        SendAll(command, 30);
+                        Apply(command, 30);
                         command = new PlayerInputCommand(Session.LocalPlayer,
                             simulation.CurrentFrame + 1,
                             PlayerInputCommand.PlayerInput.StopTurnRight);
-                        simulation.PushCommand(command);
-                        SendAll(command, 30);
+                        Apply(command, 30);
                         mouseRotating = false;
                     }
                 }
@@ -130,7 +128,7 @@ namespace Space.Control
         /// Got command data from another client or the server.
         /// </summary>
         /// <param name="command">the received command.</param>
-        protected override bool HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override bool HandleCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
             // Only handle stuff while we're connected.
             if (Session.ConnectionState != ClientState.Connected)
@@ -175,8 +173,7 @@ namespace Space.Control
                         {
                             throw new ArgumentException("command.Player");
                         }
-                        var inputCommand = (PlayerInputCommand)command;
-                        simulation.PushCommand(inputCommand, inputCommand.Frame);
+                        simulation.PushCommand(command, command.Frame);
                     }
                     return true;
                 default:
@@ -317,8 +314,7 @@ namespace Space.Control
 
             if (command != null)
             {
-                simulation.PushCommand(command);
-                SendAll(command, 30);
+                Apply(command, 30);
             }
         }
 
@@ -383,8 +379,7 @@ namespace Space.Control
 
             if (command != null)
             {
-                simulation.PushCommand(command);
-                SendAll(command, 60);
+                Apply(command, 30);
             }
         }
 
@@ -425,13 +420,11 @@ namespace Space.Control
                         var command = new PlayerInputCommand(Session.LocalPlayer,
                             simulation.CurrentFrame + 1,
                             PlayerInputCommand.PlayerInput.StopTurnLeft);
-                        simulation.PushCommand(command);
-                        SendAll(command, 30);
+                        Apply(command, 30);
                         command = new PlayerInputCommand(Session.LocalPlayer,
                             simulation.CurrentFrame + 1,
                             PlayerInputCommand.PlayerInput.TurnRight);
-                        simulation.PushCommand(command);
-                        SendAll(command, 30);
+                        Apply(command, 30);
                         mouseRotating = true;
                     }
                     else
@@ -440,13 +433,11 @@ namespace Space.Control
                         var command = new PlayerInputCommand(Session.LocalPlayer,
                             simulation.CurrentFrame + 1,
                             PlayerInputCommand.PlayerInput.TurnLeft);
-                        simulation.PushCommand(command);
-                        SendAll(command, 30);
+                        Apply(command, 30);
                         command = new PlayerInputCommand(Session.LocalPlayer,
                             simulation.CurrentFrame + 1,
                             PlayerInputCommand.PlayerInput.StopTurnRight);
-                        simulation.PushCommand(command);
-                        SendAll(command, 30);
+                        Apply(command, 30);
                         mouseRotating = true;
                     }
                 }
@@ -456,13 +447,11 @@ namespace Space.Control
                     var command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.StopTurnLeft);
-                    simulation.PushCommand(command);
-                    SendAll(command, 30);
+                    Apply(command, 30);
                     command = new PlayerInputCommand(Session.LocalPlayer,
                         simulation.CurrentFrame + 1,
                         PlayerInputCommand.PlayerInput.StopTurnRight);
-                    simulation.PushCommand(command);
-                    SendAll(command, 30);
+                    Apply(command, 30);
                     mouseRotating = false;
                 }
             }

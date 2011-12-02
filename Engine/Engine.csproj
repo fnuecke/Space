@@ -102,11 +102,12 @@
   <ItemGroup>
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\ICommand.cs" />
+    <Compile Include="Commands\IFrameCommand.cs" />
+    <Compile Include="Commands\FrameCommand.cs" />
     <Compile Include="Controller\AbstractTssUdpClient.cs" />
+    <Compile Include="Controller\AbstractTssUdpController.cs" />
     <Compile Include="Controller\AbstractTssUdpServer.cs" />
-    <Compile Include="Controller\AbstractUdpClient.cs" />
     <Compile Include="Controller\AbstractUdpController.cs" />
-    <Compile Include="Controller\AbstractUdpServer.cs" />
     <Compile Include="Controller\TssUdpControllerMessage.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />
@@ -136,14 +137,12 @@
     <Compile Include="Session\ServerSession.cs" />
     <Compile Include="Session\SessionFactory.cs" />
     <Compile Include="Serialization\Packet.cs" />
-    <Compile Include="Commands\SimulationCommand.cs" />
     <Compile Include="Network\UdpProtocol.cs" />
     <Compile Include="Simulation\AbstractState.cs" />
     <Compile Include="Simulation\AbstractSteppable.cs" />
     <Compile Include="Simulation\IPhysicsEnabledState.cs" />
     <Compile Include="Simulation\IPhysicsSteppable.cs" />
     <Compile Include="Simulation\IReversibleState.cs" />
-    <Compile Include="Commands\ISimulationCommand.cs" />
     <Compile Include="Simulation\IReversibleSubstate.cs" />
     <Compile Include="Simulation\IState.cs" />
     <Compile Include="Simulation\ISteppable.cs" />

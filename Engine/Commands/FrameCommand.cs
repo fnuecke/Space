@@ -6,7 +6,7 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands that can be injected into running simulations.
     /// </summary>
-    public abstract class SimulationCommand<TCommandType, TPlayerData, TPacketizerContext> : Command<TCommandType, TPlayerData, TPacketizerContext>, ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class FrameCommand<TCommandType, TPlayerData, TPacketizerContext> : Command<TCommandType, TPlayerData, TPacketizerContext>, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
@@ -22,12 +22,12 @@ namespace Engine.Commands
 
         #region Constructor
 
-        protected SimulationCommand(TCommandType type)
+        protected FrameCommand(TCommandType type)
             : base(type)
         {
         }
 
-        protected SimulationCommand(TCommandType type, Player<TPlayerData, TPacketizerContext> player, long frame)
+        protected FrameCommand(TCommandType type, Player<TPlayerData, TPacketizerContext> player, long frame)
             : base(type, player)
         {
             this.Frame = frame;
@@ -57,9 +57,9 @@ namespace Engine.Commands
 
         public override bool Equals(ICommand<TCommandType, TPlayerData, TPacketizerContext> other)
         {
-            return other is ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext> &&
+            return other is IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> &&
                 base.Equals(other) &&
-                ((ISimulationCommand<TCommandType, TPlayerData, TPacketizerContext>)other).Frame == this.Frame;
+                ((IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>)other).Frame == this.Frame;
         }
 
         #endregion

@@ -13,7 +13,8 @@ namespace Engine.Controller
     /// This takes care of synchronizing the gamestates between server and
     /// client, and getting the runspeed synchronized as well.
     /// </summary>
-    public abstract class AbstractTssUdpServer<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractUdpServer<TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssUdpServer<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        : AbstractTssUdpController<IServerSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
@@ -30,17 +31,6 @@ namespace Engine.Controller
         #endregion
 
         #region Fields
-
-        /// <summary>
-        /// The game state representing the current game world.
-        /// </summary>
-        protected TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> simulation;
-
-        /// <summary>
-        /// The remainder of time we did not update last frame, which we'll add to the
-        /// elapsed time in the next frame update.
-        /// </summary>
-        private double lastUpdateRemainder;
 
         /// <summary>
         /// Counter used to distribute ids.
@@ -65,9 +55,31 @@ namespace Engine.Controller
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
         protected AbstractTssUdpServer(Game game, int maxPlayers, ushort port, string header)
-            : base(game, maxPlayers, port, header)
+            : base(game, port, header, new uint[] { 50 })
         {
-            simulation = new TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>(new uint[] { 50 });
+            Session = SessionFactory.StartServer<TPlayerData, TPacketizerContext>(game, protocol, maxPlayers);
+        }
+
+        /// <summary>
+        /// Attach ourselves as listeners.
+        /// </summary>
+        public override void Initialize()
+        {
+            Session.GameInfoRequested += HandleGameInfoRequested;
+            Session.JoinRequested += HandleJoinRequested;
+
+            base.Initialize();
+        }
+
+        /// <summary>
+        /// Remove ourselves as listeners.
+        /// </summary>
+        protected override void Dispose(bool disposing)
+        {
+            Session.GameInfoRequested -= HandleGameInfoRequested;
+            Session.JoinRequested -= HandleJoinRequested;
+
+            base.Dispose(disposing);
         }
 
         #endregion
@@ -101,38 +113,46 @@ namespace Engine.Controller
             }
 
             // Drive game logic.
-            if (Game.IsFixedTimeStep)
-            {
-                simulation.Update();
-            }
-            else
-            {
-                // Compensate for dynamic timestep.
-                double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + lastUpdateRemainder;
-                double target = Game.TargetElapsedTime.TotalMilliseconds;
-                while (elapsed > target)
-                {
-                    elapsed -= target;
-                    simulation.Update();
-                }
-                lastUpdateRemainder = elapsed;
-            }
+            UpdateSimulation(gameTime);
         }
 
         #endregion
 
-        #region Modify simulation in a fashion that gets automatically synched to clients
+        #region Events
+
+        protected virtual void HandleGameInfoRequested(object sender, EventArgs e)
+        {
+        }
+
+        protected virtual void HandleJoinRequested(object sender, EventArgs e)
+        {
+        }
+
+        #endregion
+
+        #region Modify simulation
 
         /// <summary>
-        /// Add a steppable to the simulation. Will be inserted at the
-        /// current leading frame. The steppable will be given a unique
-        /// id, by which it may later be referenced for removals.
+        /// Apply a command.
         /// </summary>
-        /// <param name="steppable">the steppable to add.</param>
-        /// <returns>the id the steppable was assigned.</returns>
-        public long AddSteppable(TSteppable steppable)
+        /// <param name="command">the command to send.</param>
+        /// <param name="pollRate">resend interval until ack arrived (if sent).</param>
+        public override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
         {
-            return AddSteppable(steppable, simulation.CurrentFrame);
+            if (command.Frame > simulation.TrailingFrame)
+            {
+                // All commands we apply are authoritative.
+                command.IsAuthoritative = true;
+                base.Apply(command);
+                // As a server we resend all commands.
+                SendAll(command, pollRate);
+            }
+#if DEBUG
+            else
+            {
+                console.WriteLine("Got a command we couldn't use, " + command.Frame + "<" + simulation.TrailingFrame);
+            }
+#endif
         }
 
         /// <summary>
@@ -143,14 +163,14 @@ namespace Engine.Controller
         /// <param name="steppable">the steppable to add.</param>
         /// <param name="frame">the frame in which to add the steppable.</param>
         /// <returns>the id the steppable was assigned.</returns>
-        public long AddSteppable(TSteppable steppable, long frame)
+        public override long AddSteppable(TSteppable steppable, long frame)
         {
             // Give the steppable a unique id. Skip the zero to avoid
             // referencing that object with uninitialized 'pointers'.
             steppable.UID = ++lastUid;
 
             // Add the steppable to the simulation.
-            simulation.Add(steppable, frame);
+            base.AddSteppable(steppable, frame);
 
             // Notify all players in the game about this.
             Packet addedInfo = new Packet();
@@ -164,24 +184,14 @@ namespace Engine.Controller
 
         /// <summary>
         /// Removes a steppable with the given id from the simulation.
-        /// The steppable will be removed at the current frame.
-        /// </summary>
-        /// <param name="steppableId">the id of the steppable to remove.</param>
-        public void RemoveSteppable(long steppableUid)
-        {
-            RemoveSteppable(steppableUid, simulation.CurrentFrame);
-        }
-
-        /// <summary>
-        /// Removes a steppable with the given id from the simulation.
         /// The steppable will be removed at the given frame.
         /// </summary>
         /// <param name="steppableId">the id of the steppable to remove.</param>
         /// <param name="frame">the frame in which to remove the steppable.</param>
-        public void RemoveSteppable(long steppableUid, long frame)
+        public override void RemoveSteppable(long steppableUid, long frame)
         {
             // Remove the steppable from the simulation.
-            simulation.Remove(steppableUid, frame);
+            base.RemoveSteppable(steppableUid, frame);
 
             // Notify all players in the game about this.
             Packet removedInfo = new Packet(9);
@@ -196,21 +206,9 @@ namespace Engine.Controller
         #region Protocol layer
 
         /// <summary>
-        /// Prepends all normal command messages with the corresponding flag.
-        /// </summary>
-        /// <param name="command">the command to send.</param>
-        /// <param name="packet">the final packet to send.</param>
-        /// <returns></returns>
-        protected override Packet WrapDataForSend(Commands.ICommand<TCommandType, TPlayerData, TPacketizerContext> command, Packet packet)
-        {
-            packet.Write((byte)TssUdpControllerMessage.Command);
-            return base.WrapDataForSend(command, packet);
-        }
-
-        /// <summary>
         /// Takes care of server side TSS synchronization logic.
         /// </summary>
-        protected override bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out ICommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected override bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
             var type = (TssUdpControllerMessage)args.Data.ReadByte();
             command = null;
