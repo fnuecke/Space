@@ -82,6 +82,24 @@ namespace Engine.Controller
         {
             base.Update(gameTime);
 
+            // Send hash check every now and then, to check for desyncs.
+            // Do all hashing AFTER network handling, but BEFORE logic
+            // handling (stepping), to make sure all commands that can
+            // possibly contribute to a state already have.
+            if (new TimeSpan(DateTime.Now.Ticks - lastHashTime).TotalMilliseconds > HashInterval)
+            {
+                lastHashTime = DateTime.Now.Ticks;
+
+                Hasher hasher = new Hasher();
+                simulation.TrailingState.Hash(hasher);
+
+                Packet hashCheck = new Packet(5);
+                hashCheck.Write((byte)TssUdpControllerMessage.HashCheck);
+                hashCheck.Write(simulation.TrailingFrame);
+                hashCheck.Write(hasher.Value);
+                Session.SendAll(hashCheck, 0);
+            }
+
             // Drive game logic.
             if (Game.IsFixedTimeStep)
             {
@@ -98,19 +116,6 @@ namespace Engine.Controller
                     simulation.Update();
                 }
                 lastUpdateRemainder = elapsed;
-            }
-
-            // Send hash check every now and then, to check for desyncs.
-            if (new TimeSpan(DateTime.Now.Ticks - lastHashTime).TotalMilliseconds > HashInterval)
-            {
-                lastHashTime = DateTime.Now.Ticks;
-                Packet hashCheck = new Packet(5);
-                hashCheck.Write((byte)TssUdpControllerMessage.HashCheck);
-                hashCheck.Write(simulation.TrailingFrame);
-                Hasher hasher = new Hasher();
-                simulation.TrailingState.Hash(hasher);
-                hashCheck.Write(hasher.Value);
-                Session.SendAll(hashCheck, 0);
             }
         }
 
@@ -228,6 +233,7 @@ namespace Engine.Controller
                     // Client needs game state.
                     {
                         Packet gamestateResponse = new Packet();
+                        gamestateResponse.Write((byte)TssUdpControllerMessage.GameStateResponse);
                         simulation.Packetize(gamestateResponse);
                         Session.Send(args.Player.Number, gamestateResponse, 500);
                     }

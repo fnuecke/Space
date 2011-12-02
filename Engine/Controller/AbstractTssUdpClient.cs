@@ -80,7 +80,7 @@ namespace Engine.Controller
         /// </summary>
         public override void Initialize()
         {
-            simulation.ThresholdExceeded += HandleThresholdExceeded;
+            simulation.Invalidated += HandleSimulationInvalidated;
 
             base.Initialize();
         }
@@ -90,7 +90,7 @@ namespace Engine.Controller
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            simulation.ThresholdExceeded -= HandleThresholdExceeded;
+            simulation.Invalidated -= HandleSimulationInvalidated;
 
             base.Dispose(disposing);
         }
@@ -110,6 +110,21 @@ namespace Engine.Controller
 
             if (Session.ConnectionState == ClientState.Connected && !simulation.WaitingForSynchronization)
             {
+                // Hash test.
+                // Do all hashing AFTER network handling, but BEFORE logic
+                // handling (stepping), to make sure all commands that can
+                // possibly contribute to a state already have.
+                if (simulation.TrailingFrame == hashFrame)
+                {
+                    Hasher hasher = new Hasher();
+                    simulation.TrailingState.Hash(hasher);
+                    if (hasher.Value != hashValue)
+                    {
+                        console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value);
+                        simulation.Invalidate();
+                    }
+                }
+
                 // Drive game logic.
                 if (Game.IsFixedTimeStep)
                 {
@@ -126,18 +141,6 @@ namespace Engine.Controller
                         simulation.Update();
                     }
                     lastUpdateRemainder = elapsed;
-                }
-
-                // Hash test.
-                Hasher hasher = new Hasher();
-                simulation.TrailingState.Hash(hasher);
-                if (simulation.TrailingFrame == hashFrame)
-                {
-                    if (hasher.Value != hashValue)
-                    {
-                        console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value + ", re-sync");
-                        simulation.Invalidate();
-                    }
                 }
 
                 // Send sync command every now and then, to keep game clock synched.
@@ -160,10 +163,10 @@ namespace Engine.Controller
         /// Called when our simulation cannot accomodate an update or rollback,
         /// meaning we have to get a server snapshot.
         /// </summary>
-        private void HandleThresholdExceeded(object sender, EventArgs e)
+        private void HandleSimulationInvalidated(object sender, EventArgs e)
         {
             // So we request it.
-            console.WriteLine("Client: insufficient history, re-sync");
+            console.WriteLine("Client: simulation invalidated, re-sync");
             Packet gameStateRequest = new Packet(1);
             gameStateRequest.Write((byte)TssUdpControllerMessage.GameStateRequest);
             Session.Send(gameStateRequest, 200);

@@ -20,11 +20,11 @@ namespace Engine.Simulation
         #region Events
         /// <summary>
         /// Dispatched when the state needs to roll back further than it can
-        /// to accommodate an authoritative command. The handler must trigger the
-        /// process of getting a valid snapshot, which is fed back to this
-        /// state using the <c>Synchronize()</c> method.
+        /// to accommodate an authoritative command / a user rollback request.
+        /// The handler must trigger the process of getting a valid snapshot,
+        /// which is fed back to this state (normally via <c>Depacketize()</c>).
         /// </summary>
-        public event EventHandler<EventArgs> ThresholdExceeded;
+        public event EventHandler<EventArgs> Invalidated;
 
         #endregion
 
@@ -132,7 +132,7 @@ namespace Engine.Simulation
         /// </summary>
         public void Invalidate()
         {
-            OnThresholdExceeded(EventArgs.Empty);
+            OnInvalidated(EventArgs.Empty);
         }
 
         /// <summary>
@@ -279,7 +279,7 @@ namespace Engine.Simulation
             else if (CurrentFrame < TrailingFrame)
             {
                 // Cannot rewind that far, request resync.
-                OnThresholdExceeded(EventArgs.Empty);
+                OnInvalidated(EventArgs.Empty);
             }
             else
             {
@@ -511,12 +511,12 @@ namespace Engine.Simulation
             throw new NotImplementedException();
         }
 
-        protected void OnThresholdExceeded(EventArgs e)
+        protected void OnInvalidated(EventArgs e)
         {
             WaitingForSynchronization = true;
-            if (ThresholdExceeded != null)
+            if (Invalidated != null)
             {
-                ThresholdExceeded(this, e);
+                Invalidated(this, e);
             }
         }
 

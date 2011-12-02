@@ -472,6 +472,8 @@ namespace Space.Control
 
         #region Debugging stuff
 
+        internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+
         internal void DEBUG_DrawInfo(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
         {
             // Draw debug stuff.
@@ -484,7 +486,10 @@ namespace Space.Control
             NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
         }
 
-        internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+        internal void DEBUG_InvalidateSimulation()
+        {
+            simulation.Invalidate();
+        }
 
         #endregion
     }

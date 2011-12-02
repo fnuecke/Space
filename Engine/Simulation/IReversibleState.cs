@@ -23,7 +23,7 @@ namespace Engine.Simulation
         /// process of getting a valid snapshot, and feed it back to the
         /// state (e.g. using Depacketize()).
         /// </summary>
-        event EventHandler<EventArgs> ThresholdExceeded;
+        event EventHandler<EventArgs> Invalidated;
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.

@@ -113,6 +113,11 @@ namespace Space
                 graphics.ToggleFullScreen();
             },
                 "Toggles fullscreen mode.");
+            console.AddCommand("invalidate", args =>
+            {
+                client.DEBUG_InvalidateSimulation();
+            },
+                "Invalidates the client game state, requesting a snapshot from the server.");
 
             // Just for me, joining default testing server.
             console.AddCommand("joinfn", args =>
