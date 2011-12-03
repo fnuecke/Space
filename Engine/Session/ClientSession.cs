@@ -141,10 +141,7 @@ namespace Engine.Session
             bool hostIsLoopback = IPAddress.IsLoopback(host.Address);
             if ((remoteIsLoopback && hostIsLoopback) || (!remoteIsLoopback && !hostIsLoopback))
             {
-                Packet wrapper = new Packet(5 + (packet != null ? packet.Length : 0));
-                wrapper.Write((byte)type);
-                wrapper.Write(packet);
-                protocol.Send(wrapper, remote, priority);
+                base.SendToEndPoint(remote, type, packet, priority);
             }
         }
 
