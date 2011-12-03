@@ -68,7 +68,7 @@ namespace Engine.Controller
         public AbstractTssUdpClient(Game game, ushort port, string header)
             : base(game, port, header, new uint[] { 50, 100 })
         {
-            Session = SessionFactory.StartClient<TPlayerData, TPacketizerContext>(game, protocol);
+            Session = SessionFactory.StartClient<TPlayerData, TPacketizerContext>(game, Protocol);
         }
 
         /// <summary>
@@ -82,9 +82,9 @@ namespace Engine.Controller
                 Session.JoinResponse += HandleJoinResponse;
             }
 
-            if (simulation != null)
+            if (Simulation != null)
             {
-                simulation.Invalidated += HandleSimulationInvalidated;
+                Simulation.Invalidated += HandleSimulationInvalidated;
             }
 
             base.Initialize();
@@ -99,11 +99,13 @@ namespace Engine.Controller
             {
                 Session.GameInfoReceived -= HandleGameInfoReceived;
                 Session.JoinResponse -= HandleJoinResponse;
+
+                Session.Dispose();
             }
 
-            if (simulation != null)
+            if (Simulation != null)
             {
-                simulation.Invalidated -= HandleSimulationInvalidated;
+                Simulation.Invalidated -= HandleSimulationInvalidated;
             }
 
             base.Dispose(disposing);
@@ -122,20 +124,20 @@ namespace Engine.Controller
         {
             base.Update(gameTime);
 
-            if (Session.ConnectionState == ClientState.Connected && !simulation.WaitingForSynchronization)
+            if (Session.ConnectionState == ClientState.Connected && !Simulation.WaitingForSynchronization)
             {
                 // Hash test.
                 // Do all hashing AFTER network handling, but BEFORE logic
                 // handling (stepping), to make sure all commands that can
                 // possibly contribute to a state already have.
-                if (simulation.TrailingFrame == hashFrame)
+                if (Simulation.TrailingFrame == hashFrame)
                 {
                     Hasher hasher = new Hasher();
-                    simulation.TrailingState.Hash(hasher);
+                    Simulation.TrailingState.Hash(hasher);
                     if (hasher.Value != hashValue)
                     {
-                        console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value);
-                        simulation.Invalidate();
+                        Console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value);
+                        Simulation.Invalidate();
                     }
                 }
 
@@ -148,9 +150,30 @@ namespace Engine.Controller
                     lastSyncTime = DateTime.Now.Ticks;
                     Packet syncRequest = new Packet(5);
                     syncRequest.Write((byte)TssUdpControllerMessage.Synchronize);
-                    syncRequest.Write(simulation.CurrentFrame);
+                    syncRequest.Write(Simulation.CurrentFrame);
                     Session.Send(syncRequest, 0);
                 }
+            }
+        }
+
+        #endregion
+
+        #region Modify simulation
+
+        /// <summary>
+        /// Apply a command.
+        /// </summary>
+        /// <param name="command">the command to send.</param>
+        /// <param name="pollRate">resend interval until ack arrived (if sent).</param>
+        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
+        {
+            base.Apply(command, pollRate);
+            // As a client we only send commands that are our own AND have not been sent
+            // back to us by the server, acknowledging our actions. I.e. only send our
+            // own, tentative commands.
+            if (!command.IsAuthoritative && command.Player.Number == Session.LocalPlayerNumber)
+            {
+                SendAll(command, pollRate);
             }
         }
 
@@ -171,42 +194,6 @@ namespace Engine.Controller
         /// <param name="sender">the underlying session.</param>
         /// <param name="e">information of the type <c>JoinResponseEventArgs</c>.</param>
         protected abstract void HandleJoinResponse(object sender, EventArgs e);
-
-        /// <summary>
-        /// Called when our simulation cannot accomodate an update or rollback,
-        /// meaning we have to get a server snapshot.
-        /// </summary>
-        private void HandleSimulationInvalidated(object sender, EventArgs e)
-        {
-            // So we request it.
-#if DEBUG
-            console.WriteLine("Client: simulation invalidated, re-sync");
-#endif
-            Packet gameStateRequest = new Packet(1);
-            gameStateRequest.Write((byte)TssUdpControllerMessage.GameStateRequest);
-            Session.Send(gameStateRequest, 200);
-        }
-
-        #endregion
-
-        #region Modify simulation
-
-        /// <summary>
-        /// Apply a command.
-        /// </summary>
-        /// <param name="command">the command to send.</param>
-        /// <param name="pollRate">resend interval until ack arrived (if sent).</param>
-        public override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
-        {
-            base.Apply(command);
-            // As a client we only send commands that are our own AND have not been sent
-            // back to us by the server, acknowledging our actions. I.e. only send our
-            // own, tentative commands.
-            if (!command.IsAuthoritative && command.Player.Number == Session.LocalPlayerNumber)
-            {
-                SendAll(command, pollRate);
-            }
-        }
 
         #endregion
 
@@ -236,15 +223,15 @@ namespace Engine.Controller
                         // in the frameDelta part. But it works, so w/e.
                         // We skip steps 5-7 because they're for TCP retransmits causing
                         // peaks, but we're using UDP, so there.
-                        long latency = (simulation.CurrentFrame - args.Data.ReadInt64()) / 2;
-                        long clientServerDelta = (args.Data.ReadInt64() - simulation.CurrentFrame);
+                        long latency = (Simulation.CurrentFrame - args.Data.ReadInt64()) / 2;
+                        long clientServerDelta = (args.Data.ReadInt64() - Simulation.CurrentFrame);
                         long frameDelta = clientServerDelta + latency / 2;
                         if (System.Math.Abs(frameDelta) > 2)
                         {
 #if DEBUG
-                            console.WriteLine("Client: correcting for " + frameDelta + " frames.");
+                            Console.WriteLine("Client: correcting for " + frameDelta + " frames.");
 #endif
-                            simulation.RunToFrame(simulation.CurrentFrame + frameDelta);
+                            Simulation.RunToFrame(Simulation.CurrentFrame + frameDelta);
                         }
                         return true;
                     }
@@ -256,7 +243,7 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsFromServer)
                     {
-                        simulation.Depacketize(args.Data, packetizer.Context);
+                        Simulation.Depacketize(args.Data, Packetizer.Context);
                         return true;
                     }
                     break;
@@ -266,8 +253,8 @@ namespace Engine.Controller
                     if (args.IsFromServer)
                     {
                         long addFrame = args.Data.ReadInt64();
-                        TSteppable steppable = packetizer.Depacketize<TSteppable>(args.Data);
-                        simulation.Add(steppable, addFrame);
+                        TSteppable steppable = Packetizer.Depacketize<TSteppable>(args.Data);
+                        Simulation.Add(steppable, addFrame);
                         return true;
                     }
                     break;
@@ -278,7 +265,7 @@ namespace Engine.Controller
                     {
                         long removeFrame = args.Data.ReadInt64();
                         long steppableUid = args.Data.ReadInt64();
-                        simulation.Remove(steppableUid, removeFrame);
+                        Simulation.Remove(steppableUid, removeFrame);
                         return true;
                     }
                     break;
@@ -298,6 +285,25 @@ namespace Engine.Controller
                     break;
             }
             return false;
+        }
+
+        #endregion
+
+        #region Events handled internally
+
+        /// <summary>
+        /// Called when our simulation cannot accomodate an update or rollback,
+        /// meaning we have to get a server snapshot.
+        /// </summary>
+        private void HandleSimulationInvalidated(object sender, EventArgs e)
+        {
+            // So we request it.
+#if DEBUG
+            Console.WriteLine("Client: simulation invalidated, re-sync");
+#endif
+            Packet gameStateRequest = new Packet(1);
+            gameStateRequest.Write((byte)TssUdpControllerMessage.GameStateRequest);
+            Session.Send(gameStateRequest, 200);
         }
 
         #endregion

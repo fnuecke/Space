@@ -29,7 +29,7 @@ namespace Space.Control
             : base(game, maxPlayers, 50100, "5p4c3!")
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
-            simulation.Initialize(new GameState(game, Session));
+            Simulation.Initialize(new GameState(game, Session));
         }
 
         protected override void HandleGameInfoRequested(object sender, EventArgs e)
@@ -44,15 +44,17 @@ namespace Space.Control
             var args = (JoinRequestEventArgs<PlayerInfo, PacketizerContext>)e;
 
             // Create a ship for the player.
-            var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, packetizer.Context);
+            var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, Packetizer.Context);
             args.Player.Data.ShipUID = AddSteppable(ship);
+#if DEBUG
             Console.WriteLine("{0} => ship id: {1}", args.Player, ship.UID);
+#endif
 
             // Now serialize the game state, with the player ship in it.
-            simulation.Packetize(args.Data);
+            Simulation.Packetize(args.Data);
         }
 
-        protected override bool HandleCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
             switch (command.Type)
             {
@@ -62,6 +64,7 @@ namespace Space.Control
                         Apply(command, 30);
                     }
                     return true;
+
                 default:
 #if DEBUG
                     Console.WriteLine("Server: got a command we couldn't handle: " + command.Type);
@@ -76,16 +79,21 @@ namespace Space.Control
         protected override void HandlePlayerJoined(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-            console.WriteLine(String.Format("Server: {0} joined.", args.Player));
+            Console.WriteLine(String.Format("Server: {0} joined.", args.Player));
         }
 
         protected override void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-            console.WriteLine(String.Format("Server: {0} left.", args.Player));
+            Console.WriteLine(String.Format("Server: {0} left.", args.Player));
 
             // Player left the game, remove his ship.
             RemoveSteppable(args.Player.Data.ShipUID);
+        }
+
+        protected override void HandleLocalCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        {
+            // nothing to do?
         }
 
         #region Debugging stuff
@@ -99,10 +107,10 @@ namespace Space.Control
             var sessionOffset = new Vector2(10, Game.GraphicsDevice.Viewport.Height - 100);
 
             SessionInfo.Draw("Server", Session, sessionOffset, font, spriteBatch);
-            NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
+            NetGraph.Draw(Protocol.Information, ngOffset, font, spriteBatch);
         }
 
-        internal long DEBUG_CurrentFrame { get { return simulation.CurrentFrame; } }
+        internal long DEBUG_CurrentFrame { get { return Simulation.CurrentFrame; } }
 
         #endregion
     }

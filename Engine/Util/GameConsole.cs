@@ -534,6 +534,16 @@ namespace Engine.Util
             }
         }
 
+        /// <summary>
+        /// Log some formatted text to the console.
+        /// </summary>
+        /// <param name="format">the text format.</param>
+        /// <param name="args">the parameters to insert.</param>
+        public void WriteLine(string format, params object[] args)
+        {
+            WriteLine(String.Format(format, args));
+        }
+
         #endregion
 
         #region Input

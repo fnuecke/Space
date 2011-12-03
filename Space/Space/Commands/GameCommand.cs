@@ -1,5 +1,4 @@
 ﻿using Engine.Commands;
-using Engine.Session;
 using Space.Model;
 
 namespace Space.Commands
@@ -8,11 +7,6 @@ namespace Space.Commands
     {
         public GameCommand(GameCommandType type)
             : base(type)
-        {
-        }
-
-        public GameCommand(GameCommandType type, Player<PlayerInfo, PacketizerContext> player, long frame)
-            : base(type, player, frame)
         {
         }
     }

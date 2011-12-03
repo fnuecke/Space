@@ -13,6 +13,6 @@ namespace Engine.Commands
         /// <summary>
         /// The frame the command was issued in.
         /// </summary>
-        long Frame { get; }
+        long Frame { get; set; }
     }
 }

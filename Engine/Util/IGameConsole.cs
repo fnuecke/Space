@@ -77,5 +77,12 @@ namespace Engine.Util
         /// </summary>
         /// <param name="message">the message to log.</param>
         void WriteLine(string message);
+        
+        /// <summary>
+        /// Log some formatted text to the console.
+        /// </summary>
+        /// <param name="format">the text format.</param>
+        /// <param name="args">the parameters to insert.</param>
+        void WriteLine(string format, params object[] args);
     }
 }

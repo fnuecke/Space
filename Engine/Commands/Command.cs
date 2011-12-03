@@ -35,14 +35,7 @@ namespace Engine.Commands
 
         protected Command(TCommandType type)
         {
-            Type = type;
-        }
-
-        protected Command(TCommandType type, Player<TPlayerData, TPacketizerContext> player)
-        {
-            this.IsAuthoritative = false;
             this.Type = type;
-            this.Player = player;
         }
 
         #endregion

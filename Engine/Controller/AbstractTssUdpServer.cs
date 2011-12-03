@@ -63,7 +63,7 @@ namespace Engine.Controller
         protected AbstractTssUdpServer(Game game, int maxPlayers, ushort port, string header)
             : base(game, port, header, new uint[] { 50 })
         {
-            Session = SessionFactory.StartServer<TPlayerData, TPacketizerContext>(game, protocol, maxPlayers);
+            Session = SessionFactory.StartServer<TPlayerData, TPacketizerContext>(game, Protocol, maxPlayers);
         }
 
         /// <summary>
@@ -89,6 +89,8 @@ namespace Engine.Controller
             {
                 Session.GameInfoRequested -= HandleGameInfoRequested;
                 Session.JoinRequested -= HandleJoinRequested;
+
+                Session.Dispose();
             }
 
             base.Dispose(disposing);
@@ -115,11 +117,11 @@ namespace Engine.Controller
                 lastHashTime = DateTime.Now.Ticks;
 
                 Hasher hasher = new Hasher();
-                simulation.TrailingState.Hash(hasher);
+                Simulation.TrailingState.Hash(hasher);
 
                 Packet hashCheck = new Packet(5);
                 hashCheck.Write((byte)TssUdpControllerMessage.HashCheck);
-                hashCheck.Write(simulation.TrailingFrame);
+                hashCheck.Write(Simulation.TrailingFrame);
                 hashCheck.Write(hasher.Value);
                 Session.SendAll(hashCheck, 0);
             }
@@ -154,29 +156,6 @@ namespace Engine.Controller
         #region Modify simulation
 
         /// <summary>
-        /// Apply a command.
-        /// </summary>
-        /// <param name="command">the command to send.</param>
-        /// <param name="pollRate">resend interval until ack arrived (if sent).</param>
-        public override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
-        {
-            if (command.Frame > simulation.TrailingFrame)
-            {
-                // All commands we apply are authoritative.
-                command.IsAuthoritative = true;
-                base.Apply(command);
-                // As a server we resend all commands.
-                SendAll(command, pollRate);
-            }
-#if DEBUG
-            else
-            {
-                console.WriteLine("Got a command we couldn't use, " + command.Frame + "<" + simulation.TrailingFrame);
-            }
-#endif
-        }
-
-        /// <summary>
         /// Add a steppable to the simulation. Will be inserted at the
         /// current leading frame. The steppable will be given a unique
         /// id, by which it may later be referenced for removals.
@@ -197,7 +176,7 @@ namespace Engine.Controller
             Packet addedInfo = new Packet();
             addedInfo.Write((byte)TssUdpControllerMessage.AddGameObject);
             addedInfo.Write(frame);
-            packetizer.Packetize(steppable, addedInfo);
+            Packetizer.Packetize(steppable, addedInfo);
             Session.SendAll(addedInfo, 100);
 
             return steppable.UID;
@@ -220,6 +199,30 @@ namespace Engine.Controller
             removedInfo.Write(frame);
             removedInfo.Write(steppableUid);
             Session.SendAll(removedInfo, 100);
+        }
+
+        /// <summary>
+        /// Apply a command.
+        /// </summary>
+        /// <param name="command">the command to send.</param>
+        /// <param name="pollRate">resend interval until ack arrived (if sent).</param>
+        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
+        {
+            if (command.Frame > Simulation.TrailingFrame)
+            {
+                // All commands we apply are authoritative.
+                command.IsAuthoritative = true;
+                base.Apply(command, pollRate);
+
+                // As a server we resend all commands.
+                SendAll(command, pollRate);
+            }
+#if DEBUG
+            else
+            {
+                Console.WriteLine("Got a command we couldn't use, " + command.Frame + "<" + Simulation.TrailingFrame);
+            }
+#endif
         }
 
         #endregion
@@ -246,7 +249,7 @@ namespace Engine.Controller
                         Packet synchronizeResponse = new Packet(9);
                         synchronizeResponse.Write((byte)TssUdpControllerMessage.Synchronize);
                         synchronizeResponse.Write(clientFrame);
-                        synchronizeResponse.Write(simulation.CurrentFrame);
+                        synchronizeResponse.Write(Simulation.CurrentFrame);
                         Session.Send(args.Player.Number, synchronizeResponse, 0);
                     }
                     return true;
@@ -256,7 +259,7 @@ namespace Engine.Controller
                     {
                         Packet gamestateResponse = new Packet();
                         gamestateResponse.Write((byte)TssUdpControllerMessage.GameStateResponse);
-                        simulation.Packetize(gamestateResponse);
+                        Simulation.Packetize(gamestateResponse);
                         Session.Send(args.Player.Number, gamestateResponse, 500);
                     }
                     return true;

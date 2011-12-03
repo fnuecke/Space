@@ -1,6 +1,5 @@
 ﻿using Engine.Commands;
 using Engine.Serialization;
-using Engine.Session;
 using Space.Model;
 
 namespace Space.Commands
@@ -36,8 +35,8 @@ namespace Space.Commands
         {
         }
 
-        public PlayerInputCommand(Player<PlayerInfo, PacketizerContext> player, long frame, PlayerInput input)
-            : base(GameCommandType.PlayerInput, player, frame)
+        public PlayerInputCommand(PlayerInput input)
+            : this()
         {
             this.Input = input;
         }

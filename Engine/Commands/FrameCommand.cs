@@ -1,5 +1,4 @@
 ﻿using Engine.Serialization;
-using Engine.Session;
 
 namespace Engine.Commands
 {
@@ -16,10 +15,10 @@ namespace Engine.Commands
         /// <summary>
         /// The frame this command applies to.
         /// </summary>
-        public long Frame { get; private set; }
+        public long Frame { get; set; }
 
         #endregion
-
+        
         #region Constructor
 
         protected FrameCommand(TCommandType type)
@@ -27,14 +26,8 @@ namespace Engine.Commands
         {
         }
 
-        protected FrameCommand(TCommandType type, Player<TPlayerData, TPacketizerContext> player, long frame)
-            : base(type, player)
-        {
-            this.Frame = frame;
-        }
-
         #endregion
-
+        
         #region Serialization
 
         public override void Packetize(Packet packet)

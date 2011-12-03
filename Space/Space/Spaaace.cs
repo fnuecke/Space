@@ -56,7 +56,6 @@ namespace Space
             // where the state only knows it has ISteppables, but not what the
             // actual implementations are.
             packetizer.Register<Ship>();
-            packetizer.Register<PlayerDataChangedCommand>();
             packetizer.Register<PlayerInputCommand>();
 
             // Add some more utility components.
@@ -87,6 +86,7 @@ namespace Space
                     Components.Remove(client);
                 }
                 client = new Client(this);
+                client.AddEmitter(new InputCommandEmitter(this, client.Session));
                 Components.Add(client);
             },
                 "Switch to client mode.");
@@ -199,6 +199,7 @@ namespace Space
             if (client == null)
             {
                 client = new Client(this);
+                client.AddEmitter(new InputCommandEmitter(this, client.Session));
                 Components.Add(client);
             }
 

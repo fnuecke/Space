@@ -1,4 +1,5 @@
 ﻿using Engine.Commands;
+using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -10,20 +11,27 @@ namespace Engine.Controller
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
     public abstract class AbstractTssUdpController<TSession, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractUdpController<TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>
+        : AbstractUdpController<TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>,
+          IStateController<TState, TSteppable, TSession, UdpProtocol, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
+        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
-        #region Fields
+        #region Properties
 
         /// <summary>
-        /// The underlying simulation used.
+        /// The underlying simulation used. Directly changing this is strongly
+        /// discouraged, as it will lead to clients having to resynchronize
+        /// themselves by getting a snapshot of the complete simulation.
         /// </summary>
-        protected TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> simulation;
+        protected TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> Simulation { get; private set; }
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// The remainder of time we did not update last frame, which we'll add to the
@@ -44,7 +52,7 @@ namespace Engine.Controller
         public AbstractTssUdpController(Game game, ushort port, string header, uint[] delays)
             : base(game, port, header)
         {
-            simulation = new TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>(delays);
+            Simulation = new TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>(delays);
         }
 
         #endregion
@@ -63,7 +71,7 @@ namespace Engine.Controller
         {
             if (Game.IsFixedTimeStep)
             {
-                simulation.Update();
+                Simulation.Update();
             }
             else
             {
@@ -73,7 +81,7 @@ namespace Engine.Controller
                 while (elapsed > target)
                 {
                     elapsed -= target;
-                    simulation.Update();
+                    Simulation.Update();
                 }
                 lastUpdateRemainder = elapsed;
             }
@@ -84,16 +92,6 @@ namespace Engine.Controller
         #region Modify simulation
 
         /// <summary>
-        /// Apply a command.
-        /// </summary>
-        /// <param name="command">the command to send.</param>
-        /// <param name="pollRate">resend interval until ack arrived (if sent).</param>
-        public virtual void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
-        {
-            simulation.PushCommand(command, command.Frame);
-        }
-
-        /// <summary>
         /// Add a steppable to the simulation. Will be inserted at the
         /// current leading frame. The steppable will be given a unique
         /// id, by which it may later be referenced for removals.
@@ -102,7 +100,7 @@ namespace Engine.Controller
         /// <returns>the id the steppable was assigned.</returns>
         public long AddSteppable(TSteppable steppable)
         {
-            return AddSteppable(steppable, simulation.CurrentFrame);
+            return AddSteppable(steppable, Simulation.CurrentFrame);
         }
 
         /// <summary>
@@ -116,7 +114,7 @@ namespace Engine.Controller
         public virtual long AddSteppable(TSteppable steppable, long frame)
         {
             // Add the steppable to the simulation.
-            simulation.Add(steppable, frame);
+            Simulation.Add(steppable, frame);
             return steppable.UID;
         }
 
@@ -127,7 +125,7 @@ namespace Engine.Controller
         /// <param name="steppableId">the id of the steppable to remove.</param>
         public void RemoveSteppable(long steppableUid)
         {
-            RemoveSteppable(steppableUid, simulation.CurrentFrame);
+            RemoveSteppable(steppableUid, Simulation.CurrentFrame);
         }
 
         /// <summary>
@@ -139,7 +137,31 @@ namespace Engine.Controller
         public virtual void RemoveSteppable(long steppableUid, long frame)
         {
             // Remove the steppable from the simulation.
-            simulation.Remove(steppableUid, frame);
+            Simulation.Remove(steppableUid, frame);
+        }
+
+        /// <summary>
+        /// Apply a command.
+        /// </summary>
+        /// <param name="command">the command to send.</param>
+        /// <param name="pollRate">resend interval until ack arrived (if sent).</param>
+        protected virtual void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
+        {
+            Simulation.PushCommand(command, command.Frame);
+        }
+
+        #endregion
+
+        #region Events
+
+        /// <summary>
+        /// A command emitter we're attached to has generated a new event.
+        /// Add the frame it should be applied in.
+        /// </summary>
+        protected override void HandleEmittedCommand(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        {
+            command.Frame = Simulation.CurrentFrame + 1;
+            base.HandleEmittedCommand(command);
         }
 
         #endregion
