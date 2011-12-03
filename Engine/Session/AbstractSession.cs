@@ -321,7 +321,7 @@ namespace Engine.Session
         /// <param name="type">the type of message that is sent.</param>
         /// <param name="packet">the data to send.</param>
         /// <param name="priority">the priority with which to deliver the packet.</param>
-        internal void SendToEndPoint(IPEndPoint remote, SessionMessage type, Packet packet, PacketPriority priority)
+        internal virtual void SendToEndPoint(IPEndPoint remote, SessionMessage type, Packet packet, PacketPriority priority)
         {
             Packet wrapper = new Packet(5 + (packet != null ? packet.Length : 0));
             wrapper.Write((byte)type);

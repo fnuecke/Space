@@ -337,7 +337,7 @@ namespace Engine.Session
                                 {
                                     if (!p.Equals(player))
                                     {
-                                        SendToPlayer(player, SessionMessage.PlayerJoined, joined, PacketPriority.Medium);
+                                        SendToPlayer(p, SessionMessage.PlayerJoined, joined, PacketPriority.Medium);
                                     }
                                 }
 

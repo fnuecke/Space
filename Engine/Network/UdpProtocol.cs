@@ -337,7 +337,8 @@ namespace Engine.Network
         /// </summary>
         private void Receive()
         {
-            //if (udp.Client != null)
+            // TODO no idea why this happens after cleanup...
+            if (udp.Client != null)
             {
                 var remote = new IPEndPoint(0, 0);
                 while (udp.Available > 0)

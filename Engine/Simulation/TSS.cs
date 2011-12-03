@@ -654,6 +654,19 @@ namespace Engine.Simulation
             {
                 removes.Remove(key);
             }
+
+            deprecated.Clear();
+            foreach (var key in commands.Keys)
+            {
+                if (key < TrailingFrame)
+                {
+                    deprecated.Add(key);
+                }
+            }
+            foreach (var key in deprecated)
+            {
+                commands.Remove(key);
+            }
         }
     }
 }

@@ -126,6 +126,28 @@ namespace Engine.Session
             SendToEndPoint(host, type, packet, priority);
         }
 
+        /// <summary>
+        /// Internal variant for sending data to a specific host.
+        /// </summary>
+        /// <param name="remote">the remote machine to send the data to.</param>
+        /// <param name="type">the type of message that is sent.</param>
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal override void SendToEndPoint(IPEndPoint remote, SessionMessage type, Packet packet, PacketPriority priority)
+        {
+            // As clients, don't try to cross the boundary of local loopback to
+            // outside network. It can only fail :P
+            bool remoteIsLoopback = IPAddress.IsLoopback(remote.Address);
+            bool hostIsLoopback = IPAddress.IsLoopback(host.Address);
+            if ((remoteIsLoopback && hostIsLoopback) || (!remoteIsLoopback && !hostIsLoopback))
+            {
+                Packet wrapper = new Packet(5 + (packet != null ? packet.Length : 0));
+                wrapper.Write((byte)type);
+                wrapper.Write(packet);
+                protocol.Send(wrapper, remote, priority);
+            }
+        }
+
         #endregion
 
         #region Logic
