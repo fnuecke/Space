@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Engine.Network;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -25,6 +27,11 @@ namespace Engine.Session
         /// Called when a player sent data.
         /// </summary>
         event EventHandler<EventArgs> PlayerData;
+
+        /// <summary>
+        /// Get a list of all players in the game.
+        /// </summary>
+        IEnumerable<Player<TPlayerData, TPacketizerContext>> AllPlayers { get; }
 
         /// <summary>
         /// Reference to the data struct with info about the local player.
@@ -64,26 +71,23 @@ namespace Engine.Session
         /// <summary>
         /// Send some data to the server.
         /// </summary>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
-        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
-        void Send(Packet data, uint pollRate = 0);
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        void SendToHost(Packet packet, PacketPriority priority);
+
+        /// <summary>
+        /// Send a message to all players in the game, and the server.
+        /// </summary>
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        void SendToEveryone(Packet packet, PacketPriority priority);
 
         /// <summary>
         /// Send some data to a specific player.
         /// </summary>
         /// <param name="player">the player to send the data to.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
-        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
-        void Send(int player, Packet data, uint pollRate = 0);
-
-        /// <summary>
-        /// Send a message to all players in the game, and the server.
-        /// </summary>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
-        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
-        void SendAll(Packet data, uint pollrate = 0);
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        void SendToPlayer(Player<TPlayerData, TPacketizerContext> player, Packet packet, PacketPriority priority);
     }
 }

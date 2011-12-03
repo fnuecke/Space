@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.Commands;
 using Engine.Controller;
+using Engine.Network;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -182,7 +183,7 @@ namespace Space.Control
             {
                 case GameCommandType.PlayerInput:
                     // Player input command, high send priority.
-                    Apply(command, 30);
+                    Apply(command, PacketPriority.High);
                     break;
             }
         }

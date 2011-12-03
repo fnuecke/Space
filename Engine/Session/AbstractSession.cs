@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using Engine.Network;
 using Engine.Serialization;
@@ -62,7 +63,8 @@ namespace Engine.Session
     /// <summary>
     /// Base implementation for server and client side sessions, i.e. functionality used by both.
     /// </summary>
-    public abstract class AbstractSession<TPlayerData, TPacketizerContext> : GameComponent, ISession<TPlayerData, TPacketizerContext>
+    public abstract class AbstractSession<TPlayerData, TPacketizerContext>
+        : GameComponent, ISession<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -106,6 +108,17 @@ namespace Engine.Session
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Get a list of all players in the game.
+        /// </summary>
+        public IEnumerable<Player<TPlayerData, TPacketizerContext>> AllPlayers
+        {
+            get
+            {
+                return null;
+            }
+        }
 
         /// <summary>
         /// Reference to the data struct with info about the local player.
@@ -193,7 +206,6 @@ namespace Engine.Session
         #endregion
 
         #region Public API
-        #endregion
 
         /// <summary>
         /// Get info on the player with the given number.
@@ -218,58 +230,68 @@ namespace Engine.Session
         /// <summary>
         /// Send some data to the server.
         /// </summary>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
-        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
-        public abstract void Send(Packet data, uint pollRate = 0);
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        public void SendToHost(Packet packet, PacketPriority priority)
+        {
+            SendToHost(SessionMessage.Data, packet, priority);
+        }
 
         /// <summary>
         /// Send some data to a specific player.
         /// </summary>
         /// <param name="player">the player to send the data to.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
-        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
-        public void Send(int player, Packet data, uint pollRate = 0)
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        public void SendToPlayer(Player<TPlayerData, TPacketizerContext> player, Packet packet, PacketPriority priority)
         {
-            Send(playerAddresses[player], SessionMessage.Data, data, pollRate);
+            SendToEndPoint(playerAddresses[player.Number], SessionMessage.Data, packet, priority);
         }
 
         /// <summary>
         /// Send a message to all players in the game, and the server.
         /// </summary>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
-        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
-        public void SendAll(Packet data, uint pollRate = 0)
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        public void SendToEveryone(Packet packet, PacketPriority priority)
         {
-            SendAll(SessionMessage.Data, data, pollRate);
+            SendToEveryone(SessionMessage.Data, packet, priority);
         }
 
+        #endregion
+
         #region Internal send stuff
+
+        /// <summary>
+        /// Send some data of the given type to the server.
+        /// </summary>
+        /// <param name="type">the type of message that is sent.</param>
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal abstract void SendToHost(SessionMessage type, Packet packet, PacketPriority priority);
 
         /// <summary>
         /// Internal variant for sending data to a specific host.
         /// </summary>
         /// <param name="remote">the remote machine to send the data to.</param>
         /// <param name="type">the type of message that is sent.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">see Send()</param>
-        internal virtual void Send(IPEndPoint remote, SessionMessage type, Packet data, uint pollrate = 0)
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal void SendToEndPoint(IPEndPoint remote, SessionMessage type, Packet packet, PacketPriority priority)
         {
-            Packet wrapper = new Packet(5 + (data != null ? data.Length : 0));
+            Packet wrapper = new Packet(5 + (packet != null ? packet.Length : 0));
             wrapper.Write((byte)type);
-            wrapper.Write(data);
-            protocol.Send(wrapper, remote, pollrate);
+            wrapper.Write(packet);
+            protocol.Send(wrapper, remote, priority);
         }
 
         /// <summary>
         /// As the internal Send, just for SendAll.
         /// </summary>
         /// <param name="type">the type of message to send.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">see Send()</param>
-        internal abstract void SendAll(SessionMessage type, Packet data, uint pollrate = 0);
+        /// <param name="type">the type of message that is sent.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal abstract void SendToEveryone(SessionMessage type, Packet packet, PacketPriority priority);
 
         #endregion
 

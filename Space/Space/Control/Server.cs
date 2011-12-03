@@ -1,12 +1,11 @@
 ﻿using System;
 using Engine.Commands;
 using Engine.Controller;
+using Engine.Network;
 using Engine.Session;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
 using Space.Model;
-using Space.View;
 using SpaceData;
 
 namespace Space.Control
@@ -61,7 +60,7 @@ namespace Space.Control
                 case GameCommandType.PlayerInput:
                     // Player sent input.
                     {
-                        Apply(command, 30);
+                        Apply(command, PacketPriority.High);
                     }
                     return true;
 

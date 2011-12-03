@@ -73,17 +73,6 @@ namespace Engine.Session
         #region Public API
 
         /// <summary>
-        /// Send some data to the server. Not supported for the server.
-        /// </summary>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
-        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
-        public override void Send(Packet data, uint pollRate = 0)
-        {
-            throw new InvalidOperationException("Server cannot send messages to itself. Use a more direct design.");
-        }
-
-        /// <summary>
         /// Kick a player from the session.
         /// </summary>
         /// <param name="player">the number of the player to kick.</param>
@@ -94,7 +83,7 @@ namespace Engine.Session
                 // Let him know.
                 Packet packet = new Packet(4);
                 packet.Write(playerNumber);
-                Send(playerAddresses[playerNumber], SessionMessage.PlayerLeft, packet);
+                SendToEndPoint(playerAddresses[playerNumber], SessionMessage.PlayerLeft, packet, PacketPriority.None);
 
                 // Erase him.
                 RemovePlayer(playerNumber);
@@ -106,19 +95,30 @@ namespace Engine.Session
         #region Internal send stuff
 
         /// <summary>
+        /// Send some data to the server. Not supported for the server.
+        /// </summary>
+        /// <param name="type">the type of message to send.</param>
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal override void SendToHost(SessionMessage type, Packet packet, PacketPriority priority)
+        {
+            throw new InvalidOperationException("Server cannot send messages to itself. Use a more direct design.");
+        }
+
+        /// <summary>
         /// As the internal Send, just for SendAll.
         /// </summary>
         /// <param name="type">the type of message to send.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">see Send()</param>
-        internal override void SendAll(SessionMessage type, Packet data, uint pollrate = 0)
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal override void SendToEveryone(SessionMessage type, Packet packet, PacketPriority priority)
         {
             // Send to every client.
             for (int i = 0; i < MaxPlayers; ++i)
             {
                 if (playerAddresses[i] != null)
                 {
-                    Send(playerAddresses[i], type, data, pollrate);
+                    SendToEndPoint(playerAddresses[i], type, packet, priority);
                 }
             }
         }
@@ -140,7 +140,7 @@ namespace Engine.Session
             if ((DateTime.Now - lastConnectionCheck).TotalMilliseconds > ConnectionCheckInterval)
             {
                 lastConnectionCheck = DateTime.Now;
-                SendAll(SessionMessage.ConnectionTest, new Packet(), ConnectionCheckInterval);
+                SendToEveryone(SessionMessage.ConnectionTest, null, PacketPriority.Lowest);
             }
 
             base.Update(gameTime);
@@ -215,7 +215,7 @@ namespace Engine.Session
                         response.Write(MaxPlayers);
                         response.Write(NumPlayers);
                         response.Write(requestArgs.Data);
-                        Send(args.Remote, SessionMessage.GameInfoResponse, response);
+                        SendToEndPoint(args.Remote, SessionMessage.GameInfoResponse, response, PacketPriority.None);
                     }
                     args.Consume();
                     break;
@@ -230,7 +230,7 @@ namespace Engine.Session
                             Packet fail = new Packet(2);
                             fail.Write(false);
                             fail.Write((byte)JoinResponseReason.AlreadyInGame);
-                            Send(args.Remote, SessionMessage.JoinResponse, fail);
+                            SendToEndPoint(args.Remote, SessionMessage.JoinResponse, fail, PacketPriority.None);
                         }
                         // Or if the game is already full.
                         else if (NumPlayers >= MaxPlayers)
@@ -239,7 +239,7 @@ namespace Engine.Session
                             Packet fail = new Packet(2);
                             fail.Write(false);
                             fail.Write((byte)JoinResponseReason.GameFull);
-                            Send(args.Remote, SessionMessage.JoinResponse, fail);
+                            SendToEndPoint(args.Remote, SessionMessage.JoinResponse, fail, PacketPriority.None);
                         }
                         else
                         {
@@ -257,7 +257,7 @@ namespace Engine.Session
                                     Packet fail = new Packet(2);
                                     fail.Write(false);
                                     fail.Write((byte)JoinResponseReason.InvalidName);
-                                    Send(args.Remote, SessionMessage.JoinResponse, fail);
+                                    SendToEndPoint(args.Remote, SessionMessage.JoinResponse, fail, PacketPriority.None);
                                     args.Consume();
                                     return;
                                 }
@@ -310,7 +310,7 @@ namespace Engine.Session
                                     Packet fail = new Packet(2);
                                     fail.Write(false);
                                     fail.Write((byte)JoinResponseReason.Unknown);
-                                    Send(args.Remote, SessionMessage.JoinResponse, fail);
+                                    SendToEndPoint(args.Remote, SessionMessage.JoinResponse, fail, PacketPriority.None);
                                     args.Consume();
                                     return;
                                 }
@@ -348,7 +348,7 @@ namespace Engine.Session
                                 response.Write(requestArgs.Data);
 
                                 // Send the response!
-                                Send(args.Remote, SessionMessage.JoinResponse, response, 40);
+                                SendToEndPoint(args.Remote, SessionMessage.JoinResponse, response, PacketPriority.Medium);
 
                                 // Tell the other players, but *only* the other players.
                                 var joined = new Packet();
@@ -361,7 +361,7 @@ namespace Engine.Session
                                 {
                                     if (playerAddresses[i] != null && i != playerNumber)
                                     {
-                                        Send(playerAddresses[i], SessionMessage.PlayerJoined, joined, 40);
+                                        SendToEndPoint(playerAddresses[i], SessionMessage.PlayerJoined, joined, PacketPriority.Medium);
                                     }
                                 }
 
@@ -447,7 +447,7 @@ namespace Engine.Session
             // Tell the other clients.
             Packet packet = new Packet(4);
             packet.Write(playerNumber);
-            SendAll(SessionMessage.PlayerLeft, packet, 100);
+            SendToEveryone(SessionMessage.PlayerLeft, packet, PacketPriority.Low);
 
             // Tell the local program the player is gone.
             OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));

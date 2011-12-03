@@ -16,6 +16,22 @@ namespace Engine.Network
     /// </remarks>
     public sealed class UdpProtocol : GameComponent, IProtocol
     {
+        #region Constants
+
+        /// <summary>
+        /// Lookup table for priority to udp poll rate conversion.
+        /// </summary>
+        private static readonly Dictionary<PacketPriority, uint> PollRates = new Dictionary<PacketPriority, uint>()
+        {
+            { PacketPriority.None , 0 },
+            { PacketPriority.Lowest, 5000 },
+            { PacketPriority.Low, 500 },
+            { PacketPriority.Medium, 100 },
+            { PacketPriority.High, 50 }
+        };
+
+        #endregion
+
         #region Events
 
         /// <summary>
@@ -144,27 +160,25 @@ namespace Engine.Network
         /// <summary>
         /// Send some data to a remote host.
         /// </summary>
-        /// <param name="data">the data to send.</param>
+        /// <param name="packet">the data to send.</param>
         /// <param name="remote">the remote host to send it to.</param>
-        /// <param name="pollRate">if this is set, it means the message should be acked,
-        /// and this is the rate in millisecond in which to resend the message while it
-        /// didn't get its ack. The highest accuracy for this is the rate with which
-        /// <code>Flush()</code> is called.</param>
-        public void Send(Packet data, IPEndPoint remote, uint pollRate = 0)
+        /// <param name="priority">the priority to send the packet with.</param>
+        public void Send(Packet packet, IPEndPoint remote, PacketPriority priority)
         {
             if (remote == null)
             {
                 throw new ArgumentNullException("remote");
             }
+            uint pollRate = PollRates[priority];
             if (pollRate > 0)
             {
                 int messageNumber;
-                Packet message = messages.MakeAcked(data, out messageNumber);
+                Packet message = messages.MakeAcked(packet, out messageNumber);
                 awaitingAck.Add(messageNumber, new UdpPendingMessage(message, remote, pollRate));
             }
             else
             {
-                Packet message = messages.MakeUnacked(data);
+                Packet message = messages.MakeUnacked(packet);
                 info.Outgoing(message.Length, TrafficTypes.Data);
                 udp.Send(message.Buffer, message.Length, remote);
             }

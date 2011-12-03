@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.Commands;
+using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Util;
@@ -207,9 +208,9 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="command">the command to send.</param>
         /// <param name="pollRate">resend interval until ack arrived.</param>
-        protected void Send(TCommand command, uint pollRate = 0)
+        protected void SendToHost(TCommand command, PacketPriority priority)
         {
-            Session.Send(WrapDataForSend(command, new Packet()), pollRate);
+            Session.SendToHost(WrapDataForSend(command, new Packet()), priority);
         }
 
         /// <summary>
@@ -218,9 +219,9 @@ namespace Engine.Controller
         /// <param name="player">the player to send the command to.</param>
         /// <param name="command">the command to send.</param>
         /// <param name="pollRate">resend interval until ack arrived.</param>
-        protected void Send(int player, TCommand command, uint pollRate = 0)
+        protected void SendToPlayer(Player<TPlayerData, TPacketizerContext> player, TCommand command, PacketPriority priority)
         {
-            Session.Send(player, WrapDataForSend(command, new Packet()), pollRate);
+            Session.SendToPlayer(player, WrapDataForSend(command, new Packet()), priority);
         }
 
         /// <summary>
@@ -228,9 +229,9 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="command">the command to send.</param>
         /// <param name="pollRate">resend interval until ack arrived.</param>
-        protected void SendAll(TCommand command, uint pollRate = 0)
+        protected void SendToEveryone(TCommand command, PacketPriority priority)
         {
-            Session.SendAll(WrapDataForSend(command, new Packet()), pollRate);
+            Session.SendToEveryone(WrapDataForSend(command, new Packet()), priority);
         }
 
         #endregion

@@ -5,6 +5,48 @@ using Engine.Serialization;
 namespace Engine.Network
 {
     /// <summary>
+    /// A list of possible packet priorities.
+    /// </summary>
+    public enum PacketPriority
+    {
+        /// <summary>
+        /// The packet does not necessarily have to be delivered. For example,
+        /// it will not be retransmitted if the first delivery attempt fails.
+        /// This may be used for repetitive requests, such as synchronizing the
+        /// game's speed between server and client.
+        /// </summary>
+        None,
+
+        /// <summary>
+        /// The packet has no timely relevance but should be delivered at some
+        /// point. This might be used for chat messages or connection liveness
+        /// tests.
+        /// </summary>
+        Lowest,
+
+        /// <summary>
+        /// The packet must reach its target, but it can take some time. This
+        /// might be a join request, or a notification that a player has left
+        /// the game.
+        /// </summary>
+        Low,
+
+        /// <summary>
+        /// The packet should be delivered within a reasonable time-frame. For
+        /// example, a request for a re-transmit of the game state, or that
+        /// retransmit itself may fall in this category.
+        /// </summary>
+        Medium,
+
+        /// <summary>
+        /// The packet should be delivered as quickly as possible. These can
+        /// be player actions which are immediately visible, such as movement
+        /// or shots fired, for example.
+        /// </summary>
+        High
+    }
+
+    /// <summary>
     /// Interface for all (network) protocols.
     /// </summary>
     public interface IProtocol : IDisposable
@@ -34,14 +76,10 @@ namespace Engine.Network
         /// <summary>
         /// Send some data to a remote host.
         /// </summary>
-        /// <param name="data">the data to send.</param>
+        /// <param name="packet">the data to send.</param>
         /// <param name="remote">the remote host to send it to.</param>
-        /// <param name="pollRate">if this is set, it means the message should be acked,
-        /// and this is the rate in millisecond in which to resend the message while it
-        /// didn't get its ack. The highest accuracy for this is the rate with which
-        /// <code>Flush()</code> is called. This obviously only applies when the
-        /// underlying protocol is unreliable.</param>
-        void Send(Packet data, IPEndPoint remote, uint pollRate = 0);
+        /// <param name="priority">the priority to send the message with.</param>
+        void Send(Packet packet, IPEndPoint remote, PacketPriority priority);
 
         /// <summary>
         /// Inject a message, handle it like it was received via the protocol itself.

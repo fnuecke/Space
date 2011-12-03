@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.Commands;
+using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -11,10 +12,10 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for TSS based multiplayer clients using a UDP connection.
     /// This takes care of synchronizing the gamestates between server and
-    /// client, and getting the runspeed synchronized as well.
+    /// client, and getting the run speed synchronized as well.
     /// </summary>
     /// <typeparam name="TState">the type of game state used to represent a simulation.
-    /// This is the simulation run as a substate of the TSS.</typeparam>
+    /// This is the simulation run as a sub-state of the TSS.</typeparam>
     /// <typeparam name="TSteppable">the type of object we put into our simulation.</typeparam>
     /// <typeparam name="TCommandType">the type of commands we send around.</typeparam>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
@@ -60,7 +61,7 @@ namespace Engine.Controller
         #region Construction / Destruction
 
         /// <summary>
-        /// Initiliaze session and base classes.
+        /// Initialize session and base classes.
         /// </summary>
         /// <param name="game">the game this belongs to.</param>
         /// <param name="port">the port to listen on.</param>
@@ -143,14 +144,14 @@ namespace Engine.Controller
                 // Drive game logic.
                 UpdateSimulation(gameTime);
 
-                // Send sync command every now and then, to keep game clock synched.
+                // Send sync command every now and then, to keep game clock synchronized.
                 if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
                     lastSyncTime = DateTime.Now.Ticks;
                     Packet syncRequest = new Packet(5);
                     syncRequest.Write((byte)TssUdpControllerMessage.Synchronize);
                     syncRequest.Write(Simulation.CurrentFrame);
-                    Session.Send(syncRequest, 0);
+                    Session.SendToHost(syncRequest, PacketPriority.None);
                 }
             }
         }
@@ -163,16 +164,16 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        /// <param name="pollRate">resend interval until ack arrived (if sent).</param>
-        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, PacketPriority priority)
         {
-            base.Apply(command, pollRate);
+            base.Apply(command, priority);
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
             // own, tentative commands.
             if (!command.IsAuthoritative && command.Player.Number == Session.LocalPlayerNumber)
             {
-                SendAll(command, pollRate);
+                SendToEveryone(command, priority);
             }
         }
 
@@ -188,7 +189,7 @@ namespace Engine.Controller
         protected abstract void HandleGameInfoReceived(object sender, EventArgs e);
 
         /// <summary>
-        /// A server sent us a resonse to our request to join his game.
+        /// A server sent us a response to our request to join his game.
         /// </summary>
         /// <param name="sender">the underlying session.</param>
         /// <param name="e">information of the type <c>JoinResponseEventArgs</c>.</param>
@@ -302,7 +303,7 @@ namespace Engine.Controller
 #endif
             Packet gameStateRequest = new Packet(1);
             gameStateRequest.Write((byte)TssUdpControllerMessage.GameStateRequest);
-            Session.Send(gameStateRequest, 200);
+            Session.SendToHost(gameStateRequest, PacketPriority.Medium);
         }
 
         #endregion

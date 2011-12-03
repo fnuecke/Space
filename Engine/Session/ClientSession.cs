@@ -60,17 +60,6 @@ namespace Engine.Session
         #region Public API
 
         /// <summary>
-        /// Send some data to the server.
-        /// </summary>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollRate">lower (but > 0) means more urgent, if the protocol supports it.
-        /// In case of the UDP protocol, 0 means the message is only sent once (no reliability guarantee).</param>
-        public override void Send(Packet data, uint pollRate = 0)
-        {
-            Send(host, SessionMessage.Data, data, pollRate);
-        }
-
-        /// <summary>
         /// Send a ping into the local network, looking for open games.
         /// </summary>
         public void Search()
@@ -78,7 +67,7 @@ namespace Engine.Session
             Packet packet = new Packet(1);
             packet.Write((byte)SessionMessage.GameInfoRequest);
             // Send as a multicast / broadcast.
-            protocol.Send(packet, new IPEndPoint(DefaultMulticastAddress, DefaultMulticastPort));
+            protocol.Send(packet, new IPEndPoint(DefaultMulticastAddress, DefaultMulticastPort), PacketPriority.None);
         }
 
         /// <summary>
@@ -95,7 +84,7 @@ namespace Engine.Session
                 Packet packet = new Packet();
                 packet.Write(playerName);
                 packet.Write(data);
-                Send(host, SessionMessage.JoinRequest, packet, 100);
+                SendToEndPoint(host, SessionMessage.JoinRequest, packet, PacketPriority.Lowest);
                 ConnectionState = ClientState.Connecting;
             }
             else
@@ -111,7 +100,7 @@ namespace Engine.Session
         {
             if (ConnectionState != ClientState.Unconnected)
             {
-                Send(host, SessionMessage.Leave, null, 0);
+                SendToEndPoint(host, SessionMessage.Leave, null, 0);
             }
 
             ConnectionState = ClientState.Unconnected;
@@ -127,43 +116,34 @@ namespace Engine.Session
         #region Internal send stuff
 
         /// <summary>
-        /// Internal variant for sending data to a specific host.
+        /// Send some data of the given type to the server.
         /// </summary>
-        /// <param name="remote">the remote machine to send the data to.</param>
-        /// <param name="type">the type of message that is sent.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">see Send()</param>
-        internal override void Send(IPEndPoint remote, SessionMessage type, Packet data, uint pollrate = 0)
+        /// <param name="type">the type of message to send.</param>
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal override void SendToHost(SessionMessage type, Packet packet, PacketPriority priority)
         {
-            // Don't send messages to ourself.
-            if (playerAddresses == null || !remote.Equals(playerAddresses[LocalPlayerNumber]))
-            {
-                base.Send(remote, type, data, pollrate);
-            }
-            else
-            {
-                throw new InvalidOperationException("Client cannot send messages to itself. Use a more direct design.");
-            }
+            SendToEndPoint(host, type, packet, priority);
         }
 
         /// <summary>
         /// As the internal Send, just for SendAll.
         /// </summary>
         /// <param name="type">the type of message to send.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">see Send()</param>
-        internal override void SendAll(SessionMessage type, Packet data, uint pollrate = 0)
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal override void SendToEveryone(SessionMessage type, Packet packet, PacketPriority priority)
         {
             for (int i = 0; i < MaxPlayers; ++i)
             {
                 // Don't send messages to ourself.
                 if (playerAddresses[i] != null && i != LocalPlayerNumber)
                 {
-                    Send(playerAddresses[i], type, data, pollrate);
+                    SendToEndPoint(playerAddresses[i], type, packet, priority);
                 }
             }
             // Also send to host.
-            Send(data, pollrate);
+            SendToHost(type, packet, priority);
         }
 
         #endregion
@@ -178,7 +158,7 @@ namespace Engine.Session
                 (DateTime.Now - lastConnectionCheck).TotalMilliseconds > ConnectionCheckInterval)
             {
                 lastConnectionCheck = DateTime.Now;
-                Send(host, SessionMessage.ConnectionTest, new Packet(), ConnectionCheckInterval);
+                SendToEveryone(SessionMessage.ConnectionTest, null, PacketPriority.Lowest);
             }
 
             base.Update(gameTime);

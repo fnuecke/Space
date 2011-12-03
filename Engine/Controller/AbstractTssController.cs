@@ -1,4 +1,5 @@
 ﻿using Engine.Commands;
+using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -143,8 +144,8 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        /// <param name="pollRate">resend interval until ack arrived (if sent).</param>
-        protected virtual void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, uint pollRate = 0)
+        /// <param name="priority">the priority with which to distribute the command.</param>
+        protected virtual void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, PacketPriority priority)
         {
             Simulation.PushCommand(command, command.Frame);
         }
