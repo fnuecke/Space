@@ -547,7 +547,7 @@ namespace Engine.Math
 
         public override string ToString()
         {
-            return this.RawValue.ToString();
+            return DoubleValue.ToString();
         }
     }
 

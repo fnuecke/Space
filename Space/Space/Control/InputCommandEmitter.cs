@@ -2,7 +2,9 @@
 using Engine.Commands;
 using Engine.Controller;
 using Engine.Input;
+using Engine.Math;
 using Engine.Session;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Space.Commands;
@@ -10,20 +12,71 @@ using Space.Model;
 
 namespace Space.Control
 {
-    class InputCommandEmitter : AbstractCommandEmitter<IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext>, GameCommandType, PlayerInfo, PacketizerContext>
+    class InputCommandEmitter : GameComponent, ICommandEmitter<IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext>, GameCommandType, PlayerInfo, PacketizerContext>
     {
-        private IClientSession<PlayerInfo, PacketizerContext> Session;
+        /// <summary>
+        /// Event dispatched whenever a new command was generated. This command
+        /// will be injected into the simulation at it's current frame.
+        /// 
+        /// The dispatched events must be of type <c>CommandEmittedEventArgs</c>,
+        /// with the proper generics as to match the controller it'll be registered
+        /// with.
+        /// </summary>
+        public event CommandEmittedEventHandler<IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext>, GameCommandType, PlayerInfo, PacketizerContext> CommandEmitted;
 
-        public InputCommandEmitter(Game game, IClientSession<PlayerInfo, PacketizerContext> session)
+        private IClientSession<PlayerInfo, PacketizerContext> Session;
+        private ClientController simulation;
+
+        private Fixed previousTargetRotation;
+        private Fixed currentTargetRotation;
+        private bool rotationFinished = true;
+
+        public InputCommandEmitter(Game game, IClientSession<PlayerInfo, PacketizerContext> session, ClientController simulation)
+            : base(game)
         {
             this.Session = session;
+            this.simulation = simulation;
 
+            // Register for key presses and releases (movement).
             var keyboard = (IKeyboardInputManager)game.Services.GetService(typeof(IKeyboardInputManager));
             keyboard.Pressed += HandleKeyPressed;
             keyboard.Released += HandleKeyReleased;
+
+            // Register for mouse movement (orientation) and buttons (shooting).
+            var mouse = (IMouseInputManager)game.Services.GetService(typeof(IMouseInputManager));
+            mouse.Moved += HandleMouseMoved;
+
+            // Update after inputs have been handled.
+            UpdateOrder = 20;
         }
 
-        //*
+        public override void Update(GameTime gameTime)
+        {
+            if (Session.ConnectionState == ClientState.Connected)
+            {
+                // This test is necessary to figure out when player has stopped
+                // moving his mouse, so we can send a finalizing rotation command.
+                // Otherwise the ship might stop midway in our turn, not reaching
+                // the actual target we currently want. This is because we only
+                // send rotation commands when we really have to (specifically:
+                // we don't send commands that would only update the target angle,
+                // but not the direction), which saves us quite a few commands,
+                // and thus net traffic.
+                if (!rotationFinished)
+                {
+                    // We stopped moving when last and current position are equal.
+                    if (previousTargetRotation == currentTargetRotation)
+                    {
+                        OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, currentTargetRotation));
+                        rotationFinished = true;
+                    }
+                    previousTargetRotation = currentTargetRotation;
+                }
+            }
+
+            base.Update(gameTime);
+        }
+
         /// <summary>
         /// Player pressed a key.
         /// </summary>
@@ -65,15 +118,6 @@ namespace Space.Control
                     command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.AccelerateUp);
                     break;
 
-                case Keys.Q:
-                    // Rotate to the left.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.TurnLeft);
-                    break;
-                case Keys.E:
-                    // Rotate to the right.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.TurnRight);
-                    break;
-
                 default:
                     return;
             }
@@ -113,15 +157,6 @@ namespace Space.Control
                     command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.StopUp);
                     break;
 
-                case Keys.Q:
-                    // Stop rotating left.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.StopTurnLeft);
-                    break;
-                case Keys.E:
-                    // Stop rotating right.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.StopTurnRight);
-                    break;
-
                 default:
                     return;
             }
@@ -129,80 +164,74 @@ namespace Space.Control
             OnCommand(command);
         }
 
-        /*
-        protected override void HandleMouseMoved(object sender, EventArgs e)
+        private void HandleMouseMoved(object sender, EventArgs e)
         {
             if (Session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
 
-            return;
-
             var args = (MouseInputEventArgs)e;
 
-            Ship ship = (Ship)simulation.Get(Session.LocalPlayer.Data.ShipUID);
+            // Get angle to middle of screen (position of our ship), which
+            // will be our new target rotation.
+            int rx = args.X - Game.GraphicsDevice.Viewport.Width / 2;
+            int ry = args.Y - Game.GraphicsDevice.Viewport.Height / 2;
+            double mouseAngle = System.Math.Atan2(ry, rx);
+            UpdateTargetRotation(mouseAngle);
+        }
+
+        // TODO private void HandleGamePadStickMoved(object sender, EventArgs e) { update rotation }
+
+        /// <summary>
+        /// This is the part of the base functionality for updating the direction
+        /// we're facing.
+        /// </summary>
+        /// <param name="targetRotation">the new direction to face.</param>
+        private void UpdateTargetRotation(double targetRotation)
+        {
+            Ship ship = (Ship)simulation.GetSteppable(Session.LocalPlayer.Data.ShipUID);
             if (ship != null)
             {
                 // Get ships current orientation.
                 double shipAngle = ship.Rotation.DoubleValue;
-                // Get angle to middle of screen (position of our ship).
-                int rx = args.X - GraphicsDevice.Viewport.Width / 2;
-                int ry = args.Y - GraphicsDevice.Viewport.Height / 2;
-                double mouseAngle = System.Math.Atan2(ry, rx);
 
-                Console.WriteLine(rx + ", " + ry + ", " + mouseAngle + ", " + shipAngle);
+                // Remember where we'd like to rotate to (for finalizing).
+                currentTargetRotation = Fixed.Create(targetRotation);
 
-                double deltaAngle = mouseAngle - shipAngle;
-                const double pi2 = System.Math.PI * 2;
-                deltaAngle += (deltaAngle > System.Math.PI) ? -pi2 : (deltaAngle < -System.Math.PI) ? pi2 : 0;
+                // Get the smaller angle between our current and our target angles.
+                double deltaAngle = Angle.MinAngle(shipAngle, targetRotation);
 
-                if (deltaAngle > 10e-3 || deltaAngle < -10e-3)
+                // Now, if the difference to our current rotation is large enough
+                // and we're either rotating in the other direction or not at all,
+                // we send a rotation command.
+                // If we're rotating in that direction already, we DON'T! This is
+                // the exact reason for why we need to finalize our rotations by
+                // checking when the mouse stops moving. But we can save ourselves
+                // a lot of superfluous input commands this way, reducing network
+                // load somewhat (still pretty bad if user moves his mouse slowly,
+                // but meh).
+                if ((deltaAngle > 10e-3 && ship.RotationSpeed <= Fixed.Zero) ||
+                    (deltaAngle < -10e-3 && ship.RotationSpeed >= Fixed.Zero))
                 {
-                    targetAngle = Fixed.Create(shipAngle + deltaAngle);
-                    lastAngle = ship.Rotation;
-                    if (deltaAngle > 0)
-                    {
-                        // Rotate right.
-                        var command = new PlayerInputCommand(Session.LocalPlayer,
-                            simulation.CurrentFrame + 1,
-                            PlayerInputCommand.PlayerInput.StopTurnLeft);
-                        Apply(command, 30);
-                        command = new PlayerInputCommand(Session.LocalPlayer,
-                            simulation.CurrentFrame + 1,
-                            PlayerInputCommand.PlayerInput.TurnRight);
-                        Apply(command, 30);
-                        mouseRotating = true;
-                    }
-                    else
-                    {
-                        // Rotate left.
-                        var command = new PlayerInputCommand(Session.LocalPlayer,
-                            simulation.CurrentFrame + 1,
-                            PlayerInputCommand.PlayerInput.TurnLeft);
-                        Apply(command, 30);
-                        command = new PlayerInputCommand(Session.LocalPlayer,
-                            simulation.CurrentFrame + 1,
-                            PlayerInputCommand.PlayerInput.StopTurnRight);
-                        Apply(command, 30);
-                        mouseRotating = true;
-                    }
+                    OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, currentTargetRotation));
                 }
-                else
-                {
-                    // Stop rotating.
-                    var command = new PlayerInputCommand(Session.LocalPlayer,
-                        simulation.CurrentFrame + 1,
-                        PlayerInputCommand.PlayerInput.StopTurnLeft);
-                    Apply(command, 30);
-                    command = new PlayerInputCommand(Session.LocalPlayer,
-                        simulation.CurrentFrame + 1,
-                        PlayerInputCommand.PlayerInput.StopTurnRight);
-                    Apply(command, 30);
-                    mouseRotating = false;
-                }
+
+                // Set our flag to remember we might have to finalize the movement.
+                rotationFinished = false;
             }
         }
-        //*/
+
+        /// <summary>
+        /// Use this to dispatch new command events.
+        /// </summary>
+        /// <param name="e">the command that was generated.</param>
+        protected void OnCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        {
+            if (CommandEmitted != null)
+            {
+                CommandEmitted(command);
+            }
+        }
     }
 }

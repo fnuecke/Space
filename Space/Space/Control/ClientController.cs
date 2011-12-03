@@ -13,7 +13,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class Client : AbstractTssClient<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
+    class ClientController : AbstractTssClient<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
     {
         #region Fields
 
@@ -30,7 +30,7 @@ namespace Space.Control
         /// Creates a new game client, ready to connect to an open game.
         /// </summary>
         /// <param name="game"></param>
-        public Client(Game game, IClientSession<PlayerInfo, PacketizerContext> session)
+        public ClientController(Game game, IClientSession<PlayerInfo, PacketizerContext> session)
             : base(game, session)
         {
             Simulation.Initialize(new GameState(game, Session));

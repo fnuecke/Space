@@ -65,21 +65,9 @@ namespace Space.Model
                                     ship.StopAccelerate(Directions.West);
                                     break;
 
-                                // Begin turning to the left.
-                                case PlayerInputCommand.PlayerInput.TurnLeft:
-                                    ship.Rotate(Directions.Left);
-                                    break;
-                                // Begin turning to the right.
-                                case PlayerInputCommand.PlayerInput.TurnRight:
-                                    ship.Rotate(Directions.Right);
-                                    break;
-                                // Stop turning left.
-                                case PlayerInputCommand.PlayerInput.StopTurnLeft:
-                                    ship.StopRotate(Directions.Left);
-                                    break;
-                                // Stop turning left.
-                                case PlayerInputCommand.PlayerInput.StopTurnRight:
-                                    ship.StopRotate(Directions.Right);
+                                // Begin rotating.
+                                case PlayerInputCommand.PlayerInput.Rotate:
+                                    ship.RotateTo(inputCommand.TargetAngle);
                                     break;
                             }
                         }

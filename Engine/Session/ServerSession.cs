@@ -233,7 +233,7 @@ namespace Engine.Session
                                 string playerName = data.ReadString().Trim();
 
                                 // Valid name?
-                                if (String.IsNullOrEmpty(playerName))
+                                if (String.IsNullOrWhiteSpace(playerName))
                                 {
                                     Packet fail = new Packet(2);
                                     fail.Write(false);

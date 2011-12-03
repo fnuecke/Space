@@ -108,10 +108,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\GameCommand.cs" />
-    <Compile Include="Control\Client.cs" />
-    <Compile Include="Control\GameMessage.cs" />
+    <Compile Include="Control\ClientController.cs" />
+    <Compile Include="Control\GameClient.cs" />
+    <Compile Include="Control\GameServer.cs" />
     <Compile Include="Control\InputCommandEmitter.cs" />
-    <Compile Include="Control\Server.cs" />
+    <Compile Include="Control\ServerController.cs" />
     <Compile Include="Model\PacketizerContext.cs" />
     <Compile Include="Model\PlayerInfo.cs" />
     <Compile Include="Model\StaticWorld.cs" />

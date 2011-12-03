@@ -164,6 +164,7 @@
     <Compile Include="Serialization\FixedReader.cs" />
     <Compile Include="Simulation\TSS.cs" />
     <Compile Include="Simulation\PhysicsEnabledState.cs" />
+    <Compile Include="Util\Angle.cs" />
     <Compile Include="Util\Hasher.cs" />
     <Compile Include="Util\IHashable.cs" />
     <Compile Include="Util\Sampling.cs" />

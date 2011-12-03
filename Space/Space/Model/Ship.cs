@@ -1,4 +1,5 @@
-﻿using Engine.Physics;
+﻿using Engine.Math;
+using Engine.Physics;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -24,12 +25,13 @@ namespace Space.Model
 
         public int PlayerNumber { get; private set; }
 
-        private ShipData data;
+        public ShipData Data { get; private set; }
 
         private Texture2D texture;
 
         private Directions accelerationDirection = Directions.None;
-        private Directions rotateDirection = Directions.None;
+
+        private Fixed targetRotation;
 
         public Ship()
         {
@@ -39,7 +41,7 @@ namespace Space.Model
         {
             ShipData data = context.shipData[name];
             this.radius = data.Radius;
-            this.data = data;
+            this.Data = data;
             this.texture = context.shipTextures[name];
             this.PlayerNumber = player;
         }
@@ -47,32 +49,62 @@ namespace Space.Model
         public void Accelerate(Directions direction)
         {
             accelerationDirection |= direction;
-            acceleration = DirectionConversion.DirectionToFPoint(accelerationDirection) * data.Acceleration;
+            acceleration = DirectionConversion.DirectionToFPoint(accelerationDirection) * Data.Acceleration;
         }
 
         public void StopAccelerate(Directions direction)
         {
             accelerationDirection &= ~direction;
-            acceleration = DirectionConversion.DirectionToFPoint(accelerationDirection) * data.Acceleration;
+            acceleration = DirectionConversion.DirectionToFPoint(accelerationDirection) * Data.Acceleration;
         }
 
-        public void Rotate(Directions direction)
+        public void RotateTo(Fixed targetAngle)
         {
-            rotateDirection |= direction;
-            speedRotation = DirectionConversion.DirectionToFixed(rotateDirection) * data.RotationSpeed;
-        }
-
-        public void StopRotate(Directions direction)
-        {
-            rotateDirection &= ~direction;
-            speedRotation = DirectionConversion.DirectionToFixed(rotateDirection) * data.RotationSpeed;
+            targetRotation = targetAngle;
+            Fixed deltaAngle = Angle.MinAngle(rotation, targetAngle);
+            if (deltaAngle != Fixed.Zero)
+            {
+                if (deltaAngle > Fixed.Zero)
+                {
+                    // Rotate right.
+                    speedRotation = DirectionConversion.DirectionToFixed(Directions.Right) * Data.RotationSpeed;
+                }
+                else
+                {
+                    // Rotate left.
+                    speedRotation = DirectionConversion.DirectionToFixed(Directions.Left) * Data.RotationSpeed;
+                }
+            }
+            else
+            {
+                rotation = targetRotation;
+                speedRotation = Fixed.Zero;
+            }
         }
 
         public override void Update()
         {
             if (IsAlive)
             {
-                base.Update();
+                // If we're currently rotating, check if we want to step due to the
+                // current update (because we'd overstep our target).
+                if (RotationSpeed != Fixed.Zero)
+                {
+                    var currentDelta = Angle.MinAngle(Rotation, targetRotation);
+                    base.Update();
+                    var newDelta = Angle.MinAngle(Rotation, targetRotation);
+                    if (currentDelta < Fixed.Zero && newDelta >= Fixed.Zero ||
+                        currentDelta > Fixed.Zero && newDelta <= Fixed.Zero)
+                    {
+                        rotation = targetRotation;
+                        speedRotation = Fixed.Zero;
+                    }
+                }
+                else
+                {
+                    // Not rotating, just do a normal update.
+                    base.Update();
+                }
             }
         }
 
@@ -116,9 +148,11 @@ namespace Space.Model
                 0);
         }
 
+        #region Serialization
+
         public override void Packetize(Packet packet)
         {
-            packet.Write(data.Name);
+            packet.Write(Data.Name);
             packet.Write(PlayerNumber);
 
             base.Packetize(packet);
@@ -127,12 +161,14 @@ namespace Space.Model
         public override void Depacketize(Packet packet, PacketizerContext context)
         {
             string name = packet.ReadString();
-            data = context.shipData[name];
-            texture = context.game.Content.Load<Texture2D>(data.Texture);
+            Data = context.shipData[name];
+            texture = context.game.Content.Load<Texture2D>(Data.Texture);
 
             PlayerNumber = packet.ReadInt32();
 
             base.Depacketize(packet, context);
         }
+
+        #endregion
     }
 }

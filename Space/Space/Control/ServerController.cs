@@ -13,7 +13,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class Server : AbstractTssServer<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
+    class ServerController : AbstractTssServer<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
     {
         #region Fields
 
@@ -24,7 +24,7 @@ namespace Space.Control
 
         #endregion
 
-        public Server(Game game, IServerSession<PlayerInfo, PacketizerContext> session, byte worldSize, long worldSeed)
+        public ServerController(Game game, IServerSession<PlayerInfo, PacketizerContext> session, byte worldSize, long worldSeed)
             : base(game, session)
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));

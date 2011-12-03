@@ -1,4 +1,5 @@
 ﻿using Engine.Commands;
+using Engine.Math;
 using Engine.Serialization;
 using Space.Model;
 
@@ -16,16 +17,18 @@ namespace Space.Commands
             StopRight,
             StopDown,
             StopLeft,
-            TurnLeft,
-            TurnRight,
-            StopTurnLeft,
-            StopTurnRight
+            Rotate
         }
 
         /// <summary>
         /// The player input.
         /// </summary>
         public PlayerInput Input { get; private set; }
+
+        /// <summary>
+        /// For rotate commands this is the targeted rotation angle.
+        /// </summary>
+        public Fixed TargetAngle { get; private set; }
 
         /// <summary>
         /// For deserialization.
@@ -41,11 +44,19 @@ namespace Space.Commands
             this.Input = input;
         }
 
+        public PlayerInputCommand(PlayerInput input, Fixed targetAngle)
+            : this()
+        {
+            this.Input = input;
+            this.TargetAngle = targetAngle;
+        }
+
         #region Serialization
 
         public override void Packetize(Packet packet)
         {
             packet.Write((byte)Input);
+            packet.Write(TargetAngle);
 
             base.Packetize(packet);
         }
@@ -53,6 +64,7 @@ namespace Space.Commands
         public override void Depacketize(Packet packet, PacketizerContext context)
         {
             Input = (PlayerInput)packet.ReadByte();
+            TargetAngle = packet.ReadFixed();
 
             base.Depacketize(packet, context);
         }

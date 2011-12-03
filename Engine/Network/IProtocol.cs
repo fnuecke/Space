@@ -88,6 +88,12 @@ namespace Engine.Network
         /// <param name="buffer">the data to inject.</param>
         /// <param name="remote">the remote host the message was received from.</param>
         void Inject(byte[] buffer, IPEndPoint remote);
-
+        
+        /// <summary>
+        /// Drive the network connection by receiving available packets,
+        /// and resending yet unacked messages. This must be called regularly
+        /// to ensure a proper network flow.
+        /// </summary>
+        void Update();
     }
 }

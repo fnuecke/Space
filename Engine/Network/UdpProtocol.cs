@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Network
 {
@@ -14,7 +14,7 @@ namespace Engine.Network
     /// <remarks>
     /// Implements basic reliability features via custom acks, resending and timeouts.
     /// </remarks>
-    public sealed class UdpProtocol : GameComponent, IProtocol
+    public sealed class UdpProtocol : IProtocol
     {
         #region Constants
 
@@ -29,6 +29,18 @@ namespace Engine.Network
             { PacketPriority.Medium, 100 },
             { PacketPriority.High, 50 }
         };
+
+        /// <summary>
+        /// This is used to determine the local loopback address to use for a new
+        /// instance.
+        /// </summary>
+        private static BitArray boundPorts = new BitArray(ushort.MaxValue);
+
+        /// <summary>
+        /// Lookup table the instances add themselves to. This essentially fakes
+        /// a tiny LAN which only exists inside the running program.
+        /// </summary>
+        private static Dictionary<ushort, UdpProtocol> loopbacksByPort = new Dictionary<ushort, UdpProtocol>();
 
         #endregion
 
@@ -52,6 +64,12 @@ namespace Engine.Network
         /// Keeps track of some network related statistics.
         /// </summary>
         public IProtocolInfo Information { get { return info; } }
+
+        /// <summary>
+        /// The local loopback address for this protocol. Use this to send
+        /// messages to from another protocol.
+        /// </summary>
+        public IPEndPoint Loopback { get; private set; }
 
         /// <summary>
         /// The ping frequency, i.e. how often (every <c>PingFrequency</c> milliseconds)
@@ -95,7 +113,7 @@ namespace Engine.Network
         private Dictionary<long, UdpPendingMessage> awaitingAck = new Dictionary<long, UdpPendingMessage>();
 
         /// <summary>
-        /// Last time we sind our collective ping.
+        /// Last time we since our collective ping.
         /// </summary>
         private long lastPing = 0;
 
@@ -108,35 +126,42 @@ namespace Engine.Network
         /// </summary>
         /// <param name="port">the port to listen on/send through.</param>
         /// <param name="protocolHeader">header of the used protocol (filter packages).</param>
-        public UdpProtocol(Game game, ushort port, byte[] protocolHeader)
-            : base(game)
+        public UdpProtocol(ushort port, byte[] protocolHeader)
         {
+            // Create our actual udp socket.
+            udp = new UdpClient(port);
+
+            Loopback = new IPEndPoint(IPAddress.Loopback, port);
+            loopbacksByPort[port] = this;
+            boundPorts[port] = true;
+
             this.messages = new UdpMessageFactory(protocolHeader);
             this.Timeout = 10000;
             this.PingFrequency = 1000;
-
-            // Create our actual udp socket.
-            udp = new UdpClient(port);
         }
 
         /// <summary>
         /// Close this connection for good. This class should not be used again after calling this.
         /// </summary>
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
+            ushort port = (ushort)((IPEndPoint)udp.Client.LocalEndPoint).Port;
+            loopbacksByPort.Remove(port);
+            boundPorts[port] = false;
+
             connections.Clear();
             awaitingAck.Clear();
             udp.Close();
-
-            base.Dispose(disposing);
         }
 
-        public override void Update(GameTime gameTime)
+        /// <summary>
+        /// Drive the network connection by receiving available packets,
+        /// and resending yet unacked messages.
+        /// </summary>
+        public void Update()
         {
             Receive();
             Flush();
-
-            base.Update(gameTime);
         }
 
         #endregion
@@ -180,17 +205,26 @@ namespace Engine.Network
             {
                 Packet message = messages.MakeUnacked(packet);
                 info.Outgoing(message.Length, TrafficTypes.Data);
-                udp.Send(message.Buffer, message.Length, remote);
+                Send(message.Buffer, message.Length, remote);
             }
         }
 
         /// <summary>
         /// Inject a message, handle it like it was received via the protocol itself.
-        /// This method is thread safe.
         /// </summary>
         /// <param name="buffer">the data to inject.</param>
         /// <param name="remote">the remote host the message was received from.</param>
         public void Inject(byte[] buffer, IPEndPoint remote)
+        {
+            Inject(buffer, buffer.Length, remote);
+        }
+
+        /// <summary>
+        /// Inject a message, handle it like it was received via the protocol itself.
+        /// </summary>
+        /// <param name="buffer">the data to inject.</param>
+        /// <param name="remote">the remote host the message was received from.</param>
+        public void Inject(byte[] buffer, int length, IPEndPoint remote)
         {
             // Can we parse it? The values below are set as context dictates.
             SocketMessage type;
@@ -260,7 +294,7 @@ namespace Engine.Network
                         // Send ack if we get here.
                         Packet ack = messages.MakeAck(messageNumber);
                         info.Outgoing(ack.Length, TrafficTypes.Protocol);
-                        udp.Send(ack.Buffer, ack.Length, remote);
+                        Send(ack.Buffer, ack.Length, remote);
                     }
                     break;
 
@@ -271,7 +305,7 @@ namespace Engine.Network
                     {
                         Packet pong = messages.MakePong(data.ReadInt64());
                         info.Outgoing(pong.Length, TrafficTypes.Protocol);
-                        udp.Send(pong.Buffer, pong.Length, remote);
+                        Send(pong.Buffer, pong.Length, remote);
                     }
                     break;
 
@@ -303,7 +337,7 @@ namespace Engine.Network
         /// </summary>
         private void Receive()
         {
-            if (udp.Client != null)
+            //if (udp.Client != null)
             {
                 var remote = new IPEndPoint(0, 0);
                 while (udp.Available > 0)
@@ -335,7 +369,7 @@ namespace Engine.Network
         {
             long time = DateTime.Now.Ticks;
             List<IPEndPoint> toRemove = new List<IPEndPoint>();
-            foreach (var message in awaitingAck.Values)
+            foreach (var message in new List<UdpPendingMessage>(awaitingAck.Values))
             {
                 if (new TimeSpan(time - message.timeCreated).TotalMilliseconds > Timeout)
                 {
@@ -347,7 +381,7 @@ namespace Engine.Network
                     info.Outgoing(message.data.Length, TrafficTypes.Data);
                     try
                     {
-                        udp.Send(message.data.Buffer, message.data.Length, message.remote);
+                        Send(message.data.Buffer, message.data.Length, message.remote);
                         // Incrementally stretch the time between resends, to avoid flooding
                         // the adapter for low initial pollrates.
                         if (message.lastSent != 0)
@@ -383,7 +417,7 @@ namespace Engine.Network
                     if ((DateTime.Now - item.LastReceived).TotalMilliseconds < PingFrequency * 2)
                     {
                         info.Outgoing(message.Length, TrafficTypes.Protocol);
-                        udp.Send(message.Buffer, message.Length, item.Remote);
+                        Send(message.Buffer, message.Length, item.Remote);
                     }
                 }
                 lastPing = time;
@@ -461,6 +495,20 @@ namespace Engine.Network
 
             // And return it.
             return connections[remoteIp];
+        }
+        
+        private void Send(byte[] dgram, int bytes, IPEndPoint endPoint)
+        {
+            if (IPAddress.IsLoopback(endPoint.Address) &&
+                loopbacksByPort.ContainsKey((ushort)endPoint.Port))
+            {
+                UdpProtocol remote = loopbacksByPort[(ushort)endPoint.Port];
+                remote.Inject(dgram, bytes, Loopback);
+            }
+            else
+            {
+                udp.Send(dgram, bytes, endPoint);
+            }
         }
 
         private void OnData(ProtocolDataEventArgs e)

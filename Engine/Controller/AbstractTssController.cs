@@ -119,6 +119,16 @@ namespace Engine.Controller
         }
 
         /// <summary>
+        /// Get a steppable in this simulation based on its unique identifier.
+        /// </summary>
+        /// <param name="steppableUid">the id of the object.</param>
+        /// <returns>the object, if it exists.</returns>
+        public TSteppable GetSteppable(long steppableUid)
+        {
+            return Simulation.GetSteppable(steppableUid);
+        }
+
+        /// <summary>
         /// Removes a steppable with the given id from the simulation.
         /// The steppable will be removed at the current frame.
         /// </summary>
