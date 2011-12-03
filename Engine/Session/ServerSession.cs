@@ -52,7 +52,7 @@ namespace Engine.Session
         {
             this.NumPlayers = 0;
             this.MaxPlayers = maxPlayers;
-            this.LocalPlayerNumber = -1;
+            this.localPlayerNumber = -1;
             playerAddresses = new IPEndPoint[maxPlayers];
             players = new Player<TPlayerData, TPacketizerContext>[maxPlayers];
             slots = new BitArray(maxPlayers, false);
@@ -75,18 +75,18 @@ namespace Engine.Session
         /// <summary>
         /// Kick a player from the session.
         /// </summary>
-        /// <param name="player">the number of the player to kick.</param>
-        public void Kick(int playerNumber)
+        /// <param name="player">the player to kick.</param>
+        public void Kick(Player<TPlayerData, TPacketizerContext> player)
         {
-            if (HasPlayer(playerNumber))
+            if (HasPlayer(player))
             {
                 // Let him know.
                 Packet packet = new Packet(4);
-                packet.Write(playerNumber);
-                SendToEndPoint(playerAddresses[playerNumber], SessionMessage.PlayerLeft, packet, PacketPriority.None);
+                packet.Write(player.Number);
+                SendToPlayer(player, SessionMessage.PlayerLeft, packet, PacketPriority.None);
 
                 // Erase him.
-                RemovePlayer(playerNumber);
+                RemovePlayer(player);
             }
         }
 
@@ -141,10 +141,10 @@ namespace Engine.Session
             var args = (ProtocolEventArgs)e;
 
             // But only if the player is in the game ;)
-            int playerNumber = Array.IndexOf(playerAddresses, args.Remote);
-            if (playerNumber >= 0)
+            Player<TPlayerData, TPacketizerContext> player = GetPlayer(Array.IndexOf(playerAddresses, args.Remote));
+            if (player != null)
             {
-                RemovePlayer(playerNumber);
+                RemovePlayer(player);
             } // else we don't care.
         }
 
@@ -364,10 +364,10 @@ namespace Engine.Session
                 case SessionMessage.Leave:
                     // Player wants to leave the session.
                     {
-                        int playerNumber = Array.IndexOf(playerAddresses, args.Remote);
-                        if (playerNumber >= 0)
+                        Player<TPlayerData, TPacketizerContext> player = GetPlayer(Array.IndexOf(playerAddresses, args.Remote));
+                        if (player != null)
                         {
-                            RemovePlayer(playerNumber);
+                            RemovePlayer(player);
                             args.Consume();
                         }
                     }
@@ -411,18 +411,17 @@ namespace Engine.Session
         /// that player has left.
         /// </summary>
         /// <param name="playerNumber"></param>
-        private void RemovePlayer(int playerNumber)
+        private void RemovePlayer(Player<TPlayerData, TPacketizerContext> player)
         {
             // Erase the player from the session.
-            Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
-            playerAddresses[playerNumber] = null;
-            players[playerNumber] = null;
-            slots[playerNumber] = false;
+            playerAddresses[player.Number] = null;
+            players[player.Number] = null;
+            slots[player.Number] = false;
             --NumPlayers;
 
             // Tell the other clients.
             Packet packet = new Packet(4);
-            packet.Write(playerNumber);
+            packet.Write(player.Number);
             SendToEveryone(SessionMessage.PlayerLeft, packet, PacketPriority.Low);
 
             // Tell the local program the player is gone.

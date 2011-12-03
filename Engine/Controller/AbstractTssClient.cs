@@ -171,7 +171,7 @@ namespace Engine.Controller
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
             // own, tentative commands.
-            if (!command.IsAuthoritative && command.Player.Number == Session.LocalPlayerNumber)
+            if (!command.IsAuthoritative && command.Player.Equals(Session.LocalPlayer))
             {
                 SendToEveryone(command, priority);
             }

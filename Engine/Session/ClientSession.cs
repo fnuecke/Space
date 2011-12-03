@@ -106,7 +106,7 @@ namespace Engine.Session
             ConnectionState = ClientState.Unconnected;
             playerAddresses = null;
             host = null;
-            LocalPlayerNumber = 0;
+            localPlayerNumber = 0;
             NumPlayers = 0;
             MaxPlayers = 0;
         }
@@ -169,7 +169,7 @@ namespace Engine.Session
                     }
                     else
                     {
-                        Player<TPlayerData, TPacketizerContext> player = players[LocalPlayerNumber];
+                        Player<TPlayerData, TPacketizerContext> player = LocalPlayer;
                         Leave();
                         OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
                     }
@@ -258,7 +258,7 @@ namespace Engine.Session
                             }
 
                             // Get our number.
-                            LocalPlayerNumber = data.ReadInt32();
+                            localPlayerNumber = data.ReadInt32();
 
                             // Get info about other players in the session.
                             NumPlayers = data.ReadInt32();
@@ -267,7 +267,7 @@ namespace Engine.Session
                             MaxPlayers = data.ReadInt32();
 
                             // Sanity checks.
-                            if (LocalPlayerNumber < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers || LocalPlayerNumber >= MaxPlayers)
+                            if (localPlayerNumber < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers || localPlayerNumber >= MaxPlayers)
                             {
                                 throw new PacketException("Inconsistent session info.");
                             }
@@ -410,7 +410,7 @@ namespace Engine.Session
                                 throw new PacketException("Invalid player number.");
                             }
 
-                            if (playerNumber == LocalPlayerNumber)
+                            if (playerNumber == localPlayerNumber)
                             {
                                 // We were removed from the game.
                                 Leave();

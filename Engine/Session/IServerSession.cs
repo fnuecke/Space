@@ -24,7 +24,7 @@ namespace Engine.Session
         /// <summary>
         /// Kick a player from the session.
         /// </summary>
-        /// <param name="player">the number of the player to kick.</param>
-        void Kick(int player);
+        /// <param name="player">the player to kick.</param>
+        void Kick(Player<TPlayerData, TPacketizerContext> player);
     }
 }

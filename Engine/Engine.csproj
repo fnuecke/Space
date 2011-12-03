@@ -141,7 +141,6 @@
     <Compile Include="Session\ISession.cs" />
     <Compile Include="Session\Player.cs" />
     <Compile Include="Session\ServerSession.cs" />
-    <Compile Include="Session\SessionFactory.cs" />
     <Compile Include="Serialization\Packet.cs" />
     <Compile Include="Network\UdpProtocol.cs" />
     <Compile Include="Simulation\AbstractState.cs" />

@@ -144,7 +144,6 @@ namespace Engine.Controller
         /// <returns>the given packet, after writing.</returns>
         protected virtual Packet WrapDataForSend(TCommand command, Packet packet)
         {
-            packet.Write((command.Player == null) ? Session.LocalPlayerNumber : command.Player.Number);
             Packetizer.Packetize(command, packet);
             return packet;
         }
@@ -160,22 +159,19 @@ namespace Engine.Controller
         /// <returns>if the message was handled successfully.</returns>
         protected virtual bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out TCommand command)
         {
-            // Get the player that issued the command.
-            int playerNumber = args.Data.ReadInt32();
-            if (!args.IsFromServer)
-            {
-                // Avoid clients injecting commands for other clients.
-                playerNumber = args.Player.Number;
-            }
-
             // Parse the actual command.
             command = Packetizer.Depacketize<TCommand>(args.Data);
 
+            // If the player is not the server, and the number doesn't match,
+            // ignore the command -> avoid clients injecting commands for
+            // other clients.
+            if (!args.IsFromServer && !args.Player.Equals(command.Player))
+            {
+                return false;
+            }
+
             // Flag it accordingly to where it came from.
             command.IsAuthoritative = args.IsFromServer;
-
-            // Set the issuing player.
-            command.Player = Session.GetPlayer(playerNumber);
 
             return true;
         }

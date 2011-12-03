@@ -332,6 +332,7 @@ namespace Engine.Util
                 // Draw background.
 
                 // Outer.
+                SpriteBatch.Draw(pixelTexture, bounds, new Color(64, 64, 64, BackgroundColor.A));
                 SpriteBatch.Draw(pixelTexture, bounds, BackgroundColor);
 
                 // Content.

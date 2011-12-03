@@ -189,8 +189,7 @@ namespace Space
         {
             //if (server == null)
             //{
-            //    server = new Server(this, 8, 10, 0);
-            //    Components.Add(server);
+            //    RestartServer();
             //}
             if (clientController == null)
             {

@@ -130,12 +130,7 @@ namespace Engine.Session
         /// Reference to the data struct with info about the local player.
         /// </summary>
         /// <remarks>Shortcut for <c>session.GetPlayer(session.LocalPlayerNumber)</c>.</remarks>
-        public Player<TPlayerData, TPacketizerContext> LocalPlayer { get { return GetPlayer(LocalPlayerNumber); } }
-
-        /// <summary>
-        /// Number of the local player.
-        /// </summary>
-        public int LocalPlayerNumber { get; protected set; }
+        public Player<TPlayerData, TPacketizerContext> LocalPlayer { get { return GetPlayer(localPlayerNumber); } }
 
         /// <summary>
         /// Number of players currently in the game.
@@ -150,6 +145,11 @@ namespace Engine.Session
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// Number of the local player.
+        /// </summary>
+        protected int localPlayerNumber;
 
         /// <summary>
         /// Packetizer used for this session's game.
@@ -183,7 +183,6 @@ namespace Engine.Session
         public AbstractSession(Game game, IProtocol protocol)
             : base(game)
         {
-            LocalPlayerNumber = 0;
             this.protocol = protocol;
 
             protocol.MessageTimeout += HandlePlayerTimeout;
@@ -227,10 +226,20 @@ namespace Engine.Session
         /// Check if the player with the given number exists.
         /// </summary>
         /// <param name="player">the number of the player to check.</param>
-        /// <returns><c>true</c> if such a player exists.</returns>
-        public bool HasPlayer(int player)
+        /// <returns><c>true</c> if the player is in this session.</returns>
+        public bool HasPlayer(int playerNumber)
         {
-            return (players != null && player >= 0 && player < MaxPlayers && players[player] != null);
+            return playerNumber >= 0 && playerNumber < MaxPlayers && players[playerNumber] != null;
+        }
+
+        /// <summary>
+        /// Check if the player with the given number exists.
+        /// </summary>
+        /// <param name="player">the the player to check.</param>
+        /// <returns><c>true</c> if the player is in this session.</returns>
+        public bool HasPlayer(Player<TPlayerData, TPacketizerContext> player)
+        {
+            return player != null && player.Equals(GetPlayer(player.Number));
         }
 
         /// <summary>
@@ -291,21 +300,6 @@ namespace Engine.Session
         }
 
         /// <summary>
-        /// Internal variant for sending data to a specific host.
-        /// </summary>
-        /// <param name="remote">the remote machine to send the data to.</param>
-        /// <param name="type">the type of message that is sent.</param>
-        /// <param name="packet">the data to send.</param>
-        /// <param name="priority">the priority with which to deliver the packet.</param>
-        internal void SendToEndPoint(IPEndPoint remote, SessionMessage type, Packet packet, PacketPriority priority)
-        {
-            Packet wrapper = new Packet(5 + (packet != null ? packet.Length : 0));
-            wrapper.Write((byte)type);
-            wrapper.Write(packet);
-            protocol.Send(wrapper, remote, priority);
-        }
-
-        /// <summary>
         /// As the internal Send, just for SendAll.
         /// </summary>
         /// <param name="type">the type of message to send.</param>
@@ -318,6 +312,21 @@ namespace Engine.Session
                 SendToPlayer(player, type, packet, priority);
             }
             SendToHost(type, packet, priority);
+        }
+
+        /// <summary>
+        /// Internal variant for sending data to a specific host.
+        /// </summary>
+        /// <param name="remote">the remote machine to send the data to.</param>
+        /// <param name="type">the type of message that is sent.</param>
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal void SendToEndPoint(IPEndPoint remote, SessionMessage type, Packet packet, PacketPriority priority)
+        {
+            Packet wrapper = new Packet(5 + (packet != null ? packet.Length : 0));
+            wrapper.Write((byte)type);
+            wrapper.Write(packet);
+            protocol.Send(wrapper, remote, priority);
         }
 
         #endregion
@@ -345,12 +354,12 @@ namespace Engine.Session
         protected void ConditionalOnPlayerData(ProtocolDataEventArgs args, Packet data)
         {
             // Check if this is a player of this session.
-            int player = Array.IndexOf(playerAddresses, args.Remote);
+            Player<TPlayerData, TPacketizerContext> player = GetPlayer(Array.IndexOf(playerAddresses, args.Remote));
 
             // If it is, forward the data.
-            if (HasPlayer(player))
+            if (player != null)
             {
-                OnPlayerData(new PlayerDataEventArgs<TPlayerData, TPacketizerContext>(players[player], args, data));
+                OnPlayerData(new PlayerDataEventArgs<TPlayerData, TPacketizerContext>(player, args, data));
             }
         }
 
