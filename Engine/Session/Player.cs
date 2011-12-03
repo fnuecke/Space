@@ -43,6 +43,15 @@ namespace Engine.Session
             this.pingGetter = pingGetter;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj is Player<TPlayerData, TPacketizerContext>)
+            {
+                return ((Player<TPlayerData, TPacketizerContext>)obj).Number == this.Number;
+            }
+            return false;
+        }
+
         public override string ToString()
         {
             return String.Format("Player {0} ({1})", Number, Name);

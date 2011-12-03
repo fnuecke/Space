@@ -126,26 +126,6 @@ namespace Engine.Session
             SendToEndPoint(host, type, packet, priority);
         }
 
-        /// <summary>
-        /// As the internal Send, just for SendAll.
-        /// </summary>
-        /// <param name="type">the type of message to send.</param>
-        /// <param name="packet">the data to send.</param>
-        /// <param name="priority">the priority with which to deliver the packet.</param>
-        internal override void SendToEveryone(SessionMessage type, Packet packet, PacketPriority priority)
-        {
-            for (int i = 0; i < MaxPlayers; ++i)
-            {
-                // Don't send messages to ourself.
-                if (playerAddresses[i] != null && i != LocalPlayerNumber)
-                {
-                    SendToEndPoint(playerAddresses[i], type, packet, priority);
-                }
-            }
-            // Also send to host.
-            SendToHost(type, packet, priority);
-        }
-
         #endregion
 
         #region Logic
@@ -338,11 +318,11 @@ namespace Engine.Session
 
                             // Also, fire one join event for each player in the game. Except for
                             // the local player, because that'll likely need special treatment anyway.
-                            for (int i = 0; i < MaxPlayers; ++i)
+                            foreach (var player in AllPlayers)
                             {
-                                if (i != LocalPlayerNumber && players[i] != null)
+                                if (!player.Equals(LocalPlayer))
                                 {
-                                    OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(players[i]));
+                                    OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
                                 }
                             }
 

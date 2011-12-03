@@ -116,7 +116,13 @@ namespace Engine.Session
         {
             get
             {
-                return null;
+                for (int i = 0; i < MaxPlayers; i++)
+                {
+                    if (HasPlayer(i))
+                    {
+                        yield return GetPlayer(i);
+                    }
+                }
             }
         }
 
@@ -245,7 +251,7 @@ namespace Engine.Session
         /// <param name="priority">the priority with which to deliver the packet.</param>
         public void SendToPlayer(Player<TPlayerData, TPacketizerContext> player, Packet packet, PacketPriority priority)
         {
-            SendToEndPoint(playerAddresses[player.Number], SessionMessage.Data, packet, priority);
+            SendToPlayer(player, SessionMessage.Data, packet, priority);
         }
 
         /// <summary>
@@ -271,6 +277,20 @@ namespace Engine.Session
         internal abstract void SendToHost(SessionMessage type, Packet packet, PacketPriority priority);
 
         /// <summary>
+        /// Send some data to a player. Won't do anything if the player is the local player.
+        /// </summary>
+        /// <param name="type">the type of message to send.</param>
+        /// <param name="packet">the data to send.</param>
+        /// <param name="priority">the priority with which to deliver the packet.</param>
+        internal void SendToPlayer(Player<TPlayerData, TPacketizerContext> player, SessionMessage type, Packet packet, PacketPriority priority)
+        {
+            if (!player.Equals(LocalPlayer))
+            {
+                SendToEndPoint(playerAddresses[player.Number], type, packet, priority);
+            }
+        }
+
+        /// <summary>
         /// Internal variant for sending data to a specific host.
         /// </summary>
         /// <param name="remote">the remote machine to send the data to.</param>
@@ -291,7 +311,14 @@ namespace Engine.Session
         /// <param name="type">the type of message to send.</param>
         /// <param name="type">the type of message that is sent.</param>
         /// <param name="priority">the priority with which to deliver the packet.</param>
-        internal abstract void SendToEveryone(SessionMessage type, Packet packet, PacketPriority priority);
+        internal void SendToEveryone(SessionMessage type, Packet packet, PacketPriority priority)
+        {
+            foreach (var player in AllPlayers)
+            {
+                SendToPlayer(player, type, packet, priority);
+            }
+            SendToHost(type, packet, priority);
+        }
 
         #endregion
 

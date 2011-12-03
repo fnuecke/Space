@@ -102,25 +102,6 @@ namespace Engine.Session
         /// <param name="priority">the priority with which to deliver the packet.</param>
         internal override void SendToHost(SessionMessage type, Packet packet, PacketPriority priority)
         {
-            throw new InvalidOperationException("Server cannot send messages to itself. Use a more direct design.");
-        }
-
-        /// <summary>
-        /// As the internal Send, just for SendAll.
-        /// </summary>
-        /// <param name="type">the type of message to send.</param>
-        /// <param name="packet">the data to send.</param>
-        /// <param name="priority">the priority with which to deliver the packet.</param>
-        internal override void SendToEveryone(SessionMessage type, Packet packet, PacketPriority priority)
-        {
-            // Send to every client.
-            for (int i = 0; i < MaxPlayers; ++i)
-            {
-                if (playerAddresses[i] != null)
-                {
-                    SendToEndPoint(playerAddresses[i], type, packet, priority);
-                }
-            }
         }
 
         #endregion
@@ -263,14 +244,13 @@ namespace Engine.Session
                                 }
 
                                 // Anyone else already using that name?
-                                for (int i = 0; i < MaxPlayers; ++i)
+                                foreach (var p in AllPlayers)
                                 {
-                                    if (!slots[i]) continue;
-
-                                    if (players[i].Name.Equals(playerName))
+                                    if (p.Name.Equals(playerName))
                                     {
                                         // Already taken. Rename him.
                                         playerName = playerName + playerNumber;
+                                        break;
                                     }
                                 }
 
@@ -331,37 +311,33 @@ namespace Engine.Session
                                 // Send info about all players in the game (including himself).
                                 response.Write(NumPlayers);
                                 response.Write(MaxPlayers);
-                                for (int i = 0; i < MaxPlayers; i++)
+                                foreach (var p in AllPlayers)
                                 {
-                                    // Skip empty slots.
-                                    if (!slots[i]) continue;
-
-                                    Player<TPlayerData, TPacketizerContext> p = GetPlayer(i);
                                     response.Write(p.Number);
                                     response.Write(p.Name);
                                     response.Write(p.Data);
-                                    response.Write(playerAddresses[i].Address.GetAddressBytes());
-                                    response.Write(playerAddresses[i].Port);
+                                    response.Write(playerAddresses[p.Number].Address.GetAddressBytes());
+                                    response.Write(playerAddresses[p.Number].Port);
                                 }
 
                                 // Now write the other game relevant data (e.g. game state).
                                 response.Write(requestArgs.Data);
 
                                 // Send the response!
-                                SendToEndPoint(args.Remote, SessionMessage.JoinResponse, response, PacketPriority.Medium);
+                                SendToPlayer(player, SessionMessage.JoinResponse, response, PacketPriority.Medium);
 
-                                // Tell the other players, but *only* the other players.
+                                // Tell the other players.
                                 var joined = new Packet();
                                 joined.Write(playerNumber);
                                 joined.Write(playerName);
                                 joined.Write(playerData);
                                 joined.Write(args.Remote.Address.GetAddressBytes());
                                 joined.Write(args.Remote.Port);
-                                for (int i = 0; i < MaxPlayers; ++i)
+                                foreach (var p in AllPlayers)
                                 {
-                                    if (playerAddresses[i] != null && i != playerNumber)
+                                    if (!p.Equals(player))
                                     {
-                                        SendToEndPoint(playerAddresses[i], SessionMessage.PlayerJoined, joined, PacketPriority.Medium);
+                                        SendToPlayer(player, SessionMessage.PlayerJoined, joined, PacketPriority.Medium);
                                     }
                                 }
 
