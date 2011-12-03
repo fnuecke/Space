@@ -19,8 +19,8 @@ namespace Engine.Controller
     /// <typeparam name="TCommandType">the type of commands we send around.</typeparam>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssUdpClient<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractTssUdpController<IClientSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssClient<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        : AbstractTssController<IClientSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
@@ -65,10 +65,9 @@ namespace Engine.Controller
         /// <param name="game">the game this belongs to.</param>
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
-        public AbstractTssUdpClient(Game game, ushort port, string header)
-            : base(game, port, header, new uint[] { 50, 100 })
+        public AbstractTssClient(Game game, IClientSession<TPlayerData, TPacketizerContext> session)
+            : base(game, session, new uint[] { 50, 100 })
         {
-            Session = SessionFactory.StartClient<TPlayerData, TPacketizerContext>(game, Protocol);
         }
 
         /// <summary>

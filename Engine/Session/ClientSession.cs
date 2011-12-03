@@ -9,7 +9,7 @@ namespace Engine.Session
     /// <summary>
     /// Used for joining sessions.
     /// </summary>
-    internal sealed class ClientSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IClientSession<TPlayerData, TPacketizerContext>
+    public sealed class ClientSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IClientSession<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -71,46 +71,6 @@ namespace Engine.Session
         }
 
         /// <summary>
-        /// Internal variant for sending data to a specific host.
-        /// </summary>
-        /// <param name="remote">the remote machine to send the data to.</param>
-        /// <param name="type">the type of message that is sent.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">see Send()</param>
-        protected override void Send(IPEndPoint remote, SessionMessage type, Packet data, uint pollrate = 0)
-        {
-            // Don't send messages to ourself.
-            if (playerAddresses == null || !remote.Equals(playerAddresses[LocalPlayerNumber]))
-            {
-                base.Send(remote, type, data, pollrate);
-            }
-            else
-            {
-                throw new InvalidOperationException("Client cannot send messages to itself. Use a more direct design.");
-            }
-        }
-
-        /// <summary>
-        /// As the internal Send, just for SendAll.
-        /// </summary>
-        /// <param name="type">the type of message to send.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">see Send()</param>
-        protected override void SendAll(SessionMessage type, Packet data, uint pollrate = 0)
-        {
-            for (int i = 0; i < MaxPlayers; ++i)
-            {
-                // Don't send messages to ourself.
-                if (playerAddresses[i] != null && i != LocalPlayerNumber)
-                {
-                    Send(playerAddresses[i], type, data, pollrate);
-                }
-            }
-            // Also send to host.
-            Send(data, pollrate);
-        }
-
-        /// <summary>
         /// Send a ping into the local network, looking for open games.
         /// </summary>
         public void Search()
@@ -160,6 +120,50 @@ namespace Engine.Session
             LocalPlayerNumber = 0;
             NumPlayers = 0;
             MaxPlayers = 0;
+        }
+
+        #endregion
+
+        #region Internal send stuff
+
+        /// <summary>
+        /// Internal variant for sending data to a specific host.
+        /// </summary>
+        /// <param name="remote">the remote machine to send the data to.</param>
+        /// <param name="type">the type of message that is sent.</param>
+        /// <param name="data">the data to send.</param>
+        /// <param name="pollrate">see Send()</param>
+        internal override void Send(IPEndPoint remote, SessionMessage type, Packet data, uint pollrate = 0)
+        {
+            // Don't send messages to ourself.
+            if (playerAddresses == null || !remote.Equals(playerAddresses[LocalPlayerNumber]))
+            {
+                base.Send(remote, type, data, pollrate);
+            }
+            else
+            {
+                throw new InvalidOperationException("Client cannot send messages to itself. Use a more direct design.");
+            }
+        }
+
+        /// <summary>
+        /// As the internal Send, just for SendAll.
+        /// </summary>
+        /// <param name="type">the type of message to send.</param>
+        /// <param name="data">the data to send.</param>
+        /// <param name="pollrate">see Send()</param>
+        internal override void SendAll(SessionMessage type, Packet data, uint pollrate = 0)
+        {
+            for (int i = 0; i < MaxPlayers; ++i)
+            {
+                // Don't send messages to ourself.
+                if (playerAddresses[i] != null && i != LocalPlayerNumber)
+                {
+                    Send(playerAddresses[i], type, data, pollrate);
+                }
+            }
+            // Also send to host.
+            Send(data, pollrate);
         }
 
         #endregion

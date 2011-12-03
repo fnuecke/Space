@@ -106,10 +106,9 @@
     <Compile Include="Commands\FrameCommand.cs" />
     <Compile Include="Controller\AbstractCommandEmitter.cs" />
     <Compile Include="Controller\AbstractController.cs" />
-    <Compile Include="Controller\AbstractTssUdpClient.cs" />
-    <Compile Include="Controller\AbstractTssUdpController.cs" />
-    <Compile Include="Controller\AbstractTssUdpServer.cs" />
-    <Compile Include="Controller\AbstractUdpController.cs" />
+    <Compile Include="Controller\AbstractTssClient.cs" />
+    <Compile Include="Controller\AbstractTssController.cs" />
+    <Compile Include="Controller\AbstractTssServer.cs" />
     <Compile Include="Controller\CommandEmitterEventArgs.cs" />
     <Compile Include="Controller\ICommandEmitter.cs" />
     <Compile Include="Controller\IController.cs" />

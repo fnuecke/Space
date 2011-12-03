@@ -14,7 +14,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class Server : AbstractTssUdpServer<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
+    class Server : AbstractTssServer<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
     {
         #region Fields
 
@@ -25,8 +25,8 @@ namespace Space.Control
 
         #endregion
 
-        public Server(Game game, int maxPlayers, byte worldSize, long worldSeed)
-            : base(game, maxPlayers, 50100, "5p4c3!")
+        public Server(Game game, IServerSession<PlayerInfo, PacketizerContext> session, byte worldSize, long worldSeed)
+            : base(game, session)
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
             Simulation.Initialize(new GameState(game, Session));
@@ -97,18 +97,6 @@ namespace Space.Control
         }
 
         #region Debugging stuff
-
-        internal void DEBUG_DrawInfo(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
-        {
-            // Draw debug stuff.
-            SpriteFont font = Game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
-
-            var ngOffset = new Vector2(150, Game.GraphicsDevice.Viewport.Height - 100);
-            var sessionOffset = new Vector2(10, Game.GraphicsDevice.Viewport.Height - 100);
-
-            SessionInfo.Draw("Server", Session, sessionOffset, font, spriteBatch);
-            NetGraph.Draw(Protocol.Information, ngOffset, font, spriteBatch);
-        }
 
         internal long DEBUG_CurrentFrame { get { return Simulation.CurrentFrame; } }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Commands;
-using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Util;
@@ -11,10 +10,9 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for all game controller.
     /// </summary>
-    public abstract class AbstractController<TSession, TProtocol, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : DrawableGameComponent, IController<TSession, TProtocol, TCommand, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class AbstractController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
+        : DrawableGameComponent, IController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TProtocol : IProtocol
         where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
@@ -25,12 +23,7 @@ namespace Engine.Controller
         /// <summary>
         /// The underlying session being used by this controller.
         /// </summary>
-        public TSession Session { get; protected set; }
-
-        /// <summary>
-        /// The network protocol in use by the session of this controller.
-        /// </summary>
-        public TProtocol Protocol { get; protected set; }
+        public TSession Session { get; private set; }
 
         /// <summary>
         /// The console to log messages to, which will be the same for all controllers.
@@ -50,9 +43,10 @@ namespace Engine.Controller
         /// Initialize the controller.
         /// </summary>
         /// <param name="game">the game this belongs to.</param>
-        public AbstractController(Game game)
+        public AbstractController(Game game, TSession session)
             : base(game)
         {
+            this.Session = session;
         }
 
         /// <summary>

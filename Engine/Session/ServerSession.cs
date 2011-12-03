@@ -11,7 +11,7 @@ namespace Engine.Session
     /// <summary>
     /// Used for hosting a session.
     /// </summary>
-    internal sealed class ServerSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IServerSession<TPlayerData, TPacketizerContext>
+    public sealed class ServerSession<TPlayerData, TPacketizerContext> : AbstractSession<TPlayerData, TPacketizerContext>, IServerSession<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -84,24 +84,6 @@ namespace Engine.Session
         }
 
         /// <summary>
-        /// As the internal Send, just for SendAll.
-        /// </summary>
-        /// <param name="type">the type of message to send.</param>
-        /// <param name="data">the data to send.</param>
-        /// <param name="pollrate">see Send()</param>
-        protected override void SendAll(SessionMessage type, Packet data, uint pollrate = 0)
-        {
-            // Send to every client.
-            for (int i = 0; i < MaxPlayers; ++i)
-            {
-                if (playerAddresses[i] != null)
-                {
-                    Send(playerAddresses[i], type, data, pollrate);
-                }
-            }
-        }
-
-        /// <summary>
         /// Kick a player from the session.
         /// </summary>
         /// <param name="player">the number of the player to kick.</param>
@@ -116,6 +98,28 @@ namespace Engine.Session
 
                 // Erase him.
                 RemovePlayer(playerNumber);
+            }
+        }
+
+        #endregion
+
+        #region Internal send stuff
+
+        /// <summary>
+        /// As the internal Send, just for SendAll.
+        /// </summary>
+        /// <param name="type">the type of message to send.</param>
+        /// <param name="data">the data to send.</param>
+        /// <param name="pollrate">see Send()</param>
+        internal override void SendAll(SessionMessage type, Packet data, uint pollrate = 0)
+        {
+            // Send to every client.
+            for (int i = 0; i < MaxPlayers; ++i)
+            {
+                if (playerAddresses[i] != null)
+                {
+                    Send(playerAddresses[i], type, data, pollrate);
+                }
             }
         }
 

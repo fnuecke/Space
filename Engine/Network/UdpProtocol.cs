@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Network
 {
@@ -13,7 +14,7 @@ namespace Engine.Network
     /// <remarks>
     /// Implements basic reliability features via custom acks, resending and timeouts.
     /// </remarks>
-    public sealed class UdpProtocol : IProtocol
+    public sealed class UdpProtocol : GameComponent, IProtocol
     {
         #region Events
 
@@ -91,7 +92,8 @@ namespace Engine.Network
         /// </summary>
         /// <param name="port">the port to listen on/send through.</param>
         /// <param name="protocolHeader">header of the used protocol (filter packages).</param>
-        public UdpProtocol(ushort port, byte[] protocolHeader)
+        public UdpProtocol(Game game, ushort port, byte[] protocolHeader)
+            : base(game)
         {
             this.messages = new UdpMessageFactory(protocolHeader);
             this.Timeout = 10000;
@@ -104,11 +106,21 @@ namespace Engine.Network
         /// <summary>
         /// Close this connection for good. This class should not be used again after calling this.
         /// </summary>
-        public void Dispose()
+        protected override void Dispose(bool disposing)
         {
             connections.Clear();
             awaitingAck.Clear();
             udp.Close();
+
+            base.Dispose(disposing);
+        }
+
+        public override void Update(GameTime gameTime)
+        {
+            Receive();
+            Flush();
+
+            base.Update(gameTime);
         }
 
         #endregion
@@ -127,36 +139,6 @@ namespace Engine.Network
                 return connection.Ping;
             }
             return -1;
-        }
-
-        /// <summary>
-        /// Check if there is any data that can be received. This can trigger OnConnect and
-        /// OnData events (handled in the same thread calling this function).
-        /// </summary>
-        public void Receive()
-        {
-            if (udp.Client != null)
-            {
-                var remote = new IPEndPoint(0, 0);
-                while (udp.Available > 0)
-                {
-                    try
-                    {
-                        byte[] buffer = udp.Receive(ref remote);
-                        Inject(buffer, remote);
-                    }
-#if DEBUG
-                    catch (SocketException ex)
-                    {
-                        Console.WriteLine(ex);
-                    }
-#else
-                    catch (SocketException)
-                    {
-                    }
-#endif
-                }
-            }
         }
 
         /// <summary>
@@ -185,69 +167,6 @@ namespace Engine.Network
                 Packet message = messages.MakeUnacked(data);
                 info.Outgoing(message.Length, TrafficTypes.Data);
                 udp.Send(message.Buffer, message.Length, remote);
-            }
-        }
-
-        /// <summary>
-        /// Send or resend any acked messages we still haven't got an ack for.
-        /// This can trigger MessageTimeout events.
-        /// </summary>
-        public void Flush()
-        {
-            long time = DateTime.Now.Ticks;
-            List<IPEndPoint> toRemove = new List<IPEndPoint>();
-            foreach (var message in awaitingAck.Values)
-            {
-                if (new TimeSpan(time - message.timeCreated).TotalMilliseconds > Timeout)
-                {
-                    // This connection timed out. Mark for closing.
-                    toRemove.Add(message.remote);
-                }
-                else if (new TimeSpan(time - message.lastSent).TotalMilliseconds > message.pollRate)
-                {
-                    info.Outgoing(message.data.Length, TrafficTypes.Data);
-                    try
-                    {
-                        udp.Send(message.data.Buffer, message.data.Length, message.remote);
-                        // Incrementally stretch the time between resends, to avoid flooding
-                        // the adapter for low initial pollrates.
-                        if (message.lastSent != 0)
-                        {
-                            message.pollRate += message.pollRate;
-                        }
-                        message.lastSent = time;
-                    }
-                    catch (SocketException)
-                    {
-                        toRemove.Add(message.remote);
-                    }
-                }
-            }
-
-            // Do actual removal after iteration, as this modifies the collection.
-            foreach (var remote in toRemove)
-            {
-#if DEBUG
-                Console.WriteLine("Udp: timeout for " + remote.ToString());
-#endif
-                RemoveConnection(remote);
-                OnTimeout(new ProtocolEventArgs(remote));
-            }
-
-            // Do pings for known connections once in a while.
-            if (new TimeSpan(time - lastPing).TotalMilliseconds > PingFrequency)
-            {
-                Packet message = messages.MakePing();
-                foreach (var item in connections.Values)
-                {
-                    // Only ping remote hosts that sent us a message (replied) recently.
-                    if ((DateTime.Now - item.LastReceived).TotalMilliseconds < PingFrequency * 2)
-                    {
-                        info.Outgoing(message.Length, TrafficTypes.Protocol);
-                        udp.Send(message.Buffer, message.Length, item.Remote);
-                    }
-                }
-                lastPing = time;
             }
         }
 
@@ -357,6 +276,103 @@ namespace Engine.Network
                     break;
                 default:
                     break;
+            }
+        }
+
+        #endregion
+
+        #region Drive network
+
+        /// <summary>
+        /// Check if there is any data that can be received. This can trigger OnConnect and
+        /// OnData events (handled in the same thread calling this function).
+        /// </summary>
+        private void Receive()
+        {
+            if (udp.Client != null)
+            {
+                var remote = new IPEndPoint(0, 0);
+                while (udp.Available > 0)
+                {
+                    try
+                    {
+                        byte[] buffer = udp.Receive(ref remote);
+                        Inject(buffer, remote);
+                    }
+#if DEBUG
+                    catch (SocketException ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+#else
+                    catch (SocketException)
+                    {
+                    }
+#endif
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send or resend any acked messages we still haven't got an ack for.
+        /// This can trigger MessageTimeout events.
+        /// </summary>
+        private void Flush()
+        {
+            long time = DateTime.Now.Ticks;
+            List<IPEndPoint> toRemove = new List<IPEndPoint>();
+            foreach (var message in awaitingAck.Values)
+            {
+                if (new TimeSpan(time - message.timeCreated).TotalMilliseconds > Timeout)
+                {
+                    // This connection timed out. Mark for closing.
+                    toRemove.Add(message.remote);
+                }
+                else if (new TimeSpan(time - message.lastSent).TotalMilliseconds > message.pollRate)
+                {
+                    info.Outgoing(message.data.Length, TrafficTypes.Data);
+                    try
+                    {
+                        udp.Send(message.data.Buffer, message.data.Length, message.remote);
+                        // Incrementally stretch the time between resends, to avoid flooding
+                        // the adapter for low initial pollrates.
+                        if (message.lastSent != 0)
+                        {
+                            message.pollRate += message.pollRate;
+                        }
+                        message.lastSent = time;
+                    }
+                    catch (SocketException)
+                    {
+                        toRemove.Add(message.remote);
+                    }
+                }
+            }
+
+            // Do actual removal after iteration, as this modifies the collection.
+            foreach (var remote in toRemove)
+            {
+#if DEBUG
+                Console.WriteLine("Udp: timeout for " + remote.ToString());
+#endif
+                RemoveConnection(remote);
+                OnTimeout(new ProtocolEventArgs(remote));
+            }
+
+            // Do pings for known connections once in a while.
+            if (new TimeSpan(time - lastPing).TotalMilliseconds > PingFrequency)
+            {
+                Packet message = messages.MakePing();
+                foreach (var item in connections.Values)
+                {
+                    // Only ping remote hosts that sent us a message (replied) recently.
+                    if ((DateTime.Now - item.LastReceived).TotalMilliseconds < PingFrequency * 2)
+                    {
+                        info.Outgoing(message.Length, TrafficTypes.Protocol);
+                        udp.Send(message.Buffer, message.Length, item.Remote);
+                    }
+                }
+                lastPing = time;
             }
         }
 

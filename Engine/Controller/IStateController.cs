@@ -1,5 +1,4 @@
 ﻿using Engine.Commands;
-using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -9,12 +8,11 @@ namespace Engine.Controller
     /// <summary>
     /// Public interface for controllers managing a game state.
     /// </summary>
-    public interface IStateController<TState, TSteppable, TSession, TProtocol, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : IController<TSession, TProtocol, TCommand, TCommandType, TPlayerData, TPacketizerContext>
+    public interface IStateController<TState, TSteppable, TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
+        : IController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TProtocol : IProtocol
         where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>

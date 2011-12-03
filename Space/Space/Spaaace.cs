@@ -1,13 +1,17 @@
 using System;
 using System.Net;
+using System.Text;
 using Engine.Input;
+using Engine.Network;
 using Engine.Serialization;
+using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
 using Space.Control;
 using Space.Model;
+using Space.View;
 using SpaceData;
 
 namespace Space
@@ -21,8 +25,13 @@ namespace Space
         PacketizerContext context;
         SpriteBatch spriteBatch;
         GameConsole console;
-        Server server;
-        Client client;
+
+        UdpProtocol serverProtocol;
+        UdpProtocol clientProtocol;
+        IServerSession<PlayerInfo, PacketizerContext> serverSession;
+        IClientSession<PlayerInfo, PacketizerContext> clientSession;
+        Server serverController;
+        Client clientController;
 
         public Spaaace()
         {
@@ -69,43 +78,30 @@ namespace Space
             // Register some commands for our console, making debugging that much easier ;)
             console.AddCommand("server", args =>
             {
-                if (server != null)
-                {
-                    server.Dispose();
-                    Components.Remove(server);
-                }
-                server = new Server(this, 8, 10, 0);
-                Components.Add(server);
+                RestartServer();
             },
-                "Switch to server mode (host a new game).");
+                "Restart server logic.");
             console.AddCommand("client", args =>
             {
-                if (client != null)
-                {
-                    client.Dispose();
-                    Components.Remove(client);
-                }
-                client = new Client(this);
-                client.AddEmitter(new InputCommandEmitter(this, client.Session));
-                Components.Add(client);
+                RestartClient();
             },
-                "Switch to client mode.");
+                "Restart client logic.");
             console.AddCommand("search", args =>
             {
-                client.Session.Search();
+                clientController.Session.Search();
             },
                 "Search for games available on the local subnet.");
             console.AddCommand("connect", args =>
             {
                 PlayerInfo info = new PlayerInfo();
                 info.ShipType = "Sparrow";
-                client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
+                clientController.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
             },
                 "Joins a game at the given host.",
                 "connect <host> <port> - join the host with the given hostname or IP.");
             console.AddCommand("leave", args =>
             {
-                client.Session.Leave();
+                clientController.Session.Leave();
             },
                 "Leave the current game.");
             console.AddCommand(new[] { "fullscreen", "fs" }, args =>
@@ -115,7 +111,7 @@ namespace Space
                 "Toggles fullscreen mode.");
             console.AddCommand("invalidate", args =>
             {
-                client.DEBUG_InvalidateSimulation();
+                clientController.DEBUG_InvalidateSimulation();
             },
                 "Invalidates the client game state, requesting a snapshot from the server.");
 
@@ -124,7 +120,7 @@ namespace Space
             {
                 PlayerInfo info = new PlayerInfo();
                 info.ShipType = "Sparrow";
-                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
+                clientController.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
             },
                 "autojoin fn");
             // Just for me, joining default testing server.
@@ -132,7 +128,7 @@ namespace Space
             {
                 PlayerInfo info = new PlayerInfo();
                 info.ShipType = "Sparrow";
-                client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
+                clientController.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
             },
                 "autojoin localhost");
 
@@ -196,11 +192,9 @@ namespace Space
             //    server = new Server(this, 8, 10, 0);
             //    Components.Add(server);
             //}
-            if (client == null)
+            if (clientController == null)
             {
-                client = new Client(this);
-                client.AddEmitter(new InputCommandEmitter(this, client.Session));
-                Components.Add(client);
+                RestartClient();
             }
 
             base.Update(gameTime);
@@ -216,33 +210,94 @@ namespace Space
 
             base.Draw(gameTime);
 
-            if (server != null)
+            if (serverController != null)
             {
-                server.DEBUG_DrawInfo(spriteBatch);
+                // Draw debug stuff.
+                var ngOffset = new Vector2(150, GraphicsDevice.Viewport.Height - 100);
+                var sessionOffset = new Vector2(10, GraphicsDevice.Viewport.Height - 100);
+
+                SessionInfo.Draw("Server", serverSession, sessionOffset, console.Font, spriteBatch);
+                NetGraph.Draw(serverProtocol.Information, ngOffset, console.Font, spriteBatch);
             }
 
-            if (client != null)
+            if (clientController != null)
             {
-                client.DEBUG_DrawInfo(spriteBatch);
+                // Draw debug stuff.
+                var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 200, GraphicsDevice.Viewport.Height - 100);
+                var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 340, GraphicsDevice.Viewport.Height - 100);
+
+                SessionInfo.Draw("Client", clientSession, sessionOffset, console.Font, spriteBatch);
+                NetGraph.Draw(clientProtocol.Information, ngOffset, console.Font, spriteBatch);
             }
 
             spriteBatch.Begin();
 
             string info = String.Format("FPS: {0:f} | Slow: {1}",
                 System.Math.Ceiling(1 / (float)gameTime.ElapsedGameTime.TotalSeconds), gameTime.IsRunningSlowly);
-            if (server != null)
+            if (serverController != null)
             {
-                info += String.Format("\nServerframe: {0}", server.DEBUG_CurrentFrame);
+                info += String.Format("\nServerframe: {0}", serverController.DEBUG_CurrentFrame);
             }
-            if (client != null)
+            if (clientController != null)
             {
-                info += String.Format("\nClientframe: {0}", client.DEBUG_CurrentFrame);
+                info += String.Format("\nClientframe: {0}", clientController.DEBUG_CurrentFrame);
             }
             var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - console.Font.MeasureString(info).X, 10);
 
             spriteBatch.DrawString(console.Font, info, infoPosition, Color.White);
 
             spriteBatch.End();
+        }
+
+        private void RestartServer()
+        {
+            if (serverController != null)
+            {
+                serverController.Dispose();
+                Components.Remove(serverController);
+            }
+            if (serverSession != null)
+            {
+                serverSession.Dispose();
+            }
+            if (serverProtocol != null)
+            {
+                serverProtocol.Dispose();
+                Components.Remove(serverProtocol);
+            }
+            serverProtocol = new UdpProtocol(this, 50100, Encoding.ASCII.GetBytes("Space"));
+            serverSession = new ServerSession<PlayerInfo, PacketizerContext>(this, serverProtocol, 8);
+            serverController = new Server(this, serverSession, 10, 0);
+            serverController.UpdateOrder = 10;
+
+            Components.Add(serverProtocol);
+            Components.Add(serverController);
+        }
+
+        private void RestartClient()
+        {
+            if (clientController != null)
+            {
+                clientController.Dispose();
+                Components.Remove(clientController);
+            }
+            if (clientSession != null)
+            {
+                clientSession.Dispose();
+            }
+            if (clientProtocol != null)
+            {
+                clientProtocol.Dispose();
+                Components.Remove(clientProtocol);
+            }
+            clientProtocol = new UdpProtocol(this, 50101, Encoding.ASCII.GetBytes("Space"));
+            clientSession = new ClientSession<PlayerInfo, PacketizerContext>(this, clientProtocol);
+            clientController = new Client(this, clientSession);
+            clientController.UpdateOrder = 10;
+            clientController.AddEmitter(new InputCommandEmitter(this, clientController.Session));
+
+            Components.Add(clientProtocol);
+            Components.Add(clientController);
         }
     }
 }

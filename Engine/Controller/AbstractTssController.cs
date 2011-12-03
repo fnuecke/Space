@@ -1,5 +1,4 @@
 ﻿using Engine.Commands;
-using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -10,9 +9,9 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
-    public abstract class AbstractTssUdpController<TSession, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractUdpController<TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>,
-          IStateController<TState, TSteppable, TSession, UdpProtocol, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssController<TSession, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        : AbstractController<TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>,
+          IStateController<TState, TSteppable, TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
@@ -49,8 +48,8 @@ namespace Engine.Controller
         /// <param name="game">the game this belongs to.</param>
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
-        public AbstractTssUdpController(Game game, ushort port, string header, uint[] delays)
-            : base(game, port, header)
+        public AbstractTssController(Game game, TSession session, uint[] delays)
+            : base(game, session)
         {
             Simulation = new TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>(delays);
         }

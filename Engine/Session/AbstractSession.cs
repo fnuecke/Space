@@ -62,7 +62,7 @@ namespace Engine.Session
     /// <summary>
     /// Base implementation for server and client side sessions, i.e. functionality used by both.
     /// </summary>
-    internal abstract class AbstractSession<TPlayerData, TPacketizerContext> : GameComponent, ISession<TPlayerData, TPacketizerContext>
+    public abstract class AbstractSession<TPlayerData, TPacketizerContext> : GameComponent, ISession<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -159,6 +159,8 @@ namespace Engine.Session
 
         #endregion
 
+        #region Constructor / Cleanup
+
         public AbstractSession(Game game, IProtocol protocol)
             : base(game)
         {
@@ -167,6 +169,13 @@ namespace Engine.Session
 
             protocol.MessageTimeout += HandlePlayerTimeout;
             protocol.Data += HandlePlayerData;
+        }
+
+        public override void Initialize()
+        {
+            packetizer = ((IPacketizer<TPlayerData, TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPlayerData, TPacketizerContext>))).CopyFor(this);
+
+            base.Initialize();
         }
 
         /// <summary>
@@ -181,12 +190,10 @@ namespace Engine.Session
             base.Dispose(disposing);
         }
 
-        public override void Initialize()
-        {
-            packetizer = ((IPacketizer<TPlayerData, TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPlayerData, TPacketizerContext>))).CopyFor(this);
+        #endregion
 
-            base.Initialize();
-        }
+        #region Public API
+        #endregion
 
         /// <summary>
         /// Get info on the player with the given number.
@@ -239,6 +246,8 @@ namespace Engine.Session
             SendAll(SessionMessage.Data, data, pollRate);
         }
 
+        #region Internal send stuff
+
         /// <summary>
         /// Internal variant for sending data to a specific host.
         /// </summary>
@@ -246,7 +255,7 @@ namespace Engine.Session
         /// <param name="type">the type of message that is sent.</param>
         /// <param name="data">the data to send.</param>
         /// <param name="pollrate">see Send()</param>
-        protected virtual void Send(IPEndPoint remote, SessionMessage type, Packet data, uint pollrate = 0)
+        internal virtual void Send(IPEndPoint remote, SessionMessage type, Packet data, uint pollrate = 0)
         {
             Packet wrapper = new Packet(5 + (data != null ? data.Length : 0));
             wrapper.Write((byte)type);
@@ -260,7 +269,11 @@ namespace Engine.Session
         /// <param name="type">the type of message to send.</param>
         /// <param name="data">the data to send.</param>
         /// <param name="pollrate">see Send()</param>
-        protected abstract void SendAll(SessionMessage type, Packet data, uint pollrate = 0);
+        internal abstract void SendAll(SessionMessage type, Packet data, uint pollrate = 0);
+
+        #endregion
+
+        #region Events
 
         /// <summary>
         /// Handle disconnects to players due to timeouts.
@@ -271,6 +284,10 @@ namespace Engine.Session
         /// Handle data received from a remote machine.
         /// </summary>
         protected abstract void HandlePlayerData(object sender, EventArgs e);
+
+        #endregion
+
+        #region Utility methods
 
         /// <summary>
         /// Trigger a player data event, but only if the player that sent the packet
@@ -311,5 +328,7 @@ namespace Engine.Session
                 PlayerData(this, e);
             }
         }
+
+        #endregion
     }
 }

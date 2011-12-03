@@ -6,14 +6,13 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
 using Space.Model;
-using Space.View;
 
 namespace Space.Control
 {
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class Client : AbstractTssUdpClient<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
+    class Client : AbstractTssClient<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
     {
         #region Fields
 
@@ -30,8 +29,8 @@ namespace Space.Control
         /// Creates a new game client, ready to connect to an open game.
         /// </summary>
         /// <param name="game"></param>
-        public Client(Game game)
-            : base(game, 50101, "5p4c3!")
+        public Client(Game game, IClientSession<PlayerInfo, PacketizerContext> session)
+            : base(game, session)
         {
             Simulation.Initialize(new GameState(game, Session));
         }
@@ -193,18 +192,6 @@ namespace Space.Control
         #region Debugging stuff
 
         internal long DEBUG_CurrentFrame { get { return Simulation.CurrentFrame; } }
-
-        internal void DEBUG_DrawInfo(Microsoft.Xna.Framework.Graphics.SpriteBatch spriteBatch)
-        {
-            // Draw debug stuff.
-            SpriteFont font = Game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
-
-            var ngOffset = new Vector2(Game.GraphicsDevice.Viewport.Width - 200, Game.GraphicsDevice.Viewport.Height - 100);
-            var sessionOffset = new Vector2(Game.GraphicsDevice.Viewport.Width - 340, Game.GraphicsDevice.Viewport.Height - 100);
-
-            SessionInfo.Draw("Client", Session, sessionOffset, font, spriteBatch);
-            NetGraph.Draw(Protocol.Information, ngOffset, font, spriteBatch);
-        }
 
         internal void DEBUG_InvalidateSimulation()
         {
