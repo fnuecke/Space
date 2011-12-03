@@ -28,8 +28,8 @@ namespace Space.Model
 
         private Texture2D texture;
 
-        private Direction accelerationDirection = Direction.Invalid;
-        private Direction rotateDirection = Direction.Invalid;
+        private Directions accelerationDirection = Directions.None;
+        private Directions rotateDirection = Directions.None;
 
         public Ship()
         {
@@ -44,25 +44,25 @@ namespace Space.Model
             this.PlayerNumber = player;
         }
 
-        public void Accelerate(Direction direction)
+        public void Accelerate(Directions direction)
         {
             accelerationDirection |= direction;
             acceleration = DirectionConversion.DirectionToFPoint(accelerationDirection) * data.Acceleration;
         }
 
-        public void StopAccelerate(Direction direction)
+        public void StopAccelerate(Directions direction)
         {
             accelerationDirection &= ~direction;
             acceleration = DirectionConversion.DirectionToFPoint(accelerationDirection) * data.Acceleration;
         }
 
-        public void Rotate(Direction direction)
+        public void Rotate(Directions direction)
         {
             rotateDirection |= direction;
             speedRotation = DirectionConversion.DirectionToFixed(rotateDirection) * data.RotationSpeed;
         }
 
-        public void StopRotate(Direction direction)
+        public void StopRotate(Directions direction)
         {
             rotateDirection &= ~direction;
             speedRotation = DirectionConversion.DirectionToFixed(rotateDirection) * data.RotationSpeed;

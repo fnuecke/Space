@@ -32,6 +32,16 @@ namespace Engine.Controller
             Protocol = new UdpProtocol(port, Encoding.ASCII.GetBytes(header));
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (Protocol != null)
+            {
+                Protocol.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
         #endregion
 
         #region Logic

@@ -35,7 +35,7 @@ namespace Engine.Network
         /// Keeps track of some network related statistics.
         /// </summary>
         public IProtocolInfo Information { get { return info; } }
-        
+
         /// <summary>
         /// The ping frequency, i.e. how often (every <c>PingFrequency</c> milliseconds)
         /// to send pings to known remote hosts. This is used to detect failed connections
@@ -183,7 +183,7 @@ namespace Engine.Network
             else
             {
                 Packet message = messages.MakeUnacked(data);
-                info.Outgoing(message.Length, TrafficType.Data);
+                info.Outgoing(message.Length, TrafficTypes.Data);
                 udp.Send(message.Buffer, message.Length, remote);
             }
         }
@@ -205,7 +205,7 @@ namespace Engine.Network
                 }
                 else if (new TimeSpan(time - message.lastSent).TotalMilliseconds > message.pollRate)
                 {
-                    info.Outgoing(message.data.Length, TrafficType.Data);
+                    info.Outgoing(message.data.Length, TrafficTypes.Data);
                     try
                     {
                         udp.Send(message.data.Buffer, message.data.Length, message.remote);
@@ -243,7 +243,7 @@ namespace Engine.Network
                     // Only ping remote hosts that sent us a message (replied) recently.
                     if ((DateTime.Now - item.LastReceived).TotalMilliseconds < PingFrequency * 2)
                     {
-                        info.Outgoing(message.Length, TrafficType.Protocol);
+                        info.Outgoing(message.Length, TrafficTypes.Protocol);
                         udp.Send(message.Buffer, message.Length, item.Remote);
                     }
                 }
@@ -267,106 +267,97 @@ namespace Engine.Network
             // Did we get a valid message.
             if (!messages.ParseMessage(buffer, out type, out messageNumber, out data))
             {
-                info.Incoming(buffer.Length, TrafficType.Invalid);
+                info.Incoming(buffer.Length, TrafficTypes.Invalid);
                 return;
             }
 
-            // This block is synchronized, to avoid inconsistencies when messages
-            // get pushed from outside sources.
-            try
+            // Get the connection associated with this remote machine. Only create a new one
+            // if it's a data packet.
+            UdpRemoteInfo connection = GetConnection(remote, true);
+            if (connection == null)
             {
-                // Get the connection associated with this remote machine. Only create a new one
-                // if it's a data packet.
-                UdpRemoteInfo connection = GetConnection(remote, true);
-                if (connection == null)
-                {
-                    // We couldn't get the raw IP.
+                // We couldn't get the raw IP.
 #if DEBUG
-                    Console.WriteLine("Udp: cannot get raw ip");
+                Console.WriteLine("Udp: cannot get raw ip");
 #endif
-                    return;
-                }
-                connection.LastReceived = DateTime.Now;
+                return;
+            }
+            connection.LastReceived = DateTime.Now;
 
-                // Act based on type.
-                switch (type)
-                {
-                    case SocketMessage.Ack:
-                        // It's an ack.
-                        info.Incoming(buffer.Length, TrafficType.Protocol);
-                        if (awaitingAck.ContainsKey(messageNumber))
-                        {
-                            awaitingAck.Remove(messageNumber);
-                        }
-                        break;
+            // Act based on type.
+            switch (type)
+            {
+                case SocketMessage.Ack:
+                    // It's an ack.
+                    info.Incoming(buffer.Length, TrafficTypes.Protocol);
+                    if (awaitingAck.ContainsKey(messageNumber))
+                    {
+                        awaitingAck.Remove(messageNumber);
+                    }
+                    break;
 
-                    case SocketMessage.Acked:
-                        // Acked data.
-                        info.Incoming(buffer.Length, TrafficType.Data);
-                        if (connection != null)
+                case SocketMessage.Acked:
+                    // Acked data.
+                    info.Incoming(buffer.Length, TrafficTypes.Data);
+                    if (connection != null)
+                    {
+                        // Only handle these once successfully, as they may have been resent
+                        // (ack didn't get back quick enough or failed handling before).
+                        if (!connection.IsAlreadyHandled(messageNumber))
                         {
-                            // Only handle these once successfully, as they may have been resent
-                            // (ack didn't get back quick enough or failed handling before).
-                            if (!connection.IsAlreadyHandled(messageNumber))
+                            // Failed last time, retry because some other packet might have
+                            // arrived in the meantime, changing the handler's state.
+                            var dataArgs = new ProtocolDataEventArgs(remote, data);
+                            OnData(dataArgs);
+                            if (dataArgs.WasConsumed)
                             {
-                                // Failed last time, retry because some other packet might have
-                                // arrived in the meantime, changing the handler's state.
-                                var dataArgs = new ProtocolDataEventArgs(remote, data);
-                                OnData(dataArgs);
-                                if (dataArgs.WasConsumed)
-                                {
-                                    // Success! Remember that.
-                                    connection.MarkHandled(messageNumber);
-                                }
-                                else
-                                {
-                                    // Failed handling, don't send ack.
+                                // Success! Remember that.
+                                connection.MarkHandled(messageNumber);
+                            }
+                            else
+                            {
+                                // Failed handling, don't send ack.
 #if DEBUG
-                                    Console.WriteLine("Udp: acked failed handling");
+                                Console.WriteLine("Udp: acked failed handling");
 #endif
-                                    return;
-                                }
-                            } // else handled successfully before, resend ack.
+                                return;
+                            }
+                        } // else handled successfully before, resend ack.
 
-                            // Send ack if we get here.
-                            Packet ack = messages.MakeAck(messageNumber);
-                            info.Outgoing(ack.Length, TrafficType.Protocol);
-                            udp.Send(ack.Buffer, ack.Length, remote);
-                        }
-                        break;
+                        // Send ack if we get here.
+                        Packet ack = messages.MakeAck(messageNumber);
+                        info.Outgoing(ack.Length, TrafficTypes.Protocol);
+                        udp.Send(ack.Buffer, ack.Length, remote);
+                    }
+                    break;
 
-                    case SocketMessage.Ping:
-                        // It's a ping, send a pong.
-                        info.Incoming(buffer.Length, TrafficType.Protocol);
+                case SocketMessage.Ping:
+                    // It's a ping, send a pong.
+                    info.Incoming(buffer.Length, TrafficTypes.Protocol);
+                    if (data.HasInt64())
+                    {
                         Packet pong = messages.MakePong(data.ReadInt64());
-                        info.Outgoing(pong.Length, TrafficType.Protocol);
+                        info.Outgoing(pong.Length, TrafficTypes.Protocol);
                         udp.Send(pong.Buffer, pong.Length, remote);
-                        break;
+                    }
+                    break;
 
-                    case SocketMessage.Pong:
-                        // It's a pong! Calculate latency.
+                case SocketMessage.Pong:
+                    // It's a pong! Calculate latency.
+                    if (data.HasInt64())
+                    {
                         connection.PushPing((int)new TimeSpan((DateTime.Now.Ticks - data.ReadInt64()) / 2).TotalMilliseconds);
-                        break;
+                    }
+                    break;
 
-                    case SocketMessage.Unacked:
-                        // Unacked data, this is only sent once, presumably.
-                        info.Incoming(buffer.Length, TrafficType.Data);
-                        OnData(new ProtocolDataEventArgs(remote, data));
-                        break;
-                    default:
-                        break;
-                }
+                case SocketMessage.Unacked:
+                    // Unacked data, this is only sent once, presumably.
+                    info.Incoming(buffer.Length, TrafficTypes.Data);
+                    OnData(new ProtocolDataEventArgs(remote, data));
+                    break;
+                default:
+                    break;
             }
-#if DEBUG
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-#else
-            catch (Exception)
-            {
-            }
-#endif
         }
 
         #endregion
@@ -632,7 +623,7 @@ namespace Engine.Network
                         return false;
                     }
                     byte[] compressed = packet.ReadByteArray();
-                    body = new Packet(Compression.Decompress(compressed));
+                    body = new Packet(SimpleCompression.Decompress(compressed));
                 }
                 else
                 {
@@ -686,7 +677,7 @@ namespace Engine.Network
                 // seems to be around 130byte, so make sure we're well beyond that.
                 if (packet.Length > 256)
                 {
-                    byte[] compressed = Compression.Compress(packet.Buffer, packet.Length);
+                    byte[] compressed = SimpleCompression.Compress(packet.Buffer, packet.Length);
                     if (compressed.Length < packet.Length)
                     {
                         type |= SocketMessage.Compressed;

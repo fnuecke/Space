@@ -30,7 +30,7 @@ namespace Space.Model
                 case GameCommandType.PlayerInput:
                     // Player input command, apply it.
                     {
-                        Ship ship = (Ship)Get(command.Player.Data.ShipUID);
+                        Ship ship = (Ship)GetSteppable(command.Player.Data.ShipUID);
                         if (ship != null)
                         {
                             // What did he do?
@@ -39,47 +39,47 @@ namespace Space.Model
                             {
                                 // Start accelerating in the given direction.
                                 case PlayerInputCommand.PlayerInput.AccelerateUp:
-                                    ship.Accelerate(Direction.North);
+                                    ship.Accelerate(Directions.North);
                                     break;
                                 case PlayerInputCommand.PlayerInput.AccelerateRight:
-                                    ship.Accelerate(Direction.East);
+                                    ship.Accelerate(Directions.East);
                                     break;
                                 case PlayerInputCommand.PlayerInput.AccelerateDown:
-                                    ship.Accelerate(Direction.South);
+                                    ship.Accelerate(Directions.South);
                                     break;
                                 case PlayerInputCommand.PlayerInput.AccelerateLeft:
-                                    ship.Accelerate(Direction.West);
+                                    ship.Accelerate(Directions.West);
                                     break;
 
                                 // Stop accelerating in the given direction.
                                 case PlayerInputCommand.PlayerInput.StopUp:
-                                    ship.StopAccelerate(Direction.North);
+                                    ship.StopAccelerate(Directions.North);
                                     break;
                                 case PlayerInputCommand.PlayerInput.StopRight:
-                                    ship.StopAccelerate(Direction.East);
+                                    ship.StopAccelerate(Directions.East);
                                     break;
                                 case PlayerInputCommand.PlayerInput.StopDown:
-                                    ship.StopAccelerate(Direction.South);
+                                    ship.StopAccelerate(Directions.South);
                                     break;
                                 case PlayerInputCommand.PlayerInput.StopLeft:
-                                    ship.StopAccelerate(Direction.West);
+                                    ship.StopAccelerate(Directions.West);
                                     break;
 
                                 // Begin turning to the left.
                                 case PlayerInputCommand.PlayerInput.TurnLeft:
-                                    ship.Rotate(Direction.Left);
+                                    ship.Rotate(Directions.Left);
                                     break;
                                 // Begin turning to the right.
                                 case PlayerInputCommand.PlayerInput.TurnRight:
-                                    ship.Rotate(Direction.Right);
+                                    ship.Rotate(Directions.Right);
                                     break;
                                 // Stop turning left.
                                 case PlayerInputCommand.PlayerInput.StopTurnLeft:
-                                    ship.StopRotate(Direction.Left);
+                                    ship.StopRotate(Directions.Left);
                                     break;
                                 // Stop turning left.
                                 case PlayerInputCommand.PlayerInput.StopTurnRight:
-                                    ship.StopRotate(Direction.Right);
+                                    ship.StopRotate(Directions.Right);
                                     break;
                             }
                         }

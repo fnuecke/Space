@@ -82,32 +82,33 @@ namespace Engine.Util
         /// <summary>
         /// Encrypts a complete byte array.
         /// </summary>
-        /// <param name="bytes">the byte array to encrypt.</param>
+        /// <param name="value">the byte array to encrypt.</param>
         /// <returns>the encrypted data.</returns>
-        public byte[] Encrypt(byte[] bytes)
+        public byte[] Encrypt(byte[] value)
         {
-            return Encrypt(bytes, 0, bytes.Length);
+            return Encrypt(value, 0, value.Length);
         }
 
         /// <summary>
         /// Encrypts part of a byte array.
         /// </summary>
-        /// <param name="bytes">the byte array to encrypt.</param>
-        /// <param name="start">the position to start reading at.</param>
+        /// <param name="value">the byte array to encrypt.</param>
+        /// <param name="offset">the position to start reading at.</param>
         /// <param name="length">the number of bytes to read.</param>
         /// <returns>the encrypted data.</returns>
-        public byte[] Encrypt(byte[] bytes, int start, int length)
+        public byte[] Encrypt(byte[] value, int offset, int length)
         {
-            if (bytes == null || bytes.Length <= 0)
+            if (value == null || value.Length <= 0)
             {
-                throw new ArgumentNullException("bytes");
+                throw new ArgumentNullException("value");
             }
             using (MemoryStream output = new MemoryStream())
             {
-                using (ICryptoTransform transform = new RijndaelManaged().CreateEncryptor(key, vector))
-                using (CryptoStream stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
+                using (var rijndael = new RijndaelManaged())
+                using (var transform = rijndael.CreateEncryptor(key, vector))
+                using (var stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
                 {
-                    stream.Write(bytes, start, length);
+                    stream.Write(value, offset, length);
                 }
                 return output.ToArray();
             }
@@ -116,34 +117,35 @@ namespace Engine.Util
         /// <summary>
         /// Decrypts a complete byte array.
         /// </summary>
-        /// <param name="bytes">the byte array to decrypt.</param>
+        /// <param name="value">the byte array to decrypt.</param>
         /// <returns>the decrypted data.</returns>
-        public byte[] Decrypt(byte[] bytes)
+        public byte[] Decrypt(byte[] value)
         {
-            return Decrypt(bytes, 0, bytes.Length);
+            return Decrypt(value, 0, value.Length);
         }
 
         /// <summary>
         /// Decrypts part of a byte array.
         /// </summary>
-        /// <param name="bytes">the byte array to decrypt.</param>
-        /// <param name="start">the position to start reading at.</param>
+        /// <param name="value">the byte array to decrypt.</param>
+        /// <param name="offset">the position to start reading at.</param>
         /// <param name="length">the number of bytes to read.</param>
         /// <returns>the decrypted data.</returns>
-        public byte[] Decrypt(byte[] bytes, int start, int length)
+        public byte[] Decrypt(byte[] value, int offset, int length)
         {
-            if (bytes == null || bytes.Length <= 0)
+            if (value == null || value.Length <= 0)
             {
-                throw new ArgumentNullException("bytes");
+                throw new ArgumentNullException("value");
             }
             using (MemoryStream output = new MemoryStream())
             {
                 try
                 {
-                    using (ICryptoTransform transform = new RijndaelManaged().CreateDecryptor(key, vector))
-                    using (CryptoStream stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
+                    using (var rijndael = new RijndaelManaged())
+                    using (var transform = rijndael.CreateDecryptor(key, vector))
+                    using (var stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
                     {
-                        stream.Write(bytes, start, length);
+                        stream.Write(value, offset, length);
                     }
                     return output.ToArray();
                 }

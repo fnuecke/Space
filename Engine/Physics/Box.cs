@@ -8,7 +8,7 @@ namespace Engine.Physics
     /// <summary>
     /// Base class for box shaped world objects.
     /// </summary>
-    public abstract class Box<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : Collideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class Box<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractCollideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct

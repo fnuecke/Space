@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Engine.Input;
@@ -142,9 +143,9 @@ namespace Engine.Util
         }
 
         /// <summary>
-        /// The hot-key used for toggling the console.
+        /// The hot-key used for opening the console.
         /// </summary>
-        public Keys HotKey { get; set; }
+        public Keys Hotkey { get; set; }
 
         /// <summary>
         /// Whether the console is currently open (visible) or not.
@@ -252,7 +253,7 @@ namespace Engine.Util
             EntriesToScroll = 3;
             TextColor = Color.WhiteSmoke;
             CaretColor = new Color(0.4f, 0.4f, 0.4f, 0.4f);
-            HotKey = Keys.OemTilde;
+            Hotkey = Keys.OemTilde;
             KeyMap = KeyMap.KeyMapByLocale("en-US");
 
             // Add inbuilt functions.
@@ -309,6 +310,10 @@ namespace Engine.Util
             if (mouse != null)
             {
                 mouse.Scrolled -= HandleMouseScrolled;
+            }
+            if (pixelTexture != null)
+            {
+                pixelTexture.Dispose();
             }
 
             base.Dispose(disposing);
@@ -461,6 +466,7 @@ namespace Engine.Util
         /// Execute a command in the format it would be written in the console, i.e. 'command arg0 arg1 ...'.
         /// </summary>
         /// <param name="command">the command to execute.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public void Execute(string command)
         {
             // Verify and cleanup input.
@@ -520,6 +526,10 @@ namespace Engine.Util
         /// <param name="message">the message to log.</param>
         public void WriteLine(string message)
         {
+            if (message == null)
+            {
+                return;
+            }
             message = message.Replace("\r\n", "\n").Replace("\r", "\n");
             string[] lines = message.Split('\n');
             buffer.AddRange(lines);
@@ -541,7 +551,11 @@ namespace Engine.Util
         /// <param name="args">the parameters to insert.</param>
         public void WriteLine(string format, params object[] args)
         {
-            WriteLine(String.Format(format, args));
+            if (format == null)
+            {
+                return;
+            }
+            WriteLine(String.Format(CultureInfo.CurrentCulture, format, args));
         }
 
         #endregion
@@ -686,7 +700,7 @@ namespace Engine.Util
                                 bool testIfLast = false;
                                 foreach (var command in commands)
                                 {
-                                    if (command.Key.StartsWith(inputBeforeTab))
+                                    if (command.Key.StartsWith(inputBeforeTab, StringComparison.Ordinal))
                                     {
                                         ++numMatches;
                                         if (!testIfLast && tabCompleteIndex < numMatches)
@@ -749,7 +763,7 @@ namespace Engine.Util
             }
             else
             {
-                if (args.Key.Equals(HotKey))
+                if (args.Key.Equals(Hotkey))
                 {
                     IsOpen = true;
                 }

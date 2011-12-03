@@ -254,7 +254,7 @@ namespace Engine.Controller
                     {
                         long addFrame = args.Data.ReadInt64();
                         TSteppable steppable = Packetizer.Depacketize<TSteppable>(args.Data);
-                        Simulation.Add(steppable, addFrame);
+                        Simulation.AddSteppable(steppable, addFrame);
                         return true;
                     }
                     break;
@@ -265,7 +265,7 @@ namespace Engine.Controller
                     {
                         long removeFrame = args.Data.ReadInt64();
                         long steppableUid = args.Data.ReadInt64();
-                        Simulation.Remove(steppableUid, removeFrame);
+                        Simulation.RemoveSteppable(steppableUid, removeFrame);
                         return true;
                     }
                     break;

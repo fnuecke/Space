@@ -89,11 +89,6 @@ namespace Engine.Controller
                 Game.Components.Remove(Session);
             }
 
-            if (Protocol != null)
-            {
-                Protocol.Dispose();
-            }
-
             base.Dispose(disposing);
         }
 

@@ -55,7 +55,7 @@ namespace Space.Control
 
                 // Get player's ship's position.
                 var translation = Vector2.Zero;
-                Ship ship = (Ship)Simulation.Get(Session.LocalPlayer.Data.ShipUID);
+                Ship ship = (Ship)Simulation.GetSteppable(Session.LocalPlayer.Data.ShipUID);
                 if (ship != null)
                 {
                     translation.X = -ship.Position.X.IntValue + GraphicsDevice.Viewport.Width / 2;

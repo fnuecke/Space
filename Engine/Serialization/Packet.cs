@@ -218,7 +218,7 @@ namespace Engine.Serialization
         {
             if (data.Length > ushort.MaxValue)
             {
-                throw new ArgumentException("data");
+                throw new ArgumentException("Data is too long.", "data");
             }
             Write(data, (ushort)data.Length);
         }
@@ -248,7 +248,7 @@ namespace Engine.Serialization
             {
                 if (data.Length > ushort.MaxValue)
                 {
-                    throw new ArgumentException("data");
+                    throw new ArgumentException("Data is too long.", "data");
                 }
                 Write(data.Buffer, (ushort)data.Length);
             }

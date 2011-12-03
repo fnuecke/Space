@@ -48,7 +48,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="steppable">the object to insert.</param>
         /// <param name="frame">the frame to insert it at.</param>
-        void Add(TSteppable steppable, long frame);
+        void AddSteppable(TSteppable steppable, long frame);
 
         /// <summary>
         /// Remove an object in a specific time frame. This will roll back, if
@@ -56,7 +56,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="steppableUid">the id of the object to remove.</param>
         /// <param name="frame">the frame to remove it at.</param>
-        void Remove(long steppableUid, long frame);
+        void RemoveSteppable(long steppableUid, long frame);
 
         /// <summary>
         /// Push a command to be executed at the given frame.  This will roll

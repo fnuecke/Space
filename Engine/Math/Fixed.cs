@@ -645,7 +645,35 @@ namespace Engine.Math
         }
         #endregion
 
+        #region ==
+        public static bool operator ==(FPoint point1, FPoint point2)
+        {
+            return point1.X == point2.X && point1.Y == point2.Y;
+        }
+        public static bool operator !=(FPoint point1, FPoint point2)
+        {
+            return point1.X != point2.X || point1.Y != point2.Y;
+        }
         #endregion
+
+        #endregion
+
+        public override bool Equals(object obj)
+        {
+            if (obj is FPoint)
+            {
+                return ((FPoint)obj) == this;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return X.GetHashCode();
+        }
 
         public override string ToString()
         {

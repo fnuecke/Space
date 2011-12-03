@@ -10,7 +10,7 @@ namespace Engine.Simulation
     /// Implements a Trailing State Synchronization.
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
-    public class TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : IReversibleState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+    public sealed class TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : IReversibleState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
@@ -38,7 +38,7 @@ namespace Engine.Simulation
         /// <summary>
         /// The current frame of the leading state.
         /// </summary>
-        public long CurrentFrame { get; protected set; }
+        public long CurrentFrame { get; private set; }
 
         /// <summary>
         /// Packetizer used for serialization purposes.
@@ -54,7 +54,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
         /// </summary>
-        public bool WaitingForSynchronization { get; protected set; }
+        public bool WaitingForSynchronization { get; private set; }
 
         /// <summary>
         /// Get the leading state.
@@ -74,27 +74,27 @@ namespace Engine.Simulation
         /// The list of running states. They are ordered in in increasing delay, i.e.
         /// the state at slot 0 is the leading one, 1 is the next newest, and so on.
         /// </summary>
-        protected TState[] states;
+        private TState[] states;
 
         /// <summary>
         /// The delays of the individual states.
         /// </summary>
-        protected uint[] delays;
+        private uint[] delays;
 
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<long, List<TSteppable>> adds = new Dictionary<long, List<TSteppable>>();
+        private Dictionary<long, List<TSteppable>> adds = new Dictionary<long, List<TSteppable>>();
 
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<long, List<long>> removes = new Dictionary<long, List<long>>();
+        private Dictionary<long, List<long>> removes = new Dictionary<long, List<long>>();
 
         /// <summary>
         /// List of commands to execute in delayed states when they reach the given frame.
         /// </summary>
-        protected Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>> commands = new Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>>();
+        private Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>> commands = new Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>>();
 
         #endregion
 
@@ -142,9 +142,9 @@ namespace Engine.Simulation
         /// states when they reach the current frame of the leading state.
         /// </summary>
         /// <param name="steppable">the object to add.</param>
-        public void Add(TSteppable steppable)
+        public void AddSteppable(TSteppable steppable)
         {
-            Add(steppable, CurrentFrame);
+            AddSteppable(steppable, CurrentFrame);
         }
 
         /// <summary>
@@ -153,7 +153,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="steppable">the object to insert.</param>
         /// <param name="frame">the frame to insert it at.</param>
-        public void Add(TSteppable steppable, long frame)
+        public void AddSteppable(TSteppable steppable, long frame)
         {
             // Remember original frame.
             long currentFrame = CurrentFrame;
@@ -167,7 +167,7 @@ namespace Engine.Simulation
             if (frame == CurrentFrame)
             {
                 // Live insert, add to current state, too.
-                LeadingState.Add((TSteppable)steppable.Clone());
+                LeadingState.AddSteppable((TSteppable)steppable.Clone());
             }
 
             // Store it to be inserted in trailing states.
@@ -187,7 +187,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Not supported for TSS.
         /// </summary>
-        public void Remove(TSteppable steppable)
+        public void RemoveSteppable(TSteppable steppable)
         {
             throw new NotSupportedException();
         }
@@ -196,9 +196,9 @@ namespace Engine.Simulation
         /// Remove a steppable object by its id. Will always return <c>null</c> for TSS.
         /// </summary>
         /// <param name="steppableUid">the remove object.</param>
-        public TSteppable Remove(long steppableUid)
+        public TSteppable RemoveSteppable(long steppableUid)
         {
-            Remove(steppableUid, CurrentFrame);
+            RemoveSteppable(steppableUid, CurrentFrame);
             return default(TSteppable);
         }
 
@@ -208,7 +208,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="steppableId">the id of the object to remove.</param>
         /// <param name="frame">the frame to remove it at.</param>
-        public void Remove(long steppableUid, long frame)
+        public void RemoveSteppable(long steppableUid, long frame)
         {
             // Remember original frame.
             long currentFrame = CurrentFrame;
@@ -222,7 +222,7 @@ namespace Engine.Simulation
             if (frame == CurrentFrame)
             {
                 // Live insert, add to current state, too.
-                LeadingState.Remove(steppableUid);
+                LeadingState.RemoveSteppable(steppableUid);
             }
 
             // Store it to be removed in trailing states.
@@ -244,9 +244,9 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="steppableUid">the id of the steppable to look up.</param>
         /// <returns>the current representation in this state.</returns>
-        public TSteppable Get(long steppableUid)
+        public TSteppable GetSteppable(long steppableUid)
         {
-            return LeadingState.Get(steppableUid);
+            return LeadingState.GetSteppable(steppableUid);
         }
 
         /// <summary>
@@ -360,7 +360,7 @@ namespace Engine.Simulation
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">the hasher to push data to.</param>
-        public virtual void Hash(Hasher hasher)
+        public void Hash(Hasher hasher)
         {
             throw new NotSupportedException();
         }
@@ -511,7 +511,7 @@ namespace Engine.Simulation
             throw new NotImplementedException();
         }
 
-        protected void OnInvalidated(EventArgs e)
+        private void OnInvalidated(EventArgs e)
         {
             WaitingForSynchronization = true;
             if (Invalidated != null)
@@ -563,7 +563,7 @@ namespace Engine.Simulation
                         // Add a copy of it.
                         foreach (var steppable in adds[states[i].CurrentFrame])
                         {
-                            states[i].Add((TSteppable)steppable.Clone());
+                            states[i].AddSteppable((TSteppable)steppable.Clone());
                         }
                     }
 
@@ -573,7 +573,7 @@ namespace Engine.Simulation
                         // Add a copy of it.
                         foreach (var steppableUid in removes[states[i].CurrentFrame])
                         {
-                            states[i].Remove(steppableUid);
+                            states[i].RemoveSteppable(steppableUid);
                         }
                     }
                 }

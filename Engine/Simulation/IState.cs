@@ -37,26 +37,26 @@ namespace Engine.Simulation
         /// Add an steppable object to the list of participants of this state.
         /// </summary>
         /// <param name="steppable">the object to add.</param>
-        void Add(TSteppable steppable);
+        void AddSteppable(TSteppable steppable);
 
         /// <summary>
         /// Remove an steppable object to the list of participants of this state.
         /// </summary>
         /// <param name="updateable">the object to remove.</param>
-        void Remove(TSteppable steppable);
+        void RemoveSteppable(TSteppable steppable);
 
         /// <summary>
         /// Remove a steppable object by its id.
         /// </summary>
         /// <param name="steppableUid">the remove object.</param>
-        TSteppable Remove(long steppableUid);
+        TSteppable RemoveSteppable(long steppableUid);
 
         /// <summary>
         /// Get a steppable's current representation in this state by its id.
         /// </summary>
         /// <param name="steppableUid">the id of the steppable to look up.</param>
         /// <returns>the current representation in this state.</returns>
-        TSteppable Get(long steppableUid);
+        TSteppable GetSteppable(long steppableUid);
 
         /// <summary>
         /// Advance the simulation by one frame.

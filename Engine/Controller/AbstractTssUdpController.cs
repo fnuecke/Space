@@ -114,7 +114,7 @@ namespace Engine.Controller
         public virtual long AddSteppable(TSteppable steppable, long frame)
         {
             // Add the steppable to the simulation.
-            Simulation.Add(steppable, frame);
+            Simulation.AddSteppable(steppable, frame);
             return steppable.UID;
         }
 
@@ -137,7 +137,7 @@ namespace Engine.Controller
         public virtual void RemoveSteppable(long steppableUid, long frame)
         {
             // Remove the steppable from the simulation.
-            Simulation.Remove(steppableUid, frame);
+            Simulation.RemoveSteppable(steppableUid, frame);
         }
 
         /// <summary>

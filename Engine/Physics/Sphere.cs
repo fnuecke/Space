@@ -8,7 +8,7 @@ namespace Engine.Physics
     /// <summary>
     /// Base class for spherical world objects.
     /// </summary>
-    public abstract class Sphere<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : Collideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class Sphere<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractCollideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
@@ -21,6 +21,11 @@ namespace Engine.Physics
         /// The minimal AABB surrounding this object.
         /// </summary>
         public FRectangle Bounds { get { return FRectangle.Create(position, radius * 2, radius * 2); } }
+
+        /// <summary>
+        /// Radius of the object.
+        /// </summary>
+        public Fixed Radius { get; protected set; }
 
         #endregion
 

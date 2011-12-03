@@ -8,12 +8,12 @@ namespace Engine.Util
     /// Represents simple two dimensional directions and direct combinations of them.
     /// </summary>
     [Flags]
-    public enum Direction
+    public enum Directions
     {
         /// <summary>
         /// Not a valid direction, alternatively meaning a null vector.
         /// </summary>
-        Invalid = 0,
+        None = 0,
 
         /// <summary>
         /// North direction, upward vector.
@@ -93,39 +93,35 @@ namespace Engine.Util
     /// </summary>
     public static class DirectionConversion
     {
+        private static readonly Fixed SqrtOneHalf = Fixed.Create(System.Math.Sqrt(0.5));
+
         /// <summary>
         /// Lookup table for FPoint conversion.
         /// </summary>
-        private static readonly Dictionary<Direction, FPoint> fpointLookup = new Dictionary<Direction, FPoint>();
-
-        /// <summary>
-        /// Setup of lookup tables.
-        /// </summary>
-        static DirectionConversion()
+        private static readonly Dictionary<Directions, FPoint> fpointLookup = new Dictionary<Directions, FPoint>()
         {
-            fpointLookup.Add(Direction.Invalid, FPoint.Zero);
-            fpointLookup.Add(Direction.North, FPoint.Create((Fixed)0, -(Fixed)1));
-            fpointLookup.Add(Direction.NorthAlt, FPoint.Create((Fixed)0, -(Fixed)1));
-            fpointLookup.Add(Direction.East, FPoint.Create((Fixed)1, (Fixed)0));
-            fpointLookup.Add(Direction.EastAlt, FPoint.Create((Fixed)1, (Fixed)0));
-            fpointLookup.Add(Direction.South, FPoint.Create((Fixed)0, (Fixed)1));
-            fpointLookup.Add(Direction.SouthAlt, FPoint.Create((Fixed)0, (Fixed)1));
-            fpointLookup.Add(Direction.West, FPoint.Create(-(Fixed)1, (Fixed)0));
-            fpointLookup.Add(Direction.WestAlt, FPoint.Create(-(Fixed)1, (Fixed)0));
-            // Avoid higher speed in diagonal movement.
-            Fixed sqrt2 = Fixed.Create(System.Math.Sqrt(0.5));
-            fpointLookup.Add(Direction.NorthEast, FPoint.Create((Fixed)sqrt2, -(Fixed)sqrt2));
-            fpointLookup.Add(Direction.NorthWest, FPoint.Create(-(Fixed)sqrt2, -(Fixed)sqrt2));
-            fpointLookup.Add(Direction.SouthEast, FPoint.Create((Fixed)sqrt2, (Fixed)sqrt2));
-            fpointLookup.Add(Direction.SouthWest, FPoint.Create(-(Fixed)sqrt2, (Fixed)sqrt2));
-        }
+            { Directions.None, FPoint.Zero },
+            { Directions.North, FPoint.Create((Fixed)0, -(Fixed)1) },
+            { Directions.NorthAlt, FPoint.Create((Fixed)0, -(Fixed)1) },
+            { Directions.East, FPoint.Create((Fixed)1, (Fixed)0) },
+            { Directions.EastAlt, FPoint.Create((Fixed)1, (Fixed)0) },
+            { Directions.South, FPoint.Create((Fixed)0, (Fixed)1) },
+            { Directions.SouthAlt, FPoint.Create((Fixed)0, (Fixed)1) },
+            { Directions.West, FPoint.Create(-(Fixed)1, (Fixed)0) },
+            { Directions.WestAlt, FPoint.Create(-(Fixed)1, (Fixed)0) },
+            
+            { Directions.NorthEast, FPoint.Create(SqrtOneHalf, -SqrtOneHalf) },
+            { Directions.NorthWest, FPoint.Create(-SqrtOneHalf, -SqrtOneHalf) },
+            { Directions.SouthEast, FPoint.Create(SqrtOneHalf, SqrtOneHalf) },
+            { Directions.SouthWest, FPoint.Create(-SqrtOneHalf, SqrtOneHalf) }
+        };
 
         /// <summary>
         /// Converts a simple direction to an FPoint representing that vector.
         /// </summary>
         /// <param name="direction">the direction to convert.</param>
         /// <returns>the unit FPoint corresponding to that direction.</returns>
-        public static FPoint DirectionToFPoint(Direction direction)
+        public static FPoint DirectionToFPoint(Directions direction)
         {
             if (fpointLookup.ContainsKey(direction))
             {
@@ -133,7 +129,7 @@ namespace Engine.Util
             }
             else
             {
-                return fpointLookup[Direction.Invalid];
+                return fpointLookup[Directions.None];
             }
         }
 
@@ -142,7 +138,7 @@ namespace Engine.Util
         /// </summary>
         /// <param name="direction">the direction to convert.</param>
         /// <returns><c>-1</c> for left / up, <c>1</c> for right / down.</returns>
-        public static Fixed DirectionToFixed(Direction direction)
+        public static Fixed DirectionToFixed(Directions direction)
         {
             FPoint point = DirectionToFPoint(direction);
             return point.X + point.Y;

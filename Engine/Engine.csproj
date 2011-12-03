@@ -29,7 +29,7 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <PlatformTarget>x86</PlatformTarget>
     <XnaCompressContent>false</XnaCompressContent>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -155,7 +155,7 @@
     <Compile Include="Simulation\ISteppable.cs" />
     <Compile Include="Math\Fixed.cs" />
     <Compile Include="Physics\Box.cs" />
-    <Compile Include="Physics\Collideable.cs" />
+    <Compile Include="Physics\AbstractCollideable.cs" />
     <Compile Include="Physics\ICollideable.cs" />
     <Compile Include="Physics\Intersection\AABBSweep.cs" />
     <Compile Include="Physics\Intersection\SphereAABBSweep.cs" />

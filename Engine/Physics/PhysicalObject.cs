@@ -29,7 +29,7 @@ namespace Engine.Physics
         /// <summary>
         /// The angle of the current orientation.
         /// </summary>
-        public Fixed Rotation { get { return rotation; } }
+        public Fixed Rotation { get { return Rotation; } }
 
         #endregion
 

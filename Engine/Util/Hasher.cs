@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace Engine.Util
 {
     /// <summary>
@@ -69,12 +70,12 @@ namespace Engine.Util
         /// Put a single byte to the data of which the hash
         /// gets computed.
         /// </summary>
-        /// <param name="data">the data to add.</param>
-        public void Put(byte data)
+        /// <param name="value">the data to add.</param>
+        public void Put(byte value)
         {
             unchecked
             {
-                hash = (hash ^ data) * p;
+                hash = (hash ^ value) * p;
             }
         }
 
@@ -82,12 +83,16 @@ namespace Engine.Util
         /// Put a byte arry to the data of which the hash
         /// gets computed.
         /// </summary>
-        /// <param name="data">the data to add.</param>
-        public void Put(byte[] data)
+        /// <param name="value">the data to add.</param>
+        public void Put(byte[] value)
         {
-            for (int i = 0; i < data.Length; i++)
+            if (value == null)
             {
-                Put(data[i]);
+                throw new ArgumentNullException("value");
+            }
+            for (int i = 0; i < value.Length; i++)
+            {
+                Put(value[i]);
             }
         }
     }

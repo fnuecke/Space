@@ -7,7 +7,7 @@ namespace Engine.Network
     /// Represents a type of traffic as tracked in the <c>ProtocolInfo</c> class.
     /// </summary>
     [Flags]
-    public enum TrafficType
+    public enum TrafficTypes
     {
         /// <summary>
         /// Protocol internal traffic, such as acks.
@@ -43,11 +43,11 @@ namespace Engine.Network
         /// <summary>
         /// Represents incoming traffic over a certain interval of time, tracked by type, and stored as number of bytes.
         /// </summary>
-        LinkedList<Dictionary<TrafficType, int>> IncomingTraffic { get; }
+        LinkedList<Dictionary<TrafficTypes, int>> IncomingTraffic { get; }
 
         /// <summary>
         /// Represents outgoing traffic over a certain interval of time, tracked by type, and stored as number of bytes.
         /// </summary>
-        LinkedList<Dictionary<TrafficType, int>> OutgoingTraffic { get; }
+        LinkedList<Dictionary<TrafficTypes, int>> OutgoingTraffic { get; }
     }
 }

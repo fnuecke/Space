@@ -50,7 +50,7 @@ namespace Space.View
                 {
                     int subTotal = 0;
                     {
-                        int val = incoming.Value[TrafficType.Any];
+                        int val = incoming.Value[TrafficTypes.Any];
                         if (val < minIncoming)
                         {
                             minIncoming = val;
@@ -62,12 +62,12 @@ namespace Space.View
                         avgIncoming += val;
                         subTotal += val;
 
-                        values[i - 1][0] = Tuple.Create(incoming.Value[TrafficType.Invalid], Color.Firebrick);
-                        values[i - 1][1] = Tuple.Create(incoming.Value[TrafficType.Protocol], Color.DarkBlue);
-                        values[i - 1][2] = Tuple.Create(incoming.Value[TrafficType.Data], Color.Blue);
+                        values[i - 1][0] = Tuple.Create(incoming.Value[TrafficTypes.Invalid], Color.Firebrick);
+                        values[i - 1][1] = Tuple.Create(incoming.Value[TrafficTypes.Protocol], Color.DarkBlue);
+                        values[i - 1][2] = Tuple.Create(incoming.Value[TrafficTypes.Data], Color.Blue);
                     }
                     {
-                        int val = outgoing.Value[TrafficType.Any];
+                        int val = outgoing.Value[TrafficTypes.Any];
                         if (val < minOutgoing)
                         {
                             minOutgoing = val;
@@ -79,8 +79,8 @@ namespace Space.View
                         avgOutgoing += val;
                         subTotal += val;
 
-                        values[i - 1][3] = Tuple.Create(outgoing.Value[TrafficType.Protocol], Color.Green);
-                        values[i - 1][4] = Tuple.Create(outgoing.Value[TrafficType.Data], Color.LimeGreen);
+                        values[i - 1][3] = Tuple.Create(outgoing.Value[TrafficTypes.Protocol], Color.Green);
+                        values[i - 1][4] = Tuple.Create(outgoing.Value[TrafficTypes.Data], Color.LimeGreen);
                     }
                     if (subTotal < minTotal)
                     {

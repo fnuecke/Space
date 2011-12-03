@@ -57,7 +57,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of child steppables this state drives.
         /// </summary>
-        protected List<TSteppable> steppables = new List<TSteppable>();
+        protected IList<TSteppable> steppables = new List<TSteppable>();
 
         #endregion
 
@@ -76,7 +76,7 @@ namespace Engine.Simulation
         /// Add an steppable object to the list of participants of this state.
         /// </summary>
         /// <param name="steppable">the object to add.</param>
-        public void Add(TSteppable steppable)
+        public void AddSteppable(TSteppable steppable)
         {
             steppables.Add(steppable);
             steppable.State = ThisState;
@@ -86,7 +86,7 @@ namespace Engine.Simulation
         /// Remove an steppable object to the list of participants of this state.
         /// </summary>
         /// <param name="steppable">the object to remove.</param>
-        public void Remove(TSteppable steppable)
+        public void RemoveSteppable(TSteppable steppable)
         {
             steppables.Remove(steppable);
             steppable.State = null;
@@ -96,7 +96,7 @@ namespace Engine.Simulation
         /// Remove a steppable object by its id.
         /// </summary>
         /// <param name="steppableUid">the remove object.</param>
-        public TSteppable Remove(long steppableUid)
+        public TSteppable RemoveSteppable(long steppableUid)
         {
             if (steppableUid >= 0)
             {
@@ -118,7 +118,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="steppableUid">the id of the steppable to look up.</param>
         /// <returns>the current representation in this state.</returns>
-        public TSteppable Get(long steppableUid)
+        public TSteppable GetSteppable(long steppableUid)
         {
             for (int i = 0; i < steppables.Count; i++)
             {
