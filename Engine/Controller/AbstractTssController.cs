@@ -10,12 +10,13 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
-    public abstract class AbstractTssController<TSession, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssController<TSession, TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
         : AbstractController<TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>,
-          IStateController<TState, TSteppable, TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>
+          IStateController<TState, TSteppable, TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TCommand : IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
@@ -171,20 +172,6 @@ namespace Engine.Controller
         protected virtual void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, PacketPriority priority)
         {
             Simulation.PushCommand(command, command.Frame);
-        }
-
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// A command emitter we're attached to has generated a new event.
-        /// Add the frame it should be applied in.
-        /// </summary>
-        protected override void HandleEmittedCommand(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
-        {
-            command.Frame = Simulation.CurrentFrame + 1;
-            base.HandleEmittedCommand(command);
         }
 
         #endregion

@@ -11,7 +11,7 @@ namespace Engine.Controller
 {
     /// <summary>
     /// Base class for TSS based multiplayer clients using a UDP connection.
-    /// This takes care of synchronizing the gamestates between server and
+    /// This takes care of synchronizing the game states between server and
     /// client, and getting the run speed synchronized as well.
     /// </summary>
     /// <typeparam name="TState">the type of game state used to represent a simulation.
@@ -20,10 +20,12 @@ namespace Engine.Controller
     /// <typeparam name="TCommandType">the type of commands we send around.</typeparam>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssClient<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractTssController<IClientSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssClient<TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
+        : AbstractTssController<IClientSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>,
+          IClientController<IClientSession<TPlayerData, TPacketizerContext>, TCommand, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        where TCommand : IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
@@ -83,7 +85,6 @@ namespace Engine.Controller
         {
             if (Session != null)
             {
-                Session.GameInfoReceived += HandleGameInfoReceived;
                 Session.JoinResponse += HandleJoinResponse;
             }
 
@@ -102,7 +103,6 @@ namespace Engine.Controller
         {
             if (Session != null)
             {
-                Session.GameInfoReceived -= HandleGameInfoReceived;
                 Session.JoinResponse -= HandleJoinResponse;
 
                 Session.Dispose();
@@ -166,6 +166,25 @@ namespace Engine.Controller
         #region Modify simulation
 
         /// <summary>
+        /// Add this controller as a listener to the given emitter, handling
+        /// whatever commands it produces.
+        /// </summary>
+        /// <param name="emitter">the emitter to attach to.</param>
+        public void AddEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter)
+        {
+            emitter.CommandEmitted += HandleEmittedCommand;
+        }
+
+        /// <summary>
+        /// Remove this controller as a listener from the given emitter.
+        /// </summary>
+        /// <param name="emitter">the emitter to detach from.</param>
+        public void RemoveEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter)
+        {
+            emitter.CommandEmitted -= HandleEmittedCommand;
+        }
+
+        /// <summary>
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
@@ -187,18 +206,29 @@ namespace Engine.Controller
         #region Events
 
         /// <summary>
-        /// We received information about a running game from some host.
-        /// </summary>
-        /// <param name="sender">the underlying session.</param>
-        /// <param name="e">information of the type <c>GameInfoReceivedEventArgs</c>.</param>
-        protected abstract void HandleGameInfoReceived(object sender, EventArgs e);
-
-        /// <summary>
         /// A server sent us a response to our request to join his game.
         /// </summary>
         /// <param name="sender">the underlying session.</param>
         /// <param name="e">information of the type <c>JoinResponseEventArgs</c>.</param>
         protected abstract void HandleJoinResponse(object sender, EventArgs e);
+
+        /// <summary>
+        /// A command emitter we're attached to has generated a new event.
+        /// Override this to fill in some default values in the command
+        /// before it is passed on to <c>HandleLocalCommand</c>.
+        /// </summary>
+        private void HandleEmittedCommand(TCommand command)
+        {
+            command.Player = Session.LocalPlayer;
+            command.Frame = Simulation.CurrentFrame + 1;
+            HandleLocalCommand(command);
+        }
+
+        /// <summary>
+        /// Implement in subclasses to handle commands generated locally.
+        /// </summary>
+        /// <param name="command">the command to handle.</param>
+        protected abstract void HandleLocalCommand(TCommand command);
 
         #endregion
 

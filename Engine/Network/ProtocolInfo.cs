@@ -178,7 +178,7 @@ namespace Engine.Network
             inPacketCompression.Put(ratio);
         }
 
-        internal void PutOutcomingPacketCompression(double ratio)
+        internal void PutOutgoingPacketCompression(double ratio)
         {
             outPacketCompression.Put(ratio);
         }

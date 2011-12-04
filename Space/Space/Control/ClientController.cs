@@ -13,7 +13,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class ClientController : AbstractTssClient<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
+    class ClientController : AbstractTssClient<GameState, IGameObject, GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
     {
         #region Fields
 
@@ -36,16 +36,16 @@ namespace Space.Control
             Simulation.Initialize(new GameState(game, Session));
         }
 
-        #endregion
-
-        #region Logic
-
         protected override void LoadContent()
         {
             background = Game.Content.Load<Texture2D>("Textures/stars");
 
             base.LoadContent();
         }
+
+        #endregion
+
+        #region Logic
 
         public override void Draw(GameTime gameTime)
         {
@@ -78,59 +78,9 @@ namespace Space.Control
             base.Draw(gameTime);
         }
 
-        /// <summary>
-        /// Got command data from another client or the server.
-        /// </summary>
-        /// <param name="command">the received command.</param>
-        protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
-        {
-            // Only handle stuff while we're connected.
-            if (Session.ConnectionState != ClientState.Connected)
-            {
-                return false;
-            }
-
-            // Check what we have.
-            switch (command.Type)
-            {
-                case GameCommandType.PlayerInput:
-                    {
-                        // The player has to be in the game for this to work... this can
-                        // fail if the message from the server that a client joined reached
-                        // us before the join message.
-                        if (command.Player == null)
-                        {
-                            return false;
-                        }
-                        Simulation.PushCommand(command, command.Frame);
-                    }
-                    return true;
-
-                default:
-#if DEBUG
-                    Console.WriteLine("Client: got a command we couldn't handle: " + command.Type);
-#endif
-                    break;
-            }
-
-            // Got here -> unhandled.
-            return false;
-        }
-
         #endregion
 
         #region Events
-
-        /// <summary>
-        /// Got info about an open game.
-        /// </summary>
-        protected override void HandleGameInfoReceived(object sender, EventArgs e)
-        {
-            var args = (GameInfoReceivedEventArgs)e;
-
-            var info = args.Data.ReadString();
-            Console.WriteLine(String.Format("CLT.NET: Found a game: [{0}] {1} ({2}/{3})", args.Host.ToString(), info, args.NumPlayers, args.MaxPlayers));
-        }
 
         /// <summary>
         /// Got a server response to our request to join it.
@@ -155,29 +105,9 @@ namespace Space.Control
         }
 
         /// <summary>
-        /// Got info that a new player joined the game.
-        /// </summary>
-        protected override void HandlePlayerJoined(object sender, EventArgs e)
-        {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-
-            Console.WriteLine(String.Format("CLT.NET: {0} joined.", args.Player));
-        }
-
-        /// <summary>
-        /// Got information that a player has left the game.
-        /// </summary>
-        protected override void HandlePlayerLeft(object sender, EventArgs e)
-        {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-
-            Console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
-        }
-
-        /// <summary>
         /// Got a locally generated command, apply it.
         /// </summary>
-        protected override void HandleLocalCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override void HandleLocalCommand(GameCommand command)
         {
             switch (command.Type)
             {
@@ -186,6 +116,45 @@ namespace Space.Control
                     Apply(command, PacketPriority.High);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Got command data from another client or the server.
+        /// </summary>
+        /// <param name="command">the received command.</param>
+        protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        {
+            // Only handle stuff while we're connected.
+            if (Session.ConnectionState != ClientState.Connected)
+            {
+                return false;
+            }
+
+            // Check what we have.
+            switch (command.Type)
+            {
+                case GameCommandType.PlayerInput:
+                    {
+                        // The player has to be in the game for this to work... this can
+                        // fail if the message from the server that a client joined reached
+                        // us before the join message.
+                        if (command.Player == null)
+                        {
+                            return false;
+                        }
+                        Apply(command, PacketPriority.None);
+                    }
+                    return true;
+
+                default:
+#if DEBUG
+                    Console.WriteLine("Client: got a command we couldn't handle: " + command.Type);
+#endif
+                    break;
+            }
+
+            // Got here -> unhandled.
+            return false;
         }
 
         #endregion

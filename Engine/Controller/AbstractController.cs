@@ -61,8 +61,6 @@ namespace Engine.Controller
             if (Session != null)
             {
                 Session.PlayerData += HandlePlayerData;
-                Session.PlayerJoined += HandlePlayerJoined;
-                Session.PlayerLeft += HandlePlayerLeft;
 
                 Game.Components.Add(Session);
             }
@@ -78,8 +76,6 @@ namespace Engine.Controller
             if (Session != null)
             {
                 Session.PlayerData -= HandlePlayerData;
-                Session.PlayerJoined -= HandlePlayerJoined;
-                Session.PlayerLeft -= HandlePlayerLeft;
 
                 Game.Components.Remove(Session);
             }
@@ -92,39 +88,12 @@ namespace Engine.Controller
         #region Events to be handled in subclasses
 
         /// <summary>
-        /// Another player joined the game.
-        /// </summary>
-        protected abstract void HandlePlayerJoined(object sender, EventArgs e);
-
-        /// <summary>
-        /// Another player left the game.
-        /// </summary>
-        protected abstract void HandlePlayerLeft(object sender, EventArgs e);
-
-        /// <summary>
-        /// Implement in subclasses to handle commands generated locally.
-        /// </summary>
-        /// <param name="command">the command to handle.</param>
-        protected abstract void HandleLocalCommand(TCommand command);
-
-        /// <summary>
         /// Implement in subclasses to handle commands sent by other clients or
         /// the server.
         /// </summary>
         /// <param name="command">the command to handle.</param>
         /// <returns>whether the command was handled successfully (<c>true</c>) or not (<c>false</c>).</returns>
         protected abstract bool HandleRemoteCommand(TCommand command);
-
-        /// <summary>
-        /// A command emitter we're attached to has generated a new event.
-        /// Override this to fill in some default values in the command
-        /// before it is passed on to <c>HandleLocalCommand</c>.
-        /// </summary>
-        protected virtual void HandleEmittedCommand(TCommand command)
-        {
-            command.Player = Session.LocalPlayer;
-            HandleLocalCommand(command);
-        }
 
         #endregion
 
@@ -179,25 +148,6 @@ namespace Engine.Controller
         #endregion
 
         #region Commands
-
-        /// <summary>
-        /// Add this controller as a listener to the given emitter, handling
-        /// whatever commands it produces.
-        /// </summary>
-        /// <param name="emitter">the emitter to attach to.</param>
-        public void AddEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter)
-        {
-            emitter.CommandEmitted += HandleEmittedCommand;
-        }
-
-        /// <summary>
-        /// Remove this controller as a listener from the given emitter.
-        /// </summary>
-        /// <param name="emitter">the emitter to detach from.</param>
-        public void RemoveEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter)
-        {
-            emitter.CommandEmitted -= HandleEmittedCommand;
-        }
 
         /// <summary>
         /// Send a command to the server.

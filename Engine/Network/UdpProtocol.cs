@@ -83,6 +83,13 @@ namespace Engine.Network
         /// </summary>
         public uint Timeout { get; set; }
 
+        /// <summary>
+        /// Whether to have traffic running through the local loopback (protocol
+        /// instances in the same running application) captured in the protocol
+        /// info or not.
+        /// </summary>
+        public bool RecordLoopbackTraffic { get; set; }
+
         #endregion
 
         #region Fields
@@ -204,7 +211,10 @@ namespace Engine.Network
             else
             {
                 Packet message = messages.MakeUnacked(packet);
-                info.PutOutgoingTraffic(message.Length, TrafficTypes.Data);
+                if (!IPAddress.IsLoopback(remote.Address) || RecordLoopbackTraffic)
+                {
+                    info.PutOutgoingTraffic(message.Length, TrafficTypes.Data);
+                }
                 Send(message.Buffer, message.Length, remote);
             }
         }
@@ -236,7 +246,10 @@ namespace Engine.Network
             // Did we get a valid message.
             if (!messages.ParseMessage(buffer, out type, out messageNumber, out data))
             {
-                info.PutIncomingTraffic(buffer.Length, TrafficTypes.Invalid);
+                if (!IPAddress.IsLoopback(remote.Address) || RecordLoopbackTraffic)
+                {
+                    info.PutIncomingTraffic(buffer.Length, TrafficTypes.Invalid);
+                }
                 return;
             }
 
@@ -258,7 +271,10 @@ namespace Engine.Network
             {
                 case SocketMessage.Ack:
                     // It's an ack.
-                    info.PutIncomingTraffic(buffer.Length, TrafficTypes.Protocol);
+                    if (!IPAddress.IsLoopback(remote.Address) || RecordLoopbackTraffic)
+                    {
+                        info.PutIncomingTraffic(buffer.Length, TrafficTypes.Protocol);
+                    }
                     if (awaitingAck.ContainsKey(messageNumber))
                     {
                         awaitingAck.Remove(messageNumber);
@@ -267,7 +283,10 @@ namespace Engine.Network
 
                 case SocketMessage.Acked:
                     // Acked data.
-                    info.PutIncomingTraffic(buffer.Length, TrafficTypes.Data);
+                    if (!IPAddress.IsLoopback(remote.Address) || RecordLoopbackTraffic)
+                    {
+                        info.PutIncomingTraffic(buffer.Length, TrafficTypes.Data);
+                    }
                     if (connection != null)
                     {
                         // Only handle these once successfully, as they may have been resent
@@ -295,18 +314,27 @@ namespace Engine.Network
 
                         // Send ack if we get here.
                         Packet ack = messages.MakeAck(messageNumber);
-                        info.PutOutgoingTraffic(ack.Length, TrafficTypes.Protocol);
+                        if (!IPAddress.IsLoopback(remote.Address) || RecordLoopbackTraffic)
+                        {
+                            info.PutOutgoingTraffic(ack.Length, TrafficTypes.Protocol);
+                        }
                         Send(ack.Buffer, ack.Length, remote);
                     }
                     break;
 
                 case SocketMessage.Ping:
                     // It's a ping, send a pong.
-                    info.PutIncomingTraffic(buffer.Length, TrafficTypes.Protocol);
+                    if (!IPAddress.IsLoopback(remote.Address) || RecordLoopbackTraffic)
+                    {
+                        info.PutIncomingTraffic(buffer.Length, TrafficTypes.Protocol);
+                    }
                     if (data.HasInt64())
                     {
                         Packet pong = messages.MakePong(data.ReadInt64());
-                        info.PutOutgoingTraffic(pong.Length, TrafficTypes.Protocol);
+                        if (!IPAddress.IsLoopback(remote.Address) || RecordLoopbackTraffic)
+                        {
+                            info.PutOutgoingTraffic(pong.Length, TrafficTypes.Protocol);
+                        }
                         Send(pong.Buffer, pong.Length, remote);
                     }
                     break;
@@ -321,7 +349,10 @@ namespace Engine.Network
 
                 case SocketMessage.Unacked:
                     // Unacked data, this is only sent once, presumably.
-                    info.PutIncomingTraffic(buffer.Length, TrafficTypes.Data);
+                    if (!IPAddress.IsLoopback(remote.Address) || RecordLoopbackTraffic)
+                    {
+                        info.PutIncomingTraffic(buffer.Length, TrafficTypes.Data);
+                    }
                     OnData(new ProtocolDataEventArgs(remote, data));
                     break;
                 default:
@@ -381,7 +412,10 @@ namespace Engine.Network
                 }
                 else if (new TimeSpan(time - message.lastSent).TotalMilliseconds > message.pollRate)
                 {
-                    info.PutOutgoingTraffic(message.data.Length, TrafficTypes.Data);
+                    if (!IPAddress.IsLoopback(message.remote.Address) || RecordLoopbackTraffic)
+                    {
+                        info.PutOutgoingTraffic(message.data.Length, TrafficTypes.Data);
+                    }
                     try
                     {
                         Send(message.data.Buffer, message.data.Length, message.remote);
@@ -419,7 +453,10 @@ namespace Engine.Network
                     // Only ping remote hosts that sent us a message (replied) recently.
                     if ((DateTime.Now - item.LastReceived).TotalMilliseconds < PingFrequency * 2)
                     {
-                        info.PutOutgoingTraffic(message.Length, TrafficTypes.Protocol);
+                        if (!IPAddress.IsLoopback(item.Remote.Address) || RecordLoopbackTraffic)
+                        {
+                            info.PutOutgoingTraffic(message.Length, TrafficTypes.Protocol);
+                        }
                         Send(message.Buffer, message.Length, item.Remote);
                     }
                 }
@@ -771,7 +808,7 @@ namespace Engine.Network
                     byte[] compressed = SimpleCompression.Compress(packet.Buffer, packet.Length);
                     if (compressed.Length < packet.Length)
                     {
-                        info.PutOutcomingPacketCompression(compressed.Length / (double)packet.Length);
+                        info.PutOutgoingPacketCompression(compressed.Length / (double)packet.Length);
                         type |= SocketMessage.Compressed;
                         data = compressed;
                         length = compressed.Length;

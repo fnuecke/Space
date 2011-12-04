@@ -137,7 +137,9 @@ namespace Engine.Session
         {
             // As clients, don't try to cross the boundary of local loopback to
             // outside network. It can only fail :P
-            if (remote.Equals(host) || !IPAddress.IsLoopback(remote.Address))
+            bool isHostLoopback = IPAddress.IsLoopback(host.Address);
+            bool isRemoteLoopback = IPAddress.IsLoopback(remote.Address);
+            if ((isHostLoopback && isRemoteLoopback) || (!isHostLoopback && !isRemoteLoopback))
             {
                 base.SendToEndPoint(remote, type, packet, priority);
             }

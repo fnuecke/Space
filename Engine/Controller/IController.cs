@@ -18,18 +18,5 @@ namespace Engine.Controller
         /// The underlying session being used by this controller.
         /// </summary>
         TSession Session { get; }
-
-        /// <summary>
-        /// Add this controller as a listener to the given emitter, handling
-        /// whatever commands it produces.
-        /// </summary>
-        /// <param name="emitter">the emitter to attach to.</param>
-        void AddEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter);
-
-        /// <summary>
-        /// Remove this controller as a listener from the given emitter.
-        /// </summary>
-        /// <param name="emitter">the emitter to detach from.</param>
-        void RemoveEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter);
     }
 }

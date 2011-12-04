@@ -52,6 +52,11 @@ namespace Engine.Session
             return false;
         }
 
+        public override int GetHashCode()
+        {
+            return this.Number.GetHashCode();
+        }
+
         public override string ToString()
         {
             return String.Format("Player {0} ({1})", Number, Name);

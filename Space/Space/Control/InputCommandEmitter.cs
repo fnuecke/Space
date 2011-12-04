@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.Commands;
 using Engine.Controller;
 using Engine.Input;
 using Engine.Math;
@@ -12,7 +11,7 @@ using Space.Model;
 
 namespace Space.Control
 {
-    class InputCommandEmitter : GameComponent, ICommandEmitter<IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext>, GameCommandType, PlayerInfo, PacketizerContext>
+    class InputCommandEmitter : GameComponent, ICommandEmitter<GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command
@@ -22,7 +21,7 @@ namespace Space.Control
         /// with the proper generics as to match the controller it'll be registered
         /// with.
         /// </summary>
-        public event CommandEmittedEventHandler<IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext>, GameCommandType, PlayerInfo, PacketizerContext> CommandEmitted;
+        public event CommandEmittedEventHandler<GameCommand, GameCommandType, PlayerInfo, PacketizerContext> CommandEmitted;
 
         private IClientSession<PlayerInfo, PacketizerContext> Session;
         private ClientController simulation;
@@ -226,7 +225,7 @@ namespace Space.Control
         /// Use this to dispatch new command events.
         /// </summary>
         /// <param name="e">the command that was generated.</param>
-        protected void OnCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected void OnCommand(GameCommand command)
         {
             if (CommandEmitted != null)
             {

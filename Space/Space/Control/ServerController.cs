@@ -13,7 +13,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class ServerController : AbstractTssServer<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
+    class ServerController : AbstractTssServer<GameState, IGameObject, GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
     {
         #region Fields
 
@@ -29,6 +29,20 @@ namespace Space.Control
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
             Simulation.Initialize(new GameState(game, Session));
+        }
+
+        public override void Initialize()
+        {
+            Session.PlayerLeft += HandlePlayerLeft;
+
+            base.Initialize();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            Session.PlayerLeft -= HandlePlayerLeft;
+
+            base.Dispose(disposing);
         }
 
         protected override void HandleGameInfoRequested(object sender, EventArgs e)
@@ -53,6 +67,13 @@ namespace Space.Control
             Simulation.Packetize(args.Data);
         }
 
+        protected void HandlePlayerLeft(object sender, EventArgs e)
+        {
+            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
+            // Player left the game, remove his ship.
+            RemoveSteppable(args.Player.Data.ShipUID);
+        }
+
         protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
             switch (command.Type)
@@ -73,26 +94,6 @@ namespace Space.Control
 
             // Got here -> unhandled.
             return false;
-        }
-
-        protected override void HandlePlayerJoined(object sender, EventArgs e)
-        {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-            Console.WriteLine(String.Format("Server: {0} joined.", args.Player));
-        }
-
-        protected override void HandlePlayerLeft(object sender, EventArgs e)
-        {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
-            Console.WriteLine(String.Format("Server: {0} left.", args.Player));
-
-            // Player left the game, remove his ship.
-            RemoveSteppable(args.Player.Data.ShipUID);
-        }
-
-        protected override void HandleLocalCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
-        {
-            // nothing to do?
         }
 
         #region Debugging stuff

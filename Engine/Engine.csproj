@@ -110,6 +110,7 @@
     <Compile Include="Controller\AbstractTssController.cs" />
     <Compile Include="Controller\AbstractTssServer.cs" />
     <Compile Include="Controller\CommandEmitterEventArgs.cs" />
+    <Compile Include="Controller\IClientController.cs" />
     <Compile Include="Controller\ICommandEmitter.cs" />
     <Compile Include="Controller\IController.cs" />
     <Compile Include="Controller\IStateController.cs" />
