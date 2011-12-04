@@ -62,23 +62,15 @@ namespace Space.Model
         {
             targetRotation = targetAngle;
             Fixed deltaAngle = Angle.MinAngle(rotation, targetAngle);
-            if (deltaAngle != Fixed.Zero)
+            if (deltaAngle > Fixed.Zero)
             {
-                if (deltaAngle > Fixed.Zero)
-                {
-                    // Rotate right.
-                    speedRotation = DirectionConversion.DirectionToFixed(Directions.Right) * Data.RotationSpeed;
-                }
-                else
-                {
-                    // Rotate left.
-                    speedRotation = DirectionConversion.DirectionToFixed(Directions.Left) * Data.RotationSpeed;
-                }
+                // Rotate right.
+                speedRotation = DirectionConversion.DirectionToFixed(Directions.Right) * Data.RotationSpeed;
             }
             else
             {
-                rotation = targetRotation;
-                speedRotation = Fixed.Zero;
+                // Rotate left.
+                speedRotation = DirectionConversion.DirectionToFixed(Directions.Left) * Data.RotationSpeed;
             }
         }
 
@@ -93,8 +85,8 @@ namespace Space.Model
                     var currentDelta = Angle.MinAngle(Rotation, targetRotation);
                     base.Update();
                     var newDelta = Angle.MinAngle(Rotation, targetRotation);
-                    if (currentDelta < Fixed.Zero && newDelta >= Fixed.Zero ||
-                        currentDelta > Fixed.Zero && newDelta <= Fixed.Zero)
+                    if ((currentDelta <= Fixed.Zero && newDelta >= Fixed.Zero) ||
+                        (currentDelta >= Fixed.Zero && newDelta <= Fixed.Zero))
                     {
                         rotation = targetRotation;
                         speedRotation = Fixed.Zero;

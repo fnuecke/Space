@@ -137,9 +137,7 @@ namespace Engine.Session
         {
             // As clients, don't try to cross the boundary of local loopback to
             // outside network. It can only fail :P
-            bool remoteIsLoopback = IPAddress.IsLoopback(remote.Address);
-            bool hostIsLoopback = IPAddress.IsLoopback(host.Address);
-            if ((remoteIsLoopback && hostIsLoopback) || (!remoteIsLoopback && !hostIsLoopback))
+            if (remote.Equals(host) || !IPAddress.IsLoopback(remote.Address))
             {
                 base.SendToEndPoint(remote, type, packet, priority);
             }
@@ -222,7 +220,7 @@ namespace Engine.Session
             {
                 case SessionMessage.ConnectionTest:
                     // Server wants to know if we're still there.
-                    if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
+                    if (ConnectionState == ClientState.Connected && (args.Remote.Equals(host) || Array.IndexOf(playerAddresses, args.Remote) >= 0))
                     {
                         // Yep, still in a session, and this came from it's host. Allow acking.
                         args.Consume();

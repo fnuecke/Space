@@ -12,7 +12,7 @@ namespace Space.Control
     {
         UdpProtocol protocol;
         IServerSession<PlayerInfo, PacketizerContext> session;
-        ServerController controller;
+        internal ServerController Controller { get; private set; }
         SpriteFont font;
 
         public GameServer(Game game)
@@ -20,15 +20,15 @@ namespace Space.Control
         {
             protocol = new UdpProtocol(50100, Encoding.ASCII.GetBytes("Space"));
             session = new ServerSession<PlayerInfo, PacketizerContext>(game, protocol, 8);
-            controller = new ServerController(game, session, 10, 0);
-            controller.UpdateOrder = 10;
+            Controller = new ServerController(game, session, 10, 0);
+            Controller.UpdateOrder = 10;
 
             DrawOrder = 10;
         }
 
         public override void Initialize()
         {
-            Game.Components.Add(controller);
+            Game.Components.Add(Controller);
 
             base.Initialize();
         }
@@ -44,9 +44,9 @@ namespace Space.Control
         {
             protocol.Dispose();
             session.Dispose();
-            controller.Dispose();
+            Controller.Dispose();
 
-            Game.Components.Remove(controller);
+            Game.Components.Remove(Controller);
 
             base.Dispose(disposing);
         }
@@ -63,8 +63,8 @@ namespace Space.Control
             var spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
 
             // Draw debug stuff.
-            var ngOffset = new Vector2(150, GraphicsDevice.Viewport.Height - 100);
-            var sessionOffset = new Vector2(10, GraphicsDevice.Viewport.Height - 100);
+            var ngOffset = new Vector2(150, GraphicsDevice.Viewport.Height - 140);
+            var sessionOffset = new Vector2(10, GraphicsDevice.Viewport.Height - 140);
 
             SessionInfo.Draw("Server", session, sessionOffset, font, spriteBatch);
             NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);

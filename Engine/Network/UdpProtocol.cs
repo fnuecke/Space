@@ -135,7 +135,7 @@ namespace Engine.Network
             loopbacksByPort[port] = this;
             boundPorts[port] = true;
 
-            this.messages = new UdpMessageFactory(protocolHeader);
+            this.messages = new UdpMessageFactory(protocolHeader, info);
             this.Timeout = 10000;
             this.PingFrequency = 1000;
         }
@@ -204,7 +204,7 @@ namespace Engine.Network
             else
             {
                 Packet message = messages.MakeUnacked(packet);
-                info.Outgoing(message.Length, TrafficTypes.Data);
+                info.PutOutgoingTraffic(message.Length, TrafficTypes.Data);
                 Send(message.Buffer, message.Length, remote);
             }
         }
@@ -231,10 +231,12 @@ namespace Engine.Network
             int messageNumber;
             Packet data;
 
+            info.PutIncomingPacketSize(length);
+
             // Did we get a valid message.
             if (!messages.ParseMessage(buffer, out type, out messageNumber, out data))
             {
-                info.Incoming(buffer.Length, TrafficTypes.Invalid);
+                info.PutIncomingTraffic(buffer.Length, TrafficTypes.Invalid);
                 return;
             }
 
@@ -256,7 +258,7 @@ namespace Engine.Network
             {
                 case SocketMessage.Ack:
                     // It's an ack.
-                    info.Incoming(buffer.Length, TrafficTypes.Protocol);
+                    info.PutIncomingTraffic(buffer.Length, TrafficTypes.Protocol);
                     if (awaitingAck.ContainsKey(messageNumber))
                     {
                         awaitingAck.Remove(messageNumber);
@@ -265,7 +267,7 @@ namespace Engine.Network
 
                 case SocketMessage.Acked:
                     // Acked data.
-                    info.Incoming(buffer.Length, TrafficTypes.Data);
+                    info.PutIncomingTraffic(buffer.Length, TrafficTypes.Data);
                     if (connection != null)
                     {
                         // Only handle these once successfully, as they may have been resent
@@ -293,18 +295,18 @@ namespace Engine.Network
 
                         // Send ack if we get here.
                         Packet ack = messages.MakeAck(messageNumber);
-                        info.Outgoing(ack.Length, TrafficTypes.Protocol);
+                        info.PutOutgoingTraffic(ack.Length, TrafficTypes.Protocol);
                         Send(ack.Buffer, ack.Length, remote);
                     }
                     break;
 
                 case SocketMessage.Ping:
                     // It's a ping, send a pong.
-                    info.Incoming(buffer.Length, TrafficTypes.Protocol);
+                    info.PutIncomingTraffic(buffer.Length, TrafficTypes.Protocol);
                     if (data.HasInt64())
                     {
                         Packet pong = messages.MakePong(data.ReadInt64());
-                        info.Outgoing(pong.Length, TrafficTypes.Protocol);
+                        info.PutOutgoingTraffic(pong.Length, TrafficTypes.Protocol);
                         Send(pong.Buffer, pong.Length, remote);
                     }
                     break;
@@ -319,7 +321,7 @@ namespace Engine.Network
 
                 case SocketMessage.Unacked:
                     // Unacked data, this is only sent once, presumably.
-                    info.Incoming(buffer.Length, TrafficTypes.Data);
+                    info.PutIncomingTraffic(buffer.Length, TrafficTypes.Data);
                     OnData(new ProtocolDataEventArgs(remote, data));
                     break;
                 default:
@@ -379,12 +381,12 @@ namespace Engine.Network
                 }
                 else if (new TimeSpan(time - message.lastSent).TotalMilliseconds > message.pollRate)
                 {
-                    info.Outgoing(message.data.Length, TrafficTypes.Data);
+                    info.PutOutgoingTraffic(message.data.Length, TrafficTypes.Data);
                     try
                     {
                         Send(message.data.Buffer, message.data.Length, message.remote);
                         // Incrementally stretch the time between resends, to avoid flooding
-                        // the adapter for low initial pollrates.
+                        // the adapter for low initial poll rates.
                         if (message.lastSent != 0)
                         {
                             message.pollRate += message.pollRate;
@@ -417,7 +419,7 @@ namespace Engine.Network
                     // Only ping remote hosts that sent us a message (replied) recently.
                     if ((DateTime.Now - item.LastReceived).TotalMilliseconds < PingFrequency * 2)
                     {
-                        info.Outgoing(message.Length, TrafficTypes.Protocol);
+                        info.PutOutgoingTraffic(message.Length, TrafficTypes.Protocol);
                         Send(message.Buffer, message.Length, item.Remote);
                     }
                 }
@@ -600,13 +602,21 @@ namespace Engine.Network
         private byte[] header;
 
         /// <summary>
+        /// Our protocol information instance. We use this here to fill it with
+        /// information about encryption over head and compression ratio, as well
+        /// as general package sizes.
+        /// </summary>
+        ProtocolInfo info;
+
+        /// <summary>
         /// The number of the next acked packet we'll send.
         /// </summary>
         private int nextMessageNumber;
 
-        public UdpMessageFactory(byte[] header)
+        public UdpMessageFactory(byte[] header, ProtocolInfo info)
         {
             this.header = header;
+            this.info = info;
 
             // Set the frame number to some random value. This way we can
             // be pretty sure we're not getting into the trouble of someone
@@ -703,6 +713,7 @@ namespace Engine.Network
                     }
                     byte[] compressed = packet.ReadByteArray();
                     body = new Packet(SimpleCompression.Decompress(compressed));
+                    info.PutIncomingPacketCompression(compressed.Length / (double)body.Length);
                 }
                 else
                 {
@@ -751,6 +762,7 @@ namespace Engine.Network
             {
                 data = packet.Buffer;
                 length = packet.Length;
+                info.PutOutgoingPacketSize(length);
                 // If packets are large, try compressing them, see if it helps.
                 // Only start after a certain size. General overhead for gzip
                 // seems to be around 130byte, so make sure we're well beyond that.
@@ -759,6 +771,7 @@ namespace Engine.Network
                     byte[] compressed = SimpleCompression.Compress(packet.Buffer, packet.Length);
                     if (compressed.Length < packet.Length)
                     {
+                        info.PutOutcomingPacketCompression(compressed.Length / (double)packet.Length);
                         type |= SocketMessage.Compressed;
                         data = compressed;
                         length = compressed.Length;
@@ -863,7 +876,7 @@ namespace Engine.Network
         /// Average ping to this client, i.e. half round trip time for acked messages,
         /// over the last 20 messages.
         /// </summary>
-        private Sampling pingAverage = new Sampling(5, 20);
+        private IntSampling pingAverage = new IntSampling(5, 20);
 
         /// <summary>
         /// Creates a new instance to track the state for an endpoint.

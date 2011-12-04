@@ -102,12 +102,16 @@ namespace Space.View
             avgOutgoing /= info.HistoryLength - 1;
             avgTotal /= info.HistoryLength - 1;
 
-            string netInfo = String.Format("in: {0}|{1}|{2} - {3:f}kB/s\n" +
-                                           "out: {4}|{5}|{6} - {7:f}kB/s\n" +
-                                           "sum: {8}|{9}|{10} - {11:f}kB/s",
+            string netInfo = String.Format("in: {0}|{1}|{2}|{3:f}kB/s\n" +
+                                           "    aps: {12}|apc: {13:f}\n" +
+                                           "out: {4}|{5}|{6}|{7:f}kB/s\n" +
+                                           "     aps: {14}|apc: {15:f}\n" +
+                                           "sum: {8}|{9}|{10}|{11:f}kB/s",
                                            minIncoming, maxIncoming, avgIncoming, avgIncoming / 1024f,
                                            minOutgoing, maxOutgoing, avgOutgoing, avgOutgoing / 1024f,
-                                           minTotal, maxTotal, avgTotal, avgTotal / 1024f);
+                                           minTotal, maxTotal, avgTotal, avgTotal / 1024f,
+                                           info.IncomingPacketSizes.Mean(), info.IncomingPacketCompression.Mean(),
+                                           info.OutgoingPacketSizes.Mean(), info.OutgoingPacketCompression.Mean());
             var netInfoMeasure = font.MeasureString(netInfo);
             var netInfoPosition = offset;
             var graphPosition = new Vector2(offset.X, offset.Y + netInfoMeasure.Y + 5);

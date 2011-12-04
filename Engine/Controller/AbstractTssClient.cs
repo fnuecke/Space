@@ -67,7 +67,12 @@ namespace Engine.Controller
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
         public AbstractTssClient(Game game, IClientSession<TPlayerData, TPacketizerContext> session)
-            : base(game, session, new uint[] { 50, 100 })
+            // These timings roughly correspond to 0.25 1 and 2 seconds of game time.
+            // We use the same timings for server and client, so that the clients will
+            // get the proper last known state when resynchronizing. Two seconds are
+            // quite a lot, so this may be exploitable (sending commands into the past),
+            // but let's just say I don't really care about that at this point ;)
+            : base(game, session, new uint[] { 15, 60, 120 })
         {
         }
 
@@ -122,10 +127,11 @@ namespace Engine.Controller
         /// </summary>
         public override void Update(GameTime gameTime)
         {
-            base.Update(gameTime);
-
             if (Session.ConnectionState == ClientState.Connected && !Simulation.WaitingForSynchronization)
             {
+                // Drive game logic.
+                UpdateSimulation(gameTime);
+
                 // Hash test.
                 // Do all hashing AFTER network handling, but BEFORE logic
                 // handling (stepping), to make sure all commands that can
@@ -141,9 +147,6 @@ namespace Engine.Controller
                     }
                 }
 
-                // Drive game logic.
-                UpdateSimulation(gameTime);
-
                 // Send sync command every now and then, to keep game clock synchronized.
                 if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
@@ -154,6 +157,8 @@ namespace Engine.Controller
                     Session.SendToHost(syncRequest, PacketPriority.None);
                 }
             }
+
+            base.Update(gameTime);
         }
 
         #endregion
@@ -214,8 +219,9 @@ namespace Engine.Controller
 
                 case TssUdpControllerMessage.Synchronize:
                     // Answer to a synchronization request.
-                    // Only accept these when they come from the server.
-                    if (args.IsFromServer)
+                    // Only accept these when they come from the server, and disregard if
+                    // we're waiting for a snapshot of the simulation.
+                    if (args.IsFromServer && !Simulation.WaitingForSynchronization)
                     {
                         // This calculation follows algorithm described here:
                         // http://www.mine-control.com/zack/timesync/timesync.html

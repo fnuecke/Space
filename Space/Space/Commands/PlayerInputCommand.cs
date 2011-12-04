@@ -77,7 +77,8 @@ namespace Space.Commands
         {
             return other is PlayerInputCommand &&
                 base.Equals(other) &&
-                ((PlayerInputCommand)other).Input == this.Input;
+                ((PlayerInputCommand)other).Input == this.Input &&
+                ((PlayerInputCommand)other).TargetAngle == this.TargetAngle;
         }
 
         #endregion

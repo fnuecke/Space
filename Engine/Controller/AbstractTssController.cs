@@ -75,15 +75,28 @@ namespace Engine.Controller
             }
             else
             {
-                // Compensate for dynamic timestep.
+                // Compensate for dynamic time step.
                 double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + lastUpdateRemainder;
                 double target = Game.TargetElapsedTime.TotalMilliseconds;
-                while (elapsed > target)
+                if (elapsed <= target)
                 {
-                    elapsed -= target;
-                    Simulation.Update();
+                    // If we can't actually run to the next frame, at least update
+                    // back to the current frame in case rollbacks were made to
+                    // accommodate player commands.
+                    Simulation.RunToFrame(Simulation.CurrentFrame);
                 }
-                lastUpdateRemainder = elapsed;
+                else
+                {
+                    // We can run at least one frame, so do the update(s). Due to the
+                    // carry there may occur more than one simulation update per xna
+                    // update, but that should be below the threshold of the noticeable.
+                    while (elapsed > target)
+                    {
+                        elapsed -= target;
+                        Simulation.Update();
+                    }
+                    lastUpdateRemainder = elapsed;
+                }
             }
         }
 

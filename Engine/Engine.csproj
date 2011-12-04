@@ -167,6 +167,7 @@
     <Compile Include="Util\Angle.cs" />
     <Compile Include="Util\Hasher.cs" />
     <Compile Include="Util\IHashable.cs" />
+    <Compile Include="Util\ISampling.cs" />
     <Compile Include="Util\Sampling.cs" />
     <Compile Include="Util\Compression.cs" />
     <Compile Include="Util\Direction.cs" />

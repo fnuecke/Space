@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.Util;
 
 namespace Engine.Network
 {
@@ -49,5 +50,13 @@ namespace Engine.Network
         /// Represents outgoing traffic over a certain interval of time, tracked by type, and stored as number of bytes.
         /// </summary>
         LinkedList<Dictionary<TrafficTypes, int>> OutgoingTraffic { get; }
+
+        ISampling<int> IncomingPacketSizes { get; }
+
+        ISampling<int> OutgoingPacketSizes { get; }
+
+        ISampling<double> IncomingPacketCompression { get; }
+
+        ISampling<double> OutgoingPacketCompression { get; }
     }
 }

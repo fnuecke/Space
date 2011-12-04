@@ -62,7 +62,12 @@ namespace Engine.Controller
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
         protected AbstractTssServer(Game game, IServerSession<TPlayerData, TPacketizerContext> session)
-            : base(game, session, new uint[] { 50 })
+            // These timings roughly correspond to 0.25 1 and 2 seconds of game time.
+            // We use the same timings for server and client, so that the clients will
+            // get the proper last known state when resynchronizing. Two seconds are
+            // quite a lot, so this may be exploitable (sending commands into the past),
+            // but let's just say I don't really care about that at this point ;)
+            : base(game, session, new uint[] { 15, 60, 120 })
         {
         }
 
@@ -106,12 +111,10 @@ namespace Engine.Controller
         /// </summary>
         public override void Update(GameTime gameTime)
         {
-            base.Update(gameTime);
+            // Drive game logic.
+            UpdateSimulation(gameTime);
 
             // Send hash check every now and then, to check for desyncs.
-            // Do all hashing AFTER network handling, but BEFORE logic
-            // handling (stepping), to make sure all commands that can
-            // possibly contribute to a state already have.
             if (new TimeSpan(DateTime.Now.Ticks - lastHashTime).TotalMilliseconds > HashInterval)
             {
                 lastHashTime = DateTime.Now.Ticks;
@@ -126,8 +129,7 @@ namespace Engine.Controller
                 Session.SendToEveryone(hashCheck, PacketPriority.None);
             }
 
-            // Drive game logic.
-            UpdateSimulation(gameTime);
+            base.Update(gameTime);
         }
 
         #endregion

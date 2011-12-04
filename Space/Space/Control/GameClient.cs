@@ -72,8 +72,8 @@ namespace Space.Control
             var spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
 
             // Draw debug stuff.
-            var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 200, GraphicsDevice.Viewport.Height - 100);
-            var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 340, GraphicsDevice.Viewport.Height - 100);
+            var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 230, GraphicsDevice.Viewport.Height - 140);
+            var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 340, GraphicsDevice.Viewport.Height - 140);
 
             SessionInfo.Draw("Client", Session, sessionOffset, font, spriteBatch);
             NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);

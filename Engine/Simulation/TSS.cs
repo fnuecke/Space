@@ -158,29 +158,29 @@ namespace Engine.Simulation
             // Remember original frame.
             long currentFrame = CurrentFrame;
 
-            if (frame < CurrentFrame)
-            {
-                // Rewind to the frame we need to insert in.
-                Rewind(frame);
-            }
-
-            if (frame == CurrentFrame)
-            {
-                // Live insert, add to current state, too.
-                LeadingState.AddSteppable((TSteppable)steppable.Clone());
-            }
-
             // Store it to be inserted in trailing states.
             if (!adds.ContainsKey(frame))
             {
                 adds.Add(frame, new List<TSteppable>());
             }
+            else if (adds[frame].Contains(steppable))
+            {
+                // Don't insert the same add to the list twice.
+                return;
+            }
+            else if (removes.ContainsKey(frame) && removes[frame].Contains(steppable.UID))
+            {
+                // Do not allow removal and adding of the same object in the same
+                // frame, as this can lead to unexpected behavior (may not happen
+                // in the intended order!)
+                throw new InvalidOperationException("Cannot add an object in the same frame as it will be removed.");
+            }
             adds[frame].Add((TSteppable)steppable.Clone());
 
-            // Fast forward again.
-            if (!WaitingForSynchronization)
+            // Rewind to the frame we need to insert in.
+            if (frame < CurrentFrame)
             {
-                FastForward(currentFrame);
+                Rewind(frame);
             }
         }
 
@@ -213,29 +213,29 @@ namespace Engine.Simulation
             // Remember original frame.
             long currentFrame = CurrentFrame;
 
-            if (frame < CurrentFrame)
-            {
-                // Rewind to the frame we need to insert in.
-                Rewind(frame);
-            }
-
-            if (frame == CurrentFrame)
-            {
-                // Live insert, add to current state, too.
-                LeadingState.RemoveSteppable(steppableUid);
-            }
-
             // Store it to be removed in trailing states.
             if (!removes.ContainsKey(frame))
             {
                 removes.Add(frame, new List<long>());
             }
+            else if (removes[frame].Contains(steppableUid))
+            {
+                // Don't insert the same remove to the list twice.
+                return;
+            }
+            else if (adds.ContainsKey(frame) && adds[frame].Find(a => a.UID == steppableUid) != null)
+            {
+                // Do not allow removal and adding of the same object in the same
+                // frame, as this can lead to unexpected behavior (may not happen
+                // in the intended order!)
+                throw new InvalidOperationException("Cannot remove an object in the same frame as it was added.");
+            }
             removes[frame].Add(steppableUid);
 
-            // Fast forward again.
-            if (!WaitingForSynchronization)
+            // Rewind to the frame we need to insert in.
+            if (frame < CurrentFrame)
             {
-                FastForward(currentFrame);
+                Rewind(frame);
             }
         }
 
@@ -314,44 +314,39 @@ namespace Engine.Simulation
             // Remember original frame.
             long currentFrame = CurrentFrame;
 
-            if (frame <= CurrentFrame)
-            {
-                // Rewind to the frame we need to insert in.
-                Rewind(frame - 1);
-            }
-
-            if (frame == CurrentFrame + 1)
-            {
-                // Live insert, add to current state, too.
-                LeadingState.PushCommand(command);
-            }
-
             // Store it to be removed in trailing states.
             if (!commands.ContainsKey(frame))
             {
                 commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
             }
-            else
+            
+            // Store it to be removed in trailing states.
+            if (!commands.ContainsKey(frame))
             {
-                var list = commands[frame];
-                int known = list.FindIndex(x => x.Equals(command));
-                if (known >= 0)
+                // No such command yet, push it.
+                commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
+            }
+            else if (commands[frame].Contains(command))
+            {
+                // Already there! Use the authoritative one (or if neither is do nothing).
+                var existing = commands[frame].Find(c => c.Equals(command));
+                if (!existing.IsAuthoritative && command.IsAuthoritative)
                 {
-                    // Already there! Use the authoritative one (or if neither is do nothing).
-                    var existing = list[known];
-                    if (!existing.IsAuthoritative && command.IsAuthoritative)
-                    {
-                        list.RemoveAt(known);
-                        list.Add(command);
-                    }
+                    commands[frame].Remove(existing);
+                }
+                else
+                {
+                    // Don't insert the same command twice in the same frame.
+                    return;
                 }
             }
             commands[frame].Add(command);
 
-            // Fast forward again.
-            if (!WaitingForSynchronization)
+            // Rewind to the frame we need to insert in.
+            if (frame <= CurrentFrame)
             {
-                FastForward(currentFrame);
+                // Rewind to the frame we need to insert in.
+                Rewind(frame - 1);
             }
         }
 
@@ -419,34 +414,7 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Find adds / removes / commands that our out of date now, but keep newer ones.
-            List<long> deprecated = new List<long>();
-            foreach (var key in adds.Keys)
-            {
-                if (key <= CurrentFrame)
-                {
-                    deprecated.Add(key);
-                }
-            }
-            foreach (var key in removes.Keys)
-            {
-                if (key <= CurrentFrame)
-                {
-                    deprecated.Add(key);
-                }
-            }
-            foreach (var key in commands.Keys)
-            {
-                if (key <= CurrentFrame)
-                {
-                    deprecated.Add(key);
-                }
-            }
-            foreach (var frame in deprecated)
-            {
-                adds.Remove(frame);
-                removes.Remove(frame);
-                commands.Remove(frame);
-            }
+            PrunePastEvents(CurrentFrame);
 
             // Unwrap the trailing state and mirror it to all the newer ones.
             states[states.Length - 1].Depacketize(packet, context);
@@ -545,18 +513,6 @@ namespace Engine.Simulation
                         needsRewind = true;
                     }
 
-                    // Check if we have commands to execute in that frame.
-                    if (commands.ContainsKey(states[i].CurrentFrame))
-                    {
-                        foreach (var command in commands[states[i].CurrentFrame])
-                        {
-                            states[i].PushCommand(command);
-                        }
-                    }
-
-                    // Do the actual stepping for the state.
-                    states[i].Update();
-
                     // Check if we need to add objects.
                     if (adds.ContainsKey(states[i].CurrentFrame))
                     {
@@ -576,6 +532,18 @@ namespace Engine.Simulation
                             states[i].RemoveSteppable(steppableUid);
                         }
                     }
+
+                    // Check if we have commands to execute in that frame.
+                    if (commands.ContainsKey(states[i].CurrentFrame))
+                    {
+                        foreach (var command in commands[states[i].CurrentFrame])
+                        {
+                            states[i].PushCommand(command);
+                        }
+                    }
+
+                    // Do the actual stepping for the state.
+                    states[i].Update();
                 }
 
                 // Check if we had trailing tentative commands.
@@ -586,7 +554,7 @@ namespace Engine.Simulation
             }
 
             // Clean up stuff that's too old to keep.
-            PrunePastEvents();
+            PrunePastEvents(TrailingFrame);
         }
 
         /// <summary>
@@ -625,14 +593,14 @@ namespace Engine.Simulation
         /// Some cleanup, removing old adds/removes, that will never
         /// be checked again.
         /// </summary>
-        private void PrunePastEvents()
+        private void PrunePastEvents(long frame)
         {
             // Remove adds / removes from the to-add list that have been added
             // to the state trailing furthest behind at this point.
             List<long> deprecated = new List<long>();
             foreach (var key in adds.Keys)
             {
-                if (key <= TrailingFrame)
+                if (key < frame)
                 {
                     deprecated.Add(key);
                 }
@@ -645,7 +613,7 @@ namespace Engine.Simulation
             deprecated.Clear();
             foreach (var key in removes.Keys)
             {
-                if (key <= TrailingFrame)
+                if (key < frame)
                 {
                     deprecated.Add(key);
                 }
@@ -658,7 +626,7 @@ namespace Engine.Simulation
             deprecated.Clear();
             foreach (var key in commands.Keys)
             {
-                if (key < TrailingFrame)
+                if (key < frame)
                 {
                     deprecated.Add(key);
                 }

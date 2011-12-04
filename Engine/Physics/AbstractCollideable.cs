@@ -7,7 +7,8 @@ namespace Engine.Physics
     /// <summary>
     /// Base implementation for collideable types.
     /// </summary>
-    public abstract class AbstractCollideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : PhysicalObject<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>, ICollideable
+    public abstract class AbstractCollideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        : PhysicalObject<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>, ICollideable
         where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
