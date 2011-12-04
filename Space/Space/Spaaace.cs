@@ -17,8 +17,9 @@ namespace Space
     /// </summary>
     public class Spaaace : Microsoft.Xna.Framework.Game
     {
+        private const string SettingsFile = "config.xml";
+
         GraphicsDeviceManager graphics;
-        PacketizerContext context;
         SpriteBatch spriteBatch;
         GameConsole console;
 
@@ -27,27 +28,38 @@ namespace Space
 
         public Spaaace()
         {
+            // Load settings. Save on exit.
+            Settings.Load(SettingsFile);
+            Exiting += (object sender, EventArgs e) => Settings.Save(SettingsFile);
+
+            // Set up display.
             graphics = new GraphicsDeviceManager(this);
-            Content.RootDirectory = "Content";
+            graphics.PreferredBackBufferWidth = Settings.Instance.ScreenWidth;
+            graphics.PreferredBackBufferHeight = Settings.Instance.ScreenHeight;
+            graphics.IsFullScreen = Settings.Instance.Fullscreen;
 
-            Window.Title = "Spaaaaaace. Space. Spaaace. So much space!";
-            IsMouseVisible = true;
+            // We really want to do this, because it keeps the game from running at one billion
+            // frames per second -- which sounds fun, but isn't, because game states won't update
+            // properly anymore (because elapsed time since last step will always appear to be zero).
+            graphics.SynchronizeWithVerticalRetrace = true;
 
-            // Suspect for better sync, but not enough experimenting done, yet.
-            //this.TargetElapsedTime = TimeSpan.FromMilliseconds(1000f / 67f);
-            //graphics.SynchronizeWithVerticalRetrace = true;
-
-            // XNAs fixed timestep implementation doesn't suit us, to be gentle.
+            // XNAs fixed time step implementation doesn't suit us, to be gentle.
             // So we let it be dynamic and adjust for it as necessary, leading
             // to almost no desyncs at all! Yay!
             this.IsFixedTimeStep = false;
 
+            // Remember to keep this in sync with the content project.
+            Content.RootDirectory = "data";
+
+            Window.Title = "Spaaaaaace. Space. Spaaace. So much space!";
+            IsMouseVisible = true;
+
             // Create our object instantiation context. This must contain
             // everything a game object might need to rebuild it self from
             // its serialized data (for game states being sent).
-            context = new PacketizerContext();
+            var context = new PacketizerContext();
             context.game = this;
-            Packetizer<PlayerInfo, PacketizerContext> packetizer = new Packetizer<PlayerInfo, PacketizerContext>(context);
+            var packetizer = new Packetizer<PlayerInfo, PacketizerContext>(context);
             // Make the packetizer available for all game components.
             Services.AddService(typeof(IPacketizer<PlayerInfo, PacketizerContext>), packetizer);
 
@@ -157,14 +169,13 @@ namespace Space
 
             Services.AddService(typeof(SpriteBatch), spriteBatch);
 
+            var context = ((IPacketizer<PlayerInfo, PacketizerContext>)Services.GetService(typeof(IPacketizer<PlayerInfo, PacketizerContext>))).Context;
             var shipdata = Content.Load<ShipData[]>("Data/ships");
             foreach (var ship in shipdata)
             {
                 context.shipData[ship.Name] = ship;
                 context.shipTextures[ship.Name] = Content.Load<Texture2D>(ship.Texture);
             }
-
-            context.game = this;
 
             console.SpriteBatch = spriteBatch;
             console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
