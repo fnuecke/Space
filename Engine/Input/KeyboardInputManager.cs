@@ -77,6 +77,18 @@ namespace Engine.Input
         /// Get a representation for a specific key-combination, which can be used
         /// to register for events on specific combinations of keys only.
         /// </summary>
+        /// <param name="key">the key that has to be pressed.</param>
+        /// <param name="modifier">the modifier that has to be active.</param>
+        /// <returns>an object that represents this keyboard combination.</returns>
+        public KeyCombo Combo(Keys key, KeyModifier modifier)
+        {
+            return new KeyCombo(this, new[] { key }, modifier);
+        }
+
+        /// <summary>
+        /// Get a representation for a specific key-combination, which can be used
+        /// to register for events on specific combinations of keys only.
+        /// </summary>
         /// <param name="keys">the list of keys that have to be pressed.</param>
         /// <returns>an object that represents this keyboard combination.</returns>
         public KeyCombo Combo(Keys[] keys)
