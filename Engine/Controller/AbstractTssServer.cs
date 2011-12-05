@@ -63,10 +63,9 @@ namespace Engine.Controller
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
         protected AbstractTssServer(Game game, IServerSession<TPlayerData, TPacketizerContext> session)
-            // These timings roughly corresponds to 1.5 second of game time.
-            // We use the same max timings for server and client, so that the clients will
-            // get the proper last known state when resynchronizing.
-            : base(game, session, new uint[] { 90 })
+            : base(game, session, new uint[] {
+                (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds)
+            })
         {
         }
 
@@ -121,7 +120,7 @@ namespace Engine.Controller
                 Hasher hasher = new Hasher();
                 Simulation.Hash(hasher);
 
-                Packet hashCheck = new Packet(5);
+                Packet hashCheck = new Packet(1 + sizeof(long) + sizeof(long));
                 hashCheck.Write((byte)TssUdpControllerMessage.HashCheck);
                 hashCheck.Write(Simulation.TrailingFrame);
                 hashCheck.Write(hasher.Value);
@@ -195,7 +194,7 @@ namespace Engine.Controller
             base.RemoveSteppable(steppableUid, frame);
 
             // Notify all players in the game about this.
-            Packet removedInfo = new Packet(9);
+            Packet removedInfo = new Packet(1 + sizeof(long) + sizeof(long));
             removedInfo.Write((byte)TssUdpControllerMessage.RemoveGameObject);
             removedInfo.Write(frame);
             removedInfo.Write(steppableUid);
@@ -218,12 +217,6 @@ namespace Engine.Controller
                 // As a server we resend all commands.
                 SendToEveryone(command, priority);
             }
-#if DEBUG
-            else
-            {
-                Console.WriteLine("Got a command we couldn't use, " + command.Frame + "<" + Simulation.TrailingFrame);
-            }
-#endif
         }
 
         #endregion
@@ -254,7 +247,7 @@ namespace Engine.Controller
                     // Client re-synchronizing.
                     {
                         long clientFrame = args.Data.ReadInt64();
-                        Packet synchronizeResponse = new Packet(9);
+                        Packet synchronizeResponse = new Packet(1 + sizeof(long) + sizeof(long));
                         synchronizeResponse.Write((byte)TssUdpControllerMessage.Synchronize);
                         synchronizeResponse.Write(clientFrame);
                         synchronizeResponse.Write(Simulation.CurrentFrame);

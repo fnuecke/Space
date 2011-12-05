@@ -45,7 +45,7 @@ namespace Engine.Controller
         #region Construction / Destruction
 
         /// <summary>
-        /// Initiliaze session and base classes.
+        /// Initialize session and base classes.
         /// </summary>
         /// <param name="game">the game this belongs to.</param>
         /// <param name="port">the port to listen on.</param>

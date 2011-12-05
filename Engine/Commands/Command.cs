@@ -45,7 +45,7 @@ namespace Engine.Commands
 
         public virtual void Packetize(Packet packet)
         {
-            packet.Write(Player != null ? Player.Number : -1);
+            packet.Write(Player.Number);
         }
 
         public virtual void Depacketize(Packet packet, TPacketizerContext context)

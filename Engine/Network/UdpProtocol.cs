@@ -668,7 +668,7 @@ namespace Engine.Network
         /// <returns>the data representing the message.</returns>
         public Packet MakeAck(int messageNumber)
         {
-            Packet packet = new Packet(4);
+            Packet packet = new Packet(sizeof(int));
             packet.Write(messageNumber);
             return MakeMessage(SocketMessage.Ack, packet);
         }
@@ -682,7 +682,7 @@ namespace Engine.Network
         public Packet MakeAcked(Packet packet, out int messageNumber)
         {
             messageNumber = nextMessageNumber++;
-            Packet wrapper = new Packet(8 + packet.Length);
+            Packet wrapper = new Packet(sizeof(int) + sizeof(ushort) + packet.Length);
             wrapper.Write(messageNumber);
             wrapper.Write(packet);
             return MakeMessage(SocketMessage.Acked, wrapper);
@@ -815,7 +815,7 @@ namespace Engine.Network
                     }
                 }
             }
-            Packet wrapper = new Packet(5 + length);
+            Packet wrapper = new Packet(1 + sizeof(ushort) + length);
             wrapper.Write((byte)type);
             wrapper.Write(data);
 

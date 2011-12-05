@@ -267,20 +267,29 @@ namespace Engine.Simulation
         /// <param name="frame">the frame in which to execute the command.</param>
         public void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, long frame)
         {
-            // Store it to be removed in trailing states.
-            if (!commands.ContainsKey(frame))
+            // Check if we can possibly apply this command.
+            if (frame >= TrailingFrame)
             {
-                // No such command yet, push it.
-                commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
-            }
-            // We don't need to check for duplicate / replacing authoritative here,
-            // because the sub-state will do that itself.
-            commands[frame].Add(command);
+                // Store it to be removed in trailing states.
+                if (!commands.ContainsKey(frame))
+                {
+                    // No such command yet, push it.
+                    commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
+                }
+                // We don't need to check for duplicate / replacing authoritative here,
+                // because the sub-state will do that itself.
+                commands[frame].Add(command);
 
-            // Rewind to the frame to retroactively apply changes.
-            if (frame < CurrentFrame)
+                // Rewind to the frame to retroactively apply changes.
+                if (frame < CurrentFrame)
+                {
+                    Rewind(frame);
+                }
+            }
+            else if (command.IsAuthoritative)
             {
-                Rewind(frame);
+                // Cannot apply, and this is an authoritative command. We need to sync.
+                OnInvalidated(EventArgs.Empty);
             }
         }
 
@@ -476,73 +485,66 @@ namespace Engine.Simulation
                 // with a tentative command.
                 bool needsRewind = false;
 
+                // The state we're now updating.
+                TState state = states[i];
+
                 // Update while we're still delaying.
-                while (states[i].CurrentFrame + delays[i] < frame)
+                while (state.CurrentFrame + delays[i] < frame)
                 {
+                    // The frame the state is now in, and that will be executed.
+                    long stateFrame = state.CurrentFrame;
+
+                    // Check if we need to add objects.
+                    if (adds.ContainsKey(stateFrame))
+                    {
+                        // Add a copy of it.
+                        foreach (var steppable in adds[stateFrame])
+                        {
+                            state.AddSteppable((TSteppable)steppable.Clone());
+                        }
+                    }
+
+                    // Check if we need to remove objects.
+                    if (removes.ContainsKey(stateFrame))
+                    {
+                        // Add a copy of it.
+                        foreach (var steppableUid in removes[stateFrame])
+                        {
+                            state.RemoveSteppable(steppableUid);
+                        }
+                    }
+
+                    // Check if we have commands to execute in that frame.
+                    if (commands.ContainsKey(stateFrame))
+                    {
+                        foreach (var command in commands[stateFrame])
+                        {
+                            state.PushCommand(command);
+                        }
+                    }
+
                     // If this is the trailing state, don't bring in tentative
                     // commands. Prune them instead. If there were any, rewind
                     // to apply that removal retroactively. Do this after the
                     // loop, though, to avoid unnecessary work.
-                    if (i == states.Length - 1 && states[i].SkipTentativeCommands())
+                    if (i == states.Length - 1 && state.SkipTentativeCommands())
                     {
                         needsRewind = true;
                     }
 
-                    // Apply the update for the state's current frame.
-                    UpdateSubstate(states[i]);
+                    // Do the actual stepping for the state.
+                    state.Update();
                 }
 
                 // Check if we had trailing tentative commands.
                 if (needsRewind)
                 {
-                    MirrorState(states[states.Length - 1], states.Length - 2);
+                    MirrorState(state, states.Length - 2);
                 }
             }
 
             // Clean up stuff that's too old to keep.
             PrunePastEvents();
-        }
-
-        /// <summary>
-        /// Perform an update to a sub-state, applying all adds/removes/commands to it.
-        /// </summary>
-        /// <param name="state">the state to update.</param>
-        private void UpdateSubstate(TState state)
-        {
-            // The frame the state is now in, and that will be executed.
-            long stateFrame = state.CurrentFrame;
-
-            // Check if we need to add objects.
-            if (adds.ContainsKey(stateFrame))
-            {
-                // Add a copy of it.
-                foreach (var steppable in adds[stateFrame])
-                {
-                    state.AddSteppable((TSteppable)steppable.Clone());
-                }
-            }
-
-            // Check if we need to remove objects.
-            if (removes.ContainsKey(stateFrame))
-            {
-                // Add a copy of it.
-                foreach (var steppableUid in removes[stateFrame])
-                {
-                    state.RemoveSteppable(steppableUid);
-                }
-            }
-
-            // Check if we have commands to execute in that frame.
-            if (commands.ContainsKey(stateFrame))
-            {
-                foreach (var command in commands[stateFrame])
-                {
-                    state.PushCommand(command);
-                }
-            }
-
-            // Do the actual stepping for the state.
-            state.Update();
         }
 
         /// <summary>

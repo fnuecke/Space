@@ -124,31 +124,16 @@ namespace Space.Control
         /// <param name="command">the received command.</param>
         protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
-            // Only handle stuff while we're connected.
-            if (Session.ConnectionState != ClientState.Connected)
-            {
-                return false;
-            }
-
             // Check what we have.
             switch (command.Type)
             {
                 case GameCommandType.PlayerInput:
-                    {
-                        // The player has to be in the game for this to work... this can
-                        // fail if the message from the server that a client joined reached
-                        // us before the join message.
-                        if (command.Player == null)
-                        {
-                            return false;
-                        }
-                        Apply(command, PacketPriority.None);
-                    }
+                    Apply(command, PacketPriority.None);
                     return true;
 
                 default:
 #if DEBUG
-                    Console.WriteLine("Client: got a command we couldn't handle: " + command.Type);
+                    Console.WriteLine("Client: got unknown command type: " + command.Type);
 #endif
                     break;
             }

@@ -81,7 +81,7 @@ namespace Engine.Session
             if (HasPlayer(player))
             {
                 // Let him know.
-                Packet packet = new Packet(4);
+                Packet packet = new Packet(sizeof(int));
                 packet.Write(player.Number);
                 SendToPlayer(player, SessionMessage.PlayerLeft, packet, PacketPriority.None);
 
@@ -192,7 +192,7 @@ namespace Engine.Session
                     {
                         RequestEventArgs requestArgs = new RequestEventArgs();
                         OnGameInfoRequested(requestArgs); //< Get custom data to send, if any.
-                        Packet response = new Packet(12 + requestArgs.Data.Length);
+                        Packet response = new Packet(sizeof(int) + sizeof(int) + sizeof(ushort) + requestArgs.Data.Length);
                         response.Write(MaxPlayers);
                         response.Write(NumPlayers);
                         response.Write(requestArgs.Data);
@@ -420,7 +420,7 @@ namespace Engine.Session
             --NumPlayers;
 
             // Tell the other clients.
-            Packet packet = new Packet(4);
+            Packet packet = new Packet(sizeof(int));
             packet.Write(player.Number);
             SendToEveryone(SessionMessage.PlayerLeft, packet, PacketPriority.Low);
 

@@ -323,7 +323,7 @@ namespace Engine.Session
         /// <param name="priority">the priority with which to deliver the packet.</param>
         internal virtual void SendToEndPoint(IPEndPoint remote, SessionMessage type, Packet packet, PacketPriority priority)
         {
-            Packet wrapper = new Packet(5 + (packet != null ? packet.Length : 0));
+            Packet wrapper = new Packet(1 + sizeof(ushort) + (packet != null ? packet.Length : 0));
             wrapper.Write((byte)type);
             wrapper.Write(packet);
             protocol.Send(wrapper, remote, priority);

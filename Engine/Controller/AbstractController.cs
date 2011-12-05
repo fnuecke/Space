@@ -133,8 +133,9 @@ namespace Engine.Controller
 
             // If the player is not the server, and the number doesn't match,
             // ignore the command -> avoid clients injecting commands for
-            // other clients.
-            if (!args.IsFromServer && !args.Player.Equals(command.Player))
+            // other clients. Also don't handle commands for players we don't
+            // know (null check).
+            if (!args.IsFromServer && (args.Player == null || !args.Player.Equals(command.Player)))
             {
                 return false;
             }

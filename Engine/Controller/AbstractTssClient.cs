@@ -75,10 +75,10 @@ namespace Engine.Controller
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
         public AbstractTssClient(Game game, IClientSession<TPlayerData, TPacketizerContext> session)
-            // These timings roughly correspond to 0.5 and 1.5 seconds of game time.
-            // We use the same max timings for server and client, so that the clients will
-            // get the proper last known state when resynchronizing.
-            : base(game, session, new uint[] { 30, 90 })
+            : base(game, session, new uint[] {
+                (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
+                (uint)System.Math.Ceiling(100 / game.TargetElapsedTime.TotalMilliseconds)
+            })
         {
         }
 
@@ -137,9 +137,6 @@ namespace Engine.Controller
                 UpdateSimulation(gameTime, syncDiff.Mean());
 
                 // Hash test.
-                // Do all hashing AFTER network handling, but BEFORE logic
-                // handling (stepping), to make sure all commands that can
-                // possibly contribute to a state already have.
                 if (Simulation.TrailingFrame == hashFrame)
                 {
                     Hasher hasher = new Hasher();
@@ -157,12 +154,10 @@ namespace Engine.Controller
                     new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
                     lastSyncTime = DateTime.Now.Ticks;
-                    Packet syncRequest = new Packet(5);
+                    Packet syncRequest = new Packet(1 + sizeof(long) + sizeof(long));
                     syncRequest.Write((byte)TssUdpControllerMessage.Synchronize);
                     syncRequest.Write(Simulation.CurrentFrame);
                     Session.SendToHost(syncRequest, PacketPriority.None);
-
-                    //Console.WriteLine("Client time correction: " + syncDiff.Mean());
                 }
             }
 
@@ -205,7 +200,12 @@ namespace Engine.Controller
             // own, tentative commands.
             if (!command.IsAuthoritative && command.Player.Equals(Session.LocalPlayer))
             {
-                SendToEveryone(command, priority);
+                // TODO somehow sending commands to others in the game as well (to give
+                // them a heads-up, with the intent to reduce lag) seems to cause some
+                // desyncs. Until we figure out why, let's just use a more centralized
+                // layout and have everything run through the server, first.
+                //SendToEveryone(command, priority);
+                SendToHost(command, priority);
             }
         }
 
@@ -276,10 +276,10 @@ namespace Engine.Controller
                         long latency = (Simulation.CurrentFrame - args.Data.ReadInt64()) / 2;
                         long clientServerDelta = (args.Data.ReadInt64() - Simulation.CurrentFrame);
                         long frameDelta = clientServerDelta + latency / 2;
-                        if (System.Math.Abs(frameDelta) > 2)
+                        if (System.Math.Abs(frameDelta) > 1)
                         {
 #if DEBUG
-                            Console.WriteLine("Client: correcting for " + frameDelta + " frames.");
+                            //Console.WriteLine("Client: correcting for " + frameDelta + " frames.");
 #endif
                             // Adjust the current frame of the simulation.
                             Simulation.RunToFrame(Simulation.CurrentFrame + frameDelta);

@@ -76,18 +76,17 @@ namespace Space.Control
 
         protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
         {
+            // Check what we have.
             switch (command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player sent input.
-                    {
-                        Apply(command, PacketPriority.High);
-                    }
+                    Apply(command, PacketPriority.High);
                     return true;
 
                 default:
 #if DEBUG
-                    Console.WriteLine("Server: got a command we couldn't handle: " + command.Type);
+                    Console.WriteLine("Server: got unknown command type: " + command.Type);
 #endif
                     break;
             }
