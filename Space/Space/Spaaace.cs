@@ -76,6 +76,7 @@ namespace Space
             Components.Add(new KeyboardInputManager(this));
             Components.Add(new MouseInputManager(this));
             console = new GameConsole(this);
+            console.Hotkey = Settings.Instance.ConsoleKey;
             Components.Add(console);
 
             console.DrawOrder = 10;

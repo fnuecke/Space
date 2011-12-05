@@ -2,6 +2,7 @@
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using Microsoft.Xna.Framework.Input;
 
 namespace Space
 {
@@ -27,6 +28,15 @@ namespace Space
         /// Run full screen mode or not.
         /// </summary>
         public bool Fullscreen = false;
+
+        #endregion
+
+        #region Key bindings
+
+        /// <summary>
+        /// The key that opens the in-game console.
+        /// </summary>
+        public Keys ConsoleKey = Keys.OemTilde;
 
         #endregion
 
