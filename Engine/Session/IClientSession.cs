@@ -36,7 +36,12 @@ namespace Engine.Session
         /// <summary>
         /// Current state of this session.
         /// </summary>
-        ClientState ConnectionState { get; set; }
+        ClientState ConnectionState { get; }
+
+        /// <summary>
+        /// The host we're connected to, if we're connected.
+        /// </summary>
+        IPEndPoint Host { get; }
 
         /// <summary>
         /// Send a ping into the local network, looking for open games.

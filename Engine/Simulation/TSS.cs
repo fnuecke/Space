@@ -413,12 +413,12 @@ namespace Engine.Simulation
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
 
-            // Find adds / removes / commands that our out of date now, but keep newer ones.
-            PrunePastEvents(CurrentFrame);
-
             // Unwrap the trailing state and mirror it to all the newer ones.
             states[states.Length - 1].Depacketize(packet, context);
             MirrorState(states[states.Length - 1], states.Length - 2);
+
+            // Find adds / removes / commands that our out of date now, but keep newer ones.
+            PrunePastEvents();
 
             // Continue with reading the list of adds.
             int numAdds = packet.ReadInt32();
@@ -554,7 +554,7 @@ namespace Engine.Simulation
             }
 
             // Clean up stuff that's too old to keep.
-            PrunePastEvents(TrailingFrame);
+            PrunePastEvents();
         }
 
         /// <summary>
@@ -593,14 +593,14 @@ namespace Engine.Simulation
         /// Some cleanup, removing old adds/removes, that will never
         /// be checked again.
         /// </summary>
-        private void PrunePastEvents(long frame)
+        private void PrunePastEvents()
         {
             // Remove adds / removes from the to-add list that have been added
             // to the state trailing furthest behind at this point.
             List<long> deprecated = new List<long>();
             foreach (var key in adds.Keys)
             {
-                if (key < frame)
+                if (key < TrailingFrame)
                 {
                     deprecated.Add(key);
                 }
@@ -613,7 +613,7 @@ namespace Engine.Simulation
             deprecated.Clear();
             foreach (var key in removes.Keys)
             {
-                if (key < frame)
+                if (key < TrailingFrame)
                 {
                     deprecated.Add(key);
                 }
@@ -626,7 +626,7 @@ namespace Engine.Simulation
             deprecated.Clear();
             foreach (var key in commands.Keys)
             {
-                if (key < frame)
+                if (key < TrailingFrame)
                 {
                     deprecated.Add(key);
                 }

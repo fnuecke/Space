@@ -44,9 +44,6 @@ namespace Space.Control
             // Register for mouse movement (orientation) and buttons (shooting).
             var mouse = (IMouseInputManager)game.Services.GetService(typeof(IMouseInputManager));
             mouse.Moved += HandleMouseMoved;
-
-            // Update after inputs have been handled.
-            UpdateOrder = 20;
         }
 
         public override void Update(GameTime gameTime)

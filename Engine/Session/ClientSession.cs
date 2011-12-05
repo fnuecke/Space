@@ -36,14 +36,10 @@ namespace Engine.Session
         /// </summary>
         public ClientState ConnectionState { get; set; }
 
-        #endregion
-
-        #region Fields
-
         /// <summary>
-        /// The actual host address of the game we're in / trying to join.
+        /// The host we're connected to, if we're connected.
         /// </summary>
-        private IPEndPoint host;
+        public IPEndPoint Host { get; private set; }
 
         #endregion
 
@@ -80,11 +76,11 @@ namespace Engine.Session
         {
             if (ConnectionState == ClientState.Unconnected)
             {
-                host = remote;
+                Host = remote;
                 Packet packet = new Packet();
                 packet.Write(playerName);
                 packet.Write(data);
-                SendToEndPoint(host, SessionMessage.JoinRequest, packet, PacketPriority.Lowest);
+                SendToEndPoint(Host, SessionMessage.JoinRequest, packet, PacketPriority.Lowest);
                 ConnectionState = ClientState.Connecting;
             }
             else
@@ -100,12 +96,12 @@ namespace Engine.Session
         {
             if (ConnectionState != ClientState.Unconnected)
             {
-                SendToEndPoint(host, SessionMessage.Leave, null, 0);
+                SendToEndPoint(Host, SessionMessage.Leave, null, 0);
             }
 
             ConnectionState = ClientState.Unconnected;
             playerAddresses = null;
-            host = null;
+            Host = null;
             localPlayerNumber = 0;
             NumPlayers = 0;
             MaxPlayers = 0;
@@ -123,7 +119,7 @@ namespace Engine.Session
         /// <param name="priority">the priority with which to deliver the packet.</param>
         internal override void SendToHost(SessionMessage type, Packet packet, PacketPriority priority)
         {
-            SendToEndPoint(host, type, packet, priority);
+            SendToEndPoint(Host, type, packet, priority);
         }
 
         /// <summary>
@@ -137,7 +133,7 @@ namespace Engine.Session
         {
             // As clients, don't try to cross the boundary of local loopback to
             // outside network. It can only fail :P
-            bool isHostLoopback = IPAddress.IsLoopback(host.Address);
+            bool isHostLoopback = IPAddress.IsLoopback(Host.Address);
             bool isRemoteLoopback = IPAddress.IsLoopback(remote.Address);
             if ((isHostLoopback && isRemoteLoopback) || (!isHostLoopback && !isRemoteLoopback))
             {
@@ -178,7 +174,7 @@ namespace Engine.Session
 
             if (ConnectionState != ClientState.Unconnected)
             {
-                if (args.Remote.Equals(host))
+                if (args.Remote.Equals(Host))
                 {
                     // Lost connection to host :(
                     if (ConnectionState == ClientState.Connecting)
@@ -222,7 +218,7 @@ namespace Engine.Session
             {
                 case SessionMessage.ConnectionTest:
                     // Server wants to know if we're still there.
-                    if (ConnectionState == ClientState.Connected && (args.Remote.Equals(host) || Array.IndexOf(playerAddresses, args.Remote) >= 0))
+                    if (ConnectionState == ClientState.Connected && (args.Remote.Equals(Host) || Array.IndexOf(playerAddresses, args.Remote) >= 0))
                     {
                         // Yep, still in a session, and this came from it's host. Allow acking.
                         args.Consume();
@@ -263,7 +259,7 @@ namespace Engine.Session
 
                 case SessionMessage.JoinResponse:
                     // Got a reply from a server for a join response.
-                    if (ConnectionState == ClientState.Connecting && args.Remote.Equals(host))
+                    if (ConnectionState == ClientState.Connecting && args.Remote.Equals(Host))
                     {
                         try
                         {
@@ -364,7 +360,7 @@ namespace Engine.Session
 
                 case SessionMessage.PlayerJoined:
                     // Some player joined the session.
-                    if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
+                    if (ConnectionState == ClientState.Connected && args.Remote.Equals(Host))
                     {
                         try
                         {
@@ -416,7 +412,7 @@ namespace Engine.Session
 
                 case SessionMessage.PlayerLeft:
                     // Some player left the session.
-                    if (ConnectionState == ClientState.Connected && args.Remote.Equals(host))
+                    if (ConnectionState == ClientState.Connected && args.Remote.Equals(Host))
                     {
                         try
                         {
@@ -464,7 +460,7 @@ namespace Engine.Session
                     // Custom data, just forward it if we're in a session.
                     if (ConnectionState == ClientState.Connected)
                     {
-                        if (args.Remote.Equals(host))
+                        if (args.Remote.Equals(Host))
                         {
                             OnPlayerData(new PlayerDataEventArgs<TPlayerData, TPacketizerContext>(null, args, data));
                         }

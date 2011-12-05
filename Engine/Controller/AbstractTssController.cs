@@ -67,8 +67,11 @@ namespace Engine.Controller
         /// based on the elapsed time.
         /// </summary>
         /// <param name="gameTime">the game time information for the current
-        /// udpate.</param>
-        protected void UpdateSimulation(GameTime gameTime)
+        /// update.</param>
+        /// <param name="timeCorrection">some value to add to the elapsed time as
+        /// a correction factor. Used by clients to better sync to the server's
+        /// game speed.</param>
+        protected void UpdateSimulation(GameTime gameTime, double timeCorrection = 0)
         {
             if (Game.IsFixedTimeStep)
             {
@@ -77,9 +80,8 @@ namespace Engine.Controller
             else
             {
                 // Compensate for dynamic time step.
-                double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + lastUpdateRemainder;
-                double target = Game.TargetElapsedTime.TotalMilliseconds;
-                if (elapsed <= target)
+                double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + lastUpdateRemainder + timeCorrection;
+                if (elapsed < Game.TargetElapsedTime.TotalMilliseconds)
                 {
                     // If we can't actually run to the next frame, at least update
                     // back to the current frame in case rollbacks were made to
@@ -91,9 +93,9 @@ namespace Engine.Controller
                     // We can run at least one frame, so do the update(s). Due to the
                     // carry there may occur more than one simulation update per xna
                     // update, but that should be below the threshold of the noticeable.
-                    while (elapsed > target)
+                    while (elapsed >= Game.TargetElapsedTime.TotalMilliseconds)
                     {
-                        elapsed -= target;
+                        elapsed -= Game.TargetElapsedTime.TotalMilliseconds;
                         Simulation.Update();
                     }
                     lastUpdateRemainder = elapsed;

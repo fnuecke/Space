@@ -67,10 +67,14 @@ namespace Space.Model
                 // Rotate right.
                 speedRotation = DirectionConversion.DirectionToFixed(Directions.Right) * Data.RotationSpeed;
             }
-            else
+            else if (deltaAngle < Fixed.Zero)
             {
                 // Rotate left.
                 speedRotation = DirectionConversion.DirectionToFixed(Directions.Left) * Data.RotationSpeed;
+            }
+            else
+            {
+                speedRotation = Fixed.Zero;
             }
         }
 

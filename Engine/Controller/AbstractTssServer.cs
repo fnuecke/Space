@@ -211,7 +211,7 @@ namespace Engine.Controller
         /// <param name="priority">the priority with which to deliver the packet.</param>
         protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, PacketPriority priority)
         {
-            if (command.Frame > Simulation.TrailingFrame)
+            if (command.Frame >= Simulation.TrailingFrame)
             {
                 // All commands we apply are authoritative.
                 command.IsAuthoritative = true;

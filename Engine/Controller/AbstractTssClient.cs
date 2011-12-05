@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using Engine.Commands;
 using Engine.Network;
 using Engine.Serialization;
@@ -47,6 +48,11 @@ namespace Engine.Controller
         /// Last time we sent a sync command to the server.
         /// </summary>
         private long lastSyncTime = 0;
+
+        /// <summary>
+        /// Keep track of the average number of frames we had to sync.
+        /// </summary>
+        private DoubleSampling syncDiff = new DoubleSampling(5);
 
         /// <summary>
         /// The last frame we know the server's state hash of.
@@ -130,7 +136,7 @@ namespace Engine.Controller
             if (Session.ConnectionState == ClientState.Connected && !Simulation.WaitingForSynchronization)
             {
                 // Drive game logic.
-                UpdateSimulation(gameTime);
+                UpdateSimulation(gameTime, syncDiff.Mean());
 
                 // Hash test.
                 // Do all hashing AFTER network handling, but BEFORE logic
@@ -148,13 +154,17 @@ namespace Engine.Controller
                 }
 
                 // Send sync command every now and then, to keep game clock synchronized.
-                if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
+                // No need to sync for a server that runs in the same program, though.
+                if (!IPAddress.IsLoopback(Session.Host.Address) &&
+                    new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
                     lastSyncTime = DateTime.Now.Ticks;
                     Packet syncRequest = new Packet(5);
                     syncRequest.Write((byte)TssUdpControllerMessage.Synchronize);
                     syncRequest.Write(Simulation.CurrentFrame);
                     Session.SendToHost(syncRequest, PacketPriority.None);
+
+                    //Console.WriteLine("Client time correction: " + syncDiff.Mean());
                 }
             }
 
@@ -253,6 +263,12 @@ namespace Engine.Controller
                     // we're waiting for a snapshot of the simulation.
                     if (args.IsFromServer && !Simulation.WaitingForSynchronization)
                     {
+                        // No need to sync for a server that runs in the same program.
+                        // We shouldn't get any of these, because we don't ask for them,
+                        // but better safe than sorry.
+                        if (IPAddress.IsLoopback(Session.Host.Address)) {
+                            return true;
+                        }
                         // This calculation follows algorithm described here:
                         // http://www.mine-control.com/zack/timesync/timesync.html
                         // Which is actually pretty logical, except for the '+ latency / 2'
@@ -267,8 +283,22 @@ namespace Engine.Controller
 #if DEBUG
                             Console.WriteLine("Client: correcting for " + frameDelta + " frames.");
 #endif
+                            // Adjust the current frame of the simulation.
                             Simulation.RunToFrame(Simulation.CurrentFrame + frameDelta);
                         }
+                        // Push our average delay plus the delta! Otherwise we'd loose the
+                        // running ('constant') delta we accumulated.
+                        syncDiff.Put(frameDelta * Game.TargetElapsedTime.TotalMilliseconds / SyncInterval);
+                        return true;
+                    }
+                    break;
+
+                case TssUdpControllerMessage.HashCheck:
+                    // Only accept these when they come from the server.
+                    if (args.IsFromServer)
+                    {
+                        hashFrame = args.Data.ReadInt64();
+                        hashValue = args.Data.ReadInt32();
                         return true;
                     }
                     break;
@@ -302,16 +332,6 @@ namespace Engine.Controller
                         long removeFrame = args.Data.ReadInt64();
                         long steppableUid = args.Data.ReadInt64();
                         Simulation.RemoveSteppable(steppableUid, removeFrame);
-                        return true;
-                    }
-                    break;
-
-                case TssUdpControllerMessage.HashCheck:
-                    // Only accept these when they come from the server.
-                    if (args.IsFromServer)
-                    {
-                        hashFrame = args.Data.ReadInt64();
-                        hashValue = args.Data.ReadInt32();
                         return true;
                     }
                     break;
