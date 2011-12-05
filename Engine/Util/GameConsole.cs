@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 using Engine.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
+
+using Keys = Microsoft.Xna.Framework.Input.Keys;
+
 
 namespace Engine.Util
 {
@@ -281,6 +284,8 @@ namespace Engine.Util
             if (keyboard != null)
             {
                 keyboard.Pressed += HandleKeyPressed;
+
+                keyboard.Combo(Keys.V, KeyModifier.Control).Pressed += HandleInsert;
             }
             var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
             if (mouse != null)
@@ -769,6 +774,19 @@ namespace Engine.Util
                     IsOpen = true;
                 }
             }
+        }
+
+
+        private void HandleInsert(object sender, EventArgs e)
+        {
+            
+            IDataObject dataObj = Clipboard.GetDataObject();
+
+            if (!dataObj.GetDataPresent(DataFormats.Text))
+               return;
+
+            input.Append( dataObj.GetData(DataFormats.Text).ToString());
+            cursor = input.Length;
         }
 
         /// <summary>
