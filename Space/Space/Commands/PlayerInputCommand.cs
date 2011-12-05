@@ -17,7 +17,9 @@ namespace Space.Commands
             StopRight,
             StopDown,
             StopLeft,
-            Rotate
+            Rotate,
+            Shoot,
+            CeaseFire
         }
 
         /// <summary>

@@ -52,15 +52,16 @@ namespace Engine.Simulation
             commands.Clear();
 
             // Update all objects in this state.
-            foreach (var steppable in steppables)
+            var activeSteppables = new List<TSteppable>(steppables);
+            foreach (var steppable in activeSteppables)
             {
                 steppable.PreUpdate();
             }
-            foreach (var steppable in steppables)
+            foreach (var steppable in activeSteppables)
             {
                 steppable.Update();
             }
-            foreach (var steppable in steppables)
+            foreach (var steppable in activeSteppables)
             {
                 steppable.PostUpdate();
             }

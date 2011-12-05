@@ -69,6 +69,7 @@ namespace Space
             // where the state only knows it has ISteppables, but not what the
             // actual implementations are.
             packetizer.Register<Ship>();
+            packetizer.Register<Shot>();
             packetizer.Register<PlayerInputCommand>();
 
             // Add some more utility components.

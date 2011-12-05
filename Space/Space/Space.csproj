@@ -115,6 +115,7 @@
     <Compile Include="Control\ServerController.cs" />
     <Compile Include="Model\PacketizerContext.cs" />
     <Compile Include="Model\PlayerInfo.cs" />
+    <Compile Include="Model\Shot.cs" />
     <Compile Include="Model\StaticWorld.cs" />
     <Compile Include="Commands\GameCommandType.cs" />
     <Compile Include="Commands\PlayerInputCommand.cs" />

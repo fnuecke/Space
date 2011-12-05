@@ -33,9 +33,14 @@ namespace Engine.Physics
         public Fixed Rotation { get { return rotation; } }
 
         /// <summary>
+        /// The directed speed of the object.
+        /// </summary>
+        public FPoint Velocity { get { return velocity; } }
+
+        /// <summary>
         /// The current rotation speed of the object.
         /// </summary>
-        public Fixed RotationSpeed { get { return speedRotation; } }
+        public Fixed Spin { get { return spin; } }
 
         #endregion
 
@@ -64,12 +69,12 @@ namespace Engine.Physics
         /// <summary>
         /// Current directed speed of the object.
         /// </summary>
-        protected FPoint speedMovement;
+        protected FPoint velocity;
 
         /// <summary>
         /// Current rotation speed of the object.
         /// </summary>
-        protected Fixed speedRotation;
+        protected Fixed spin;
 
         #endregion
 
@@ -79,13 +84,9 @@ namespace Engine.Physics
         {
         }
 
-        private static readonly Fixed Dampening = Fixed.Create(0.99);
-
-        private static readonly Fixed Epsilon = Fixed.Create(0.01);
-
         public override void Update()
         {
-            rotation += speedRotation;
+            rotation += spin;
             if (rotation < -Fixed.PI)
             {
                 rotation += Fixed.PI * 2;
@@ -95,14 +96,8 @@ namespace Engine.Physics
                 rotation -= Fixed.PI * 2;
             }
             previousPosition = position;
-            Fixed previousSpeed = speedMovement.Norm;
-            speedMovement += acceleration;
-            speedMovement *= Dampening;
-            if (previousSpeed > Fixed.Zero && speedMovement.Norm < Epsilon)
-            {
-                speedMovement = FPoint.Zero;
-            }
-            position += speedMovement;
+            velocity += acceleration;
+            position += velocity;
         }
 
         public virtual void PostUpdate()
@@ -123,9 +118,9 @@ namespace Engine.Physics
             hasher.Put(BitConverter.GetBytes(this.previousPosition.Y.RawValue));
             hasher.Put(BitConverter.GetBytes(this.acceleration.X.RawValue));
             hasher.Put(BitConverter.GetBytes(this.acceleration.Y.RawValue));
-            hasher.Put(BitConverter.GetBytes(this.speedMovement.X.RawValue));
-            hasher.Put(BitConverter.GetBytes(this.speedMovement.Y.RawValue));
-            hasher.Put(BitConverter.GetBytes(this.speedRotation.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.velocity.X.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.velocity.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(this.spin.RawValue));
         }
 
         #endregion
@@ -138,8 +133,8 @@ namespace Engine.Physics
             packet.Write(previousPosition);
             packet.Write(rotation);
             packet.Write(acceleration);
-            packet.Write(speedMovement);
-            packet.Write(speedRotation);
+            packet.Write(velocity);
+            packet.Write(spin);
 
             base.Packetize(packet);
         }
@@ -150,8 +145,8 @@ namespace Engine.Physics
             previousPosition = packet.ReadFPoint();
             rotation = packet.ReadFixed();
             acceleration = packet.ReadFPoint();
-            speedMovement = packet.ReadFPoint();
-            speedRotation = packet.ReadFixed();
+            velocity = packet.ReadFPoint();
+            spin = packet.ReadFixed();
 
             base.Depacketize(packet, context);
         }

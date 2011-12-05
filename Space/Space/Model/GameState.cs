@@ -1,4 +1,5 @@
-﻿using Engine.Commands;
+﻿using System;
+using Engine.Commands;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -68,6 +69,15 @@ namespace Space.Model
                                 // Begin rotating.
                                 case PlayerInputCommand.PlayerInput.Rotate:
                                     ship.RotateTo(inputCommand.TargetAngle);
+                                    break;
+
+                                // Begin/stop shooting.
+                                case PlayerInputCommand.PlayerInput.Shoot:
+                                    Console.WriteLine("start shooting");
+                                    ship.Shoot();
+                                    break;
+                                case PlayerInputCommand.PlayerInput.CeaseFire:
+                                    ship.CeaseFire();
                                     break;
                             }
                         }

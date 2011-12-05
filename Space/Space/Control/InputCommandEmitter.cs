@@ -44,6 +44,8 @@ namespace Space.Control
             // Register for mouse movement (orientation) and buttons (shooting).
             var mouse = (IMouseInputManager)game.Services.GetService(typeof(IMouseInputManager));
             mouse.Moved += HandleMouseMoved;
+            mouse.Pressed += HandleMousePressed;
+            mouse.Released += HandleMouseReleased;
         }
 
         public override void Update(GameTime gameTime)
@@ -207,14 +209,44 @@ namespace Space.Control
                 // a lot of superfluous input commands this way, reducing network
                 // load somewhat (still pretty bad if user moves his mouse slowly,
                 // but meh).
-                if ((deltaAngle > 10e-3 && ship.RotationSpeed <= Fixed.Zero) ||
-                    (deltaAngle < -10e-3 && ship.RotationSpeed >= Fixed.Zero))
+                if ((deltaAngle > 10e-3 && ship.Spin <= Fixed.Zero) ||
+                    (deltaAngle < -10e-3 && ship.Spin >= Fixed.Zero))
                 {
                     OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, currentTargetRotation));
                 }
 
                 // Set our flag to remember we might have to finalize the movement.
                 rotationFinished = false;
+            }
+        }
+
+        void HandleMousePressed(object sender, EventArgs e)
+        {
+            if (Session.ConnectionState != ClientState.Connected)
+            {
+                return;
+            }
+
+            var args = (MouseInputEventArgs)e;
+
+            if (args.Button == MouseInputEventArgs.MouseButton.Left)
+            {
+                OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Shoot));
+            }
+        }
+
+        void HandleMouseReleased(object sender, EventArgs e)
+        {
+            if (Session.ConnectionState != ClientState.Connected)
+            {
+                return;
+            }
+
+            var args = (MouseInputEventArgs)e;
+
+            if (args.Button == MouseInputEventArgs.MouseButton.Left)
+            {
+                OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.CeaseFire));
             }
         }
 

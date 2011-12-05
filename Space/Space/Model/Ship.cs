@@ -16,6 +16,10 @@ namespace Space.Model
         /// </summary>
         public const long RespawnTime = 1000;
 
+        private static readonly Fixed Dampening = Fixed.Create(0.99);
+
+        private static readonly Fixed Epsilon = Fixed.Create(0.01);
+
         /// <summary>
         /// The last frame this ship was destroyed in.
         /// </summary>
@@ -32,6 +36,10 @@ namespace Space.Model
         private Directions accelerationDirection = Directions.None;
 
         private Fixed targetRotation;
+
+        private bool shooting;
+
+        private int shotCooldown;
 
         public Ship()
         {
@@ -65,26 +73,39 @@ namespace Space.Model
             if (deltaAngle > Fixed.Zero)
             {
                 // Rotate right.
-                speedRotation = DirectionConversion.DirectionToFixed(Directions.Right) * Data.RotationSpeed;
+                spin = DirectionConversion.DirectionToFixed(Directions.Right) * Data.RotationSpeed;
             }
             else if (deltaAngle < Fixed.Zero)
             {
                 // Rotate left.
-                speedRotation = DirectionConversion.DirectionToFixed(Directions.Left) * Data.RotationSpeed;
+                spin = DirectionConversion.DirectionToFixed(Directions.Left) * Data.RotationSpeed;
             }
             else
             {
-                speedRotation = Fixed.Zero;
+                spin = Fixed.Zero;
             }
+        }
+
+        public void Shoot()
+        {
+            shooting = true;
+        }
+
+        public void CeaseFire()
+        {
+            shooting = false;
         }
 
         public override void Update()
         {
             if (IsAlive)
             {
+                // Remember our previous speed (see below).
+                Fixed previousSpeed = velocity.Norm;
+
                 // If we're currently rotating, check if we want to step due to the
                 // current update (because we'd overstep our target).
-                if (RotationSpeed != Fixed.Zero)
+                if (spin != Fixed.Zero)
                 {
                     var currentDelta = Angle.MinAngle(Rotation, targetRotation);
                     base.Update();
@@ -93,13 +114,32 @@ namespace Space.Model
                         (currentDelta >= Fixed.Zero && newDelta <= Fixed.Zero))
                     {
                         rotation = targetRotation;
-                        speedRotation = Fixed.Zero;
+                        spin = Fixed.Zero;
                     }
                 }
                 else
                 {
                     // Not rotating, just do a normal update.
                     base.Update();
+                }
+
+                // Slow down some if not accelerating. This also enforces a max speed.
+                // Both not realistic, but better for the gameplay ;)
+                velocity *= Dampening;
+
+                // Also, if we're below a certain minimum speed, just stop, otherwise
+                // it'd be hard to. We only stop if we were faster than the minimum,
+                // before. Otherwise we might have problems getting moving at all, if
+                // the acceleration of the ship is too low.
+                if (previousSpeed > Epsilon && velocity.Norm < Epsilon)
+                {
+                    velocity = FPoint.Zero;
+                }
+
+                if (shooting && shotCooldown-- <= 0)
+                {
+                    State.AddSteppable(new Shot(position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), State.Packetizer.Context));
+                    shotCooldown = 20;
                 }
             }
         }
@@ -150,6 +190,8 @@ namespace Space.Model
         {
             packet.Write(Data.Name);
             packet.Write(PlayerNumber);
+            packet.Write(shooting);
+            packet.Write(shotCooldown);
 
             base.Packetize(packet);
         }
@@ -161,6 +203,8 @@ namespace Space.Model
             texture = context.game.Content.Load<Texture2D>(Data.Texture);
 
             PlayerNumber = packet.ReadInt32();
+            shooting = packet.ReadBoolean();
+            shotCooldown = packet.ReadInt32();
 
             base.Depacketize(packet, context);
         }

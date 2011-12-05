@@ -316,17 +316,47 @@ namespace Engine.Math
 
         #region Casting
 
-        public static explicit operator int(Fixed src)
+        public static implicit operator int(Fixed src)
         {
-            return (int)(src.RawValue >> SHIFT_AMOUNT);
+            return (int)src.IntValue;
         }
 
-        public static explicit operator Fixed(int src)
+        public static explicit operator uint(Fixed src)
+        {
+            return (uint)src.IntValue;
+        }
+
+        public static implicit operator long(Fixed src)
+        {
+            return (long)src.IntValue;
+        }
+
+        public static explicit operator ulong(Fixed src)
+        {
+            return (ulong)src.IntValue;
+        }
+
+        public static explicit operator float(Fixed src)
+        {
+            return (float)src.DoubleValue;
+        }
+
+        public static implicit operator double(Fixed src)
+        {
+            return src.DoubleValue;
+        }
+
+        public static implicit operator Fixed(int src)
         {
             return Fixed.Create(src, true);
         }
 
-        public static explicit operator Fixed(long src)
+        public static implicit operator Fixed(uint src)
+        {
+            return Fixed.Create(src, true);
+        }
+
+        public static implicit operator Fixed(long src)
         {
             return Fixed.Create(src, true);
         }
@@ -334,6 +364,16 @@ namespace Engine.Math
         public static explicit operator Fixed(ulong src)
         {
             return Fixed.Create((long)src, true);
+        }
+
+        public static implicit operator Fixed(float src)
+        {
+            return Fixed.Create(src);
+        }
+
+        public static implicit operator Fixed(double src)
+        {
+            return Fixed.Create(src);
         }
 
         #endregion

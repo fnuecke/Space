@@ -280,7 +280,7 @@ namespace Engine.Simulation
             clone.steppables.Clear();
             foreach (var steppable in steppables)
             {
-                clone.steppables.Add((TSteppable)steppable.Clone());
+                clone.AddSteppable((TSteppable)steppable.Clone());
             }
 
             return clone;
