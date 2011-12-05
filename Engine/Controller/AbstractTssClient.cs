@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using Engine.Commands;
 using Engine.Network;
 using Engine.Serialization;
@@ -77,7 +76,8 @@ namespace Engine.Controller
         public AbstractTssClient(Game game, IClientSession<TPlayerData, TPacketizerContext> session)
             : base(game, session, new uint[] {
                 (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
-                (uint)System.Math.Ceiling(100 / game.TargetElapsedTime.TotalMilliseconds)
+                (uint)System.Math.Ceiling(150 / game.TargetElapsedTime.TotalMilliseconds),
+                (uint)System.Math.Ceiling(300 / game.TargetElapsedTime.TotalMilliseconds)
             })
         {
         }
@@ -150,8 +150,7 @@ namespace Engine.Controller
 
                 // Send sync command every now and then, to keep game clock synchronized.
                 // No need to sync for a server that runs in the same program, though.
-                if (!IPAddress.IsLoopback(Session.Host.Address) &&
-                    new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
+                if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
                     lastSyncTime = DateTime.Now.Ticks;
                     Packet syncRequest = new Packet(1 + sizeof(long) + sizeof(long));
@@ -261,12 +260,6 @@ namespace Engine.Controller
                     // we're waiting for a snapshot of the simulation.
                     if (args.IsFromServer && !Simulation.WaitingForSynchronization)
                     {
-                        // No need to sync for a server that runs in the same program.
-                        // We shouldn't get any of these, because we don't ask for them,
-                        // but better safe than sorry.
-                        if (IPAddress.IsLoopback(Session.Host.Address)) {
-                            return true;
-                        }
                         // This calculation follows algorithm described here:
                         // http://www.mine-control.com/zack/timesync/timesync.html
                         // Which is actually pretty logical, except for the '+ latency / 2'

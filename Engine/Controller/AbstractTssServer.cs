@@ -64,7 +64,8 @@ namespace Engine.Controller
         /// <param name="header">the protocol header.</param>
         protected AbstractTssServer(Game game, IServerSession<TPlayerData, TPacketizerContext> session)
             : base(game, session, new uint[] {
-                (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds)
+                (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
+                (uint)System.Math.Ceiling(150 / game.TargetElapsedTime.TotalMilliseconds)
             })
         {
         }
