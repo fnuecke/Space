@@ -7,7 +7,8 @@ namespace Engine.Commands
     /// <summary>
     /// Minimal interface for commands.
     /// </summary>
-    public interface ICommand<TCommandType, TPlayerData, TPacketizerContext> : IPacketizable<TPlayerData, TPacketizerContext>, IEquatable<ICommand<TCommandType, TPlayerData, TPacketizerContext>>
+    public interface ICommand<TCommandType, TPlayerData, TPacketizerContext>
+        : IPacketizable<TPlayerData, TPacketizerContext>, IEquatable<ICommand<TCommandType, TPlayerData, TPacketizerContext>>
         where TCommandType : struct
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>

@@ -11,7 +11,8 @@ namespace Engine.Simulation
     /// </summary>
     /// <typeparam name="TState">the type of state the object will be used together with.</typeparam>
     /// <typeparam name="TSteppable">the type of steppable used in the state.</typeparam>
-    public interface IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ICloneable, IPacketizable<TPlayerData, TPacketizerContext>, IHashable
+    public interface IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        : ICloneable, IPacketizable<TPlayerData, TPacketizerContext>, IHashable
         where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct

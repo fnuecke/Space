@@ -10,7 +10,8 @@ namespace Engine.Simulation
     /// Implements a Trailing State Synchronization.
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
-    public sealed class TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : IReversibleState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+    public sealed class TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> :
+        IReversibleState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
@@ -18,6 +19,7 @@ namespace Engine.Simulation
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         #region Events
+
         /// <summary>
         /// Dispatched when the state needs to roll back further than it can
         /// to accommodate an authoritative command / a user rollback request.
@@ -31,19 +33,9 @@ namespace Engine.Simulation
         #region Properties
 
         /// <summary>
-        /// Enumerator over all children of the leading state.
-        /// </summary>
-        public IEnumerable<TSteppable> Children { get { return LeadingState.Children; } }
-
-        /// <summary>
         /// The current frame of the leading state.
         /// </summary>
         public long CurrentFrame { get; private set; }
-
-        /// <summary>
-        /// Packetizer used for serialization purposes.
-        /// </summary>
-        public IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get { return LeadingState.Packetizer; } }
 
         /// <summary>
         /// The frame number of the trailing state, i.e. the point we cannot roll
@@ -52,34 +44,44 @@ namespace Engine.Simulation
         public long TrailingFrame { get { return states[states.Length - 1].CurrentFrame; } }
 
         /// <summary>
+        /// Enumerator over all children of the leading state.
+        /// </summary>
+        public IEnumerable<TSteppable> Children { get { return LeadingState.Children; } }
+
+        /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
         /// </summary>
         public bool WaitingForSynchronization { get; private set; }
 
         /// <summary>
-        /// Get the leading state.
+        /// Packetizer used for serialization purposes.
         /// </summary>
-        public TState LeadingState { get { return states[0]; } }
+        public IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get { return LeadingState.Packetizer; } }
 
         /// <summary>
         /// Get the trailing state.
         /// </summary>
-        public TState TrailingState { get { return states[states.Length - 1]; } }
+        private TState TrailingState { get { return states[states.Length - 1]; } }
+
+        /// <summary>
+        /// Get the leading state.
+        /// </summary>
+        private TState LeadingState { get { return states[0]; } }
 
         #endregion
 
         #region Fields
 
         /// <summary>
+        /// The delays of the individual states.
+        /// </summary>
+        private uint[] delays;
+
+        /// <summary>
         /// The list of running states. They are ordered in in increasing delay, i.e.
         /// the state at slot 0 is the leading one, 1 is the next newest, and so on.
         /// </summary>
         private TState[] states;
-
-        /// <summary>
-        /// The delays of the individual states.
-        /// </summary>
-        private uint[] delays;
 
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
@@ -155,9 +157,6 @@ namespace Engine.Simulation
         /// <param name="frame">the frame to insert it at.</param>
         public void AddSteppable(TSteppable steppable, long frame)
         {
-            // Remember original frame.
-            long currentFrame = CurrentFrame;
-
             // Store it to be inserted in trailing states.
             if (!adds.ContainsKey(frame))
             {
@@ -177,7 +176,7 @@ namespace Engine.Simulation
             }
             adds[frame].Add((TSteppable)steppable.Clone());
 
-            // Rewind to the frame we need to insert in.
+            // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
             {
                 Rewind(frame);
@@ -210,9 +209,6 @@ namespace Engine.Simulation
         /// <param name="frame">the frame to remove it at.</param>
         public void RemoveSteppable(long steppableUid, long frame)
         {
-            // Remember original frame.
-            long currentFrame = CurrentFrame;
-
             // Store it to be removed in trailing states.
             if (!removes.ContainsKey(frame))
             {
@@ -232,7 +228,7 @@ namespace Engine.Simulation
             }
             removes[frame].Add(steppableUid);
 
-            // Rewind to the frame we need to insert in.
+            // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
             {
                 Rewind(frame);
@@ -250,6 +246,45 @@ namespace Engine.Simulation
         }
 
         /// <summary>
+        /// Push a command to all sub states.
+        /// 
+        /// This will lead to a rollback of all states that have already passed
+        /// the command's frame. They will be fast-forwarded appropriately in
+        /// the next Step().
+        /// </summary>
+        /// <param name="command">the command to push.</param>
+        public void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        {
+            PushCommand(command, CurrentFrame);
+        }
+
+        /// <summary>
+        /// Push a command to be executed at the given frame.  This will roll
+        /// back, if necessary, to remove the object, meaning it can trigger
+        /// desyncs.
+        /// </summary>
+        /// <param name="command">the command to push.</param>
+        /// <param name="frame">the frame in which to execute the command.</param>
+        public void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, long frame)
+        {
+            // Store it to be removed in trailing states.
+            if (!commands.ContainsKey(frame))
+            {
+                // No such command yet, push it.
+                commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
+            }
+            // We don't need to check for duplicate / replacing authoritative here,
+            // because the sub-state will do that itself.
+            commands[frame].Add(command);
+
+            // Rewind to the frame to retroactively apply changes.
+            if (frame < CurrentFrame)
+            {
+                Rewind(frame);
+            }
+        }
+
+        /// <summary>
         /// Advance all states
         /// </summary>
         public void Update()
@@ -260,6 +295,9 @@ namespace Engine.Simulation
 
         /// <summary>
         /// Run the simulation to the given frame, which may be in the past.
+        /// This will make the given frame the new  <c>CurrentFrame</c>, which
+        /// means that no adds/removes/commands/update will be applied to that
+        /// actual frame just yet.
         /// </summary>
         /// <param name="frame">the frame to run to.</param>
         public void RunToFrame(long frame)
@@ -274,80 +312,13 @@ namespace Engine.Simulation
             {
                 // Moving forward, just run.
                 FastForward(frame);
-                CurrentFrame = frame;
-            }
-            else if (CurrentFrame < TrailingFrame)
-            {
-                // Cannot rewind that far, request resync.
-                OnInvalidated(EventArgs.Empty);
             }
             else
             {
-                // In range for reverting.
+                // Need to revert.
                 Rewind(frame);
-                CurrentFrame = frame;
             }
-        }
-
-        /// <summary>
-        /// Push a command to all sub states.
-        /// 
-        /// This will lead to a rollback of all states that have already passed
-        /// the command's frame. They will be fast-forwarded appropriately in
-        /// the next Step().
-        /// </summary>
-        /// <param name="command">the command to push.</param>
-        public void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command)
-        {
-            PushCommand(command, CurrentFrame + 1);
-        }
-
-        /// <summary>
-        /// Push a command to be executed at the given frame.  This will roll
-        /// back, if necessary, to remove the object, meaning it can trigger
-        /// desyncs.
-        /// </summary>
-        /// <param name="command">the command to push.</param>
-        /// <param name="frame">the frame in which to execute the command.</param>
-        public void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, long frame)
-        {
-            // Remember original frame.
-            long currentFrame = CurrentFrame;
-
-            // Store it to be removed in trailing states.
-            if (!commands.ContainsKey(frame))
-            {
-                commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
-            }
-            
-            // Store it to be removed in trailing states.
-            if (!commands.ContainsKey(frame))
-            {
-                // No such command yet, push it.
-                commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
-            }
-            else if (commands[frame].Contains(command))
-            {
-                // Already there! Use the authoritative one (or if neither is do nothing).
-                var existing = commands[frame].Find(c => c.Equals(command));
-                if (!existing.IsAuthoritative && command.IsAuthoritative)
-                {
-                    commands[frame].Remove(existing);
-                }
-                else
-                {
-                    // Don't insert the same command twice in the same frame.
-                    return;
-                }
-            }
-            commands[frame].Add(command);
-
-            // Rewind to the frame we need to insert in.
-            if (frame <= CurrentFrame)
-            {
-                // Rewind to the frame we need to insert in.
-                Rewind(frame - 1);
-            }
+            CurrentFrame = frame;
         }
 
         /// <summary>
@@ -357,7 +328,15 @@ namespace Engine.Simulation
         /// <param name="hasher">the hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
-            throw new NotSupportedException();
+            TrailingState.Hash(hasher);
+        }
+
+        /// <summary>
+        /// Not available for TSS.
+        /// </summary>
+        public object Clone()
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -471,14 +450,6 @@ namespace Engine.Simulation
             WaitingForSynchronization = false;
         }
 
-        /// <summary>
-        /// Not available for TSS.
-        /// </summary>
-        public object Clone()
-        {
-            throw new NotImplementedException();
-        }
-
         private void OnInvalidated(EventArgs e)
         {
             WaitingForSynchronization = true;
@@ -489,13 +460,16 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Update the simulation by advancing forwards.
+        /// Update the simulation by advancing forwards. This will run to,
+        /// excluding, the given frame (i.e. adds/removes/commands will *not*
+        /// be applied to the given frame, and its <c>Update()</c> method will
+        /// *not* be called once it reaches the given frame).
         /// </summary>
         /// <param name="frame">the frame up to which to run.</param>
         private void FastForward(long frame)
         {
             // Update states. Run back to front, to allow rewinding future states
-            // if the trailing state must skip tentative commands all in one go.
+            // (if the trailing state must skip tentative commands) all in one go.
             for (int i = states.Length - 1; i >= 0; --i)
             {
                 // Check if we need to rewind because the trailing state was left
@@ -507,43 +481,15 @@ namespace Engine.Simulation
                 {
                     // If this is the trailing state, don't bring in tentative
                     // commands. Prune them instead. If there were any, rewind
-                    // to apply that removal retroactively.
+                    // to apply that removal retroactively. Do this after the
+                    // loop, though, to avoid unnecessary work.
                     if (i == states.Length - 1 && states[i].SkipTentativeCommands())
                     {
                         needsRewind = true;
                     }
 
-                    // Check if we need to add objects.
-                    if (adds.ContainsKey(states[i].CurrentFrame))
-                    {
-                        // Add a copy of it.
-                        foreach (var steppable in adds[states[i].CurrentFrame])
-                        {
-                            states[i].AddSteppable((TSteppable)steppable.Clone());
-                        }
-                    }
-
-                    // Check if we need to remove objects.
-                    if (removes.ContainsKey(states[i].CurrentFrame))
-                    {
-                        // Add a copy of it.
-                        foreach (var steppableUid in removes[states[i].CurrentFrame])
-                        {
-                            states[i].RemoveSteppable(steppableUid);
-                        }
-                    }
-
-                    // Check if we have commands to execute in that frame.
-                    if (commands.ContainsKey(states[i].CurrentFrame))
-                    {
-                        foreach (var command in commands[states[i].CurrentFrame])
-                        {
-                            states[i].PushCommand(command);
-                        }
-                    }
-
-                    // Do the actual stepping for the state.
-                    states[i].Update();
+                    // Apply the update for the state's current frame.
+                    UpdateSubstate(states[i]);
                 }
 
                 // Check if we had trailing tentative commands.
@@ -558,8 +504,53 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Rewind the simulation to the given frame. If this fails (too far
-        /// in the past) this will trigger a resync request.
+        /// Perform an update to a sub-state, applying all adds/removes/commands to it.
+        /// </summary>
+        /// <param name="state">the state to update.</param>
+        private void UpdateSubstate(TState state)
+        {
+            // The frame the state is now in, and that will be executed.
+            long stateFrame = state.CurrentFrame;
+
+            // Check if we need to add objects.
+            if (adds.ContainsKey(stateFrame))
+            {
+                // Add a copy of it.
+                foreach (var steppable in adds[stateFrame])
+                {
+                    state.AddSteppable((TSteppable)steppable.Clone());
+                }
+            }
+
+            // Check if we need to remove objects.
+            if (removes.ContainsKey(stateFrame))
+            {
+                // Add a copy of it.
+                foreach (var steppableUid in removes[stateFrame])
+                {
+                    state.RemoveSteppable(steppableUid);
+                }
+            }
+
+            // Check if we have commands to execute in that frame.
+            if (commands.ContainsKey(stateFrame))
+            {
+                foreach (var command in commands[stateFrame])
+                {
+                    state.PushCommand(command);
+                }
+            }
+
+            // Do the actual stepping for the state.
+            state.Update();
+        }
+
+        /// <summary>
+        /// Rewind the simulation to the "beginning" of the given frame.
+        /// Meaning one frame before the given frame, making it ready to
+        /// have adds/removes/commands applied to it again. If this fails
+        /// (too far in the past) this will trigger a resynchronization
+        /// request.
         /// </summary>
         /// <param name="frame">the frame to rewind to.</param>
         private void Rewind(long frame)
@@ -567,13 +558,16 @@ namespace Engine.Simulation
             // Find first state that's not past the frame.
             for (int i = 0; i < states.Length; ++i)
             {
-                if (states[i].CurrentFrame < frame)
+                if (states[i].CurrentFrame <= frame)
                 {
                     // Success, mirror the state to all newer ones.
                     MirrorState(states[i], i - 1);
-                    break;
+                    return; // Then return, so we don't trigger resync ;)
                 }
             }
+
+            // Cannot rewind that far, request resynchronization.
+            OnInvalidated(EventArgs.Empty);
         }
 
         /// <summary>

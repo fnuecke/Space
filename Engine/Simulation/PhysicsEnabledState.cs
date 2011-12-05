@@ -7,7 +7,8 @@ namespace Engine.Simulation
     /// <summary>
     /// Base class for states that takes care of some common functionality.
     /// </summary>
-    public abstract class PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>, IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+        : AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>, IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TState : PhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct

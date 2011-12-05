@@ -6,7 +6,8 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands.
     /// </summary>
-    public abstract class Command<TCommandType, TPlayerData, TPacketizerContext> : ICommand<TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class Command<TCommandType, TPlayerData, TPacketizerContext>
+        : ICommand<TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>

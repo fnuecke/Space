@@ -5,7 +5,8 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands that can be injected into running simulations.
     /// </summary>
-    public abstract class FrameCommand<TCommandType, TPlayerData, TPacketizerContext> : Command<TCommandType, TPlayerData, TPacketizerContext>, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class FrameCommand<TCommandType, TPlayerData, TPacketizerContext>
+        : Command<TCommandType, TPlayerData, TPacketizerContext>, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
         where TCommandType : struct
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>

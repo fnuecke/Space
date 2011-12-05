@@ -141,16 +141,22 @@ namespace Engine.Simulation
             if (known >= 0)
             {
                 // Already there! Use the authoritative one (or if neither is do nothing).
-                var existing = commands[known];
-                if (!existing.IsAuthoritative && command.IsAuthoritative)
+                if (!commands[known].IsAuthoritative && command.IsAuthoritative)
                 {
                     commands.RemoveAt(known);
+                    commands.Insert(known, command);
                 }
             }
-            commands.Add(command);
+            else
+            {
+                // New one, append.
+                commands.Add(command);
+            }
         }
 
         #endregion
+
+        #region Logic
 
         /// <summary>
         /// Advance the simulation by one frame.
@@ -173,7 +179,20 @@ namespace Engine.Simulation
                 steppable.Update();
             }
         }
-        
+
+        /// <summary>
+        /// Implement this to handle commands. This will be called for each command
+        /// at the moment it should be applied. The implementation must be done in
+        /// a way that behaves the same for any permutation of a given set of non-equal
+        /// commands. I.e. the order of the command execution must not make a difference.
+        /// </summary>
+        /// <param name="command">the command to handle.</param>
+        protected abstract void HandleCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command);
+
+        #endregion
+
+        #region Hashing / Cloning / Serialization
+
         /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
@@ -267,11 +286,6 @@ namespace Engine.Simulation
             return clone;
         }
 
-        /// <summary>
-        /// Implement this to handle commands. This will be called for each command
-        /// at the moment it should be applied.
-        /// </summary>
-        /// <param name="command">the command to handle.</param>
-        protected abstract void HandleCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command);
+        #endregion
     }
 }

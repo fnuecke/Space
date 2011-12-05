@@ -75,12 +75,10 @@ namespace Engine.Controller
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
         public AbstractTssClient(Game game, IClientSession<TPlayerData, TPacketizerContext> session)
-            // These timings roughly correspond to 0.25 1 and 2 seconds of game time.
-            // We use the same timings for server and client, so that the clients will
-            // get the proper last known state when resynchronizing. Two seconds are
-            // quite a lot, so this may be exploitable (sending commands into the past),
-            // but let's just say I don't really care about that at this point ;)
-            : base(game, session, new uint[] { 15, 60, 120 })
+            // These timings roughly correspond to 0.5 and 1.5 seconds of game time.
+            // We use the same max timings for server and client, so that the clients will
+            // get the proper last known state when resynchronizing.
+            : base(game, session, new uint[] { 30, 90 })
         {
         }
 
@@ -145,7 +143,7 @@ namespace Engine.Controller
                 if (Simulation.TrailingFrame == hashFrame)
                 {
                     Hasher hasher = new Hasher();
-                    Simulation.TrailingState.Hash(hasher);
+                    Simulation.Hash(hasher);
                     if (hasher.Value != hashValue)
                     {
                         Console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value);
