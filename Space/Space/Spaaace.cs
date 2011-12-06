@@ -3,6 +3,7 @@ using System.Net;
 using Engine.Input;
 using Engine.Serialization;
 using Engine.Util;
+using GameStateManagement;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
@@ -23,8 +24,10 @@ namespace Space
         SpriteBatch spriteBatch;
         GameConsole console;
 
+        ScreenManager screenManager;
+
         GameServer server;
-        GameClient client;
+        
 
         public Spaaace()
         {
@@ -79,6 +82,16 @@ namespace Space
             console.Hotkey = Settings.Instance.ConsoleKey;
             Components.Add(console);
 
+
+            // Create the screen manager component.
+            screenManager = new ScreenManager(this);
+
+            Components.Add(screenManager);
+
+            // Activate the first screens.
+            screenManager.AddScreen(new BackgroundScreen(), null);
+            screenManager.AddScreen(new MainMenuScreen(), null);
+
             console.DrawOrder = 10;
 
             // Register some commands for our console, making debugging that much easier ;)
@@ -87,56 +100,14 @@ namespace Space
                 RestartServer();
             },
                 "Restart server logic.");
-            console.AddCommand("client", args =>
-            {
-                RestartClient();
-            },
-                "Restart client logic.");
-            console.AddCommand("search", args =>
-            {
-                client.Session.Search();
-            },
-                "Search for games available on the local subnet.");
-            console.AddCommand("connect", args =>
-            {
-                PlayerInfo info = new PlayerInfo();
-                info.ShipType = "Sparrow";
-                client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
-            },
-                "Joins a game at the given host.",
-                "connect <host> <port> - join the host with the given hostname or IP.");
-            console.AddCommand("leave", args =>
-            {
-                client.Session.Leave();
-            },
-                "Leave the current game.");
+           
             console.AddCommand(new[] { "fullscreen", "fs" }, args =>
             {
                 graphics.ToggleFullScreen();
             },
                 "Toggles fullscreen mode.");
-            console.AddCommand("invalidate", args =>
-            {
-                client.Controller.DEBUG_InvalidateSimulation();
-            },
-                "Invalidates the client game state, requesting a snapshot from the server.");
-
-            // Just for me, joining default testing server.
-            console.AddCommand("joinfn", args =>
-            {
-                PlayerInfo info = new PlayerInfo();
-                info.ShipType = "Sparrow";
-                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
-            },
-                "autojoin fn");
-            // Just for me, joining default testing server.
-            console.AddCommand("joinlh", args =>
-            {
-                PlayerInfo info = new PlayerInfo();
-                info.ShipType = "Sparrow";
-                client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
-            },
-                "autojoin localhost");
+            
+           
 
             // Copy everything written to our gameconsole to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
@@ -196,10 +167,7 @@ namespace Space
             //{
             //    RestartServer();
             //}
-            if (client == null)
-            {
-                RestartClient();
-            }
+           
 
             base.Update(gameTime);
         }
@@ -210,7 +178,7 @@ namespace Space
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.Black);
+            //GraphicsDevice.Clear(Color.Black);
 
             base.Draw(gameTime);
 
@@ -236,15 +204,6 @@ namespace Space
             Components.Add(server);
         }
 
-        private void RestartClient()
-        {
-            if (client != null)
-            {
-                client.Dispose();
-                Components.Remove(client);
-            }
-            client = new GameClient(this);
-            Components.Add(client);
-        }
+        
     }
 }

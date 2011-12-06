@@ -28,7 +28,7 @@ namespace Engine.Controller
         /// discouraged, as it will lead to clients having to resynchronize
         /// themselves by getting a snapshot of the complete simulation.
         /// </summary>
-        protected TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> Simulation { get; private set; }
+        public TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> Simulation { get; private set; }
 
         #endregion
 

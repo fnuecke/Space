@@ -7,7 +7,7 @@ using SpaceData;
 
 namespace Space.Model
 {
-    class PacketizerContext : IPacketizerContext<PlayerInfo, PacketizerContext>
+    public class PacketizerContext : IPacketizerContext<PlayerInfo, PacketizerContext>
     {
         public Game game;
 
