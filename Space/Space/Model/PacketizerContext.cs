@@ -4,6 +4,7 @@ using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SpaceData;
+using Microsoft.Xna.Framework.Audio;
 
 namespace Space.Model
 {
@@ -19,6 +20,14 @@ namespace Space.Model
         public Dictionary<string, ShipData> shipData = new Dictionary<string, ShipData>();
 
         public Dictionary<string, Texture2D> shipTextures = new Dictionary<string, Texture2D>();
+
+        public Dictionary<string, SoundEffect> shipSounds = new Dictionary<string, SoundEffect>();
+
+        public Dictionary<string, WeaponData> weaponData = new Dictionary<string, WeaponData>();
+
+        public Dictionary<string, Texture2D> weaponTextures = new Dictionary<string, Texture2D>();
+
+        public Dictionary<string, SoundEffect> weaponsSounds = new Dictionary<string, SoundEffect>();
 
         public object Clone()
         {

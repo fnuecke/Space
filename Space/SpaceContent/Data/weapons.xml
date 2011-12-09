@@ -4,6 +4,8 @@
     <Item>
       <Name>Cheap Laser</Name>
       <Size>Small</Size>
+	  <Texture>Textures/ship</Texture>
+	  <Sound>Sounds/laser1</Sound>
       <Damage>5</Damage>
       <FireRate>0.5</FireRate>
     </Item>

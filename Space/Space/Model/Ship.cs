@@ -138,7 +138,7 @@ namespace Space.Model
 
                 if (shooting && shotCooldown-- <= 0)
                 {
-                    State.AddSteppable(new Shot(position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), State.Packetizer.Context));
+                    State.AddSteppable(new Shot("Cheap Laser",position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), State.Packetizer.Context));
                     shotCooldown = 20;
                 }
             }

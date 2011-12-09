@@ -10,6 +10,7 @@ using Space.Commands;
 using Space.Control;
 using Space.Model;
 using SpaceData;
+using Microsoft.Xna.Framework.Audio;
 
 namespace Space
 {
@@ -144,12 +145,20 @@ namespace Space
 
             var context = ((IPacketizer<PlayerInfo, PacketizerContext>)Services.GetService(typeof(IPacketizer<PlayerInfo, PacketizerContext>))).Context;
             var shipdata = Content.Load<ShipData[]>("Data/ships");
+            var weaponData = Content.Load<WeaponData[]>("Data/Weapons");
             foreach (var ship in shipdata)
             {
                 context.shipData[ship.Name] = ship;
                 context.shipTextures[ship.Name] = Content.Load<Texture2D>(ship.Texture);
+
             }
 
+            foreach (var weapon in weaponData)
+            {
+                context.weaponData[weapon.Name] = weapon;
+                context.weaponTextures[weapon.Name] = Content.Load<Texture2D>(weapon.Texture);
+                context.weaponsSounds[weapon.Name] = Content.Load<SoundEffect>(weapon.Sound);
+            }
             console.SpriteBatch = spriteBatch;
             console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
 

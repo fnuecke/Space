@@ -129,8 +129,8 @@
     <Compile Include="ScreenManager\InputState.cs" />
     <Compile Include="ScreenManager\ScreenManager.cs" />
     <Compile Include="Screens\BackgroundScreen.cs" />
+    <Compile Include="Screens\ConnectScreen.cs" />
     <Compile Include="Screens\GameplayScreen.cs" />
-    <Compile Include="Screens\GameplayScreen2.cs" />
     <Compile Include="Screens\LoadingScreen.cs" />
     <Compile Include="Screens\MainMenuScreen.cs" />
     <Compile Include="Screens\MenuEntry.cs" />

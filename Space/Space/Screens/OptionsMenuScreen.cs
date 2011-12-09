@@ -36,7 +36,7 @@ namespace GameStateManagement
 
         static Ungulate currentUngulate = Ungulate.Dromedary;
 
-        static string[] languages = { "C#", "French", "Deoxyribonucleic acid" };
+        static string[] languages = { "Deutsch", "Englisch" };
         static int currentLanguage = 0;
 
         static bool frobnicate = true;

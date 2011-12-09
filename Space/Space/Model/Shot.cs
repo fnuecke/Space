@@ -15,11 +15,12 @@ namespace Space.Model
         {
         }
 
-        public Shot(FPoint position, FPoint velocity, PacketizerContext context)
+        public Shot(string name,FPoint position, FPoint velocity, PacketizerContext context)
         {
             this.position = position;
             this.velocity = velocity;
-            this.texture = context.shipTextures["Sparrow"];
+            this.texture = context.weaponTextures[name];
+            context.weaponsSounds[name].Play();
         }
 
         public override void NotifyOfCollision()
