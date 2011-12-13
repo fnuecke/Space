@@ -255,7 +255,10 @@ namespace Engine.Controller
             {
                 case TssControllerMessage.Command:
                     // Normal command, forward it.
-                    return base.UnwrapDataForReceive(e);
+                    var command = base.UnwrapDataForReceive(e);
+                    // We're the server and we received it, so it's definitely not authoritative.
+                    command.IsAuthoritative = false;
+                    return command;
 
                 case TssControllerMessage.Synchronize:
                     // Client re-synchronizing.

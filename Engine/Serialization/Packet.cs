@@ -26,6 +26,9 @@ namespace Engine.Serialization
 
         #region Fields
 
+        /// <summary>
+        /// The underlying memory stream used for buffering.
+        /// </summary>
         private MemoryStream _stream;
 
         private bool _disposed;
@@ -60,6 +63,8 @@ namespace Engine.Serialization
                 _stream = null;
                 _disposed = true;
             }
+
+            GC.SuppressFinalize(this);
         }
 
         #endregion

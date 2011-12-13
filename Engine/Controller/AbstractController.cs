@@ -133,12 +133,7 @@ namespace Engine.Controller
         protected virtual TCommand UnwrapDataForReceive(SessionDataEventArgs args)
         {
             // Parse the actual command.
-            TCommand command = Packetizer.Depacketize<TCommand>(args.Data);
-
-            // Flag it as it came from the server.
-            command.IsAuthoritative = true;
-
-            return command;
+            return Packetizer.Depacketize<TCommand>(args.Data);
         }
 
         #endregion
