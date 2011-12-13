@@ -39,9 +39,10 @@ namespace Engine.Session
         ClientState ConnectionState { get; }
 
         /// <summary>
-        /// The host we're connected to, if we're connected.
+        /// Reference to the data struct with info about the local player.
         /// </summary>
-        IPEndPoint Host { get; }
+        /// <remarks>Shortcut for <c>session.GetPlayer(session.LocalPlayerNumber)</c>.</remarks>
+        Player<TPlayerData, TPacketizerContext> LocalPlayer { get; }
 
         /// <summary>
         /// Send a ping into the local network, looking for open games.

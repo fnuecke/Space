@@ -9,8 +9,8 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
-    public class AbstractHybridSession<TPlayerData, TPacketizerContext>
-        : GameComponent, IClientSession<TPlayerData, TPacketizerContext>
+    public abstract class AbstractHybridSession<TPlayerData, TPacketizerContext>
+        : GameComponent, ISession<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -89,7 +89,7 @@ namespace Engine.Session
         /// <summary>
         /// Called when a player sent data.
         /// </summary>
-        public event EventHandler<EventArgs> PlayerData;
+        public event EventHandler<EventArgs> Data;
 
         #endregion
 
@@ -160,11 +160,14 @@ namespace Engine.Session
 
         protected override void Dispose(bool disposing)
         {
-            udp.Dispose();
+            if (disposing)
+            {
+                udp.Dispose();
+            }
 
             base.Dispose(disposing);
         }
-
+        
         public override void Update(GameTime gameTime)
         {
             // Drive UDP network.
@@ -251,7 +254,7 @@ namespace Engine.Session
 
         #region Event Dispatching
 
-        protected void OnPlayerJoined(PlayerEventArgs<TPlayerData, TPacketizerContext> e)
+        protected void OnPlayerJoined(EventArgs e)
         {
             if (PlayerJoined != null)
             {
@@ -259,7 +262,7 @@ namespace Engine.Session
             }
         }
 
-        protected void OnPlayerLeft(PlayerEventArgs<TPlayerData, TPacketizerContext> e)
+        protected void OnPlayerLeft(EventArgs e)
         {
             if (PlayerLeft != null)
             {
@@ -267,11 +270,11 @@ namespace Engine.Session
             }
         }
 
-        protected void OnPlayerData(PlayerDataEventArgs<TPlayerData, TPacketizerContext> e)
+        protected void OnData(EventArgs e)
         {
-            if (PlayerData != null)
+            if (Data != null)
             {
-                PlayerData(this, e);
+                Data(this, e);
             }
         }
 

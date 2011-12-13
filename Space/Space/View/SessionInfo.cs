@@ -12,14 +12,7 @@ namespace Space.View
             string sessionInfo = title + " (" + session.NumPlayers + "/" + session.MaxPlayers + ")";
             foreach (var player in session.AllPlayers)
             {
-                if (player == session.LocalPlayer)
-                {
-                    sessionInfo += "\n#" + player.Number + ": " + player.Name + " [-]";
-                }
-                else
-                {
-                    sessionInfo += "\n#" + player.Number + ": " + player.Name + " [" + player.Ping + "]";
-                }
+                sessionInfo += "\n#" + player.Number + ": " + player.Name;
             }
 
             var sessionInfoMeasure = font.MeasureString(sessionInfo);

@@ -25,11 +25,6 @@ namespace Engine.Session
         /// </summary>
         public TPlayerData Data { get; set; }
 
-        /// <summary>
-        /// The session this player belongs to.
-        /// </summary>
-        private Func<int> pingGetter;
-
         internal Player(int number, string name, TPlayerData data)
         {
             this.Number = number;

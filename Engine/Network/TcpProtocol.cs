@@ -52,11 +52,6 @@ namespace Engine.Network
         #region Events
 
         /// <summary>
-        /// Register here to be notified of incoming data packets.
-        /// </summary>
-        public event EventHandler<EventArgs> Data;
-
-        /// <summary>
         /// If we're a client, this means our connection to the server
         /// was was established successfully. If we're a server, this
         /// means we got a new incoming connection.
@@ -157,14 +152,13 @@ namespace Engine.Network
         /// <summary>
         /// Shutdown this instance, closing any open connections.
         /// </summary>
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
             State = ProtocolState.None;
             if (server != null)
             {
                 server.Stop();
                 server.Server.Close();
-                server.Server.Dispose();
                 foreach (var connection in clients)
                 {
                     connection.Dispose();
@@ -249,7 +243,7 @@ namespace Engine.Network
         /// Try receiving some packets. This will trigger the <c>Data</c> event
         /// for each received packet.
         /// </summary>
-        public abstract void Receive()
+        public override void Receive()
         {
             if (server != null)
             {
@@ -282,7 +276,7 @@ namespace Engine.Network
         /// <param name="message">the data to send/</param>
         /// <param name="bytes">the length of the data to send.</param>
         /// <param name="endPoint">the end point to send it to.</param>
-        protected abstract void HandleSend(byte[] message, IPEndPoint endPoint)
+        protected override void HandleSend(byte[] message, IPEndPoint endPoint)
         {
             if (server != null)
             {

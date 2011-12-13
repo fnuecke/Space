@@ -140,8 +140,6 @@
     <Compile Include="Serialization\PacketException.cs" />
     <Compile Include="Serialization\Packetizer.cs" />
     <Compile Include="Session\AbstractHybridSession.cs" />
-    <Compile Include="Session\AbstractSession.cs" />
-    <Compile Include="Session\ClientSession.cs" />
     <Compile Include="Session\HybridClientSession.cs" />
     <Compile Include="Session\HybridServerSession.cs" />
     <Compile Include="Session\SessionEventArgs.cs" />
@@ -150,7 +148,6 @@
     <Compile Include="Session\IServerSession.cs" />
     <Compile Include="Session\ISession.cs" />
     <Compile Include="Session\Player.cs" />
-    <Compile Include="Session\ServerSession.cs" />
     <Compile Include="Serialization\Packet.cs" />
     <Compile Include="Simulation\AbstractState.cs" />
     <Compile Include="Simulation\AbstractSteppable.cs" />

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.Network;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -27,18 +26,12 @@ namespace Engine.Session
         /// <summary>
         /// Called when a player sent data.
         /// </summary>
-        event EventHandler<EventArgs> PlayerData;
+        event EventHandler<EventArgs> Data;
 
         /// <summary>
         /// Get a list of all players in the game.
         /// </summary>
         IEnumerable<Player<TPlayerData, TPacketizerContext>> AllPlayers { get; }
-
-        /// <summary>
-        /// Reference to the data struct with info about the local player.
-        /// </summary>
-        /// <remarks>Shortcut for <c>session.GetPlayer(session.LocalPlayerNumber)</c>.</remarks>
-        Player<TPlayerData, TPacketizerContext> LocalPlayer { get; }
 
         /// <summary>
         /// Number of players currently in the game.
@@ -75,22 +68,6 @@ namespace Engine.Session
         /// Send some data to the server.
         /// </summary>
         /// <param name="packet">the data to send.</param>
-        /// <param name="priority">the priority with which to deliver the packet.</param>
-        void SendToHost(Packet packet, PacketPriority priority);
-
-        /// <summary>
-        /// Send some data to a specific player.
-        /// </summary>
-        /// <param name="player">the player to send the data to.</param>
-        /// <param name="packet">the data to send.</param>
-        /// <param name="priority">the priority with which to deliver the packet.</param>
-        void SendToPlayer(Player<TPlayerData, TPacketizerContext> player, Packet packet, PacketPriority priority);
-
-        /// <summary>
-        /// Send a message to all players in the game, and the server.
-        /// </summary>
-        /// <param name="packet">the data to send.</param>
-        /// <param name="priority">the priority with which to deliver the packet.</param>
-        void SendToEveryone(Packet packet, PacketPriority priority);
+        void Send(Packet packet);
     }
 }

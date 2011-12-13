@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -72,11 +71,14 @@ namespace Engine.Network
         /// <summary>
         /// Close this connection for good. This class should not be used again after calling this.
         /// </summary>
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            ushort port = (ushort)((IPEndPoint)udp.Client.LocalEndPoint).Port;
-            loopbacksByPort.Remove(port);
-            boundPorts[port] = false;
+            if (Loopback != null)
+            {
+                ushort port = (ushort)((IPEndPoint)udp.Client.LocalEndPoint).Port;
+                loopbacksByPort.Remove(port);
+                boundPorts[port] = false;
+            }
 
             udp.Close();
         }
@@ -91,7 +93,7 @@ namespace Engine.Network
         /// </summary>
         /// <remarks>implementations in subclasses shoudl call <c>HandleReceive</c>
         /// with the read raw data.</remarks>
-        public abstract void Receive()
+        public override void Receive()
         {
             // TODO no idea why this happens after cleanup...
             if (udp.Client != null)
@@ -104,16 +106,10 @@ namespace Engine.Network
                         byte[] message = udp.Receive(ref remote);
                         HandleReceive(message, remote);
                     }
-#if DEBUG
                     catch (SocketException ex)
                     {
-                        Console.WriteLine(ex);
+                        logger.TraceException("Socket connection died.", ex);
                     }
-#else
-                    catch (SocketException)
-                    {
-                    }
-#endif
                 }
             }
         }
@@ -124,7 +120,7 @@ namespace Engine.Network
         /// <param name="message">the data to send/</param>
         /// <param name="bytes">the length of the data to send.</param>
         /// <param name="endPoint">the end point to send it to.</param>
-        protected abstract void HandleSend(byte[] message, IPEndPoint endPoint)
+        protected override void HandleSend(byte[] message, IPEndPoint endPoint)
         {
             // Are we delivering locally?
             if (IPAddress.IsLoopback(endPoint.Address) &&

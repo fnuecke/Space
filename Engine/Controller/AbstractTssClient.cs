@@ -29,6 +29,12 @@ namespace Engine.Controller
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
+        #region Logger
+
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Constants
 
         /// <summary>
@@ -142,7 +148,7 @@ namespace Engine.Controller
                     Simulation.Hash(hasher);
                     if (hasher.Value != hashValue)
                     {
-                        Console.WriteLine("Client: hash mismatch " + hashValue + "!= " + hasher.Value);
+                        logger.Debug("Client: hash mismatch " + hashValue + "!= " + hasher.Value);
                         Simulation.Invalidate();
                     }
                 }
@@ -153,9 +159,9 @@ namespace Engine.Controller
                 {
                     lastSyncTime = DateTime.Now.Ticks;
                     Packet syncRequest = new Packet(1 + sizeof(long) + sizeof(long));
-                    syncRequest.Write((byte)TssUdpControllerMessage.Synchronize);
+                    syncRequest.Write((byte)TssControllerMessage.Synchronize);
                     syncRequest.Write(Simulation.CurrentFrame);
-                    Session.SendToHost(syncRequest, PacketPriority.None);
+                    Session.Send(syncRequest);
                 }
             }
 
@@ -189,8 +195,7 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        /// <param name="priority">the priority with which to deliver the packet.</param>
-        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, PacketPriority priority)
+        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
@@ -204,12 +209,8 @@ namespace Engine.Controller
                     return;
                 }
 
-                // TODO somehow sending commands to others in the game as well (to give
-                // them a heads-up, with the intent to reduce lag) seems to cause some
-                // desyncs. Until we figure out why, let's just use a more centralized
-                // layout and have everything run through the server, first.
-                //SendToEveryone(command, priority);
-                SendToHost(command, priority);
+                // Send command to host.
+                Send(command);
             }
             else if (Simulation.WaitingForSynchronization && command.Frame <= Simulation.TrailingFrame)
             {
@@ -217,7 +218,7 @@ namespace Engine.Controller
                 // we just skip any commands whatsoever that are from before it.
                 return;
             }
-            base.Apply(command, priority);
+            base.Apply(command);
         }
 
         #endregion
@@ -256,21 +257,21 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of client side TSS synchronization logic.
         /// </summary>
-        protected override bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected override IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
         {
-            var type = (TssUdpControllerMessage)args.Data.ReadByte();
-            command = null;
+            var args = (ClientDataEventArgs)e;
+            var type = (TssControllerMessage)args.Data.ReadByte();
             switch (type)
             {
-                case TssUdpControllerMessage.Command:
+                case TssControllerMessage.Command:
                     // Normal command, forward it.
-                    return base.UnwrapDataForReceive(args, out command);
+                    return base.UnwrapDataForReceive(e);
 
-                case TssUdpControllerMessage.Synchronize:
+                case TssControllerMessage.Synchronize:
                     // Answer to a synchronization request.
                     // Only accept these when they come from the server, and disregard if
                     // we're waiting for a snapshot of the simulation.
-                    if (args.IsAuthoritative && !Simulation.WaitingForSynchronization)
+                    if (!Simulation.WaitingForSynchronization)
                     {
                         // This calculation follows algorithm described here:
                         // http://www.mine-control.com/zack/timesync/timesync.html
@@ -283,67 +284,48 @@ namespace Engine.Controller
                         long frameDelta = clientServerDelta + latency / 2;
                         if (System.Math.Abs(frameDelta) > 1)
                         {
-#if DEBUG
-                            //Console.WriteLine("Client: correcting for " + frameDelta + " frames.");
-#endif
+                            logger.Debug("Client: correcting for " + frameDelta + " frames.");
                             // Adjust the current frame of the simulation.
                             Simulation.RunToFrame(Simulation.CurrentFrame + frameDelta);
                         }
                         // Push our average delay plus the delta! Otherwise we'd loose the
                         // running ('constant') delta we accumulated.
                         syncDiff.Put(frameDelta * Game.TargetElapsedTime.TotalMilliseconds / SyncInterval);
-                        return true;
                     }
                     break;
 
-                case TssUdpControllerMessage.HashCheck:
+                case TssControllerMessage.HashCheck:
                     // Only accept these when they come from the server.
-                    if (args.IsAuthoritative)
-                    {
-                        hashFrame = args.Data.ReadInt64();
-                        hashValue = args.Data.ReadInt32();
-                        return true;
-                    }
+                    hashFrame = args.Data.ReadInt64();
+                    hashValue = args.Data.ReadInt32();
                     break;
 
-                case TssUdpControllerMessage.GameStateResponse:
+                case TssControllerMessage.GameStateResponse:
                     // Got a simulation snap shot (normally after requesting it due to
                     // our simulation going out of scope for an older event).
                     // Only accept these when they come from the server.
-                    if (args.IsAuthoritative)
-                    {
-                        Simulation.Depacketize(args.Data, Packetizer.Context);
-                        return true;
-                    }
+                    Simulation.Depacketize(args.Data, Packetizer.Context);
                     break;
 
-                case TssUdpControllerMessage.AddGameObject:
+                case TssControllerMessage.AddGameObject:
                     // Only accept these when they come from the server.
-                    if (args.IsAuthoritative)
-                    {
-                        long addFrame = args.Data.ReadInt64();
-                        TSteppable steppable = Packetizer.Depacketize<TSteppable>(args.Data);
-                        Simulation.AddSteppable(steppable, addFrame);
-                        return true;
-                    }
+                    long addFrame = args.Data.ReadInt64();
+                    TSteppable steppable = Packetizer.Depacketize<TSteppable>(args.Data);
+                    Simulation.AddSteppable(steppable, addFrame);
                     break;
 
-                case TssUdpControllerMessage.RemoveGameObject:
+                case TssControllerMessage.RemoveGameObject:
                     // Only accept these when they come from the server.
-                    if (args.IsAuthoritative)
-                    {
-                        long removeFrame = args.Data.ReadInt64();
-                        long steppableUid = args.Data.ReadInt64();
-                        Simulation.RemoveSteppable(steppableUid, removeFrame);
-                        return true;
-                    }
+                    long removeFrame = args.Data.ReadInt64();
+                    long steppableUid = args.Data.ReadInt64();
+                    Simulation.RemoveSteppable(steppableUid, removeFrame);
                     break;
 
                 // Everything else is unhandled on the client.
                 default:
                     break;
             }
-            return false;
+            return null;
         }
 
         #endregion
@@ -351,18 +333,14 @@ namespace Engine.Controller
         #region Events handled internally
 
         /// <summary>
-        /// Called when our simulation cannot accomodate an update or rollback,
+        /// Called when our simulation cannot accommodate an update or rollback,
         /// meaning we have to get a server snapshot.
         /// </summary>
         private void HandleSimulationInvalidated(object sender, EventArgs e)
         {
             // So we request it.
-#if DEBUG
-            Console.WriteLine("Client: simulation invalidated, re-sync");
-#endif
-            Packet gameStateRequest = new Packet(1);
-            gameStateRequest.Write((byte)TssUdpControllerMessage.GameStateRequest);
-            Session.SendToHost(gameStateRequest, PacketPriority.Medium);
+            logger.Debug("Client: simulation invalidated, re-sync");
+            Session.Send(new Packet().Write((byte)TssControllerMessage.GameStateRequest));
         }
 
         #endregion

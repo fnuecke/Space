@@ -23,10 +23,19 @@ namespace Engine.Session
         }
     }
 
+    public interface SessionDataEventArgs
+    {
+        /// <summary>
+        /// The data received.
+        /// </summary>
+        Packet Data { get; }
+    }
+
     /// <summary>
-    /// Event args used for <see cref="Engine.Session.ISession#PlayerData"/>.
+    /// Event args used for a server's data event.
     /// </summary>
-    public class PlayerDataEventArgs<TPlayerData, TPacketizerContext> : PlayerEventArgs<TPlayerData, TPacketizerContext>
+    public class ServerDataEventArgs<TPlayerData, TPacketizerContext>
+        : PlayerEventArgs<TPlayerData, TPacketizerContext>, SessionDataEventArgs
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -35,16 +44,26 @@ namespace Engine.Session
         /// </summary>
         public Packet Data { get; private set; }
 
-        /// <summary>
-        /// Whether this data was signed by the server.
-        /// </summary>
-        public bool IsAuthoritative { get; private set; }
-
-        public PlayerDataEventArgs(Player<TPlayerData, TPacketizerContext> player, Packet data, bool isFromServer)
+        public ServerDataEventArgs(Player<TPlayerData, TPacketizerContext> player, Packet data)
             : base(player)
         {
             this.Data = data;
-            this.IsAuthoritative = isFromServer;
+        }
+    }
+
+    /// <summary>
+    /// Event args used for a client's data event.
+    /// </summary>
+    public class ClientDataEventArgs : EventArgs, SessionDataEventArgs
+    {
+        /// <summary>
+        /// The data received from the player.
+        /// </summary>
+        public Packet Data { get; private set; }
+
+        public ClientDataEventArgs(Packet data)
+        {
+            this.Data = data;
         }
     }
 
@@ -83,68 +102,18 @@ namespace Engine.Session
         }
     }
 
-    public enum JoinResponseReason
-    {
-        /// <summary>
-        /// Join was successful!
-        /// </summary>
-        Success,
-
-        /// <summary>
-        /// Unknown reason a join failed (invalid packet?).
-        /// </summary>
-        Unknown,
-
-        /// <summary>
-        /// The game we tried to join is already full.
-        /// </summary>
-        GameFull,
-
-        /// <summary>
-        /// Server says we're already in the game we're trying to join.
-        /// </summary>
-        AlreadyInGame,
-
-        /// <summary>
-        /// The name we provided was refused by the server (e.g. because it was empty?).
-        /// </summary>
-        InvalidName,
-
-        /// <summary>
-        /// Response we got from the server was invalid.
-        /// </summary>
-        InvalidServerData,
-
-        /// <summary>
-        /// Failed establishing a connection to the server.
-        /// </summary>
-        ConnectionFailed
-    }
-
     /// <summary>
     /// Event args for join responses as dispatched on clients.
     /// </summary>
     public class JoinResponseEventArgs : EventArgs
     {
         /// <summary>
-        /// Tells whether the join request was successful or failed.
-        /// </summary>
-        public bool WasSuccess { get; private set; }
-
-        /// <summary>
-        /// The reason for the state of <c>WasSuccess</c>.
-        /// </summary>
-        public JoinResponseReason Reason { get; private set; }
-
-        /// <summary>
         /// Any additional data the server sent with the answer.
         /// </summary>
         public Packet Data { get; private set; }
 
-        public JoinResponseEventArgs(bool wasSuccess, JoinResponseReason reason, Packet data)
+        public JoinResponseEventArgs(Packet data)
         {
-            this.WasSuccess = wasSuccess;
-            this.Reason = reason;
             this.Data = data;
         }
     }

@@ -18,6 +18,12 @@ namespace Engine.Controller
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
+        #region Logger
+
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -59,7 +65,7 @@ namespace Engine.Controller
 
             if (Session != null)
             {
-                Session.PlayerData += HandlePlayerData;
+                Session.Data += HandlePlayerData;
 
                 Game.Components.Add(Session);
             }
@@ -74,7 +80,7 @@ namespace Engine.Controller
         {
             if (Session != null)
             {
-                Session.PlayerData -= HandlePlayerData;
+                Session.Data -= HandlePlayerData;
 
                 Game.Components.Remove(Session);
             }
@@ -122,27 +128,17 @@ namespace Engine.Controller
         /// as there.
         /// </summary>
         /// <param name="args">the originally received network data.</param>
-        /// <param name="command">the parsed command, or null, if the message
-        /// was not a command (i.e. some other message type).</param>
-        /// <returns>if the message was handled successfully.</returns>
-        protected virtual bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out TCommand command)
+        /// <returns>the parsed command, or null, if the message
+        /// was not a command (i.e. some other message type).</returns>
+        protected virtual TCommand UnwrapDataForReceive(SessionDataEventArgs args)
         {
             // Parse the actual command.
-            command = Packetizer.Depacketize<TCommand>(args.Data);
+            TCommand command = Packetizer.Depacketize<TCommand>(args.Data);
 
-            // If the player is not the server, and the number doesn't match,
-            // ignore the command -> avoid clients injecting commands for
-            // other clients. Also don't handle commands for players we don't
-            // know (null check).
-            if (!args.IsAuthoritative && (args.Player == null || !args.Player.Equals(command.Player)))
-            {
-                return false;
-            }
+            // Flag it as it came from the server.
+            command.IsAuthoritative = true;
 
-            // Flag it accordingly to where it came from.
-            command.IsAuthoritative = args.IsAuthoritative;
-
-            return true;
+            return command;
         }
 
         #endregion
@@ -153,31 +149,9 @@ namespace Engine.Controller
         /// Send a command to the server.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        /// <param name="pollRate">resend interval until ack arrived.</param>
-        protected void SendToHost(TCommand command, PacketPriority priority)
+        protected void Send(TCommand command)
         {
-            Session.SendToHost(WrapDataForSend(command, new Packet()), priority);
-        }
-
-        /// <summary>
-        /// Send a command to another client.
-        /// </summary>
-        /// <param name="player">the player to send the command to.</param>
-        /// <param name="command">the command to send.</param>
-        /// <param name="pollRate">resend interval until ack arrived.</param>
-        protected void SendToPlayer(Player<TPlayerData, TPacketizerContext> player, TCommand command, PacketPriority priority)
-        {
-            Session.SendToPlayer(player, WrapDataForSend(command, new Packet()), priority);
-        }
-
-        /// <summary>
-        /// Send a command to everyone, including the server.
-        /// </summary>
-        /// <param name="command">the command to send.</param>
-        /// <param name="pollRate">resend interval until ack arrived.</param>
-        protected void SendToEveryone(TCommand command, PacketPriority priority)
-        {
-            Session.SendToEveryone(WrapDataForSend(command, new Packet()), priority);
+            Session.Send(WrapDataForSend(command, new Packet()));
         }
 
         #endregion
@@ -200,36 +174,22 @@ namespace Engine.Controller
         {
             try
             {
-                var args = (PlayerDataEventArgs<TPlayerData, TPacketizerContext>)e;
-
-                TCommand command;
-
                 // Delegate unwrapping of the message, and if this yields a command object
                 // try to handle it.
-                if (UnwrapDataForReceive(args, out command) &&
-                    (command == null || HandleRemoteCommand(command)))
+                TCommand command = UnwrapDataForReceive((SessionDataEventArgs)e);
+                if (command != null)
                 {
-                    // If this was successfully handled, mark it as consumed.
-                    args.Consume();
+                    HandleRemoteCommand(command);
                 }
             }
-#if DEBUG
             catch (PacketException ex)
             {
-                Console.WriteLine("Error handling received player data: " + ex);
+                logger.WarnException("Error handling received player data.", ex);
             }
             catch (ArgumentException ex)
             {
-                Console.WriteLine("Error handling received player data: " + ex);
+                logger.WarnException("Error handling received player data.", ex);
             }
-#else
-            catch (PacketException)
-            {
-            }
-            catch (ArgumentException)
-            {
-            }
-#endif
         }
 
         #endregion

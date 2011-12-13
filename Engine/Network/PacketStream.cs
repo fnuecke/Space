@@ -79,8 +79,8 @@ namespace Engine.Network
         /// packets, repeatedly call this method until it returns <c>null</c>.
         /// </summary>
         /// <returns>A read packet, if one was available.</returns>
-        /// <exception cref="SocketException">If the underlying stream fails.</exception>
-        public override Packet Read()
+        /// <exception cref="IOException">If the underlying stream fails.</exception>
+        public Packet Read()
         {
             // Read until we either find a complete packet, or cannot read any more data.
             while (Available > 0 || stream.DataAvailable)
@@ -100,7 +100,7 @@ namespace Engine.Network
                     if (bufferDataLength <= 0)
                     {
                         // Connection died (reading 0 bytes means the connection is gone).
-                        throw new SocketException();
+                        throw new IOException();
                     }
                     // Reset our read position.
                     bufferReadPosition = 0;
@@ -115,7 +115,8 @@ namespace Engine.Network
         /// byte a <c>PacketStream</c> on the other end of the stream.
         /// </summary>
         /// <param name="packet">The packet to write.</param>
-        public override void Write(Packet packet)
+        /// <exception cref="IOException">If the underlying stream fails.</exception>
+        public void Write(Packet packet)
         {
             if (packet.Length > 0)
             {
@@ -150,7 +151,7 @@ namespace Engine.Network
                     if (messageLength < 0)
                     {
                         // Invalid data, consider this connection broken.
-                        throw new SocketException();
+                        throw new IOException();
                     }
                     // Reset so the rest is just the data.
                     messageStream.SetLength(0);
@@ -177,6 +178,7 @@ namespace Engine.Network
                     // Reset for the next message.
                     messageStream.SetLength(0);
                     messageStream.Position = 0;
+                    messageLength = 0;
                     return packet;
                 }
             }

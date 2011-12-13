@@ -1,7 +1,6 @@
 ﻿using System;
 using Engine.Commands;
 using Engine.Controller;
-using Engine.Network;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -89,19 +88,9 @@ namespace Space.Control
         {
             var args = (JoinResponseEventArgs)e;
 
-            Console.WriteLine(string.Format("CLT.NET: Join response: {0} ({1})", args.WasSuccess, Enum.GetName(typeof(JoinResponseReason), args.Reason)));
+            Console.WriteLine("CLT.NET: Join response");
 
-            // Were we allowed to join?
-            if (args.WasSuccess)
-            {
-                // Yes! Use the received simulation information.
-                Simulation.Depacketize(args.Data, Packetizer.Context);
-            }
-            else
-            {
-                // No :( See if we know why and notify the user.
-                // TODO
-            }
+            Simulation.Depacketize(args.Data, Packetizer.Context);
         }
 
         /// <summary>
@@ -113,7 +102,7 @@ namespace Space.Control
             {
                 case GameCommandType.PlayerInput:
                     // Player input command, high send priority.
-                    Apply(command, PacketPriority.High);
+                    Apply(command);
                     break;
             }
         }
@@ -128,7 +117,7 @@ namespace Space.Control
             switch (command.Type)
             {
                 case GameCommandType.PlayerInput:
-                    Apply(command, PacketPriority.None);
+                    Apply(command);
                     return true;
 
                 default:

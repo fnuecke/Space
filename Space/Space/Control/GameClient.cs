@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Text;
-using Engine.Network;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,7 +12,6 @@ namespace Space.Control
         public IClientSession<PlayerInfo, PacketizerContext> Session { get; private set; }
         public ClientController Controller { get; private set; }
 
-        DeprecatedUdpProtocol protocol;
         private InputCommandEmitter emitter;
 
         SpriteFont font;
@@ -22,8 +19,7 @@ namespace Space.Control
         public GameClient(Game game)
             : base(game)
         {
-            protocol = new DeprecatedUdpProtocol(50101, Encoding.ASCII.GetBytes("Space"));
-            Session = new ClientSession<PlayerInfo, PacketizerContext>(game, protocol);
+            Session = new HybridClientSession<PlayerInfo, PacketizerContext>(game);
             Controller = new ClientController(game, Session);
             Controller.UpdateOrder = 10;
 
@@ -56,7 +52,6 @@ namespace Space.Control
             Session.PlayerJoined -= HandlePlayerJoined;
             Session.PlayerLeft -= HandlePlayerLeft;
 
-            protocol.Dispose();
             Session.Dispose();
             Controller.Dispose();
             emitter.Dispose();
@@ -65,13 +60,6 @@ namespace Space.Control
             Game.Components.Remove(emitter);
 
             base.Dispose(disposing);
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            protocol.Update();
-
-            base.Update(gameTime);
         }
 
         public override void Draw(GameTime gameTime)
@@ -83,7 +71,7 @@ namespace Space.Control
             var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 360, GraphicsDevice.Viewport.Height - 140);
 
             SessionInfo.Draw("Client", Session, sessionOffset, font, spriteBatch);
-            NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
+            //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
 
             base.Draw(gameTime);
         }

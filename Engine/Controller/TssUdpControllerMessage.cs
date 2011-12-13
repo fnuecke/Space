@@ -3,7 +3,7 @@
     /// <summary>
     /// Used in abstract TSS server and client implementations.
     /// </summary>
-    internal enum TssUdpControllerMessage
+    internal enum TssControllerMessage
     {
         /// <summary>
         /// Normal game command, handled in base class.

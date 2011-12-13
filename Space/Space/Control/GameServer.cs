@@ -1,6 +1,4 @@
-﻿using System.Text;
-using Engine.Network;
-using Engine.Session;
+﻿using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Model;
@@ -10,7 +8,6 @@ namespace Space.Control
 {
     public class GameServer : DrawableGameComponent
     {
-        DeprecatedUdpProtocol protocol;
         IServerSession<PlayerInfo, PacketizerContext> session;
         internal ServerController Controller { get; private set; }
         SpriteFont font;
@@ -18,8 +15,7 @@ namespace Space.Control
         public GameServer(Game game)
             : base(game)
         {
-            protocol = new DeprecatedUdpProtocol(50100, Encoding.ASCII.GetBytes("Space"));
-            session = new ServerSession<PlayerInfo, PacketizerContext>(game, protocol, 8);
+            session = new HybridServerSession<PlayerInfo, PacketizerContext>(game, 50100, 8);
             Controller = new ServerController(game, session, 10, 0);
             Controller.UpdateOrder = 10;
 
@@ -42,20 +38,12 @@ namespace Space.Control
 
         protected override void Dispose(bool disposing)
         {
-            protocol.Dispose();
             session.Dispose();
             Controller.Dispose();
 
             Game.Components.Remove(Controller);
 
             base.Dispose(disposing);
-        }
-
-        public override void Update(GameTime gameTime)
-        {
-            protocol.Update();
-
-            base.Update(gameTime);
         }
 
         public override void Draw(GameTime gameTime)
@@ -67,7 +55,7 @@ namespace Space.Control
             var sessionOffset = new Vector2(10, GraphicsDevice.Viewport.Height - 140);
 
             SessionInfo.Draw("Server", session, sessionOffset, font, spriteBatch);
-            NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
+            //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
 
             base.Draw(gameTime);
         }

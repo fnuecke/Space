@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Commands;
-using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -29,6 +28,12 @@ namespace Engine.Controller
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
+        #region Logger
+
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Constants
 
         /// <summary>
@@ -135,10 +140,10 @@ namespace Engine.Controller
                 Simulation.Hash(hasher);
 
                 Packet hashCheck = new Packet(1 + sizeof(long) + sizeof(long));
-                hashCheck.Write((byte)TssUdpControllerMessage.HashCheck);
+                hashCheck.Write((byte)TssControllerMessage.HashCheck);
                 hashCheck.Write(Simulation.TrailingFrame);
                 hashCheck.Write(hasher.Value);
-                Session.SendToEveryone(hashCheck, PacketPriority.None);
+                Session.Send(hashCheck);
             }
 
             base.Update(gameTime);
@@ -188,10 +193,10 @@ namespace Engine.Controller
 
             // Notify all players in the game about this.
             Packet addedInfo = new Packet();
-            addedInfo.Write((byte)TssUdpControllerMessage.AddGameObject);
+            addedInfo.Write((byte)TssControllerMessage.AddGameObject);
             addedInfo.Write(frame);
             Packetizer.Packetize(steppable, addedInfo);
-            Session.SendToEveryone(addedInfo, PacketPriority.Medium);
+            Session.Send(addedInfo);
 
             return steppable.UID;
         }
@@ -209,27 +214,26 @@ namespace Engine.Controller
 
             // Notify all players in the game about this.
             Packet removedInfo = new Packet(1 + sizeof(long) + sizeof(long));
-            removedInfo.Write((byte)TssUdpControllerMessage.RemoveGameObject);
+            removedInfo.Write((byte)TssControllerMessage.RemoveGameObject);
             removedInfo.Write(frame);
             removedInfo.Write(steppableUid);
-            Session.SendToEveryone(removedInfo, PacketPriority.Medium);
+            Session.Send(removedInfo);
         }
 
         /// <summary>
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        /// <param name="priority">the priority with which to deliver the packet.</param>
-        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, PacketPriority priority)
+        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
             if (command.Frame >= Simulation.TrailingFrame)
             {
                 // All commands we apply are authoritative.
                 command.IsAuthoritative = true;
-                base.Apply(command, priority);
+                base.Apply(command);
 
                 // As a server we resend all commands.
-                SendToEveryone(command, priority);
+                Send(command);
             }
 #if DEBUG
             else
@@ -246,51 +250,44 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of server side TSS synchronization logic.
         /// </summary>
-        protected override bool UnwrapDataForReceive(PlayerDataEventArgs<TPlayerData, TPacketizerContext> args, out IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected override IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
         {
-            command = null;
-            if (!args.Data.HasByte())
-            {
-#if DEBUG
-                Console.WriteLine("Server.Controller: invalid packet received (no type).");
-#endif
-                return false;
-            }
-            var type = (TssUdpControllerMessage)args.Data.ReadByte();
+            var args = (ServerDataEventArgs<TPlayerData, TPacketizerContext>)e;
+            var type = (TssControllerMessage)args.Data.ReadByte();
             switch (type)
             {
-                case TssUdpControllerMessage.Command:
+                case TssControllerMessage.Command:
                     // Normal command, forward it.
-                    return base.UnwrapDataForReceive(args, out command);
+                    return base.UnwrapDataForReceive(e);
 
-                case TssUdpControllerMessage.Synchronize:
+                case TssControllerMessage.Synchronize:
                     // Client re-synchronizing.
                     {
                         long clientFrame = args.Data.ReadInt64();
                         Packet synchronizeResponse = new Packet(1 + sizeof(long) + sizeof(long));
-                        synchronizeResponse.Write((byte)TssUdpControllerMessage.Synchronize);
+                        synchronizeResponse.Write((byte)TssControllerMessage.Synchronize);
                         synchronizeResponse.Write(clientFrame);
                         synchronizeResponse.Write(Simulation.CurrentFrame);
-                        Session.SendToPlayer(args.Player, synchronizeResponse, PacketPriority.None);
+                        Session.SendTo(args.Player, synchronizeResponse);
                     }
-                    return true;
+                    break;
 
-                case TssUdpControllerMessage.GameStateRequest:
+                case TssControllerMessage.GameStateRequest:
                     // Client needs game state.
                     if ((DateTime.Now - lastGameStateSentTime[args.Player.Number]).TotalMilliseconds > GameStateResendInterval) {
                         lastGameStateSentTime[args.Player.Number] = DateTime.Now;
                         Packet gamestateResponse = new Packet();
-                        gamestateResponse.Write((byte)TssUdpControllerMessage.GameStateResponse);
+                        gamestateResponse.Write((byte)TssControllerMessage.GameStateResponse);
                         Simulation.Packetize(gamestateResponse);
-                        Session.SendToPlayer(args.Player, gamestateResponse, PacketPriority.Medium);
+                        Session.SendTo(args.Player, gamestateResponse);
                     }
-                    return true;
+                    break;
 
                 // Everything else is unhandled on the server.
                 default:
                     break;
             }
-            return false;
+            return null;
         }
 
         #endregion

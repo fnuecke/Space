@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using Engine.Network;
@@ -12,11 +13,11 @@ namespace Engine.Session
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
-#region Logger
+        #region Logger
 
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-#endregion
+        #endregion
 
         #region Events
 
@@ -49,7 +50,7 @@ namespace Engine.Session
         /// <summary>
         /// Reference to the data struct with info about the local player.
         /// </summary>
-        public Player<TPlayerData, TPacketizerContext> LocalPlayer { get { return GetPlayer(localPlayerNumber); } }
+        public Player<TPlayerData, TPacketizerContext> LocalPlayer { get { return GetPlayer(_localPlayerNumber); } }
 
         #endregion
 
@@ -58,27 +59,27 @@ namespace Engine.Session
         /// <summary>
         /// The connection to the server, used to (reliably) receive data.
         /// </summary>
-        private TcpClient tcp;
+        private TcpClient _tcp;
 
         /// <summary>
         /// The packet stream used to send packets to and receive packets from the server.
         /// </summary>
-        private PacketStream stream;
+        private PacketStream _stream;
 
         /// <summary>
         /// Number of the local player.
         /// </summary>
-        private int localPlayerNumber;
+        private int _localPlayerNumber;
 
         /// <summary>
         /// The name of the local player (remembered from join for actual join request).
         /// </summary>
-        private string playerName;
+        private string _playerName;
 
         /// <summary>
         /// Player data (as for name, remembered for actual request).
         /// </summary>
-        private TPlayerData playerData;
+        private TPlayerData _playerData;
 
         #endregion
 
@@ -89,34 +90,53 @@ namespace Engine.Session
         {
             udp = new UdpProtocol(0, udpHeader);
             ConnectionState = ClientState.Unconnected;
-            localPlayerNumber = -1;
+            _localPlayerNumber = -1;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_stream != null)
+                {
+                    _stream.Dispose();
+                }
+                if (_tcp != null)
+                {
+                    _tcp.Close();
+                }
+            }
+
+            base.Dispose(disposing);
         }
 
         #endregion
-        
+
         #region Logic
 
         public override void Update(GameTime gameTime)
         {
-            if (stream != null)
+            if (_stream != null)
             {
                 try
                 {
                     Packet packet;
-                    while ((packet = stream.Read()) != null)
+                    while ((packet = _stream.Read()) != null)
                     {
                         SessionMessage type = (SessionMessage)packet.ReadByte();
                         HandleTcpData(type, packet.ReadPacket());
                     }
                 }
-                catch (SocketException)
+                catch (IOException ex)
                 {
                     // Connection failed, disconnect.
+                    logger.TraceException("Socket connection died.", ex);
                     Reset(true);
                 }
-                catch (PacketException)
+                catch (PacketException ex)
                 {
                     // Received invalid packet from server.
+                    logger.WarnException("Invalid packet received from server.", ex);
                     Reset(true);
                 }
             }
@@ -127,13 +147,14 @@ namespace Engine.Session
         #endregion
 
         #region Public API
-        
+
         /// <summary>
         /// Send a ping into the local network, looking for open games.
         /// </summary>
         public void Search()
         {
             // Send as a multicast / broadcast.
+            logger.Trace("Sending ping to search for open games.");
             udp.Send(new Packet(1).Write((byte)SessionMessage.GameInfoRequest), DefaultMulticastEndpoint);
         }
 
@@ -149,11 +170,12 @@ namespace Engine.Session
             {
                 throw new InvalidOperationException("Must leave the current session first.");
             }
+            logger.Debug("Begin connecting to host at '{0}'.", remote);
             ConnectionState = ClientState.Connecting;
-            this.playerName = playerName;
-            this.playerData = playerData;
-            tcp = new TcpClient();
-            tcp.BeginConnect(remote.Address, remote.Port, new AsyncCallback(HandleConnected), tcp);
+            this._playerName = playerName;
+            this._playerData = playerData;
+            _tcp = new TcpClient();
+            _tcp.BeginConnect(remote.Address, remote.Port, new AsyncCallback(HandleConnected), _tcp);
         }
 
         /// <summary>
@@ -182,16 +204,17 @@ namespace Engine.Session
         {
             if (ConnectionState != ClientState.Connected)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Not in a session.");
             }
             try
             {
-                stream.Write(new Packet().
+                _stream.Write(new Packet().
                     Write((byte)type).
                     Write(packet));
             }
-            catch (SocketException)
+            catch (IOException ex)
             {
+                logger.TraceException("Socket connection died.", ex);
                 Reset(true);
             }
         }
@@ -207,12 +230,14 @@ namespace Engine.Session
         {
             try
             {
-                tcp.EndConnect(result);
-                stream = new PacketStream(tcp.GetStream());
-                stream.Write(new Packet().
+                logger.Debug("Connected to host, sending actual join request.");
+                _tcp.EndConnect(result);
+                _stream = new PacketStream(_tcp.GetStream());
+                _stream.Write(new Packet().
                     Write((byte)SessionMessage.JoinRequest).
-                    Write(playerName).
-                    Write(playerData));
+                    Write(new Packet().
+                        Write(_playerName).
+                        Write(_playerData)));
             }
             catch (Exception)
             {
@@ -256,11 +281,15 @@ namespace Engine.Session
                             // Get additional data.
                             Packet customData = data.ReadPacket();
 
+                            logger.Trace("Got game info from host '{0}': {1}/{2} players, data of length {3}.",
+                                args.RemoteEndPoint, numPlayers, maxPlayers, customData.Length);
+
                             // Propagate to local program.
                             OnGameInfoReceived(new GameInfoReceivedEventArgs(args.RemoteEndPoint, numPlayers, maxPlayers, customData));
                         }
                         catch (PacketException ex)
                         {
+                            // Bad data.
                             logger.WarnException("Invalid GameInfoResponse.", ex);
                         }
                     }
@@ -268,12 +297,15 @@ namespace Engine.Session
 
                 // Nothing else is handled via UDP.
                 default:
-                    logger.Trace("Unknown SessionMessage via UDP: {0}.", type);
+                    logger.Debug("Unknown SessionMessage via UDP: {0}.", type);
                     break;
             }
         }
 
-        private void HandleTcpData(SessionMessage type, Packet data)
+        /// <summary>
+        /// Got some data via our TCP connection, so it's from the server.
+        /// </summary>
+        private void HandleTcpData(SessionMessage type, Packet packet)
         {
             switch (type)
             {
@@ -283,26 +315,17 @@ namespace Engine.Session
                     {
                         try
                         {
-                            // Success or not?
-                            if (!data.ReadBoolean())
-                            {
-                                // Joining failed :(
-                                Reset();
-                                OnJoinResponse(new JoinResponseEventArgs(false, (JoinResponseReason)data.ReadByte(), null));
-                                return;
-                            }
-
                             // Get our number.
-                            localPlayerNumber = data.ReadInt32();
+                            _localPlayerNumber = packet.ReadInt32();
 
                             // Get info about other players in the session.
-                            NumPlayers = data.ReadInt32();
+                            NumPlayers = packet.ReadInt32();
 
                             // Maximum number of players in the session?
-                            MaxPlayers = data.ReadInt32();
+                            MaxPlayers = packet.ReadInt32();
 
                             // Sanity checks.
-                            if (localPlayerNumber < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers || localPlayerNumber >= MaxPlayers)
+                            if (_localPlayerNumber < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers || _localPlayerNumber >= MaxPlayers)
                             {
                                 throw new PacketException("Inconsistent session info.");
                             }
@@ -310,11 +333,14 @@ namespace Engine.Session
                             // Allocate array for the players in the session.
                             players = new Player<TPlayerData, TPacketizerContext>[MaxPlayers];
 
+                            // Get other game relevant data (e.g. game state).
+                            Packet joinData = packet.ReadPacket();
+
                             // Get info on players already in the session, including us.
                             for (int i = 0; i < NumPlayers; i++)
                             {
                                 // Get player number.
-                                int playerNumber = data.ReadInt32();
+                                int playerNumber = packet.ReadInt32();
 
                                 // Sanity checks.
                                 if (playerNumber < 0 || playerNumber >= MaxPlayers || players[playerNumber] != null)
@@ -323,24 +349,23 @@ namespace Engine.Session
                                 }
 
                                 // Get player name.
-                                string playerName = data.ReadString();
+                                string playerName = packet.ReadString();
 
                                 // Get additional player data.
                                 TPlayerData playerData = new TPlayerData();
-                                data.ReadPacketizable(playerData, packetizer.Context);
+                                packet.ReadPacketizable(playerData, packetizer.Context);
 
                                 // All OK, add the player.
                                 players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData);
                             }
 
-                            // Get other game relevant data (e.g. game state).
-                            Packet joinData = data.ReadPacket();
-
                             // New state :)
                             ConnectionState = ClientState.Connected;
 
+                            logger.Debug("Successfully joined game at '{0}'.", (IPEndPoint)_tcp.Client.RemoteEndPoint);
+
                             // OK, let the program know.
-                            OnJoinResponse(new JoinResponseEventArgs(true, JoinResponseReason.Success, joinData));
+                            OnJoinResponse(new JoinResponseEventArgs(joinData));
 
                             // Also, fire one join event for each player in the game. Except for
                             // the local player, because that'll likely need special treatment anyway.
@@ -355,8 +380,7 @@ namespace Engine.Session
                         catch (PacketException ex)
                         {
                             logger.WarnException("Invalid JoinResponse.", ex);
-                            Reset();
-                            OnJoinResponse(new JoinResponseEventArgs(false, JoinResponseReason.InvalidServerData, null));
+                            Reset(true);
                         }
                     }
                     break;
@@ -368,7 +392,7 @@ namespace Engine.Session
                         try
                         {
                             // Get player number.
-                            int playerNumber = data.ReadInt32();
+                            int playerNumber = packet.ReadInt32();
 
                             // Sanity checks.
                             if (playerNumber < 0 || playerNumber >= MaxPlayers || players[playerNumber] != null)
@@ -377,11 +401,11 @@ namespace Engine.Session
                             }
 
                             // Get player name.
-                            string playerName = data.ReadString();
+                            string playerName = packet.ReadString();
 
                             // Get additional player data.
                             TPlayerData playerData = new TPlayerData();
-                            data.ReadPacketizable(playerData, packetizer.Context);
+                            packet.ReadPacketizable(playerData, packetizer.Context);
 
                             // All OK, add the player.
                             players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData);
@@ -404,7 +428,7 @@ namespace Engine.Session
                         try
                         {
                             // Get player number.
-                            int playerNumber = data.ReadInt32();
+                            int playerNumber = packet.ReadInt32();
 
                             // Sanity checks.
                             if (!HasPlayer(playerNumber))
@@ -412,7 +436,7 @@ namespace Engine.Session
                                 throw new PacketException("Invalid player number.");
                             }
 
-                            if (playerNumber == localPlayerNumber)
+                            if (playerNumber == _localPlayerNumber)
                             {
                                 // We were removed from the game.
                                 Reset(true);
@@ -441,8 +465,7 @@ namespace Engine.Session
                     {
                         try
                         {
-                            int playerNumber = data.ReadInt32();
-                            OnPlayerData(new PlayerDataEventArgs<TPlayerData, TPacketizerContext>(GetPlayer(playerNumber), data, true));
+                            OnData(new ClientDataEventArgs(packet));
                         }
                         catch (PacketException ex)
                         {
@@ -470,23 +493,25 @@ namespace Engine.Session
         {
             if (ConnectionState != ClientState.Unconnected)
             {
+                logger.Debug("Resetting session.");
+
                 players = null;
-                localPlayerNumber = -1;
+                _localPlayerNumber = -1;
                 NumPlayers = 0;
                 MaxPlayers = 0;
 
                 if (ConnectionState == ClientState.Connected)
                 {
-                    stream.Dispose();
-                    tcp.Close();
+                    _stream.Dispose();
+                    _tcp.Close();
                 }
                 else if (ConnectionState == ClientState.Connecting)
                 {
-                    tcp.GetStream().Close();
-                    tcp.Close();
+                    _tcp.GetStream().Close();
+                    _tcp.Close();
                 }
-                stream = null;
-                tcp = null;
+                _stream = null;
+                _tcp = null;
 
                 ConnectionState = ClientState.Unconnected;
 

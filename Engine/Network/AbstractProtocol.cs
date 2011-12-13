@@ -21,7 +21,9 @@ namespace Engine.Network
         /// <summary>
         /// The header we use for all messages.
         /// </summary>
-        private byte[] header;
+        private byte[] _header;
+
+        private bool _disposed;
 
         #endregion
         
@@ -34,13 +36,23 @@ namespace Engine.Network
         protected AbstractProtocol(byte[] protocolHeader)
         {
             // Remember our header.
-            header = protocolHeader;
+            _header = protocolHeader;
         }
 
         /// <summary>
         /// Close this connection for good. This class should not be used again after calling this.
         /// </summary>
-        public virtual void Dispose()
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                Dispose(true);
+                _disposed = true;
+            }
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
         {
         }
 
@@ -166,7 +178,7 @@ namespace Engine.Network
             if (IsHeaderValid(message))
             {
                 // OK, get the decrypted packet.
-                var packet = new Packet(crypto.Decrypt(message, header.Length, message.Length - header.Length));
+                var packet = new Packet(crypto.Decrypt(message, _header.Length, message.Length - _header.Length));
 
                 // Get message flags.
                 if (packet.HasByte())
@@ -224,9 +236,9 @@ namespace Engine.Network
             withFlags.Write(data);
 
             byte[] encrypted = crypto.Encrypt(withFlags.Buffer, 0, withFlags.Length);
-            byte[] withHeader = new byte[header.Length + encrypted.Length];
-            header.CopyTo(withHeader, 0);
-            encrypted.CopyTo(withHeader, header.Length);
+            byte[] withHeader = new byte[_header.Length + encrypted.Length];
+            _header.CopyTo(withHeader, 0);
+            encrypted.CopyTo(withHeader, _header.Length);
             return withHeader;
         }
 
@@ -237,13 +249,13 @@ namespace Engine.Network
         /// <returns>whether it matches or not.</returns>
         private bool IsHeaderValid(byte[] buffer)
         {
-            if (buffer.Length < header.Length)
+            if (buffer.Length < _header.Length)
             {
                 return false;
             }
-            for (var i = 0; i < header.Length; ++i)
+            for (var i = 0; i < _header.Length; ++i)
             {
-                if (buffer[i] != header[i])
+                if (buffer[i] != _header[i])
                 {
                     return false;
                 }

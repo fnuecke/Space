@@ -1,5 +1,4 @@
 ﻿using Engine.Commands;
-using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -170,8 +169,7 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        /// <param name="priority">the priority with which to distribute the command.</param>
-        protected virtual void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, PacketPriority priority)
+        protected virtual void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
         {
             Simulation.PushCommand(command, command.Frame);
         }
@@ -188,7 +186,7 @@ namespace Engine.Controller
         /// <returns>the given packet, after writing.</returns>
         protected override Packet WrapDataForSend(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, Packet packet)
         {
-            packet.Write((byte)TssUdpControllerMessage.Command);
+            packet.Write((byte)TssControllerMessage.Command);
             return base.WrapDataForSend(command, packet);
         }
 
