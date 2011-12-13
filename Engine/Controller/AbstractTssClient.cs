@@ -158,10 +158,9 @@ namespace Engine.Controller
                 if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
                     lastSyncTime = DateTime.Now.Ticks;
-                    Packet syncRequest = new Packet(1 + sizeof(long) + sizeof(long));
-                    syncRequest.Write((byte)TssControllerMessage.Synchronize);
-                    syncRequest.Write(Simulation.CurrentFrame);
-                    Session.Send(syncRequest);
+                    Session.Send(new Packet()
+                        .Write((byte)TssControllerMessage.Synchronize)
+                        .Write(Simulation.CurrentFrame));
                 }
             }
 

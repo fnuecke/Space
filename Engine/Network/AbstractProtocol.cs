@@ -23,8 +23,6 @@ namespace Engine.Network
         /// </summary>
         private byte[] _header;
 
-        private bool _disposed;
-
         #endregion
         
         #region Constructor / Cleanup
@@ -38,43 +36,11 @@ namespace Engine.Network
             // Remember our header.
             _header = protocolHeader;
         }
-
+        
         /// <summary>
         /// Close this connection for good. This class should not be used again after calling this.
         /// </summary>
-        public void Dispose()
-        {
-            if (!_disposed)
-            {
-                Dispose(true);
-                _disposed = true;
-            }
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-        }
-
-        #endregion
-
-        #region Types
-
-        /// <summary>
-        /// Possible message flags.
-        /// </summary>
-        private enum MessageFlags
-        {
-            /// <summary>
-            /// No flags set.
-            /// </summary>
-            None = 0,
-
-            /// <summary>
-            /// The message is marked to be compressed.
-            /// </summary>
-            Compressed = 1
-        }
+        public abstract void Dispose();
 
         #endregion
 
@@ -96,6 +62,11 @@ namespace Engine.Network
         /// Cryptography instance we'll use for mangling our packets.
         /// </summary>
         private static readonly SimpleCrypto crypto = new SimpleCrypto(key, vector);
+
+        /// <summary>
+        /// Bit set to mark a message as compressed.
+        /// </summary>
+        private const uint CompressedMask = 1u << 31;
 
         #endregion
 
@@ -121,7 +92,10 @@ namespace Engine.Network
                 throw new ArgumentNullException("endPoint");
             }
 
-            HandleSend(MakeMessage(packet), endPoint);
+            if (packet != null)
+            {
+                HandleSend(MakeMessage(packet), endPoint);
+            }
         }
 
         /// <summary>
@@ -177,27 +151,22 @@ namespace Engine.Network
             // Check the header.
             if (IsHeaderValid(message))
             {
+                // Get message length plus compressed bit.
+                uint info = BitConverter.ToUInt32(message, _header.Length);
+                int length = (int)(info & ~CompressedMask);
+                bool flag = (info & CompressedMask) > 0;
+
                 // OK, get the decrypted packet.
-                var packet = new Packet(crypto.Decrypt(message, _header.Length, message.Length - _header.Length));
+                var data = crypto.Decrypt(message, _header.Length + sizeof(uint), length);
 
-                // Get message flags.
-                if (packet.HasByte())
+                // Is this a compressed message?
+                if (flag)
                 {
-                    MessageFlags flags = (MessageFlags)packet.ReadByte();
-
-                    // Get the message body.
-                    if (packet.HasByteArray())
-                    {
-                        if ((flags & MessageFlags.Compressed) > 0)
-                        {
-                            return new Packet(SimpleCompression.Decompress(packet.ReadByteArray()));
-                        }
-                        else
-                        {
-                            return new Packet(packet.ReadByteArray());
-                        }
-                    }
+                    data = SimpleCompression.Decompress(data);
                 }
+
+                // Return result as a packet.
+                return new Packet(data);
             }
             return null;
         }
@@ -210,36 +179,38 @@ namespace Engine.Network
         /// <returns>the message data.</returns>
         private byte[] MakeMessage(Packet packet)
         {
-            byte[] data = null;
-            int length = 0;
-            MessageFlags flags = MessageFlags.None;
-            if (packet != null)
+            // Get the actual data in raw format.
+            byte[] data = packet.GetBuffer();
+
+            // If packets are large, try compressing them, see if it helps.
+            // Only start after a certain size. General overhead for gzip
+            // seems to be around 130byte, so make sure we're well beyond that.
+            bool flag = false;
+            if (data.Length > 200)
             {
-                data = packet.Buffer;
-                length = packet.Length;
-                // If packets are large, try compressing them, see if it helps.
-                // Only start after a certain size. General overhead for gzip
-                // seems to be around 130byte, so make sure we're well beyond that.
-                if (packet.Length > 256)
+                byte[] compressed = SimpleCompression.Compress(data);
+                if (compressed.Length < data.Length)
                 {
-                    byte[] compressed = SimpleCompression.Compress(packet.Buffer, packet.Length);
-                    if (compressed.Length < packet.Length)
-                    {
-                        flags |= MessageFlags.Compressed;
-                        data = compressed;
-                        length = compressed.Length;
-                    }
+                    // OK, worth it, it's smaller than before.
+                    flag = true;
+                    data = compressed;
                 }
             }
-            Packet withFlags = new Packet(1 + sizeof(ushort) + length);
-            withFlags.Write((byte)flags);
-            withFlags.Write(data);
 
-            byte[] encrypted = crypto.Encrypt(withFlags.Buffer, 0, withFlags.Length);
-            byte[] withHeader = new byte[_header.Length + encrypted.Length];
-            _header.CopyTo(withHeader, 0);
-            encrypted.CopyTo(withHeader, _header.Length);
-            return withHeader;
+            // Encrypt the message.
+            data = crypto.Encrypt(data);
+
+            if ((data.Length & CompressedMask) > 0)
+            {
+                throw new ArgumentException("Packet too long.", "packet");
+            }
+
+            // Build the final message: header, then length + compressed bit, then data.
+            byte[] result = new byte[_header.Length + sizeof(uint) + data.Length];
+            _header.CopyTo(result, 0);
+            BitConverter.GetBytes((uint)data.Length | (flag ? CompressedMask : 0u)).CopyTo(result, _header.Length);
+            data.CopyTo(result, _header.Length + sizeof(uint));
+            return result;
         }
 
         /// <summary>

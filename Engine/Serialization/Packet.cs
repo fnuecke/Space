@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using Engine.Math;
 
@@ -7,65 +8,58 @@ namespace Engine.Serialization
     /// <summary>
     /// Serialization utility class, for packing basic types into a byte array.
     /// </summary>
-    public sealed class Packet
+    public sealed class Packet : IDisposable
     {
         #region Properties
 
         /// <summary>
         /// The number of bytes available for reading.
         /// </summary>
-        public int Available { get { return Length - readPointer; } }
-
-        /// <summary>
-        /// The underlying buffer.
-        /// </summary>
-        public byte[] Buffer { get; private set; }
+        public int Available { get { return (int)(_stream.Length - _stream.Position); } }
 
         /// <summary>
         /// The number of used bytes in the buffer.
         /// </summary>
-        public int Length { get; private set; }
+        public int Length { get { return (int)_stream.Length; } }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        /// Marks the current read / write position in the buffer.
-        /// </summary>
-        private int readPointer;
+        private MemoryStream _stream;
+
+        private bool _disposed;
 
         #endregion
 
         #region Constructor
 
         /// <summary>
-        /// Create a new packet of default buffer length (512).
+        /// Create a new packet.
         /// </summary>
         public Packet()
-            : this(64)
         {
+            _stream = new MemoryStream();
         }
 
         /// <summary>
-        /// Create a new packet with a buffer of the given length.
+        /// Create a new packet based on the given buffer, which will
+        /// result in a read-only packet.
         /// </summary>
-        /// <param name="maxLength">the size of the used buffer.</param>
-        public Packet(long maxLength)
-        {
-            Buffer = new byte[maxLength];
-            Reset();
-        }
-
-        /// <summary>
-        /// Create a new packet based on the given buffer (used directly, i.e. not copied).
-        /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">the data to initialize the packet with.</param>
         public Packet(byte[] data)
         {
-            Buffer = (data == null) ? new byte[0] : data;
-            Length = data.Length;
-            readPointer = 0;
+            _stream = new MemoryStream((data == null) ? new byte[0] : data, false);
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed)
+            {
+                _stream.Dispose();
+                _stream = null;
+                _disposed = true;
+            }
         }
 
         #endregion
@@ -73,24 +67,12 @@ namespace Engine.Serialization
         #region Initialization
 
         /// <summary>
-        /// Copies the data from the given buffer into the local one.
-        /// </summary>
-        /// <param name="data">the data to copy.</param>
-        /// <param name="length">the number of bytes to copy from the buffer.</param>
-        public void SetTo(byte[] data, int length)
-        {
-            data.CopyTo(Buffer, 0);
-            Length = length;
-            readPointer = 0;
-        }
-
-        /// <summary>
         /// Resets this packet, setting length and read/write position to zero.
         /// </summary>
         public void Reset()
         {
-            Length = 0;
-            readPointer = 0;
+            _stream.SetLength(0);
+            _stream.Position = 0;
         }
 
         /// <summary>
@@ -98,21 +80,19 @@ namespace Engine.Serialization
         /// </summary>
         public void Rewind()
         {
-            readPointer = 0;
+            _stream.Position = 0;
         }
 
+        #endregion
+
+        #region Buffer
+
         /// <summary>
-        /// Make sure our buffer is large enough.
+        /// Writes the contents of this packet to an array.
         /// </summary>
-        /// <param name="length">the length required.</param>
-        private void EnsureCapacity(int length)
+        public byte[] GetBuffer()
         {
-            if (Buffer.Length < length)
-            {
-                byte[] buffer = new byte[System.Math.Max(Buffer.Length * 2, length)];
-                Buffer.CopyTo(buffer, 0);
-                Buffer = buffer;
-            }
+            return _stream.ToArray();
         }
 
         #endregion
@@ -122,121 +102,80 @@ namespace Engine.Serialization
         public Packet Write(bool data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(byte data)
         {
-            EnsureCapacity(Length + 1);
-            Buffer[Length] = data;
-            Length++;
-            return this;
-        }
-
-        public Packet Write(char data)
-        {
-            byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.WriteByte(data);
             return this;
         }
 
         public Packet Write(double data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(Fixed data)
         {
             byte[] bytes = BitConverter.GetBytes(data.RawValue);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(float data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(int data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(long data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(short data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(uint data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(ushort data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(ulong data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
-            EnsureCapacity(Length + bytes.Length);
-            bytes.CopyTo(Buffer, Length);
-            Length += bytes.Length;
+            _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
 
         public Packet Write(byte[] data)
-        {
-            if (data.Length > ushort.MaxValue)
-            {
-                throw new ArgumentException("Data is too long.", "data");
-            }
-            Write(data, (ushort)data.Length);
-            return this;
-        }
-
-        public Packet Write(byte[] data, ushort length)
         {
             if (data == null)
             {
@@ -244,10 +183,25 @@ namespace Engine.Serialization
             }
             else
             {
-                Write(length);
-                EnsureCapacity(Length + length);
-                Array.Copy(data, 0, Buffer, this.Length, length);
-                this.Length += length;
+                Write(data, data.Length);
+            }
+            return this;
+        }
+
+        public Packet Write(byte[] data, int length)
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException("data");
+            }
+            if (length > ushort.MaxValue)
+            {
+                throw new ArgumentException("Data is too long.", "length");
+            }
+            else
+            {
+                Write((ushort)length);
+                _stream.Write(data, 0, length);
             }
             return this;
         }
@@ -260,11 +214,7 @@ namespace Engine.Serialization
             }
             else
             {
-                if (data.Length > ushort.MaxValue)
-                {
-                    throw new ArgumentException("Data is too long.", "data");
-                }
-                Write(data.Buffer, (ushort)data.Length);
+                Write(data.GetBuffer());
             }
             return this;
         }
@@ -300,9 +250,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read boolean.");
             }
-            var result = BitConverter.ToBoolean(Buffer, readPointer);
-            readPointer += sizeof(bool);
-            return result;
+            byte[] bytes = new byte[sizeof(bool)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return BitConverter.ToBoolean(bytes, 0);
         }
 
         public byte ReadByte()
@@ -311,20 +261,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read byte.");
             }
-            var result = Buffer[readPointer];
-            readPointer++;
-            return result;
-        }
-
-        public char ReadChar()
-        {
-            if (!HasChar())
-            {
-                throw new PacketException("Cannot read char.");
-            }
-            var result = BitConverter.ToChar(Buffer, readPointer);
-            readPointer += sizeof(char);
-            return result;
+            return (byte)_stream.ReadByte();
         }
 
         public float ReadSingle()
@@ -333,9 +270,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read single.");
             }
-            var result = BitConverter.ToSingle(Buffer, readPointer);
-            readPointer += sizeof(float);
-            return result;
+            byte[] bytes = new byte[sizeof(float)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return BitConverter.ToSingle(bytes, 0);
         }
 
         public double ReadDouble()
@@ -344,9 +281,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read double.");
             }
-            var result = BitConverter.ToDouble(Buffer, readPointer);
-            readPointer += sizeof(double);
-            return result;
+            byte[] bytes = new byte[sizeof(double)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return BitConverter.ToDouble(bytes, 0);
         }
 
         public Fixed ReadFixed()
@@ -355,9 +292,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read fixed.");
             }
-            var result = Fixed.Create(BitConverter.ToInt64(Buffer, readPointer), false);
-            readPointer += sizeof(long);
-            return result;
+            byte[] bytes = new byte[sizeof(long)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return Fixed.Create(BitConverter.ToInt64(bytes, 0), false);
         }
 
         public short ReadInt16()
@@ -366,9 +303,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read int16.");
             }
-            var result = BitConverter.ToInt16(Buffer, readPointer);
-            readPointer += sizeof(short);
-            return result;
+            byte[] bytes = new byte[sizeof(short)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return BitConverter.ToInt16(bytes, 0);
         }
 
         public int ReadInt32()
@@ -377,9 +314,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read int32.");
             }
-            var result = BitConverter.ToInt32(Buffer, readPointer);
-            readPointer += sizeof(int);
-            return result;
+            byte[] bytes = new byte[sizeof(int)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return BitConverter.ToInt32(bytes, 0);
         }
 
         public long ReadInt64()
@@ -388,9 +325,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read int64.");
             }
-            var result = BitConverter.ToInt64(Buffer, readPointer);
-            readPointer += sizeof(long);
-            return result;
+            byte[] bytes = new byte[sizeof(long)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return BitConverter.ToInt64(bytes, 0);
         }
 
         public ushort ReadUInt16()
@@ -399,9 +336,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read uint16.");
             }
-            var result = BitConverter.ToUInt16(Buffer, readPointer);
-            readPointer += sizeof(ushort);
-            return result;
+            byte[] bytes = new byte[sizeof(ushort)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return BitConverter.ToUInt16(bytes, 0);
         }
 
         public uint ReadUInt32()
@@ -410,9 +347,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read uint32.");
             }
-            var result = BitConverter.ToUInt32(Buffer, readPointer);
-            readPointer += sizeof(uint);
-            return result;
+            byte[] bytes = new byte[sizeof(uint)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return BitConverter.ToUInt32(bytes, 0);
         }
 
         public ulong ReadUInt64()
@@ -421,9 +358,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read uint64.");
             }
-            var result = BitConverter.ToUInt64(Buffer, readPointer);
-            readPointer += sizeof(ulong);
-            return result;
+            byte[] bytes = new byte[sizeof(ulong)];
+            _stream.Read(bytes, 0, bytes.Length);
+            return BitConverter.ToUInt64(bytes, 0);
         }
 
         public byte[] ReadByteArray()
@@ -432,12 +369,9 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read byte[].");
             }
-            ushort length = BitConverter.ToUInt16(Buffer, readPointer);
-            readPointer += sizeof(ushort);
-            byte[] result = new byte[length];
-            Array.Copy(Buffer, readPointer, result, 0, length);
-            readPointer += length;
-            return result;
+            byte[] bytes = new byte[ReadUInt16()];
+            _stream.Read(bytes, 0, bytes.Length);
+            return bytes;
         }
 
         public Packet ReadPacket()
@@ -479,140 +413,114 @@ namespace Engine.Serialization
 
         public bool PeekBoolean()
         {
-            if (!HasBoolean())
-            {
-                throw new PacketException("Cannot read boolean.");
-            }
-            return BitConverter.ToBoolean(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadBoolean();
+            _stream.Position = position;
+            return result;
         }
 
         public byte PeekByte()
         {
-            if (!HasByte())
-            {
-                throw new PacketException("Cannot read byte.");
-            }
-            return Buffer[readPointer];
-        }
-
-        public char PeekChar()
-        {
-            if (!HasChar())
-            {
-                throw new PacketException("Cannot read char.");
-            }
-            return BitConverter.ToChar(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadByte();
+            _stream.Position = position;
+            return result;
         }
 
         public float PeekSingle()
         {
-            if (!HasSingle())
-            {
-                throw new PacketException("Cannot read single.");
-            }
-            return BitConverter.ToSingle(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadSingle();
+            _stream.Position = position;
+            return result;
         }
 
         public double PeekDouble()
         {
-            if (!HasDouble())
-            {
-                throw new PacketException("Cannot read double.");
-            }
-            return BitConverter.ToDouble(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadDouble();
+            _stream.Position = position;
+            return result;
         }
 
         public Fixed PeekFixed()
         {
-            if (!HasFixed())
-            {
-                throw new PacketException("Cannot read fixed.");
-            }
-            return Fixed.Create(BitConverter.ToInt64(Buffer, readPointer), false);
+            long position = _stream.Position;
+            var result = ReadFixed();
+            _stream.Position = position;
+            return result;
         }
 
         public short PeekInt16()
         {
-            if (!HasInt16())
-            {
-                throw new PacketException("Cannot read int16.");
-            }
-            return BitConverter.ToInt16(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadInt16();
+            _stream.Position = position;
+            return result;
         }
 
         public int PeekInt32()
         {
-            if (!HasInt32())
-            {
-                throw new PacketException("Cannot read int32.");
-            }
-            return BitConverter.ToInt32(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadInt32();
+            _stream.Position = position;
+            return result;
         }
 
         public long PeekInt64()
         {
-            if (!HasInt64())
-            {
-                throw new PacketException("Cannot read int64.");
-            }
-            return BitConverter.ToInt64(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadInt64();
+            _stream.Position = position;
+            return result;
         }
 
         public ushort PeekUInt16()
         {
-            if (!HasUInt16())
-            {
-                throw new PacketException("Cannot read uint16.");
-            }
-            return BitConverter.ToUInt16(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadUInt16();
+            _stream.Position = position;
+            return result;
         }
 
         public uint PeekUInt32()
         {
-            if (!HasUInt32())
-            {
-                throw new PacketException("Cannot read uint32.");
-            }
-            return BitConverter.ToUInt32(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadUInt32();
+            _stream.Position = position;
+            return result;
         }
 
         public ulong PeekUInt64()
         {
-            if (!HasUInt64())
-            {
-                throw new PacketException("Cannot read uint64.");
-            }
-            return BitConverter.ToUInt64(Buffer, readPointer);
+            long position = _stream.Position;
+            var result = ReadUInt64();
+            _stream.Position = position;
+            return result;
         }
 
         public byte[] PeekByteArray()
         {
-            if (!HasByteArray())
-            {
-                throw new PacketException("Cannot read byte[].");
-            }
-            ushort length = BitConverter.ToUInt16(Buffer, readPointer);
-            byte[] result = new byte[length];
-            Array.Copy(Buffer, readPointer + sizeof(ushort), result, 0, length);
+            long position = _stream.Position;
+            var result = ReadByteArray();
+            _stream.Position = position;
             return result;
         }
 
         public Packet PeekPacket()
         {
-            if (!HasPacket())
-            {
-                throw new PacketException("Cannot read packet.");
-            }
-            return new Packet(PeekByteArray());
+            long position = _stream.Position;
+            var result = ReadPacket();
+            _stream.Position = position;
+            return result;
         }
 
         public string PeekString()
         {
-            if (!HasString())
-            {
-                throw new PacketException("Cannot read string.");
-            }
-            return Encoding.UTF8.GetString(PeekByteArray());
+            long position = _stream.Position;
+            var result = ReadString();
+            _stream.Position = position;
+            return result;
         }
 
         #endregion
@@ -621,17 +529,12 @@ namespace Engine.Serialization
 
         public bool HasBoolean()
         {
-            return Available >= 1;
+            return Available >= sizeof(bool);
         }
 
         public bool HasByte()
         {
-            return Available >= 1;
-        }
-
-        public bool HasChar()
-        {
-            return Available >= 1;
+            return Available >= sizeof(byte);
         }
 
         public bool HasSingle()

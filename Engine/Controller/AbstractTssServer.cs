@@ -139,11 +139,10 @@ namespace Engine.Controller
                 Hasher hasher = new Hasher();
                 Simulation.Hash(hasher);
 
-                Packet hashCheck = new Packet(1 + sizeof(long) + sizeof(long));
-                hashCheck.Write((byte)TssControllerMessage.HashCheck);
-                hashCheck.Write(Simulation.TrailingFrame);
-                hashCheck.Write(hasher.Value);
-                Session.Send(hashCheck);
+                Session.Send(new Packet()
+                    .Write((byte)TssControllerMessage.HashCheck)
+                    .Write(Simulation.TrailingFrame)
+                    .Write(hasher.Value));
             }
 
             base.Update(gameTime);
@@ -192,9 +191,10 @@ namespace Engine.Controller
             base.AddSteppable(steppable, frame);
 
             // Notify all players in the game about this.
-            Packet addedInfo = new Packet();
-            addedInfo.Write((byte)TssControllerMessage.AddGameObject);
-            addedInfo.Write(frame);
+            Packet addedInfo = new Packet()
+                .Write((byte)TssControllerMessage.AddGameObject)
+                .Write(frame);
+            // Run it through the packetizer, because we don't know the actual type.
             Packetizer.Packetize(steppable, addedInfo);
             Session.Send(addedInfo);
 
@@ -213,11 +213,10 @@ namespace Engine.Controller
             base.RemoveSteppable(steppableUid, frame);
 
             // Notify all players in the game about this.
-            Packet removedInfo = new Packet(1 + sizeof(long) + sizeof(long));
-            removedInfo.Write((byte)TssControllerMessage.RemoveGameObject);
-            removedInfo.Write(frame);
-            removedInfo.Write(steppableUid);
-            Session.Send(removedInfo);
+            Session.Send(new Packet()
+                .Write((byte)TssControllerMessage.RemoveGameObject)
+                .Write(frame)
+                .Write(steppableUid));
         }
 
         /// <summary>
@@ -235,12 +234,10 @@ namespace Engine.Controller
                 // As a server we resend all commands.
                 Send(command);
             }
-#if DEBUG
             else
             {
                 Console.WriteLine("Server: client command too old " + command.Frame + "<" + Simulation.TrailingFrame);
             }
-#endif
         }
 
         #endregion
@@ -264,11 +261,10 @@ namespace Engine.Controller
                     // Client re-synchronizing.
                     {
                         long clientFrame = args.Data.ReadInt64();
-                        Packet synchronizeResponse = new Packet(1 + sizeof(long) + sizeof(long));
-                        synchronizeResponse.Write((byte)TssControllerMessage.Synchronize);
-                        synchronizeResponse.Write(clientFrame);
-                        synchronizeResponse.Write(Simulation.CurrentFrame);
-                        Session.SendTo(args.Player, synchronizeResponse);
+                        Session.SendTo(args.Player, new Packet()
+                            .Write((byte)TssControllerMessage.Synchronize)
+                            .Write(clientFrame)
+                            .Write(Simulation.CurrentFrame));
                     }
                     break;
 
@@ -276,10 +272,9 @@ namespace Engine.Controller
                     // Client needs game state.
                     if ((DateTime.Now - lastGameStateSentTime[args.Player.Number]).TotalMilliseconds > GameStateResendInterval) {
                         lastGameStateSentTime[args.Player.Number] = DateTime.Now;
-                        Packet gamestateResponse = new Packet();
-                        gamestateResponse.Write((byte)TssControllerMessage.GameStateResponse);
-                        Simulation.Packetize(gamestateResponse);
-                        Session.SendTo(args.Player, gamestateResponse);
+                        Session.SendTo(args.Player, new Packet()
+                            .Write((byte)TssControllerMessage.GameStateResponse)
+                            .Write(Simulation));
                     }
                     break;
 

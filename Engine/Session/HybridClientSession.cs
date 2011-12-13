@@ -131,13 +131,13 @@ namespace Engine.Session
                 {
                     // Connection failed, disconnect.
                     logger.TraceException("Socket connection died.", ex);
-                    Reset(true);
+                    Reset();
                 }
                 catch (PacketException ex)
                 {
                     // Received invalid packet from server.
                     logger.WarnException("Invalid packet received from server.", ex);
-                    Reset(true);
+                    Reset();
                 }
             }
 
@@ -155,7 +155,7 @@ namespace Engine.Session
         {
             // Send as a multicast / broadcast.
             logger.Trace("Sending ping to search for open games.");
-            udp.Send(new Packet(1).Write((byte)SessionMessage.GameInfoRequest), DefaultMulticastEndpoint);
+            udp.Send(new Packet().Write((byte)SessionMessage.GameInfoRequest), DefaultMulticastEndpoint);
         }
 
         /// <summary>
@@ -188,7 +188,7 @@ namespace Engine.Session
                 throw new InvalidOperationException("Not in a session.");
             }
             Send(SessionMessage.Leave);
-            Reset(true);
+            Reset();
         }
 
         #endregion
@@ -215,7 +215,7 @@ namespace Engine.Session
             catch (IOException ex)
             {
                 logger.TraceException("Socket connection died.", ex);
-                Reset(true);
+                Reset();
             }
         }
 
@@ -242,7 +242,7 @@ namespace Engine.Session
             catch (Exception)
             {
                 // Connection failed.
-                Reset(true);
+                Reset();
             }
         }
 
@@ -262,7 +262,7 @@ namespace Engine.Session
             SessionMessage type = (SessionMessage)args.Data.ReadByte();
 
             // Get additional data.
-            Packet data = args.Data.HasPacket() ? args.Data.ReadPacket() : null;
+            Packet packet = args.Data.HasPacket() ? args.Data.ReadPacket() : null;
 
             switch (type)
             {
@@ -273,13 +273,13 @@ namespace Engine.Session
                         try
                         {
                             // Get number of max players.
-                            int maxPlayers = data.ReadInt32();
+                            int maxPlayers = packet.ReadInt32();
 
                             // Get number of current players.
-                            int numPlayers = data.ReadInt32();
+                            int numPlayers = packet.ReadInt32();
 
                             // Get additional data.
-                            Packet customData = data.ReadPacket();
+                            Packet customData = packet.ReadPacket();
 
                             logger.Trace("Got game info from host '{0}': {1}/{2} players, data of length {3}.",
                                 args.RemoteEndPoint, numPlayers, maxPlayers, customData.Length);
@@ -291,6 +291,21 @@ namespace Engine.Session
                         {
                             // Bad data.
                             logger.WarnException("Invalid GameInfoResponse.", ex);
+                        }
+                    }
+                    break;
+
+                case SessionMessage.Data:
+                    // Custom data, just forward it if we're in a session.
+                    if (ConnectionState == ClientState.Connected)
+                    {
+                        try
+                        {
+                            OnData(new ClientDataEventArgs(packet, args.RemoteEndPoint == _tcp.Client.RemoteEndPoint));
+                        }
+                        catch (PacketException ex)
+                        {
+                            logger.WarnException("Invalid Data.", ex);
                         }
                     }
                     break;
@@ -380,7 +395,7 @@ namespace Engine.Session
                         catch (PacketException ex)
                         {
                             logger.WarnException("Invalid JoinResponse.", ex);
-                            Reset(true);
+                            Reset();
                         }
                     }
                     break;
@@ -416,7 +431,7 @@ namespace Engine.Session
                         catch (PacketException ex)
                         {
                             logger.WarnException("Invalid PlayerJoined.", ex);
-                            Reset(true);
+                            Reset();
                         }
                     }
                     break;
@@ -439,7 +454,7 @@ namespace Engine.Session
                             if (playerNumber == _localPlayerNumber)
                             {
                                 // We were removed from the game.
-                                Reset(true);
+                                Reset();
                             }
                             else
                             {
@@ -454,7 +469,7 @@ namespace Engine.Session
                         catch (PacketException ex)
                         {
                             logger.WarnException("Invalid PlayerLeft.", ex);
-                            Reset(true);
+                            Reset();
                         }
                     }
                     break;
@@ -465,12 +480,11 @@ namespace Engine.Session
                     {
                         try
                         {
-                            OnData(new ClientDataEventArgs(packet));
+                            OnData(new ClientDataEventArgs(packet, true));
                         }
                         catch (PacketException ex)
                         {
                             logger.WarnException("Invalid Data.", ex);
-                            Reset(true);
                         }
                     }
                     break;
@@ -489,7 +503,7 @@ namespace Engine.Session
         /// <summary>
         /// Resets the connection to its unconnected, initial state.
         /// </summary>
-        private void Reset(bool fireEvent = false)
+        private void Reset()
         {
             if (ConnectionState != ClientState.Unconnected)
             {
@@ -515,10 +529,7 @@ namespace Engine.Session
 
                 ConnectionState = ClientState.Unconnected;
 
-                if (fireEvent)
-                {
-                    OnDisconnected(EventArgs.Empty);
-                }
+                OnDisconnected(EventArgs.Empty);
             }
         }
 

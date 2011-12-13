@@ -5,7 +5,7 @@ using Engine.Serialization;
 namespace Engine.Session
 {
     /// <summary>
-    /// Event args used for <see cref="Engine.Session.ISession#PlayerJoined"/> and
+    /// Used for <see cref="Engine.Session.ISession#PlayerJoined"/> and
     /// <see cref="Engine.Session.ISession#PlayerLeft"/>.
     /// </summary>
     public class PlayerEventArgs<TPlayerData, TPacketizerContext> : EventArgs
@@ -23,6 +23,9 @@ namespace Engine.Session
         }
     }
 
+    /// <summary>
+    /// Sued for <see cref="Engine.Session.ISession#Data"/>.
+    /// </summary>
     public interface SessionDataEventArgs
     {
         /// <summary>
@@ -32,7 +35,7 @@ namespace Engine.Session
     }
 
     /// <summary>
-    /// Event args used for a server's data event.
+    /// Used for a server's <c>Data</c> event.
     /// </summary>
     public class ServerDataEventArgs<TPlayerData, TPacketizerContext>
         : PlayerEventArgs<TPlayerData, TPacketizerContext>, SessionDataEventArgs
@@ -52,7 +55,7 @@ namespace Engine.Session
     }
 
     /// <summary>
-    /// Event args used for a client's data event.
+    /// Used for a client's <c>Data</c> event.
     /// </summary>
     public class ClientDataEventArgs : EventArgs, SessionDataEventArgs
     {
@@ -61,15 +64,21 @@ namespace Engine.Session
         /// </summary>
         public Packet Data { get; private set; }
 
-        public ClientDataEventArgs(Packet data)
+        /// <summary>
+        /// Whether this is an authoritative message (came from the server)
+        /// or not.
+        /// </summary>
+        public bool IsAuthoritative { get; private set; }
+
+        public ClientDataEventArgs(Packet data, bool isAuthoritative)
         {
             this.Data = data;
+            this.IsAuthoritative = isAuthoritative;
         }
     }
 
     /// <summary>
-    /// Event args used to notifiy clients of info received from a server
-    /// about a running session.
+    /// Used for <see cref="Engine.Session.IClientSession#GameInfoReceived"/>.
     /// </summary>
     public class GameInfoReceivedEventArgs : EventArgs
     {
@@ -103,7 +112,7 @@ namespace Engine.Session
     }
 
     /// <summary>
-    /// Event args for join responses as dispatched on clients.
+    /// Used for <see cref="Engine.Session.IClientSession#JoinResponse"/>.
     /// </summary>
     public class JoinResponseEventArgs : EventArgs
     {
@@ -119,7 +128,7 @@ namespace Engine.Session
     }
 
     /// <summary>
-    /// Event args for handling join or info requests on servers.
+    /// Used for <see cref="Engine.Session.IServerSession#GameInfoRequested"/>.
     /// </summary>
     public class RequestEventArgs : EventArgs
     {
@@ -135,7 +144,7 @@ namespace Engine.Session
     }
 
     /// <summary>
-    /// Event args for handling join or info requests on servers.
+    /// Used for <see cref="Engine.Session.IServerSession#JoinRequested"/>.
     /// </summary>
     public class JoinRequestEventArgs<TPlayerData, TPacketizerContext> : RequestEventArgs
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
@@ -161,6 +170,5 @@ namespace Engine.Session
             this.Player = player;
             this.PlayerData = playerData;
         }
-
     }
 }

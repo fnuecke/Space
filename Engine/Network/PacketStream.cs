@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net.Sockets;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.Network
 {
@@ -10,12 +11,38 @@ namespace Engine.Network
     /// </summary>
     public class PacketStream
     {
+        #region Constants
+
+        /// <summary>
+        /// We'll just use the same key engine globally, as this isn't meant
+        /// as a waterproof security anyways. Just make it easier to stay
+        /// honest, so to say ;)
+        /// </summary>
+        private static readonly byte[] key = new byte[] { 58, 202, 84, 179, 32, 50, 8, 252, 238, 91, 233, 209, 25, 203, 183, 237, 33, 159, 103, 243, 93, 46, 67, 2, 169, 100, 96, 33, 196, 195, 244, 113 };
+
+        /// <summary>
+        /// Globally used initial vector.
+        /// </summary>
+        private static readonly byte[] vector = new byte[] { 112, 155, 187, 151, 110, 190, 166, 5, 137, 147, 104, 79, 199, 129, 24, 187 };
+
+        /// <summary>
+        /// Cryptography instance we'll use for mangling our packets.
+        /// </summary>
+        private static readonly SimpleCrypto crypto = new SimpleCrypto(key, vector);
+
+        /// <summary>
+        /// Bit set to mark a message as compressed.
+        /// </summary>
+        private const uint CompressedMask = 1u << 31;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
         /// Number of bytes available from our buffer.
         /// </summary>
-        private int Available { get { return bufferDataLength - bufferReadPosition; } }
+        private int Available { get { return _bufferDataLength - _bufferReadPosition; } }
 
         #endregion
 
@@ -24,28 +51,28 @@ namespace Engine.Network
         /// <summary>
         /// The underlying network stream being used.
         /// </summary>
-        private NetworkStream stream;
+        private NetworkStream _stream;
 
         /// <summary>
         /// Buffer for reading from the stream.
         /// </summary>
-        private byte[] buffer = new byte[512];
+        private byte[] _buffer = new byte[512];
 
         /// <summary>
         /// The actual number of valid bytes in our buffer.
         /// </summary>
-        private int bufferDataLength = 0;
+        private int _bufferDataLength;
 
         /// <summary>
         /// The position in our buffer we're currently reading from.
         /// </summary>
-        private int bufferReadPosition = 0;
+        private int _bufferReadPosition;
 
         /// <summary>
         /// Used to store any received data. This is used to build
         /// a single message (over and over).
         /// </summary>
-        private MemoryStream messageStream = new MemoryStream();
+        private MemoryStream _messageStream = new MemoryStream();
 
         /// <summary>
         /// Used to remember the length for the message we're currently
@@ -53,7 +80,12 @@ namespace Engine.Network
         /// all the time (when continuing to read a partially received
         /// message).
         /// </summary>
-        private int messageLength = 0;
+        private int _messageLength;
+
+        /// <summary>
+        /// Remember if the message we're currently reading is compressed or not.
+        /// </summary>
+        private bool _isCompressed;
 
         #endregion
 
@@ -61,13 +93,14 @@ namespace Engine.Network
 
         public PacketStream(NetworkStream stream)
         {
-            this.stream = stream;
+            this._stream = stream;
         }
 
         public void Dispose()
         {
-            messageStream.Dispose();
-            stream.Dispose();
+            _messageStream.Dispose();
+
+            GC.SuppressFinalize(this);
         }
 
         #endregion
@@ -83,7 +116,7 @@ namespace Engine.Network
         public Packet Read()
         {
             // Read until we either find a complete packet, or cannot read any more data.
-            while (Available > 0 || stream.DataAvailable)
+            while (Available > 0 || _stream.DataAvailable)
             {
                 // Parse what's left in our buffer. If we find a packet, we return it.
                 Packet packet = Parse();
@@ -93,17 +126,17 @@ namespace Engine.Network
                 }
                 // Else we're guaranteed to be at the end of our buffer, and it wasn't
                 // enough, so we get some more.
-                if (stream.DataAvailable)
+                if (_stream.DataAvailable)
                 {
                     // Get what we can fit in our buffer.
-                    bufferDataLength = stream.Read(buffer, 0, buffer.Length);
-                    if (bufferDataLength <= 0)
+                    _bufferDataLength = _stream.Read(_buffer, 0, _buffer.Length);
+                    if (_bufferDataLength <= 0)
                     {
                         // Connection died (reading 0 bytes means the connection is gone).
                         throw new IOException();
                     }
                     // Reset our read position.
-                    bufferReadPosition = 0;
+                    _bufferReadPosition = 0;
                 }
             }
             // Got here means we failed.
@@ -120,8 +153,33 @@ namespace Engine.Network
         {
             if (packet.Length > 0)
             {
-                stream.Write(BitConverter.GetBytes(packet.Length), 0, sizeof(int));
-                stream.Write(packet.Buffer, 0, packet.Length);
+                byte[] data = packet.GetBuffer();
+
+                // If packets are large, try compressing them, see if it helps.
+                // Only start after a certain size. General overhead for gzip
+                // seems to be around 130byte, so make sure we're well beyond that.
+                bool flag = false;
+                if (data.Length > 200)
+                {
+                    byte[] compressed = SimpleCompression.Compress(data);
+                    if (compressed.Length < data.Length)
+                    {
+                        // OK, worth it, it's smaller than before.
+                        flag = true;
+                        data = compressed;
+                    }
+                }
+
+                // Encrypt the message.
+                data = crypto.Encrypt(data);
+
+                if ((data.Length & CompressedMask) > 0)
+                {
+                    throw new ArgumentException("Packet too long.", "packet");
+                }
+
+                _stream.Write(BitConverter.GetBytes((uint)data.Length | (flag ? CompressedMask : 0u)), 0, sizeof(uint));
+                _stream.Write(data, 0, data.Length);
             }
         }
 
@@ -134,28 +192,31 @@ namespace Engine.Network
         /// </summary>
         private Packet Parse()
         {
-            if (messageLength <= 0)
+            if (_messageLength <= 0)
             {
                 // Message size unknown. Figure out how much more we need to read, and
                 // read at most that much.
-                int remainingSizeBytes = sizeof(int) - (int)messageStream.Position;
+                int remainingSizeBytes = sizeof(int) - (int)_messageStream.Position;
                 int sizeBytesToRead = System.Math.Min(Available, remainingSizeBytes);
-                messageStream.Write(buffer, bufferReadPosition, sizeBytesToRead);
-                bufferReadPosition += sizeBytesToRead;
+                _messageStream.Write(_buffer, _bufferReadPosition, sizeBytesToRead);
+                _bufferReadPosition += sizeBytesToRead;
 
                 // Do we have enough data to figure out the size now?
-                if (messageStream.Position == sizeof(int))
+                if (_messageStream.Position == sizeof(int))
                 {
-                    // Yes. Get the message length and read the remainder.
-                    messageLength = BitConverter.ToInt32(messageStream.GetBuffer(), 0);
-                    if (messageLength < 0)
+                    // Yes. Get the message length, compressed flag and read the remainder.
+                    uint info = BitConverter.ToUInt32(_messageStream.GetBuffer(), 0);
+                    _messageLength = (int)(info & ~CompressedMask);
+                    _isCompressed = (info & CompressedMask) > 0;
+
+                    if (_messageLength < 0)
                     {
                         // Invalid data, consider this connection broken.
                         throw new IOException();
                     }
                     // Reset so the rest is just the data.
-                    messageStream.SetLength(0);
-                    messageStream.Position = 0;
+                    _messageStream.SetLength(0);
+                    _messageStream.Position = 0;
 
                     // Read up to the end of this message.
                     return Parse();
@@ -165,20 +226,28 @@ namespace Engine.Network
             {
                 // We already know our current message size. See if we can complete the
                 // message.
-                int remainingBodyBytes = messageLength - (int)messageStream.Position;
+                int remainingBodyBytes = _messageLength - (int)_messageStream.Position;
                 int bodyBytesToRead = System.Math.Min(Available, remainingBodyBytes);
-                messageStream.Write(buffer, bufferReadPosition, bodyBytesToRead);
-                bufferReadPosition += bodyBytesToRead;
+                _messageStream.Write(_buffer, _bufferReadPosition, bodyBytesToRead);
+                _bufferReadPosition += bodyBytesToRead;
 
                 // We done yet?
-                if (messageStream.Position == messageLength)
+                if (_messageStream.Position == _messageLength)
                 {
-                    // Yep. Wrap up a packet, reset and return it.
-                    Packet packet = new Packet(messageStream.ToArray());
+                    // Yep. Decrypt, decompress as necessary.
+                    byte[] data = crypto.Decrypt(_messageStream.ToArray());
+                    if (_isCompressed)
+                    {
+                        data = SimpleCompression.Decompress(data);
+                    }
+
+                    // Wrap up a packet, reset and return it.
+                    Packet packet = new Packet(data);
+
                     // Reset for the next message.
-                    messageStream.SetLength(0);
-                    messageStream.Position = 0;
-                    messageLength = 0;
+                    _messageStream.SetLength(0);
+                    _messageStream.Position = 0;
+                    _messageLength = 0;
                     return packet;
                 }
             }
