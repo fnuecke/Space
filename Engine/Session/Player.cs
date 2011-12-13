@@ -21,11 +21,6 @@ namespace Engine.Session
         public string Name { get; private set; }
 
         /// <summary>
-        /// The average ping to this player.
-        /// </summary>
-        public int Ping { get { return pingGetter(); } }
-
-        /// <summary>
         /// Some arbitrary data associated with the player.
         /// </summary>
         public TPlayerData Data { get; set; }
@@ -35,12 +30,11 @@ namespace Engine.Session
         /// </summary>
         private Func<int> pingGetter;
 
-        internal Player(int number, string name, TPlayerData data, Func<int> pingGetter)
+        internal Player(int number, string name, TPlayerData data)
         {
             this.Number = number;
             this.Name = name;
             this.Data = data;
-            this.pingGetter = pingGetter;
         }
 
         public override bool Equals(object obj)

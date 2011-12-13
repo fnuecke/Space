@@ -81,6 +81,7 @@
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -126,6 +127,10 @@
     <Compile Include="Input\KeyModifier.cs" />
     <Compile Include="Input\MouseInputEventArgs.cs" />
     <Compile Include="Input\MouseInputManager.cs" />
+    <Compile Include="Network\AbstractProtocol.cs" />
+    <Compile Include="Network\PacketStream.cs" />
+    <Compile Include="Network\TcpProtocol.cs" />
+    <Compile Include="Network\UdpProtocol.cs" />
     <Compile Include="Network\EventArgs.cs" />
     <Compile Include="Network\IProtocolInfo.cs" />
     <Compile Include="Network\ProtocolInfo.cs" />
@@ -134,8 +139,11 @@
     <Compile Include="Serialization\IPacketizerContext.cs" />
     <Compile Include="Serialization\PacketException.cs" />
     <Compile Include="Serialization\Packetizer.cs" />
+    <Compile Include="Session\AbstractHybridSession.cs" />
     <Compile Include="Session\AbstractSession.cs" />
     <Compile Include="Session\ClientSession.cs" />
+    <Compile Include="Session\HybridClientSession.cs" />
+    <Compile Include="Session\HybridServerSession.cs" />
     <Compile Include="Session\SessionEventArgs.cs" />
     <Compile Include="Session\IClientSession.cs" />
     <Compile Include="Network\IProtocol.cs" />
@@ -144,7 +152,6 @@
     <Compile Include="Session\Player.cs" />
     <Compile Include="Session\ServerSession.cs" />
     <Compile Include="Serialization\Packet.cs" />
-    <Compile Include="Network\UdpProtocol.cs" />
     <Compile Include="Simulation\AbstractState.cs" />
     <Compile Include="Simulation\AbstractSteppable.cs" />
     <Compile Include="Simulation\IPhysicsEnabledState.cs" />

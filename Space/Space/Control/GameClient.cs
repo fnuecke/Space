@@ -14,7 +14,7 @@ namespace Space.Control
         public IClientSession<PlayerInfo, PacketizerContext> Session { get; private set; }
         public ClientController Controller { get; private set; }
 
-        UdpProtocol protocol;
+        DeprecatedUdpProtocol protocol;
         private InputCommandEmitter emitter;
 
         SpriteFont font;
@@ -22,7 +22,7 @@ namespace Space.Control
         public GameClient(Game game)
             : base(game)
         {
-            protocol = new UdpProtocol(50101, Encoding.ASCII.GetBytes("Space"));
+            protocol = new DeprecatedUdpProtocol(50101, Encoding.ASCII.GetBytes("Space"));
             Session = new ClientSession<PlayerInfo, PacketizerContext>(game, protocol);
             Controller = new ClientController(game, Session);
             Controller.UpdateOrder = 10;

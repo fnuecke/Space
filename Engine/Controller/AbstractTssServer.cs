@@ -36,6 +36,12 @@ namespace Engine.Controller
         /// </summary>
         private const int HashInterval = 5000;
 
+        /// <summary>
+        /// The interval in milliseconds after which we allow resending the game state to
+        /// a specific client.
+        /// </summary>
+        private const int GameStateResendInterval = 5000;
+
         #endregion
 
         #region Fields
@@ -49,6 +55,12 @@ namespace Engine.Controller
         /// Last time we sent a hash check to our clients.
         /// </summary>
         private long lastHashTime;
+
+        /// <summary>
+        /// The last time we sent a full snapshot of the gamestate to certain
+        /// player. We use this to avoid utterly overloading the network.
+        /// </summary>
+        private DateTime[] lastGameStateSentTime;
 
         #endregion
 
@@ -68,6 +80,7 @@ namespace Engine.Controller
                 (uint)System.Math.Ceiling(150 / game.TargetElapsedTime.TotalMilliseconds)
             })
         {
+            lastGameStateSentTime = new DateTime[Session.MaxPlayers];
         }
 
         /// <summary>
@@ -218,6 +231,12 @@ namespace Engine.Controller
                 // As a server we resend all commands.
                 SendToEveryone(command, priority);
             }
+#if DEBUG
+            else
+            {
+                Console.WriteLine("Server: client command too old " + command.Frame + "<" + Simulation.TrailingFrame);
+            }
+#endif
         }
 
         #endregion
@@ -258,7 +277,8 @@ namespace Engine.Controller
 
                 case TssUdpControllerMessage.GameStateRequest:
                     // Client needs game state.
-                    {
+                    if ((DateTime.Now - lastGameStateSentTime[args.Player.Number]).TotalMilliseconds > GameStateResendInterval) {
+                        lastGameStateSentTime[args.Player.Number] = DateTime.Now;
                         Packet gamestateResponse = new Packet();
                         gamestateResponse.Write((byte)TssUdpControllerMessage.GameStateResponse);
                         Simulation.Packetize(gamestateResponse);

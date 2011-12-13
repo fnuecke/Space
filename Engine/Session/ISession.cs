@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 namespace Engine.Session
 {
     /// <summary>
+    /// <summary>
     /// Common interface for sessions of either server or client type.
     /// </summary>
     public interface ISession<TPlayerData, TPacketizerContext> : IGameComponent, IDisposable

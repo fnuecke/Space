@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using Engine.Network;
 using Engine.Serialization;
 
 namespace Engine.Session
@@ -37,29 +36,15 @@ namespace Engine.Session
         public Packet Data { get; private set; }
 
         /// <summary>
-        /// This data was sent by the server (also means <c>Player == null</c>).
+        /// Whether this data was signed by the server.
         /// </summary>
-        public bool IsFromServer { get; private set; }
+        public bool IsAuthoritative { get; private set; }
 
-        /// <summary>
-        /// Inner event args that triggered this one.
-        /// </summary>
-        private ProtocolDataEventArgs innerArgs;
-
-        public PlayerDataEventArgs(Player<TPlayerData, TPacketizerContext> player, ProtocolDataEventArgs innerArgs, Packet data)
+        public PlayerDataEventArgs(Player<TPlayerData, TPacketizerContext> player, Packet data, bool isFromServer)
             : base(player)
         {
             this.Data = data;
-            this.innerArgs = innerArgs;
-            this.IsFromServer = (player == null);
-        }
-
-        /// <summary>
-        /// Called by listeners to signal the event was handled.
-        /// </summary>
-        public void Consume()
-        {
-            innerArgs.Consume();
+            this.IsAuthoritative = isFromServer;
         }
     }
 

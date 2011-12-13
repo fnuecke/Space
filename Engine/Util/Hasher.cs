@@ -71,20 +71,23 @@ namespace Engine.Util
         /// gets computed.
         /// </summary>
         /// <param name="value">the data to add.</param>
-        public void Put(byte value)
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(byte value)
         {
             unchecked
             {
                 hash = (hash ^ value) * p;
             }
+            return this;
         }
 
         /// <summary>
-        /// Put a byte arry to the data of which the hash
+        /// Put a byte array to the data of which the hash
         /// gets computed.
         /// </summary>
         /// <param name="value">the data to add.</param>
-        public void Put(byte[] value)
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(byte[] value)
         {
             if (value == null)
             {
@@ -94,6 +97,7 @@ namespace Engine.Util
             {
                 Put(value[i]);
             }
+            return this;
         }
     }
 }

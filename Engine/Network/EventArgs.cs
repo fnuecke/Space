@@ -1,27 +1,28 @@
 ﻿using System;
 using System.Net;
+using System.Net.Sockets;
 using Engine.Serialization;
 
 namespace Engine.Network
 {
     /// <summary>
-    /// Event args used for <see cref="Engine.Network.IProtocol#MessageTimeout"/>.
+    /// Event args used for simple protocol events.
     /// </summary>
     public class ProtocolEventArgs : EventArgs
     {
         /// <summary>
         /// The remote end point the event applies to.
         /// </summary>
-        public IPEndPoint Remote { get; private set; }
+        public IPEndPoint RemoteEndPoint { get; private set; }
 
-        public ProtocolEventArgs(IPEndPoint remote)
+        public ProtocolEventArgs(IPEndPoint endPoint)
         {
-            this.Remote = remote;
+            this.RemoteEndPoint = endPoint;
         }
     }
 
     /// <summary>
-    /// Event args used for <see cref="Engine.Network.IProtocol#Data"/>.
+    /// Event args used for protocol events including data.
     /// </summary>
     public class ProtocolDataEventArgs : ProtocolEventArgs
     {
@@ -30,23 +31,37 @@ namespace Engine.Network
         /// </summary>
         public Packet Data { get; private set; }
 
-        /// <summary>
-        /// Tells whether the event was handled by a listener.
-        /// </summary>
-        public bool WasConsumed { get; private set; }
-
-        public ProtocolDataEventArgs(IPEndPoint remote, Packet data)
-            : base(remote)
+        public ProtocolDataEventArgs(IPEndPoint endPoint, Packet data)
+            : base(endPoint)
         {
             this.Data = data;
         }
+    }
+
+    /// <summary>
+    /// Event args used for the TCP protocol's connected events.
+    /// </summary>
+    public class TcpProtocolConnectEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Whether the attempt to connect was successful or not.
+        /// </summary>
+        public bool Success { get; private set; }
 
         /// <summary>
-        /// Called by listeners to signal the event was handled.
+        /// If the connection failed, this is the reason for it.
         /// </summary>
-        public void Consume()
+        public SocketException Exception { get; private set; }
+
+        public TcpProtocolConnectEventArgs(bool success)
         {
-            WasConsumed = true;
+            this.Success = success;
+        }
+
+        public TcpProtocolConnectEventArgs(bool success, SocketException exception)
+            : this(success)
+        {
+            this.Exception = exception;
         }
     }
 }

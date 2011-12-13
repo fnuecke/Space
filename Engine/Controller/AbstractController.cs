@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Commands;
-using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Util;
@@ -135,13 +134,13 @@ namespace Engine.Controller
             // ignore the command -> avoid clients injecting commands for
             // other clients. Also don't handle commands for players we don't
             // know (null check).
-            if (!args.IsFromServer && (args.Player == null || !args.Player.Equals(command.Player)))
+            if (!args.IsAuthoritative && (args.Player == null || !args.Player.Equals(command.Player)))
             {
                 return false;
             }
 
             // Flag it accordingly to where it came from.
-            command.IsAuthoritative = args.IsFromServer;
+            command.IsAuthoritative = args.IsAuthoritative;
 
             return true;
         }

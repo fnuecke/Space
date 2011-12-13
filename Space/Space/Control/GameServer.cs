@@ -10,7 +10,7 @@ namespace Space.Control
 {
     public class GameServer : DrawableGameComponent
     {
-        UdpProtocol protocol;
+        DeprecatedUdpProtocol protocol;
         IServerSession<PlayerInfo, PacketizerContext> session;
         internal ServerController Controller { get; private set; }
         SpriteFont font;
@@ -18,7 +18,7 @@ namespace Space.Control
         public GameServer(Game game)
             : base(game)
         {
-            protocol = new UdpProtocol(50100, Encoding.ASCII.GetBytes("Space"));
+            protocol = new DeprecatedUdpProtocol(50100, Encoding.ASCII.GetBytes("Space"));
             session = new ServerSession<PlayerInfo, PacketizerContext>(game, protocol, 8);
             Controller = new ServerController(game, session, 10, 0);
             Controller.UpdateOrder = 10;

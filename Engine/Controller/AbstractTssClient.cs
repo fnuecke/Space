@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Commands;
-using Engine.Network;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -193,12 +192,18 @@ namespace Engine.Controller
         /// <param name="priority">the priority with which to deliver the packet.</param>
         protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, PacketPriority priority)
         {
-            base.Apply(command, priority);
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
             // own, tentative commands.
             if (!command.IsAuthoritative && command.Player.Equals(Session.LocalPlayer))
             {
+                // If we're waiting for a snapshot, don't continue spamming commands for
+                // the very frame we're stuck in.
+                if (Simulation.WaitingForSynchronization)
+                {
+                    return;
+                }
+
                 // TODO somehow sending commands to others in the game as well (to give
                 // them a heads-up, with the intent to reduce lag) seems to cause some
                 // desyncs. Until we figure out why, let's just use a more centralized
@@ -206,6 +211,13 @@ namespace Engine.Controller
                 //SendToEveryone(command, priority);
                 SendToHost(command, priority);
             }
+            else if (Simulation.WaitingForSynchronization && command.Frame <= Simulation.TrailingFrame)
+            {
+                // We're waiting for a sync, and our trailing frame wasn't enough, so
+                // we just skip any commands whatsoever that are from before it.
+                return;
+            }
+            base.Apply(command, priority);
         }
 
         #endregion
@@ -258,7 +270,7 @@ namespace Engine.Controller
                     // Answer to a synchronization request.
                     // Only accept these when they come from the server, and disregard if
                     // we're waiting for a snapshot of the simulation.
-                    if (args.IsFromServer && !Simulation.WaitingForSynchronization)
+                    if (args.IsAuthoritative && !Simulation.WaitingForSynchronization)
                     {
                         // This calculation follows algorithm described here:
                         // http://www.mine-control.com/zack/timesync/timesync.html
@@ -286,7 +298,7 @@ namespace Engine.Controller
 
                 case TssUdpControllerMessage.HashCheck:
                     // Only accept these when they come from the server.
-                    if (args.IsFromServer)
+                    if (args.IsAuthoritative)
                     {
                         hashFrame = args.Data.ReadInt64();
                         hashValue = args.Data.ReadInt32();
@@ -298,7 +310,7 @@ namespace Engine.Controller
                     // Got a simulation snap shot (normally after requesting it due to
                     // our simulation going out of scope for an older event).
                     // Only accept these when they come from the server.
-                    if (args.IsFromServer)
+                    if (args.IsAuthoritative)
                     {
                         Simulation.Depacketize(args.Data, Packetizer.Context);
                         return true;
@@ -307,7 +319,7 @@ namespace Engine.Controller
 
                 case TssUdpControllerMessage.AddGameObject:
                     // Only accept these when they come from the server.
-                    if (args.IsFromServer)
+                    if (args.IsAuthoritative)
                     {
                         long addFrame = args.Data.ReadInt64();
                         TSteppable steppable = Packetizer.Depacketize<TSteppable>(args.Data);
@@ -318,7 +330,7 @@ namespace Engine.Controller
 
                 case TssUdpControllerMessage.RemoveGameObject:
                     // Only accept these when they come from the server.
-                    if (args.IsFromServer)
+                    if (args.IsAuthoritative)
                     {
                         long removeFrame = args.Data.ReadInt64();
                         long steppableUid = args.Data.ReadInt64();

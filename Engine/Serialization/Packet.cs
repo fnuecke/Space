@@ -43,7 +43,7 @@ namespace Engine.Serialization
         /// Create a new packet of default buffer length (512).
         /// </summary>
         public Packet()
-            : this(512)
+            : this(64)
         {
         }
 
@@ -63,7 +63,7 @@ namespace Engine.Serialization
         /// <param name="data"></param>
         public Packet(byte[] data)
         {
-            Buffer = data;
+            Buffer = (data == null) ? new byte[0] : data;
             Length = data.Length;
             readPointer = 0;
         }
@@ -119,111 +119,124 @@ namespace Engine.Serialization
 
         #region Writing
 
-        public void Write(bool data)
+        public Packet Write(bool data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(byte data)
+        public Packet Write(byte data)
         {
             EnsureCapacity(Length + 1);
             Buffer[Length] = data;
             Length++;
+            return this;
         }
 
-        public void Write(char data)
+        public Packet Write(char data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(double data)
+        public Packet Write(double data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(Fixed data)
+        public Packet Write(Fixed data)
         {
             byte[] bytes = BitConverter.GetBytes(data.RawValue);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(float data)
+        public Packet Write(float data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(int data)
+        public Packet Write(int data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(long data)
+        public Packet Write(long data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(short data)
+        public Packet Write(short data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(uint data)
+        public Packet Write(uint data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(ushort data)
+        public Packet Write(ushort data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(ulong data)
+        public Packet Write(ulong data)
         {
             byte[] bytes = BitConverter.GetBytes(data);
             EnsureCapacity(Length + bytes.Length);
             bytes.CopyTo(Buffer, Length);
             Length += bytes.Length;
+            return this;
         }
 
-        public void Write(byte[] data)
+        public Packet Write(byte[] data)
         {
             if (data.Length > ushort.MaxValue)
             {
                 throw new ArgumentException("Data is too long.", "data");
             }
             Write(data, (ushort)data.Length);
+            return this;
         }
 
-        public void Write(byte[] data, ushort length)
+        public Packet Write(byte[] data, ushort length)
         {
             if (data == null)
             {
@@ -236,9 +249,10 @@ namespace Engine.Serialization
                 Array.Copy(data, 0, Buffer, this.Length, length);
                 this.Length += length;
             }
+            return this;
         }
 
-        public void Write(Packet data)
+        public Packet Write(Packet data)
         {
             if (data == null)
             {
@@ -252,24 +266,28 @@ namespace Engine.Serialization
                 }
                 Write(data.Buffer, (ushort)data.Length);
             }
+            return this;
         }
 
-        public void Write(string data)
+        public Packet Write(string data)
         {
             Write(Encoding.UTF8.GetBytes(data));
+            return this;
         }
 
-        public void Write(FPoint data)
+        public Packet Write(FPoint data)
         {
             Write(data.X);
             Write(data.Y);
+            return this;
         }
 
-        public void Write<TPlayerData, TPacketizerContext>(IPacketizable<TPlayerData, TPacketizerContext> data)
+        public Packet Write<TPlayerData, TPacketizerContext>(IPacketizable<TPlayerData, TPacketizerContext> data)
             where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
             where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
         {
             data.Packetize(this);
+            return this;
         }
 
         #endregion

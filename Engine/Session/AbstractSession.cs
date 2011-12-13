@@ -8,59 +8,6 @@ using Microsoft.Xna.Framework;
 namespace Engine.Session
 {
     /// <summary>
-    /// Message types sessions send around for internal logic.
-    /// </summary>
-    internal enum SessionMessage
-    {
-        /// <summary>
-        /// Only used internally, to check if players still respond, and can
-        /// therefore be considered in the session.
-        /// </summary>
-        ConnectionTest,
-
-        /// <summary>
-        /// Client requested the game information.
-        /// </summary>
-        GameInfoRequest,
-
-        /// <summary>
-        /// Server answered to our request for game info.
-        /// </summary>
-        GameInfoResponse,
-
-        /// <summary>
-        /// Client wants to join our game.
-        /// </summary>
-        JoinRequest,
-
-        /// <summary>
-        /// Server answers to client request for joining a game.
-        /// </summary>
-        JoinResponse,
-
-        /// <summary>
-        /// Client leaves the session. This is just courtesy. The server
-        /// would disconnect the client if it stops responding anyway.
-        /// </summary>
-        Leave,
-
-        /// <summary>
-        /// Server informs us that a player has joined.
-        /// </summary>
-        PlayerJoined,
-
-        /// <summary>
-        /// Server informs us that a player has left.
-        /// </summary>
-        PlayerLeft,
-
-        /// <summary>
-        /// Data packet to be handled by someone else.
-        /// </summary>
-        Data
-    }
-
-    /// <summary>
     /// Base implementation for server and client side sessions, i.e. functionality used by both.
     /// </summary>
     public abstract class AbstractSession<TPlayerData, TPacketizerContext>
@@ -354,7 +301,7 @@ namespace Engine.Session
         protected void ConditionalOnPlayerData(ProtocolDataEventArgs args, Packet data)
         {
             // Check if this is a player of this session.
-            Player<TPlayerData, TPacketizerContext> player = GetPlayer(Array.IndexOf(playerAddresses, args.Remote));
+            Player<TPlayerData, TPacketizerContext> player = GetPlayer(Array.IndexOf(playerAddresses, args.RemoteEndPoint));
 
             // If it is, forward the data.
             if (player != null)
