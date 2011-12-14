@@ -328,7 +328,6 @@ namespace Engine.Util
         {
             if (IsOpen && BackgroundColor != null && SpriteBatch != null && Font != null)
             {
-
                 Rectangle bounds = ComputeBounds();
                 int numBufferLines = ComputeNumberOfVisibleLines() - 1;
 
@@ -576,7 +575,7 @@ namespace Engine.Util
             var args = (KeyboardInputEventArgs)e;
             if (IsOpen)
             {
-                
+
                 switch (args.Key)
                 {
                     case Keys.Back:
@@ -770,7 +769,6 @@ namespace Engine.Util
             }
             else
             {
-               
                 if (args.Key.Equals(Hotkey))
                 {
                     IsOpen = true;

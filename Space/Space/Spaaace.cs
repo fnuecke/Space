@@ -1,18 +1,17 @@
 using System;
-using System.Net;
+using System.Globalization;
 using Engine.Input;
 using Engine.Serialization;
 using Engine.Util;
 using GameStateManagement;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using Space.Commands;
 using Space.Control;
 using Space.Model;
 using SpaceData;
-using Microsoft.Xna.Framework.Audio;
-using System.Globalization;
 
 namespace Space
 {
@@ -29,10 +28,7 @@ namespace Space
         SpriteBatch spriteBatch;
         GameConsole console;
 
-        ScreenManager screenManager;
-
         GameServer server;
-        
 
         public Spaaace()
         {
@@ -62,19 +58,22 @@ namespace Space
             // to almost no desyncs at all! Yay!
             this.IsFixedTimeStep = false;
 
-            // Remember to keep this in sync with the content project.
-            
+            // Get locale for localized content.
             try
             {
                 Strings.Culture = new System.Globalization.CultureInfo(Settings.Instance.Language);
             }
-            catch (CultureNotFoundException e) {
+            catch (CultureNotFoundException)
+            {
                 Strings.Culture = new System.Globalization.CultureInfo("en");
                 Settings.Instance.Language = "en";
             }
             Content = new SpaceContentManager(Services, Settings.Instance.Language);
-                Content.RootDirectory = "data";
-            
+
+            // Remember to keep this in sync with the content project.
+            Content.RootDirectory = "data";
+
+            // Some window settings.
             Window.Title = "Spaaaaaace. Space. Spaaace. So much space!";
             IsMouseVisible = true;
 
@@ -106,8 +105,7 @@ namespace Space
 
 
             // Create the screen manager component.
-            screenManager = new ScreenManager(this);
-
+            var screenManager = new ScreenManager(this);
             Components.Add(screenManager);
 
             // Activate the first screens.
@@ -125,16 +123,15 @@ namespace Space
                 RestartServer();
             },
                 "Restart server logic.");
-           
+
             console.AddCommand(new[] { "fullscreen", "fs" }, args =>
             {
                 graphics.ToggleFullScreen();
             },
                 "Toggles fullscreen mode.");
-            
-           
 
-            // Copy everything written to our gameconsole to the actual console,
+
+            // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
             // the game has crashed.
             console.LineWritten += delegate(object sender, EventArgs e)
@@ -174,7 +171,6 @@ namespace Space
             {
                 context.shipData[ship.Name] = ship;
                 context.shipTextures[ship.Name] = Content.Load<Texture2D>(ship.Texture);
-
             }
 
             foreach (var weapon in weaponData)
@@ -187,22 +183,6 @@ namespace Space
             console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
 
             console.WriteLine("Game Console. Type 'help' for available commands.");
-        }
-
-        /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-        protected override void Update(GameTime gameTime)
-        {
-            //if (server == null)
-            //{
-            //    RestartServer();
-            //}
-           
-
-            base.Update(gameTime);
         }
 
         /// <summary>
@@ -236,7 +216,5 @@ namespace Space
             server = new GameServer(this);
             Components.Add(server);
         }
-
-        
     }
 }
