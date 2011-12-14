@@ -17,6 +17,8 @@ namespace Space
     /// </summary>
     public class Spaaace : Microsoft.Xna.Framework.Game
     {
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         private const string SettingsFile = "config.xml";
 
         GraphicsDeviceManager graphics;
@@ -28,9 +30,15 @@ namespace Space
 
         public Spaaace()
         {
+            logger.Info("Starting up program...");
+
             // Load settings. Save on exit.
             Settings.Load(SettingsFile);
-            Exiting += (object sender, EventArgs e) => Settings.Save(SettingsFile);
+            Exiting += (object sender, EventArgs e) =>
+            {
+                logger.Info("Shutting down program...");
+                Settings.Save(SettingsFile);
+            };
 
             // Set up display.
             graphics = new GraphicsDeviceManager(this);

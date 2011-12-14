@@ -88,7 +88,7 @@ namespace Engine.Session
         public HybridClientSession(Game game)
             : base(game)
         {
-            udp = new UdpProtocol(0, udpHeader);
+            udp = new UdpProtocol(udpHeader);
             ConnectionState = ClientState.Unconnected;
             _localPlayerNumber = -1;
         }

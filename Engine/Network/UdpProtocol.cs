@@ -37,36 +37,34 @@ namespace Engine.Network
         #endregion
 
         #region Constructor / Cleanup
-
+        
         /// <summary>
         /// Creates a new UDP socket listening on the given port for the given protocol.
         /// </summary>
-        /// <param name="port">the port to listen on/send through. If this is 0 we can only send.</param>
+        /// <param name="endPoint">The local endpoint to bind to, with multicast enabled.</param>
         /// <param name="protocolHeader">header of the used protocol (filter packages).</param>
-        /// <param name="multicastGroup">the multicast group to join, if any.</param>
-        public UdpProtocol(ushort port, byte[] protocolHeader, IPAddress multicastGroup = null)
+        public UdpProtocol(IPEndPoint endPoint, byte[] protocolHeader)
             : base(protocolHeader)
         {
-            // Create our actual udp socket.
-            if (port > 0)
-            {
-                udp = new UdpClient(port);
+            udp = new UdpClient(endPoint.Port);
 
-                // Register as a local loopback.
-                Loopback = new IPEndPoint(IPAddress.Loopback, port);
-                loopbacksByPort[port] = this;
-                boundPorts[port] = true;
+            // Register as a local loopback.
+            Loopback = new IPEndPoint(IPAddress.Loopback, endPoint.Port);
+            loopbacksByPort[endPoint.Port] = this;
+            boundPorts[endPoint.Port] = true;
 
-                // Join multicast group to receive multicast messages.
-                if (multicastGroup != null)
-                {
-                    udp.JoinMulticastGroup(multicastGroup);
-                }
-            }
-            else
-            {
-                udp = new UdpClient();
-            }
+            // Join multicast group to receive multicast messages.
+            udp.JoinMulticastGroup(endPoint.Address);
+        }
+
+        /// <summary>
+        /// Creates a new UDP socket for sending only.
+        /// </summary>
+        /// <param name="protocolHeader">header of the used protocol (filter packages).</param>
+        public UdpProtocol(byte[] protocolHeader)
+            : base(protocolHeader)
+        {
+            udp = new UdpClient();
         }
 
         /// <summary>
@@ -74,14 +72,18 @@ namespace Engine.Network
         /// </summary>
         public override void Dispose()
         {
-            if (Loopback != null)
+            if (udp != null)
             {
-                ushort port = (ushort)((IPEndPoint)udp.Client.LocalEndPoint).Port;
-                loopbacksByPort.Remove(port);
-                boundPorts[port] = false;
-            }
+                if (Loopback != null)
+                {
+                    ushort port = (ushort)((IPEndPoint)udp.Client.LocalEndPoint).Port;
+                    loopbacksByPort.Remove(port);
+                    boundPorts[port] = false;
+                }
 
-            udp.Close();
+                udp.Close();
+                udp = null;
+            }
 
             GC.SuppressFinalize(this);
         }
@@ -153,7 +155,7 @@ namespace Engine.Network
         /// Lookup table the instances add themselves to. This essentially fakes
         /// a tiny LAN which only exists inside the running program.
         /// </summary>
-        private static Dictionary<ushort, UdpProtocol> loopbacksByPort = new Dictionary<ushort, UdpProtocol>();
+        private static Dictionary<int, UdpProtocol> loopbacksByPort = new Dictionary<int, UdpProtocol>();
 
         #endregion
 

@@ -71,7 +71,7 @@ namespace Engine.Session
 
             _tcp = new TcpListener(IPAddress.Any, port);
             _tcp.Start();
-            udp = new UdpProtocol(0, udpHeader, DefaultMulticastEndpoint.Address);
+            udp = new UdpProtocol(DefaultMulticastEndpoint, udpHeader);
 
             this.MaxPlayers = (int)maxPlayers;
             players = new Player<TPlayerData, TPacketizerContext>[maxPlayers];
@@ -277,9 +277,10 @@ namespace Engine.Session
                         OnGameInfoRequested(requestArgs); //< Get custom data to send, if any.
                         udp.Send(new Packet().
                             Write((byte)SessionMessage.GameInfoResponse).
-                            Write(MaxPlayers).
-                            Write(NumPlayers).
-                            Write(requestArgs.Data),
+                            Write(new Packet()
+                                .Write(MaxPlayers)
+                                .Write(NumPlayers)
+                                .Write(requestArgs.Data)),
                             args.RemoteEndPoint);
                     }
                     break;
