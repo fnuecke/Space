@@ -11,6 +11,8 @@
 using Microsoft.Xna.Framework;
 using Space;
 using Space.Control;
+using System.Net;
+using Space.Model;
 
 #endregion
 
@@ -28,11 +30,12 @@ namespace GameStateManagement
 
         private GameServer server;
 
+        private GameClient Client;
         /// <summary>
         /// Constructor fills in the menu contents.
         /// </summary>
         public MainMenuScreen()
-            : base("Main Menu")
+            : base(Strings.MainMenu)
         {
             
             // Create our menu entries.
@@ -65,9 +68,16 @@ namespace GameStateManagement
         /// </summary>
         void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-          RestartServer();
-            LoadingScreen.Load(ScreenManager, true, e.PlayerIndex,
-                               new GameplayScreen());
+            RestartClient();
+            if (server != null)
+            {
+                PlayerInfo info = new PlayerInfo();
+                info.ShipType = "Sparrow";
+                Client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
+                LoadingScreen.Load(ScreenManager, true,
+                                   new GameplayScreen(Client));
+            }
+            else ScreenManager.AddScreen(new ConnectScreen(Client));
         }
         void StartServerMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
@@ -83,20 +93,29 @@ namespace GameStateManagement
             server = new GameServer(ScreenManager.Game);
             ScreenManager.Game.Components.Add(server);
         }
-
+        private void RestartClient()
+        {
+            if (Client != null)
+            {
+                Client.Dispose();
+                ScreenManager.Game.Components.Remove(Client);
+            }
+            Client = new GameClient(ScreenManager.Game);
+            ScreenManager.Game.Components.Add(Client);
+        }
         /// <summary>
         /// Event handler for when the Options menu entry is selected.
         /// </summary>
         void OptionsMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            ScreenManager.AddScreen(new OptionsMenuScreen(), e.PlayerIndex);
+            ScreenManager.AddScreen(new OptionsMenuScreen());
         }
 
 
         /// <summary>
         /// When the user cancels the main menu, ask if they want to exit the sample.
         /// </summary>
-        protected override void OnCancel(PlayerIndex playerIndex)
+        protected override void OnCancel()
         {
             const string message = "Are you sure you want to exit this sample?";
 
@@ -104,7 +123,7 @@ namespace GameStateManagement
 
             confirmExitMessageBox.Accepted += ConfirmExitMessageBoxAccepted;
 
-            ScreenManager.AddScreen(confirmExitMessageBox, playerIndex);
+            ScreenManager.AddScreen(confirmExitMessageBox);
         }
 
 

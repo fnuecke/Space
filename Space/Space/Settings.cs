@@ -31,6 +31,10 @@ namespace Space
 
         #endregion
 
+        #region language
+        public string Language = "en";
+        #endregion
+
         #region Key bindings
 
         /// <summary>

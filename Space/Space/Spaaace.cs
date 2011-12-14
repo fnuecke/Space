@@ -11,6 +11,7 @@ using Space.Control;
 using Space.Model;
 using SpaceData;
 using Microsoft.Xna.Framework.Audio;
+using System.Globalization;
 
 namespace Space
 {
@@ -53,8 +54,18 @@ namespace Space
             this.IsFixedTimeStep = false;
 
             // Remember to keep this in sync with the content project.
-            Content.RootDirectory = "data";
-
+            
+            try
+            {
+                Strings.Culture = new System.Globalization.CultureInfo(Settings.Instance.Language);
+            }
+            catch (CultureNotFoundException e) {
+                Strings.Culture = new System.Globalization.CultureInfo("en");
+                Settings.Instance.Language = "en";
+            }
+            Content = new SpaceContentManager(Services, Settings.Instance.Language);
+                Content.RootDirectory = "data";
+            
             Window.Title = "Spaaaaaace. Space. Spaaace. So much space!";
             IsMouseVisible = true;
 
@@ -90,8 +101,8 @@ namespace Space
             Components.Add(screenManager);
 
             // Activate the first screens.
-            screenManager.AddScreen(new BackgroundScreen(), null);
-            screenManager.AddScreen(new MainMenuScreen(), null);
+            screenManager.AddScreen(new BackgroundScreen());
+            screenManager.AddScreen(new MainMenuScreen());
 
             console.DrawOrder = 10;
 

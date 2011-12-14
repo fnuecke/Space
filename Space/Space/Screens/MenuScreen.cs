@@ -27,7 +27,7 @@ namespace GameStateManagement
         #region Fields
 
         List<MenuEntry> menuEntries = new List<MenuEntry>();
-        int selectedEntry = 0;
+        protected int selectedEntry = 0;
         string menuTitle;
 
         #endregion
@@ -74,21 +74,28 @@ namespace GameStateManagement
         public override void HandleInput(InputState input)
         {
             // Move to the previous menu entry?
-            if (input.IsMenuUp(ControllingPlayer))
+            if (input.IsMenuUp())
             {
+                MenuEntries[selectedEntry].Active = false;
                 selectedEntry--;
 
                 if (selectedEntry < 0)
                     selectedEntry = menuEntries.Count - 1;
+                MenuEntries[selectedEntry].Active = true;
+                
             }
 
             // Move to the next menu entry?
-            if (input.IsMenuDown(ControllingPlayer))
+            if (input.IsMenuDown())
             {
+                MenuEntries[selectedEntry].Active = false;
+                
                 selectedEntry++;
 
                 if (selectedEntry >= menuEntries.Count)
                     selectedEntry = 0;
+                MenuEntries[selectedEntry].Active = true;
+                
             }
 
             // Accept or cancel the menu? We pass in our ControllingPlayer, which may
@@ -96,15 +103,15 @@ namespace GameStateManagement
             // If we pass a null controlling player, the InputState helper returns to
             // us which player actually provided the input. We pass that through to
             // OnSelectEntry and OnCancel, so they can tell which player triggered them.
-            PlayerIndex playerIndex;
+            
 
-            if (input.IsMenuSelect(ControllingPlayer, out playerIndex))
+            if (input.IsMenuSelect())
             {
-                OnSelectEntry(selectedEntry, playerIndex);
+                OnSelectEntry(selectedEntry);
             }
-            else if (input.IsMenuCancel(ControllingPlayer, out playerIndex))
+            else if (input.IsMenuCancel())
             {
-                OnCancel(playerIndex);
+                OnCancel();
             }
         }
 
@@ -112,16 +119,16 @@ namespace GameStateManagement
         /// <summary>
         /// Handler for when the user has chosen a menu entry.
         /// </summary>
-        protected virtual void OnSelectEntry(int entryIndex, PlayerIndex playerIndex)
+        protected virtual void OnSelectEntry(int entryIndex)
         {
-            menuEntries[entryIndex].OnSelectEntry(playerIndex);
+            menuEntries[entryIndex].OnSelectEntry();
         }
 
 
         /// <summary>
         /// Handler for when the user has cancelled the menu.
         /// </summary>
-        protected virtual void OnCancel(PlayerIndex playerIndex)
+        protected virtual void OnCancel()
         {
             ExitScreen();
         }
@@ -132,7 +139,7 @@ namespace GameStateManagement
         /// </summary>
         protected void OnCancel(object sender, PlayerIndexEventArgs e)
         {
-            OnCancel(e.PlayerIndex);
+            OnCancel();
         }
 
 

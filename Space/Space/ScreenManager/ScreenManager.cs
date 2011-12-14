@@ -37,7 +37,10 @@ namespace GameStateManagement
         SpriteBatch spriteBatch;
         SpriteFont font;
         Texture2D blankTexture;
-
+        /// <summary>
+        /// Texture used for rendering the background.
+        /// </summary>
+        public Texture2D PixelTexture { get; private set; }
         bool isInitialized;
 
         bool traceEnabled;
@@ -90,6 +93,8 @@ namespace GameStateManagement
         public ScreenManager(Game game)
             : base(game)
         {
+            Game games = game;
+ 
             // we must set EnabledGestures before we can query for them, but
             // we don't assume the game wants to read them.
             //TouchPanel.EnabledGestures = GestureType.None;
@@ -102,6 +107,8 @@ namespace GameStateManagement
         public override void Initialize()
         {
             base.Initialize();
+            PixelTexture = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+            PixelTexture.SetData(new[] { Color.White });
 
             isInitialized = true;
         }
@@ -236,9 +243,9 @@ namespace GameStateManagement
         /// <summary>
         /// Adds a new screen to the screen manager.
         /// </summary>
-        public void AddScreen(GameScreen screen, PlayerIndex? controllingPlayer)
+        public void AddScreen(GameScreen screen)
         {
-            screen.ControllingPlayer = controllingPlayer;
+            
             screen.ScreenManager = this;
             screen.IsExiting = false;
 

@@ -26,6 +26,10 @@ namespace GameStateManagement
         #region Fields
 
         /// <summary>
+        /// returns if the value is selected
+        /// </summary>
+        public bool Active { get; set; }
+        /// <summary>
         /// The text rendered for this entry.
         /// </summary>
         string text;
@@ -36,7 +40,7 @@ namespace GameStateManagement
         /// <remarks>
         /// The entries transition out of the selection effect when they are deselected.
         /// </remarks>
-        float selectionFade;
+        protected float selectionFade;
 
         /// <summary>
         /// The position at which the entry is drawn. This is set by the MenuScreen
@@ -79,14 +83,38 @@ namespace GameStateManagement
         /// </summary>
         public event EventHandler<PlayerIndexEventArgs> Selected;
 
+        /// <summary>
+        /// Event raised when the next menü entry is choosen.
+        /// </summary>
+        public event EventHandler<PlayerIndexEventArgs> next;
 
+        /// <summary>
+        /// Event raised when the prev menu entry is selected.
+        /// </summary>
+        public event EventHandler<PlayerIndexEventArgs> prev;
         /// <summary>
         /// Method for raising the Selected event.
         /// </summary>
-        protected internal virtual void OnSelectEntry(PlayerIndex playerIndex)
+        protected internal virtual void OnSelectEntry()
         {
             if (Selected != null)
-                Selected(this, new PlayerIndexEventArgs(playerIndex));
+                Selected(this, new PlayerIndexEventArgs());
+        }
+        /// <summary>
+        /// Method for raising the Selected event.
+        /// </summary>
+        protected internal virtual void OnNextEntry()
+        {
+            if (next != null)
+                next(this, new PlayerIndexEventArgs());
+        }
+        /// <summary>
+        /// Method for raising the Selected event.
+        /// </summary>
+        protected internal virtual void OnPrevEntry()
+        {
+            if (prev != null)
+                prev(this, new PlayerIndexEventArgs());
         }
 
 

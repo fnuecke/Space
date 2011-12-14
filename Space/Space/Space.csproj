@@ -130,6 +130,7 @@
     <Compile Include="ScreenManager\ScreenManager.cs" />
     <Compile Include="Screens\BackgroundScreen.cs" />
     <Compile Include="Screens\ConnectScreen.cs" />
+    <Compile Include="Screens\EditableMenueEntry.cs" />
     <Compile Include="Screens\GameplayScreen.cs" />
     <Compile Include="Screens\LoadingScreen.cs" />
     <Compile Include="Screens\MainMenuScreen.cs" />
@@ -141,6 +142,12 @@
     <Compile Include="Screens\PlayerIndexEventArgs.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Spaaace.cs" />
+    <Compile Include="SpaceContentManager.cs" />
+    <Compile Include="Strings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Strings.resx</DependentUpon>
+    </Compile>
     <Compile Include="View\NetGraph.cs" />
     <Compile Include="View\SessionInfo.cs" />
   </ItemGroup>
@@ -193,7 +200,13 @@
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Strings.de.resx" />
+    <EmbeddedResource Include="Strings.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>

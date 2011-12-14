@@ -9,6 +9,8 @@
 
 #region Using Statements
 using Microsoft.Xna.Framework;
+using Space;
+using System.Collections.Generic;
 #endregion
 
 namespace GameStateManagement
@@ -36,8 +38,12 @@ namespace GameStateManagement
 
         static Ungulate currentUngulate = Ungulate.Dromedary;
 
-        static string[] languages = { "Deutsch", "Englisch" };
+        static Dictionary<string,string> languages= new Dictionary<string,string>();
+
+    
         static int currentLanguage = 0;
+
+            
 
         static bool frobnicate = true;
 
@@ -55,6 +61,8 @@ namespace GameStateManagement
             : base("Options")
         {
             // Create our menu entries.
+            languages["en"] = Strings.en;
+            languages["de"] = Strings.de;
             ungulateMenuEntry = new MenuEntry(string.Empty);
             languageMenuEntry = new MenuEntry(string.Empty);
             frobnicateMenuEntry = new MenuEntry(string.Empty);
@@ -67,6 +75,7 @@ namespace GameStateManagement
             // Hook up menu event handlers.
             ungulateMenuEntry.Selected += UngulateMenuEntrySelected;
             languageMenuEntry.Selected += LanguageMenuEntrySelected;
+            languageMenuEntry.next += LanguageMenuEntryNext;
             frobnicateMenuEntry.Selected += FrobnicateMenuEntrySelected;
             elfMenuEntry.Selected += ElfMenuEntrySelected;
             back.Selected += OnCancel;
@@ -86,7 +95,7 @@ namespace GameStateManagement
         void SetMenuEntryText()
         {
             ungulateMenuEntry.Text = "Preferred ungulate: " + currentUngulate;
-            languageMenuEntry.Text = "Language: " + languages[currentLanguage];
+            languageMenuEntry.Text = "Language: " + languages[Settings.Instance.Language];
             frobnicateMenuEntry.Text = "Frobnicate: " + (frobnicate ? "on" : "off");
             elfMenuEntry.Text = "elf: " + elf;
         }
@@ -116,7 +125,17 @@ namespace GameStateManagement
         /// </summary>
         void LanguageMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            currentLanguage = (currentLanguage + 1) % languages.Length;
+            
+            
+            currentLanguage = (currentLanguage + 1) % languages.Count;
+
+            SetMenuEntryText();
+        }
+        void LanguageMenuEntryNext(object sender, PlayerIndexEventArgs e)
+        {
+
+
+            currentLanguage = (currentLanguage + 1) % languages.Count;
 
             SetMenuEntryText();
         }

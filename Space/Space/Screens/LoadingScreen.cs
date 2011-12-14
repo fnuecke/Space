@@ -61,7 +61,6 @@ namespace GameStateManagement
         /// Activates the loading screen.
         /// </summary>
         public static void Load(ScreenManager screenManager, bool loadingIsSlow,
-                                PlayerIndex? controllingPlayer,
                                 params GameScreen[] screensToLoad)
         {
             // Tell all the current screens to transition off.
@@ -73,7 +72,7 @@ namespace GameStateManagement
                                                             loadingIsSlow,
                                                             screensToLoad);
 
-            screenManager.AddScreen(loadingScreen, controllingPlayer);
+            screenManager.AddScreen(loadingScreen);
         }
 
 
@@ -100,7 +99,7 @@ namespace GameStateManagement
                 {
                     if (screen != null)
                     {
-                        ScreenManager.AddScreen(screen, ControllingPlayer);
+                        ScreenManager.AddScreen(screen);
                     }
                 }
 

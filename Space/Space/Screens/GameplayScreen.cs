@@ -42,7 +42,7 @@ namespace GameStateManagement
 
         Random random = new Random();
 
-
+        
 
         float pauseAlpha;
 
@@ -57,15 +57,16 @@ namespace GameStateManagement
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GameplayScreen()
+        public GameplayScreen(GameClient client)
         {
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
 
-
+            this.client = client;
 
            
         }
+        
 
 
         /// <summary>
@@ -78,11 +79,7 @@ namespace GameStateManagement
 
             if (console == null)
                 console = (IGameConsole)ScreenManager.Game.Services.GetService(typeof (IGameConsole));
-            console.AddCommand("client", args =>
-            {
-                RestartClient();
-            },
-              "Restart client logic.");
+           
             console.AddCommand("search", args =>
             {
                 client.Session.Search();
@@ -126,11 +123,9 @@ namespace GameStateManagement
 
 
             gameFont = content.Load<SpriteFont>("Fonts/gamefont");
-            RestartClient();
-            PlayerInfo infos = new PlayerInfo();
-            infos.ShipType = "Sparrow";
-            client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", infos);
-            // A real game would probably have more content than this sample, so
+            
+            
+             // A real game would probably have more content than this sample, so
             // it would take longer to load. We simulate that by delaying for a
             // while, giving you a chance to admire the beautiful loading screen.
         //    Thread.Sleep(1000);
@@ -174,10 +169,7 @@ namespace GameStateManagement
 
             if (IsActive)
             {
-                if (client == null)
-                {
-                    RestartClient();
-                }
+                
             }
         }
 
@@ -192,21 +184,20 @@ namespace GameStateManagement
                 throw new ArgumentNullException("input");
 
             // Look up inputs for the active player profile.
-            int playerIndex = (int)ControllingPlayer.Value;
-
-            KeyboardState keyboardState = input.CurrentKeyboardStates[playerIndex];
-            GamePadState gamePadState = input.CurrentGamePadStates[playerIndex];
+           
+            KeyboardState keyboardState = input.CurrentKeyboardState;
+            GamePadState gamePadState = input.CurrentGamePadState;
 
             // The game pauses either if the user presses the pause button, or if
             // they unplug the active gamepad. This requires us to keep track of
             // whether a gamepad was ever plugged in, because we don't want to pause
             // on PC if they are playing with a keyboard and have no gamepad at all!
             bool gamePadDisconnected = !gamePadState.IsConnected &&
-                                       input.GamePadWasConnected[playerIndex];
+                                       input.GamePadWasConnected;
 
-            if (input.IsPauseGame(ControllingPlayer) || gamePadDisconnected)
+            if (input.IsPauseGame() || gamePadDisconnected)
             {
-                ScreenManager.AddScreen(new PauseMenuScreen(), ControllingPlayer);
+                ScreenManager.AddScreen(new PauseMenuScreen());
             }
             else
             {
@@ -272,15 +263,6 @@ namespace GameStateManagement
         #endregion
 
 
-        private void RestartClient()
-        {
-            if (client != null)
-            {
-                client.Dispose();
-                ScreenManager.Game.Components.Remove(client);
-            }
-            client = new GameClient(ScreenManager.Game);
-            ScreenManager.Game.Components.Add(client);
-        }
+       
     }
 }
