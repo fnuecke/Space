@@ -44,6 +44,10 @@ namespace SpaceData
 
         public WeaponSize Size;
 
+        public string Texture;
+
+        public string Sound;
+
         public Fixed Damage;
         public Fixed FireRate;
     }

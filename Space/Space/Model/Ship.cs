@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
 using SpaceData;
+using System;
 
 namespace Space.Model
 {
@@ -136,10 +137,14 @@ namespace Space.Model
                     velocity = FPoint.Zero;
                 }
 
-                if (shooting && shotCooldown-- <= 0)
+                if (shotCooldown-- <= 0 && shooting)
                 {
-                    State.AddSteppable(new Shot(position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), State.Packetizer.Context));
+
+                    Console.WriteLine("shoot");
+
                     shotCooldown = 20;
+                    State.AddSteppable(new Shot("Cheap Laser", position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), State.Packetizer.Context));
+                    
                 }
             }
         }

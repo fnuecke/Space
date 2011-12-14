@@ -576,6 +576,7 @@ namespace Engine.Util
             var args = (KeyboardInputEventArgs)e;
             if (IsOpen)
             {
+                
                 switch (args.Key)
                 {
                     case Keys.Back:
@@ -769,6 +770,7 @@ namespace Engine.Util
             }
             else
             {
+               
                 if (args.Key.Equals(Hotkey))
                 {
                     IsOpen = true;
@@ -779,14 +781,16 @@ namespace Engine.Util
 
         private void HandleInsert(object sender, EventArgs e)
         {
-            
-            IDataObject dataObj = Clipboard.GetDataObject();
+            if (IsOpen)
+            {
+                IDataObject dataObj = Clipboard.GetDataObject();
 
-            if (!dataObj.GetDataPresent(DataFormats.Text))
-               return;
+                if (!dataObj.GetDataPresent(DataFormats.Text))
+                    return;
 
-            input.Append( dataObj.GetData(DataFormats.Text).ToString());
-            cursor = input.Length;
+                input.Append(dataObj.GetData(DataFormats.Text).ToString());
+                cursor = input.Length;
+            }
         }
 
         /// <summary>
