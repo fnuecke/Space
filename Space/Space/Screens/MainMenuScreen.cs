@@ -73,7 +73,7 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.ShipType = "Sparrow";
-                Client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
+                Client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), Settings.Instance.PlayerName, info);
                 LoadingScreen.Load(ScreenManager, true,
                                    new GameplayScreen(Client));
             }

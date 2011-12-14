@@ -95,5 +95,14 @@ namespace Space {
                 return ResourceManager.GetString("MainMenu", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Player Name: .
+        /// </summary>
+        internal static string playerName {
+            get {
+                return ResourceManager.GetString("playerName", resourceCulture);
+            }
+        }
     }
 }

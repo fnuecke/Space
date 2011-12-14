@@ -129,4 +129,7 @@
   <data name="connect" xml:space="preserve">
     <value>Connect to Server</value>
   </data>
+  <data name="playerName" xml:space="preserve">
+    <value>Player Name: </value>
+  </data>
 </root>
