@@ -175,6 +175,7 @@ namespace Engine.Session
             this._playerName = playerName;
             this._playerData = playerData;
             _tcp = new TcpClient();
+            _tcp.NoDelay = true;
             _tcp.BeginConnect(remote.Address, remote.Port, new AsyncCallback(HandleConnected), _tcp);
         }
 

@@ -59,6 +59,12 @@ namespace Engine.Controller
         private DoubleSampling syncDiff = new DoubleSampling(5);
 
         /// <summary>
+        /// Difference in current frame to server, as determined by the
+        /// last few syncs.
+        /// </summary>
+        private IntSampling frameDiff = new IntSampling(5);
+
+        /// <summary>
         /// The last frame we know the server's state hash of.
         /// </summary>
         private long hashFrame = -1;
@@ -273,18 +279,22 @@ namespace Engine.Controller
                     // Answer to a synchronization request.
                     // Only accept these when they come from the server, and disregard if
                     // we're waiting for a snapshot of the simulation.
-                    if (!Simulation.WaitingForSynchronization)
+                    if (args.IsAuthoritative && !Simulation.WaitingForSynchronization)
                     {
                         // This calculation follows algorithm described here:
                         // http://www.mine-control.com/zack/timesync/timesync.html
-                        // Which is actually pretty logical, except for the '+ latency / 2'
-                        // in the frameDelta part. But it works, so w/e.
-                        // We skip steps 5-7 because they're for TCP retransmits causing
-                        // peaks, but we're using UDP, so there.
-                        long latency = (Simulation.CurrentFrame - args.Data.ReadInt64()) / 2;
-                        long clientServerDelta = (args.Data.ReadInt64() - Simulation.CurrentFrame);
+                        long sentFrame = args.Data.ReadInt64();
+                        long serverFrame = args.Data.ReadInt64();
+
+                        long latency = (Simulation.CurrentFrame - sentFrame) / 2;
+                        long clientServerDelta = (serverFrame - Simulation.CurrentFrame);
                         long frameDelta = clientServerDelta + latency / 2;
-                        if (System.Math.Abs(frameDelta) > 1)
+
+                        frameDiff.Put((int)frameDelta);
+                        int median = frameDiff.Median();
+                        double stdDev = frameDiff.StandardDeviation();
+
+                        if (System.Math.Abs(frameDelta) > 1 && frameDelta < (int)(median + stdDev))
                         {
                             logger.Debug("Client: correcting for " + frameDelta + " frames.");
                             // Adjust the current frame of the simulation.
@@ -298,29 +308,41 @@ namespace Engine.Controller
 
                 case TssControllerMessage.HashCheck:
                     // Only accept these when they come from the server.
-                    hashFrame = args.Data.ReadInt64();
-                    hashValue = args.Data.ReadInt32();
+                    if (args.IsAuthoritative)
+                    {
+                        hashFrame = args.Data.ReadInt64();
+                        hashValue = args.Data.ReadInt32();
+                    }
                     break;
 
                 case TssControllerMessage.GameStateResponse:
                     // Got a simulation snap shot (normally after requesting it due to
                     // our simulation going out of scope for an older event).
                     // Only accept these when they come from the server.
-                    Simulation.Depacketize(args.Data, Packetizer.Context);
+                    if (args.IsAuthoritative)
+                    {
+                        Simulation.Depacketize(args.Data, Packetizer.Context);
+                    }
                     break;
 
                 case TssControllerMessage.AddGameObject:
                     // Only accept these when they come from the server.
-                    long addFrame = args.Data.ReadInt64();
-                    TSteppable steppable = Packetizer.Depacketize<TSteppable>(args.Data);
-                    Simulation.AddSteppable(steppable, addFrame);
+                    if (args.IsAuthoritative)
+                    {
+                        long addFrame = args.Data.ReadInt64();
+                        TSteppable steppable = Packetizer.Depacketize<TSteppable>(args.Data);
+                        Simulation.AddSteppable(steppable, addFrame);
+                    }
                     break;
 
                 case TssControllerMessage.RemoveGameObject:
                     // Only accept these when they come from the server.
-                    long removeFrame = args.Data.ReadInt64();
-                    long steppableUid = args.Data.ReadInt64();
-                    Simulation.RemoveSteppable(steppableUid, removeFrame);
+                    if (args.IsAuthoritative)
+                    {
+                        long removeFrame = args.Data.ReadInt64();
+                        long steppableUid = args.Data.ReadInt64();
+                        Simulation.RemoveSteppable(steppableUid, removeFrame);
+                    }
                     break;
 
                 // Everything else is unhandled on the client.

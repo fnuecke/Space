@@ -82,7 +82,7 @@ namespace Engine.Controller
         protected AbstractTssServer(Game game, IServerSession<TPlayerData, TPacketizerContext> session)
             : base(game, session, new uint[] {
                 (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
-                (uint)System.Math.Ceiling(150 / game.TargetElapsedTime.TotalMilliseconds)
+                (uint)System.Math.Ceiling(250 / game.TargetElapsedTime.TotalMilliseconds)
             })
         {
             lastGameStateSentTime = new DateTime[Session.MaxPlayers];

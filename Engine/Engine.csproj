@@ -170,6 +170,7 @@
     <Compile Include="Simulation\TSS.cs" />
     <Compile Include="Simulation\PhysicsEnabledState.cs" />
     <Compile Include="Util\Angle.cs" />
+    <Compile Include="Util\GameConsoleTarget.cs" />
     <Compile Include="Util\Hasher.cs" />
     <Compile Include="Util\IHashable.cs" />
     <Compile Include="Util\ISampling.cs" />

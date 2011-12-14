@@ -118,6 +118,7 @@ namespace Engine.Session
             while (NumPlayers < MaxPlayers && _tcp.Pending())
             {
                 TcpClient client = _tcp.AcceptTcpClient();
+                client.NoDelay = true;
                 PacketStream stream = new PacketStream(client.GetStream());
 
                 // Do not allow connections from the same IP twice, to avoid

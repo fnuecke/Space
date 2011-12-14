@@ -5,6 +5,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NLog;
 using Space.Commands;
 using Space.Control;
 using Space.Model;
@@ -83,11 +84,15 @@ namespace Space
             // Add some more utility components.
             Components.Add(new KeyboardInputManager(this));
             Components.Add(new MouseInputManager(this));
+
             console = new GameConsole(this);
             console.Hotkey = Settings.Instance.ConsoleKey;
             Components.Add(console);
 
             console.DrawOrder = 10;
+
+            // Add a logging target that'll write to our console.
+            new GameConsoleTarget(this, LogLevel.Trace);
 
             // Register some commands for our console, making debugging that much easier ;)
             console.AddCommand("server", args =>
