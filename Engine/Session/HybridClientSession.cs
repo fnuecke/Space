@@ -240,9 +240,10 @@ namespace Engine.Session
                         Write(_playerName).
                         Write(_playerData)));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Connection failed.
+                logger.DebugException("Join failed.", ex);
                 Reset();
             }
         }
