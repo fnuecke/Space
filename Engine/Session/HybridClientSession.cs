@@ -522,7 +522,6 @@ namespace Engine.Session
                 }
                 else if (ConnectionState == ClientState.Connecting)
                 {
-                    _tcp.GetStream().Close();
                     _tcp.Close();
                 }
                 _stream = null;
