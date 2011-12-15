@@ -19,7 +19,7 @@ namespace GameStateManagement
         public GameClient Client { get; private set; }
         #endregion
         public ConnectScreen(GameClient client)
-            : base(Strings.connect)
+            : base(Strings.join)
         {
             Client = client;
             client.Session.JoinResponse += LoginSucces;

@@ -37,8 +37,8 @@ namespace GameStateManagement
         {
             
             // Create our menu entries.
-            MenuEntry playGameMenuEntry = new MenuEntry("Play Game");
-            MenuEntry startServerMenuEntry = new MenuEntry("Start Server");
+            MenuEntry playGameMenuEntry = new MenuEntry(Strings.join);
+            MenuEntry startServerMenuEntry = new MenuEntry(Strings.host);
             MenuEntry optionsMenuEntry = new MenuEntry("Options");
             MenuEntry exitMenuEntry = new MenuEntry("Exit");
 
@@ -67,21 +67,21 @@ namespace GameStateManagement
         void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
             RestartClient();
-            if (_server != null)
-            {
-                PlayerInfo info = new PlayerInfo();
-                info.ShipType = "Sparrow";
-                //Client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
-                _client.Session.Join(_server.Session, "player", info);
-                LoadingScreen.Load(ScreenManager, true,
-                                   new GameplayScreen(_client));
-            }
-            else ScreenManager.AddScreen(new ConnectScreen(_client));
+
+            ScreenManager.AddScreen(new ConnectScreen(_client));
         }
 
         void StartServerMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
             RestartServer();
+            RestartClient();
+
+            // Autojoin self.
+            PlayerInfo info = new PlayerInfo();
+            info.ShipType = "Sparrow";
+            _client.Session.Join(_server.Session, "player", info);
+
+            LoadingScreen.Load(ScreenManager, true, new GameplayScreen(_client));
         }
 
         /// <summary>

@@ -9,8 +9,8 @@ namespace Space.Control
 {
     class GameClient : DrawableGameComponent
     {
-        public IClientSession<PlayerInfo, PacketizerContext> Session { get; private set; }
-        public ClientController Controller { get; private set; }
+        internal IClientSession<PlayerInfo, PacketizerContext> Session { get; private set; }
+        internal ClientController Controller { get; private set; }
 
         private InputCommandEmitter emitter;
 
