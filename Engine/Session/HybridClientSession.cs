@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using Engine.Network;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Session
@@ -64,7 +65,7 @@ namespace Engine.Session
         /// <summary>
         /// The packet stream used to send packets to and receive packets from the server.
         /// </summary>
-        private PacketStream _stream;
+        private IPacketStream _stream;
 
         /// <summary>
         /// Number of the local player.
@@ -105,6 +106,8 @@ namespace Engine.Session
                 {
                     _tcp.Close();
                 }
+                _stream = null;
+                _tcp = null;
             }
 
             base.Dispose(disposing);
@@ -121,7 +124,7 @@ namespace Engine.Session
                 try
                 {
                     Packet packet;
-                    while ((packet = _stream.Read()) != null)
+                    while (_stream != null && (packet = _stream.Read()) != null)
                     {
                         SessionMessage type = (SessionMessage)packet.ReadByte();
                         HandleTcpData(type, packet.ReadPacket());
@@ -162,8 +165,8 @@ namespace Engine.Session
         /// Join a game on the given host.
         /// </summary>
         /// <param name="remote">the remote host that runs the session.</param>
-        /// <param name="playerName">the with which to register.</param>
-        /// <param name="playerData">additional data to be associated with our player (Player.Data).</param>
+        /// <param name="playerName">the name with which to register.</param>
+        /// <param name="playerData">additional data to be associated with our player.</param>
         public void Join(IPEndPoint remote, string playerName, TPlayerData playerData)
         {
             if (ConnectionState != ClientState.Unconnected)
@@ -177,6 +180,53 @@ namespace Engine.Session
             _tcp = new TcpClient();
             _tcp.NoDelay = true;
             _tcp.BeginConnect(remote.Address, remote.Port, new AsyncCallback(HandleConnected), _tcp);
+        }
+
+        /// <summary>
+        /// Join a local game.
+        /// </summary>
+        /// <param name="server">the local server to join.</param>
+        /// <param name="playerName">the name with which to register.</param>
+        /// <param name="data">additional data to be associated with our player.</param>
+        public void Join(IServerSession<TPlayerData, TPacketizerContext> server, string playerName, TPlayerData playerData)
+        {
+            if (ConnectionState != ClientState.Unconnected)
+            {
+                throw new InvalidOperationException("Must leave the current session first.");
+            }
+            if (!(server is HybridServerSession<TPlayerData, TPacketizerContext>))
+            {
+                throw new InvalidOperationException("Incompatible server type.");
+            }
+            logger.Debug("Begin connecting to local server.");
+            ConnectionState = ClientState.Connecting;
+            this._playerName = playerName;
+            this._playerData = playerData;
+
+            // Create the two 'pipes' we use to pass data from client to server
+            // and vice versa.
+            var toClient = new SlidingStream();
+            var toServer = new SlidingStream();
+
+            // Our stream is the one where the sink is the server.
+            // The server gets one in the other direction (see below).
+            _stream = new SlidingPacketStream(toClient, toServer);
+            _stream.Write(new Packet().
+                Write((byte)SessionMessage.JoinRequest).
+                Write(new Packet().
+                    Write(_playerName).
+                    Write(_playerData)));
+            try
+            {
+                // Let's try this... this can throw if the server is already full.
+                ((HybridServerSession<TPlayerData, TPacketizerContext>)server).
+                    Add(new SlidingPacketStream(toServer, toClient));
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.DebugException("Join failed.", ex);
+                Reset();
+            }
         }
 
         /// <summary>
@@ -233,14 +283,14 @@ namespace Engine.Session
             {
                 logger.Debug("Connected to host, sending actual join request.");
                 _tcp.EndConnect(result);
-                _stream = new PacketStream(_tcp.GetStream());
+                _stream = new NetworkPacketStream(_tcp.GetStream());
                 _stream.Write(new Packet().
                     Write((byte)SessionMessage.JoinRequest).
                     Write(new Packet().
                         Write(_playerName).
                         Write(_playerData)));
             }
-            catch (Exception ex)
+            catch (SocketException ex)
             {
                 // Connection failed.
                 logger.DebugException("Join failed.", ex);
@@ -303,7 +353,7 @@ namespace Engine.Session
                     {
                         try
                         {
-                            OnData(new ClientDataEventArgs(packet, args.RemoteEndPoint == _tcp.Client.RemoteEndPoint));
+                            OnData(new ClientDataEventArgs(packet, _tcp != null && args.RemoteEndPoint == _tcp.Client.RemoteEndPoint));
                         }
                         catch (PacketException ex)
                         {
@@ -330,83 +380,29 @@ namespace Engine.Session
                     // Got a reply from a server for a join response.
                     if (ConnectionState == ClientState.Connecting)
                     {
-                        try
+                        // Get our number.
+                        _localPlayerNumber = packet.ReadInt32();
+
+                        // Get info about other players in the session.
+                        NumPlayers = packet.ReadInt32();
+
+                        // Maximum number of players in the session?
+                        MaxPlayers = packet.ReadInt32();
+
+                        // Sanity checks.
+                        if (_localPlayerNumber < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers || _localPlayerNumber >= MaxPlayers)
                         {
-                            // Get our number.
-                            _localPlayerNumber = packet.ReadInt32();
-
-                            // Get info about other players in the session.
-                            NumPlayers = packet.ReadInt32();
-
-                            // Maximum number of players in the session?
-                            MaxPlayers = packet.ReadInt32();
-
-                            // Sanity checks.
-                            if (_localPlayerNumber < 0 || NumPlayers < 0 || MaxPlayers < 0 || MaxPlayers < NumPlayers || _localPlayerNumber >= MaxPlayers)
-                            {
-                                throw new PacketException("Inconsistent session info.");
-                            }
-
-                            // Allocate array for the players in the session.
-                            players = new Player<TPlayerData, TPacketizerContext>[MaxPlayers];
-
-                            // Get other game relevant data (e.g. game state).
-                            Packet joinData = packet.ReadPacket();
-
-                            // Get info on players already in the session, including us.
-                            for (int i = 0; i < NumPlayers; i++)
-                            {
-                                // Get player number.
-                                int playerNumber = packet.ReadInt32();
-
-                                // Sanity checks.
-                                if (playerNumber < 0 || playerNumber >= MaxPlayers || players[playerNumber] != null)
-                                {
-                                    throw new PacketException("Invalid player number.");
-                                }
-
-                                // Get player name.
-                                string playerName = packet.ReadString();
-
-                                // Get additional player data.
-                                TPlayerData playerData = new TPlayerData();
-                                packet.ReadPacketizable(playerData, packetizer.Context);
-
-                                // All OK, add the player.
-                                players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData);
-                            }
-
-                            // New state :)
-                            ConnectionState = ClientState.Connected;
-
-                            logger.Debug("Successfully joined game at '{0}'.", (IPEndPoint)_tcp.Client.RemoteEndPoint);
-
-                            // OK, let the program know.
-                            OnJoinResponse(new JoinResponseEventArgs(joinData));
-
-                            // Also, fire one join event for each player in the game. Except for
-                            // the local player, because that'll likely need special treatment anyway.
-                            foreach (var player in AllPlayers)
-                            {
-                                if (!player.Equals(LocalPlayer))
-                                {
-                                    OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
-                                }
-                            }
+                            throw new PacketException("Inconsistent session info.");
                         }
-                        catch (PacketException ex)
-                        {
-                            logger.WarnException("Invalid JoinResponse.", ex);
-                            Reset();
-                        }
-                    }
-                    break;
 
-                case SessionMessage.PlayerJoined:
-                    // Some player joined the session.
-                    if (ConnectionState == ClientState.Connected)
-                    {
-                        try
+                        // Allocate array for the players in the session.
+                        players = new Player<TPlayerData, TPacketizerContext>[MaxPlayers];
+
+                        // Get other game relevant data (e.g. game state).
+                        Packet joinData = packet.ReadPacket();
+
+                        // Get info on players already in the session, including us.
+                        for (int i = 0; i < NumPlayers; i++)
                         {
                             // Get player number.
                             int playerNumber = packet.ReadInt32();
@@ -426,15 +422,60 @@ namespace Engine.Session
 
                             // All OK, add the player.
                             players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData);
+                        }
 
-                            // The the local program about it.
-                            OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(players[playerNumber]));
-                        }
-                        catch (PacketException ex)
+                        // New state :)
+                        ConnectionState = ClientState.Connected;
+
+                        if (_tcp != null)
                         {
-                            logger.WarnException("Invalid PlayerJoined.", ex);
-                            Reset();
+                            logger.Debug("Successfully joined game at '{0}'.", (IPEndPoint)_tcp.Client.RemoteEndPoint);
                         }
+                        else
+                        {
+                            logger.Debug("Successfully joined local game.");
+                        }
+
+                        // OK, let the program know.
+                        OnJoinResponse(new JoinResponseEventArgs(joinData));
+
+                        // Also, fire one join event for each player in the game. Except for
+                        // the local player, because that'll likely need special treatment anyway.
+                        foreach (var player in AllPlayers)
+                        {
+                            if (!player.Equals(LocalPlayer))
+                            {
+                                OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
+                            }
+                        }
+                    }
+                    break;
+
+                case SessionMessage.PlayerJoined:
+                    // Some player joined the session.
+                    if (ConnectionState == ClientState.Connected)
+                    {
+                        // Get player number.
+                        int playerNumber = packet.ReadInt32();
+
+                        // Sanity checks.
+                        if (playerNumber < 0 || playerNumber >= MaxPlayers || players[playerNumber] != null)
+                        {
+                            throw new PacketException("Invalid player number.");
+                        }
+
+                        // Get player name.
+                        string playerName = packet.ReadString();
+
+                        // Get additional player data.
+                        TPlayerData playerData = new TPlayerData();
+                        packet.ReadPacketizable(playerData, packetizer.Context);
+
+                        // All OK, add the player.
+                        players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData);
+
+                        // The the local program about it.
+                        OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(players[playerNumber]));
                     }
                     break;
 
@@ -442,36 +483,28 @@ namespace Engine.Session
                     // Some player left the session.
                     if (ConnectionState == ClientState.Connected)
                     {
-                        try
+                        // Get player number.
+                        int playerNumber = packet.ReadInt32();
+
+                        // Sanity checks.
+                        if (!HasPlayer(playerNumber))
                         {
-                            // Get player number.
-                            int playerNumber = packet.ReadInt32();
-
-                            // Sanity checks.
-                            if (!HasPlayer(playerNumber))
-                            {
-                                throw new PacketException("Invalid player number.");
-                            }
-
-                            if (playerNumber == _localPlayerNumber)
-                            {
-                                // We were removed from the game.
-                                Reset();
-                            }
-                            else
-                            {
-                                // OK, remove the player.
-                                Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
-                                players[playerNumber] = null;
-
-                                // Tell the local program about it.
-                                OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
-                            }
+                            throw new PacketException("Invalid player number.");
                         }
-                        catch (PacketException ex)
+
+                        if (playerNumber == _localPlayerNumber)
                         {
-                            logger.WarnException("Invalid PlayerLeft.", ex);
+                            // We were removed from the game.
                             Reset();
+                        }
+                        else
+                        {
+                            // OK, remove the player.
+                            Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
+                            players[playerNumber] = null;
+
+                            // Tell the local program about it.
+                            OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
                         }
                     }
                     break;
@@ -480,14 +513,7 @@ namespace Engine.Session
                     // Custom data, just forward it if we're in a session.
                     if (ConnectionState == ClientState.Connected)
                     {
-                        try
-                        {
-                            OnData(new ClientDataEventArgs(packet, true));
-                        }
-                        catch (PacketException ex)
-                        {
-                            logger.WarnException("Invalid Data.", ex);
-                        }
+                        OnData(new ClientDataEventArgs(packet, true));
                     }
                     break;
 
@@ -516,12 +542,11 @@ namespace Engine.Session
                 NumPlayers = 0;
                 MaxPlayers = 0;
 
-                if (ConnectionState == ClientState.Connected)
+                if (_stream != null)
                 {
                     _stream.Dispose();
-                    _tcp.Close();
                 }
-                else if (ConnectionState == ClientState.Connecting)
+                if (_tcp != null)
                 {
                     _tcp.Close();
                 }

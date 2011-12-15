@@ -6,10 +6,30 @@ using Engine.Util;
 
 namespace Engine.Network
 {
+    public interface IPacketStream : IDisposable
+    {
+        /// <summary>
+        /// Tries reading a single packet from this stream. To read multiple available
+        /// packets, repeatedly call this method until it returns <c>null</c>.
+        /// </summary>
+        /// <returns>A read packet, if one was available.</returns>
+        /// <exception cref="IOException">If the underlying stream fails.</exception>
+        Packet Read();
+
+        /// <summary>
+        /// Writes the specified packet to the underlying stream. It can then be read
+        /// byte a <c>PacketStream</c> on the other end of the stream.
+        /// </summary>
+        /// <param name="packet">The packet to write.</param>
+        /// <exception cref="IOException">If the underlying stream fails.</exception>
+        void Write(Packet packet);
+    }
+
     /// <summary>
     /// Utility class for sending packets over a network stream.
     /// </summary>
-    public class PacketStream
+    public abstract class AbstractPacketStream<T> : IPacketStream
+        where T : Stream
     {
         #region Constants
 
@@ -49,9 +69,14 @@ namespace Engine.Network
         #region Fields
 
         /// <summary>
-        /// The underlying network stream being used.
+        /// The underlying stream to read data from.
         /// </summary>
-        private NetworkStream _stream;
+        private T _source;
+
+        /// <summary>
+        /// The underlying stream to write data to.
+        /// </summary>
+        private T _sink;
 
         /// <summary>
         /// Buffer for reading from the stream.
@@ -91,14 +116,17 @@ namespace Engine.Network
 
         #region Constructor / Cleanup
 
-        public PacketStream(NetworkStream stream)
+        protected AbstractPacketStream(T source, T sink)
         {
-            this._stream = stream;
+            this._source = source;
+            this._sink = sink;
         }
 
         public void Dispose()
         {
             _messageStream.Dispose();
+            _source.Dispose();
+            _sink.Dispose();
 
             GC.SuppressFinalize(this);
         }
@@ -116,20 +144,23 @@ namespace Engine.Network
         public Packet Read()
         {
             // Read until we either find a complete packet, or cannot read any more data.
-            while (Available > 0 || _stream.DataAvailable)
+            while (Available > 0 || IsDataAvailable(_source))
             {
                 // Parse what's left in our buffer. If we find a packet, we return it.
-                Packet packet = Parse();
-                if (packet != null)
+                if (Available > 0)
                 {
-                    return packet;
+                    Packet packet = Parse();
+                    if (packet != null)
+                    {
+                        return packet;
+                    }
                 }
                 // Else we're guaranteed to be at the end of our buffer, and it wasn't
                 // enough, so we get some more.
-                if (_stream.DataAvailable)
+                if (IsDataAvailable(_source))
                 {
                     // Get what we can fit in our buffer.
-                    _bufferDataLength = _stream.Read(_buffer, 0, _buffer.Length);
+                    _bufferDataLength = _source.Read(_buffer, 0, _buffer.Length);
                     if (_bufferDataLength <= 0)
                     {
                         // Connection died (reading 0 bytes means the connection is gone).
@@ -178,8 +209,8 @@ namespace Engine.Network
                     throw new ArgumentException("Packet too long.", "packet");
                 }
 
-                _stream.Write(BitConverter.GetBytes((uint)data.Length | (flag ? CompressedMask : 0u)), 0, sizeof(uint));
-                _stream.Write(data, 0, data.Length);
+                _sink.Write(BitConverter.GetBytes((uint)data.Length | (flag ? CompressedMask : 0u)), 0, sizeof(uint));
+                _sink.Write(data, 0, data.Length);
             }
         }
 
@@ -256,5 +287,37 @@ namespace Engine.Network
         }
 
         #endregion
+
+        #region Internals
+
+        protected abstract bool IsDataAvailable(T stream);
+
+        #endregion
+    }
+
+    public sealed class NetworkPacketStream : AbstractPacketStream<NetworkStream>
+    {
+        public NetworkPacketStream(NetworkStream stream)
+            : base(stream, stream)
+        {
+        }
+
+        protected override bool IsDataAvailable(NetworkStream stream)
+        {
+            return stream.DataAvailable;
+        }
+    }
+
+    public sealed class SlidingPacketStream : AbstractPacketStream<SlidingStream>
+    {
+        public SlidingPacketStream(SlidingStream source, SlidingStream sink)
+            : base(source, sink)
+        {
+        }
+
+        protected override bool IsDataAvailable(SlidingStream stream)
+        {
+            return stream.DataAvailable;
+        }
     }
 }

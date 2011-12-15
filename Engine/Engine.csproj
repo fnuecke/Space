@@ -181,6 +181,7 @@
     <Compile Include="Util\IGameConsole.cs" />
     <Compile Include="Util\LineWrittenEventArgs.cs" />
     <Compile Include="Util\SimpleCrypto.cs" />
+    <Compile Include="Util\SlidingStream.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="EngineKey.snk" />

@@ -14,6 +14,12 @@ namespace Space.Control
     /// </summary>
     class ServerController : AbstractTssServer<GameState, IGameObject, GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
     {
+        #region Logger
+
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -39,7 +45,10 @@ namespace Space.Control
 
         protected override void Dispose(bool disposing)
         {
-            Session.PlayerLeft -= HandlePlayerLeft;
+            if (Session != null)
+            {
+                Session.PlayerLeft -= HandlePlayerLeft;
+            }
 
             base.Dispose(disposing);
         }
@@ -56,14 +65,9 @@ namespace Space.Control
             var args = (JoinRequestEventArgs<PlayerInfo, PacketizerContext>)e;
 
             // Create a ship for the player.
+            // TODO validate ship data (i.e. valid ship with valid equipment etc.)
             var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, Packetizer.Context);
             args.Player.Data.ShipUID = AddSteppable(ship);
-#if DEBUG
-            Console.WriteLine("{0} => ship id: {1}", args.Player, ship.UID);
-#endif
-
-            // Now serialize the game state, with the player ship in it.
-            Simulation.Packetize(args.Data);
         }
 
         protected void HandlePlayerLeft(object sender, EventArgs e)
@@ -84,20 +88,12 @@ namespace Space.Control
                     return true;
 
                 default:
-#if DEBUG
-                    Console.WriteLine("Server: got unknown command type: " + command.Type);
-#endif
+                    logger.Debug("Got unknown command type: {0}", command.Type);
                     break;
             }
 
             // Got here -> unhandled.
             return false;
         }
-
-        #region Debugging stuff
-
-        internal long DEBUG_CurrentFrame { get { return Simulation.CurrentFrame; } }
-
-        #endregion
     }
 }

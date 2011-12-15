@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -35,12 +36,28 @@ namespace Engine.Session
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// The time to wait for a new incoming connection to initiate the
+        /// login, before it gets disconnected, in milliseconds.
+        /// </summary>
+        public int LoginTimeout { get; set; }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
         /// The connection to the server, used to (reliably) receive data.
         /// </summary>
         private TcpListener _tcp;
+
+        /// <summary>
+        /// List of pending logins, i.e. connections that have not completed
+        /// the login yet.
+        /// </summary>
+        private List<PendingLogin> _pending = new List<PendingLogin>();
 
         /// <summary>
         /// The list of TCP connections to the connected clients.
@@ -50,7 +67,7 @@ namespace Engine.Session
         /// <summary>
         /// The packet streams used for the different clients.
         /// </summary>
-        private PacketStream[] _streams;
+        private IPacketStream[] _streams;
 
         /// <summary>
         /// Keep track of free slots (use the first free on on joins).
@@ -69,6 +86,8 @@ namespace Engine.Session
                 throw new ArgumentException("maxPlayers");
             }
 
+            LoginTimeout = 2000;
+
             _tcp = new TcpListener(IPAddress.Any, port);
             _tcp.Start();
             udp = new UdpProtocol(DefaultMulticastEndpoint, udpHeader);
@@ -76,7 +95,7 @@ namespace Engine.Session
             this.MaxPlayers = (int)maxPlayers;
             players = new Player<TPlayerData, TPacketizerContext>[maxPlayers];
             this._clients = new TcpClient[maxPlayers];
-            this._streams = new PacketStream[maxPlayers];
+            this._streams = new IPacketStream[maxPlayers];
             _slots = new BitArray(maxPlayers, false);
 
             logger.Trace("Started new server session on port {0}.", port);
@@ -93,11 +112,7 @@ namespace Engine.Session
                 {
                     if (_slots[i])
                     {
-                        try { _clients[i].Client.Shutdown(SocketShutdown.Both); }
-                        catch (Exception) { }
                         _streams[i].Dispose();
-                        _clients[i].Close();
-
                         _streams[i] = null;
                         _clients[i] = null;
                         _slots[i] = false;
@@ -119,43 +134,83 @@ namespace Engine.Session
             {
                 TcpClient client = _tcp.AcceptTcpClient();
                 client.NoDelay = true;
-                PacketStream stream = new PacketStream(client.GetStream());
 
                 // Do not allow connections from the same IP twice, to avoid
                 // ambivalence when getting UDP data packets.
                 if (Array.FindIndex(_clients, c => c != null && ((IPEndPoint)c.Client.RemoteEndPoint).Address.Equals(((IPEndPoint)client.Client.RemoteEndPoint).Address)) >= 0)
                 {
                     // Player already in the game.
-                    try { client.Client.Shutdown(SocketShutdown.Both); }
-                    catch (Exception) { }
-                    stream.Dispose();
-                    client.Close();
+                    client.GetStream().Dispose();
                 }
                 else
                 {
                     // Not yet here, give him a slot, wait for join information.
-                    int playerNumber = FindFreePlayerNumber();
-                    _slots[playerNumber] = true;
-                    _clients[playerNumber] = client;
-                    _streams[playerNumber] = new PacketStream(client.GetStream());
-                    if (++NumPlayers == MaxPlayers)
+                    _pending.Add(new PendingLogin(client, new NetworkPacketStream(client.GetStream())));
+                }
+            }
+
+            // Check for data of pending connections. Iterate back to front to
+            // not get into trouble due to modifications to the collection due
+            // to successful joins. Additional check (< count) is for the case
+            // that all further pending connections are killed because the game
+            // is now full.
+            for (int i = _pending.Count - 1; i >= 0 && i < _pending.Count; --i)
+            {
+                // First check if the client timed out while logging in.
+                // This is to kill off connections from other programs to this
+                // port (that we obviously don't want to talk to), or unresponsive
+                // clients.
+                if ((DateTime.Now - _pending[i].established).TotalMilliseconds > LoginTimeout)
+                {
+                    // Client took to long to complete login, kill the connection.
+                    _pending[i].stream.Dispose();
+                    _pending.RemoveAt(i);
+                }
+                else
+                {
+                    // Not timed out yet. Read a *single* packet from the stream, which
+                    // should be the login packet. We don't read as much as we can here,
+                    // because we can only handle a single packet anyway.
+                    IPacketStream stream = _pending[i].stream;
+                    try
                     {
-                        // Ignore connection requests, we're full.
-                        _tcp.Stop();
+                        Packet packet;
+                        if ((packet = stream.Read()) != null)
+                        {
+                            SessionMessage type = (SessionMessage)packet.ReadByte();
+                            HandlePendingData(i, type, packet.ReadPacket());
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        // Connection failed, disconnect.
+                        logger.TraceException("Socket connection died during login.", ex);
+                        Remove(i);
+                    }
+                    catch (PacketException ex)
+                    {
+                        // Received invalid packet from server.
+                        logger.WarnException("Invalid packet received from client during login.", ex);
+                        Remove(i);
                     }
                 }
             }
 
-            // Check for incoming data.
+            // Check for incoming data. This is for the actual players already in the
+            // session. They can send a lot of packets at once, so we loop until we
+            // can't read any more.
+            // TODO unlikely, but in theory packets could arrive in such frequency that we never leave this loop, check for that (max time spent in loop or something).
             for (int i = 0; i < MaxPlayers; ++i)
             {
                 if (_streams[i] != null)
                 {
                     try
                     {
+                        // Read packets while the stream is still alive.
                         Packet packet;
                         while (_streams[i] != null && (packet = _streams[i].Read()) != null)
                         {
+                            // Get the type and have it handled.
                             SessionMessage type = (SessionMessage)packet.ReadByte();
                             HandleTcpData(i, type, packet.ReadPacket());
                         }
@@ -169,13 +224,33 @@ namespace Engine.Session
                     catch (PacketException ex)
                     {
                         // Received invalid packet from server.
-                        logger.WarnException("Invalid packet received from server.", ex);
+                        logger.WarnException("Invalid packet received from client.", ex);
                         Remove(i);
                     }
                 }
             }
 
             base.Update(gameTime);
+        }
+        
+        /// <summary>
+        /// Add a single connection for this server. This connection will be put into
+        /// login pending mode, meaning it has to send its login data. If it doesn't
+        /// by the time <c>LoginTimeout</c> milliseconds have passed, it'll be disconnected.
+        /// 
+        /// <para>
+        /// This is used for local joins, i.e. clients running in the same program
+        /// joining the game. We avoid going through the network stack this way.
+        /// </para>
+        /// </summary>
+        /// <param name="stream">the packet stream used for this client.</param>
+        internal void Add(IPacketStream stream)
+        {
+            if (NumPlayers == MaxPlayers)
+            {
+                throw new InvalidOperationException("Game already full.");
+            }
+            _pending.Add(new PendingLogin(null, stream));
         }
 
         #endregion
@@ -293,102 +368,130 @@ namespace Engine.Session
             }
         }
 
-        private void HandleTcpData(int playerNumber, SessionMessage type, Packet packet)
+        /// <summary>
+        /// Got data from a pending connection.
+        /// </summary>
+        /// <param name="pending">the index of the pending connection data.</param>
+        /// <param name="type">the type of message we got.</param>
+        /// <param name="packet">the data we got with it.</param>
+        private void HandlePendingData(int pendingIndex, SessionMessage type, Packet packet)
         {
             switch (type)
             {
                 case SessionMessage.JoinRequest:
                     // Player wants to join.
                     {
+                        // First, get the name he wishes to use.
+                        string playerName = packet.ReadString().Trim();
+
+                        // Valid name?
+                        if (String.IsNullOrWhiteSpace(playerName))
+                        {
+                            throw new ArgumentException("Invalid name.");
+                        }
+
+                        // Get custom player data.
+                        TPlayerData playerData = new TPlayerData();
+                        packet.ReadPacketizable(playerData, packetizer.Context);
+                        
+                        // OK so far, get a number for our player.
+                        int playerNumber = FindFreePlayerNumber();
+
+                        // Create the player instance for the player.
+                        var player = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData);
+
+                        // Request additional info first, as this also triggers
+                        // validation / prepping of the joining player's player
+                        // info, or allow manual override -- disallowing the
+                        // player to join.
+                        var requestArgs = new JoinRequestEventArgs<TPlayerData, TPacketizerContext>(player, playerData);
                         try
                         {
-                            // First, get the name he wishes to use.
-                            string playerName = packet.ReadString().Trim();
-
-                            // Valid name?
-                            if (String.IsNullOrWhiteSpace(playerName))
-                            {
-                                Remove(playerNumber);
-                                return;
-                            }
-
-                            // Get custom player data.
-                            TPlayerData playerData = new TPlayerData();
-                            packet.ReadPacketizable(playerData, packetizer.Context);
-
-                            // Create the player instance for the player.
-                            var player = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData);
-
-                            // Request additional info first, as this also triggers
-                            // validation / prepping of the joining player's player
-                            // info, or allow manual override -- disallowing the
-                            // player to join.
-                            var requestArgs = new JoinRequestEventArgs<TPlayerData, TPacketizerContext>(player, playerData);
-                            try
-                            {
-                                OnJoinRequested(requestArgs);
-                            }
-                            catch (Exception ex)
-                            {
-                                // Something went wrong, possible wrong data provided by the client.
-                                // In any case, block him.
-                                logger.ErrorException("Failed getting join response data.", ex);
-                                requestArgs.ShouldBlock = true;
-                            }
-
-                            // Should we block the player?
-                            if (requestArgs.ShouldBlock)
-                            {
-                                Remove(playerNumber);
-                                return;
-                            }
-
-                            // Store the player's info.
-                            players[playerNumber] = player;
-
-                            // Build the response.
-                            Packet response = new Packet()
-                                .Write(playerNumber)
-                                .Write(NumPlayers)
-                                .Write(MaxPlayers)
-                                .Write(requestArgs.Data);
-
-                            // Send info about all players in the game (including himself).
-                            foreach (var p in AllPlayers)
-                            {
-                                response
-                                    .Write(p.Number)
-                                    .Write(p.Name)
-                                    .Write(p.Data);
-                            }
-
-                            // Send the response!
-                            SendTo(player, SessionMessage.JoinResponse, response);
-
-                            // Tell the other players.
-                            var joined = new Packet()
-                                .Write(playerNumber)
-                                .Write(playerName)
-                                .Write(playerData);
-                            foreach (var p in AllPlayers)
-                            {
-                                if (!p.Equals(player))
-                                {
-                                    SendTo(p, SessionMessage.PlayerJoined, joined);
-                                }
-                            }
-
-                            // Tell the local program the player has joined.
-                            OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(players[playerNumber]));
+                            OnJoinRequested(requestArgs);
                         }
-                        catch (PacketException ex)
+                        catch (Exception ex)
                         {
-                            logger.WarnException("Invalid JoinRequest.", ex);
-                            Remove(playerNumber);
+                            // Something went wrong, possible wrong data provided by the client.
+                            // In any case, block him.
+                            logger.ErrorException("Failed getting join response data.", ex);
+                            requestArgs.ShouldBlock = true;
                         }
+
+                        // Should we block the player?
+                        if (requestArgs.ShouldBlock)
+                        {
+                            throw new ArgumentException("Invalid data or actively blocked.");
+                        }
+
+                        // After getting here it's official! We have a new player.
+
+                        // Store the player's info.
+                        players[playerNumber] = player;
+                        _slots[playerNumber] = true;
+                        _clients[playerNumber] = _pending[pendingIndex].client;
+                        _streams[playerNumber] = _pending[pendingIndex].stream;
+
+                        _pending.RemoveAt(pendingIndex);
+                        if (++NumPlayers == MaxPlayers)
+                        {
+                            // Ignore connection requests, we're full.
+                            _tcp.Stop();
+                            // Also kill all other pending connections.
+                            foreach (var pending in _pending)
+                            {
+                                pending.stream.Dispose();
+                            }
+                            _pending.Clear();
+                        }
+
+                        // Build the response.
+                        Packet response = new Packet()
+                            .Write(playerNumber)
+                            .Write(NumPlayers)
+                            .Write(MaxPlayers)
+                            .Write(requestArgs.Data);
+
+                        // Send info about all players in the game (including himself).
+                        foreach (var p in AllPlayers)
+                        {
+                            response
+                                .Write(p.Number)
+                                .Write(p.Name)
+                                .Write(p.Data);
+                        }
+
+                        // Send the response!
+                        SendTo(player, SessionMessage.JoinResponse, response);
+
+                        // Tell the other players.
+                        var joined = new Packet()
+                            .Write(playerNumber)
+                            .Write(playerName)
+                            .Write(playerData);
+                        foreach (var p in AllPlayers)
+                        {
+                            if (!p.Equals(player))
+                            {
+                                SendTo(p, SessionMessage.PlayerJoined, joined);
+                            }
+                        }
+
+                        // Tell the local program the player has joined.
+                        OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(players[playerNumber]));
                     }
                     break;
 
+                // Ignore the rest.
+                default:
+                    logger.Trace("Unknown SessionMessage via TCP: {0}.", type);
+                    break;
+            }
+        }
+
+        private void HandleTcpData(int playerNumber, SessionMessage type, Packet packet)
+        {
+            switch (type)
+            {
                 case SessionMessage.Leave:
                     // Player wants to leave the session.
                     {
@@ -424,11 +527,7 @@ namespace Engine.Session
                 // Keep for event dispatching.
                 var player = players[playerNumber];
 
-                try { _clients[playerNumber].Client.Shutdown(SocketShutdown.Both); }
-                catch (Exception) { }
                 _streams[playerNumber].Dispose();
-                _clients[playerNumber].Close();
-
                 _clients[playerNumber] = null;
                 _streams[playerNumber] = null;
                 _slots[playerNumber] = false;
@@ -486,5 +585,19 @@ namespace Engine.Session
         }
 
         #endregion
+
+        private sealed class PendingLogin
+        {
+            public readonly TcpClient client;
+            public readonly IPacketStream stream;
+            public readonly DateTime established;
+
+            public PendingLogin(TcpClient client, IPacketStream stream)
+            {
+                this.client = client;
+                this.stream = stream;
+                this.established = DateTime.Now;
+            }
+        }
     }
 }

@@ -14,6 +14,12 @@ namespace Space.Control
     /// </summary>
     class ClientController : AbstractTssClient<GameState, IGameObject, GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
     {
+        #region Logger
+
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -86,11 +92,8 @@ namespace Space.Control
         /// </summary>
         protected override void HandleJoinResponse(object sender, EventArgs e)
         {
-            var args = (JoinResponseEventArgs)e;
-
-            Console.WriteLine("CLT.NET: Join response");
-
-            Simulation.Depacketize(args.Data, Packetizer.Context);
+            // OK, we were allowed to join, invalidate our simulation to request the current state.
+            Simulation.Invalidate();
         }
 
         /// <summary>
@@ -121,9 +124,7 @@ namespace Space.Control
                     return true;
 
                 default:
-#if DEBUG
-                    Console.WriteLine("Client: got unknown command type: " + command.Type);
-#endif
+                    logger.Debug("Got unknown command type: {0}", command.Type);
                     break;
             }
 
@@ -134,8 +135,6 @@ namespace Space.Control
         #endregion
 
         #region Debugging stuff
-
-        internal long DEBUG_CurrentFrame { get { return Simulation.CurrentFrame; } }
 
         internal void DEBUG_InvalidateSimulation()
         {
