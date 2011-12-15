@@ -132,4 +132,7 @@
   <data name="host" xml:space="preserve">
     <value>Spiel hosten</value>
   </data>
+  <data name="playerName" xml:space="preserve">
+    <value>Spieler Name:</value>
+  </data>
 </root>

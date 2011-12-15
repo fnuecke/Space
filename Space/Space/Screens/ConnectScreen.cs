@@ -50,7 +50,7 @@ namespace GameStateManagement
             PlayerInfo info = new PlayerInfo();
             info.ShipType = "Sparrow";
             ((EditableMenueEntry)MenuEntries[0]).locked = true;
-            Client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
+            Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
         }
         //Called if the login was handeled
         private void LoginSucces(object sender, EventArgs e)

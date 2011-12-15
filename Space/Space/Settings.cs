@@ -40,6 +40,15 @@ namespace Space
 
         #endregion
 
+        #region Miscellaneous
+
+        /// <summary>
+        /// The Name of the Player
+        /// </summary>
+        public string PlayerName = "Player";
+
+        #endregion
+
         #region Key bindings
 
         /// <summary>

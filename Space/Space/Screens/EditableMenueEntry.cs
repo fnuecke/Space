@@ -30,17 +30,31 @@ namespace GameStateManagement
         /// Overall padding of the console.
         /// </summary>
         private const int Padding = 4;
-       
+
+        private string inputText;
+        private string staticText = "";
         #endregion
         public EditableMenueEntry(string Text)
             : base(Text)
         {
+            inputText = "";
+            staticText = Text;
+            
             KeyMap = KeyMap.KeyMapByLocale("en-US");
             locked = false;
             CaretColor = new Color(0.4f, 0.4f, 0.4f, 0.4f);
             
         }
-
+        public void SetInputText(string text)
+        {
+            inputText = text;
+            Cursor = text.Length;
+            Text = staticText + inputText;
+        }
+        public  string  GetInputText()
+        {
+            return inputText;
+        }
         public void HandleKeyPressed(object sender, EventArgs e)
         {
             if (Active&&!locked)
@@ -50,9 +64,9 @@ namespace GameStateManagement
                 switch (args.Key)
                 {
                     case Keys.Back:
-                        if (Text.Length > 0)
+                        if (inputText.Length > 0)
                         {
-                            Text = (Cursor > 0 ? Text.Substring(0, Cursor - 1) : "") + (Cursor > 0 ? Text.Substring(Cursor) : Text.Substring(Cursor+1));
+                            inputText = (Cursor > 0 ? inputText.Substring(0, Cursor - 1) : "") + (Cursor > 0 ? inputText.Substring(Cursor) : inputText.Substring(Cursor + 1));
                             if(Cursor>0)
                             Cursor--;
                         }
@@ -78,7 +92,7 @@ namespace GameStateManagement
                     case Keys.PageUp:
                         break;
                     case Keys.Right:
-                        if (Cursor < Text.Length)
+                        if (Cursor < inputText.Length)
                             Cursor++;
                         break;
                     case Keys.Tab:
@@ -93,12 +107,13 @@ namespace GameStateManagement
                             char ch = KeyMap[args.Modifier, args.Key];
                             if (ch != '\0')
                             {
-                               Text = Text.Substring(0,Cursor)+ch+Text.Substring(Cursor);
+                                inputText = inputText.Substring(0, Cursor) + ch + inputText.Substring(Cursor);
                                Cursor++;
                             }
                         }
                         break;
                 }
+                Text = staticText + inputText;
             }
         }
 
@@ -126,14 +141,14 @@ namespace GameStateManagement
                 float scale = 1 + pulsate * 0.05f * selectionFade;
                 int cursorLine;
                 int cursorCounter = Cursor;
-                if (Text.Length > 0&&cursorCounter>0)
+                if (inputText.Length > 0&&cursorCounter>0)
                     cursorCounter -= 1;
-                int cursorX = (int)Position.X  + (int)(Font.MeasureString(Text.Substring(0, Cursor)).X * scale);
+                int cursorX = (int)Position.X + (int)(Font.MeasureString(inputText.Substring(0, Cursor)).X + Font.MeasureString(staticText).X * scale);
                 int cursorY = (int)(Position.Y -Font.LineSpacing/2 * scale) ;// +Padding + (ComputeNumberOfVisibleLines() - (inputWrapped.Count - cursorLine)) * Font.LineSpacing;
                 int cursorWidth;
-                if (Text.Length > cursorCounter+1)
+                if (inputText.Length > cursorCounter+1)
                 {
-                    cursorWidth = (int)(Font.MeasureString(Text.Substring(cursorCounter, 1)).X * scale);
+                    cursorWidth = (int)(Font.MeasureString(inputText.Substring(cursorCounter, 1)).X * scale);
                 }
                 else
                 {

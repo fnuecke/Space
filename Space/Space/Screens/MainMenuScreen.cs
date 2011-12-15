@@ -79,7 +79,7 @@ namespace GameStateManagement
             // Autojoin self.
             PlayerInfo info = new PlayerInfo();
             info.ShipType = "Sparrow";
-            _client.Session.Join(_server.Session, "player", info);
+            _client.Session.Join(_server.Session, Settings.Instance.PlayerName, info);
 
             LoadingScreen.Load(ScreenManager, true, new GameplayScreen(_client));
         }

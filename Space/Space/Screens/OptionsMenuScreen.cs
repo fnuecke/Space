@@ -8,6 +8,8 @@
 #endregion
 
 #region Using Statements
+
+using Engine.Input;
 using Microsoft.Xna.Framework;
 using Space;
 using System.Collections.Generic;
@@ -24,19 +26,11 @@ namespace GameStateManagement
     {
         #region Fields
 
-        MenuEntry ungulateMenuEntry;
         MenuEntry languageMenuEntry;
-        MenuEntry frobnicateMenuEntry;
-        MenuEntry elfMenuEntry;
+        private EditableMenueEntry playerName;
+        
 
-        enum Ungulate
-        {
-            BactrianCamel,
-            Dromedary,
-            Llama,
-        }
-
-        static Ungulate currentUngulate = Ungulate.Dromedary;
+      
 
         static Dictionary<string,string> languages= new Dictionary<string,string>();
 
@@ -63,41 +57,42 @@ namespace GameStateManagement
             // Create our menu entries.
             languages["en"] = Strings.en;
             languages["de"] = Strings.de;
-            ungulateMenuEntry = new MenuEntry(string.Empty);
+            
             languageMenuEntry = new MenuEntry(string.Empty);
-            frobnicateMenuEntry = new MenuEntry(string.Empty);
-            elfMenuEntry = new MenuEntry(string.Empty);
-
+            playerName = new EditableMenueEntry(Strings.playerName);
+            
             SetMenuEntryText();
 
             MenuEntry back = new MenuEntry("Back");
 
             // Hook up menu event handlers.
-            ungulateMenuEntry.Selected += UngulateMenuEntrySelected;
             languageMenuEntry.Selected += LanguageMenuEntrySelected;
             languageMenuEntry.next += LanguageMenuEntryNext;
-            frobnicateMenuEntry.Selected += FrobnicateMenuEntrySelected;
-            elfMenuEntry.Selected += ElfMenuEntrySelected;
             back.Selected += OnCancel;
+
+            playerName.Selected += PlayerNameSelected;
             
             // Add entries to the menu.
-            MenuEntries.Add(ungulateMenuEntry);
             MenuEntries.Add(languageMenuEntry);
-            MenuEntries.Add(frobnicateMenuEntry);
-            MenuEntries.Add(elfMenuEntry);
+            MenuEntries.Add(playerName);
             MenuEntries.Add(back);
         }
 
-
+        public override void LoadContent()
+        {
+            var keyboard = (IKeyboardInputManager)ScreenManager.Game.Services.GetService(typeof(IKeyboardInputManager));
+            if (keyboard != null)
+            {
+                keyboard.Pressed += playerName.HandleKeyPressed;
+            }
+        }
         /// <summary>
         /// Fills in the latest values for the options screen menu text.
         /// </summary>
         void SetMenuEntryText()
         {
-            ungulateMenuEntry.Text = "Preferred ungulate: " + currentUngulate;
-            languageMenuEntry.Text = "Language: " + languages[Settings.Instance.Language];
-            frobnicateMenuEntry.Text = "Frobnicate: " + (frobnicate ? "on" : "off");
-            elfMenuEntry.Text = "elf: " + elf;
+           languageMenuEntry.Text = "Language: " + languages[Settings.Instance.Language];
+            playerName.SetInputText(Settings.Instance.PlayerName);
         }
 
 
@@ -106,18 +101,7 @@ namespace GameStateManagement
         #region Handle Input
 
 
-        /// <summary>
-        /// Event handler for when the Ungulate menu entry is selected.
-        /// </summary>
-        void UngulateMenuEntrySelected(object sender, PlayerIndexEventArgs e)
-        {
-            currentUngulate++;
-
-            if (currentUngulate > Ungulate.Llama)
-                currentUngulate = 0;
-
-            SetMenuEntryText();
-        }
+       
 
 
         /// <summary>
@@ -128,6 +112,18 @@ namespace GameStateManagement
             
             
             currentLanguage = (currentLanguage + 1) % languages.Count;
+
+            SetMenuEntryText();
+        }
+
+        /// <summary>
+        /// Event handler for when the Language menu entry is selected.
+        /// </summary>
+        void PlayerNameSelected(object sender, PlayerIndexEventArgs e)
+        {
+
+
+            Settings.Instance.PlayerName = playerName.GetInputText();
 
             SetMenuEntryText();
         }
