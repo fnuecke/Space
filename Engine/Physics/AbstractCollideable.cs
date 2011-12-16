@@ -1,56 +1,16 @@
 ﻿using Engine.Math;
 using Engine.Serialization;
-using Engine.Simulation;
 
 namespace Engine.Physics
 {
     /// <summary>
     /// Base implementation for collideable types.
     /// </summary>
-    public abstract class AbstractCollideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        : PhysicalObject<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>, ICollideable
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public abstract class AbstractCollideable<TPlayerData, TPacketizerContext>
+        : PhysicalObject<TPlayerData, TPacketizerContext>, ICollideable
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
-        #region Properties
-
-        /// <summary>
-        /// Implements registering / unregistering self with the associated state.
-        /// </summary>
-        public override TState State
-        {
-            get
-            {
-                return _State;
-            }
-            set
-            {
-                if (_State != null)
-                {
-                    _State.Collideables.Remove(this);
-                }
-                _State = value;
-                if (_State != null)
-                {
-                    _State.Collideables.Add(this);
-                }
-            }
-        }
-
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        /// Holds actual value of <c>State</c>.
-        /// </summary>
-        private TState _State;
-
-        #endregion
-
         #region Interfaces
 
         /// <summary>

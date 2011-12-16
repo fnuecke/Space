@@ -12,7 +12,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class ClientController : AbstractTssClient<GameState, IGameObject, GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
+    class ClientController : AbstractTssClient<GameCommand, PlayerInfo, PacketizerContext>
     {
         #region Logger
 
@@ -60,7 +60,7 @@ namespace Space.Control
 
                 // Get player's ship's position.
                 var translation = Vector2.Zero;
-                Ship ship = (Ship)Simulation.GetSteppable(Session.LocalPlayer.Data.ShipUID);
+                Ship ship = (Ship)Simulation.GetEntity(Session.LocalPlayer.Data.ShipUID);
                 if (ship != null)
                 {
                     translation.X = -ship.Position.X.IntValue + GraphicsDevice.Viewport.Width / 2;
@@ -75,7 +75,7 @@ namespace Space.Control
                 spriteBatch.Begin();
                 foreach (var child in Simulation.Children)
                 {
-                    child.Draw(null, translation, spriteBatch);
+                    //child.Draw(null, translation, spriteBatch);
                 }
                 spriteBatch.End();
             }
@@ -101,7 +101,7 @@ namespace Space.Control
         /// </summary>
         protected override void HandleLocalCommand(GameCommand command)
         {
-            switch (command.Type)
+            switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player input command, high send priority.
@@ -114,10 +114,10 @@ namespace Space.Control
         /// Got command data from another client or the server.
         /// </summary>
         /// <param name="command">the received command.</param>
-        protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override bool HandleRemoteCommand(IFrameCommand<PlayerInfo, PacketizerContext> command)
         {
             // Check what we have.
-            switch (command.Type)
+            switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     Apply(command);

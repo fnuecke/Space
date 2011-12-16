@@ -7,10 +7,9 @@ namespace Engine.Controller
     /// <summary>
     /// Defines public functionality of a game controller.
     /// </summary>
-    public interface IController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
+    public interface IController<TSession, TCommand, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+        where TCommand : ICommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {

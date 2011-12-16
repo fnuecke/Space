@@ -1,4 +1,5 @@
-﻿using Engine.Serialization;
+﻿using System;
+using Engine.Serialization;
 using Engine.Session;
 
 namespace Engine.Commands
@@ -6,9 +7,8 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands.
     /// </summary>
-    public abstract class Command<TCommandType, TPlayerData, TPacketizerContext>
-        : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public abstract class Command<TPlayerData, TPacketizerContext>
+        : ICommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -28,13 +28,13 @@ namespace Engine.Commands
         /// <summary>
         /// The type of the command.
         /// </summary>
-        public TCommandType Type { get; private set; }
+        public Enum Type { get; private set; }
 
         #endregion
 
         #region Constructor
 
-        protected Command(TCommandType type)
+        protected Command(Enum type)
         {
             this.Type = type;
         }
@@ -57,7 +57,7 @@ namespace Engine.Commands
 
         #region Equality
 
-        public virtual bool Equals(ICommand<TCommandType, TPlayerData, TPacketizerContext> other)
+        public virtual bool Equals(ICommand<TPlayerData, TPacketizerContext> other)
         {
             return other != null && other.Type.Equals(this.Type) &&
                 other.Player.Number == this.Player.Number;

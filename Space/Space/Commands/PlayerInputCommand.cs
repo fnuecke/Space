@@ -75,7 +75,7 @@ namespace Space.Commands
 
         #region Equality
 
-        public override bool Equals(ICommand<GameCommandType, PlayerInfo, PacketizerContext> other)
+        public override bool Equals(ICommand<PlayerInfo, PacketizerContext> other)
         {
             return other is PlayerInputCommand &&
                 base.Equals(other) &&

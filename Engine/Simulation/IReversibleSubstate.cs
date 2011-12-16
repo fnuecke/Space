@@ -2,10 +2,8 @@
 
 namespace Engine.Simulation
 {
-    public interface IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public interface IReversibleSubstate<TPlayerData, TPacketizerContext>
+        : IState<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {

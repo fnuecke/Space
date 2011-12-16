@@ -4,14 +4,10 @@ using Engine.Util;
 namespace Engine.Simulation
 {
     /// <summary>
-    /// Base class for steppables, implementing logic for distributing unique ids.
+    /// Base class for entities, implementing logic for distributing unique ids.
     /// </summary>
-    /// <typeparam name="TState">the type of state the object will be used together with.</typeparam>
-    /// <typeparam name="TSteppable">the type of steppable used in the state.</typeparam>
-    public abstract class AbstractSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public abstract class AbstractEntity<TPlayerData, TPacketizerContext>
+        : IEntity<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -25,11 +21,11 @@ namespace Engine.Simulation
         /// <summary>
         /// The world (simulation) this object is associated with.
         /// </summary>
-        public virtual TState State { get; set; }
+        public virtual IState<TPlayerData, TPacketizerContext> State { get; set; }
 
         #endregion
 
-        protected AbstractSteppable()
+        protected AbstractEntity()
         {
             // Init to -1 as a default, so these aren't found due to
             // badly initialized 'pointers'.

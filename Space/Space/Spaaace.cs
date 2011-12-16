@@ -89,7 +89,7 @@ namespace Space
             // Make some class available through it. The classes registered here
             // can be deserialized without the code triggering the deserialization
             // to actually know what it'll get. This is used in game states, e.g.
-            // where the state only knows it has ISteppables, but not what the
+            // where the state only knows it has IEntities, but not what the
             // actual implementations are.
             packetizer.Register<Ship>();
             packetizer.Register<Shot>();

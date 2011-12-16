@@ -11,17 +11,15 @@ namespace Engine.Simulation
     /// all non-constant references (constant references may for
     /// example be things such as settings / read only values).
     /// </summary>
-    public interface ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : ICloneable, IPacketizable<TPlayerData, TPacketizerContext>, IHashable
-        where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public interface IEntity<TPlayerData, TPacketizerContext>
+        : IPacketizable<TPlayerData, TPacketizerContext>, ICloneable, IHashable
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
         /// The world (simulation) this object is associated with.
         /// </summary>
-        TState State { get; set; }
+        IState<TPlayerData, TPacketizerContext> State { get; set; }
 
         /// <summary>
         /// A globally unique id for this object.

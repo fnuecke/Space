@@ -1,16 +1,15 @@
-﻿using Engine.Math;
+﻿using System;
+using Engine.Math;
 using Engine.Physics;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Space.Commands;
 using SpaceData;
-using System;
 
 namespace Space.Model
 {
-    class Ship : Sphere<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>, IGameObject
+    class Ship : Sphere<PlayerInfo, PacketizerContext>, IGameObject
     {
         /// <summary>
         /// Time in ticks it takes before a ship may respawn.
@@ -143,7 +142,7 @@ namespace Space.Model
                     Console.WriteLine("shoot");
 
                     shotCooldown = 20;
-                    State.AddSteppable(new Shot("Cheap Laser", position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), State.Packetizer.Context));
+                    State.AddEntity(new Shot("Cheap Laser", position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), State.Packetizer.Context));
                     
                 }
             }
@@ -154,7 +153,7 @@ namespace Space.Model
             if (IsAlive)
             {
                 base.PostUpdate();
-
+                /*
                 foreach (var collideable in State.Collideables)
                 {
                     if (collideable.Intersects(this.radius, ref this.previousPosition, ref this.position))
@@ -163,6 +162,7 @@ namespace Space.Model
                         this.NotifyOfCollision();
                     }
                 }
+                 * */
             }
         }
 

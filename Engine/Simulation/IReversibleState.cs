@@ -10,11 +10,8 @@ namespace Engine.Simulation
     /// pushed that was issued earlier than the current frame (if the command
     /// was authoritative, i.e. not tentative).
     /// </summary>
-    interface IReversibleState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    interface IReversibleState<TPlayerData, TPacketizerContext>
+        : IState<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -47,17 +44,17 @@ namespace Engine.Simulation
         /// Add an object in a specific time frame. This will roll back, if
         /// necessary, to insert the object, meaning it can trigger desyncs.
         /// </summary>
-        /// <param name="steppable">the object to insert.</param>
+        /// <param name="entity">the object to insert.</param>
         /// <param name="frame">the frame to insert it at.</param>
-        void AddSteppable(TSteppable steppable, long frame);
+        void AddEntity(IEntity<TPlayerData, TPacketizerContext> entity, long frame);
 
         /// <summary>
         /// Remove an object in a specific time frame. This will roll back, if
         /// necessary, to remove the object, meaning it can trigger desyncs.
         /// </summary>
-        /// <param name="steppableUid">the id of the object to remove.</param>
+        /// <param name="entityUid">the id of the object to remove.</param>
         /// <param name="frame">the frame to remove it at.</param>
-        void RemoveSteppable(long steppableUid, long frame);
+        void RemoveEntity(long entityUid, long frame);
 
         /// <summary>
         /// Push a command to be executed at the given frame.  This will roll
@@ -66,6 +63,6 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="command">the command to push.</param>
         /// <param name="frame">the frame in which to execute the command.</param>
-        void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, long frame);
+        void PushCommand(ICommand<TPlayerData, TPacketizerContext> command, long frame);
     }
 }

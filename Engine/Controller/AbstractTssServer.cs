@@ -13,18 +13,11 @@ namespace Engine.Controller
     /// This takes care of synchronizing the gamestates between server and
     /// client, and getting the runspeed synchronized as well.
     /// </summary>
-    /// <typeparam name="TState">the type of game state used to represent a simulation.
-    /// This is the simulation run as a substate of the TSS.</typeparam>
-    /// <typeparam name="TSteppable">the type of object we put into our simulation.</typeparam>
-    /// <typeparam name="TCommandType">the type of commands we send around.</typeparam>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssServer<TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractTssController<IServerSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TCommand : IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssServer<TCommand, TPlayerData, TPacketizerContext>
+        : AbstractTssController<IServerSession<TPlayerData, TPacketizerContext>, TCommand, TPlayerData, TPacketizerContext>
+        where TCommand : IFrameCommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -172,56 +165,56 @@ namespace Engine.Controller
         #region Modify simulation
 
         /// <summary>
-        /// Add a steppable to the simulation. Will be inserted at the
-        /// current leading frame. The steppable will be given a unique
+        /// Add a entity to the simulation. Will be inserted at the
+        /// current leading frame. The entity will be given a unique
         /// id, by which it may later be referenced for removals.
         /// </summary>
-        /// <param name="steppable">the steppable to add.</param>
-        /// <param name="frame">the frame in which to add the steppable.</param>
-        /// <returns>the id the steppable was assigned.</returns>
-        public override long AddSteppable(TSteppable steppable, long frame)
+        /// <param name="entity">the entity to add.</param>
+        /// <param name="frame">the frame in which to add the entity.</param>
+        /// <returns>the id the entity was assigned.</returns>
+        public override long AddEntity(IEntity<TPlayerData, TPacketizerContext> entity, long frame)
         {
-            // Give the steppable a unique id. Skip the zero to avoid
+            // Give the entity a unique id. Skip the zero to avoid
             // referencing that object with uninitialized 'pointers'.
-            steppable.UID = ++_lastUid;
+            entity.UID = ++_lastUid;
 
-            // Add the steppable to the simulation.
-            base.AddSteppable(steppable, frame);
+            // Add the entity to the simulation.
+            base.AddEntity(entity, frame);
 
             // Notify all players in the game about this.
             Packet addedInfo = new Packet()
                 .Write((byte)TssControllerMessage.AddGameObject)
                 .Write(frame);
             // Run it through the packetizer, because we don't know the actual type.
-            Packetizer.Packetize(steppable, addedInfo);
+            Packetizer.Packetize(entity, addedInfo);
             Session.Send(addedInfo);
 
-            return steppable.UID;
+            return entity.UID;
         }
 
         /// <summary>
-        /// Removes a steppable with the given id from the simulation.
-        /// The steppable will be removed at the given frame.
+        /// Removes a entity with the given id from the simulation.
+        /// The entity will be removed at the given frame.
         /// </summary>
-        /// <param name="steppableId">the id of the steppable to remove.</param>
-        /// <param name="frame">the frame in which to remove the steppable.</param>
-        public override void RemoveSteppable(long steppableUid, long frame)
+        /// <param name="entityId">the id of the entity to remove.</param>
+        /// <param name="frame">the frame in which to remove the entity.</param>
+        public override void RemoveEntity(long entityUid, long frame)
         {
-            // Remove the steppable from the simulation.
-            base.RemoveSteppable(steppableUid, frame);
+            // Remove the entity from the simulation.
+            base.RemoveEntity(entityUid, frame);
 
             // Notify all players in the game about this.
             Session.Send(new Packet()
                 .Write((byte)TssControllerMessage.RemoveGameObject)
                 .Write(frame)
-                .Write(steppableUid));
+                .Write(entityUid));
         }
 
         /// <summary>
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected override void Apply(IFrameCommand<TPlayerData, TPacketizerContext> command)
         {
             if (command.Frame >= Simulation.TrailingFrame)
             {
@@ -245,7 +238,7 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of server side TSS synchronization logic.
         /// </summary>
-        protected override IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
+        protected override IFrameCommand<TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
         {
             var args = (ServerDataEventArgs<TPlayerData, TPacketizerContext>)e;
             var type = (TssControllerMessage)args.Data.ReadByte();

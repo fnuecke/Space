@@ -12,7 +12,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class ServerController : AbstractTssServer<GameState, IGameObject, GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
+    class ServerController : AbstractTssServer<GameCommand, PlayerInfo, PacketizerContext>
     {
         #region Logger
 
@@ -67,20 +67,20 @@ namespace Space.Control
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
             var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, Packetizer.Context);
-            args.Player.Data.ShipUID = AddSteppable(ship);
+            args.Player.Data.ShipUID = AddEntity(ship);
         }
 
         protected void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
             // Player left the game, remove his ship.
-            RemoveSteppable(args.Player.Data.ShipUID);
+            RemoveEntity(args.Player.Data.ShipUID);
         }
 
-        protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override bool HandleRemoteCommand(IFrameCommand<PlayerInfo, PacketizerContext> command)
         {
             // Check what we have.
-            switch (command.Type)
+            switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player sent input.

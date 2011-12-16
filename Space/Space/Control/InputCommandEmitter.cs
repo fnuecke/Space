@@ -11,7 +11,7 @@ using Space.Model;
 
 namespace Space.Control
 {
-    class InputCommandEmitter : GameComponent, ICommandEmitter<GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
+    class InputCommandEmitter : GameComponent, ICommandEmitter<GameCommand, PlayerInfo, PacketizerContext>
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command
@@ -21,7 +21,7 @@ namespace Space.Control
         /// with the proper generics as to match the controller it'll be registered
         /// with.
         /// </summary>
-        public event CommandEmittedEventHandler<GameCommand, GameCommandType, PlayerInfo, PacketizerContext> CommandEmitted;
+        public event CommandEmittedEventHandler<GameCommand, PlayerInfo, PacketizerContext> CommandEmitted;
 
         private IClientSession<PlayerInfo, PacketizerContext> Session;
         private ClientController simulation;
@@ -188,7 +188,7 @@ namespace Space.Control
         /// <param name="targetRotation">the new direction to face.</param>
         private void UpdateTargetRotation(double targetRotation)
         {
-            Ship ship = (Ship)simulation.GetSteppable(Session.LocalPlayer.Data.ShipUID);
+            Ship ship = (Ship)simulation.GetEntity(Session.LocalPlayer.Data.ShipUID);
             if (ship != null)
             {
                 // Get ships current orientation.

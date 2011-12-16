@@ -10,11 +10,10 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for all game controller.
     /// </summary>
-    public abstract class AbstractController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : DrawableGameComponent, IController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class AbstractController<TSession, TCommand, TPlayerData, TPacketizerContext>
+        : DrawableGameComponent, IController<TSession, TCommand, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+        where TCommand : ICommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {

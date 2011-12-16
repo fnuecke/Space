@@ -8,55 +8,52 @@ namespace Engine.Controller
     /// <summary>
     /// Public interface for controllers managing a game state.
     /// </summary>
-    public interface IStateController<TState, TSteppable, TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : IController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
+    public interface IStateController<TSession, TCommand, TPlayerData, TPacketizerContext>
+        : IController<TSession, TCommand, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+        where TCommand : ICommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
         /// <summary>
-        /// Add a steppable to the simulation. Will be inserted at the
-        /// current leading frame. The steppable will be given a unique
+        /// Add a entity to the simulation. Will be inserted at the
+        /// current leading frame. The entity will be given a unique
         /// id, by which it may later be referenced for removals.
         /// </summary>
-        /// <param name="steppable">the steppable to add.</param>
-        /// <returns>the id the steppable was assigned.</returns>
-        long AddSteppable(TSteppable steppable);
+        /// <param name="entity">the entity to add.</param>
+        /// <returns>the id the entity was assigned.</returns>
+        long AddEntity(IEntity<TPlayerData, TPacketizerContext> entity);
 
         /// <summary>
-        /// Add a steppable to the simulation. Will be inserted at the
-        /// current leading frame. The steppable will be given a unique
+        /// Add a entity to the simulation. Will be inserted at the
+        /// current leading frame. The entity will be given a unique
         /// id, by which it may later be referenced for removals.
         /// </summary>
-        /// <param name="steppable">the steppable to add.</param>
-        /// <param name="frame">the frame in which to add the steppable.</param>
-        /// <returns>the id the steppable was assigned.</returns>
-        long AddSteppable(TSteppable steppable, long frame);
+        /// <param name="entity">the entity to add.</param>
+        /// <param name="frame">the frame in which to add the entity.</param>
+        /// <returns>the id the entity was assigned.</returns>
+        long AddEntity(IEntity<TPlayerData, TPacketizerContext> entity, long frame);
 
         /// <summary>
-        /// Get a steppable in this simulation based on its unique identifier.
+        /// Get a entity in this simulation based on its unique identifier.
         /// </summary>
-        /// <param name="steppableUid">the id of the object.</param>
+        /// <param name="entityUid">the id of the object.</param>
         /// <returns>the object, if it exists.</returns>
-        TSteppable GetSteppable(long steppableUid);
+        IEntity<TPlayerData, TPacketizerContext> GetEntity(long entityUid);
 
         /// <summary>
-        /// Removes a steppable with the given id from the simulation.
-        /// The steppable will be removed at the current frame.
+        /// Removes a entity with the given id from the simulation.
+        /// The entity will be removed at the current frame.
         /// </summary>
-        /// <param name="steppableId">the id of the steppable to remove.</param>
-        void RemoveSteppable(long steppableUid);
+        /// <param name="entityId">the id of the entity to remove.</param>
+        void RemoveEntity(long entityUid);
 
         /// <summary>
-        /// Removes a steppable with the given id from the simulation.
-        /// The steppable will be removed at the given frame.
+        /// Removes a entity with the given id from the simulation.
+        /// The entity will be removed at the given frame.
         /// </summary>
-        /// <param name="steppableId">the id of the steppable to remove.</param>
-        /// <param name="frame">the frame in which to remove the steppable.</param>
-        void RemoveSteppable(long steppableUid, long frame);
+        /// <param name="entityId">the id of the entity to remove.</param>
+        /// <param name="frame">the frame in which to remove the entity.</param>
+        void RemoveEntity(long entityUid, long frame);
     }
 }

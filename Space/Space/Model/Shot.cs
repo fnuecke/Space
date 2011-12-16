@@ -3,11 +3,10 @@ using Engine.Physics;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Space.Commands;
 
 namespace Space.Model
 {
-    class Shot : Sphere<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>, IGameObject
+    class Shot : Sphere<PlayerInfo, PacketizerContext>, IGameObject
     {
         private Texture2D texture;
 

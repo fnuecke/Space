@@ -16,10 +16,7 @@ namespace Engine.Simulation
     /// - Cloning of the state (may use CloneTo to take care of the basics).
     /// </para>
     /// </summary>
-    public abstract class AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : IState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public abstract class AbstractState<TPlayerData, TPacketizerContext> : IState<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -33,17 +30,12 @@ namespace Engine.Simulation
         /// <summary>
         /// Enumerator over all children.
         /// </summary>
-        public IEnumerable<TSteppable> Children { get { return steppables; } }
+        public IEnumerable<IEntity<TPlayerData, TPacketizerContext>> Children { get { return entities; } }
 
         /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
         public IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get; protected set; }
-
-        /// <summary>
-        /// Getter to return <c>this</c> pointer of actual implementation type... damn generics.
-        /// </summary>
-        protected abstract TState ThisState { get; }
 
         #endregion
 
@@ -52,12 +44,12 @@ namespace Engine.Simulation
         /// <summary>
         /// List of queued commands to execute in the next step.
         /// </summary>
-        protected List<ICommand<TCommandType, TPlayerData, TPacketizerContext>> commands = new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>();
+        protected List<ICommand<TPlayerData, TPacketizerContext>> commands = new List<ICommand<TPlayerData, TPacketizerContext>>();
 
         /// <summary>
-        /// List of child steppables this state drives.
+        /// List of child entities this state drives.
         /// </summary>
-        protected IList<TSteppable> steppables = new List<TSteppable>();
+        protected IList<IEntity<TPlayerData, TPacketizerContext>> entities = new List<IEntity<TPlayerData, TPacketizerContext>>();
 
         #endregion
 
@@ -73,68 +65,68 @@ namespace Engine.Simulation
         #region Accessors
 
         /// <summary>
-        /// Add an steppable object to the list of participants of this state.
+        /// Add an entity object to the list of participants of this state.
         /// </summary>
-        /// <param name="steppable">the object to add.</param>
-        public void AddSteppable(TSteppable steppable)
+        /// <param name="entity">the object to add.</param>
+        public void AddEntity(IEntity<TPlayerData, TPacketizerContext> entity)
         {
-            steppables.Add(steppable);
-            steppable.State = ThisState;
+            entities.Add(entity);
+            entity.State = this;
         }
 
         /// <summary>
-        /// Remove an steppable object to the list of participants of this state.
+        /// Remove an entity object to the list of participants of this state.
         /// </summary>
-        /// <param name="steppable">the object to remove.</param>
-        public void RemoveSteppable(TSteppable steppable)
+        /// <param name="entity">the object to remove.</param>
+        public void RemoveEntity(IEntity<TPlayerData, TPacketizerContext> entity)
         {
-            steppables.Remove(steppable);
-            steppable.State = null;
+            RemoveEntity(entity.UID);
         }
 
         /// <summary>
-        /// Remove a steppable object by its id.
+        /// Remove a entity object by its id.
         /// </summary>
-        /// <param name="steppableUid">the remove object.</param>
-        public TSteppable RemoveSteppable(long steppableUid)
+        /// <param name="entityUid">the remove object.</param>
+        public IEntity<TPlayerData, TPacketizerContext> RemoveEntity(long entityUid)
         {
-            if (steppableUid >= 0)
+            if (entityUid >= 0)
             {
-                for (int i = 0; i < steppables.Count; i++)
+                for (int i = 0; i < entities.Count; i++)
                 {
-                    if (steppables[i].UID == steppableUid)
+                    if (entities[i].UID == entityUid)
                     {
-                        TSteppable steppable = steppables[i];
-                        steppables.RemoveAt(i);
-                        return steppable;
+                        IEntity<TPlayerData, TPacketizerContext> entity = entities[i];
+                        entities.RemoveAt(i);
+                        entity.State = null;
+                        return entity;
                     }
                 }
             }
-            return default(TSteppable);
+            return null;
         }
 
         /// <summary>
-        /// Get a steppable's current representation in this state by its id.
+        /// Get a entity's current representation in this state by its id.
         /// </summary>
-        /// <param name="steppableUid">the id of the steppable to look up.</param>
+        /// <param name="entityUid">the id of the entity to look up.</param>
         /// <returns>the current representation in this state.</returns>
-        public TSteppable GetSteppable(long steppableUid)
+        public IEntity<TPlayerData, TPacketizerContext> GetEntity(long entityUid)
         {
-            for (int i = 0; i < steppables.Count; i++)
+            for (int i = 0; i < entities.Count; i++)
             {
-                if (steppables[i].UID == steppableUid)
+                if (entities[i].UID == entityUid)
                 {
-                    return steppables[i];
+                    return entities[i];
                 }
             }
-            return default(TSteppable);
+            return null;
         }
 
         /// <summary>
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        public virtual void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        public virtual void PushCommand(ICommand<TPlayerData, TPacketizerContext> command)
         {
             // There's a chance we have that command in a tentative version. Let's check.
             int known = commands.FindIndex(x => x.Equals(command));
@@ -174,9 +166,9 @@ namespace Engine.Simulation
             commands.Clear();
 
             // Update all objects in this state.
-            foreach (var steppable in steppables)
+            foreach (var entity in entities)
             {
-                steppable.Update();
+                entity.Update();
             }
         }
 
@@ -187,7 +179,7 @@ namespace Engine.Simulation
         /// commands. I.e. the order of the command execution must not make a difference.
         /// </summary>
         /// <param name="command">the command to handle.</param>
-        protected abstract void HandleCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command);
+        protected abstract void HandleCommand(ICommand<TPlayerData, TPacketizerContext> command);
 
         #endregion
 
@@ -200,22 +192,22 @@ namespace Engine.Simulation
         /// <param name="hasher">the hasher to push data to.</param>
         public virtual void Hash(Hasher hasher)
         {
-            hasher.Put(BitConverter.GetBytes(steppables.Count));
-            List<TSteppable> withId = new List<TSteppable>();
-            if (steppables.Count > 0)
+            hasher.Put(BitConverter.GetBytes(entities.Count));
+            List<IEntity<TPlayerData, TPacketizerContext>> withId = new List<IEntity<TPlayerData, TPacketizerContext>>();
+            if (entities.Count > 0)
             {
-                foreach (var steppable in steppables)
+                foreach (var entity in entities)
                 {
-                    if (steppable.UID > 0)
+                    if (entity.UID > 0)
                     {
-                        withId.Add(steppable);
+                        withId.Add(entity);
                     }
                 }
             }
             withId.Sort((a, b) => a.UID.CompareTo(b.UID));
-            foreach (var steppable in withId)
+            foreach (var entity in withId)
             {
-                steppable.Hash(hasher);
+                entity.Hash(hasher);
             }
         }
 
@@ -231,10 +223,10 @@ namespace Engine.Simulation
                 Packetizer.Packetize(command, packet);
             }
 
-            packet.Write(steppables.Count);
-            foreach (var steppable in steppables)
+            packet.Write(entities.Count);
+            foreach (var entity in entities)
             {
-                Packetizer.Packetize(steppable, packet);
+                Packetizer.Packetize(entity, packet);
             }
         }
 
@@ -248,17 +240,17 @@ namespace Engine.Simulation
             int numCommands = packet.ReadInt32();
             for (int j = 0; j < numCommands; ++j)
             {
-                PushCommand(Packetizer.Depacketize<ICommand<TCommandType, TPlayerData, TPacketizerContext>>(packet));
+                PushCommand(Packetizer.Depacketize<ICommand<TPlayerData, TPacketizerContext>>(packet));
             }
 
             // And finally the objects. Remove the one we know before that.
-            steppables.Clear();
-            int numSteppables = packet.ReadInt32();
-            for (int i = 0; i < numSteppables; ++i)
+            entities.Clear();
+            int numEntitys = packet.ReadInt32();
+            for (int i = 0; i < numEntitys; ++i)
             {
-                var steppable = Packetizer.Depacketize<TSteppable>(packet);
-                steppables.Add(steppable);
-                steppable.State = ThisState;
+                var entity = Packetizer.Depacketize<IEntity<TPlayerData, TPacketizerContext>>(packet);
+                entities.Add(entity);
+                entity.State = this;
             }
         }
 
@@ -266,7 +258,7 @@ namespace Engine.Simulation
         /// Call this from the implemented Clone() method to clone basic properties.
         /// </summary>
         /// <param name="clone"></param>
-        protected virtual object CloneTo(AbstractState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> clone)
+        protected virtual object CloneTo(AbstractState<TPlayerData, TPacketizerContext> clone)
         {
             clone.CurrentFrame = CurrentFrame;
 
@@ -277,10 +269,10 @@ namespace Engine.Simulation
             clone.commands.AddRange(commands);
 
             // Object however need to add clones!
-            clone.steppables.Clear();
-            foreach (var steppable in steppables)
+            clone.entities.Clear();
+            foreach (var entity in entities)
             {
-                clone.AddSteppable((TSteppable)steppable.Clone());
+                clone.AddEntity((IEntity<TPlayerData, TPacketizerContext>)entity.Clone());
             }
 
             return clone;

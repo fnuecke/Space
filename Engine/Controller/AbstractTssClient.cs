@@ -13,19 +13,12 @@ namespace Engine.Controller
     /// This takes care of synchronizing the game states between server and
     /// client, and getting the run speed synchronized as well.
     /// </summary>
-    /// <typeparam name="TState">the type of game state used to represent a simulation.
-    /// This is the simulation run as a sub-state of the TSS.</typeparam>
-    /// <typeparam name="TSteppable">the type of object we put into our simulation.</typeparam>
-    /// <typeparam name="TCommandType">the type of commands we send around.</typeparam>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssClient<TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractTssController<IClientSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>,
-          IClientController<IClientSession<TPlayerData, TPacketizerContext>, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommand : IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public abstract class AbstractTssClient<TCommand, TPlayerData, TPacketizerContext>
+        : AbstractTssController<IClientSession<TPlayerData, TPacketizerContext>, TCommand, TPlayerData, TPacketizerContext>,
+          IClientController<IClientSession<TPlayerData, TPacketizerContext>, TCommand, TPlayerData, TPacketizerContext>
+        where TCommand : IFrameCommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -180,7 +173,7 @@ namespace Engine.Controller
         /// whatever commands it produces.
         /// </summary>
         /// <param name="emitter">the emitter to attach to.</param>
-        public void AddEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter)
+        public void AddEmitter(ICommandEmitter<TCommand, TPlayerData, TPacketizerContext> emitter)
         {
             emitter.CommandEmitted += HandleEmittedCommand;
         }
@@ -189,7 +182,7 @@ namespace Engine.Controller
         /// Remove this controller as a listener from the given emitter.
         /// </summary>
         /// <param name="emitter">the emitter to detach from.</param>
-        public void RemoveEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter)
+        public void RemoveEmitter(ICommandEmitter<TCommand, TPlayerData, TPacketizerContext> emitter)
         {
             emitter.CommandEmitted -= HandleEmittedCommand;
         }
@@ -198,7 +191,7 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected override void Apply(IFrameCommand<TPlayerData, TPacketizerContext> command)
         {
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
@@ -260,7 +253,7 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of client side TSS synchronization logic.
         /// </summary>
-        protected override IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
+        protected override IFrameCommand<TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
         {
             var args = (ClientDataEventArgs)e;
             var type = (TssControllerMessage)args.Data.ReadByte();
@@ -328,8 +321,8 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long addFrame = args.Data.ReadInt64();
-                        TSteppable steppable = Packetizer.Depacketize<TSteppable>(args.Data);
-                        Simulation.AddSteppable(steppable, addFrame);
+                        IEntity<TPlayerData, TPacketizerContext> entity = Packetizer.Depacketize<IEntity<TPlayerData, TPacketizerContext>>(args.Data);
+                        Simulation.AddEntity(entity, addFrame);
                     }
                     break;
 
@@ -338,8 +331,8 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long removeFrame = args.Data.ReadInt64();
-                        long steppableUid = args.Data.ReadInt64();
-                        Simulation.RemoveSteppable(steppableUid, removeFrame);
+                        long entityUid = args.Data.ReadInt64();
+                        Simulation.RemoveEntity(entityUid, removeFrame);
                     }
                     break;
 

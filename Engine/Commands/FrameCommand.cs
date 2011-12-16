@@ -1,13 +1,13 @@
-﻿using Engine.Serialization;
+﻿using System;
+using Engine.Serialization;
 
 namespace Engine.Commands
 {
     /// <summary>
     /// Base class for commands that can be injected into running simulations.
     /// </summary>
-    public abstract class FrameCommand<TCommandType, TPlayerData, TPacketizerContext>
-        : Command<TCommandType, TPlayerData, TPacketizerContext>, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public abstract class FrameCommand<TPlayerData, TPacketizerContext>
+        : Command<TPlayerData, TPacketizerContext>, IFrameCommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -22,7 +22,7 @@ namespace Engine.Commands
         
         #region Constructor
 
-        protected FrameCommand(TCommandType type)
+        protected FrameCommand(Enum type)
             : base(type)
         {
         }
@@ -49,11 +49,11 @@ namespace Engine.Commands
 
         #region Equality
 
-        public override bool Equals(ICommand<TCommandType, TPlayerData, TPacketizerContext> other)
+        public override bool Equals(ICommand<TPlayerData, TPacketizerContext> other)
         {
-            return other is IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> &&
+            return other is IFrameCommand<TPlayerData, TPacketizerContext> &&
                 base.Equals(other) &&
-                ((IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>)other).Frame == this.Frame;
+                ((IFrameCommand<TPlayerData, TPacketizerContext>)other).Frame == this.Frame;
         }
 
         #endregion

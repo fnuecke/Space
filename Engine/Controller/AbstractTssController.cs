@@ -9,14 +9,11 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
-    public abstract class AbstractTssController<TSession, TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractController<TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>,
-          IStateController<TState, TSteppable, TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssController<TSession, TCommand, TPlayerData, TPacketizerContext>
+        : AbstractController<TSession, IFrameCommand<TPlayerData, TPacketizerContext>, TPlayerData, TPacketizerContext>,
+          IStateController<TSession, TCommand, TPlayerData, TPacketizerContext>
         where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommand : IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+        where TCommand : IFrameCommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -75,7 +72,7 @@ namespace Engine.Controller
         /// discouraged, as it will lead to clients having to resynchronize
         /// themselves by getting a snapshot of the complete simulation.
         /// </summary>
-        protected TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> Simulation { get; private set; }
+        protected TSS< TPlayerData, TPacketizerContext> Simulation { get; private set; }
 
         #endregion
 
@@ -100,7 +97,7 @@ namespace Engine.Controller
         public AbstractTssController(Game game, TSession session, uint[] delays)
             : base(game, session)
         {
-            Simulation = new TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>(delays);
+            Simulation = new TSS<TPlayerData, TPacketizerContext>(delays);
         }
 
         protected override void Dispose(bool disposing)
@@ -162,69 +159,69 @@ namespace Engine.Controller
         #region Modify simulation
 
         /// <summary>
-        /// Add a steppable to the simulation. Will be inserted at the
-        /// current leading frame. The steppable will be given a unique
+        /// Add a entity to the simulation. Will be inserted at the
+        /// current leading frame. The entity will be given a unique
         /// id, by which it may later be referenced for removals.
         /// </summary>
-        /// <param name="steppable">the steppable to add.</param>
-        /// <returns>the id the steppable was assigned.</returns>
-        public long AddSteppable(TSteppable steppable)
+        /// <param name="entity">the entity to add.</param>
+        /// <returns>the id the entity was assigned.</returns>
+        public long AddEntity(IEntity<TPlayerData, TPacketizerContext> entity)
         {
-            return AddSteppable(steppable, Simulation.CurrentFrame);
+            return AddEntity(entity, Simulation.CurrentFrame);
         }
 
         /// <summary>
-        /// Add a steppable to the simulation. Will be inserted at the
-        /// current leading frame. The steppable will be given a unique
+        /// Add a entity to the simulation. Will be inserted at the
+        /// current leading frame. The entity will be given a unique
         /// id, by which it may later be referenced for removals.
         /// </summary>
-        /// <param name="steppable">the steppable to add.</param>
-        /// <param name="frame">the frame in which to add the steppable.</param>
-        /// <returns>the id the steppable was assigned.</returns>
-        public virtual long AddSteppable(TSteppable steppable, long frame)
+        /// <param name="entity">the entity to add.</param>
+        /// <param name="frame">the frame in which to add the entity.</param>
+        /// <returns>the id the entity was assigned.</returns>
+        public virtual long AddEntity(IEntity<TPlayerData, TPacketizerContext> entity, long frame)
         {
-            // Add the steppable to the simulation.
-            Simulation.AddSteppable(steppable, frame);
-            return steppable.UID;
+            // Add the entity to the simulation.
+            Simulation.AddEntity(entity, frame);
+            return entity.UID;
         }
 
         /// <summary>
-        /// Get a steppable in this simulation based on its unique identifier.
+        /// Get a entity in this simulation based on its unique identifier.
         /// </summary>
-        /// <param name="steppableUid">the id of the object.</param>
+        /// <param name="entityUid">the id of the object.</param>
         /// <returns>the object, if it exists.</returns>
-        public TSteppable GetSteppable(long steppableUid)
+        public IEntity<TPlayerData, TPacketizerContext> GetEntity(long entityUid)
         {
-            return Simulation.GetSteppable(steppableUid);
+            return Simulation.GetEntity(entityUid);
         }
 
         /// <summary>
-        /// Removes a steppable with the given id from the simulation.
-        /// The steppable will be removed at the current frame.
+        /// Removes a entity with the given id from the simulation.
+        /// The entity will be removed at the current frame.
         /// </summary>
-        /// <param name="steppableId">the id of the steppable to remove.</param>
-        public void RemoveSteppable(long steppableUid)
+        /// <param name="entityId">the id of the entity to remove.</param>
+        public void RemoveEntity(long entityUid)
         {
-            RemoveSteppable(steppableUid, Simulation.CurrentFrame);
+            RemoveEntity(entityUid, Simulation.CurrentFrame);
         }
 
         /// <summary>
-        /// Removes a steppable with the given id from the simulation.
-        /// The steppable will be removed at the given frame.
+        /// Removes a entity with the given id from the simulation.
+        /// The entity will be removed at the given frame.
         /// </summary>
-        /// <param name="steppableId">the id of the steppable to remove.</param>
-        /// <param name="frame">the frame in which to remove the steppable.</param>
-        public virtual void RemoveSteppable(long steppableUid, long frame)
+        /// <param name="entityId">the id of the entity to remove.</param>
+        /// <param name="frame">the frame in which to remove the entity.</param>
+        public virtual void RemoveEntity(long entityUid, long frame)
         {
-            // Remove the steppable from the simulation.
-            Simulation.RemoveSteppable(steppableUid, frame);
+            // Remove the entity from the simulation.
+            Simulation.RemoveEntity(entityUid, frame);
         }
 
         /// <summary>
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected virtual void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected virtual void Apply(IFrameCommand<TPlayerData, TPacketizerContext> command)
         {
             Simulation.PushCommand(command, command.Frame);
         }
@@ -239,7 +236,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         /// <param name="packet">the final packet to send.</param>
         /// <returns>the given packet, after writing.</returns>
-        protected override Packet WrapDataForSend(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, Packet packet)
+        protected override Packet WrapDataForSend(IFrameCommand<TPlayerData, TPacketizerContext> command, Packet packet)
         {
             packet.Write((byte)TssControllerMessage.Command);
             return base.WrapDataForSend(command, packet);

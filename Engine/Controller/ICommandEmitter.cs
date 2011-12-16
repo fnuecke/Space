@@ -7,9 +7,8 @@ namespace Engine.Controller
     /// Signature for methods that can handle a certain type of emitted command.
     /// </summary>
     /// <param name="command">the command that was emitted.</param>
-    public delegate void CommandEmittedEventHandler<TCommand, TCommandType, TPlayerData, TPacketizerContext>(TCommand command)
-        where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public delegate void CommandEmittedEventHandler<TCommand, TPlayerData, TPacketizerContext>(TCommand command)
+        where TCommand : ICommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>;
 
@@ -17,9 +16,8 @@ namespace Engine.Controller
     /// Interface for "command emitters", i.e. objects that generate commands
     /// in some fashion (e.g. user input commands via key presses).
     /// </summary>
-    public interface ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public interface ICommandEmitter<TCommand, TPlayerData, TPacketizerContext>
+        where TCommand : ICommand<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
@@ -31,6 +29,6 @@ namespace Engine.Controller
         /// with the proper generics as to match the controller it'll be registered
         /// with.
         /// </summary>
-        event CommandEmittedEventHandler<TCommand, TCommandType, TPlayerData, TPacketizerContext> CommandEmitted;
+        event CommandEmittedEventHandler<TCommand, TPlayerData, TPacketizerContext> CommandEmitted;
     }
 }

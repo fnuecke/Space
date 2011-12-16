@@ -1,17 +1,14 @@
 ﻿using Engine.Math;
 using Engine.Physics.Intersection;
 using Engine.Serialization;
-using Engine.Simulation;
 
 namespace Engine.Physics
 {
     /// <summary>
     /// Base class for spherical world objects.
     /// </summary>
-    public abstract class Sphere<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> : AbstractCollideable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IPhysicsEnabledState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : IPhysicsSteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
+    public abstract class Sphere<TPlayerData, TPacketizerContext>
+        : AbstractCollideable<TPlayerData, TPacketizerContext>
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {

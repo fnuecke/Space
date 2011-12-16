@@ -9,10 +9,8 @@ using Space.Commands;
 
 namespace Space.Model
 {
-    class GameState : PhysicsEnabledState<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>, IReversibleSubstate<GameState, IGameObject, GameCommandType, PlayerInfo, PacketizerContext>
+    class GameState : AbstractState<PlayerInfo, PacketizerContext>, IReversibleSubstate<PlayerInfo, PacketizerContext>
     {
-        protected override GameState ThisState { get { return this; } }
-
         private Game game;
 
         private ISession<PlayerInfo, PacketizerContext> session;
@@ -24,14 +22,14 @@ namespace Space.Model
             this.session = session;
         }
 
-        protected override void HandleCommand(ICommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override void HandleCommand(ICommand<PlayerInfo, PacketizerContext> command)
         {
-            switch (command.Type)
+            switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player input command, apply it.
                     {
-                        Ship ship = (Ship)GetSteppable(command.Player.Data.ShipUID);
+                        Ship ship = (Ship)GetEntity(command.Player.Data.ShipUID);
                         if (ship != null)
                         {
                             // What did he do?
