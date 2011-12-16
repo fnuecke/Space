@@ -55,6 +55,13 @@ namespace Engine.Controller
             Simulation = new TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>(delays);
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            Simulation = null;
+
+            base.Dispose(disposing);
+        }
+
         #endregion
 
         #region Logic

@@ -119,8 +119,6 @@ namespace Engine.Controller
             if (Session != null)
             {
                 Session.JoinResponse -= HandleJoinResponse;
-
-                Session.Dispose();
             }
 
             if (Simulation != null)
@@ -154,7 +152,7 @@ namespace Engine.Controller
                     Simulation.Hash(hasher);
                     if (hasher.Value != hashValue)
                     {
-                        logger.Debug("Client: hash mismatch " + hashValue + "!= " + hasher.Value);
+                        logger.Debug("Hash mismatch: {0} != {1} ", hashValue, hasher.Value);
                         Simulation.Invalidate();
                     }
                 }
@@ -296,7 +294,7 @@ namespace Engine.Controller
 
                         if (System.Math.Abs(frameDelta) > 1 && frameDelta < (int)(median + stdDev))
                         {
-                            logger.Debug("Client: correcting for " + frameDelta + " frames.");
+                            logger.Debug("Correcting for {0} frames.", frameDelta);
                             // Adjust the current frame of the simulation.
                             Simulation.RunToFrame(Simulation.CurrentFrame + frameDelta);
                         }
@@ -363,7 +361,7 @@ namespace Engine.Controller
         private void HandleSimulationInvalidated(object sender, EventArgs e)
         {
             // So we request it.
-            logger.Debug("Client: simulation invalidated, re-sync");
+            logger.Debug("Simulation invalidated, requesting server state.");
             Session.Send(new Packet().Write((byte)TssControllerMessage.GameStateRequest));
         }
 

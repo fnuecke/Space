@@ -8,10 +8,8 @@
 #endregion
 
 #region Using Statements
-using Microsoft.Xna.Framework;
 using Space;
 using Space.Control;
-using System.Net;
 using Space.Model;
 
 #endregion
@@ -28,9 +26,9 @@ namespace GameStateManagement
 
         #region Initialization
 
-        private GameServer server;
+        private GameServer _server;
+        private GameClient _client;
 
-        private GameClient Client;
         /// <summary>
         /// Constructor fills in the menu contents.
         /// </summary>
@@ -39,8 +37,8 @@ namespace GameStateManagement
         {
             
             // Create our menu entries.
-            MenuEntry playGameMenuEntry = new MenuEntry("Play Game");
-            MenuEntry startServerMenuEntry = new MenuEntry("Start Server");
+            MenuEntry playGameMenuEntry = new MenuEntry(Strings.join);
+            MenuEntry startServerMenuEntry = new MenuEntry(Strings.host);
             MenuEntry optionsMenuEntry = new MenuEntry("Options");
             MenuEntry exitMenuEntry = new MenuEntry("Exit");
 
@@ -69,40 +67,23 @@ namespace GameStateManagement
         void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
             RestartClient();
-            if (server != null)
-            {
-                PlayerInfo info = new PlayerInfo();
-                info.ShipType = "Sparrow";
-                Client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), Settings.Instance.PlayerName, info);
-                LoadingScreen.Load(ScreenManager, true,
-                                   new GameplayScreen(Client));
-            }
-            else ScreenManager.AddScreen(new ConnectScreen(Client));
+
+            ScreenManager.AddScreen(new ConnectScreen(_client));
         }
+
         void StartServerMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
             RestartServer();
+            RestartClient();
+
+            // Autojoin self.
+            PlayerInfo info = new PlayerInfo();
+            info.ShipType = "Sparrow";
+            _client.Session.Join(_server.Session, Settings.Instance.PlayerName, info);
+
+            LoadingScreen.Load(ScreenManager, true, new GameplayScreen(_client));
         }
-        private void RestartServer()
-        {
-            if (server != null)
-            {
-                server.Dispose();
-                ScreenManager.Game.Components.Remove(server);
-            }
-            server = new GameServer(ScreenManager.Game);
-            ScreenManager.Game.Components.Add(server);
-        }
-        private void RestartClient()
-        {
-            if (Client != null)
-            {
-                Client.Dispose();
-                ScreenManager.Game.Components.Remove(Client);
-            }
-            Client = new GameClient(ScreenManager.Game);
-            ScreenManager.Game.Components.Add(Client);
-        }
+
         /// <summary>
         /// Event handler for when the Options menu entry is selected.
         /// </summary>
@@ -136,6 +117,31 @@ namespace GameStateManagement
             ScreenManager.Game.Exit();
         }
 
+        #endregion
+
+        #region Utility Methods
+        
+        private void RestartServer()
+        {
+            if (_server != null)
+            {
+                _server.Dispose();
+                ScreenManager.Game.Components.Remove(_server);
+            }
+            _server = new GameServer(ScreenManager.Game);
+            ScreenManager.Game.Components.Add(_server);
+        }
+
+        private void RestartClient()
+        {
+            if (_client != null)
+            {
+                _client.Dispose();
+                ScreenManager.Game.Components.Remove(_client);
+            }
+            _client = new GameClient(ScreenManager.Game);
+            ScreenManager.Game.Components.Add(_client);
+        }
 
         #endregion
     }

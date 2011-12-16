@@ -126,8 +126,11 @@
   <data name="MainMenu" xml:space="preserve">
     <value>Main Menu</value>
   </data>
-  <data name="connect" xml:space="preserve">
-    <value>Connect to Server</value>
+  <data name="join" xml:space="preserve">
+    <value>Join a game</value>
+  </data>
+  <data name="host" xml:space="preserve">
+    <value>Host a game</value>
   </data>
   <data name="playerName" xml:space="preserve">
     <value>Player Name: </value>

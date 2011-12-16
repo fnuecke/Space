@@ -8,15 +8,15 @@ namespace Space.Control
 {
     public class GameServer : DrawableGameComponent
     {
-        IServerSession<PlayerInfo, PacketizerContext> session;
+        internal IServerSession<PlayerInfo, PacketizerContext> Session { get; private set; }
         internal ServerController Controller { get; private set; }
         SpriteFont font;
 
         public GameServer(Game game)
             : base(game)
         {
-            session = new HybridServerSession<PlayerInfo, PacketizerContext>(game, 50100, 8);
-            Controller = new ServerController(game, session, 10, 0);
+            Session = new HybridServerSession<PlayerInfo, PacketizerContext>(game, 50100, 8);
+            Controller = new ServerController(game, Session, 10, 0);
             Controller.UpdateOrder = 10;
 
             DrawOrder = 10;
@@ -38,7 +38,7 @@ namespace Space.Control
 
         protected override void Dispose(bool disposing)
         {
-            session.Dispose();
+            Session.Dispose();
             Controller.Dispose();
 
             Game.Components.Remove(Controller);
@@ -54,7 +54,7 @@ namespace Space.Control
             var ngOffset = new Vector2(150, GraphicsDevice.Viewport.Height - 140);
             var sessionOffset = new Vector2(10, GraphicsDevice.Viewport.Height - 140);
 
-            SessionInfo.Draw("Server", session, sessionOffset, font, spriteBatch);
+            SessionInfo.Draw("Server", Session, sessionOffset, font, spriteBatch);
             //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
 
             base.Draw(gameTime);

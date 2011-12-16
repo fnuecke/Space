@@ -66,7 +66,6 @@ namespace Engine.Controller
             if (Session != null)
             {
                 Session.Data += HandlePlayerData;
-
                 Game.Components.Add(Session);
             }
 
@@ -81,8 +80,9 @@ namespace Engine.Controller
             if (Session != null)
             {
                 Session.Data -= HandlePlayerData;
-
                 Game.Components.Remove(Session);
+                Session.Dispose();
+                Session = default(TSession);
             }
 
             base.Dispose(disposing);
@@ -179,11 +179,11 @@ namespace Engine.Controller
             }
             catch (PacketException ex)
             {
-                logger.WarnException("Error handling received player data.", ex);
+                logger.WarnException("Failed parsing received packet.", ex);
             }
             catch (ArgumentException ex)
             {
-                logger.WarnException("Error handling received player data.", ex);
+                logger.WarnException("Failed deserializing unknown type.", ex);
             }
         }
 

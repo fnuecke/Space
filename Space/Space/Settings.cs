@@ -34,14 +34,18 @@ namespace Space
         #region Interface
 
         /// <summary>
-        /// The Name of the Player
-        /// </summary>
- 
-        public string PlayerName = "Player";
-        /// <summary>
         /// The locale to use for localized content.
         /// </summary>
         public string Language = "en";
+
+        #endregion
+
+        #region Miscellaneous
+
+        /// <summary>
+        /// The Name of the Player
+        /// </summary>
+        public string PlayerName = "Player";
 
         #endregion
 

@@ -111,8 +111,6 @@ namespace Engine.Controller
             {
                 Session.GameInfoRequested -= HandleGameInfoRequested;
                 Session.JoinRequested -= HandleJoinRequested;
-
-                Session.Dispose();
             }
 
             base.Dispose(disposing);
@@ -236,7 +234,7 @@ namespace Engine.Controller
             }
             else
             {
-                Console.WriteLine("Server: client command too old " + command.Frame + "<" + Simulation.TrailingFrame);
+                logger.Trace("Client command too old " + command.Frame + "<" + Simulation.TrailingFrame);
             }
         }
 

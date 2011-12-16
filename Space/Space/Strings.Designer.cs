@@ -61,15 +61,6 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connect to Server.
-        /// </summary>
-        internal static string connect {
-            get {
-                return ResourceManager.GetString("connect", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to German.
         /// </summary>
         internal static string de {
@@ -84,6 +75,24 @@ namespace Space {
         internal static string en {
             get {
                 return ResourceManager.GetString("en", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Host a game.
+        /// </summary>
+        internal static string host {
+            get {
+                return ResourceManager.GetString("host", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Join a game.
+        /// </summary>
+        internal static string join {
+            get {
+                return ResourceManager.GetString("join", resourceCulture);
             }
         }
         

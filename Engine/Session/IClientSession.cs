@@ -53,9 +53,17 @@ namespace Engine.Session
         /// Join a game on the given host.
         /// </summary>
         /// <param name="remote">the remote host that runs the session.</param>
-        /// <param name="playerName">the with which to register.</param>
-        /// <param name="data">additional data to be associated with our player (Player.Data).</param>
+        /// <param name="playerName">the name with which to register.</param>
+        /// <param name="data">additional data to be associated with our player.</param>
         void Join(IPEndPoint remote, string playerName, TPlayerData data);
+
+        /// <summary>
+        /// Join a local game.
+        /// </summary>
+        /// <param name="server">the local server to join.</param>
+        /// <param name="playerName">the name with which to register.</param>
+        /// <param name="data">additional data to be associated with our player.</param>
+        void Join(IServerSession<TPlayerData, TPacketizerContext> server, string playerName, TPlayerData data);
 
         /// <summary>
         /// Leave the session.
