@@ -13,6 +13,8 @@ namespace GameStateManagement
     {
         #region Fields
         public bool locked{get;set;}
+
+        public bool Editable { get; set; }
         public KeyMap KeyMap { get; set; }
         /// <summary>
         /// Last time a key was pressed (to suppress blinking for a bit while / after typing).
@@ -55,9 +57,15 @@ namespace GameStateManagement
         {
             return inputText;
         }
+        override
+        public  void SetActive(bool active)
+        {
+            Active = active;
+            Editable = false;
+        } 
         public void HandleKeyPressed(object sender, EventArgs e)
         {
-            if (Active&&!locked)
+            if (Active&&!locked&&Editable)
             {
                 var args = (KeyboardInputEventArgs)e;
 
@@ -66,12 +74,13 @@ namespace GameStateManagement
                     case Keys.Back:
                         if (inputText.Length > 0)
                         {
-                            inputText = (Cursor > 0 ? inputText.Substring(0, Cursor - 1) : "") + (Cursor > 0 ? inputText.Substring(Cursor) : inputText.Substring(Cursor + 1));
+                            inputText = (Cursor > 0 ? inputText.Substring(0, Cursor - 1) : "") + inputText.Substring(Cursor);
                             if(Cursor>0)
                             Cursor--;
                         }
                             break;
                     case Keys.Delete:
+                            inputText = inputText.Substring(0, Cursor)  + (Cursor<inputText.Length?inputText.Substring(Cursor+1):"");
                         break;
                     case Keys.Down:
                         break;
@@ -127,7 +136,7 @@ namespace GameStateManagement
         {
             base.Draw(screen, isSelected, gameTime);
             
-            if (Active&&((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (lastKeyPress != null && new TimeSpan(DateTime.Now.Ticks - lastKeyPress.Ticks).TotalSeconds < 1))
+            if (Active&&Editable&&((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (lastKeyPress != null && new TimeSpan(DateTime.Now.Ticks - lastKeyPress.Ticks).TotalSeconds < 1))
             {
                 ScreenManager screenManager = screen.ScreenManager;
                 SpriteBatch SpriteBatch = screenManager.SpriteBatch;

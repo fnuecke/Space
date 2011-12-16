@@ -122,10 +122,16 @@ namespace GameStateManagement
         void PlayerNameSelected(object sender, PlayerIndexEventArgs e)
         {
 
-
-            Settings.Instance.PlayerName = playerName.GetInputText();
-
-            SetMenuEntryText();
+            if (playerName.Editable)
+            {
+                Settings.Instance.PlayerName = playerName.GetInputText();
+                playerName.Editable = false;
+                SetMenuEntryText();
+            }
+            else
+            {
+                playerName.Editable = true;
+            }
         }
         void LanguageMenuEntryNext(object sender, PlayerIndexEventArgs e)
         {
@@ -136,6 +142,14 @@ namespace GameStateManagement
             SetMenuEntryText();
         }
 
+        protected override void OnNext()
+        {
+            SetMenuEntryText();
+        }
+        protected override void OnPrev()
+        {
+            SetMenuEntryText();
+        }
 
         /// <summary>
         /// Event handler for when the Frobnicate menu entry is selected.

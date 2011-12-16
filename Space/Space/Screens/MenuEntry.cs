@@ -28,7 +28,7 @@ namespace GameStateManagement
         /// <summary>
         /// returns if the value is selected
         /// </summary>
-        public bool Active { get; set; }
+        public bool Active { get;protected set; }
         /// <summary>
         /// The text rendered for this entry.
         /// </summary>
@@ -131,7 +131,10 @@ namespace GameStateManagement
             this.text = text;
         }
 
-
+        public virtual void SetActive(bool active)
+        {
+            Active = active;
+        } 
         #endregion
 
         #region Update and Draw

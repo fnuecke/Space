@@ -76,26 +76,26 @@ namespace GameStateManagement
             // Move to the previous menu entry?
             if (input.IsMenuUp())
             {
-                MenuEntries[selectedEntry].Active = false;
+                MenuEntries[selectedEntry].SetActive(false);
                 selectedEntry--;
 
                 if (selectedEntry < 0)
                     selectedEntry = menuEntries.Count - 1;
-                MenuEntries[selectedEntry].Active = true;
-                
+                MenuEntries[selectedEntry].SetActive(true);
+                OnPrev();
             }
 
             // Move to the next menu entry?
             if (input.IsMenuDown())
             {
-                MenuEntries[selectedEntry].Active = false;
+                MenuEntries[selectedEntry].SetActive(false);
                 
                 selectedEntry++;
 
                 if (selectedEntry >= menuEntries.Count)
                     selectedEntry = 0;
-                MenuEntries[selectedEntry].Active = true;
-                
+                MenuEntries[selectedEntry].SetActive(true);
+                OnNext();
             }
 
             // Accept or cancel the menu? We pass in our ControllingPlayer, which may
@@ -142,6 +142,14 @@ namespace GameStateManagement
             OnCancel();
         }
 
+        protected virtual void OnNext()
+        {
+
+        }
+        protected virtual void OnPrev()
+        {
+
+        }
 
         #endregion
 

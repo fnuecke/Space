@@ -14,7 +14,7 @@ namespace GameStateManagement
     {
         #region Fields
 
-
+        EditableMenueEntry connect;
 
         public GameClient Client { get; private set; }
         #endregion
@@ -23,9 +23,9 @@ namespace GameStateManagement
         {
             Client = client;
             client.Session.JoinResponse += LoginSucces;
-            EditableMenueEntry connect = new EditableMenueEntry(String.Empty);
+            connect = new EditableMenueEntry(String.Empty);
             MenuEntry back = new MenuEntry("Back");
-            connect.Active = true;
+            connect.SetActive(true);
 
             connect.Selected += ConnectEntrySelected;
 
@@ -47,10 +47,18 @@ namespace GameStateManagement
         //Called if the Connect Entry is selected
         void ConnectEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            PlayerInfo info = new PlayerInfo();
-            info.ShipType = "Sparrow";
-            ((EditableMenueEntry)MenuEntries[0]).locked = true;
-            Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
+            if (connect.Editable)
+            {
+                PlayerInfo info = new PlayerInfo();
+                info.ShipType = "Sparrow";
+                connect.locked = true;
+                Client.Session.Join(new IPEndPoint(IPAddress.Parse(connect.Text), 50100), Settings.Instance.PlayerName, info);
+            }
+            else
+            {
+                connect.Editable = true;
+            }
+            
         }
         //Called if the login was handeled
         private void LoginSucces(object sender, EventArgs e)
