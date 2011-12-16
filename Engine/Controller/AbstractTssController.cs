@@ -20,6 +20,54 @@ namespace Engine.Controller
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
+        #region Types
+
+        /// <summary>
+        /// Used in abstract TSS server and client implementations.
+        /// </summary>
+        protected enum TssControllerMessage
+        {
+            /// <summary>
+            /// Normal game command, handled in base class.
+            /// </summary>
+            Command,
+
+            /// <summary>
+            /// Server sends current frame to clients, used to synchronize
+            /// run speeds of clients to server.
+            /// </summary>
+            Synchronize,
+
+            /// <summary>
+            /// Client requested the game state, e.g. because it could not
+            /// roll back to a required state.
+            /// </summary>
+            GameStateRequest,
+
+            /// <summary>
+            /// Server sends game state to client in response to <c>GameStateRequest</c>.
+            /// </summary>
+            GameStateResponse,
+
+            /// <summary>
+            /// Server tells players about a new object to insert into the simulation.
+            /// </summary>
+            AddGameObject,
+
+            /// <summary>
+            /// Server tells players to remove an object from the simulation.
+            /// </summary>
+            RemoveGameObject,
+
+            /// <summary>
+            /// Compare the hash of the leading game state at a given frame. If
+            /// the client fails the check, it'll have to request a new snapshot.
+            /// </summary>
+            HashCheck
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -27,7 +75,7 @@ namespace Engine.Controller
         /// discouraged, as it will lead to clients having to resynchronize
         /// themselves by getting a snapshot of the complete simulation.
         /// </summary>
-        public TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> Simulation { get; private set; }
+        protected TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> Simulation { get; private set; }
 
         #endregion
 
@@ -37,7 +85,7 @@ namespace Engine.Controller
         /// The remainder of time we did not update last frame, which we'll add to the
         /// elapsed time in the next frame update.
         /// </summary>
-        private double lastUpdateRemainder;
+        private double _lastUpdateRemainder;
 
         #endregion
 
@@ -86,7 +134,7 @@ namespace Engine.Controller
             else
             {
                 // Compensate for dynamic time step.
-                double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + lastUpdateRemainder + timeCorrection;
+                double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder + timeCorrection;
                 if (elapsed < Game.TargetElapsedTime.TotalMilliseconds)
                 {
                     // If we can't actually run to the next frame, at least update
@@ -104,7 +152,7 @@ namespace Engine.Controller
                         elapsed -= Game.TargetElapsedTime.TotalMilliseconds;
                         Simulation.Update();
                     }
-                    lastUpdateRemainder = elapsed;
+                    _lastUpdateRemainder = elapsed;
                 }
             }
         }

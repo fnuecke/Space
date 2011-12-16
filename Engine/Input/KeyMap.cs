@@ -18,7 +18,7 @@ namespace Engine.Input
         /// <summary>
         /// Mapping of modifiers to keys to chars.
         /// </summary>
-        private Dictionary<KeyModifier, Dictionary<Keys, char>> mapping = new Dictionary<KeyModifier, Dictionary<Keys, char>>();
+        private Dictionary<KeyModifier, Dictionary<Keys, char>> _mapping = new Dictionary<KeyModifier, Dictionary<Keys, char>>();
 
         #endregion
 
@@ -31,7 +31,7 @@ namespace Engine.Input
         {
             foreach (var modifier in (KeyModifier[])Enum.GetValues(typeof(KeyModifier)))
             {
-                mapping.Add(modifier, new Dictionary<Keys, char>());
+                _mapping.Add(modifier, new Dictionary<Keys, char>());
             }
         }
 
@@ -47,7 +47,7 @@ namespace Engine.Input
         /// <param name="ch">the char to map to.</param>
         public void Add(KeyModifier modifier, Keys key, char ch)
         {
-            mapping[modifier][key] = ch;
+            _mapping[modifier][key] = ch;
         }
 
         /// <summary>
@@ -70,9 +70,9 @@ namespace Engine.Input
         {
             get
             {
-                if (mapping[modifier].ContainsKey(key))
+                if (_mapping[modifier].ContainsKey(key))
                 {
-                    return mapping[modifier][key];
+                    return _mapping[modifier][key];
                 }
                 else
                 {

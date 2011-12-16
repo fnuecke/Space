@@ -41,7 +41,7 @@ namespace Engine.Simulation
         /// The frame number of the trailing state, i.e. the point we cannot roll
         /// back past.
         /// </summary>
-        public long TrailingFrame { get { return states[states.Length - 1].CurrentFrame; } }
+        public long TrailingFrame { get { return _states[_states.Length - 1].CurrentFrame; } }
 
         /// <summary>
         /// Enumerator over all children of the leading state.
@@ -61,12 +61,12 @@ namespace Engine.Simulation
         /// <summary>
         /// Get the trailing state.
         /// </summary>
-        private TState TrailingState { get { return states[states.Length - 1]; } }
+        private TState TrailingState { get { return _states[_states.Length - 1]; } }
 
         /// <summary>
         /// Get the leading state.
         /// </summary>
-        private TState LeadingState { get { return states[0]; } }
+        private TState LeadingState { get { return _states[0]; } }
 
         #endregion
 
@@ -75,28 +75,28 @@ namespace Engine.Simulation
         /// <summary>
         /// The delays of the individual states.
         /// </summary>
-        private uint[] delays;
+        private uint[] _delays;
 
         /// <summary>
         /// The list of running states. They are ordered in in increasing delay, i.e.
         /// the state at slot 0 is the leading one, 1 is the next newest, and so on.
         /// </summary>
-        private TState[] states;
+        private TState[] _states;
 
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<TSteppable>> adds = new Dictionary<long, List<TSteppable>>();
+        private Dictionary<long, List<TSteppable>> _adds = new Dictionary<long, List<TSteppable>>();
 
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<long>> removes = new Dictionary<long, List<long>>();
+        private Dictionary<long, List<long>> _removes = new Dictionary<long, List<long>>();
 
         /// <summary>
         /// List of commands to execute in delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>> commands = new Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>>();
+        private Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>> _commands = new Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>>();
 
         #endregion
 
@@ -106,12 +106,12 @@ namespace Engine.Simulation
         /// <param name="delays">The delays to use for trailing states, with the delays in frames.</param>
         public TSS(uint[] delays)
         {
-            this.delays = new uint[delays.Length + 1];
-            delays.CopyTo(this.delays, 1);
-            Array.Sort(this.delays);
+            this._delays = new uint[delays.Length + 1];
+            delays.CopyTo(this._delays, 1);
+            Array.Sort(this._delays);
 
             // Generate initial states.
-            states = new TState[this.delays.Length];
+            _states = new TState[this._delays.Length];
 
             // Mark us for need of sync.
             WaitingForSynchronization = true;
@@ -124,7 +124,7 @@ namespace Engine.Simulation
         /// <param name="state">the state to initialize this TSS to.</param>
         public void Initialize(TState state)
         {
-            MirrorState(state, states.Length - 1);
+            MirrorState(state, _states.Length - 1);
             WaitingForSynchronization = false;
         }
 
@@ -158,23 +158,23 @@ namespace Engine.Simulation
         public void AddSteppable(TSteppable steppable, long frame)
         {
             // Store it to be inserted in trailing states.
-            if (!adds.ContainsKey(frame))
+            if (!_adds.ContainsKey(frame))
             {
-                adds.Add(frame, new List<TSteppable>());
+                _adds.Add(frame, new List<TSteppable>());
             }
-            else if (adds[frame].Contains(steppable))
+            else if (_adds[frame].Contains(steppable))
             {
                 // Don't insert the same add to the list twice.
                 return;
             }
-            else if (removes.ContainsKey(frame) && removes[frame].Contains(steppable.UID))
+            else if (_removes.ContainsKey(frame) && _removes[frame].Contains(steppable.UID))
             {
                 // Do not allow removal and adding of the same object in the same
                 // frame, as this can lead to unexpected behavior (may not happen
                 // in the intended order!)
                 throw new InvalidOperationException("Cannot add an object in the same frame as it will be removed.");
             }
-            adds[frame].Add((TSteppable)steppable.Clone());
+            _adds[frame].Add((TSteppable)steppable.Clone());
 
             // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
@@ -210,23 +210,23 @@ namespace Engine.Simulation
         public void RemoveSteppable(long steppableUid, long frame)
         {
             // Store it to be removed in trailing states.
-            if (!removes.ContainsKey(frame))
+            if (!_removes.ContainsKey(frame))
             {
-                removes.Add(frame, new List<long>());
+                _removes.Add(frame, new List<long>());
             }
-            else if (removes[frame].Contains(steppableUid))
+            else if (_removes[frame].Contains(steppableUid))
             {
                 // Don't insert the same remove to the list twice.
                 return;
             }
-            else if (adds.ContainsKey(frame) && adds[frame].Find(a => a.UID == steppableUid) != null)
+            else if (_adds.ContainsKey(frame) && _adds[frame].Find(a => a.UID == steppableUid) != null)
             {
                 // Do not allow removal and adding of the same object in the same
                 // frame, as this can lead to unexpected behavior (may not happen
                 // in the intended order!)
                 throw new InvalidOperationException("Cannot remove an object in the same frame as it was added.");
             }
-            removes[frame].Add(steppableUid);
+            _removes[frame].Add(steppableUid);
 
             // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
@@ -271,14 +271,14 @@ namespace Engine.Simulation
             if (frame >= TrailingFrame)
             {
                 // Store it to be removed in trailing states.
-                if (!commands.ContainsKey(frame))
+                if (!_commands.ContainsKey(frame))
                 {
                     // No such command yet, push it.
-                    commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
+                    _commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
                 }
                 // We don't need to check for duplicate / replacing authoritative here,
                 // because the sub-state will do that itself.
-                commands[frame].Add(command);
+                _commands[frame].Add(command);
 
                 // Rewind to the frame to retroactively apply changes.
                 if (frame < CurrentFrame)
@@ -356,10 +356,10 @@ namespace Engine.Simulation
         {
             packet.Write(CurrentFrame);
 
-            states[states.Length - 1].Packetize(packet);
+            _states[_states.Length - 1].Packetize(packet);
 
-            packet.Write(adds.Count);
-            foreach (var add in adds)
+            packet.Write(_adds.Count);
+            foreach (var add in _adds)
             {
                 packet.Write(add.Key);
                 packet.Write(add.Value.Count);
@@ -369,8 +369,8 @@ namespace Engine.Simulation
                 }
             }
 
-            packet.Write(removes.Count);
-            foreach (var remove in removes)
+            packet.Write(_removes.Count);
+            foreach (var remove in _removes)
             {
                 packet.Write(remove.Key);
                 packet.Write(remove.Value.Count);
@@ -380,8 +380,8 @@ namespace Engine.Simulation
                 }
             }
 
-            packet.Write(commands.Count);
-            foreach (var command in commands)
+            packet.Write(_commands.Count);
+            foreach (var command in _commands)
             {
                 packet.Write(command.Key);
                 packet.Write(command.Value.Count);
@@ -402,8 +402,8 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Unwrap the trailing state and mirror it to all the newer ones.
-            states[states.Length - 1].Depacketize(packet, context);
-            MirrorState(states[states.Length - 1], states.Length - 2);
+            _states[_states.Length - 1].Depacketize(packet, context);
+            MirrorState(_states[_states.Length - 1], _states.Length - 2);
 
             // Find adds / removes / commands that our out of date now, but keep newer ones.
             PrunePastEvents();
@@ -413,14 +413,14 @@ namespace Engine.Simulation
             for (int addIdx = 0; addIdx < numAdds; ++addIdx)
             {
                 long key = packet.ReadInt64();
-                if (!adds.ContainsKey(key))
+                if (!_adds.ContainsKey(key))
                 {
-                    adds.Add(key, new List<TSteppable>());
+                    _adds.Add(key, new List<TSteppable>());
                 }
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    adds[key].Add(Packetizer.Depacketize<TSteppable>(packet));
+                    _adds[key].Add(Packetizer.Depacketize<TSteppable>(packet));
                 }
             }
 
@@ -429,14 +429,14 @@ namespace Engine.Simulation
             for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
             {
                 long key = packet.ReadInt64();
-                if (!removes.ContainsKey(key))
+                if (!_removes.ContainsKey(key))
                 {
-                    removes.Add(key, new List<long>());
+                    _removes.Add(key, new List<long>());
                 }
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    removes[key].Add(packet.ReadInt64());
+                    _removes[key].Add(packet.ReadInt64());
                 }
             }
 
@@ -445,14 +445,14 @@ namespace Engine.Simulation
             for (int commandIdx = 0; commandIdx < numCommands; ++commandIdx)
             {
                 long key = packet.ReadInt64();
-                if (!commands.ContainsKey(key))
+                if (!_commands.ContainsKey(key))
                 {
-                    commands.Add(key, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
+                    _commands.Add(key, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
                 }
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    commands[key].Add(Packetizer.Depacketize<ICommand<TCommandType, TPlayerData, TPacketizerContext>>(packet));
+                    _commands[key].Add(Packetizer.Depacketize<ICommand<TCommandType, TPlayerData, TPacketizerContext>>(packet));
                 }
             }
 
@@ -479,45 +479,45 @@ namespace Engine.Simulation
         {
             // Update states. Run back to front, to allow rewinding future states
             // (if the trailing state must skip tentative commands) all in one go.
-            for (int i = states.Length - 1; i >= 0; --i)
+            for (int i = _states.Length - 1; i >= 0; --i)
             {
                 // Check if we need to rewind because the trailing state was left
                 // with a tentative command.
                 bool needsRewind = false;
 
                 // The state we're now updating.
-                TState state = states[i];
+                TState state = _states[i];
 
                 // Update while we're still delaying.
-                while (state.CurrentFrame + delays[i] < frame)
+                while (state.CurrentFrame + _delays[i] < frame)
                 {
                     // The frame the state is now in, and that will be executed.
                     long stateFrame = state.CurrentFrame;
 
                     // Check if we need to add objects.
-                    if (adds.ContainsKey(stateFrame))
+                    if (_adds.ContainsKey(stateFrame))
                     {
                         // Add a copy of it.
-                        foreach (var steppable in adds[stateFrame])
+                        foreach (var steppable in _adds[stateFrame])
                         {
                             state.AddSteppable((TSteppable)steppable.Clone());
                         }
                     }
 
                     // Check if we need to remove objects.
-                    if (removes.ContainsKey(stateFrame))
+                    if (_removes.ContainsKey(stateFrame))
                     {
                         // Add a copy of it.
-                        foreach (var steppableUid in removes[stateFrame])
+                        foreach (var steppableUid in _removes[stateFrame])
                         {
                             state.RemoveSteppable(steppableUid);
                         }
                     }
 
                     // Check if we have commands to execute in that frame.
-                    if (commands.ContainsKey(stateFrame))
+                    if (_commands.ContainsKey(stateFrame))
                     {
-                        foreach (var command in commands[stateFrame])
+                        foreach (var command in _commands[stateFrame])
                         {
                             state.PushCommand(command);
                         }
@@ -527,7 +527,7 @@ namespace Engine.Simulation
                     // commands. Prune them instead. If there were any, rewind
                     // to apply that removal retroactively. Do this after the
                     // loop, though, to avoid unnecessary work.
-                    if (i == states.Length - 1 && state.SkipTentativeCommands())
+                    if (i == _states.Length - 1 && state.SkipTentativeCommands())
                     {
                         needsRewind = true;
                     }
@@ -539,7 +539,7 @@ namespace Engine.Simulation
                 // Check if we had trailing tentative commands.
                 if (needsRewind)
                 {
-                    MirrorState(state, states.Length - 2);
+                    MirrorState(state, _states.Length - 2);
                 }
             }
 
@@ -558,12 +558,12 @@ namespace Engine.Simulation
         private void Rewind(long frame)
         {
             // Find first state that's not past the frame.
-            for (int i = 0; i < states.Length; ++i)
+            for (int i = 0; i < _states.Length; ++i)
             {
-                if (states[i].CurrentFrame <= frame)
+                if (_states[i].CurrentFrame <= frame)
                 {
                     // Success, mirror the state to all newer ones.
-                    MirrorState(states[i], i - 1);
+                    MirrorState(_states[i], i - 1);
                     return; // Then return, so we don't trigger resync ;)
                 }
             }
@@ -581,7 +581,7 @@ namespace Engine.Simulation
         {
             for (int i = start; i >= 0; --i)
             {
-                states[i] = (TState)state.Clone();
+                _states[i] = (TState)state.Clone();
             }
         }
 
@@ -594,7 +594,7 @@ namespace Engine.Simulation
             // Remove adds / removes from the to-add list that have been added
             // to the state trailing furthest behind at this point.
             List<long> deprecated = new List<long>();
-            foreach (var key in adds.Keys)
+            foreach (var key in _adds.Keys)
             {
                 if (key < TrailingFrame)
                 {
@@ -603,11 +603,11 @@ namespace Engine.Simulation
             }
             foreach (var key in deprecated)
             {
-                adds.Remove(key);
+                _adds.Remove(key);
             }
 
             deprecated.Clear();
-            foreach (var key in removes.Keys)
+            foreach (var key in _removes.Keys)
             {
                 if (key < TrailingFrame)
                 {
@@ -616,11 +616,11 @@ namespace Engine.Simulation
             }
             foreach (var key in deprecated)
             {
-                removes.Remove(key);
+                _removes.Remove(key);
             }
 
             deprecated.Clear();
-            foreach (var key in commands.Keys)
+            foreach (var key in _commands.Keys)
             {
                 if (key < TrailingFrame)
                 {
@@ -629,7 +629,7 @@ namespace Engine.Simulation
             }
             foreach (var key in deprecated)
             {
-                commands.Remove(key);
+                _commands.Remove(key);
             }
         }
     }

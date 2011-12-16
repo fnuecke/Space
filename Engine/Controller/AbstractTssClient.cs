@@ -51,28 +51,28 @@ namespace Engine.Controller
         /// <summary>
         /// Last time we sent a sync command to the server.
         /// </summary>
-        private long lastSyncTime = 0;
+        private long _lastSyncTime = 0;
 
         /// <summary>
         /// Keep track of the average number of frames we had to sync.
         /// </summary>
-        private DoubleSampling syncDiff = new DoubleSampling(5);
+        private DoubleSampling _syncDiff = new DoubleSampling(5);
 
         /// <summary>
         /// Difference in current frame to server, as determined by the
         /// last few syncs.
         /// </summary>
-        private IntSampling frameDiff = new IntSampling(5);
+        private IntSampling _frameDiff = new IntSampling(5);
 
         /// <summary>
         /// The last frame we know the server's state hash of.
         /// </summary>
-        private long hashFrame = -1;
+        private long _hashFrame = -1;
 
         /// <summary>
         /// The hash value of the server's state.
         /// </summary>
-        private int hashValue;
+        private int _hashValue;
 
         #endregion
 
@@ -143,25 +143,25 @@ namespace Engine.Controller
             if (Session.ConnectionState == ClientState.Connected && !Simulation.WaitingForSynchronization)
             {
                 // Drive game logic.
-                UpdateSimulation(gameTime, syncDiff.Mean());
+                UpdateSimulation(gameTime, _syncDiff.Mean());
 
                 // Hash test.
-                if (Simulation.TrailingFrame == hashFrame)
+                if (Simulation.TrailingFrame == _hashFrame)
                 {
                     Hasher hasher = new Hasher();
                     Simulation.Hash(hasher);
-                    if (hasher.Value != hashValue)
+                    if (hasher.Value != _hashValue)
                     {
-                        logger.Debug("Hash mismatch: {0} != {1} ", hashValue, hasher.Value);
+                        logger.Debug("Hash mismatch: {0} != {1} ", _hashValue, hasher.Value);
                         Simulation.Invalidate();
                     }
                 }
 
                 // Send sync command every now and then, to keep game clock synchronized.
                 // No need to sync for a server that runs in the same program, though.
-                if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
+                if (new TimeSpan(DateTime.Now.Ticks - _lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
-                    lastSyncTime = DateTime.Now.Ticks;
+                    _lastSyncTime = DateTime.Now.Ticks;
                     Session.Send(new Packet()
                         .Write((byte)TssControllerMessage.Synchronize)
                         .Write(Simulation.CurrentFrame));
@@ -288,9 +288,9 @@ namespace Engine.Controller
                         long clientServerDelta = (serverFrame - Simulation.CurrentFrame);
                         long frameDelta = clientServerDelta + latency / 2;
 
-                        frameDiff.Put((int)frameDelta);
-                        int median = frameDiff.Median();
-                        double stdDev = frameDiff.StandardDeviation();
+                        _frameDiff.Put((int)frameDelta);
+                        int median = _frameDiff.Median();
+                        double stdDev = _frameDiff.StandardDeviation();
 
                         if (System.Math.Abs(frameDelta) > 1 && frameDelta < (int)(median + stdDev))
                         {
@@ -300,7 +300,7 @@ namespace Engine.Controller
                         }
                         // Push our average delay plus the delta! Otherwise we'd loose the
                         // running ('constant') delta we accumulated.
-                        syncDiff.Put(frameDelta * Game.TargetElapsedTime.TotalMilliseconds / SyncInterval);
+                        _syncDiff.Put(frameDelta * Game.TargetElapsedTime.TotalMilliseconds / SyncInterval);
                     }
                     break;
 
@@ -308,8 +308,8 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
-                        hashFrame = args.Data.ReadInt64();
-                        hashValue = args.Data.ReadInt32();
+                        _hashFrame = args.Data.ReadInt64();
+                        _hashValue = args.Data.ReadInt32();
                     }
                     break;
 

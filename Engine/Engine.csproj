@@ -116,7 +116,6 @@
     <Compile Include="Controller\ICommandEmitter.cs" />
     <Compile Include="Controller\IController.cs" />
     <Compile Include="Controller\IStateController.cs" />
-    <Compile Include="Controller\TssUdpControllerMessage.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />
     <Compile Include="Input\KeyboardInputEventArgs.cs" />

@@ -31,8 +31,6 @@ namespace Engine.Serialization
         /// </summary>
         private MemoryStream _stream;
 
-        private bool _disposed;
-
         #endregion
 
         #region Constructor
@@ -57,11 +55,10 @@ namespace Engine.Serialization
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (_stream != null)
             {
                 _stream.Dispose();
                 _stream = null;
-                _disposed = true;
             }
 
             GC.SuppressFinalize(this);

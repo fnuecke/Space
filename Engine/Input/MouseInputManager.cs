@@ -41,7 +41,7 @@ namespace Engine.Input
         /// <summary>
         /// State from the last update, to check for changes.
         /// </summary>
-        private MouseState previousState;
+        private MouseState _previousState;
 
         #endregion
 
@@ -65,10 +65,10 @@ namespace Engine.Input
             // Get a shortcut to the current keyboard state.
             var currentState = Mouse.GetState();
 
-            if (previousState != null)
+            if (_previousState != null)
             {
                 // Check for pressed / released events.
-                if (currentState.LeftButton != previousState.LeftButton)
+                if (currentState.LeftButton != _previousState.LeftButton)
                 {
                     if (currentState.LeftButton == ButtonState.Pressed)
                     {
@@ -79,7 +79,7 @@ namespace Engine.Input
                         OnReleased(new MouseInputEventArgs(currentState, MouseInputEventArgs.MouseButton.Left, ButtonState.Released));
                     }
                 }
-                if (currentState.RightButton != previousState.RightButton)
+                if (currentState.RightButton != _previousState.RightButton)
                 {
                     if (currentState.RightButton == ButtonState.Pressed)
                     {
@@ -90,7 +90,7 @@ namespace Engine.Input
                         OnReleased(new MouseInputEventArgs(currentState, MouseInputEventArgs.MouseButton.Right, ButtonState.Released));
                     }
                 }
-                if (currentState.MiddleButton != previousState.MiddleButton)
+                if (currentState.MiddleButton != _previousState.MiddleButton)
                 {
                     if (currentState.MiddleButton == ButtonState.Pressed)
                     {
@@ -101,7 +101,7 @@ namespace Engine.Input
                         OnReleased(new MouseInputEventArgs(currentState, MouseInputEventArgs.MouseButton.Middle, ButtonState.Released));
                     }
                 }
-                if (currentState.XButton1 != previousState.XButton1)
+                if (currentState.XButton1 != _previousState.XButton1)
                 {
                     if (currentState.XButton1 == ButtonState.Pressed)
                     {
@@ -112,7 +112,7 @@ namespace Engine.Input
                         OnReleased(new MouseInputEventArgs(currentState, MouseInputEventArgs.MouseButton.Extra1, ButtonState.Released));
                     }
                 }
-                if (currentState.XButton2 != previousState.XButton2)
+                if (currentState.XButton2 != _previousState.XButton2)
                 {
                     if (currentState.XButton2 == ButtonState.Pressed)
                     {
@@ -125,18 +125,18 @@ namespace Engine.Input
                 }
 
                 // Check for scroll wheel.
-                if (currentState.ScrollWheelValue != previousState.ScrollWheelValue)
+                if (currentState.ScrollWheelValue != _previousState.ScrollWheelValue)
                 {
-                    OnScrolled(new MouseInputEventArgs(currentState, previousState.ScrollWheelValue - currentState.ScrollWheelValue));
+                    OnScrolled(new MouseInputEventArgs(currentState, _previousState.ScrollWheelValue - currentState.ScrollWheelValue));
                 }
 
                 // Check for mouse movement.
-                if (currentState.X != previousState.X || currentState.Y != previousState.Y)
+                if (currentState.X != _previousState.X || currentState.Y != _previousState.Y)
                 {
-                    OnMoved(new MouseInputEventArgs(currentState, currentState.X, currentState.Y, previousState.X - currentState.X, previousState.Y - currentState.Y));
+                    OnMoved(new MouseInputEventArgs(currentState, currentState.X, currentState.Y, _previousState.X - currentState.X, _previousState.Y - currentState.Y));
                 }
             }
-            previousState = currentState;
+            _previousState = currentState;
 
             base.Update(gameTime);
         }

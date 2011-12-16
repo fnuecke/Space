@@ -54,18 +54,18 @@ namespace Engine.Controller
         /// <summary>
         /// Counter used to distribute ids.
         /// </summary>
-        private long lastUid;
+        private long _lastUid;
 
         /// <summary>
         /// Last time we sent a hash check to our clients.
         /// </summary>
-        private long lastHashTime;
+        private long _lastHashTime;
 
         /// <summary>
         /// The last time we sent a full snapshot of the gamestate to certain
         /// player. We use this to avoid utterly overloading the network.
         /// </summary>
-        private DateTime[] lastGameStateSentTime;
+        private DateTime[] _lastGameStateSentTime;
 
         #endregion
 
@@ -85,7 +85,7 @@ namespace Engine.Controller
                 (uint)System.Math.Ceiling(250 / game.TargetElapsedTime.TotalMilliseconds)
             })
         {
-            lastGameStateSentTime = new DateTime[Session.MaxPlayers];
+            _lastGameStateSentTime = new DateTime[Session.MaxPlayers];
         }
 
         /// <summary>
@@ -130,9 +130,9 @@ namespace Engine.Controller
             UpdateSimulation(gameTime);
 
             // Send hash check every now and then, to check for desyncs.
-            if (new TimeSpan(DateTime.Now.Ticks - lastHashTime).TotalMilliseconds > HashInterval)
+            if (new TimeSpan(DateTime.Now.Ticks - _lastHashTime).TotalMilliseconds > HashInterval)
             {
-                lastHashTime = DateTime.Now.Ticks;
+                _lastHashTime = DateTime.Now.Ticks;
 
                 Hasher hasher = new Hasher();
                 Simulation.Hash(hasher);
@@ -183,7 +183,7 @@ namespace Engine.Controller
         {
             // Give the steppable a unique id. Skip the zero to avoid
             // referencing that object with uninitialized 'pointers'.
-            steppable.UID = ++lastUid;
+            steppable.UID = ++_lastUid;
 
             // Add the steppable to the simulation.
             base.AddSteppable(steppable, frame);
@@ -271,8 +271,8 @@ namespace Engine.Controller
 
                 case TssControllerMessage.GameStateRequest:
                     // Client needs game state.
-                    if ((DateTime.Now - lastGameStateSentTime[args.Player.Number]).TotalMilliseconds > GameStateResendInterval) {
-                        lastGameStateSentTime[args.Player.Number] = DateTime.Now;
+                    if ((DateTime.Now - _lastGameStateSentTime[args.Player.Number]).TotalMilliseconds > GameStateResendInterval) {
+                        _lastGameStateSentTime[args.Player.Number] = DateTime.Now;
                         Session.SendTo(args.Player, new Packet()
                             .Write((byte)TssControllerMessage.GameStateResponse)
                             .Write(Simulation));

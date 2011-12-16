@@ -13,16 +13,26 @@ namespace Engine.Serialization
         where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
         where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
     {
+        #region Properties
+        
         /// <summary>
         /// The context used by depacketize methods.
         /// </summary>
         public TPacketizerContext Context { get; private set; }
 
+        #endregion
+
+        #region Fields
+        
         /// <summary>
         /// Keep track of registered types.
         /// </summary>
-        private Dictionary<string, Func<IPacketizable<TPlayerData, TPacketizerContext>>> constructors = new Dictionary<string, Func<IPacketizable<TPlayerData, TPacketizerContext>>>();
+        private Dictionary<string, Func<IPacketizable<TPlayerData, TPacketizerContext>>> _constructors = new Dictionary<string, Func<IPacketizable<TPlayerData, TPacketizerContext>>>();
 
+        #endregion
+
+        #region Constructor
+        
         public Packetizer(TPacketizerContext context)
         {
             this.Context = context;
@@ -33,6 +43,10 @@ namespace Engine.Serialization
         {
         }
 
+        #endregion
+
+        #region Public API
+
         /// <summary>
         /// Register a new type for serializing / deserializing.
         /// </summary>
@@ -40,9 +54,9 @@ namespace Engine.Serialization
         public void Register<T>() where T : IPacketizable<TPlayerData, TPacketizerContext>, new()
         {
             Type type = typeof(T);
-            if (!constructors.ContainsKey(type.FullName))
+            if (!_constructors.ContainsKey(type.FullName))
             {
-                constructors.Add(type.FullName, delegate() { return (T)typeof(T).GetConstructor(new Type[0]).Invoke(new object[0]); });
+                _constructors.Add(type.FullName, delegate() { return (T)typeof(T).GetConstructor(new Type[0]).Invoke(new object[0]); });
             }
         }
 
@@ -57,7 +71,7 @@ namespace Engine.Serialization
         public void Packetize<T>(T value, Packet packet) where T : IPacketizable<TPlayerData, TPacketizerContext>
         {
             Type type = value.GetType();
-            if (constructors.ContainsKey(type.FullName))
+            if (_constructors.ContainsKey(type.FullName))
             {
                 packet.Write(type.FullName);
                 value.Packetize(packet);
@@ -78,9 +92,9 @@ namespace Engine.Serialization
         public T Depacketize<T>(Packet packet) where T : IPacketizable<TPlayerData, TPacketizerContext>
         {
             string fullName = packet.ReadString();
-            if (constructors.ContainsKey(fullName))
+            if (_constructors.ContainsKey(fullName))
             {
-                IPacketizable<TPlayerData, TPacketizerContext> result = constructors[fullName]();
+                IPacketizable<TPlayerData, TPacketizerContext> result = _constructors[fullName]();
                 result.Depacketize(packet, Context);
                 return (T)result;
             }
@@ -100,8 +114,10 @@ namespace Engine.Serialization
             var copy = new Packetizer<TPlayerData, TPacketizerContext>();
             copy.Context = (TPacketizerContext)this.Context.Clone();
             copy.Context.Session = session;
-            copy.constructors = this.constructors;
+            copy._constructors = this._constructors;
             return copy;
         }
+
+        #endregion
     }
 }
