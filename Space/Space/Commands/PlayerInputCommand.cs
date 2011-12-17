@@ -29,7 +29,7 @@ namespace Space.Commands
         /// <summary>
         /// For rotate commands this is the targeted rotation angle.
         /// </summary>
-        public Fixed TargetAngle { get; private set; }
+        public Fixed TargetRotation { get; private set; }
 
         /// <summary>
         /// For deserialization.
@@ -45,11 +45,11 @@ namespace Space.Commands
             this.Input = input;
         }
 
-        public PlayerInputCommand(PlayerInput input, Fixed targetAngle)
+        public PlayerInputCommand(PlayerInput input, Fixed targetRotation)
             : this()
         {
             this.Input = input;
-            this.TargetAngle = targetAngle;
+            this.TargetRotation = targetRotation;
         }
 
         #region Serialization
@@ -57,7 +57,7 @@ namespace Space.Commands
         public override void Packetize(Packet packet)
         {
             packet.Write((byte)Input);
-            packet.Write(TargetAngle);
+            packet.Write(TargetRotation);
 
             base.Packetize(packet);
         }
@@ -65,7 +65,7 @@ namespace Space.Commands
         public override void Depacketize(Packet packet)
         {
             Input = (PlayerInput)packet.ReadByte();
-            TargetAngle = packet.ReadFixed();
+            TargetRotation = packet.ReadFixed();
 
             base.Depacketize(packet);
         }
@@ -79,7 +79,7 @@ namespace Space.Commands
             return other is PlayerInputCommand &&
                 base.Equals(other) &&
                 ((PlayerInputCommand)other).Input == this.Input &&
-                ((PlayerInputCommand)other).TargetAngle == this.TargetAngle;
+                ((PlayerInputCommand)other).TargetRotation == this.TargetRotation;
         }
 
         #endregion

@@ -4,8 +4,11 @@
     <Item>
       <Name>Cheap Laser</Name>
       <Size>Small</Size>
-	  <Texture>Textures/ship</Texture>
-	  <Sound>Sounds/laser1</Sound>
+      <Radius>3</Radius>
+      <Texture>Textures/ship</Texture>
+      <Sound>Sounds/laser1</Sound>
+      <ProjectileEffect>Textures/ship</ProjectileEffect>
+      <ProjectileSpeed>10</ProjectileSpeed>
       <Damage>5</Damage>
       <FireRate>0.5</FireRate>
     </Item>

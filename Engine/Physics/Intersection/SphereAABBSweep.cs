@@ -2,7 +2,7 @@
 
 namespace Engine.Physics.Intersection
 {
-    sealed class SphereAABBSweep
+    internal static class SphereAABBSweep
     {
         /// <summary>
         /// Test for collision between moving box and sphere.
@@ -188,10 +188,6 @@ namespace Engine.Physics.Intersection
             }
 
             return true;
-        }
-        
-        private SphereAABBSweep()
-        {
         }
     }
 }

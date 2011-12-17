@@ -33,9 +33,9 @@ namespace Engine.Simulation
         public IEnumerable<IEntity> Children { get { return entities; } }
 
         /// <summary>
-        /// Packetizer used for serialization purposes.
+        /// The component system manager in use in this simulation.
         /// </summary>
-        public IPacketizer Packetizer { get; protected set; }
+        public IComponentSystemManager SystemManager { get; private set; }
 
         #endregion
 
@@ -51,18 +51,13 @@ namespace Engine.Simulation
         /// </summary>
         protected IList<IEntity> entities = new List<IEntity>();
 
-        /// <summary>
-        /// Manager for all component systems available in this simulation.
-        /// </summary>
-        protected CompositeComponentSystem systems = new CompositeComponentSystem();
-
         #endregion
 
         #region Constructor
 
-        protected AbstractState(IPacketizer packetizer)
+        protected AbstractState()
         {
-            this.Packetizer = packetizer;
+            this.SystemManager = new CompositeComponentSystem();
         }
 
         #endregion
@@ -76,6 +71,7 @@ namespace Engine.Simulation
         public void AddEntity(IEntity entity)
         {
             entities.Add(entity);
+            SystemManager.AddEntity(entity);
         }
 
         /// <summary>
@@ -117,21 +113,13 @@ namespace Engine.Simulation
                     if (entities[i].UID == entityUid)
                     {
                         IEntity entity = entities[i];
+                        SystemManager.RemoveEntity(entity);
                         entities.RemoveAt(i);
                         return entity;
                     }
                 }
             }
             return null;
-        }
-
-        /// <summary>
-        /// Register a component system with this simulation.
-        /// </summary>
-        /// <param name="system">the system to register.</param>
-        public void AddSystem(IComponentSystem system)
-        {
-            systems.Add(system);
         }
 
         /// <summary>
@@ -177,11 +165,8 @@ namespace Engine.Simulation
             }
             commands.Clear();
 
-            // Update all objects in this state.
-            foreach (var entity in entities)
-            {
-                systems.Update(entity);
-            }
+            // Update all systems.
+            SystemManager.Update();
         }
 
         /// <summary>
@@ -272,8 +257,6 @@ namespace Engine.Simulation
         protected virtual object CloneTo(AbstractState clone)
         {
             clone.CurrentFrame = CurrentFrame;
-
-            clone.Packetizer = Packetizer;
 
             // Commands are immutable, so just copy the reference.
             clone.commands.Clear();

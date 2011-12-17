@@ -8,24 +8,12 @@ namespace Space.ComponentSystem.Entities
 {
     public class Ship : AbstractEntity
     {
-        public int PlayerNumber { get; private set; }
-
-        public ShipData Data { get; private set; }
-
-        private bool shooting;
-
-        private int shotCooldown;
-
         public Ship()
         {
-            this.Data = new ShipData();
         }
 
-        public Ship(ShipData shipData, int player)
+        public Ship(ShipData shipData, int playerNumber)
         {
-            this.Data = shipData;
-            this.PlayerNumber = player;
-
             StaticPhysics sphysics = new StaticPhysics();
             
             DynamicPhysics dphysics = new DynamicPhysics(sphysics);
@@ -33,18 +21,21 @@ namespace Space.ComponentSystem.Entities
             dphysics.MinVelocity = 0.01;
 
             CollidableSphere collidable = new CollidableSphere(sphysics);
-            collidable.Radius = Data.Radius;
+            collidable.Radius = shipData.Radius;
 
             MovementProperties movement = new MovementProperties();
-            movement.Acceleration = Data.Acceleration;
-            movement.RotationSpeed = Data.RotationSpeed;
+            movement.Acceleration = shipData.Acceleration;
+            movement.RotationSpeed = shipData.RotationSpeed;
 
             Armament guns = new Armament();
 
             StaticPhysicsRenderer renderer = new StaticPhysicsRenderer(sphysics);
-            renderer.TextureName = Data.Texture;
+            renderer.TextureName = shipData.Texture;
 
             ShipControl input = new ShipControl(dphysics, movement, guns);
+
+            Avatar avatar = new Avatar(this);
+            avatar.PlayerNumber = playerNumber;
 
             components.Add(sphysics);
             components.Add(dphysics);
@@ -53,31 +44,11 @@ namespace Space.ComponentSystem.Entities
             components.Add(guns);
             components.Add(renderer);
             components.Add(input);
-        }
-
-        public void Shoot()
-        {
-            shooting = true;
-        }
-
-        public void CeaseFire()
-        {
-            shooting = false;
-        }
-
-        public override void Packetize(Packet packet)
-        {
-            packet.Write(PlayerNumber);
-            packet.Write(Data);
-
-            base.Packetize(packet);
+            components.Add(avatar);
         }
 
         public override void Depacketize(Packet packet)
         {
-            PlayerNumber = packet.ReadInt32();
-            Data.Depacketize(packet);
-
             StaticPhysics sphysics = new StaticPhysics();
             DynamicPhysics dphysics = new DynamicPhysics(sphysics);
             CollidableSphere collidable = new CollidableSphere(sphysics);
@@ -85,6 +56,7 @@ namespace Space.ComponentSystem.Entities
             Armament guns = new Armament();
             StaticPhysicsRenderer renderer = new StaticPhysicsRenderer(sphysics);
             ShipControl input = new ShipControl(dphysics, movement, guns);
+            Avatar avatar = new Avatar(this);
 
             components.Add(sphysics);
             components.Add(dphysics);
@@ -93,8 +65,16 @@ namespace Space.ComponentSystem.Entities
             components.Add(guns);
             components.Add(renderer);
             components.Add(input);
+            components.Add(avatar);
 
             base.Depacketize(packet);
+        }
+
+        public override object Clone()
+        {
+            var copy = new Ship();
+            // TODO copy component settings
+            return copy;
         }
     }
 }

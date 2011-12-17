@@ -1,13 +1,14 @@
-﻿using System;
-using Engine.Commands;
-using Engine.Serialization;
+﻿using Engine.Commands;
+using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Engine.Simulation;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.Commands;
+using Space.ComponentSystem.Components;
 
-namespace Space.Model
+namespace Space.Simulation
 {
     class GameState : AbstractState, IReversibleSubstate
     {
@@ -16,7 +17,6 @@ namespace Space.Model
         private ISession session;
 
         public GameState(Game game, ISession session)
-            : base(((IPacketizer)game.Services.GetService(typeof(IPacketizer))).CopyFor(session))
         {
             this.game = game;
             this.session = session;
@@ -29,53 +29,53 @@ namespace Space.Model
                 case GameCommandType.PlayerInput:
                     // Player input command, apply it.
                     {
-                        Ship ship = (Ship)GetEntity(((PlayerInfo)command.Player.Data).ShipUID);
-                        if (ship != null)
+                        IEntity avatar = SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.Player);
+                        if (avatar != null)
                         {
+                            var input = avatar.GetComponent<ShipControl>();
                             // What did he do?
                             var inputCommand = (PlayerInputCommand)command;
                             switch (inputCommand.Input)
                             {
                                 // Start accelerating in the given direction.
                                 case PlayerInputCommand.PlayerInput.AccelerateUp:
-                                    ship.Accelerate(Directions.North);
+                                    input.Accelerate(Directions.North);
                                     break;
                                 case PlayerInputCommand.PlayerInput.AccelerateRight:
-                                    ship.Accelerate(Directions.East);
+                                    input.Accelerate(Directions.East);
                                     break;
                                 case PlayerInputCommand.PlayerInput.AccelerateDown:
-                                    ship.Accelerate(Directions.South);
+                                    input.Accelerate(Directions.South);
                                     break;
                                 case PlayerInputCommand.PlayerInput.AccelerateLeft:
-                                    ship.Accelerate(Directions.West);
+                                    input.Accelerate(Directions.West);
                                     break;
 
                                 // Stop accelerating in the given direction.
                                 case PlayerInputCommand.PlayerInput.StopUp:
-                                    ship.StopAccelerate(Directions.North);
+                                    input.StopAccelerate(Directions.North);
                                     break;
                                 case PlayerInputCommand.PlayerInput.StopRight:
-                                    ship.StopAccelerate(Directions.East);
+                                    input.StopAccelerate(Directions.East);
                                     break;
                                 case PlayerInputCommand.PlayerInput.StopDown:
-                                    ship.StopAccelerate(Directions.South);
+                                    input.StopAccelerate(Directions.South);
                                     break;
                                 case PlayerInputCommand.PlayerInput.StopLeft:
-                                    ship.StopAccelerate(Directions.West);
+                                    input.StopAccelerate(Directions.West);
                                     break;
 
                                 // Begin rotating.
                                 case PlayerInputCommand.PlayerInput.Rotate:
-                                    ship.RotateTo(inputCommand.TargetAngle);
+                                    input.TargetRotation = inputCommand.TargetRotation;
                                     break;
 
                                 // Begin/stop shooting.
                                 case PlayerInputCommand.PlayerInput.Shoot:
-                                    Console.WriteLine("start shooting");
-                                    ship.Shoot();
+                                    input.IsShooting = true;
                                     break;
                                 case PlayerInputCommand.PlayerInput.CeaseFire:
-                                    ship.CeaseFire();
+                                    input.IsShooting = false;
                                     break;
                             }
                         }

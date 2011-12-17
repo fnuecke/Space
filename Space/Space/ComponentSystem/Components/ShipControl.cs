@@ -86,11 +86,9 @@ namespace Space.ComponentSystem.Components
         public override void Update(object parameterization)
         {
 #if DEBUG
-            // Only do this expensive check in debug mode, as this should not happen anyway.
-            if (!SupportsParameterization(parameterization))
-            {
-                throw new System.ArgumentException("parameterization");
-            }
+            // Only do this expensive check (see implementation) in debug mode,
+            // as it should not happen that this is of an invalid type anyway.
+            base.Update(parameterization);
 #endif
             var p = (InputParameterization)parameterization;
 
@@ -135,9 +133,14 @@ namespace Space.ComponentSystem.Components
             ArmamentComponent.IsShooting = IsShooting;
         }
 
-        public override bool SupportsParameterization(object parameterization)
+        /// <summary>
+        /// Accepts <c>InputParameterization</c>s.
+        /// </summary>
+        /// <param name="parameterizationType">the type to check.</param>
+        /// <returns>whether the type's supported or not.</returns>
+        public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterization is InputParameterization;
+            return parameterizationType.Equals(typeof(InputParameterization));
         }
 
         public override void Packetize(Engine.Serialization.Packet packet)

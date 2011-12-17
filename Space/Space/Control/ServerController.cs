@@ -1,10 +1,12 @@
 ﻿using System;
 using Engine.Commands;
+using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Space.Commands;
-using Space.Model;
+using Space.ComponentSystem.Entities;
+using Space.Simulation;
 using SpaceData;
 
 namespace Space.Control
@@ -33,6 +35,11 @@ namespace Space.Control
             : base(game, session)
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
+
+            PhysicsSystem physics = new PhysicsSystem();
+
+            Simulation.SystemManager.AddSystem(physics);
+
             Simulation.Initialize(new GameState(game, Session));
         }
 
@@ -66,15 +73,15 @@ namespace Space.Control
 
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
-            var ship = new Ship(((PlayerInfo)args.Player.Data).ShipType, args.Player.Number, (PacketizerContext)Packetizer.Context);
-            ((PlayerInfo)args.Player.Data).ShipUID = AddEntity(ship);
+            var playerData = (PlayerInfo)args.Player.Data;
+            AddEntity(new Ship(playerData.Ship, args.Player.Number));
         }
 
         protected void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs)e;
             // Player left the game, remove his ship.
-            RemoveEntity(((PlayerInfo)args.Player.Data).ShipUID);
+            RemoveEntity(Simulation.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player).UID);
         }
 
         protected override bool HandleRemoteCommand(IFrameCommand command)

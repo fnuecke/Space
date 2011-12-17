@@ -2,7 +2,6 @@
 using Engine.ComponentSystem.Entities;
 using Engine.Math;
 using Engine.Serialization;
-using Space.Serialization;
 
 namespace Space.ComponentSystem.Entities
 {
@@ -12,7 +11,7 @@ namespace Space.ComponentSystem.Entities
         {
         }
 
-        public Shot(string textureName, FPoint position, FPoint velocity, PacketizerContext context)
+        public Shot(string textureName, FPoint position, FPoint velocity)
         {
             // Give this entity a position.
             StaticPhysics sphysics = new StaticPhysics();

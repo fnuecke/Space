@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space;
 using Space.Control;
-using Space.Model;
+using Space.Simulation;
 
 namespace GameStateManagement
 {

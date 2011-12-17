@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -30,9 +31,33 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        public override bool SupportsParameterization(object parameterization)
+        public override void Update(object parameterization)
         {
-            return parameterization is RendererParameterization;
+#if DEBUG
+            base.Update(parameterization);
+#endif
+            var p = (RendererParameterization)parameterization;
+
+            // Load our texture, if it's not set.
+            if (texture == null)
+            {
+                // But only if we have a name, set, else return.
+                if (string.IsNullOrWhiteSpace(TextureName))
+                {
+                    return;
+                }
+                texture = p.Content.Load<Texture2D>(TextureName);
+            }
+        }
+
+        /// <summary>
+        /// Accepts <c>RendererParameterization</c>s.
+        /// </summary>
+        /// <param name="parameterizationType">the type to check.</param>
+        /// <returns>whether the type's supported or not.</returns>
+        public override bool SupportsParameterization(Type parameterizationType)
+        {
+            return parameterizationType.Equals(typeof(RendererParameterization));
         }
 
         public override void Packetize(Serialization.Packet packet)

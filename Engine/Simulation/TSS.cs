@@ -45,14 +45,14 @@ namespace Engine.Simulation
         public IEnumerable<IEntity> Children { get { return LeadingState.Children; } }
 
         /// <summary>
+        /// The component system manager in use in this simulation.
+        /// </summary>
+        public IComponentSystemManager SystemManager { get; private set; }
+
+        /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
         /// </summary>
         public bool WaitingForSynchronization { get; private set; }
-
-        /// <summary>
-        /// Packetizer used for serialization purposes.
-        /// </summary>
-        public IPacketizer Packetizer { get { return LeadingState.Packetizer; } }
 
         /// <summary>
         /// Get the trailing state.
@@ -108,6 +108,10 @@ namespace Engine.Simulation
 
             // Generate initial states.
             _states = new IReversibleSubstate[this._delays.Length];
+
+            // Our pass-through component manager, which allows adding and
+            // removing only in the first frame (i.e. before the first update).
+            SystemManager = new TSSComponentSystemManager(this);
 
             // Mark us for need of sync.
             WaitingForSynchronization = true;
@@ -241,22 +245,6 @@ namespace Engine.Simulation
             }
         }
 
-        /// <summary>
-        /// Register a component system with this simulation.
-        /// </summary>
-        /// <param name="system">the system to register.</param>
-        public void AddSystem(IComponentSystem system)
-        {
-            if (CurrentFrame > 0)
-            {
-                throw new InvalidOperationException("Cannot add systems after simulation has started.");
-            }
-            foreach (var state in _states)
-            {
-                state.AddSystem(system);
-            }
-        }
-        
         /// <summary>
         /// Push a command to all sub states.
         /// 
@@ -642,6 +630,72 @@ namespace Engine.Simulation
             foreach (var key in deprecated)
             {
                 _commands.Remove(key);
+            }
+        }
+
+        /// <summary>
+        /// Helper for system initialization and accessing systems of the leading state.
+        /// </summary>
+        private class TSSComponentSystemManager : IComponentSystemManager
+        {
+            #region Fields
+            
+            private TSS _tss;
+
+            #endregion
+
+            public TSSComponentSystemManager(TSS tss)
+            {
+                this._tss = tss;
+            }
+
+            public void AddSystem(IComponentSystem system)
+            {
+                if (_tss.CurrentFrame > 0)
+                {
+                    throw new InvalidOperationException("Cannot add systems after simulation has started.");
+                }
+                foreach (var state in _tss._states)
+                {
+                    state.SystemManager.AddSystem(system);
+                }
+            }
+
+            public void RemoveSystem(IComponentSystem system)
+            {
+                if (_tss.CurrentFrame > 0)
+                {
+                    throw new InvalidOperationException("Cannot remove systems after simulation has started.");
+                }
+                foreach (var state in _tss._states)
+                {
+                    state.SystemManager.RemoveSystem(system);
+                }
+            }
+
+            public T GetSystem<T>() where T : IComponentSystem
+            {
+                return _tss.LeadingState.SystemManager.GetSystem<T>();
+            }
+
+            public void Update()
+            {
+                throw new NotSupportedException();
+            }
+
+            public void AddEntity(IEntity entity)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void RemoveEntity(IEntity entity)
+            {
+                throw new NotSupportedException();
+            }
+
+            public object Clone()
+            {
+                throw new NotSupportedException();
             }
         }
     }

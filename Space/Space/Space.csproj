@@ -110,28 +110,27 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\GameCommand.cs" />
+    <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
     <Compile Include="ComponentSystem\Components\MovementProperties.cs" />
     <Compile Include="ComponentSystem\Components\Armament.cs" />
-    <Compile Include="ComponentSystem\Entities\Background.cs" />
     <Compile Include="ComponentSystem\Parameterizations\ArmamentParameterization.cs" />
     <Compile Include="ComponentSystem\Parameterizations\InputParameterization.cs" />
+    <Compile Include="ComponentSystem\Systems\PlayerCenteredRenderSystem.cs" />
     <Compile Include="Control\ClientController.cs" />
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Control\InputCommandEmitter.cs" />
     <Compile Include="Control\ServerController.cs" />
-    <Compile Include="Serialization\PacketizerContext.cs" />
-    <Compile Include="Model\PlayerInfo.cs" />
+    <Compile Include="Simulation\PlayerInfo.cs" />
     <Compile Include="ComponentSystem\Entities\Shot.cs" />
-    <Compile Include="Model\StaticWorld.cs" />
+    <Compile Include="Simulation\StaticWorld.cs" />
     <Compile Include="Commands\GameCommandType.cs" />
     <Compile Include="Commands\PlayerInputCommand.cs" />
-    <Compile Include="Model\GameState.cs" />
+    <Compile Include="Simulation\GameState.cs" />
     <Compile Include="ComponentSystem\Entities\Ship.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
-    <Compile Include="Model\IGameObject.cs" />
     <Compile Include="ScreenManager\GameScreen.cs" />
     <Compile Include="ScreenManager\InputState.cs" />
     <Compile Include="ScreenManager\ScreenManager.cs" />

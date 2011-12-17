@@ -1,14 +1,14 @@
 ﻿using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Space.Model;
+using Space.Simulation;
 using Space.View;
 
 namespace Space.Control
 {
     public class GameServer : DrawableGameComponent
     {
-        internal IServerSession<PlayerInfo> Session { get; private set; }
+        internal IServerSession Session { get; private set; }
         internal ServerController Controller { get; private set; }
         SpriteFont font;
 

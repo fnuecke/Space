@@ -33,11 +33,6 @@ namespace Engine.Controller
         /// </summary>
         protected IGameConsole Console { get; private set; }
 
-        /// <summary>
-        /// Packetizer used for the game session handled in this controller.
-        /// </summary>
-        protected IPacketizer Packetizer { get; private set; }
-
         #endregion
 
         #region Construction / Destruction
@@ -58,7 +53,6 @@ namespace Engine.Controller
         public override void Initialize()
         {
             Console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
-            Packetizer = ((IPacketizer)Game.Services.GetService(typeof(IPacketizer))).CopyFor(Session);
 
             if (Session != null)
             {

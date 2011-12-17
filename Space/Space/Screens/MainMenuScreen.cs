@@ -10,7 +10,7 @@
 #region Using Statements
 using Space;
 using Space.Control;
-using Space.Model;
+using Space.Simulation;
 
 #endregion
 

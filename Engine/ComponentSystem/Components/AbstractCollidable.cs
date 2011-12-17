@@ -35,14 +35,16 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        /// <summary>
+        /// Checks for collisions between this component and others given in the parameterization.
+        /// </summary>
+        /// <param name="parameterization">the parameterization to use.</param>
         public override void Update(object parameterization)
         {
 #if DEBUG
-            // Only do this expensive check in debug mode, as this should not happen anyway.
-            if (!SupportsParameterization(parameterization))
-            {
-                throw new System.ArgumentException("parameterization");
-            }
+            // Only do this expensive check (see implementation) in debug mode,
+            // as it should not happen that this is of an invalid type anyway.
+            base.Update(parameterization);
 #endif
             var p = (CollisionParameterization)parameterization;
             // TODO parameterization must contain list of objects to test collision with and possibility to return collision results
@@ -50,9 +52,14 @@ namespace Engine.ComponentSystem.Components
             previousPosition = StaticPhysicsComponent.Position;
         }
 
-        public override bool SupportsParameterization(object parameterization)
+        /// <summary>
+        /// Accepts <c>CollisionParameterization</c>s.
+        /// </summary>
+        /// <param name="parameterizationType">the type to check.</param>
+        /// <returns>whether the type's supported or not.</returns>
+        public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterization is CollisionParameterization;
+            return parameterizationType.Equals(typeof(CollisionParameterization));
         }
 
         public override void Packetize(Serialization.Packet packet)

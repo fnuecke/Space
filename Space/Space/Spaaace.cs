@@ -5,13 +5,11 @@ using Engine.Serialization;
 using Engine.Util;
 using GameStateManagement;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using Space.Commands;
+using Space.ComponentSystem.Entities;
 using Space.Control;
-using Space.Model;
-using SpaceData;
 
 namespace Space
 {
@@ -77,23 +75,14 @@ namespace Space
             Window.Title = "Spaaaaaace. Space. Spaaace. So much space!";
             IsMouseVisible = true;
 
-            // Create our object instantiation context. This must contain
-            // everything a game object might need to rebuild it self from
-            // its serialized data (for game states being sent).
-            var context = new PacketizerContext();
-            context.game = this;
-            var packetizer = new Packetizer<PlayerInfo>(context);
-            // Make the packetizer available for all game components.
-            Services.AddService(typeof(IPacketizer<PlayerInfo>), packetizer);
-
-            // Make some class available through it. The classes registered here
-            // can be deserialized without the code triggering the deserialization
+            // Make some class available through the packetizer. The classes registered
+            // here can be deserialized without the code triggering the deserialization
             // to actually know what it'll get. This is used in game states, e.g.
             // where the state only knows it has IEntities, but not what the
             // actual implementations are.
-            packetizer.Register<Ship>();
-            packetizer.Register<Shot>();
-            packetizer.Register<PlayerInputCommand>();
+            Packetizer.Register<Ship>();
+            Packetizer.Register<Shot>();
+            Packetizer.Register<PlayerInputCommand>();
 
             // Add some more utility components.
             Components.Add(new KeyboardInputManager(this));
@@ -164,21 +153,6 @@ namespace Space
 
             Services.AddService(typeof(SpriteBatch), spriteBatch);
 
-            var context = (PacketizerContext)((IPacketizer<PlayerInfo>)Services.GetService(typeof(IPacketizer<PlayerInfo>))).Context;
-            var shipdata = Content.Load<ShipData[]>("Data/ships");
-            var weaponData = Content.Load<WeaponData[]>("Data/Weapons");
-            foreach (var ship in shipdata)
-            {
-                context.shipData[ship.Name] = ship;
-                context.shipTextures[ship.Name] = Content.Load<Texture2D>(ship.Texture);
-            }
-
-            foreach (var weapon in weaponData)
-            {
-                context.weaponData[weapon.Name] = weapon;
-                context.weaponTextures[weapon.Name] = Content.Load<Texture2D>(weapon.Texture);
-                context.weaponsSounds[weapon.Name] = Content.Load<SoundEffect>(weapon.Sound);
-            }
             console.SpriteBatch = spriteBatch;
             console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
 

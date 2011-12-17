@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Math
 {
@@ -695,6 +696,18 @@ namespace Engine.Math
             return point1.X != point2.X || point1.Y != point2.Y;
         }
         #endregion
+
+        #endregion
+
+        #region Casting
+
+        public static explicit operator Vector2(FPoint src)
+        {
+            Vector2 result;
+            result.X = src.X;
+            result.Y = src.Y;
+            return result;
+        }
 
         #endregion
 

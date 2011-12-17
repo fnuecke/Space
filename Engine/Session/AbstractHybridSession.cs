@@ -122,11 +122,6 @@ namespace Engine.Session
         protected byte[] udpHeader;
 
         /// <summary>
-        /// Packetizer used for this session's game.
-        /// </summary>
-        protected IPacketizer packetizer;
-
-        /// <summary>
         /// List of all players known to be in this session.
         /// </summary>
         protected Player[] players;
@@ -148,8 +143,6 @@ namespace Engine.Session
 
         public override void Initialize()
         {
-            packetizer = ((IPacketizer)Game.Services.GetService(typeof(IPacketizer))).CopyFor(this);
-
             udp.Data += HandleUdpData;
 
             base.Initialize();

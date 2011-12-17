@@ -2,7 +2,7 @@
 
 namespace Engine.Physics.Intersection
 {
-    internal sealed class AABBSweep
+    internal static class AABBSweep
     {
         /// <summary>
         /// Sweep two AABB's to see if and when they first and last were overlapping.
@@ -95,10 +95,6 @@ namespace Engine.Physics.Intersection
             //the first time of overlap occurred
             //before the last time of overlap
             return u0 <= u1;
-        }
-
-        private AABBSweep()
-        {
         }
     }
 }

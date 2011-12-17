@@ -43,8 +43,18 @@ namespace Engine.ComponentSystem.Components
             StaticPhysicsComponent = staticPhysicsComponent;
         }
 
+        /// <summary>
+        /// Updates an objects position/rotation and speed according to its acceleration
+        /// and speeds.
+        /// </summary>
+        /// <param name="parameterization">the parameterization to use.</param>
         public override void Update(object parameterization)
         {
+#if DEBUG
+            // Only do this expensive check (see implementation) in debug mode,
+            // as it should not happen that this is of an invalid type anyway.
+            base.Update(parameterization);
+#endif
             // Apply rotation, keep the value in bounds.
             StaticPhysicsComponent.Rotation += Spin;
             if (StaticPhysicsComponent.Rotation < -Fixed.PI)
@@ -79,9 +89,14 @@ namespace Engine.ComponentSystem.Components
             }
         }
 
-        public override bool SupportsParameterization(object parameterization)
+        /// <summary>
+        /// Accepts <c>PhysicsParameterization</c>s.
+        /// </summary>
+        /// <param name="parameterizationType">the type to check.</param>
+        /// <returns>whether the type's supported or not.</returns>
+        public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterization is PhysicsParameterization;
+            return parameterizationType.Equals(typeof(PhysicsParameterization));
         }
 
         public override void Packetize(Serialization.Packet packet)

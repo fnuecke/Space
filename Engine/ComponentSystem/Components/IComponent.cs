@@ -8,6 +8,6 @@ namespace Engine.ComponentSystem.Components
     {
         void Update(object parameterization);
 
-        bool SupportsParameterization(object parameterization);
+        bool SupportsParameterization(Type parameterizationType);
     }
 }

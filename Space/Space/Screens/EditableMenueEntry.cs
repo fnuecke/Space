@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Engine.Input;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace GameStateManagement
 {
@@ -139,7 +136,6 @@ namespace GameStateManagement
                 float pulsate = (float)Math.Sin(time * 6) + 1;
 
                 float scale = 1 + pulsate * 0.05f * selectionFade;
-                int cursorLine;
                 int cursorCounter = Cursor;
                 if (inputText.Length > 0&&cursorCounter>0)
                     cursorCounter -= 1;

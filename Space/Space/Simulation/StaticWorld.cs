@@ -1,6 +1,6 @@
 ﻿using SpaceData;
 
-namespace Space.Model
+namespace Space.Simulation
 {
     /// <summary>
     /// This class contains static world information, i.e. information that

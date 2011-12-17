@@ -2,7 +2,7 @@
 
 namespace Engine.Physics.Intersection
 {
-    sealed class SphereSweep
+    internal static class SphereSweep
     {
         /// <summary>
         /// Test for collision between two moving spheres.
@@ -48,10 +48,6 @@ namespace Engine.Physics.Intersection
             }
 
             return false;
-        }
-
-        private SphereSweep()
-        {
         }
     }
 }

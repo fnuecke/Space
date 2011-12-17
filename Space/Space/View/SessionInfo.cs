@@ -1,13 +1,12 @@
 ﻿using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Space.Model;
 
 namespace Space.View
 {
     static class SessionInfo
     {
-        public static void Draw(string title, ISession<PlayerInfo> session, Vector2 offset, SpriteFont font, SpriteBatch spriteBatch)
+        public static void Draw(string title, ISession session, Vector2 offset, SpriteFont font, SpriteBatch spriteBatch)
         {
             string sessionInfo = title + " (" + session.NumPlayers + "/" + session.MaxPlayers + ")";
             foreach (var player in session.AllPlayers)

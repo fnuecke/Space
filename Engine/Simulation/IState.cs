@@ -24,9 +24,9 @@ namespace Engine.Simulation
         IEnumerable<IEntity> Children { get; }
 
         /// <summary>
-        /// Packetizer used for serialization purposes.
+        /// The component system manager in use in this simulation.
         /// </summary>
-        IPacketizer Packetizer { get; }
+        IComponentSystemManager SystemManager { get; }
 
         /// <summary>
         /// Add an entity object to the list of participants of this state.
@@ -53,12 +53,6 @@ namespace Engine.Simulation
         /// <param name="entityUid">the remove object.</param>
         IEntity RemoveEntity(long entityUid);
         
-        /// <summary>
-        /// Register a component system with this simulation.
-        /// </summary>
-        /// <param name="system">the system to register.</param>
-        void AddSystem(IComponentSystem system);
-
         /// <summary>
         /// Advance the simulation by one frame.
         /// </summary>
