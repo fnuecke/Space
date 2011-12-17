@@ -6,9 +6,8 @@ namespace Engine.Session
     /// <summary>
     /// This class is used to represent a single player in a Session.
     /// </summary>
-    public sealed class Player<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public sealed class Player<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// The player's number in the game he's in.
@@ -34,9 +33,9 @@ namespace Engine.Session
 
         public override bool Equals(object obj)
         {
-            if (obj is Player<TPlayerData, TPacketizerContext>)
+            if (obj is Player<TPlayerData>)
             {
-                return ((Player<TPlayerData, TPacketizerContext>)obj).Number == this.Number;
+                return ((Player<TPlayerData>)obj).Number == this.Number;
             }
             return false;
         }

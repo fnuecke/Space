@@ -234,9 +234,8 @@ namespace Engine.Serialization
             return this;
         }
 
-        public Packet Write<TPlayerData, TPacketizerContext>(IPacketizable<TPlayerData, TPacketizerContext> data)
-            where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-            where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+        public Packet Write<TPlayerData>(IPacketizable<TPlayerData> data)
+            where TPlayerData : IPacketizable<TPlayerData>
         {
             data.Packetize(this);
             return this;
@@ -402,9 +401,8 @@ namespace Engine.Serialization
             return result;
         }
 
-        public void ReadPacketizable<TPlayerData, TPacketizerContext>(IPacketizable<TPlayerData, TPacketizerContext> packetizable, TPacketizerContext context)
-            where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-            where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+        public void ReadPacketizable<TPlayerData>(IPacketizable<TPlayerData> packetizable, IPacketizerContext<TPlayerData> context)
+            where TPlayerData : IPacketizable<TPlayerData>
         {
             packetizable.Depacketize(this, context);
         }

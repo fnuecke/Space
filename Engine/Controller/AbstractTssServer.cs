@@ -15,11 +15,9 @@ namespace Engine.Controller
     /// </summary>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssServer<TCommand, TPlayerData, TPacketizerContext>
-        : AbstractTssController<IServerSession<TPlayerData, TPacketizerContext>, TCommand, TPlayerData, TPacketizerContext>
-        where TCommand : IFrameCommand<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssServer<TCommand, TPlayerData> : AbstractTssController<IServerSession<TPlayerData>, TCommand, TPlayerData>
+        where TCommand : IFrameCommand<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>, new()
     {
         #region Logger
 
@@ -72,7 +70,7 @@ namespace Engine.Controller
         /// <param name="maxPlayers">the maximum number of players in the game.</param>
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
-        protected AbstractTssServer(Game game, IServerSession<TPlayerData, TPacketizerContext> session)
+        protected AbstractTssServer(Game game, IServerSession<TPlayerData> session)
             : base(game, session, new uint[] {
                 (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
                 (uint)System.Math.Ceiling(250 / game.TargetElapsedTime.TotalMilliseconds)
@@ -172,7 +170,7 @@ namespace Engine.Controller
         /// <param name="entity">the entity to add.</param>
         /// <param name="frame">the frame in which to add the entity.</param>
         /// <returns>the id the entity was assigned.</returns>
-        public override long AddEntity(IEntity<TPlayerData, TPacketizerContext> entity, long frame)
+        public override long AddEntity(IEntity<TPlayerData> entity, long frame)
         {
             // Give the entity a unique id. Skip the zero to avoid
             // referencing that object with uninitialized 'pointers'.
@@ -214,7 +212,7 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected override void Apply(IFrameCommand<TPlayerData, TPacketizerContext> command)
+        protected override void Apply(IFrameCommand<TPlayerData> command)
         {
             if (command.Frame >= Simulation.TrailingFrame)
             {
@@ -238,9 +236,9 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of server side TSS synchronization logic.
         /// </summary>
-        protected override IFrameCommand<TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
+        protected override IFrameCommand<TPlayerData> UnwrapDataForReceive(SessionDataEventArgs e)
         {
-            var args = (ServerDataEventArgs<TPlayerData, TPacketizerContext>)e;
+            var args = (ServerDataEventArgs<TPlayerData>)e;
             var type = (TssControllerMessage)args.Data.ReadByte();
             switch (type)
             {

@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.Model
 {
-    class Shot : Sphere<PlayerInfo, PacketizerContext>, IGameObject
+    class Shot : Sphere<PlayerInfo>, IGameObject
     {
         private Texture2D texture;
 
@@ -44,9 +44,10 @@ namespace Space.Model
                 0);
         }
 
-        public override void Depacketize(Packet packet, PacketizerContext context)
+        public override void Depacketize(Packet packet, IPacketizerContext<PlayerInfo> context)
         {
-            texture = context.shipTextures["Sparrow"];
+            var gameContext = (PacketizerContext)context;
+            texture = gameContext.shipTextures["Sparrow"];
 
             base.Depacketize(packet, context);
         }

@@ -11,7 +11,7 @@ using Space.Model;
 
 namespace Space.Control
 {
-    class InputCommandEmitter : GameComponent, ICommandEmitter<GameCommand, PlayerInfo, PacketizerContext>
+    class InputCommandEmitter : GameComponent, ICommandEmitter<GameCommand, PlayerInfo>
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command
@@ -21,16 +21,16 @@ namespace Space.Control
         /// with the proper generics as to match the controller it'll be registered
         /// with.
         /// </summary>
-        public event CommandEmittedEventHandler<GameCommand, PlayerInfo, PacketizerContext> CommandEmitted;
+        public event CommandEmittedEventHandler<GameCommand, PlayerInfo> CommandEmitted;
 
-        private IClientSession<PlayerInfo, PacketizerContext> Session;
+        private IClientSession<PlayerInfo> Session;
         private ClientController simulation;
 
         private Fixed previousTargetRotation;
         private Fixed currentTargetRotation;
         private bool rotationFinished = true;
 
-        public InputCommandEmitter(Game game, IClientSession<PlayerInfo, PacketizerContext> session, ClientController simulation)
+        public InputCommandEmitter(Game game, IClientSession<PlayerInfo> session, ClientController simulation)
             : base(game)
         {
             this.Session = session;

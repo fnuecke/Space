@@ -82,9 +82,9 @@ namespace Space
             // its serialized data (for game states being sent).
             var context = new PacketizerContext();
             context.game = this;
-            var packetizer = new Packetizer<PlayerInfo, PacketizerContext>(context);
+            var packetizer = new Packetizer<PlayerInfo>(context);
             // Make the packetizer available for all game components.
-            Services.AddService(typeof(IPacketizer<PlayerInfo, PacketizerContext>), packetizer);
+            Services.AddService(typeof(IPacketizer<PlayerInfo>), packetizer);
 
             // Make some class available through it. The classes registered here
             // can be deserialized without the code triggering the deserialization
@@ -164,7 +164,7 @@ namespace Space
 
             Services.AddService(typeof(SpriteBatch), spriteBatch);
 
-            var context = ((IPacketizer<PlayerInfo, PacketizerContext>)Services.GetService(typeof(IPacketizer<PlayerInfo, PacketizerContext>))).Context;
+            var context = (PacketizerContext)((IPacketizer<PlayerInfo>)Services.GetService(typeof(IPacketizer<PlayerInfo>))).Context;
             var shipdata = Content.Load<ShipData[]>("Data/ships");
             var weaponData = Content.Load<WeaponData[]>("Data/Weapons");
             foreach (var ship in shipdata)

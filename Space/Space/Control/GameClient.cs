@@ -9,7 +9,7 @@ namespace Space.Control
 {
     class GameClient : DrawableGameComponent
     {
-        internal IClientSession<PlayerInfo, PacketizerContext> Session { get; private set; }
+        internal IClientSession<PlayerInfo> Session { get; private set; }
         internal ClientController Controller { get; private set; }
 
         private InputCommandEmitter emitter;
@@ -19,7 +19,7 @@ namespace Space.Control
         public GameClient(Game game)
             : base(game)
         {
-            Session = new HybridClientSession<PlayerInfo, PacketizerContext>(game);
+            Session = new HybridClientSession<PlayerInfo>(game);
             Controller = new ClientController(game, Session);
             Controller.UpdateOrder = 10;
 
@@ -92,7 +92,7 @@ namespace Space.Control
         /// </summary>
         protected void HandlePlayerJoined(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
+            var args = (PlayerEventArgs<PlayerInfo>)e;
 
             Console.WriteLine(String.Format("CLT.NET: {0} joined.", args.Player));
         }
@@ -102,7 +102,7 @@ namespace Space.Control
         /// </summary>
         protected void HandlePlayerLeft(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
+            var args = (PlayerEventArgs<PlayerInfo>)e;
 
             Console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
         }

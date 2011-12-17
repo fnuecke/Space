@@ -9,10 +9,8 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
-    public sealed class HybridClientSession<TPlayerData, TPacketizerContext>
-        : AbstractHybridSession<TPlayerData, TPacketizerContext>, IClientSession<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public sealed class HybridClientSession<TPlayerData> : AbstractHybridSession<TPlayerData>, IClientSession<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>, new()
     {
         #region Logger
 
@@ -51,7 +49,7 @@ namespace Engine.Session
         /// <summary>
         /// Reference to the data struct with info about the local player.
         /// </summary>
-        public Player<TPlayerData, TPacketizerContext> LocalPlayer { get { return GetPlayer(_localPlayerNumber); } }
+        public Player<TPlayerData> LocalPlayer { get { return GetPlayer(_localPlayerNumber); } }
 
         #endregion
 
@@ -188,13 +186,13 @@ namespace Engine.Session
         /// <param name="server">the local server to join.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="data">additional data to be associated with our player.</param>
-        public void Join(IServerSession<TPlayerData, TPacketizerContext> server, string playerName, TPlayerData playerData)
+        public void Join(IServerSession<TPlayerData> server, string playerName, TPlayerData playerData)
         {
             if (ConnectionState != ClientState.Unconnected)
             {
                 throw new InvalidOperationException("Must leave the current session first.");
             }
-            if (!(server is HybridServerSession<TPlayerData, TPacketizerContext>))
+            if (!(server is HybridServerSession<TPlayerData>))
             {
                 throw new InvalidOperationException("Incompatible server type.");
             }
@@ -219,7 +217,7 @@ namespace Engine.Session
             try
             {
                 // Let's try this... this can throw if the server is already full.
-                ((HybridServerSession<TPlayerData, TPacketizerContext>)server).
+                ((HybridServerSession<TPlayerData>)server).
                     Add(new SlidingPacketStream(toServer, toClient));
             }
             catch (InvalidOperationException ex)
@@ -396,7 +394,7 @@ namespace Engine.Session
                         }
 
                         // Allocate array for the players in the session.
-                        players = new Player<TPlayerData, TPacketizerContext>[MaxPlayers];
+                        players = new Player<TPlayerData>[MaxPlayers];
 
                         // Get other game relevant data (e.g. game state).
                         Packet joinData = packet.ReadPacket();
@@ -421,7 +419,7 @@ namespace Engine.Session
                             packet.ReadPacketizable(playerData, packetizer.Context);
 
                             // All OK, add the player.
-                            players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData);
+                            players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData);
                         }
 
                         // New state :)
@@ -445,7 +443,7 @@ namespace Engine.Session
                         {
                             if (!player.Equals(LocalPlayer))
                             {
-                                OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
+                                OnPlayerJoined(new PlayerEventArgs<TPlayerData>(player));
                             }
                         }
                     }
@@ -472,10 +470,10 @@ namespace Engine.Session
                         packet.ReadPacketizable(playerData, packetizer.Context);
 
                         // All OK, add the player.
-                        players[playerNumber] = new Player<TPlayerData, TPacketizerContext>(playerNumber, playerName, playerData);
+                        players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData);
 
                         // The the local program about it.
-                        OnPlayerJoined(new PlayerEventArgs<TPlayerData, TPacketizerContext>(players[playerNumber]));
+                        OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[playerNumber]));
                     }
                     break;
 
@@ -500,11 +498,11 @@ namespace Engine.Session
                         else
                         {
                             // OK, remove the player.
-                            Player<TPlayerData, TPacketizerContext> player = players[playerNumber];
+                            Player<TPlayerData> player = players[playerNumber];
                             players[playerNumber] = null;
 
                             // Tell the local program about it.
-                            OnPlayerLeft(new PlayerEventArgs<TPlayerData, TPacketizerContext>(player));
+                            OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
                         }
                     }
                     break;

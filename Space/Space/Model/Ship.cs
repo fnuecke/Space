@@ -9,7 +9,7 @@ using SpaceData;
 
 namespace Space.Model
 {
-    class Ship : Sphere<PlayerInfo, PacketizerContext>, IGameObject
+    class Ship : Sphere<PlayerInfo>, IGameObject
     {
         /// <summary>
         /// Time in ticks it takes before a ship may respawn.
@@ -142,7 +142,7 @@ namespace Space.Model
                     Console.WriteLine("shoot");
 
                     shotCooldown = 20;
-                    State.AddEntity(new Shot("Cheap Laser", position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), State.Packetizer.Context));
+                    State.AddEntity(new Shot("Cheap Laser", position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), (PacketizerContext)State.Packetizer.Context));
                     
                 }
             }
@@ -201,11 +201,12 @@ namespace Space.Model
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet, PacketizerContext context)
+        public override void Depacketize(Packet packet, IPacketizerContext<PlayerInfo> context)
         {
+            var gameContext = (PacketizerContext)context;
             string name = packet.ReadString();
-            Data = context.shipData[name];
-            texture = context.game.Content.Load<Texture2D>(Data.Texture);
+            Data = gameContext.shipData[name];
+            texture = gameContext.game.Content.Load<Texture2D>(Data.Texture);
 
             PlayerNumber = packet.ReadInt32();
             shooting = packet.ReadBoolean();

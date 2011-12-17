@@ -8,12 +8,11 @@ namespace Engine.Controller
     /// <summary>
     /// Public interface for controllers managing a game state.
     /// </summary>
-    public interface IStateController<TSession, TCommand, TPlayerData, TPacketizerContext>
-        : IController<TSession, TCommand, TPlayerData, TPacketizerContext>
-        where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TCommand : ICommand<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public interface IStateController<TSession, TCommand, TPlayerData>
+        : IController<TSession, TPlayerData>
+        where TSession : ISession<TPlayerData>
+        where TCommand : ICommand<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// Add a entity to the simulation. Will be inserted at the
@@ -22,7 +21,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="entity">the entity to add.</param>
         /// <returns>the id the entity was assigned.</returns>
-        long AddEntity(IEntity<TPlayerData, TPacketizerContext> entity);
+        long AddEntity(IEntity<TPlayerData> entity);
 
         /// <summary>
         /// Add a entity to the simulation. Will be inserted at the
@@ -32,14 +31,14 @@ namespace Engine.Controller
         /// <param name="entity">the entity to add.</param>
         /// <param name="frame">the frame in which to add the entity.</param>
         /// <returns>the id the entity was assigned.</returns>
-        long AddEntity(IEntity<TPlayerData, TPacketizerContext> entity, long frame);
+        long AddEntity(IEntity<TPlayerData> entity, long frame);
 
         /// <summary>
         /// Get a entity in this simulation based on its unique identifier.
         /// </summary>
         /// <param name="entityUid">the id of the object.</param>
         /// <returns>the object, if it exists.</returns>
-        IEntity<TPlayerData, TPacketizerContext> GetEntity(long entityUid);
+        IEntity<TPlayerData> GetEntity(long entityUid);
 
         /// <summary>
         /// Removes a entity with the given id from the simulation.

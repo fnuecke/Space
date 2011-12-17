@@ -10,12 +10,11 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for all game controller.
     /// </summary>
-    public abstract class AbstractController<TSession, TCommand, TPlayerData, TPacketizerContext>
-        : DrawableGameComponent, IController<TSession, TCommand, TPlayerData, TPacketizerContext>
-        where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TCommand : ICommand<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractController<TSession, TCommand, TPlayerData>
+        : DrawableGameComponent, IController<TSession, TPlayerData>
+        where TSession : ISession<TPlayerData>
+        where TCommand : ICommand<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         #region Logger
 
@@ -38,7 +37,7 @@ namespace Engine.Controller
         /// <summary>
         /// Packetizer used for the game session handled in this controller.
         /// </summary>
-        protected IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get; private set; }
+        protected IPacketizer<TPlayerData> Packetizer { get; private set; }
 
         #endregion
 
@@ -60,7 +59,7 @@ namespace Engine.Controller
         public override void Initialize()
         {
             Console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
-            Packetizer = ((IPacketizer<TPlayerData, TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPlayerData, TPacketizerContext>))).CopyFor(Session);
+            Packetizer = ((IPacketizer<TPlayerData>)Game.Services.GetService(typeof(IPacketizer<TPlayerData>))).CopyFor(Session);
 
             if (Session != null)
             {

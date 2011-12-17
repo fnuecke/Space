@@ -2,20 +2,20 @@
 using Engine.Serialization;
 using Engine.Session;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using SpaceData;
-using Microsoft.Xna.Framework.Audio;
 
 namespace Space.Model
 {
-    public class PacketizerContext : IPacketizerContext<PlayerInfo, PacketizerContext>
+    public class PacketizerContext : IPacketizerContext<PlayerInfo>
     {
         public Game game;
 
         /// <summary>
         /// The session the packetizer context is bound to.
         /// </summary>
-        public ISession<PlayerInfo, PacketizerContext> Session { get; set; }
+        public ISession<PlayerInfo> Session { get; set; }
 
         public Dictionary<string, ShipData> shipData = new Dictionary<string, ShipData>();
 

@@ -7,10 +7,8 @@ namespace Engine.Physics
     /// <summary>
     /// Base class for spherical world objects.
     /// </summary>
-    public abstract class Sphere<TPlayerData, TPacketizerContext>
-        : AbstractCollideable<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class Sphere<TPlayerData> : AbstractCollideable<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         #region Properties
 
@@ -74,7 +72,7 @@ namespace Engine.Physics
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Serialization.Packet packet, TPacketizerContext context)
+        public override void Depacketize(Serialization.Packet packet, IPacketizerContext<TPlayerData> context)
         {
             radius = packet.ReadFixed();
 

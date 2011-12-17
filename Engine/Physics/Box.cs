@@ -7,10 +7,8 @@ namespace Engine.Physics
     /// <summary>
     /// Base class for box shaped world objects.
     /// </summary>
-    public abstract class Box<TPlayerData, TPacketizerContext>
-        : AbstractCollideable<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class Box<TPlayerData> : AbstractCollideable<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         #region Properties
 
@@ -69,7 +67,7 @@ namespace Engine.Physics
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet, TPacketizerContext context)
+        public override void Depacketize(Packet packet, IPacketizerContext<TPlayerData> context)
         {
             size = packet.ReadFPoint();
 

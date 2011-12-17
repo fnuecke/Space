@@ -6,11 +6,10 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for command emitters.
     /// </summary>
-    public abstract class AbstractCommandEmitter<TCommand, TPlayerData, TPacketizerContext>
-        : ICommandEmitter<TCommand, TPlayerData, TPacketizerContext>
-        where TCommand : ICommand<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractCommandEmitter<TCommand, TPlayerData>
+        : ICommandEmitter<TCommand, TPlayerData>
+        where TCommand : ICommand<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command
@@ -20,7 +19,7 @@ namespace Engine.Controller
         /// with the proper generics as to match the controller it'll be registered
         /// with.
         /// </summary>
-        public event CommandEmittedEventHandler<TCommand, TPlayerData, TPacketizerContext> CommandEmitted;
+        public event CommandEmittedEventHandler<TCommand, TPlayerData> CommandEmitted;
 
         /// <summary>
         /// Use this to dispatch new command events.

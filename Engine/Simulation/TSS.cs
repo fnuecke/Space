@@ -10,10 +10,8 @@ namespace Engine.Simulation
     /// Implements a Trailing State Synchronization.
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
-    public sealed class TSS<TPlayerData, TPacketizerContext> :
-        IReversibleState<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public sealed class TSS<TPlayerData> : IReversibleState<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         #region Events
 
@@ -43,7 +41,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Enumerator over all children of the leading state.
         /// </summary>
-        public IEnumerable<IEntity<TPlayerData, TPacketizerContext>> Children { get { return LeadingState.Children; } }
+        public IEnumerable<IEntity<TPlayerData>> Children { get { return LeadingState.Children; } }
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
@@ -53,17 +51,17 @@ namespace Engine.Simulation
         /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
-        public IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get { return LeadingState.Packetizer; } }
+        public IPacketizer<TPlayerData> Packetizer { get { return LeadingState.Packetizer; } }
 
         /// <summary>
         /// Get the trailing state.
         /// </summary>
-        private IReversibleSubstate<TPlayerData, TPacketizerContext> TrailingState { get { return _states[_states.Length - 1]; } }
+        private IReversibleSubstate<TPlayerData> TrailingState { get { return _states[_states.Length - 1]; } }
 
         /// <summary>
         /// Get the leading state.
         /// </summary>
-        private IReversibleSubstate<TPlayerData, TPacketizerContext> LeadingState { get { return _states[0]; } }
+        private IReversibleSubstate<TPlayerData> LeadingState { get { return _states[0]; } }
 
         #endregion
 
@@ -78,12 +76,12 @@ namespace Engine.Simulation
         /// The list of running states. They are ordered in in increasing delay, i.e.
         /// the state at slot 0 is the leading one, 1 is the next newest, and so on.
         /// </summary>
-        private IReversibleSubstate<TPlayerData, TPacketizerContext>[] _states;
+        private IReversibleSubstate<TPlayerData>[] _states;
 
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<IEntity<TPlayerData, TPacketizerContext>>> _adds = new Dictionary<long, List<IEntity<TPlayerData, TPacketizerContext>>>();
+        private Dictionary<long, List<IEntity<TPlayerData>>> _adds = new Dictionary<long, List<IEntity<TPlayerData>>>();
 
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
@@ -93,7 +91,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of commands to execute in delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<ICommand<TPlayerData, TPacketizerContext>>> _commands = new Dictionary<long, List<ICommand<TPlayerData, TPacketizerContext>>>();
+        private Dictionary<long, List<ICommand<TPlayerData>>> _commands = new Dictionary<long, List<ICommand<TPlayerData>>>();
 
         #endregion
 
@@ -108,7 +106,7 @@ namespace Engine.Simulation
             Array.Sort(this._delays);
 
             // Generate initial states.
-            _states = new IReversibleSubstate<TPlayerData, TPacketizerContext>[this._delays.Length];
+            _states = new IReversibleSubstate<TPlayerData>[this._delays.Length];
 
             // Mark us for need of sync.
             WaitingForSynchronization = true;
@@ -119,7 +117,7 @@ namespace Engine.Simulation
         /// <c>WaitingForSynchronization</c> flag.
         /// </summary>
         /// <param name="state">the state to initialize this TSS to.</param>
-        public void Initialize(IReversibleSubstate<TPlayerData, TPacketizerContext> state)
+        public void Initialize(IReversibleSubstate<TPlayerData> state)
         {
             MirrorState(state, _states.Length - 1);
             WaitingForSynchronization = false;
@@ -141,7 +139,7 @@ namespace Engine.Simulation
         /// states when they reach the current frame of the leading state.
         /// </summary>
         /// <param name="entity">the object to add.</param>
-        public void AddEntity(IEntity<TPlayerData, TPacketizerContext> entity)
+        public void AddEntity(IEntity<TPlayerData> entity)
         {
             AddEntity(entity, CurrentFrame);
         }
@@ -152,12 +150,12 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="entity">the object to insert.</param>
         /// <param name="frame">the frame to insert it at.</param>
-        public void AddEntity(IEntity<TPlayerData, TPacketizerContext> entity, long frame)
+        public void AddEntity(IEntity<TPlayerData> entity, long frame)
         {
             // Store it to be inserted in trailing states.
             if (!_adds.ContainsKey(frame))
             {
-                _adds.Add(frame, new List<IEntity<TPlayerData, TPacketizerContext>>());
+                _adds.Add(frame, new List<IEntity<TPlayerData>>());
             }
             else if (_adds[frame].Contains(entity))
             {
@@ -171,7 +169,7 @@ namespace Engine.Simulation
                 // in the intended order!)
                 throw new InvalidOperationException("Cannot add an object in the same frame as it will be removed.");
             }
-            _adds[frame].Add((IEntity<TPlayerData, TPacketizerContext>)entity.Clone());
+            _adds[frame].Add((IEntity<TPlayerData>)entity.Clone());
 
             // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
@@ -185,7 +183,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="entityUid">the id of the entity to look up.</param>
         /// <returns>the current representation in this state.</returns>
-        public IEntity<TPlayerData, TPacketizerContext> GetEntity(long entityUid)
+        public IEntity<TPlayerData> GetEntity(long entityUid)
         {
             return LeadingState.GetEntity(entityUid);
         }
@@ -193,7 +191,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Not supported for TSS.
         /// </summary>
-        public void RemoveEntity(IEntity<TPlayerData, TPacketizerContext> entity)
+        public void RemoveEntity(IEntity<TPlayerData> entity)
         {
             throw new NotSupportedException();
         }
@@ -202,7 +200,7 @@ namespace Engine.Simulation
         /// Remove a entity object by its id. Will always return <c>null</c> for TSS.
         /// </summary>
         /// <param name="entityUid">the remove object.</param>
-        public IEntity<TPlayerData, TPacketizerContext> RemoveEntity(long entityUid)
+        public IEntity<TPlayerData> RemoveEntity(long entityUid)
         {
             RemoveEntity(entityUid, CurrentFrame);
             return null;
@@ -250,7 +248,7 @@ namespace Engine.Simulation
         /// the next Step().
         /// </summary>
         /// <param name="command">the command to push.</param>
-        public void PushCommand(ICommand<TPlayerData, TPacketizerContext> command)
+        public void PushCommand(ICommand<TPlayerData> command)
         {
             PushCommand(command, CurrentFrame);
         }
@@ -262,7 +260,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="command">the command to push.</param>
         /// <param name="frame">the frame in which to execute the command.</param>
-        public void PushCommand(ICommand<TPlayerData, TPacketizerContext> command, long frame)
+        public void PushCommand(ICommand<TPlayerData> command, long frame)
         {
             // Check if we can possibly apply this command.
             if (frame >= TrailingFrame)
@@ -271,7 +269,7 @@ namespace Engine.Simulation
                 if (!_commands.ContainsKey(frame))
                 {
                     // No such command yet, push it.
-                    _commands.Add(frame, new List<ICommand<TPlayerData, TPacketizerContext>>());
+                    _commands.Add(frame, new List<ICommand<TPlayerData>>());
                 }
                 // We don't need to check for duplicate / replacing authoritative here,
                 // because the sub-state will do that itself.
@@ -393,7 +391,7 @@ namespace Engine.Simulation
         /// Deserialize a state from a packet.
         /// </summary>
         /// <param name="packet">the packet to read the data from.</param>
-        public void Depacketize(Packet packet, TPacketizerContext context)
+        public void Depacketize(Packet packet, IPacketizerContext<TPlayerData> context)
         {
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
@@ -412,12 +410,12 @@ namespace Engine.Simulation
                 long key = packet.ReadInt64();
                 if (!_adds.ContainsKey(key))
                 {
-                    _adds.Add(key, new List<IEntity<TPlayerData, TPacketizerContext>>());
+                    _adds.Add(key, new List<IEntity<TPlayerData>>());
                 }
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    _adds[key].Add(Packetizer.Depacketize<IEntity<TPlayerData, TPacketizerContext>>(packet));
+                    _adds[key].Add(Packetizer.Depacketize<IEntity<TPlayerData>>(packet));
                 }
             }
 
@@ -444,12 +442,12 @@ namespace Engine.Simulation
                 long key = packet.ReadInt64();
                 if (!_commands.ContainsKey(key))
                 {
-                    _commands.Add(key, new List<ICommand<TPlayerData, TPacketizerContext>>());
+                    _commands.Add(key, new List<ICommand<TPlayerData>>());
                 }
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    _commands[key].Add(Packetizer.Depacketize<ICommand<TPlayerData, TPacketizerContext>>(packet));
+                    _commands[key].Add(Packetizer.Depacketize<ICommand<TPlayerData>>(packet));
                 }
             }
 
@@ -497,7 +495,7 @@ namespace Engine.Simulation
                         // Add a copy of it.
                         foreach (var entity in _adds[stateFrame])
                         {
-                            state.AddEntity((IEntity<TPlayerData, TPacketizerContext>)entity.Clone());
+                            state.AddEntity((IEntity<TPlayerData>)entity.Clone());
                         }
                     }
 
@@ -574,11 +572,11 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="state">the state to mirror.</param>
         /// <param name="start">the index to start at.</param>
-        private void MirrorState(IReversibleSubstate<TPlayerData, TPacketizerContext> state, int start)
+        private void MirrorState(IReversibleSubstate<TPlayerData> state, int start)
         {
             for (int i = start; i >= 0; --i)
             {
-                _states[i] = (IReversibleSubstate<TPlayerData, TPacketizerContext>)state.Clone();
+                _states[i] = (IReversibleSubstate<TPlayerData>)state.Clone();
             }
         }
 

@@ -15,12 +15,11 @@ namespace Engine.Controller
     /// </summary>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssClient<TCommand, TPlayerData, TPacketizerContext>
-        : AbstractTssController<IClientSession<TPlayerData, TPacketizerContext>, TCommand, TPlayerData, TPacketizerContext>,
-          IClientController<IClientSession<TPlayerData, TPacketizerContext>, TCommand, TPlayerData, TPacketizerContext>
-        where TCommand : IFrameCommand<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssClient<TCommand, TPlayerData>
+        : AbstractTssController<IClientSession<TPlayerData>, TCommand, TPlayerData>,
+          IClientController<IClientSession<TPlayerData>, TCommand, TPlayerData>
+        where TCommand : IFrameCommand<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>, new()
     {
         #region Logger
 
@@ -77,7 +76,7 @@ namespace Engine.Controller
         /// <param name="game">the game this belongs to.</param>
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
-        public AbstractTssClient(Game game, IClientSession<TPlayerData, TPacketizerContext> session)
+        public AbstractTssClient(Game game, IClientSession<TPlayerData> session)
             : base(game, session, new uint[] {
                 (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
                 (uint)System.Math.Ceiling(150 / game.TargetElapsedTime.TotalMilliseconds),
@@ -173,7 +172,7 @@ namespace Engine.Controller
         /// whatever commands it produces.
         /// </summary>
         /// <param name="emitter">the emitter to attach to.</param>
-        public void AddEmitter(ICommandEmitter<TCommand, TPlayerData, TPacketizerContext> emitter)
+        public void AddEmitter(ICommandEmitter<TCommand, TPlayerData> emitter)
         {
             emitter.CommandEmitted += HandleEmittedCommand;
         }
@@ -182,7 +181,7 @@ namespace Engine.Controller
         /// Remove this controller as a listener from the given emitter.
         /// </summary>
         /// <param name="emitter">the emitter to detach from.</param>
-        public void RemoveEmitter(ICommandEmitter<TCommand, TPlayerData, TPacketizerContext> emitter)
+        public void RemoveEmitter(ICommandEmitter<TCommand, TPlayerData> emitter)
         {
             emitter.CommandEmitted -= HandleEmittedCommand;
         }
@@ -191,7 +190,7 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected override void Apply(IFrameCommand<TPlayerData, TPacketizerContext> command)
+        protected override void Apply(IFrameCommand<TPlayerData> command)
         {
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
@@ -253,7 +252,7 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of client side TSS synchronization logic.
         /// </summary>
-        protected override IFrameCommand<TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
+        protected override IFrameCommand<TPlayerData> UnwrapDataForReceive(SessionDataEventArgs e)
         {
             var args = (ClientDataEventArgs)e;
             var type = (TssControllerMessage)args.Data.ReadByte();
@@ -321,7 +320,7 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long addFrame = args.Data.ReadInt64();
-                        IEntity<TPlayerData, TPacketizerContext> entity = Packetizer.Depacketize<IEntity<TPlayerData, TPacketizerContext>>(args.Data);
+                        IEntity<TPlayerData> entity = Packetizer.Depacketize<IEntity<TPlayerData>>(args.Data);
                         Simulation.AddEntity(entity, addFrame);
                     }
                     break;

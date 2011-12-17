@@ -8,16 +8,15 @@ namespace Engine.Session
     /// Used for <see cref="Engine.Session.ISession#PlayerJoined"/> and
     /// <see cref="Engine.Session.ISession#PlayerLeft"/>.
     /// </summary>
-    public class PlayerEventArgs<TPlayerData, TPacketizerContext> : EventArgs
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public class PlayerEventArgs<TPlayerData> : EventArgs
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// The player the event applies to.
         /// </summary>
-        public Player<TPlayerData, TPacketizerContext> Player { get; private set; }
+        public Player<TPlayerData> Player { get; private set; }
 
-        public PlayerEventArgs(Player<TPlayerData, TPacketizerContext> player)
+        public PlayerEventArgs(Player<TPlayerData> player)
         {
             this.Player = player;
         }
@@ -37,17 +36,15 @@ namespace Engine.Session
     /// <summary>
     /// Used for a server's <c>Data</c> event.
     /// </summary>
-    public class ServerDataEventArgs<TPlayerData, TPacketizerContext>
-        : PlayerEventArgs<TPlayerData, TPacketizerContext>, SessionDataEventArgs
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public class ServerDataEventArgs<TPlayerData> : PlayerEventArgs<TPlayerData>, SessionDataEventArgs
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// The data received from the player.
         /// </summary>
         public Packet Data { get; private set; }
 
-        public ServerDataEventArgs(Player<TPlayerData, TPacketizerContext> player, Packet data)
+        public ServerDataEventArgs(Player<TPlayerData> player, Packet data)
             : base(player)
         {
             this.Data = data;
@@ -146,14 +143,13 @@ namespace Engine.Session
     /// <summary>
     /// Used for <see cref="Engine.Session.IServerSession#JoinRequested"/>.
     /// </summary>
-    public class JoinRequestEventArgs<TPlayerData, TPacketizerContext> : RequestEventArgs
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public class JoinRequestEventArgs<TPlayerData> : RequestEventArgs
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// The player doing the joining.
         /// </summary>
-        public Player<TPlayerData, TPacketizerContext> Player { get; private set; }
+        public Player<TPlayerData> Player { get; private set; }
 
         /// <summary>
         /// Data that should be sent should be written to this packet.
@@ -165,7 +161,7 @@ namespace Engine.Session
         /// </summary>
         public bool ShouldBlock { get; set; }
 
-        public JoinRequestEventArgs(Player<TPlayerData, TPacketizerContext> player, TPlayerData playerData)
+        public JoinRequestEventArgs(Player<TPlayerData> player, TPlayerData playerData)
         {
             this.Player = player;
             this.PlayerData = playerData;

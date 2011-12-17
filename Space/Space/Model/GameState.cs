@@ -9,20 +9,20 @@ using Space.Commands;
 
 namespace Space.Model
 {
-    class GameState : AbstractState<PlayerInfo, PacketizerContext>, IReversibleSubstate<PlayerInfo, PacketizerContext>
+    class GameState : AbstractState<PlayerInfo>, IReversibleSubstate<PlayerInfo>
     {
         private Game game;
 
-        private ISession<PlayerInfo, PacketizerContext> session;
+        private ISession<PlayerInfo> session;
 
-        public GameState(Game game, ISession<PlayerInfo, PacketizerContext> session)
-            : base(((IPacketizer<PlayerInfo, PacketizerContext>)game.Services.GetService(typeof(IPacketizer<PlayerInfo, PacketizerContext>))).CopyFor(session))
+        public GameState(Game game, ISession<PlayerInfo> session)
+            : base(((IPacketizer<PlayerInfo>)game.Services.GetService(typeof(IPacketizer<PlayerInfo>))).CopyFor(session))
         {
             this.game = game;
             this.session = session;
         }
 
-        protected override void HandleCommand(ICommand<PlayerInfo, PacketizerContext> command)
+        protected override void HandleCommand(ICommand<PlayerInfo> command)
         {
             switch ((GameCommandType)command.Type)
             {

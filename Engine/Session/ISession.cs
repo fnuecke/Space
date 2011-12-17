@@ -9,9 +9,8 @@ namespace Engine.Session
     /// <summary>
     /// Common interface for sessions of either server or client type.
     /// </summary>
-    public interface ISession<TPlayerData, TPacketizerContext> : IGameComponent, IDisposable
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public interface ISession<TPlayerData> : IGameComponent, IDisposable
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// Called when a new player joins the session.
@@ -31,7 +30,7 @@ namespace Engine.Session
         /// <summary>
         /// Get a list of all players in the game.
         /// </summary>
-        IEnumerable<Player<TPlayerData, TPacketizerContext>> AllPlayers { get; }
+        IEnumerable<Player<TPlayerData>> AllPlayers { get; }
 
         /// <summary>
         /// Number of players currently in the game.
@@ -48,7 +47,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="playerNumber">the number of the player.</param>
         /// <returns>information on the player.</returns>
-        Player<TPlayerData, TPacketizerContext> GetPlayer(int playerNumber);
+        Player<TPlayerData> GetPlayer(int playerNumber);
 
         /// <summary>
         /// Check if the player with the given number exists.
@@ -62,7 +61,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">the player to check.</param>
         /// <returns><c>true</c> if the player is in the session.</returns>
-        bool HasPlayer(Player<TPlayerData, TPacketizerContext> player);
+        bool HasPlayer(Player<TPlayerData> player);
 
         /// <summary>
         /// Send some data to the server.

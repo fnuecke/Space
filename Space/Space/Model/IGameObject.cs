@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.Model
 {
-    interface IGameObject : IEntity<PlayerInfo, PacketizerContext>
+    interface IGameObject : IEntity<PlayerInfo>
     {
         void Draw(GameTime gameTime, Vector2 translation, SpriteBatch spriteBatch);
     }

@@ -6,10 +6,8 @@ namespace Engine.Simulation
     /// <summary>
     /// Base class for entities, implementing logic for distributing unique ids.
     /// </summary>
-    public abstract class AbstractEntity<TPlayerData, TPacketizerContext>
-        : IEntity<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractEntity<TPlayerData> : IEntity<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         #region Properties
 
@@ -21,7 +19,7 @@ namespace Engine.Simulation
         /// <summary>
         /// The world (simulation) this object is associated with.
         /// </summary>
-        public virtual IState<TPlayerData, TPacketizerContext> State { get; set; }
+        public virtual IState<TPlayerData> State { get; set; }
 
         #endregion
 
@@ -65,7 +63,7 @@ namespace Engine.Simulation
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">the packet to read from.</param>
-        public virtual void Depacketize(Packet packet, TPacketizerContext context)
+        public virtual void Depacketize(Packet packet, IPacketizerContext<TPlayerData> context)
         {
             UID = packet.ReadInt64();
         }

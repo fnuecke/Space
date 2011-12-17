@@ -12,10 +12,8 @@ namespace Engine.Physics
     /// This means the objects have a position, an orientation and a
     /// movement vector (speed / acceleration).
     /// </summary>
-    public abstract class PhysicalObject<TPlayerData, TPacketizerContext>
-        : AbstractEntity<TPlayerData, TPacketizerContext>, IPacketizable<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class PhysicalObject<TPlayerData> : AbstractEntity<TPlayerData>, IPacketizable<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         #region Properties
 
@@ -136,7 +134,7 @@ namespace Engine.Physics
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet, TPacketizerContext context)
+        public override void Depacketize(Packet packet, IPacketizerContext<TPlayerData> context)
         {
             position = packet.ReadFPoint();
             previousPosition = packet.ReadFPoint();

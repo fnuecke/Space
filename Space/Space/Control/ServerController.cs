@@ -12,7 +12,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class ServerController : AbstractTssServer<GameCommand, PlayerInfo, PacketizerContext>
+    class ServerController : AbstractTssServer<GameCommand, PlayerInfo>
     {
         #region Logger
 
@@ -29,7 +29,7 @@ namespace Space.Control
 
         #endregion
 
-        public ServerController(Game game, IServerSession<PlayerInfo, PacketizerContext> session, byte worldSize, long worldSeed)
+        public ServerController(Game game, IServerSession<PlayerInfo> session, byte worldSize, long worldSeed)
             : base(game, session)
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
@@ -62,22 +62,22 @@ namespace Space.Control
         protected override void HandleJoinRequested(object sender, EventArgs e)
         {
             // Send current game state to client.
-            var args = (JoinRequestEventArgs<PlayerInfo, PacketizerContext>)e;
+            var args = (JoinRequestEventArgs<PlayerInfo>)e;
 
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
-            var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, Packetizer.Context);
+            var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, (PacketizerContext)Packetizer.Context);
             args.Player.Data.ShipUID = AddEntity(ship);
         }
 
         protected void HandlePlayerLeft(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
+            var args = (PlayerEventArgs<PlayerInfo>)e;
             // Player left the game, remove his ship.
             RemoveEntity(args.Player.Data.ShipUID);
         }
 
-        protected override bool HandleRemoteCommand(IFrameCommand<PlayerInfo, PacketizerContext> command)
+        protected override bool HandleRemoteCommand(IFrameCommand<PlayerInfo> command)
         {
             // Check what we have.
             switch ((GameCommandType)command.Type)

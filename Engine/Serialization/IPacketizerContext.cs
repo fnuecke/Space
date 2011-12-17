@@ -9,13 +9,12 @@ namespace Engine.Serialization
     /// </summary>
     /// <typeparam name="TPlayerData"></typeparam>
     /// <typeparam name="TPacketizerContext"></typeparam>
-    public interface IPacketizerContext<TPlayerData, TPacketizerContext> : ICloneable
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public interface IPacketizerContext<TPlayerData> : ICloneable
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// The session the packetizer context is bound to.
         /// </summary>
-        ISession<TPlayerData, TPacketizerContext> Session { get; set; }
+        ISession<TPlayerData> Session { get; set; }
     }
 }

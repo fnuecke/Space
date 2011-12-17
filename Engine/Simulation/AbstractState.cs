@@ -16,9 +16,8 @@ namespace Engine.Simulation
     /// - Cloning of the state (may use CloneTo to take care of the basics).
     /// </para>
     /// </summary>
-    public abstract class AbstractState<TPlayerData, TPacketizerContext> : IState<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractState<TPlayerData> : IState<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         #region Properties
 
@@ -30,12 +29,12 @@ namespace Engine.Simulation
         /// <summary>
         /// Enumerator over all children.
         /// </summary>
-        public IEnumerable<IEntity<TPlayerData, TPacketizerContext>> Children { get { return entities; } }
+        public IEnumerable<IEntity<TPlayerData>> Children { get { return entities; } }
 
         /// <summary>
         /// Packetizer used for serialization purposes.
         /// </summary>
-        public IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get; protected set; }
+        public IPacketizer<TPlayerData> Packetizer { get; protected set; }
 
         #endregion
 
@@ -44,18 +43,18 @@ namespace Engine.Simulation
         /// <summary>
         /// List of queued commands to execute in the next step.
         /// </summary>
-        protected List<ICommand<TPlayerData, TPacketizerContext>> commands = new List<ICommand<TPlayerData, TPacketizerContext>>();
+        protected List<ICommand<TPlayerData>> commands = new List<ICommand<TPlayerData>>();
 
         /// <summary>
         /// List of child entities this state drives.
         /// </summary>
-        protected IList<IEntity<TPlayerData, TPacketizerContext>> entities = new List<IEntity<TPlayerData, TPacketizerContext>>();
+        protected IList<IEntity<TPlayerData>> entities = new List<IEntity<TPlayerData>>();
 
         #endregion
 
         #region Constructor
 
-        protected AbstractState(IPacketizer<TPlayerData, TPacketizerContext> packetizer)
+        protected AbstractState(IPacketizer<TPlayerData> packetizer)
         {
             this.Packetizer = packetizer;
         }
@@ -68,7 +67,7 @@ namespace Engine.Simulation
         /// Add an entity object to the list of participants of this state.
         /// </summary>
         /// <param name="entity">the object to add.</param>
-        public void AddEntity(IEntity<TPlayerData, TPacketizerContext> entity)
+        public void AddEntity(IEntity<TPlayerData> entity)
         {
             entities.Add(entity);
             entity.State = this;
@@ -78,7 +77,7 @@ namespace Engine.Simulation
         /// Remove an entity object to the list of participants of this state.
         /// </summary>
         /// <param name="entity">the object to remove.</param>
-        public void RemoveEntity(IEntity<TPlayerData, TPacketizerContext> entity)
+        public void RemoveEntity(IEntity<TPlayerData> entity)
         {
             RemoveEntity(entity.UID);
         }
@@ -87,7 +86,7 @@ namespace Engine.Simulation
         /// Remove a entity object by its id.
         /// </summary>
         /// <param name="entityUid">the remove object.</param>
-        public IEntity<TPlayerData, TPacketizerContext> RemoveEntity(long entityUid)
+        public IEntity<TPlayerData> RemoveEntity(long entityUid)
         {
             if (entityUid >= 0)
             {
@@ -95,7 +94,7 @@ namespace Engine.Simulation
                 {
                     if (entities[i].UID == entityUid)
                     {
-                        IEntity<TPlayerData, TPacketizerContext> entity = entities[i];
+                        IEntity<TPlayerData> entity = entities[i];
                         entities.RemoveAt(i);
                         entity.State = null;
                         return entity;
@@ -110,7 +109,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="entityUid">the id of the entity to look up.</param>
         /// <returns>the current representation in this state.</returns>
-        public IEntity<TPlayerData, TPacketizerContext> GetEntity(long entityUid)
+        public IEntity<TPlayerData> GetEntity(long entityUid)
         {
             for (int i = 0; i < entities.Count; i++)
             {
@@ -126,7 +125,7 @@ namespace Engine.Simulation
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        public virtual void PushCommand(ICommand<TPlayerData, TPacketizerContext> command)
+        public virtual void PushCommand(ICommand<TPlayerData> command)
         {
             // There's a chance we have that command in a tentative version. Let's check.
             int known = commands.FindIndex(x => x.Equals(command));
@@ -179,7 +178,7 @@ namespace Engine.Simulation
         /// commands. I.e. the order of the command execution must not make a difference.
         /// </summary>
         /// <param name="command">the command to handle.</param>
-        protected abstract void HandleCommand(ICommand<TPlayerData, TPacketizerContext> command);
+        protected abstract void HandleCommand(ICommand<TPlayerData> command);
 
         #endregion
 
@@ -193,7 +192,7 @@ namespace Engine.Simulation
         public virtual void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(entities.Count));
-            List<IEntity<TPlayerData, TPacketizerContext>> withId = new List<IEntity<TPlayerData, TPacketizerContext>>();
+            List<IEntity<TPlayerData>> withId = new List<IEntity<TPlayerData>>();
             if (entities.Count > 0)
             {
                 foreach (var entity in entities)
@@ -230,7 +229,7 @@ namespace Engine.Simulation
             }
         }
 
-        public virtual void Depacketize(Packet packet, TPacketizerContext context)
+        public virtual void Depacketize(Packet packet, IPacketizerContext<TPlayerData> context)
         {
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
@@ -240,7 +239,7 @@ namespace Engine.Simulation
             int numCommands = packet.ReadInt32();
             for (int j = 0; j < numCommands; ++j)
             {
-                PushCommand(Packetizer.Depacketize<ICommand<TPlayerData, TPacketizerContext>>(packet));
+                PushCommand(Packetizer.Depacketize<ICommand<TPlayerData>>(packet));
             }
 
             // And finally the objects. Remove the one we know before that.
@@ -248,7 +247,7 @@ namespace Engine.Simulation
             int numEntitys = packet.ReadInt32();
             for (int i = 0; i < numEntitys; ++i)
             {
-                var entity = Packetizer.Depacketize<IEntity<TPlayerData, TPacketizerContext>>(packet);
+                var entity = Packetizer.Depacketize<IEntity<TPlayerData>>(packet);
                 entities.Add(entity);
                 entity.State = this;
             }
@@ -258,7 +257,7 @@ namespace Engine.Simulation
         /// Call this from the implemented Clone() method to clone basic properties.
         /// </summary>
         /// <param name="clone"></param>
-        protected virtual object CloneTo(AbstractState<TPlayerData, TPacketizerContext> clone)
+        protected virtual object CloneTo(AbstractState<TPlayerData> clone)
         {
             clone.CurrentFrame = CurrentFrame;
 
@@ -272,7 +271,7 @@ namespace Engine.Simulation
             clone.entities.Clear();
             foreach (var entity in entities)
             {
-                clone.AddEntity((IEntity<TPlayerData, TPacketizerContext>)entity.Clone());
+                clone.AddEntity((IEntity<TPlayerData>)entity.Clone());
             }
 
             return clone;

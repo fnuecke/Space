@@ -9,10 +9,9 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
-    public abstract class AbstractHybridSession<TPlayerData, TPacketizerContext>
-        : GameComponent, ISession<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractHybridSession<TPlayerData>
+        : GameComponent, ISession<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         #region Types
 
@@ -98,7 +97,7 @@ namespace Engine.Session
         /// <summary>
         /// Get a list of all players in the game.
         /// </summary>
-        public IEnumerable<Player<TPlayerData, TPacketizerContext>> AllPlayers { get { for (int i = 0; i < MaxPlayers; i++) { if (HasPlayer(i)) { yield return GetPlayer(i); } } } }
+        public IEnumerable<Player<TPlayerData>> AllPlayers { get { for (int i = 0; i < MaxPlayers; i++) { if (HasPlayer(i)) { yield return GetPlayer(i); } } } }
 
         /// <summary>
         /// Number of players currently in the game.
@@ -127,12 +126,12 @@ namespace Engine.Session
         /// <summary>
         /// Packetizer used for this session's game.
         /// </summary>
-        protected IPacketizer<TPlayerData, TPacketizerContext> packetizer;
+        protected IPacketizer<TPlayerData> packetizer;
 
         /// <summary>
         /// List of all players known to be in this session.
         /// </summary>
-        protected Player<TPlayerData, TPacketizerContext>[] players;
+        protected Player<TPlayerData>[] players;
 
         #endregion
         
@@ -151,7 +150,7 @@ namespace Engine.Session
 
         public override void Initialize()
         {
-            packetizer = ((IPacketizer<TPlayerData, TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPlayerData, TPacketizerContext>))).CopyFor(this);
+            packetizer = ((IPacketizer<TPlayerData>)Game.Services.GetService(typeof(IPacketizer<TPlayerData>))).CopyFor(this);
 
             udp.Data += HandleUdpData;
 
@@ -181,7 +180,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="playerNumber">the number of the player.</param>
         /// <returns>the player in the session with the given number.</returns>
-        public Player<TPlayerData, TPacketizerContext> GetPlayer(int playerNumber)
+        public Player<TPlayerData> GetPlayer(int playerNumber)
         {
             if (playerNumber < 0 || playerNumber >= MaxPlayers)
             {
@@ -211,7 +210,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">the player to check.</param>
         /// <returns>if the player is in the session or not.</returns>
-        public bool HasPlayer(Player<TPlayerData, TPacketizerContext> player)
+        public bool HasPlayer(Player<TPlayerData> player)
         {
             return HasPlayer(player.Number) && GetPlayer(player.Number) == player;
         }

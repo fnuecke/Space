@@ -17,9 +17,8 @@ namespace Engine.Session
     /// <summary>
     /// Interface for client side representations of a session.
     /// </summary>
-    public interface IClientSession<TPlayerData, TPacketizerContext> : ISession<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public interface IClientSession<TPlayerData> : ISession<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// Called when we receive information about an open game.
@@ -42,7 +41,7 @@ namespace Engine.Session
         /// Reference to the data struct with info about the local player.
         /// </summary>
         /// <remarks>Shortcut for <c>session.GetPlayer(session.LocalPlayerNumber)</c>.</remarks>
-        Player<TPlayerData, TPacketizerContext> LocalPlayer { get; }
+        Player<TPlayerData> LocalPlayer { get; }
 
         /// <summary>
         /// Send a ping into the local network, looking for open games.
@@ -63,7 +62,7 @@ namespace Engine.Session
         /// <param name="server">the local server to join.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="data">additional data to be associated with our player.</param>
-        void Join(IServerSession<TPlayerData, TPacketizerContext> server, string playerName, TPlayerData data);
+        void Join(IServerSession<TPlayerData> server, string playerName, TPlayerData data);
 
         /// <summary>
         /// Leave the session.

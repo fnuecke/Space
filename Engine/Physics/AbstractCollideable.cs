@@ -6,10 +6,8 @@ namespace Engine.Physics
     /// <summary>
     /// Base implementation for collideable types.
     /// </summary>
-    public abstract class AbstractCollideable<TPlayerData, TPacketizerContext>
-        : PhysicalObject<TPlayerData, TPacketizerContext>, ICollideable
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractCollideable<TPlayerData> : PhysicalObject<TPlayerData>, ICollideable
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         #region Interfaces
 

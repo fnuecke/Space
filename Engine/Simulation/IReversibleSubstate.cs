@@ -2,10 +2,8 @@
 
 namespace Engine.Simulation
 {
-    public interface IReversibleSubstate<TPlayerData, TPacketizerContext>
-        : IState<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public interface IReversibleSubstate<TPlayerData> : IState<TPlayerData>
+        where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
         /// Forces the state to remove any pending commands that
