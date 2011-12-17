@@ -1,33 +1,27 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 
 namespace Engine.Simulation
 {
     /// <summary>
-    /// Interface for world objects to be updated each frame.
-    /// 
-    /// IMPORTANT: implementations must perform a deep copy for
-    /// all non-constant references (constant references may for
-    /// example be things such as settings / read only values).
+    /// Minimal functionality of a world entity that can be used in simulations
+    /// and updated via the component system. The entity must know its components
+    /// and delegate the <c>Update</c> call to its components.
     /// </summary>
-    public interface IEntity<TPlayerData>
-        : IPacketizable<TPlayerData>, ICloneable, IHashable
+    public interface IEntity<TPlayerData> : IPacketizable<TPlayerData>, ICloneable, IHashable
         where TPlayerData : IPacketizable<TPlayerData>
     {
         /// <summary>
-        /// The world (simulation) this object is associated with.
-        /// </summary>
-        IState<TPlayerData> State { get; set; }
-
-        /// <summary>
         /// A globally unique id for this object.
         /// </summary>
-        long UID { get; set; }
+        long UID { get; }
 
         /// <summary>
-        /// Perform one simulation step. 
+        /// A list of all of this entities components.
         /// </summary>
-        void Update();
+        ReadOnlyCollection<IComponent<TPlayerData>> Components { get; }
     }
 }

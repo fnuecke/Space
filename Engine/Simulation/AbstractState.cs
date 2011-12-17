@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Commands;
+using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -50,6 +51,11 @@ namespace Engine.Simulation
         /// </summary>
         protected IList<IEntity<TPlayerData>> entities = new List<IEntity<TPlayerData>>();
 
+        /// <summary>
+        /// Manager for all component systems available in this simulation.
+        /// </summary>
+        protected CompositeComponentSystem<TPlayerData> systems = new CompositeComponentSystem<TPlayerData>();
+
         #endregion
 
         #region Constructor
@@ -70,9 +76,25 @@ namespace Engine.Simulation
         public void AddEntity(IEntity<TPlayerData> entity)
         {
             entities.Add(entity);
-            entity.State = this;
         }
 
+        /// <summary>
+        /// Get a entity's current representation in this state by its id.
+        /// </summary>
+        /// <param name="entityUid">the id of the entity to look up.</param>
+        /// <returns>the current representation in this state.</returns>
+        public IEntity<TPlayerData> GetEntity(long entityUid)
+        {
+            for (int i = 0; i < entities.Count; i++)
+            {
+                if (entities[i].UID == entityUid)
+                {
+                    return entities[i];
+                }
+            }
+            return null;
+        }
+        
         /// <summary>
         /// Remove an entity object to the list of participants of this state.
         /// </summary>
@@ -96,7 +118,6 @@ namespace Engine.Simulation
                     {
                         IEntity<TPlayerData> entity = entities[i];
                         entities.RemoveAt(i);
-                        entity.State = null;
                         return entity;
                     }
                 }
@@ -105,20 +126,12 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Get a entity's current representation in this state by its id.
+        /// Register a component system with this simulation.
         /// </summary>
-        /// <param name="entityUid">the id of the entity to look up.</param>
-        /// <returns>the current representation in this state.</returns>
-        public IEntity<TPlayerData> GetEntity(long entityUid)
+        /// <param name="system">the system to register.</param>
+        public void AddSystem(IComponentSystem<TPlayerData> system)
         {
-            for (int i = 0; i < entities.Count; i++)
-            {
-                if (entities[i].UID == entityUid)
-                {
-                    return entities[i];
-                }
-            }
-            return null;
+            systems.Add(system);
         }
 
         /// <summary>
@@ -167,7 +180,7 @@ namespace Engine.Simulation
             // Update all objects in this state.
             foreach (var entity in entities)
             {
-                entity.Update();
+                systems.Update(entity);
             }
         }
 

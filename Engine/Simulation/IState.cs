@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Commands;
+using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -57,7 +58,7 @@ namespace Engine.Simulation
         /// Register a component system with this simulation.
         /// </summary>
         /// <param name="system">the system to register.</param>
-        //void AddSystem(IComponentSystem system);
+        void AddSystem(IComponentSystem<TPlayerData> system);
 
         /// <summary>
         /// Advance the simulation by one frame.

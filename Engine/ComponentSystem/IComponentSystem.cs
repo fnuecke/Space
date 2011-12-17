@@ -1,7 +1,12 @@
-﻿namespace Engine.ComponentSystem
+﻿using System;
+using Engine.Serialization;
+using Engine.Simulation;
+
+namespace Engine.ComponentSystem
 {
-    public interface IComponentSystem
+    public interface IComponentSystem<TPlayerData> : ICloneable
+        where TPlayerData : IPacketizable<TPlayerData>
     {
-        void Update();
+        void Update(IEntity<TPlayerData> entity);
     }
 }

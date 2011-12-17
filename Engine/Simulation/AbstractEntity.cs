@@ -1,4 +1,7 @@
-﻿using Engine.Serialization;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using Engine.ComponentSystem.Components;
+using Engine.Serialization;
 using Engine.Util;
 
 namespace Engine.Simulation
@@ -17,9 +20,18 @@ namespace Engine.Simulation
         public long UID { get; set; }
 
         /// <summary>
-        /// The world (simulation) this object is associated with.
+        /// A list of all of this entities components.
         /// </summary>
-        public virtual IState<TPlayerData> State { get; set; }
+        public ReadOnlyCollection<IComponent<TPlayerData>> Components { get { return components.AsReadOnly(); } }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// List of all this entities components.
+        /// </summary>
+        protected List<IComponent<TPlayerData>> components = new List<IComponent<TPlayerData>>();
 
         #endregion
 
@@ -31,11 +43,6 @@ namespace Engine.Simulation
         }
 
         #region Interfaces
-
-        /// <summary>
-        /// Perform one simulation step. 
-        /// </summary>
-        public abstract void Update();
 
         /// <summary>
         /// Push some unique data of the object to the given hasher,
