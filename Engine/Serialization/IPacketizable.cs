@@ -17,7 +17,7 @@
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">the packet to read from.</param>
-        /// <param name="context">contextual information provided by the <c>Packetizer</c>.</param>
-        void Depacketize(Packet packet, IPacketizerContext context);
+        /// 
+        void Depacketize(Packet packet);
     }
 }

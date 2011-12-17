@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.Commands;
+using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Session;
-using Engine.Simulation;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -310,7 +310,7 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
-                        Simulation.Depacketize(args.Data, Packetizer.Context);
+                        Simulation.Depacketize(args.Data);
                     }
                     break;
 

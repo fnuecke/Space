@@ -105,9 +105,9 @@ namespace Engine.Controller
         /// May be overridden in subclasses which wish to add another protocol layer.
         /// In that case this should follow the pattern
         /// <code>
-        /// override PrepareForSend(...) {
+        /// override WrapDataForSend(...) {
         ///   packet.Write(myStuff);
-        ///   return base.PrepareForSend(...);
+        ///   return base.WrapDataForSend(...);
         /// }
         /// </code>
         /// </summary>
@@ -115,6 +115,7 @@ namespace Engine.Controller
         /// <returns>the given packet, after writing.</returns>
         protected virtual Packet WrapDataForSend(TCommand command, Packet packet)
         {
+            packet.Write(command.Player.Number);
             Packetizer.Packetize(command, packet);
             return packet;
         }
@@ -130,7 +131,10 @@ namespace Engine.Controller
         protected virtual TCommand UnwrapDataForReceive(SessionDataEventArgs args)
         {
             // Parse the actual command.
-            return Packetizer.Depacketize<TCommand>(args.Data);
+            Player player = Session.GetPlayer(args.Data.ReadInt32());
+            TCommand command = Packetizer.Depacketize<TCommand>(args.Data);
+            command.Player = player;
+            return command;
         }
 
         #endregion

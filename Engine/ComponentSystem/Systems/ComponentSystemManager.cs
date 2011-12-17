@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Engine.Simulation;
+using Engine.ComponentSystem.Entities;
 
-namespace Engine.ComponentSystem
+namespace Engine.ComponentSystem.Systems
 {
     public class CompositeComponentSystem
         : List<IComponentSystem>, IComponentSystem

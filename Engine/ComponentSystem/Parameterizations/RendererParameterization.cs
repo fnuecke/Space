@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Parameterizations
 {
-    public class DrawParameterization
+    public class RendererParameterization
     {
         public SpriteBatch SpriteBatch { get; private set; }
 
@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem.Parameterizations
 
         public Vector2 Translation { get; set; }
 
-        public DrawParameterization(SpriteBatch spriteBatch, ContentManager contentManager)
+        public RendererParameterization(SpriteBatch spriteBatch, ContentManager contentManager)
         {
             this.SpriteBatch = spriteBatch;
             this.Content = contentManager;

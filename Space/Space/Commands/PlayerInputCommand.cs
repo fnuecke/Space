@@ -62,12 +62,12 @@ namespace Space.Commands
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet, IPacketizerContext context)
+        public override void Depacketize(Packet packet)
         {
             Input = (PlayerInput)packet.ReadByte();
             TargetAngle = packet.ReadFixed();
 
-            base.Depacketize(packet, context);
+            base.Depacketize(packet);
         }
 
         #endregion

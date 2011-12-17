@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Commands;
+using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -243,7 +245,7 @@ namespace Engine.Simulation
         /// Register a component system with this simulation.
         /// </summary>
         /// <param name="system">the system to register.</param>
-        public void AddSystem(ComponentSystem.IComponentSystem system)
+        public void AddSystem(IComponentSystem system)
         {
             if (CurrentFrame > 0)
             {
@@ -406,13 +408,13 @@ namespace Engine.Simulation
         /// Deserialize a state from a packet.
         /// </summary>
         /// <param name="packet">the packet to read the data from.</param>
-        public void Depacketize(Packet packet, IPacketizerContext context)
+        public void Depacketize(Packet packet)
         {
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
 
             // Unwrap the trailing state and mirror it to all the newer ones.
-            _states[_states.Length - 1].Depacketize(packet, context);
+            _states[_states.Length - 1].Depacketize(packet);
             MirrorState(_states[_states.Length - 1], _states.Length - 2);
 
             // Find adds / removes / commands that our out of date now, but keep newer ones.

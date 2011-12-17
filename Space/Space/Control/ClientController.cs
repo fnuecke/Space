@@ -5,6 +5,7 @@ using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
+using Space.ComponentSystem.Entities;
 using Space.Model;
 
 namespace Space.Control

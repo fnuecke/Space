@@ -1,19 +1,11 @@
 ﻿using System;
-using Engine.Session;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Engine.Serialization
 {
-    /// <summary>
-    /// Base interface all packetizer contexts must implement. This defines
-    /// information the engine itself needs internally.
-    /// </summary>
-    /// <typeparam name="TPlayerData"></typeparam>
-    /// <typeparam name="TPacketizerContext"></typeparam>
-    public interface IPacketizerContext : ICloneable
+    class IPacketizerContext
     {
-        /// <summary>
-        /// The session the packetizer context is bound to.
-        /// </summary>
-        ISession Session { get; set; }
     }
 }

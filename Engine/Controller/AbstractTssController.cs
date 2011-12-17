@@ -1,4 +1,5 @@
 ﻿using Engine.Commands;
+using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;

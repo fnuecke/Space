@@ -1,7 +1,7 @@
 ﻿using System;
-using Engine.Simulation;
+using Engine.ComponentSystem.Entities;
 
-namespace Engine.ComponentSystem
+namespace Engine.ComponentSystem.Systems
 {
     public class ComponentSystem<TUpdateParameterization> : IComponentSystem
         where TUpdateParameterization : ICloneable

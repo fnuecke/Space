@@ -1,6 +1,6 @@
 ﻿using Engine.Commands;
+using Engine.ComponentSystem.Entities;
 using Engine.Session;
-using Engine.Simulation;
 
 namespace Engine.Controller
 {

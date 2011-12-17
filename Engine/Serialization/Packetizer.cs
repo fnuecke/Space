@@ -11,35 +11,12 @@ namespace Engine.Serialization
     /// </summary>
     public sealed class Packetizer : IPacketizer
     {
-        #region Properties
-        
-        /// <summary>
-        /// The context used by depacketize methods.
-        /// </summary>
-        public IPacketizerContext Context { get; private set; }
-
-        #endregion
-
         #region Fields
         
         /// <summary>
         /// Keep track of registered types.
         /// </summary>
         private Dictionary<string, Func<IPacketizable>> _constructors = new Dictionary<string, Func<IPacketizable>>();
-
-        #endregion
-
-        #region Constructor
-        
-        public Packetizer(IPacketizerContext context)
-        {
-            this.Context = context;
-        }
-
-        // For copying.
-        private Packetizer()
-        {
-        }
 
         #endregion
 
@@ -93,7 +70,7 @@ namespace Engine.Serialization
             if (_constructors.ContainsKey(fullName))
             {
                 IPacketizable result = _constructors[fullName]();
-                result.Depacketize(packet, Context);
+                result.Depacketize(packet);
                 return (T)result;
             }
             else
@@ -110,8 +87,6 @@ namespace Engine.Serialization
         public IPacketizer CopyFor(ISession session)
         {
             var copy = new Packetizer();
-            copy.Context = (IPacketizerContext)this.Context.Clone();
-            copy.Context.Session = session;
             copy._constructors = this._constructors;
             return copy;
         }

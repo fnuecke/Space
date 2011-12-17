@@ -106,15 +106,21 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\IFrameCommand.cs" />
     <Compile Include="Commands\FrameCommand.cs" />
-    <Compile Include="ComponentSystem\ComponentSystem.cs" />
-    <Compile Include="ComponentSystem\ComponentSystemManager.cs" />
-    <Compile Include="ComponentSystem\Components\AbstractCollidableComponent.cs" />
-    <Compile Include="ComponentSystem\Components\CollidableBoxComponent.cs" />
-    <Compile Include="ComponentSystem\Components\CollidableSphereComponent.cs" />
+    <Compile Include="ComponentSystem\Systems\ComponentSystem.cs" />
+    <Compile Include="ComponentSystem\Systems\ComponentSystemManager.cs" />
+    <Compile Include="ComponentSystem\Components\AbstractCollidable.cs" />
+    <Compile Include="ComponentSystem\Components\AbstractComponent.cs" />
+    <Compile Include="ComponentSystem\Components\CollidableBox.cs" />
+    <Compile Include="ComponentSystem\Components\CollidableSphere.cs" />
+    <Compile Include="ComponentSystem\Components\AbstractRenderer.cs" />
+    <Compile Include="ComponentSystem\Components\StaticPhysicsRenderer.cs" />
     <Compile Include="ComponentSystem\Components\IComponent.cs" />
-    <Compile Include="ComponentSystem\Components\PhysicsComponent.cs" />
-    <Compile Include="ComponentSystem\IComponentSystem.cs" />
-    <Compile Include="ComponentSystem\Parameterizations\DrawParameterization.cs" />
+    <Compile Include="ComponentSystem\Components\DynamicPhysics.cs" />
+    <Compile Include="ComponentSystem\Components\StaticPhysics.cs" />
+    <Compile Include="ComponentSystem\Systems\IComponentSystem.cs" />
+    <Compile Include="ComponentSystem\Parameterizations\CollisionParameterization.cs" />
+    <Compile Include="ComponentSystem\Parameterizations\RendererParameterization.cs" />
+    <Compile Include="ComponentSystem\Parameterizations\PhysicsParameterization.cs" />
     <Compile Include="ComponentSystem\Parameterizations\UpdateParameterization.cs" />
     <Compile Include="Controller\AbstractCommandEmitter.cs" />
     <Compile Include="Controller\AbstractController.cs" />
@@ -158,11 +164,11 @@
     <Compile Include="Session\Player.cs" />
     <Compile Include="Serialization\Packet.cs" />
     <Compile Include="Simulation\AbstractState.cs" />
-    <Compile Include="Simulation\AbstractEntity.cs" />
+    <Compile Include="ComponentSystem\Entities\AbstractEntity.cs" />
     <Compile Include="Simulation\IReversibleState.cs" />
     <Compile Include="Simulation\IReversibleSubstate.cs" />
     <Compile Include="Simulation\IState.cs" />
-    <Compile Include="Simulation\IEntity.cs" />
+    <Compile Include="ComponentSystem\Entities\IEntity.cs" />
     <Compile Include="Math\Fixed.cs" />
     <Compile Include="Physics\ICollideable.cs" />
     <Compile Include="Physics\Intersection\AABBSweep.cs" />
@@ -188,9 +194,7 @@
   <ItemGroup>
     <None Include="EngineKey.snk" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ComponentSystem\Entities\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

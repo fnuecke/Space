@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Commands;
-using Engine.ComponentSystem;
+using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 

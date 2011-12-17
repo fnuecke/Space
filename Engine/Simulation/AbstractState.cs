@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Commands;
-using Engine.ComponentSystem;
+using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -241,7 +242,7 @@ namespace Engine.Simulation
             }
         }
 
-        public virtual void Depacketize(Packet packet, IPacketizerContext context)
+        public virtual void Depacketize(Packet packet)
         {
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();

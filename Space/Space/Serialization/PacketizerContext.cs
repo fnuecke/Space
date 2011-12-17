@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using SpaceData;
 
-namespace Space.Model
+namespace Space.Serialization
 {
     public class PacketizerContext : IPacketizerContext
     {

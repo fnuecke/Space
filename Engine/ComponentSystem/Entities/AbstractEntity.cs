@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 
-namespace Engine.Simulation
+namespace Engine.ComponentSystem.Entities
 {
     /// <summary>
     /// Base class for entities, implementing logic for distributing unique ids.
@@ -39,6 +39,24 @@ namespace Engine.Simulation
             this.UID = -1;
         }
 
+        /// <summary>
+        /// Get a component of the specified type from this entity, if it
+        /// has one.
+        /// </summary>
+        /// <typeparam name="T">the type of the component to get.</typeparam>
+        /// <returns>the component, or <c>null</c> if the entity has none of this type.</returns>
+        public T GetComponent<T>()
+        {
+            foreach (var component in components)
+            {
+                if (component.GetType().Equals(typeof(T)))
+                {
+                    return (T)component;
+                }
+            }
+            return default(T);
+        }
+
         #region Interfaces
 
         /// <summary>
@@ -64,12 +82,12 @@ namespace Engine.Simulation
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">the packet to read from.</param>
-        public virtual void Depacketize(Serialization.Packet packet, Serialization.IPacketizerContext context)
+        public virtual void Depacketize(Serialization.Packet packet)
         {
             UID = packet.ReadInt64();
             foreach (var component in components)
             {
-                component.Depacketize(packet, context);
+                component.Depacketize(packet);
             }
         }
 
@@ -80,8 +98,13 @@ namespace Engine.Simulation
         /// <param name="hasher">the hasher to push data to.</param>
         public virtual void Hash(Util.Hasher hasher)
         {
+            foreach (var component in components)
+            {
+                component.Hash(hasher);
+            }
         }
 
         #endregion
+
     }
 }

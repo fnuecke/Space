@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.Commands;
+using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Session;
-using Engine.Simulation;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -173,7 +173,7 @@ namespace Engine.Controller
         {
             // Give the entity a unique id. Skip the zero to avoid
             // referencing that object with uninitialized 'pointers'.
-// TODO!!!            entity.UID = ++_lastUid;
+            entity.UID = ++_lastUid;
 
             // Add the entity to the simulation.
             base.AddEntity(entity, frame);

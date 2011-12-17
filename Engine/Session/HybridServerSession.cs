@@ -391,7 +391,7 @@ namespace Engine.Session
 
                         // Get custom player data.
                         TPlayerData playerData = new TPlayerData();
-                        packet.ReadPacketizable(playerData, packetizer.Context);
+                        packet.ReadPacketizable(playerData);
                         
                         // OK so far, get a number for our player.
                         int playerNumber = FindFreePlayerNumber();

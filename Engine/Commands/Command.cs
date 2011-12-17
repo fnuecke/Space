@@ -40,15 +40,9 @@ namespace Engine.Commands
 
         #region Serialization
 
-        public virtual void Packetize(Packet packet)
-        {
-            packet.Write(Player.Number);
-        }
+        public abstract void Packetize(Packet packet);
 
-        public virtual void Depacketize(Packet packet, IPacketizerContext context)
-        {
-            Player = context.Session.GetPlayer(packet.ReadInt32());
-        }
+        public abstract void Depacketize(Packet packet);
 
         #endregion
 

@@ -416,7 +416,7 @@ namespace Engine.Session
 
                             // Get additional player data.
                             TPlayerData playerData = new TPlayerData();
-                            packet.ReadPacketizable(playerData, packetizer.Context);
+                            packet.ReadPacketizable(playerData);
 
                             // All OK, add the player.
                             players[playerNumber] = new Player(playerNumber, playerName, playerData);
@@ -467,7 +467,7 @@ namespace Engine.Session
 
                         // Get additional player data.
                         TPlayerData playerData = new TPlayerData();
-                        packet.ReadPacketizable(playerData, packetizer.Context);
+                        packet.ReadPacketizable(playerData);
 
                         // All OK, add the player.
                         players[playerNumber] = new Player(playerNumber, playerName, playerData);

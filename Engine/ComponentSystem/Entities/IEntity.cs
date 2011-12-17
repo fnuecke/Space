@@ -4,7 +4,7 @@ using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 
-namespace Engine.Simulation
+namespace Engine.ComponentSystem.Entities
 {
     /// <summary>
     /// Minimal functionality of a world entity that can be used in simulations
@@ -16,11 +16,19 @@ namespace Engine.Simulation
         /// <summary>
         /// A globally unique id for this object.
         /// </summary>
-        long UID { get; }
+        long UID { get; set; }
 
         /// <summary>
         /// A list of all of this entities components.
         /// </summary>
         ReadOnlyCollection<IComponent> Components { get; }
+
+        /// <summary>
+        /// Get a component of the specified type from this entity, if it
+        /// has one.
+        /// </summary>
+        /// <typeparam name="T">the type of the component to get.</typeparam>
+        /// <returns>the component, or <c>null</c> if the entity has none of this type.</returns>
+        T GetComponent<T>();
     }
 }

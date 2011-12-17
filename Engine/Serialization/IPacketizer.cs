@@ -6,14 +6,8 @@ namespace Engine.Serialization
     /// <summary>
     /// Interface for the <c>Packetizer</c> class, used for serializing / deserializing objects.
     /// </summary>
-    /// <typeparam name="TPacketizerContext"></typeparam>
     public interface IPacketizer
     {
-        /// <summary>
-        /// The context used by depacketize methods.
-        /// </summary>
-        IPacketizerContext Context { get; }
-
         /// <summary>
         /// Write an object to a packet, including type information for deserialization
         /// under the condition that the actual expected type is unknown.

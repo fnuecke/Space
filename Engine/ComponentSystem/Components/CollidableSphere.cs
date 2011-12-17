@@ -4,7 +4,7 @@ using Engine.Physics.Intersection;
 
 namespace Engine.ComponentSystem.Components
 {
-    public class CollidableSphereComponent : AbstractCollidableComponent
+    public class CollidableSphere : AbstractCollidable
     {
         #region Properties
         
@@ -15,12 +15,8 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        public CollidableSphereComponent(PhysicsComponent physicsComponent)
-            : base(physicsComponent)
-        {
-        }
-
-        public CollidableSphereComponent()
+        public CollidableSphere(StaticPhysics staticPhysicsComponent)
+            : base(staticPhysicsComponent)
         {
         }
 
@@ -28,13 +24,15 @@ namespace Engine.ComponentSystem.Components
 
         public override bool Intersects(FPoint extents, FPoint previousPosition, FPoint position)
         {
-            return SphereAABBSweep.Test(this.Radius, this.PreviousPosition, this.PhysicsComponent.Position,
+            return SphereAABBSweep.Test(
+                this.Radius, this.previousPosition, this.StaticPhysicsComponent.Position,
                 extents, previousPosition, position);
         }
 
         public override bool Intersects(Fixed radius, FPoint previousPosition, FPoint position)
         {
-            return SphereSweep.Test(this.Radius, this.PreviousPosition, this.PhysicsComponent.Position,
+            return SphereSweep.Test(
+                this.Radius, this.previousPosition, this.StaticPhysicsComponent.Position,
                 radius, previousPosition, position);
         }
 
@@ -46,9 +44,9 @@ namespace Engine.ComponentSystem.Components
             packet.Write(Radius);
         }
 
-        public override void Depacketize(Serialization.Packet packet, Serialization.IPacketizerContext context)
+        public override void Depacketize(Serialization.Packet packet)
         {
-            base.Depacketize(packet, context);
+            base.Depacketize(packet);
             Radius = packet.ReadFixed();
         }
 

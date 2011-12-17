@@ -400,9 +400,9 @@ namespace Engine.Serialization
             return result;
         }
 
-        public void ReadPacketizable(IPacketizable packetizable, IPacketizerContext context)
+        public void ReadPacketizable(IPacketizable packetizable)
         {
-            packetizable.Depacketize(this, context);
+            packetizable.Depacketize(this);
         }
 
         #endregion

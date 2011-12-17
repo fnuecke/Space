@@ -20,7 +20,7 @@ namespace Space.Model
             packet.Write(ShipType);
         }
 
-        public void Depacketize(Packet packet, IPacketizerContext context)
+        public void Depacketize(Packet packet)
         {
             ShipUID = packet.ReadInt64();
             ShipType = packet.ReadString();

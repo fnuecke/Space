@@ -4,7 +4,7 @@ using Engine.Physics.Intersection;
 
 namespace Engine.ComponentSystem.Components
 {
-    public class CollidableBoxComponent : AbstractCollidableComponent
+    public class CollidableBox : AbstractCollidable
     {
         #region Properties
         
@@ -15,12 +15,8 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        public CollidableBoxComponent(PhysicsComponent physicsComponent)
-            : base(physicsComponent)
-        {
-        }
-
-        public CollidableBoxComponent()
+        public CollidableBox(StaticPhysics staticPhysicsComponent)
+            : base(staticPhysicsComponent)
         {
         }
 
@@ -28,14 +24,16 @@ namespace Engine.ComponentSystem.Components
 
         public override bool Intersects(FPoint extents, FPoint previousPosition, FPoint position)
         {
-            return AABBSweep.Test(this.Size, this.PreviousPosition, this.PhysicsComponent.Position,
+            return AABBSweep.Test(
+                this.Size, this.previousPosition, this.StaticPhysicsComponent.Position,
                 extents, previousPosition, position);
         }
 
         public override bool Intersects(Fixed radius, FPoint previousPosition, FPoint position)
         {
-            return SphereAABBSweep.Test(radius, previousPosition, position,
-                this.Size, this.PreviousPosition, this.PhysicsComponent.Position);
+            return SphereAABBSweep.Test(
+                radius, previousPosition, position,
+                this.Size, this.previousPosition, this.StaticPhysicsComponent.Position);
         }
 
         #endregion
@@ -46,9 +44,9 @@ namespace Engine.ComponentSystem.Components
             packet.Write(Size);
         }
 
-        public override void Depacketize(Serialization.Packet packet, Serialization.IPacketizerContext context)
+        public override void Depacketize(Serialization.Packet packet)
         {
-            base.Depacketize(packet, context);
+            base.Depacketize(packet);
             Size = packet.ReadFPoint();
         }
 

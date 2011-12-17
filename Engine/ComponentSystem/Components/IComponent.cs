@@ -7,5 +7,7 @@ namespace Engine.ComponentSystem.Components
     public interface IComponent : ICloneable, IPacketizable, IHashable
     {
         void Update(object parameterization);
+
+        bool SupportsParameterization(object parameterization);
     }
 }
