@@ -6,8 +6,7 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands that can be injected into running simulations.
     /// </summary>
-    public abstract class FrameCommand<TPlayerData> : Command<TPlayerData>, IFrameCommand<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public abstract class FrameCommand : Command, IFrameCommand
     {
         #region Properties
 
@@ -36,7 +35,7 @@ namespace Engine.Commands
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet, IPacketizerContext<TPlayerData> context)
+        public override void Depacketize(Packet packet, IPacketizerContext context)
         {
             Frame = packet.ReadInt64();
 
@@ -47,10 +46,10 @@ namespace Engine.Commands
 
         #region Equality
 
-        public override bool Equals(ICommand<TPlayerData> other)
+        public override bool Equals(ICommand other)
         {
-            return other is IFrameCommand<TPlayerData> && base.Equals(other) &&
-                ((IFrameCommand<TPlayerData>)other).Frame == this.Frame;
+            return other is IFrameCommand && base.Equals(other) &&
+                ((IFrameCommand)other).Frame == this.Frame;
         }
 
         #endregion

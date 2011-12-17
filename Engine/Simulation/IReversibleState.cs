@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Commands;
-using Engine.Serialization;
 
 namespace Engine.Simulation
 {
@@ -10,8 +9,7 @@ namespace Engine.Simulation
     /// pushed that was issued earlier than the current frame (if the command
     /// was authoritative, i.e. not tentative).
     /// </summary>
-    interface IReversibleState<TPlayerData> : IState<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    interface IReversibleState : IState
     {
         /// <summary>
         /// Dispatched when the state needs to roll back further than it can
@@ -44,7 +42,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="entity">the object to insert.</param>
         /// <param name="frame">the frame to insert it at.</param>
-        void AddEntity(IEntity<TPlayerData> entity, long frame);
+        void AddEntity(IEntity entity, long frame);
 
         /// <summary>
         /// Remove an object in a specific time frame. This will roll back, if
@@ -61,6 +59,6 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="command">the command to push.</param>
         /// <param name="frame">the frame in which to execute the command.</param>
-        void PushCommand(ICommand<TPlayerData> command, long frame);
+        void PushCommand(ICommand command, long frame);
     }
 }

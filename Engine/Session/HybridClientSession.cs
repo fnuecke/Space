@@ -9,8 +9,8 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
-    public sealed class HybridClientSession<TPlayerData> : AbstractHybridSession<TPlayerData>, IClientSession<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>, new()
+    public sealed class HybridClientSession<TPlayerData> : AbstractHybridSession, IClientSession
+        where TPlayerData : IPacketizable, new()
     {
         #region Logger
 
@@ -49,7 +49,7 @@ namespace Engine.Session
         /// <summary>
         /// Reference to the data struct with info about the local player.
         /// </summary>
-        public Player<TPlayerData> LocalPlayer { get { return GetPlayer(_localPlayerNumber); } }
+        public Player LocalPlayer { get { return GetPlayer(_localPlayerNumber); } }
 
         #endregion
 
@@ -165,16 +165,16 @@ namespace Engine.Session
         /// <param name="remote">the remote host that runs the session.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="playerData">additional data to be associated with our player.</param>
-        public void Join(IPEndPoint remote, string playerName, TPlayerData playerData)
+        public void Join(IPEndPoint remote, string playerName, IPacketizable playerData)
         {
             if (ConnectionState != ClientState.Unconnected)
             {
                 throw new InvalidOperationException("Must leave the current session first.");
             }
             logger.Debug("Begin connecting to host at '{0}'.", remote);
-            ConnectionState = ClientState.Connecting;
             this._playerName = playerName;
-            this._playerData = playerData;
+            this._playerData = (TPlayerData)playerData;
+            ConnectionState = ClientState.Connecting;
             _tcp = new TcpClient();
             _tcp.NoDelay = true;
             _tcp.BeginConnect(remote.Address, remote.Port, new AsyncCallback(HandleConnected), _tcp);
@@ -186,7 +186,7 @@ namespace Engine.Session
         /// <param name="server">the local server to join.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="data">additional data to be associated with our player.</param>
-        public void Join(IServerSession<TPlayerData> server, string playerName, TPlayerData playerData)
+        public void Join(IServerSession server, string playerName, IPacketizable playerData)
         {
             if (ConnectionState != ClientState.Unconnected)
             {
@@ -197,9 +197,9 @@ namespace Engine.Session
                 throw new InvalidOperationException("Incompatible server type.");
             }
             logger.Debug("Begin connecting to local server.");
-            ConnectionState = ClientState.Connecting;
             this._playerName = playerName;
-            this._playerData = playerData;
+            this._playerData = (TPlayerData)playerData;
+            ConnectionState = ClientState.Connecting;
 
             // Create the two 'pipes' we use to pass data from client to server
             // and vice versa.
@@ -394,7 +394,7 @@ namespace Engine.Session
                         }
 
                         // Allocate array for the players in the session.
-                        players = new Player<TPlayerData>[MaxPlayers];
+                        players = new Player[MaxPlayers];
 
                         // Get other game relevant data (e.g. game state).
                         Packet joinData = packet.ReadPacket();
@@ -419,7 +419,7 @@ namespace Engine.Session
                             packet.ReadPacketizable(playerData, packetizer.Context);
 
                             // All OK, add the player.
-                            players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData);
+                            players[playerNumber] = new Player(playerNumber, playerName, playerData);
                         }
 
                         // New state :)
@@ -443,7 +443,7 @@ namespace Engine.Session
                         {
                             if (!player.Equals(LocalPlayer))
                             {
-                                OnPlayerJoined(new PlayerEventArgs<TPlayerData>(player));
+                                OnPlayerJoined(new PlayerEventArgs(player));
                             }
                         }
                     }
@@ -470,10 +470,10 @@ namespace Engine.Session
                         packet.ReadPacketizable(playerData, packetizer.Context);
 
                         // All OK, add the player.
-                        players[playerNumber] = new Player<TPlayerData>(playerNumber, playerName, playerData);
+                        players[playerNumber] = new Player(playerNumber, playerName, playerData);
 
                         // The the local program about it.
-                        OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[playerNumber]));
+                        OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
                     }
                     break;
 
@@ -498,11 +498,11 @@ namespace Engine.Session
                         else
                         {
                             // OK, remove the player.
-                            Player<TPlayerData> player = players[playerNumber];
+                            Player player = players[playerNumber];
                             players[playerNumber] = null;
 
                             // Tell the local program about it.
-                            OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
+                            OnPlayerLeft(new PlayerEventArgs(player));
                         }
                     }
                     break;

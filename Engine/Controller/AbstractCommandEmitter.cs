@@ -1,15 +1,13 @@
 ﻿using Engine.Commands;
-using Engine.Serialization;
 
 namespace Engine.Controller
 {
     /// <summary>
     /// Base class for command emitters.
     /// </summary>
-    public abstract class AbstractCommandEmitter<TCommand, TPlayerData>
-        : ICommandEmitter<TCommand, TPlayerData>
-        where TCommand : ICommand<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public abstract class AbstractCommandEmitter<TCommand>
+        : ICommandEmitter<TCommand>
+        where TCommand : ICommand
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command
@@ -19,7 +17,7 @@ namespace Engine.Controller
         /// with the proper generics as to match the controller it'll be registered
         /// with.
         /// </summary>
-        public event CommandEmittedEventHandler<TCommand, TPlayerData> CommandEmitted;
+        public event CommandEmittedEventHandler<TCommand> CommandEmitted;
 
         /// <summary>
         /// Use this to dispatch new command events.

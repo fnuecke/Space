@@ -15,7 +15,7 @@ namespace Engine.Physics.Intersection
         /// <param name="B1">current position of AABB</param>
         /// <returns>true if the objects (did) collide.</returns>
         /// <see cref="http://www.geometrictools.com/LibMathematics/Intersection/Wm5IntrBox2Circle2.cpp"/> 
-        public static bool Test(Fixed ra, ref FPoint A0, ref FPoint A1, ref FPoint eb, ref FPoint B0, ref FPoint B1)
+        public static bool Test(Fixed ra, FPoint A0, FPoint A1, FPoint eb, FPoint B0, FPoint B1)
         {
             // Convert circle center to box coordinates.
             FPoint diff = A1 - (B1 + eb / 2);

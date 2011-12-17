@@ -8,7 +8,7 @@ namespace Space.Model
         ShipType
     }
 
-    public class PlayerInfo : IPacketizable<PlayerInfo>
+    public class PlayerInfo : IPacketizable
     {
         public long ShipUID { get; set; }
 
@@ -20,7 +20,7 @@ namespace Space.Model
             packet.Write(ShipType);
         }
 
-        public void Depacketize(Packet packet, IPacketizerContext<PlayerInfo> context)
+        public void Depacketize(Packet packet, IPacketizerContext context)
         {
             ShipUID = packet.ReadInt64();
             ShipType = packet.ReadString();

@@ -9,15 +9,14 @@ namespace Engine.Serialization
     /// serialization / deserialization if the code triggering the deserialization
     /// does not know the actual type to expect in the data.
     /// </summary>
-    public sealed class Packetizer<TPlayerData> : IPacketizer<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public sealed class Packetizer : IPacketizer
     {
         #region Properties
         
         /// <summary>
         /// The context used by depacketize methods.
         /// </summary>
-        public IPacketizerContext<TPlayerData> Context { get; private set; }
+        public IPacketizerContext Context { get; private set; }
 
         #endregion
 
@@ -26,13 +25,13 @@ namespace Engine.Serialization
         /// <summary>
         /// Keep track of registered types.
         /// </summary>
-        private Dictionary<string, Func<IPacketizable<TPlayerData>>> _constructors = new Dictionary<string, Func<IPacketizable<TPlayerData>>>();
+        private Dictionary<string, Func<IPacketizable>> _constructors = new Dictionary<string, Func<IPacketizable>>();
 
         #endregion
 
         #region Constructor
         
-        public Packetizer(IPacketizerContext<TPlayerData> context)
+        public Packetizer(IPacketizerContext context)
         {
             this.Context = context;
         }
@@ -50,7 +49,7 @@ namespace Engine.Serialization
         /// Register a new type for serializing / deserializing.
         /// </summary>
         /// <typeparam name="T">the type to register.</typeparam>
-        public void Register<T>() where T : IPacketizable<TPlayerData>, new()
+        public void Register<T>() where T : IPacketizable, new()
         {
             Type type = typeof(T);
             if (!_constructors.ContainsKey(type.FullName))
@@ -67,7 +66,7 @@ namespace Engine.Serialization
         /// <param name="value">the object to write.</param>
         /// <param name="packet">the packet to write to.</param>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        public void Packetize<T>(T value, Packet packet) where T : IPacketizable<TPlayerData>
+        public void Packetize<T>(T value, Packet packet) where T : IPacketizable
         {
             Type type = value.GetType();
             if (_constructors.ContainsKey(type.FullName))
@@ -88,12 +87,12 @@ namespace Engine.Serialization
         /// <param name="packet">the packet to read from.</param>
         /// <returns>the deserialized object.</returns>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        public T Depacketize<T>(Packet packet) where T : IPacketizable<TPlayerData>
+        public T Depacketize<T>(Packet packet) where T : IPacketizable
         {
             string fullName = packet.ReadString();
             if (_constructors.ContainsKey(fullName))
             {
-                IPacketizable<TPlayerData> result = _constructors[fullName]();
+                IPacketizable result = _constructors[fullName]();
                 result.Depacketize(packet, Context);
                 return (T)result;
             }
@@ -108,10 +107,10 @@ namespace Engine.Serialization
         /// </summary>
         /// <param name="session">the session for which to copy the packetizer.</param>
         /// <returns>a new packetizer for the given session.</returns>
-        public IPacketizer<TPlayerData> CopyFor(ISession<TPlayerData> session)
+        public IPacketizer CopyFor(ISession session)
         {
-            var copy = new Packetizer<TPlayerData>();
-            copy.Context = (IPacketizerContext<TPlayerData>)this.Context.Clone();
+            var copy = new Packetizer();
+            copy.Context = (IPacketizerContext)this.Context.Clone();
             copy.Context.Session = session;
             copy._constructors = this._constructors;
             return copy;

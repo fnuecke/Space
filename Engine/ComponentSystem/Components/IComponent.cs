@@ -1,13 +1,11 @@
 ﻿using System;
 using Engine.Serialization;
-using Engine.Simulation;
 using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {
-    public interface IComponent<TPlayerData> : ICloneable, IHashable
-        where TPlayerData : IPacketizable<TPlayerData>
+    public interface IComponent : ICloneable, IPacketizable, IHashable
     {
-        void Update(IEntity<TPlayerData> entity, object parameterization);
+        void Update(object parameterization);
     }
 }

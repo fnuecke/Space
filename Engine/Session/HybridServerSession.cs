@@ -10,8 +10,9 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
-    public sealed class HybridServerSession<TPlayerData> : AbstractHybridSession<TPlayerData>, IServerSession<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>, new()
+    public sealed class HybridServerSession<TPlayerData>
+        : AbstractHybridSession, IServerSession
+        where TPlayerData : IPacketizable, new()
     {
         #region Logger
 
@@ -91,7 +92,7 @@ namespace Engine.Session
             udp = new UdpProtocol(DefaultMulticastEndpoint, udpHeader);
 
             this.MaxPlayers = (int)maxPlayers;
-            players = new Player<TPlayerData>[maxPlayers];
+            players = new Player[maxPlayers];
             this._clients = new TcpClient[maxPlayers];
             this._streams = new IPacketStream[maxPlayers];
             _slots = new BitArray(maxPlayers, false);
@@ -259,7 +260,7 @@ namespace Engine.Session
         /// Disconnects the specified player.
         /// </summary>
         /// <param name="player">The player to disconnect.</param>
-        public void Disconnect(Player<TPlayerData> player)
+        public void Disconnect(Player player)
         {
             if (HasPlayer(player))
             {
@@ -277,7 +278,7 @@ namespace Engine.Session
         /// Sends a data message with the the specified packet as its data to the specified player.
         /// </summary>
         /// <param name="packet">The data to send.</param>
-        public void SendTo(Player<TPlayerData> player, Packet packet)
+        public void SendTo(Player player, Packet packet)
         {
             SendTo(player, SessionMessage.Data, packet);
         }
@@ -300,7 +301,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="type">The type of the message to send.</param>
         /// <param name="packet">The data to send.</param>
-        private void SendTo(Player<TPlayerData> player, SessionMessage type, Packet packet)
+        private void SendTo(Player player, SessionMessage type, Packet packet)
         {
             if (!HasPlayer(player))
             {
@@ -396,13 +397,13 @@ namespace Engine.Session
                         int playerNumber = FindFreePlayerNumber();
 
                         // Create the player instance for the player.
-                        var player = new Player<TPlayerData>(playerNumber, playerName, playerData);
+                        var player = new Player(playerNumber, playerName, playerData);
 
                         // Request additional info first, as this also triggers
                         // validation / prepping of the joining player's player
                         // info, or allow manual override -- disallowing the
                         // player to join.
-                        var requestArgs = new JoinRequestEventArgs<TPlayerData>(player, playerData);
+                        var requestArgs = new JoinRequestEventArgs(player);
                         try
                         {
                             OnJoinRequested(requestArgs);
@@ -455,7 +456,7 @@ namespace Engine.Session
                             response
                                 .Write(p.Number)
                                 .Write(p.Name)
-                                .Write(p.Data);
+                                .Write((TPlayerData)p.Data);
                         }
 
                         // Send the response!
@@ -475,7 +476,7 @@ namespace Engine.Session
                         }
 
                         // Tell the local program the player has joined.
-                        OnPlayerJoined(new PlayerEventArgs<TPlayerData>(players[playerNumber]));
+                        OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
                     }
                     break;
 
@@ -499,7 +500,7 @@ namespace Engine.Session
 
                 case SessionMessage.Data:
                     // Custom data, just forward it.
-                    OnData(new ServerDataEventArgs<TPlayerData>(GetPlayer(playerNumber), packet));
+                    OnData(new ServerDataEventArgs(GetPlayer(playerNumber), packet));
                     break;
 
                 // Ignore the rest.
@@ -540,7 +541,7 @@ namespace Engine.Session
                 if (player != null)
                 {
                     Send(SessionMessage.PlayerLeft, new Packet().Write(playerNumber));
-                    OnPlayerLeft(new PlayerEventArgs<TPlayerData>(player));
+                    OnPlayerLeft(new PlayerEventArgs(player));
                 }
             }
         }
@@ -566,7 +567,7 @@ namespace Engine.Session
 
         #region Event Dispatching
 
-        private void OnJoinRequested(JoinRequestEventArgs<TPlayerData> e)
+        private void OnJoinRequested(JoinRequestEventArgs e)
         {
             if (JoinRequested != null)
             {

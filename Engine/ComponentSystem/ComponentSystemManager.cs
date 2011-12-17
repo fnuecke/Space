@@ -1,14 +1,12 @@
 ﻿using System.Collections.Generic;
-using Engine.Serialization;
 using Engine.Simulation;
 
 namespace Engine.ComponentSystem
 {
-    public class CompositeComponentSystem<TPlayerData>
-        : List<IComponentSystem<TPlayerData>>, IComponentSystem<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public class CompositeComponentSystem
+        : List<IComponentSystem>, IComponentSystem
     {
-        public void Update(IEntity<TPlayerData> entity)
+        public void Update(IEntity entity)
         {
             foreach (var item in this)
             {
@@ -18,10 +16,10 @@ namespace Engine.ComponentSystem
 
         public object Clone()
         {
-            var copy = new CompositeComponentSystem<TPlayerData>();
+            var copy = new CompositeComponentSystem();
             foreach (var item in this)
             {
-                copy.Add((IComponentSystem<TPlayerData>)item.Clone());
+                copy.Add((IComponentSystem)item.Clone());
             }
             return copy;
         }

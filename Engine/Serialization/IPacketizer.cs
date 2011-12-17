@@ -7,13 +7,12 @@ namespace Engine.Serialization
     /// Interface for the <c>Packetizer</c> class, used for serializing / deserializing objects.
     /// </summary>
     /// <typeparam name="TPacketizerContext"></typeparam>
-    public interface IPacketizer<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public interface IPacketizer
     {
         /// <summary>
         /// The context used by depacketize methods.
         /// </summary>
-        IPacketizerContext<TPlayerData> Context { get; }
+        IPacketizerContext Context { get; }
 
         /// <summary>
         /// Write an object to a packet, including type information for deserialization
@@ -23,7 +22,7 @@ namespace Engine.Serialization
         /// <param name="value">the object to write.</param>
         /// <param name="packet">the packet to write to.</param>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        void Packetize<T>(T value, Packet packet) where T : IPacketizable<TPlayerData>;
+        void Packetize<T>(T value, Packet packet) where T : IPacketizable;
 
         /// <summary>
         /// Parse an object of an unknown type at a certain state from a packet.
@@ -32,13 +31,13 @@ namespace Engine.Serialization
         /// <param name="packet">the packet to read from.</param>
         /// <returns>the deserialized object.</returns>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        T Depacketize<T>(Packet packet) where T : IPacketizable<TPlayerData>;
+        T Depacketize<T>(Packet packet) where T : IPacketizable;
 
         /// <summary>
         /// Creates a clone of this packetizer, but with it's context set for the given session.
         /// </summary>
         /// <param name="session">the session for which to copy the packetizer.</param>
         /// <returns>a new packetizer for the given session.</returns>
-        IPacketizer<TPlayerData> CopyFor(ISession<TPlayerData> session);
+        IPacketizer CopyFor(ISession session);
     }
 }

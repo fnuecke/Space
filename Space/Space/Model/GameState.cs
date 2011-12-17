@@ -9,27 +9,27 @@ using Space.Commands;
 
 namespace Space.Model
 {
-    class GameState : AbstractState<PlayerInfo>, IReversibleSubstate<PlayerInfo>
+    class GameState : AbstractState, IReversibleSubstate
     {
         private Game game;
 
-        private ISession<PlayerInfo> session;
+        private ISession session;
 
-        public GameState(Game game, ISession<PlayerInfo> session)
-            : base(((IPacketizer<PlayerInfo>)game.Services.GetService(typeof(IPacketizer<PlayerInfo>))).CopyFor(session))
+        public GameState(Game game, ISession session)
+            : base(((IPacketizer)game.Services.GetService(typeof(IPacketizer))).CopyFor(session))
         {
             this.game = game;
             this.session = session;
         }
 
-        protected override void HandleCommand(ICommand<PlayerInfo> command)
+        protected override void HandleCommand(ICommand command)
         {
             switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player input command, apply it.
                     {
-                        Ship ship = (Ship)GetEntity(command.Player.Data.ShipUID);
+                        Ship ship = (Ship)GetEntity(((PlayerInfo)command.Player.Data).ShipUID);
                         if (ship != null)
                         {
                             // What did he do?

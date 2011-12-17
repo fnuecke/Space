@@ -8,14 +8,14 @@ using SpaceData;
 
 namespace Space.Model
 {
-    public class PacketizerContext : IPacketizerContext<PlayerInfo>
+    public class PacketizerContext : IPacketizerContext
     {
         public Game game;
 
         /// <summary>
         /// The session the packetizer context is bound to.
         /// </summary>
-        public ISession<PlayerInfo> Session { get; set; }
+        public ISession Session { get; set; }
 
         public Dictionary<string, ShipData> shipData = new Dictionary<string, ShipData>();
 

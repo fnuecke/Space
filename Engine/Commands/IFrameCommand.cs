@@ -1,12 +1,10 @@
-﻿using Engine.Serialization;
-
+﻿
 namespace Engine.Commands
 {
     /// <summary>
     /// Type of commands that can be injected into a running simulation.
     /// </summary>
-    public interface IFrameCommand<TPlayerData> : ICommand<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public interface IFrameCommand : ICommand
     {
         /// <summary>
         /// The frame the command was issued in.

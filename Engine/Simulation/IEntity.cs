@@ -11,8 +11,7 @@ namespace Engine.Simulation
     /// and updated via the component system. The entity must know its components
     /// and delegate the <c>Update</c> call to its components.
     /// </summary>
-    public interface IEntity<TPlayerData> : IPacketizable<TPlayerData>, ICloneable, IHashable
-        where TPlayerData : IPacketizable<TPlayerData>
+    public interface IEntity : IPacketizable, ICloneable, IHashable
     {
         /// <summary>
         /// A globally unique id for this object.
@@ -22,6 +21,6 @@ namespace Engine.Simulation
         /// <summary>
         /// A list of all of this entities components.
         /// </summary>
-        ReadOnlyCollection<IComponent<TPlayerData>> Components { get; }
+        ReadOnlyCollection<IComponent> Components { get; }
     }
 }

@@ -17,8 +17,7 @@ namespace Engine.Session
     /// <summary>
     /// Interface for client side representations of a session.
     /// </summary>
-    public interface IClientSession<TPlayerData> : ISession<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public interface IClientSession : ISession
     {
         /// <summary>
         /// Called when we receive information about an open game.
@@ -41,7 +40,7 @@ namespace Engine.Session
         /// Reference to the data struct with info about the local player.
         /// </summary>
         /// <remarks>Shortcut for <c>session.GetPlayer(session.LocalPlayerNumber)</c>.</remarks>
-        Player<TPlayerData> LocalPlayer { get; }
+        Player LocalPlayer { get; }
 
         /// <summary>
         /// Send a ping into the local network, looking for open games.
@@ -54,7 +53,7 @@ namespace Engine.Session
         /// <param name="remote">the remote host that runs the session.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="data">additional data to be associated with our player.</param>
-        void Join(IPEndPoint remote, string playerName, TPlayerData data);
+        void Join(IPEndPoint remote, string playerName, IPacketizable data);
 
         /// <summary>
         /// Join a local game.
@@ -62,7 +61,7 @@ namespace Engine.Session
         /// <param name="server">the local server to join.</param>
         /// <param name="playerName">the name with which to register.</param>
         /// <param name="data">additional data to be associated with our player.</param>
-        void Join(IServerSession<TPlayerData> server, string playerName, TPlayerData data);
+        void Join(IServerSession server, string playerName, IPacketizable data);
 
         /// <summary>
         /// Leave the session.

@@ -1,5 +1,4 @@
 ﻿using Engine.Commands;
-using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
 
@@ -8,11 +7,9 @@ namespace Engine.Controller
     /// <summary>
     /// Public interface for controllers managing a game state.
     /// </summary>
-    public interface IStateController<TSession, TCommand, TPlayerData>
-        : IController<TSession, TPlayerData>
-        where TSession : ISession<TPlayerData>
-        where TCommand : ICommand<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public interface IStateController<TSession, TCommand> : IController<TSession>
+        where TSession : ISession
+        where TCommand : ICommand
     {
         /// <summary>
         /// Add a entity to the simulation. Will be inserted at the
@@ -21,7 +18,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="entity">the entity to add.</param>
         /// <returns>the id the entity was assigned.</returns>
-        long AddEntity(IEntity<TPlayerData> entity);
+        long AddEntity(IEntity entity);
 
         /// <summary>
         /// Add a entity to the simulation. Will be inserted at the
@@ -31,14 +28,14 @@ namespace Engine.Controller
         /// <param name="entity">the entity to add.</param>
         /// <param name="frame">the frame in which to add the entity.</param>
         /// <returns>the id the entity was assigned.</returns>
-        long AddEntity(IEntity<TPlayerData> entity, long frame);
+        long AddEntity(IEntity entity, long frame);
 
         /// <summary>
         /// Get a entity in this simulation based on its unique identifier.
         /// </summary>
         /// <param name="entityUid">the id of the object.</param>
         /// <returns>the object, if it exists.</returns>
-        IEntity<TPlayerData> GetEntity(long entityUid);
+        IEntity GetEntity(long entityUid);
 
         /// <summary>
         /// Removes a entity with the given id from the simulation.

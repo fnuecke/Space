@@ -7,8 +7,7 @@ namespace Engine.Commands
     /// <summary>
     /// Base class for commands.
     /// </summary>
-    public abstract class Command<TPlayerData> : ICommand<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public abstract class Command : ICommand
     {
         #region Properties
 
@@ -21,7 +20,7 @@ namespace Engine.Commands
         /// <summary>
         /// The player that issued the command.
         /// </summary>
-        public Player<TPlayerData> Player { get; set; }
+        public Player Player { get; set; }
 
         /// <summary>
         /// The type of the command.
@@ -46,7 +45,7 @@ namespace Engine.Commands
             packet.Write(Player.Number);
         }
 
-        public virtual void Depacketize(Packet packet, IPacketizerContext<TPlayerData> context)
+        public virtual void Depacketize(Packet packet, IPacketizerContext context)
         {
             Player = context.Session.GetPlayer(packet.ReadInt32());
         }
@@ -55,7 +54,7 @@ namespace Engine.Commands
 
         #region Equality
 
-        public virtual bool Equals(ICommand<TPlayerData> other)
+        public virtual bool Equals(ICommand other)
         {
             return other != null && other.Type.Equals(this.Type) &&
                 other.Player.Number == this.Player.Number;

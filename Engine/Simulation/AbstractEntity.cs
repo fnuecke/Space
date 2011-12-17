@@ -1,16 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
-using Engine.Serialization;
-using Engine.Util;
 
 namespace Engine.Simulation
 {
     /// <summary>
     /// Base class for entities, implementing logic for distributing unique ids.
     /// </summary>
-    public abstract class AbstractEntity<TPlayerData> : IEntity<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public abstract class AbstractEntity : IEntity
     {
         #region Properties
 
@@ -22,7 +19,7 @@ namespace Engine.Simulation
         /// <summary>
         /// A list of all of this entities components.
         /// </summary>
-        public ReadOnlyCollection<IComponent<TPlayerData>> Components { get { return components.AsReadOnly(); } }
+        public ReadOnlyCollection<IComponent> Components { get { return components.AsReadOnly(); } }
 
         #endregion
 
@@ -31,7 +28,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of all this entities components.
         /// </summary>
-        protected List<IComponent<TPlayerData>> components = new List<IComponent<TPlayerData>>();
+        protected List<IComponent> components = new List<IComponent>();
 
         #endregion
 
@@ -45,13 +42,6 @@ namespace Engine.Simulation
         #region Interfaces
 
         /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">the hasher to push data to.</param>
-        public abstract void Hash(Hasher hasher);
-
-        /// <summary>
         /// Create a (deep!) copy of the object.
         /// </summary>
         /// <returns></returns>
@@ -61,18 +51,35 @@ namespace Engine.Simulation
         /// Write the object's state to the given packet.
         /// </summary>
         /// <param name="packet">the packet to write the data to.</param>
-        public virtual void Packetize(Packet packet)
+        public virtual void Packetize(Serialization.Packet packet)
         {
             packet.Write(UID);
+            foreach (var component in components)
+            {
+                component.Packetize(packet);
+            }
         }
 
         /// <summary>
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">the packet to read from.</param>
-        public virtual void Depacketize(Packet packet, IPacketizerContext<TPlayerData> context)
+        public virtual void Depacketize(Serialization.Packet packet, Serialization.IPacketizerContext context)
         {
             UID = packet.ReadInt64();
+            foreach (var component in components)
+            {
+                component.Depacketize(packet, context);
+            }
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">the hasher to push data to.</param>
+        public virtual void Hash(Util.Hasher hasher)
+        {
         }
 
         #endregion

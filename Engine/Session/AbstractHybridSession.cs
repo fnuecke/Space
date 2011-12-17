@@ -9,9 +9,7 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
-    public abstract class AbstractHybridSession<TPlayerData>
-        : GameComponent, ISession<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public abstract class AbstractHybridSession : GameComponent, ISession
     {
         #region Types
 
@@ -97,7 +95,7 @@ namespace Engine.Session
         /// <summary>
         /// Get a list of all players in the game.
         /// </summary>
-        public IEnumerable<Player<TPlayerData>> AllPlayers { get { for (int i = 0; i < MaxPlayers; i++) { if (HasPlayer(i)) { yield return GetPlayer(i); } } } }
+        public IEnumerable<Player> AllPlayers { get { for (int i = 0; i < MaxPlayers; i++) { if (HasPlayer(i)) { yield return GetPlayer(i); } } } }
 
         /// <summary>
         /// Number of players currently in the game.
@@ -126,12 +124,12 @@ namespace Engine.Session
         /// <summary>
         /// Packetizer used for this session's game.
         /// </summary>
-        protected IPacketizer<TPlayerData> packetizer;
+        protected IPacketizer packetizer;
 
         /// <summary>
         /// List of all players known to be in this session.
         /// </summary>
-        protected Player<TPlayerData>[] players;
+        protected Player[] players;
 
         #endregion
         
@@ -150,7 +148,7 @@ namespace Engine.Session
 
         public override void Initialize()
         {
-            packetizer = ((IPacketizer<TPlayerData>)Game.Services.GetService(typeof(IPacketizer<TPlayerData>))).CopyFor(this);
+            packetizer = ((IPacketizer)Game.Services.GetService(typeof(IPacketizer))).CopyFor(this);
 
             udp.Data += HandleUdpData;
 
@@ -180,7 +178,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="playerNumber">the number of the player.</param>
         /// <returns>the player in the session with the given number.</returns>
-        public Player<TPlayerData> GetPlayer(int playerNumber)
+        public Player GetPlayer(int playerNumber)
         {
             if (playerNumber < 0 || playerNumber >= MaxPlayers)
             {
@@ -210,7 +208,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">the player to check.</param>
         /// <returns>if the player is in the session or not.</returns>
-        public bool HasPlayer(Player<TPlayerData> player)
+        public bool HasPlayer(Player player)
         {
             return HasPlayer(player.Number) && GetPlayer(player.Number) == player;
         }

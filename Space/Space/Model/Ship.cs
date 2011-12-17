@@ -1,31 +1,18 @@
 ﻿using System;
 using Engine.Math;
-using Engine.Physics;
 using Engine.Serialization;
+using Engine.Simulation;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using SpaceData;
 
 namespace Space.Model
 {
-    class Ship : Sphere<PlayerInfo>, IGameObject
+    class Ship : AbstractEntity
     {
-        /// <summary>
-        /// Time in ticks it takes before a ship may respawn.
-        /// </summary>
-        public const long RespawnTime = 1000;
-
         private static readonly Fixed Dampening = Fixed.Create(0.99);
 
         private static readonly Fixed Epsilon = Fixed.Create(0.01);
-
-        /// <summary>
-        /// The last frame this ship was destroyed in.
-        /// </summary>
-        protected long lastDestroyed;
-
-        public bool IsAlive { get { return true /* State.CurrentFrame - lastDestroyed > RespawnTime */; } }
 
         public int PlayerNumber { get; private set; }
 
@@ -98,8 +85,6 @@ namespace Space.Model
 
         public override void Update()
         {
-            if (IsAlive)
-            {
                 // Remember our previous speed (see below).
                 Fixed previousSpeed = velocity.Norm;
 
@@ -145,48 +130,6 @@ namespace Space.Model
                     State.AddEntity(new Shot("Cheap Laser", position, velocity + FPoint.Rotate(FPoint.Create(10, 0), rotation), (PacketizerContext)State.Packetizer.Context));
                     
                 }
-            }
-        }
-
-        public override void PostUpdate()
-        {
-            if (IsAlive)
-            {
-                base.PostUpdate();
-                /*
-                foreach (var collideable in State.Collideables)
-                {
-                    if (collideable.Intersects(this.radius, ref this.previousPosition, ref this.position))
-                    {
-                        collideable.NotifyOfCollision();
-                        this.NotifyOfCollision();
-                    }
-                }
-                 * */
-            }
-        }
-
-        public override void NotifyOfCollision()
-        {
-            lastDestroyed = State.CurrentFrame;
-        }
-
-        public override object Clone()
-        {
-            return this.MemberwiseClone();
-        }
-
-        public void Draw(GameTime gameTime, Vector2 translation, SpriteBatch spriteBatch)
-        {
-            spriteBatch.Draw(texture,
-                new Rectangle(position.X.IntValue + (int)translation.X, position.Y.IntValue + (int)translation.Y,
-                              texture.Width, texture.Height),
-                null,
-                Color.White,
-                (float)rotation.DoubleValue,
-                new Vector2(texture.Width / 2, texture.Height / 2),
-                SpriteEffects.None,
-                0);
         }
 
         #region Serialization
@@ -201,7 +144,7 @@ namespace Space.Model
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet, IPacketizerContext<PlayerInfo> context)
+        public override void Depacketize(Packet packet, IPacketizerContext context)
         {
             var gameContext = (PacketizerContext)context;
             string name = packet.ReadString();

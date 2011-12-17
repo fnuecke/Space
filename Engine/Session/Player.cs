@@ -1,13 +1,11 @@
 ﻿using System;
-using Engine.Serialization;
 
 namespace Engine.Session
 {
     /// <summary>
     /// This class is used to represent a single player in a Session.
     /// </summary>
-    public sealed class Player<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public sealed class Player
     {
         /// <summary>
         /// The player's number in the game he's in.
@@ -22,9 +20,9 @@ namespace Engine.Session
         /// <summary>
         /// Some arbitrary data associated with the player.
         /// </summary>
-        public TPlayerData Data { get; set; }
+        public object Data { get; set; }
 
-        internal Player(int number, string name, TPlayerData data)
+        internal Player(int number, string name, object data)
         {
             this.Number = number;
             this.Name = name;
@@ -33,9 +31,9 @@ namespace Engine.Session
 
         public override bool Equals(object obj)
         {
-            if (obj is Player<TPlayerData>)
+            if (obj is Player)
             {
-                return ((Player<TPlayerData>)obj).Number == this.Number;
+                return ((Player)obj).Number == this.Number;
             }
             return false;
         }

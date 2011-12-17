@@ -1,7 +1,6 @@
 ﻿using Engine.Commands;
 using Engine.Math;
 using Engine.Serialization;
-using Space.Model;
 
 namespace Space.Commands
 {
@@ -63,7 +62,7 @@ namespace Space.Commands
             base.Packetize(packet);
         }
 
-        public override void Depacketize(Packet packet, IPacketizerContext<PlayerInfo> context)
+        public override void Depacketize(Packet packet, IPacketizerContext context)
         {
             Input = (PlayerInput)packet.ReadByte();
             TargetAngle = packet.ReadFixed();
@@ -75,7 +74,7 @@ namespace Space.Commands
 
         #region Equality
 
-        public override bool Equals(ICommand<PlayerInfo> other)
+        public override bool Equals(ICommand other)
         {
             return other is PlayerInputCommand &&
                 base.Equals(other) &&

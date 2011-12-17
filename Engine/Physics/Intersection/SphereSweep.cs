@@ -15,7 +15,7 @@ namespace Engine.Physics.Intersection
         /// <param name="B1">current position of sphere B</param>
         /// <returns>true if the spheres (did) collide.</returns>
         /// <see cref="http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=2"/> 
-        public static bool Test(Fixed ra, ref FPoint A0, ref FPoint A1, Fixed rb, ref FPoint B0, ref FPoint B1)
+        public static bool Test(Fixed ra, FPoint A0, FPoint A1, Fixed rb, FPoint B0, FPoint B1)
         {
             FPoint va = A1 - A0;
             FPoint vb = B1 - B0;

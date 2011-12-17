@@ -1,9 +1,7 @@
-﻿using Engine.Serialization;
-
+﻿
 namespace Engine.Simulation
 {
-    public interface IReversibleSubstate<TPlayerData> : IState<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public interface IReversibleSubstate : IState
     {
         /// <summary>
         /// Forces the state to remove any pending commands that

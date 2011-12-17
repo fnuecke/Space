@@ -9,12 +9,11 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
-    public abstract class AbstractTssController<TSession, TCommand, TPlayerData>
-        : AbstractController<TSession, IFrameCommand<TPlayerData>, TPlayerData>,
-          IStateController<TSession, TCommand, TPlayerData>
-        where TSession : ISession<TPlayerData>
-        where TCommand : IFrameCommand<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public abstract class AbstractTssController<TSession, TCommand>
+        : AbstractController<TSession, IFrameCommand>,
+          IStateController<TSession, TCommand>
+        where TSession : ISession
+        where TCommand : IFrameCommand
     {
         #region Types
 
@@ -71,7 +70,7 @@ namespace Engine.Controller
         /// discouraged, as it will lead to clients having to resynchronize
         /// themselves by getting a snapshot of the complete simulation.
         /// </summary>
-        protected TSS< TPlayerData> Simulation { get; private set; }
+        protected TSS Simulation { get; private set; }
 
         #endregion
 
@@ -96,7 +95,7 @@ namespace Engine.Controller
         public AbstractTssController(Game game, TSession session, uint[] delays)
             : base(game, session)
         {
-            Simulation = new TSS<TPlayerData>(delays);
+            Simulation = new TSS(delays);
         }
 
         protected override void Dispose(bool disposing)
@@ -164,7 +163,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="entity">the entity to add.</param>
         /// <returns>the id the entity was assigned.</returns>
-        public long AddEntity(IEntity<TPlayerData> entity)
+        public long AddEntity(IEntity entity)
         {
             return AddEntity(entity, Simulation.CurrentFrame);
         }
@@ -177,7 +176,7 @@ namespace Engine.Controller
         /// <param name="entity">the entity to add.</param>
         /// <param name="frame">the frame in which to add the entity.</param>
         /// <returns>the id the entity was assigned.</returns>
-        public virtual long AddEntity(IEntity<TPlayerData> entity, long frame)
+        public virtual long AddEntity(IEntity entity, long frame)
         {
             // Add the entity to the simulation.
             Simulation.AddEntity(entity, frame);
@@ -189,7 +188,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="entityUid">the id of the object.</param>
         /// <returns>the object, if it exists.</returns>
-        public IEntity<TPlayerData> GetEntity(long entityUid)
+        public IEntity GetEntity(long entityUid)
         {
             return Simulation.GetEntity(entityUid);
         }
@@ -220,7 +219,7 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected virtual void Apply(IFrameCommand<TPlayerData> command)
+        protected virtual void Apply(IFrameCommand command)
         {
             Simulation.PushCommand(command, command.Frame);
         }
@@ -235,7 +234,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         /// <param name="packet">the final packet to send.</param>
         /// <returns>the given packet, after writing.</returns>
-        protected override Packet WrapDataForSend(IFrameCommand<TPlayerData> command, Packet packet)
+        protected override Packet WrapDataForSend(IFrameCommand command, Packet packet)
         {
             packet.Write((byte)TssControllerMessage.Command);
             return base.WrapDataForSend(command, packet);

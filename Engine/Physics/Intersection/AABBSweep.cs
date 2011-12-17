@@ -15,7 +15,7 @@ namespace Engine.Physics.Intersection
         /// <param name="B1">its current position</param>
         /// <returns>true if the boxes (did) collide.</returns>
         /// <see cref="http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=3"/>
-        public static bool Test(ref FPoint Ea, ref FPoint A0, ref FPoint A1, ref FPoint Eb, ref FPoint B0, ref FPoint B1)
+        public static bool Test(FPoint Ea, FPoint A0, FPoint A1, FPoint Eb, FPoint B0, FPoint B1)
         {
             FRectangle A = FRectangle.Create(A0, Ea.X, Ea.Y);//previous state of AABB A
             FRectangle B = FRectangle.Create(B0, Eb.X, Eb.Y);//previous state of AABB B

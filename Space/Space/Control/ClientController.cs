@@ -12,7 +12,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class ClientController : AbstractTssClient<GameCommand, PlayerInfo>
+    class ClientController : AbstractTssClient<GameCommand>
     {
         #region Logger
 
@@ -35,7 +35,7 @@ namespace Space.Control
         /// Creates a new game client, ready to connect to an open game.
         /// </summary>
         /// <param name="game"></param>
-        public ClientController(Game game, IClientSession<PlayerInfo> session)
+        public ClientController(Game game, IClientSession session)
             : base(game, session)
         {
             Simulation.Initialize(new GameState(game, Session));
@@ -114,7 +114,7 @@ namespace Space.Control
         /// Got command data from another client or the server.
         /// </summary>
         /// <param name="command">the received command.</param>
-        protected override bool HandleRemoteCommand(IFrameCommand<PlayerInfo> command)
+        protected override bool HandleRemoteCommand(IFrameCommand command)
         {
             // Check what we have.
             switch ((GameCommandType)command.Type)

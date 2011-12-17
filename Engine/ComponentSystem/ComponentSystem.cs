@@ -1,11 +1,9 @@
 ﻿using System;
-using Engine.Serialization;
 using Engine.Simulation;
 
 namespace Engine.ComponentSystem
 {
-    public class ComponentSystem<TPlayerData, TUpdateParameterization> : IComponentSystem<TPlayerData>
-        where TPlayerData : IPacketizable<TPlayerData>
+    public class ComponentSystem<TUpdateParameterization> : IComponentSystem
         where TUpdateParameterization : ICloneable
     {
         protected TUpdateParameterization parameterization;
@@ -19,17 +17,17 @@ namespace Engine.ComponentSystem
         {
         }
 
-        public virtual void Update(IEntity<TPlayerData> entity)
+        public virtual void Update(IEntity entity)
         {
             foreach (var item in entity.Components)
             {
-                item.Update(entity, parameterization);
+                item.Update(parameterization);
             }
         }
 
         public virtual object Clone()
         {
-            return new ComponentSystem<TPlayerData, TUpdateParameterization>((TUpdateParameterization)parameterization.Clone());
+            return new ComponentSystem<TUpdateParameterization>((TUpdateParameterization)parameterization.Clone());
         }
     }
 }
