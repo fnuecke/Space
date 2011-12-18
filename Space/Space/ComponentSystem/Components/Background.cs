@@ -23,7 +23,7 @@ namespace Space.ComponentSystem.Components
                 new Rectangle(-(int)p.Translation.X, -(int)p.Translation.Y,
                     p.SpriteBatch.GraphicsDevice.Viewport.Width,
                     p.SpriteBatch.GraphicsDevice.Viewport.Height),
-                    Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                    Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             p.SpriteBatch.End();
         }
     }

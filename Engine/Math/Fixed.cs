@@ -322,7 +322,7 @@ namespace Engine.Math
             return (int)src.IntValue;
         }
 
-        public static explicit operator uint(Fixed src)
+        public static implicit operator uint(Fixed src)
         {
             return (uint)src.IntValue;
         }
@@ -332,12 +332,12 @@ namespace Engine.Math
             return (long)src.IntValue;
         }
 
-        public static explicit operator ulong(Fixed src)
+        public static implicit operator ulong(Fixed src)
         {
             return (ulong)src.IntValue;
         }
 
-        public static explicit operator float(Fixed src)
+        public static implicit operator float(Fixed src)
         {
             return (float)src.DoubleValue;
         }
@@ -362,7 +362,7 @@ namespace Engine.Math
             return Fixed.Create(src, true);
         }
 
-        public static explicit operator Fixed(ulong src)
+        public static implicit operator Fixed(ulong src)
         {
             return Fixed.Create((long)src, true);
         }
