@@ -33,8 +33,8 @@ namespace Engine.ComponentSystem.Components
             // Draw the texture based on our physics component.
             p.SpriteBatch.Begin();
             p.SpriteBatch.Draw(texture,
-                new Rectangle((int)((float)sphysics.Position.X + p.Translation.X),
-                              (int)((float)sphysics.Position.Y + p.Translation.Y),
+                new Rectangle((int)sphysics.Position.X + (int)p.Translation.X,
+                              (int)sphysics.Position.Y + (int)p.Translation.Y,
                               texture.Width, texture.Height),
                 null, Color.White,
                 (float)sphysics.Rotation,
