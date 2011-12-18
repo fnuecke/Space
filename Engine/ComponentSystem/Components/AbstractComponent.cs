@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Entities;
 namespace Engine.ComponentSystem.Components
 {
     /// <summary>
@@ -6,6 +7,16 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public abstract class AbstractComponent : IComponent
     {
+        /// <summary>
+        /// Gets the entity this component belongs to.
+        /// </summary>
+        public IEntity Entity { get; set; }
+
+        protected AbstractComponent(IEntity entity)
+        {
+            this.Entity = entity;
+        }
+
         /// <summary>
         /// Does nothing on update.
         /// </summary>
@@ -37,7 +48,9 @@ namespace Engine.ComponentSystem.Components
         /// <returns>A member-wise clone of this instance.</returns>
         public virtual object Clone()
         {
-            return MemberwiseClone();
+            var copy = (AbstractComponent)MemberwiseClone();
+            copy.Entity = null;
+            return copy;
         }
 
         /// <summary>

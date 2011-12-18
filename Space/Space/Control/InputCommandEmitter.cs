@@ -194,9 +194,10 @@ namespace Space.Control
             IEntity avatar = GetLocalAvatar();
             if (avatar != null)
             {
-                var physics = avatar.GetComponent<DynamicPhysics>();
+                var sphysics = avatar.GetComponent<StaticPhysics>();
+                var dphysics = avatar.GetComponent<DynamicPhysics>();
                 // Get ships current orientation.
-                double shipAngle = physics.StaticPhysicsComponent.Rotation;
+                double shipAngle = sphysics.Rotation;
 
                 // Remember where we'd like to rotate to (for finalizing).
                 _currentTargetRotation = Fixed.Create(targetRotation);
@@ -213,8 +214,8 @@ namespace Space.Control
                 // a lot of superfluous input commands this way, reducing network
                 // load somewhat (still pretty bad if user moves his mouse slowly,
                 // but meh).
-                if ((deltaAngle > 10e-3 && physics.Spin <= Fixed.Zero) ||
-                    (deltaAngle < -10e-3 && physics.Spin >= Fixed.Zero))
+                if ((deltaAngle > 10e-3 && dphysics.Spin <= Fixed.Zero) ||
+                    (deltaAngle < -10e-3 && dphysics.Spin >= Fixed.Zero))
                 {
                     OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
                 }

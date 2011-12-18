@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
+using Space.Simulation;
 
 namespace Space.Control
 {
@@ -40,17 +41,19 @@ namespace Space.Control
         public ClientController(Game game, IClientSession session)
             : base(game, session)
         {
+            Simulation.Initialize(new GameState());
+
             PhysicsSystem physics = new PhysicsSystem();
+            ShipControlSystem controls = new ShipControlSystem();
             AvatarSystem avatars = new AvatarSystem();
             PlayerCenteredRenderSystem renderer = new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session);
 
             Simulation.SystemManager.AddSystem(physics);
+            Simulation.SystemManager.AddSystem(controls);
             Simulation.SystemManager.AddSystem(avatars);
             Simulation.SystemManager.AddSystem(renderer);
 
             renderer.AddComponent(new Background("Textures/stars"));
-
-            //Simulation.Initialize(new GameState(game, Session));
         }
 
         protected override void LoadContent()
@@ -61,6 +64,16 @@ namespace Space.Control
         }
 
         #endregion
+
+        public override void Draw(GameTime gameTime)
+        {
+            base.Draw(gameTime);
+
+            if (Session.ConnectionState == ClientState.Connected)
+            {
+                Simulation.SystemManager.Update(ComponentSystemUpdateType.Display);
+            }
+        }
 
         #region Events
 

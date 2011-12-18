@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Entities;
 using Engine.Math;
 
 namespace Engine.ComponentSystem.Components
@@ -14,6 +15,11 @@ namespace Engine.ComponentSystem.Components
         /// The angle of the current orientation.
         /// </summary>
         public Fixed Rotation { get; set; }
+
+        public StaticPhysics(IEntity entity)
+            : base(entity)
+        {
+        }
 
         public override void Packetize(Serialization.Packet packet)
         {

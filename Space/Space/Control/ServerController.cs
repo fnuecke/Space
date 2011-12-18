@@ -6,6 +6,7 @@ using Engine.Session;
 using Microsoft.Xna.Framework;
 using Space.Commands;
 using Space.ComponentSystem.Entities;
+using Space.ComponentSystem.Systems;
 using Space.Simulation;
 using SpaceData;
 
@@ -36,11 +37,13 @@ namespace Space.Control
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
 
+            Simulation.Initialize(new GameState());
+
             PhysicsSystem physics = new PhysicsSystem();
+            ShipControlSystem controls = new ShipControlSystem();
 
             Simulation.SystemManager.AddSystem(physics);
-
-            Simulation.Initialize(new GameState(game, Session));
+            Simulation.SystemManager.AddSystem(controls);
         }
 
         public override void Initialize()

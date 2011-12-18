@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -30,6 +31,11 @@ namespace Engine.ComponentSystem.Components
         private string textureName;
 
         #endregion
+
+        protected AbstractRenderer(IEntity entity)
+            : base(entity)
+        {
+        }
 
         public override void Update(object parameterization)
         {

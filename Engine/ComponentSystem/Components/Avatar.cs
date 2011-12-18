@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Parameterizations;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -15,16 +16,16 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public int PlayerNumber { get; set; }
 
-        /// <summary>
-        /// The entity that serves as the player's avatar.
-        /// </summary>
-        public IEntity Entity { get; private set; }
-
         #endregion
 
         public Avatar(IEntity entity)
+            : base(entity)
         {
-            this.Entity = entity;
+        }
+
+        public override bool SupportsParameterization(Type parameterizationType)
+        {
+            return parameterizationType.Equals(typeof(AvatarParameterization));
         }
 
         public override void Packetize(Serialization.Packet packet)

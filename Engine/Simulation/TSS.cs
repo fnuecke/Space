@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Engine.Commands;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
@@ -638,8 +639,20 @@ namespace Engine.Simulation
         /// </summary>
         private class TSSComponentSystemManager : IComponentSystemManager
         {
+            #region Properties
+
+            /// <summary>
+            /// Not supported.
+            /// </summary>
+            public ReadOnlyCollection<IComponentSystem> Systems { get { throw new NotSupportedException(); } }
+
+            #endregion
+
             #region Fields
             
+            /// <summary>
+            /// The TSS this wrapper is associated to.
+            /// </summary>
             private TSS _tss;
 
             #endregion
@@ -678,21 +691,37 @@ namespace Engine.Simulation
                 return _tss.LeadingState.SystemManager.GetSystem<T>();
             }
 
-            public void Update()
+            /// <summary>
+            /// Only render passes supported, based on leading state.
+            /// </summary>
+            public void Update(ComponentSystemUpdateType updateType)
+            {
+                if (updateType != ComponentSystemUpdateType.Display)
+                {
+                    throw new NotSupportedException();
+                }
+                _tss.LeadingState.SystemManager.Update(updateType);
+            }
+
+            /// <summary>
+            /// Not supported.
+            /// </summary>
+            public void AddComponent(ComponentSystem.Components.IComponent component)
             {
                 throw new NotSupportedException();
             }
 
-            public void AddEntity(IEntity entity)
+            /// <summary>
+            /// Not supported.
+            /// </summary>
+            public void RemoveComponent(ComponentSystem.Components.IComponent component)
             {
                 throw new NotSupportedException();
             }
 
-            public void RemoveEntity(IEntity entity)
-            {
-                throw new NotSupportedException();
-            }
-
+            /// <summary>
+            /// Not supported.
+            /// </summary>
             public object Clone()
             {
                 throw new NotSupportedException();

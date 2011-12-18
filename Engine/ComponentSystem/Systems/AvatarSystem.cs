@@ -29,7 +29,11 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>The avatar, or <c>null</c> if none is known for this player.</returns>
         public IEntity GetAvatar(Player player)
         {
-            return _avatars[player.Number];
+            if (_avatars.ContainsKey(player.Number))
+            {
+                return _avatars[player.Number];
+            }
+            return null;
         }
 
         #endregion

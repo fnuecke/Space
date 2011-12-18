@@ -8,6 +8,7 @@ namespace Space.ComponentSystem.Components
     public class Background : AbstractRenderer
     {
         public Background(string textureName)
+            : base(null)
         {
             this.TextureName = textureName;
         }

@@ -41,7 +41,14 @@ namespace Space.ComponentSystem.Systems
             {
                 _avatarSystem = Manager.GetSystem<AvatarSystem>();
             }
-            return -(Vector2)_avatarSystem.GetAvatar(_session.LocalPlayer).GetComponent<StaticPhysics>().Position;
+            var avatar = _avatarSystem.GetAvatar(_session.LocalPlayer);
+            if (avatar != null)
+            {
+                return new Vector2(parameterization.SpriteBatch.GraphicsDevice.Viewport.Width / 2,
+                                   parameterization.SpriteBatch.GraphicsDevice.Viewport.Height / 2)
+                                   - (Vector2)avatar.GetComponent<StaticPhysics>().Position;
+            }
+            return Vector2.Zero;
         }
     }
 }

@@ -60,10 +60,21 @@ namespace Engine.ComponentSystem.Entities
         #region Interfaces
 
         /// <summary>
-        /// Create a (deep!) copy of the object.
+        /// Create a deep copy of the object.
         /// </summary>
         /// <returns></returns>
-        public abstract object Clone();
+        public virtual object Clone()
+        {
+            var copy = (AbstractEntity)MemberwiseClone();
+            copy.components = new List<IComponent>();
+            foreach (var component in components)
+            {
+                var componentCopy = (IComponent)component.Clone();
+                componentCopy.Entity = copy;
+                copy.components.Add(componentCopy);
+            }
+            return copy;
+        }
 
         /// <summary>
         /// Write the object's state to the given packet.

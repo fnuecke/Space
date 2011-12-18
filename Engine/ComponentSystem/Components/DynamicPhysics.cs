@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
 
@@ -6,11 +7,6 @@ namespace Engine.ComponentSystem.Components
 {
     public class DynamicPhysics : AbstractComponent
     {
-        /// <summary>
-        /// Current position of the object.
-        /// </summary>
-        public StaticPhysics StaticPhysicsComponent { get; private set; }
-
         /// <summary>
         /// The directed speed of the object.
         /// </summary>
@@ -38,9 +34,9 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public Fixed MinVelocity { get; set; }
 
-        public DynamicPhysics(StaticPhysics staticPhysicsComponent)
+        public DynamicPhysics(IEntity entity)
+            : base(entity)
         {
-            StaticPhysicsComponent = staticPhysicsComponent;
         }
 
         /// <summary>
@@ -56,14 +52,15 @@ namespace Engine.ComponentSystem.Components
             base.Update(parameterization);
 #endif
             // Apply rotation, keep the value in bounds.
-            StaticPhysicsComponent.Rotation += Spin;
-            if (StaticPhysicsComponent.Rotation < -Fixed.PI)
+            var sphysics = Entity.GetComponent<StaticPhysics>();
+            sphysics.Rotation += Spin;
+            if (sphysics.Rotation < -Fixed.PI)
             {
-                StaticPhysicsComponent.Rotation += Fixed.PI * 2;
+                sphysics.Rotation += Fixed.PI * 2;
             }
-            else if (StaticPhysicsComponent.Rotation > Fixed.PI)
+            else if (sphysics.Rotation > Fixed.PI)
             {
-                StaticPhysicsComponent.Rotation -= Fixed.PI * 2;
+                sphysics.Rotation -= Fixed.PI * 2;
             }
 
             // Save previous velocity for stop check (due to MinVelocity).
@@ -71,7 +68,7 @@ namespace Engine.ComponentSystem.Components
 
             // Apply acceleration and velocity.
             Velocity += Acceleration;
-            StaticPhysicsComponent.Position += Velocity;
+            sphysics.Position += Velocity;
 
             // Simulate friction.
             if (Damping > 0)

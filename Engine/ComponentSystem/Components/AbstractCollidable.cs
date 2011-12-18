@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
 using Engine.Physics;
@@ -7,24 +8,15 @@ namespace Engine.ComponentSystem.Components
 {
     public abstract class AbstractCollidable : AbstractComponent, ICollideable
     {
-        #region Properties
-
-        /// <summary>
-        /// The underlying physics component we do collision checks for.
-        /// </summary>
-        public StaticPhysics StaticPhysicsComponent { get; private set; }
-
-        #endregion
-
         /// <summary>
         /// Previous position of the underlying physics component (for sweep tests).
         /// </summary>
         protected FPoint previousPosition;
 
-        public AbstractCollidable(StaticPhysics staticPhysicsComponent)
+        public AbstractCollidable(IEntity entity)
+            : base(entity)
         {
-            this.previousPosition = staticPhysicsComponent.Position;
-            this.StaticPhysicsComponent = staticPhysicsComponent;
+            this.previousPosition = entity.GetComponent<StaticPhysics>().Position;
         }
 
         #region Intersection
@@ -49,7 +41,7 @@ namespace Engine.ComponentSystem.Components
             var p = (CollisionParameterization)parameterization;
             // TODO parameterization must contain list of objects to test collision with and possibility to return collision results
 
-            previousPosition = StaticPhysicsComponent.Position;
+            previousPosition = Entity.GetComponent<StaticPhysics>().Position;
         }
 
         /// <summary>

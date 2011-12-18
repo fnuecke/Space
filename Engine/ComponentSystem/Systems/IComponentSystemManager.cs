@@ -1,28 +1,36 @@
-﻿using Engine.ComponentSystem.Entities;
+﻿using System;
+using System.Collections.ObjectModel;
+using Engine.ComponentSystem.Components;
 namespace Engine.ComponentSystem.Systems
 {
     /// <summary>
     /// Interface to component system managers, which hold multiple systems
     /// which may communicate with each other via the manager.
     /// </summary>
-    public interface IComponentSystemManager
+    public interface IComponentSystemManager : ICloneable
     {
+        /// <summary>
+        /// A list of registered subsystems.
+        /// </summary>
+        ReadOnlyCollection<IComponentSystem> Systems { get; }
+
         /// <summary>
         /// Update all subsystems.
         /// </summary>
-        void Update();
+        /// <param name="updateType">The type of update to perform.</param>
+        void Update(ComponentSystemUpdateType updateType);
 
         /// <summary>
-        /// Add all components of the specified entity to all known systems.
+        /// Add the component to supported subsystems.
         /// </summary>
-        /// <param name="entity">the entity of which to add the components.</param>
-        void AddEntity(IEntity entity);
+        /// <param name="component">The component to add.</param>
+        void AddComponent(IComponent component);
 
         /// <summary>
-        /// Remove all components of the specified entity from all known systems.
+        /// Removes the component from supported subsystems.
         /// </summary>
-        /// <param name="entity">the entity of which to remove the components.</param>
-        void RemoveEntity(IEntity entity);
+        /// <param name="component">The component to remove.</param>
+        void RemoveComponent(IComponent component);
 
         /// <summary>
         /// Add the system to this manager.

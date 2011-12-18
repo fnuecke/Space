@@ -1,6 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
-using Engine.Serialization;
 using Space.ComponentSystem.Components;
 using SpaceData;
 
@@ -10,71 +9,35 @@ namespace Space.ComponentSystem.Entities
     {
         public Ship()
         {
+            components.Add(new StaticPhysics(this));
+            components.Add(new DynamicPhysics(this));
+            components.Add(new CollidableSphere(this));
+            components.Add(new MovementProperties(this));
+            components.Add(new Armament(this));
+            components.Add(new StaticPhysicsRenderer(this));
+            components.Add(new ShipControl(this));
+            components.Add(new Avatar(this));
         }
 
         public Ship(ShipData shipData, int playerNumber)
+            : this()
         {
-            StaticPhysics sphysics = new StaticPhysics();
-            
-            DynamicPhysics dphysics = new DynamicPhysics(sphysics);
-            dphysics.Damping = 0.99;
+            var dphysics = GetComponent<DynamicPhysics>();
+            dphysics.Damping = 0.9;
             dphysics.MinVelocity = 0.01;
 
-            CollidableSphere collidable = new CollidableSphere(sphysics);
+            var collidable = GetComponent<CollidableSphere>();
             collidable.Radius = shipData.Radius;
 
-            MovementProperties movement = new MovementProperties();
+            var movement = GetComponent<MovementProperties>();
             movement.Acceleration = shipData.Acceleration;
             movement.RotationSpeed = shipData.RotationSpeed;
 
-            Armament guns = new Armament();
-
-            StaticPhysicsRenderer renderer = new StaticPhysicsRenderer(sphysics);
+            var renderer = GetComponent<StaticPhysicsRenderer>();
             renderer.TextureName = shipData.Texture;
 
-            ShipControl input = new ShipControl(dphysics, movement, guns);
-
-            Avatar avatar = new Avatar(this);
+            var avatar = GetComponent<Avatar>();
             avatar.PlayerNumber = playerNumber;
-
-            components.Add(sphysics);
-            components.Add(dphysics);
-            components.Add(collidable);
-            components.Add(movement);
-            components.Add(guns);
-            components.Add(renderer);
-            components.Add(input);
-            components.Add(avatar);
-        }
-
-        public override void Depacketize(Packet packet)
-        {
-            StaticPhysics sphysics = new StaticPhysics();
-            DynamicPhysics dphysics = new DynamicPhysics(sphysics);
-            CollidableSphere collidable = new CollidableSphere(sphysics);
-            MovementProperties movement = new MovementProperties();
-            Armament guns = new Armament();
-            StaticPhysicsRenderer renderer = new StaticPhysicsRenderer(sphysics);
-            ShipControl input = new ShipControl(dphysics, movement, guns);
-            Avatar avatar = new Avatar(this);
-
-            components.Add(sphysics);
-            components.Add(dphysics);
-            components.Add(collidable);
-            components.Add(movement);
-            components.Add(guns);
-            components.Add(renderer);
-            components.Add(input);
-            components.Add(avatar);
-
-            base.Depacketize(packet);
-        }
-
-        public override object Clone()
-        {
-            var copy = new Ship();
-            // TODO copy component settings
-            return copy;
         }
     }
 }

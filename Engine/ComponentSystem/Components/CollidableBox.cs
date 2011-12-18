@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Entities;
 using Engine.Math;
 using Engine.Physics.Intersection;
 
@@ -15,8 +16,8 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        public CollidableBox(StaticPhysics staticPhysicsComponent)
-            : base(staticPhysicsComponent)
+        public CollidableBox(IEntity entity)
+            : base(entity)
         {
         }
 
@@ -25,7 +26,7 @@ namespace Engine.ComponentSystem.Components
         public override bool Intersects(FPoint extents, FPoint previousPosition, FPoint position)
         {
             return AABBSweep.Test(
-                this.Size, this.previousPosition, this.StaticPhysicsComponent.Position,
+                this.Size, this.previousPosition, this.Entity.GetComponent<StaticPhysics>().Position,
                 extents, previousPosition, position);
         }
 
@@ -33,7 +34,7 @@ namespace Engine.ComponentSystem.Components
         {
             return SphereAABBSweep.Test(
                 radius, previousPosition, position,
-                this.Size, this.previousPosition, this.StaticPhysicsComponent.Position);
+                this.Size, this.previousPosition, this.Entity.GetComponent<StaticPhysics>().Position);
         }
 
         #endregion

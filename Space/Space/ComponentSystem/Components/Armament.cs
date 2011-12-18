@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Entities;
 using Space.ComponentSystem.Parameterizations;
 using SpaceData;
 
@@ -15,7 +16,8 @@ namespace Space.ComponentSystem.Components
 
         public List<WeaponData> Weapons { get; private set; }
 
-        public Armament()
+        public Armament(IEntity entity)
+            : base(entity)
         {
             this.Weapons = new List<WeaponData>();
         }

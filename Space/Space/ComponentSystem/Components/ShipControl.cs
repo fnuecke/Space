@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Entities;
 using Engine.Math;
 using Engine.Util;
 using Space.ComponentSystem.Parameterizations;
@@ -28,21 +29,6 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public bool IsShooting { get; set; }
 
-        /// <summary>
-        /// The dynamic physics component we're controlling.
-        /// </summary>
-        public DynamicPhysics DynamicPhysicsComponent { get; private set; }
-
-        /// <summary>
-        /// Movement properties that apply to the way we move.
-        /// </summary>
-        public MovementProperties MovementPropertiesComponent { get; private set; }
-
-        /// <summary>
-        /// The component handling the weapons systems.
-        /// </summary>
-        public Armament ArmamentComponent { get; private set; }
-
         #endregion
 
         #region Fields
@@ -64,13 +50,10 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        public ShipControl(DynamicPhysics dynamicPhysicsComponent,
-            MovementProperties movementPropertiesComponent, Armament armamentComponent)
+        public ShipControl(IEntity entity)
+            : base(entity)
         {
-            this.DynamicPhysicsComponent = dynamicPhysicsComponent;
-            this.MovementPropertiesComponent = movementPropertiesComponent;
-            this.ArmamentComponent = armamentComponent;
-            _previousRotation = dynamicPhysicsComponent.StaticPhysicsComponent.Rotation;
+            _previousRotation = Entity.GetComponent<StaticPhysics>().Rotation;
         }
 
         public void Accelerate(Directions direction)
@@ -92,45 +75,49 @@ namespace Space.ComponentSystem.Components
 #endif
             var p = (InputParameterization)parameterization;
 
+            var sphysics = Entity.GetComponent<StaticPhysics>();
+            var dphysics = Entity.GetComponent<DynamicPhysics>();
+            var movement = Entity.GetComponent<MovementProperties>();
+
             // Update acceleration.
-            DynamicPhysicsComponent.Acceleration = DirectionConversion.DirectionToFPoint(AccelerationDirection) * MovementPropertiesComponent.Acceleration;
+            dphysics.Acceleration = DirectionConversion.DirectionToFPoint(AccelerationDirection) * movement.Acceleration;
 
             // Update rotation / spin.
-            if (DynamicPhysicsComponent.Spin != Fixed.Zero)
+            if (dphysics.Spin != Fixed.Zero)
             {
                 // Currently rotating, check if we passed our target rotation.
                 var previousDelta = Angle.MinAngle(_previousRotation, TargetRotation);
-                var currentDelta = Angle.MinAngle(DynamicPhysicsComponent.StaticPhysicsComponent.Rotation, TargetRotation);
+                var currentDelta = Angle.MinAngle(sphysics.Rotation, TargetRotation);
                 if ((currentDelta <= Fixed.Zero && previousDelta >= Fixed.Zero) ||
                     (currentDelta >= Fixed.Zero && previousDelta <= Fixed.Zero))
                 {
                     // Yes, set to that rotation and stop spinning.
-                    DynamicPhysicsComponent.StaticPhysicsComponent.Rotation = TargetRotation;
-                    DynamicPhysicsComponent.Spin = Fixed.Zero;
+                    sphysics.Rotation = TargetRotation;
+                    dphysics.Spin = Fixed.Zero;
                 }
-                _previousRotation = DynamicPhysicsComponent.StaticPhysicsComponent.Rotation;
+                _previousRotation = sphysics.Rotation;
             }
             else if (_targetRotationChanged)
             {
                 _targetRotationChanged = false;
-                var rotationDelta = Angle.MinAngle(DynamicPhysicsComponent.StaticPhysicsComponent.Rotation, TargetRotation);
-                if (Fixed.Abs(rotationDelta) > MovementPropertiesComponent.RotationSpeed)
+                var rotationDelta = Angle.MinAngle(sphysics.Rotation, TargetRotation);
+                if (Fixed.Abs(rotationDelta) > movement.RotationSpeed)
                 {
-                    DynamicPhysicsComponent.Spin = (rotationDelta > 0
+                    dphysics.Spin = (rotationDelta > 0
                         ? DirectionConversion.DirectionToFixed(Directions.Right)
                         : DirectionConversion.DirectionToFixed(Directions.Left))
-                        * MovementPropertiesComponent.RotationSpeed;
+                        * movement.RotationSpeed;
                 }
                 else
                 {
-                    DynamicPhysicsComponent.StaticPhysicsComponent.Rotation = TargetRotation;
-                    DynamicPhysicsComponent.Spin = Fixed.Zero;
-                    _previousRotation = DynamicPhysicsComponent.StaticPhysicsComponent.Rotation;
+                    sphysics.Rotation = TargetRotation;
+                    dphysics.Spin = Fixed.Zero;
+                    _previousRotation = sphysics.Rotation;
                 }
             }
 
             // Fire?
-            ArmamentComponent.IsShooting = IsShooting;
+            Entity.GetComponent<Armament>().IsShooting = IsShooting;
         }
 
         /// <summary>

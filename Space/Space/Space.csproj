@@ -117,6 +117,7 @@
     <Compile Include="ComponentSystem\Parameterizations\ArmamentParameterization.cs" />
     <Compile Include="ComponentSystem\Parameterizations\InputParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\PlayerCenteredRenderSystem.cs" />
+    <Compile Include="ComponentSystem\Systems\ShipControlSystem.cs" />
     <Compile Include="Control\ClientController.cs" />
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />

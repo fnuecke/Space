@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Entities;
 using Engine.Math;
 
 namespace Space.ComponentSystem.Components
@@ -15,6 +16,11 @@ namespace Space.ComponentSystem.Components
         /// The maximum rotation speed an entity with this component can have.
         /// </summary>
         public Fixed RotationSpeed { get; set; }
+
+        public MovementProperties(IEntity entity)
+            : base(entity)
+        {
+        }
 
         public override void Packetize(Engine.Serialization.Packet packet)
         {

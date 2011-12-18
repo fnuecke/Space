@@ -1,12 +1,22 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Entities;
+using System.Collections.ObjectModel;
+using Engine.ComponentSystem.Components;
 
 namespace Engine.ComponentSystem.Systems
 {
     public class CompositeComponentSystem : IComponentSystemManager
     {
+        #region Properties
+
+        /// <summary>
+        /// A list of registered subsystems.
+        /// </summary>
+        public ReadOnlyCollection<IComponentSystem> Systems { get { return _systems.AsReadOnly(); } }
+
+        #endregion
+
         #region Fields
-        
+
         /// <summary>
         /// List of all systems registered with this manager.
         /// </summary>
@@ -19,35 +29,36 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Update all known systems.
         /// </summary>
-        public void Update()
+        /// <param name="updateType">The type of update to perform.</param>
+        public void Update(ComponentSystemUpdateType updateType)
         {
-            foreach (var item in _systems)
+            foreach (var system in _systems)
             {
-                item.Update();
+                system.Update(updateType);
             }
         }
 
         /// <summary>
-        /// Add all components of the specified entity to all known systems.
+        /// Add the component to supported subsystems.
         /// </summary>
-        /// <param name="entity">the entity of which to add the components.</param>
-        public void AddEntity(IEntity entity)
+        /// <param name="component">The component to add.</param>
+        public void AddComponent(IComponent component)
         {
             foreach (var system in _systems)
             {
-                system.AddEntity(entity);
+                system.AddComponent(component);
             }
         }
 
         /// <summary>
-        /// Remove all components of the specified entity from all known systems.
+        /// Removes the component from supported subsystems.
         /// </summary>
-        /// <param name="entity">the entity of which to remove the components.</param>
-        public void RemoveEntity(IEntity entity)
+        /// <param name="component">The component to remove.</param>
+        public void RemoveComponent(IComponent component)
         {
             foreach (var system in _systems)
             {
-                system.RemoveEntity(entity);
+                system.RemoveComponent(component);
             }
         }
 
@@ -98,11 +109,15 @@ namespace Engine.ComponentSystem.Systems
 
         public object Clone()
         {
-            var copy = new CompositeComponentSystem();
-            foreach (var item in _systems)
+            var copy = (CompositeComponentSystem)MemberwiseClone();
+
+            // Create clones of all subsystems.
+            copy._systems = new List<IComponentSystem>();
+            foreach (var system in _systems)
             {
-                copy.AddSystem((IComponentSystem)item.Clone());
+                copy.AddSystem((IComponentSystem)system.Clone());
             }
+
             return copy;
         }
 

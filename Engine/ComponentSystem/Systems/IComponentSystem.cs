@@ -1,9 +1,26 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
 
 namespace Engine.ComponentSystem.Systems
 {
+    /// <summary>
+    /// Update types for a component system, based on the different update
+    /// stages of a game loop (normally at least update + draw).
+    /// </summary>
+    public enum ComponentSystemUpdateType
+    {
+        /// <summary>
+        /// Performs a game logic pass.
+        /// </summary>
+        Logic,
+
+        /// <summary>
+        /// Performs rendering pass.
+        /// </summary>
+        Display
+    }
+
     /// <summary>
     /// Interface for component systems (which are responsible for
     /// updating a specific type of component with an agreed upon
@@ -23,9 +40,15 @@ namespace Engine.ComponentSystem.Systems
         IComponentSystemManager Manager { get; set; }
 
         /// <summary>
+        /// A list of components registered in this system.
+        /// </summary>
+        ReadOnlyCollection<IComponent> Components { get; }
+
+        /// <summary>
         /// Update all components in this system.
         /// </summary>
-        void Update();
+        /// <param name="updateType">The type of update to perform.</param>
+        void Update(ComponentSystemUpdateType updateType);
 
         /// <summary>
         /// Add the component to this system, if it's supported.
@@ -38,17 +61,5 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to remove.</param>
         void RemoveComponent(IComponent component);
-
-        /// <summary>
-        /// Add all components of the specified entity that can be handled by this system.
-        /// </summary>
-        /// <param name="entity">the entity of which to add the components.</param>
-        void AddEntity(IEntity entity);
-
-        /// <summary>
-        /// Remove all components of the specified entity that can be handled by this system.
-        /// </summary>
-        /// <param name="entity">the entity of which to remove the components.</param>
-        void RemoveEntity(IEntity entity);
     }
 }

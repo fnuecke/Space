@@ -13,21 +13,26 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The reusable parameterization.
         /// </summary>
-        private RendererParameterization _parameterization;
+        protected RendererParameterization parameterization;
 
         public RenderSystem(SpriteBatch spriteBatch, ContentManager contentManager)
         {
-            _parameterization = new RendererParameterization(spriteBatch, contentManager);
+            parameterization = new RendererParameterization(spriteBatch, contentManager);
         }
 
-        public override void Update()
+        public override void Update(ComponentSystemUpdateType updateType)
         {
+            if (updateType != ComponentSystemUpdateType.Display)
+            {
+                return;
+            }
+
             // Get translation, which may be overridden.
-            _parameterization.Translation = GetTranslation();
+            parameterization.Translation = GetTranslation();
             // Then render all components.
             foreach (var component in components)
             {
-                component.Update(_parameterization);
+                component.Update(parameterization);
             }
         }
 

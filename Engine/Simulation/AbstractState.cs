@@ -71,7 +71,50 @@ namespace Engine.Simulation
         public void AddEntity(IEntity entity)
         {
             entities.Add(entity);
-            SystemManager.AddEntity(entity);
+            foreach (var component in entity.Components)
+            {
+                SystemManager.AddComponent(component);
+            }
+        }
+
+        /// <summary>
+        /// Remove an entity object to the list of participants of this state.
+        /// </summary>
+        /// <param name="entity">the object to remove.</param>
+        public void RemoveEntity(IEntity entity)
+        {
+            if (entities.Remove(entity))
+            {
+                foreach (var component in entity.Components)
+                {
+                    SystemManager.RemoveComponent(component);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Remove a entity object by its id.
+        /// </summary>
+        /// <param name="entityUid">the remove object.</param>
+        public IEntity RemoveEntity(long entityUid)
+        {
+            if (entityUid >= 0)
+            {
+                for (int i = 0; i < entities.Count; i++)
+                {
+                    if (entities[i].UID == entityUid)
+                    {
+                        IEntity entity = entities[i];
+                        entities.RemoveAt(i);
+                        foreach (var component in entity.Components)
+                        {
+                            SystemManager.RemoveComponent(component);
+                        }
+                        return entity;
+                    }
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -91,37 +134,6 @@ namespace Engine.Simulation
             return null;
         }
         
-        /// <summary>
-        /// Remove an entity object to the list of participants of this state.
-        /// </summary>
-        /// <param name="entity">the object to remove.</param>
-        public void RemoveEntity(IEntity entity)
-        {
-            RemoveEntity(entity.UID);
-        }
-
-        /// <summary>
-        /// Remove a entity object by its id.
-        /// </summary>
-        /// <param name="entityUid">the remove object.</param>
-        public IEntity RemoveEntity(long entityUid)
-        {
-            if (entityUid >= 0)
-            {
-                for (int i = 0; i < entities.Count; i++)
-                {
-                    if (entities[i].UID == entityUid)
-                    {
-                        IEntity entity = entities[i];
-                        SystemManager.RemoveEntity(entity);
-                        entities.RemoveAt(i);
-                        return entity;
-                    }
-                }
-            }
-            return null;
-        }
-
         /// <summary>
         /// Apply a given command to the simulation state.
         /// </summary>
@@ -166,7 +178,7 @@ namespace Engine.Simulation
             commands.Clear();
 
             // Update all systems.
-            SystemManager.Update();
+            SystemManager.Update(ComponentSystemUpdateType.Logic);
         }
 
         /// <summary>
@@ -208,8 +220,6 @@ namespace Engine.Simulation
             }
         }
 
-        public abstract object Clone();
-
         public virtual void Packetize(Packet packet)
         {
             packet.Write(CurrentFrame);
@@ -250,26 +260,24 @@ namespace Engine.Simulation
             }
         }
 
-        /// <summary>
-        /// Call this from the implemented Clone() method to clone basic properties.
-        /// </summary>
-        /// <param name="clone"></param>
-        protected virtual object CloneTo(AbstractState clone)
+        public virtual object Clone()
         {
-            clone.CurrentFrame = CurrentFrame;
+            var copy = (AbstractState)MemberwiseClone();
 
-            // Commands are immutable, so just copy the reference.
-            clone.commands.Clear();
-            clone.commands.AddRange(commands);
+            // Clone system manager.
+            copy.SystemManager = (IComponentSystemManager)SystemManager.Clone();
 
-            // Object however need to add clones!
-            clone.entities.Clear();
+            // Copy commands directly (they are immutable).
+            copy.commands = new List<ICommand>(commands);
+
+            // Clone all entities.
+            copy.entities = new List<IEntity>();
             foreach (var entity in entities)
             {
-                clone.AddEntity((IEntity)entity.Clone());
+                copy.AddEntity((IEntity)entity.Clone());
             }
 
-            return clone;
+            return copy;
         }
 
         #endregion

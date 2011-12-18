@@ -7,11 +7,18 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public class PhysicsSystem : AbstractComponentSystem<PhysicsParameterization>
     {
-        public override void Update()
+        private PhysicsParameterization _parameterization = new PhysicsParameterization();
+
+        public override void Update(ComponentSystemUpdateType updateType)
         {
+            if (updateType != ComponentSystemUpdateType.Logic)
+            {
+                return;
+            }
+
             foreach (var component in components)
             {
-                component.Update(null);
+                component.Update(_parameterization);
             }
         }
     }

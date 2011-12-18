@@ -1,10 +1,8 @@
 ﻿using Engine.Commands;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
-using Engine.Session;
 using Engine.Simulation;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Space.Commands;
 using Space.ComponentSystem.Components;
 
@@ -12,16 +10,6 @@ namespace Space.Simulation
 {
     class GameState : AbstractState, IReversibleSubstate
     {
-        private Game game;
-
-        private ISession session;
-
-        public GameState(Game game, ISession session)
-        {
-            this.game = game;
-            this.session = session;
-        }
-
         protected override void HandleCommand(ICommand command)
         {
             switch ((GameCommandType)command.Type)
@@ -84,13 +72,6 @@ namespace Space.Simulation
                 default:
                     break;
             }
-        }
-
-        public override object Clone()
-        {
-            var clone = new GameState(game, session);
-
-            return CloneTo(clone);
         }
 
         public bool SkipTentativeCommands()

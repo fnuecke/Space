@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -18,6 +18,11 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         public IComponentSystemManager Manager { get; set; }
 
+        /// <summary>
+        /// A list of components registered in this system.
+        /// </summary>
+        public ReadOnlyCollection<IComponent> Components { get { return new List<IComponent>(components).AsReadOnly(); } }
+
         #endregion
 
         #region Fields
@@ -25,7 +30,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
-        protected List<IComponent> components = new List<IComponent>();
+        protected HashSet<IComponent> components = new HashSet<IComponent>();
 
         #endregion
 
@@ -34,7 +39,8 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Default implementation does nothing.
         /// </summary>
-        public virtual void Update()
+        /// <param name="updateType">The type of update to perform.</param>
+        public virtual void Update(ComponentSystemUpdateType updateType)
         {
         }
 
@@ -63,49 +69,32 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        /// <summary>
-        /// Add all components of the specified entity that can be handled by this system.
-        /// </summary>
-        /// <param name="entity">the entity of which to add the components.</param>
-        public void AddEntity(IEntity entity)
-        {
-            foreach (var component in entity.Components)
-            {
-                AddComponent(component);
-            }
-        }
-
-        /// <summary>
-        /// Remove all components of the specified entity that can be handled by this system.
-        /// </summary>
-        /// <param name="entity">the entity of which to remove the components.</param>
-        public void RemoveEntity(IEntity entity)
-        {
-            foreach (var component in entity.Components)
-            {
-                RemoveComponent(component);
-            }
-        }
-
         #endregion
 
         #region Cloning
 
         /// <summary>
-        /// Creates a shallow copy, with a clear component list, and no
-        /// attached manager. When having members that need clearing or
-        /// decoupling in subclasses, override this method, call it and
-        /// clear them in the returned copy.
+        /// Creates a shallow copy, with a component list, only containing
+        /// clones of components not bound to an entity.
         /// </summary>
         /// <returns>A shallow, cleared copy of this system.</returns>
         public virtual object Clone()
         {
-            // Copy any members of subclasses.
             var copy = (AbstractComponentSystem<TUpdateParameterization>)MemberwiseClone();
-            // But use a different list.
-            copy.components = new List<IComponent>();
-            // And belong to no manager at first.
+
+            // Use a different list.
+            copy.components = new HashSet<IComponent>();
+            foreach (var component in components)
+            {
+                if (component.Entity == null)
+                {
+                    copy.components.Add((IComponent)component.Clone());
+                }
+            }
+            
+            // No manager at first. Re-set in cloned manager.
             copy.Manager = null;
+
             return copy;
         }
 

@@ -11,6 +11,7 @@
 using Space;
 using Space.Control;
 using Space.Simulation;
+using SpaceData;
 
 #endregion
 
@@ -78,7 +79,7 @@ namespace GameStateManagement
 
             // Autojoin self.
             PlayerInfo info = new PlayerInfo();
-            info.ShipType = "Sparrow";
+            info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
             _client.Session.Join(_server.Session, Settings.Instance.PlayerName, info);
 
             LoadingScreen.Load(ScreenManager, true, new GameplayScreen(_client));
