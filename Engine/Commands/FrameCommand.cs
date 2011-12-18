@@ -30,11 +30,15 @@ namespace Engine.Commands
 
         public override void Packetize(Packet packet)
         {
+            base.Packetize(packet);
+            
             packet.Write(Frame);
         }
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+            
             Frame = packet.ReadInt64();
         }
 

@@ -19,11 +19,6 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private IClientSession _session;
 
-        /// <summary>
-        /// The avatar system, to get the entity representing the local player.
-        /// </summary>
-        private AvatarSystem _avatarSystem;
-
         #endregion
 
         public PlayerCenteredRenderSystem(SpriteBatch spriteBatch, ContentManager contentManager, IClientSession session)
@@ -37,11 +32,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         protected override Vector2 GetTranslation()
         {
-            if (_avatarSystem == null)
-            {
-                _avatarSystem = Manager.GetSystem<AvatarSystem>();
-            }
-            var avatar = _avatarSystem.GetAvatar(_session.LocalPlayer);
+            var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
             if (avatar != null)
             {
                 return new Vector2(parameterization.SpriteBatch.GraphicsDevice.Viewport.Width / 2,

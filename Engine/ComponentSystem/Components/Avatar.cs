@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 
 namespace Engine.ComponentSystem.Components
@@ -18,15 +17,16 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        public Avatar(IEntity entity)
-            : base(entity)
-        {
-        }
-
+        #region Logic
+        
         public override bool SupportsParameterization(Type parameterizationType)
         {
             return parameterizationType.Equals(typeof(AvatarParameterization));
         }
+
+        #endregion
+
+        #region Serialization / Hashing
 
         public override void Packetize(Serialization.Packet packet)
         {
@@ -42,5 +42,7 @@ namespace Engine.ComponentSystem.Components
         {
             hasher.Put(BitConverter.GetBytes(PlayerNumber));
         }
+
+        #endregion
     }
 }

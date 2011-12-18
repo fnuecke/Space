@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Serialization;
-using Engine.Session;
 
 namespace Engine.Commands
 {
@@ -18,9 +17,9 @@ namespace Engine.Commands
         public bool IsAuthoritative { get; set; }
 
         /// <summary>
-        /// The player that issued the command.
+        /// The number of the player that issued the command.
         /// </summary>
-        public Player Player { get; set; }
+        public int PlayerNumber { get; set; }
 
         /// <summary>
         /// The type of the command.
@@ -40,9 +39,15 @@ namespace Engine.Commands
 
         #region Serialization
 
-        public abstract void Packetize(Packet packet);
+        public virtual void Packetize(Packet packet)
+        {
+            packet.Write(PlayerNumber);
+        }
 
-        public abstract void Depacketize(Packet packet);
+        public virtual void Depacketize(Packet packet)
+        {
+            PlayerNumber = packet.ReadInt32();
+        }
 
         #endregion
 
@@ -51,7 +56,7 @@ namespace Engine.Commands
         public virtual bool Equals(ICommand other)
         {
             return other != null && other.Type.Equals(this.Type) &&
-                other.Player.Number == this.Player.Number;
+                other.PlayerNumber == this.PlayerNumber;
         }
 
         #endregion

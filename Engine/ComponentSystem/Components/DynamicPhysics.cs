@@ -1,12 +1,20 @@
 ﻿using System;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
 
 namespace Engine.ComponentSystem.Components
 {
+    /// <summary>
+    /// Represents dynamic physical properties such as speed and acceleration.
+    /// 
+    /// <para>
+    /// Requires: <c>StaticPhysics</c>.
+    /// </para>
+    /// </summary>
     public class DynamicPhysics : AbstractComponent
     {
+        #region Properties
+
         /// <summary>
         /// The directed speed of the object.
         /// </summary>
@@ -34,10 +42,9 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public Fixed MinVelocity { get; set; }
 
-        public DynamicPhysics(IEntity entity)
-            : base(entity)
-        {
-        }
+        #endregion
+
+        #region Logic
 
         /// <summary>
         /// Updates an objects position/rotation and speed according to its acceleration
@@ -51,8 +58,9 @@ namespace Engine.ComponentSystem.Components
             // as it should not happen that this is of an invalid type anyway.
             base.Update(parameterization);
 #endif
-            // Apply rotation, keep the value in bounds.
             var sphysics = Entity.GetComponent<StaticPhysics>();
+
+            // Apply rotation, keep the value in bounds.
             sphysics.Rotation += Spin;
             if (sphysics.Rotation < -Fixed.PI)
             {
@@ -66,24 +74,24 @@ namespace Engine.ComponentSystem.Components
             // Save previous velocity for stop check (due to MinVelocity).
             var previousVelocity = Velocity.Norm;
 
-            // Apply acceleration and velocity.
+            // Apply acceleration and damping.
             Velocity += Acceleration;
-            sphysics.Position += Velocity;
-
-            // Simulate friction.
-            if (Damping > 0)
+            if (Damping > (Fixed)0)
             {
-                Velocity *= (1 - Damping);
+                Velocity = Velocity * ((Fixed)1 - Damping);
             }
 
             // If we're below a certain minimum speed, just stop, otherwise
             // it'd be hard to. We only stop if we were faster than the minimum,
             // before. Otherwise we might have problems getting moving at all, if
             // the acceleration is too low.
-            if (previousVelocity > MinVelocity && Velocity.Norm < MinVelocity)
+            if (previousVelocity > Velocity.Norm && Velocity.Norm < MinVelocity)
             {
                 Velocity = FPoint.Zero;
             }
+
+            // Apply velocity.
+            sphysics.Position += Velocity;
         }
 
         /// <summary>
@@ -96,11 +104,17 @@ namespace Engine.ComponentSystem.Components
             return parameterizationType.Equals(typeof(PhysicsParameterization));
         }
 
+        #endregion
+
+        #region Serialization / Hashing
+
         public override void Packetize(Serialization.Packet packet)
         {
             packet.Write(Velocity);
             packet.Write(Spin);
             packet.Write(Acceleration);
+            packet.Write(Damping);
+            packet.Write(MinVelocity);
         }
 
         public override void Depacketize(Serialization.Packet packet)
@@ -108,6 +122,8 @@ namespace Engine.ComponentSystem.Components
             Velocity = packet.ReadFPoint();
             Spin = packet.ReadFixed();
             Acceleration = packet.ReadFPoint();
+            Damping = packet.ReadFixed();
+            MinVelocity = packet.ReadFixed();
         }
 
         public override void Hash(Util.Hasher hasher)
@@ -117,6 +133,10 @@ namespace Engine.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(Spin.RawValue));
             hasher.Put(BitConverter.GetBytes(Acceleration.X.RawValue));
             hasher.Put(BitConverter.GetBytes(Acceleration.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(Damping.RawValue));
+            hasher.Put(BitConverter.GetBytes(MinVelocity.RawValue));
         }
+
+        #endregion
     }
 }

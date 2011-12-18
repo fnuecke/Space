@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
 using Space.ComponentSystem.Parameterizations;
 using SpaceData;
 
@@ -9,18 +8,30 @@ namespace Space.ComponentSystem.Components
 {
     public class Armament : AbstractComponent
     {
+        #region Properties
+        
         /// <summary>
         /// Whether ima currently firin mah lazer or not.
         /// </summary>
         public bool IsShooting { get; set; }
 
+        /// <summary>
+        /// A list of weapons currently active.
+        /// </summary>
         public List<WeaponData> Weapons { get; private set; }
 
-        public Armament(IEntity entity)
-            : base(entity)
+        #endregion
+
+        #region Constructor
+
+        public Armament()
         {
             this.Weapons = new List<WeaponData>();
         }
+
+        #endregion
+
+        #region Logic
 
         public override void Update(object parameterization)
         {
@@ -46,6 +57,10 @@ namespace Space.ComponentSystem.Components
         {
             return parameterizationType.Equals(typeof(ArmamentParameterization));
         }
+
+        #endregion
+
+        #region Serialization / Hashing
 
         public override void Packetize(Engine.Serialization.Packet packet)
         {
@@ -74,5 +89,7 @@ namespace Space.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(IsShooting));
             hasher.Put(BitConverter.GetBytes(Weapons.Count)); // TODO make data hashable, hash all weapons
         }
+
+        #endregion
     }
 }

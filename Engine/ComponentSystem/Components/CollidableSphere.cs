@@ -1,10 +1,17 @@
 ﻿using System;
-using Engine.ComponentSystem.Entities;
 using Engine.Math;
 using Engine.Physics.Intersection;
 
 namespace Engine.ComponentSystem.Components
 {
+    /// <summary>
+    /// Implements a sphere, which has a radius which is used to
+    /// determine collisions.
+    /// 
+    /// <para>
+    /// Requires: <c>StaticPhysics</c>.
+    /// </para>
+    /// </summary>
     public class CollidableSphere : AbstractCollidable
     {
         #region Properties
@@ -15,11 +22,6 @@ namespace Engine.ComponentSystem.Components
         public Fixed Radius { get; set; }
 
         #endregion
-
-        public CollidableSphere(IEntity entity)
-            : base(entity)
-        {
-        }
 
         #region Intersection
 
@@ -39,6 +41,8 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Serialization / Hashing
+
         public override void Packetize(Serialization.Packet packet)
         {
             base.Packetize(packet);
@@ -56,5 +60,7 @@ namespace Engine.ComponentSystem.Components
             base.Hash(hasher);
             hasher.Put(BitConverter.GetBytes(Radius.RawValue));
         }
+
+        #endregion
     }
 }

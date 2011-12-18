@@ -8,7 +8,7 @@ using Space.ComponentSystem.Components;
 
 namespace Space.Simulation
 {
-    class GameState : AbstractState, IReversibleSubstate
+    class GameState : AbstractSimulation, IAuthoritativeSimulation
     {
         protected override void HandleCommand(ICommand command)
         {
@@ -17,10 +17,11 @@ namespace Space.Simulation
                 case GameCommandType.PlayerInput:
                     // Player input command, apply it.
                     {
-                        IEntity avatar = SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.Player);
+                        IEntity avatar = SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
                         if (avatar != null)
                         {
                             var input = avatar.GetComponent<ShipControl>();
+
                             // What did he do?
                             var inputCommand = (PlayerInputCommand)command;
                             switch (inputCommand.Input)

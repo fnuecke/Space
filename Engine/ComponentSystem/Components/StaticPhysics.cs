@@ -1,11 +1,15 @@
 ﻿using System;
-using Engine.ComponentSystem.Entities;
 using Engine.Math;
 
 namespace Engine.ComponentSystem.Components
 {
+    /// <summary>
+    /// Represents basic, static physical properties of position and rotation.
+    /// </summary>
     public class StaticPhysics : AbstractComponent
     {
+        #region Properties
+        
         /// <summary>
         /// Current position of the object.
         /// </summary>
@@ -16,10 +20,9 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public Fixed Rotation { get; set; }
 
-        public StaticPhysics(IEntity entity)
-            : base(entity)
-        {
-        }
+        #endregion
+
+        #region Serialization / Hashing
 
         public override void Packetize(Serialization.Packet packet)
         {
@@ -39,5 +42,7 @@ namespace Engine.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(Position.Y.RawValue));
             hasher.Put(BitConverter.GetBytes(Rotation.RawValue));
         }
+
+        #endregion
     }
 }

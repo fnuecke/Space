@@ -2,7 +2,6 @@
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Session;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -20,18 +19,18 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Public API
+        #region Avatar-lookup
         
         /// <summary>
         /// Fetch the avatar of the specified player.
         /// </summary>
         /// <param name="player">The player to fetch the avatar for.</param>
         /// <returns>The avatar, or <c>null</c> if none is known for this player.</returns>
-        public IEntity GetAvatar(Player player)
+        public IEntity GetAvatar(int playerNumber)
         {
-            if (_avatars.ContainsKey(player.Number))
+            if (_avatars.ContainsKey(playerNumber))
             {
-                return _avatars[player.Number];
+                return _avatars[playerNumber];
             }
             return null;
         }
@@ -50,6 +49,21 @@ namespace Engine.ComponentSystem.Systems
         {
             var avatar = (Avatar)component;
             _avatars.Remove(avatar.PlayerNumber);
+        }
+
+        #endregion
+
+        #region Cloning
+
+        public override object Clone()
+        {
+            // Get the base clone.
+            var copy = (AvatarSystem)base.Clone();
+
+            // Give it its own lookup table.
+            copy._avatars = new Dictionary<int, IEntity>();
+
+            return copy;
         }
 
         #endregion

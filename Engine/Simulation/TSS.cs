@@ -13,7 +13,7 @@ namespace Engine.Simulation
     /// Implements a Trailing State Synchronization.
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
-    public sealed class TSS : IReversibleState
+    public sealed class TSS : IReversibleSimulation
     {
         #region Events
 
@@ -43,7 +43,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Enumerator over all children of the leading state.
         /// </summary>
-        public IEnumerable<IEntity> Children { get { return LeadingState.Children; } }
+        public IEnumerable<IEntity> Entities { get { return LeadingState.Entities; } }
 
         /// <summary>
         /// The component system manager in use in this simulation.
@@ -58,12 +58,12 @@ namespace Engine.Simulation
         /// <summary>
         /// Get the trailing state.
         /// </summary>
-        private IReversibleSubstate TrailingState { get { return _states[_states.Length - 1]; } }
+        private IAuthoritativeSimulation TrailingState { get { return _states[_states.Length - 1]; } }
 
         /// <summary>
         /// Get the leading state.
         /// </summary>
-        private IReversibleSubstate LeadingState { get { return _states[0]; } }
+        private IAuthoritativeSimulation LeadingState { get { return _states[0]; } }
 
         #endregion
 
@@ -78,7 +78,7 @@ namespace Engine.Simulation
         /// The list of running states. They are ordered in in increasing delay, i.e.
         /// the state at slot 0 is the leading one, 1 is the next newest, and so on.
         /// </summary>
-        private IReversibleSubstate[] _states;
+        private IAuthoritativeSimulation[] _states;
 
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
@@ -97,6 +97,8 @@ namespace Engine.Simulation
 
         #endregion
 
+        #region Constructor
+
         /// <summary>
         /// Creates a new TSS based meta state.
         /// </summary>
@@ -108,7 +110,7 @@ namespace Engine.Simulation
             Array.Sort(this._delays);
 
             // Generate initial states.
-            _states = new IReversibleSubstate[this._delays.Length];
+            _states = new IAuthoritativeSimulation[this._delays.Length];
 
             // Our pass-through component manager, which allows adding and
             // removing only in the first frame (i.e. before the first update).
@@ -118,12 +120,16 @@ namespace Engine.Simulation
             WaitingForSynchronization = true;
         }
 
+        #endregion
+
+        #region Invalidation / (Re-)Initialization
+
         /// <summary>
         /// Initialize the TSS to the given state. This also clears the
         /// <c>WaitingForSynchronization</c> flag.
         /// </summary>
         /// <param name="state">the state to initialize this TSS to.</param>
-        public void Initialize(IReversibleSubstate state)
+        public void Initialize(IAuthoritativeSimulation state)
         {
             MirrorState(state, _states.Length - 1);
             WaitingForSynchronization = false;
@@ -137,6 +143,10 @@ namespace Engine.Simulation
         {
             OnInvalidated(EventArgs.Empty);
         }
+
+        #endregion
+
+        #region Interfaces
 
         /// <summary>
         /// Add a new object.
@@ -152,7 +162,7 @@ namespace Engine.Simulation
 
         /// <summary>
         /// Add an object in a specific time frame. This will roll back, if
-        /// necessary, to insert the object, meaning it can trigger desyncs.
+        /// necessary, to insert the object, meaning it can trigger invalidation.
         /// </summary>
         /// <param name="entity">the object to insert.</param>
         /// <param name="frame">the frame to insert it at.</param>
@@ -214,7 +224,7 @@ namespace Engine.Simulation
 
         /// <summary>
         /// Remove an object in a specific time frame. This will roll back, if
-        /// necessary, to remove the object, meaning it can trigger desyncs.
+        /// necessary, to remove the object, meaning it can trigger invalidation.
         /// </summary>
         /// <param name="entityId">the id of the object to remove.</param>
         /// <param name="frame">the frame to remove it at.</param>
@@ -262,7 +272,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Push a command to be executed at the given frame.  This will roll
         /// back, if necessary, to remove the object, meaning it can trigger
-        /// desyncs.
+        /// invalidation.
         /// </summary>
         /// <param name="command">the command to push.</param>
         /// <param name="frame">the frame in which to execute the command.</param>
@@ -295,13 +305,18 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Advance all states
+        /// Advance leading state to <c>CurrentFrame + 1</c> and update all trailing
+        /// states accordingly.
         /// </summary>
         public void Update()
         {
             // Advance the simulation.
             FastForward(++CurrentFrame);
         }
+
+        #endregion
+
+        #region Fine-grained playback control
 
         /// <summary>
         /// Run the simulation to the given frame, which may be in the past.
@@ -331,23 +346,9 @@ namespace Engine.Simulation
             CurrentFrame = frame;
         }
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">the hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            TrailingState.Hash(hasher);
-        }
+        #endregion
 
-        /// <summary>
-        /// Not available for TSS.
-        /// </summary>
-        public object Clone()
-        {
-            throw new NotImplementedException();
-        }
+        #region Serialization / Hashing
 
         /// <summary>
         /// Serialize a state to a packet.
@@ -459,6 +460,28 @@ namespace Engine.Simulation
 
             WaitingForSynchronization = false;
         }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">the hasher to push data to.</param>
+        public void Hash(Hasher hasher)
+        {
+            TrailingState.Hash(hasher);
+        }
+
+        /// <summary>
+        /// Not available for TSS.
+        /// </summary>
+        public object Clone()
+        {
+            throw new NotSupportedException();
+        }
+
+        #endregion
+
+        #region Utility methods
 
         private void OnInvalidated(EventArgs e)
         {
@@ -578,11 +601,11 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="state">the state to mirror.</param>
         /// <param name="start">the index to start at.</param>
-        private void MirrorState(IReversibleSubstate state, int start)
+        private void MirrorState(IAuthoritativeSimulation state, int start)
         {
             for (int i = start; i >= 0; --i)
             {
-                _states[i] = (IReversibleSubstate)state.Clone();
+                _states[i] = (IAuthoritativeSimulation)state.Clone();
             }
         }
 
@@ -634,6 +657,10 @@ namespace Engine.Simulation
             }
         }
 
+        #endregion
+
+        #region ComponentSystemManager-Wrapper
+
         /// <summary>
         /// Helper for system initialization and accessing systems of the leading state.
         /// </summary>
@@ -657,10 +684,16 @@ namespace Engine.Simulation
 
             #endregion
 
+            #region Constructor
+
             public TSSComponentSystemManager(TSS tss)
             {
                 this._tss = tss;
             }
+
+            #endregion
+
+            #region Interfaces
 
             public void AddSystem(IComponentSystem system)
             {
@@ -670,20 +703,13 @@ namespace Engine.Simulation
                 }
                 foreach (var state in _tss._states)
                 {
-                    state.SystemManager.AddSystem(system);
+                    state.SystemManager.AddSystem((IComponentSystem)system.Clone());
                 }
             }
 
             public void RemoveSystem(IComponentSystem system)
             {
-                if (_tss.CurrentFrame > 0)
-                {
-                    throw new InvalidOperationException("Cannot remove systems after simulation has started.");
-                }
-                foreach (var state in _tss._states)
-                {
-                    state.SystemManager.RemoveSystem(system);
-                }
+                throw new InvalidOperationException("Cannot remove systems from TSS.");
             }
 
             public T GetSystem<T>() where T : IComponentSystem
@@ -726,6 +752,10 @@ namespace Engine.Simulation
             {
                 throw new NotSupportedException();
             }
+
+            #endregion
         }
+
+        #endregion
     }
 }

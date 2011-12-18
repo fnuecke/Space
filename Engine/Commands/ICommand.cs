@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Serialization;
-using Engine.Session;
 
 namespace Engine.Commands
 {
@@ -16,9 +15,9 @@ namespace Engine.Commands
         bool IsAuthoritative { get; set; }
 
         /// <summary>
-        /// The player that performed the action causing the command.
+        /// The number of the player that issued the command.
         /// </summary>
-        Player Player { get; set; }
+        int PlayerNumber { get; set; }
 
         /// <summary>
         /// The type of the command, used to determine which handler to use for it.

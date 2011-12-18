@@ -1,7 +1,10 @@
-﻿
-namespace Engine.Simulation
+﻿namespace Engine.Simulation
 {
-    public interface IReversibleSubstate : IState
+    /// <summary>
+    /// Interface to simulations that may be requested to prune non-authoritative
+    /// commands.
+    /// </summary>
+    public interface IAuthoritativeSimulation : ISimulation
     {
         /// <summary>
         /// Forces the state to remove any pending commands that

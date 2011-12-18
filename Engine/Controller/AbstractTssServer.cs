@@ -29,7 +29,7 @@ namespace Engine.Controller
         /// <summary>
         /// The interval in milliseconds after which to send a hash check to the clients.
         /// </summary>
-        private const int HashInterval = 5000;
+        private const int HashInterval = 10000;
 
         /// <summary>
         /// The interval in milliseconds after which we allow resending the game state to
@@ -52,7 +52,7 @@ namespace Engine.Controller
         private long _lastHashTime;
 
         /// <summary>
-        /// The last time we sent a full snapshot of the gamestate to certain
+        /// The last time we sent a full snapshot of the game state to certain
         /// player. We use this to avoid utterly overloading the network.
         /// </summary>
         private DateTime[] _lastGameStateSentTime;
@@ -125,11 +125,11 @@ namespace Engine.Controller
                 _lastHashTime = DateTime.Now.Ticks;
 
                 Hasher hasher = new Hasher();
-                Simulation.Hash(hasher);
+                tss.Hash(hasher);
 
                 Session.Send(new Packet()
                     .Write((byte)TssControllerMessage.HashCheck)
-                    .Write(Simulation.TrailingFrame)
+                    .Write(tss.TrailingFrame)
                     .Write(hasher.Value));
             }
 
@@ -213,7 +213,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         protected override void Apply(IFrameCommand command)
         {
-            if (command.Frame >= Simulation.TrailingFrame)
+            if (command.Frame >= tss.TrailingFrame)
             {
                 // All commands we apply are authoritative.
                 command.IsAuthoritative = true;
@@ -224,7 +224,7 @@ namespace Engine.Controller
             }
             else
             {
-                logger.Trace("Client command too old " + command.Frame + "<" + Simulation.TrailingFrame);
+                logger.Trace("Client command too old " + command.Frame + "<" + tss.TrailingFrame);
             }
         }
 
@@ -246,6 +246,8 @@ namespace Engine.Controller
                     var command = base.UnwrapDataForReceive(e);
                     // We're the server and we received it, so it's definitely not authoritative.
                     command.IsAuthoritative = false;
+                    // Validate player number (avoid command injection for other players).
+                    command.PlayerNumber = args.Player.Number;
                     return command;
 
                 case TssControllerMessage.Synchronize:
@@ -255,7 +257,7 @@ namespace Engine.Controller
                         Session.SendTo(args.Player, new Packet()
                             .Write((byte)TssControllerMessage.Synchronize)
                             .Write(clientFrame)
-                            .Write(Simulation.CurrentFrame));
+                            .Write(tss.CurrentFrame));
                     }
                     break;
 
@@ -265,7 +267,7 @@ namespace Engine.Controller
                         _lastGameStateSentTime[args.Player.Number] = DateTime.Now;
                         Session.SendTo(args.Player, new Packet()
                             .Write((byte)TssControllerMessage.GameStateResponse)
-                            .Write(Simulation));
+                            .Write(tss));
                     }
                     break;
 

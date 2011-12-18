@@ -30,7 +30,7 @@ namespace Engine.ComponentSystem.Systems
             // Get translation, which may be overridden.
             parameterization.Translation = GetTranslation();
             // Then render all components.
-            foreach (var component in components)
+            foreach (var component in Components)
             {
                 component.Update(parameterization);
             }

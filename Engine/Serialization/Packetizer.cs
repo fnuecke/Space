@@ -42,13 +42,15 @@ namespace Engine.Serialization
         /// <param name="value">the object to write.</param>
         /// <param name="packet">the packet to write to.</param>
         /// <exception cref="ArgumentException">if the type has not been registered beforehand.</exception>
-        public static void Packetize<T>(T value, Packet packet) where T : IPacketizable
+        /// <returns>the specified packet with the value written to it.</returns>
+        public static Packet Packetize<T>(T value, Packet packet) where T : IPacketizable
         {
             Type type = value.GetType();
             if (_constructors.ContainsKey(type.FullName))
             {
                 packet.Write(type.FullName);
                 value.Packetize(packet);
+                return packet;
             }
             else
             {

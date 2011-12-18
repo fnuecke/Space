@@ -167,11 +167,11 @@
     <Compile Include="Session\ISession.cs" />
     <Compile Include="Session\Player.cs" />
     <Compile Include="Serialization\Packet.cs" />
-    <Compile Include="Simulation\AbstractState.cs" />
+    <Compile Include="Simulation\AbstractSimulation.cs" />
     <Compile Include="ComponentSystem\Entities\AbstractEntity.cs" />
-    <Compile Include="Simulation\IReversibleState.cs" />
-    <Compile Include="Simulation\IReversibleSubstate.cs" />
-    <Compile Include="Simulation\IState.cs" />
+    <Compile Include="Simulation\IReversibleSimulation.cs" />
+    <Compile Include="Simulation\IAuthoritativeSimulation.cs" />
+    <Compile Include="Simulation\ISimulation.cs" />
     <Compile Include="ComponentSystem\Entities\IEntity.cs" />
     <Compile Include="Math\Fixed.cs" />
     <Compile Include="Physics\ICollideable.cs" />

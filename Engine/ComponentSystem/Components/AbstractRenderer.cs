@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Text;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Components
 {
+    /// <summary>
+    /// Base class for components responsible for rendering something. Keeps track of
+    /// a texture to use for rendering.
+    /// </summary>
     public abstract class AbstractRenderer : AbstractComponent
     {
         #region Properties
@@ -13,7 +16,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The name of the texture to use for rendering the physics object.
         /// </summary>
-        public string TextureName { get { return textureName; } set { textureName = value; texture = null; } }
+        public string TextureName { get { return _textureName; } set { _textureName = value; texture = null; } }
 
         #endregion
 
@@ -28,15 +31,17 @@ namespace Engine.ComponentSystem.Components
         /// Actual texture name. Setter is used to invalidate the actual texture reference,
         /// so we need to store this ourselves.
         /// </summary>
-        private string textureName;
+        private string _textureName;
 
         #endregion
 
-        protected AbstractRenderer(IEntity entity)
-            : base(entity)
-        {
-        }
-
+        #region Logic
+        
+        /// <summary>
+        /// Subclasses should call this in their overridden update method first, as
+        /// it takes care of properly setting the <c>texture</c> field.
+        /// </summary>
+        /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
 #if DEBUG
@@ -66,6 +71,10 @@ namespace Engine.ComponentSystem.Components
             return parameterizationType.Equals(typeof(RendererParameterization));
         }
 
+        #endregion
+
+        #region Serialization / Hashing
+
         public override void Packetize(Serialization.Packet packet)
         {
             packet.Write(TextureName);
@@ -80,5 +89,7 @@ namespace Engine.ComponentSystem.Components
         {
             hasher.Put(Encoding.UTF8.GetBytes(TextureName));
         }
+
+        #endregion
     }
 }

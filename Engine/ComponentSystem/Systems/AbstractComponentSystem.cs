@@ -7,6 +7,13 @@ namespace Engine.ComponentSystem.Systems
     /// <summary>
     /// Utility base class for component systems, pre-implementing adding / removal
     /// of components.
+    /// 
+    /// <para>
+    /// Subclasses should take note that when cloning they must take care of
+    /// duplicating reference types, to complete the deep-copy of the object.
+    /// Caches, i.e. lists / dictionaries / etc. to quickly look up components
+    /// should be reset.
+    /// </para>
     /// </summary>
     /// <typeparam name="TUpdateParameterization">the type of parameterization used in this system</typeparam>
     public abstract class AbstractComponentSystem<TUpdateParameterization> : IComponentSystem
@@ -21,7 +28,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// A list of components registered in this system.
         /// </summary>
-        public ReadOnlyCollection<IComponent> Components { get { return new List<IComponent>(components).AsReadOnly(); } }
+        public ReadOnlyCollection<IComponent> Components { get { return new List<IComponent>(_components).AsReadOnly(); } }
 
         #endregion
 
@@ -30,7 +37,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
-        protected HashSet<IComponent> components = new HashSet<IComponent>();
+        private HashSet<IComponent> _components = new HashSet<IComponent>();
 
         #endregion
 
@@ -50,10 +57,13 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component to add.</param>
         public void AddComponent(IComponent component)
         {
-            if (component.SupportsParameterization(typeof(TUpdateParameterization)))
+            if (!_components.Contains(component))
             {
-                components.Add(component);
-                HandleComponentAdded(component);
+                if (component.SupportsParameterization(typeof(TUpdateParameterization)))
+                {
+                    _components.Add(component);
+                    HandleComponentAdded(component);
+                }
             }
         }
 
@@ -63,7 +73,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component to remove.</param>
         public void RemoveComponent(IComponent component)
         {
-            if (components.Remove(component))
+            if (_components.Remove(component))
             {
                 HandleComponentRemoved(component);
             }
@@ -74,25 +84,32 @@ namespace Engine.ComponentSystem.Systems
         #region Cloning
 
         /// <summary>
-        /// Creates a shallow copy, with a component list, only containing
+        /// Creates a deep copy, with a component list only containing
         /// clones of components not bound to an entity.
+        /// 
+        /// <para>
+        /// Subclasses must take care of duplicating reference types, to complete
+        /// the deep-copy of the object. Caches, i.e. lists / dictionaries / etc.
+        /// to quickly look up components must be reset / rebuilt.
+        /// </para>
         /// </summary>
-        /// <returns>A shallow, cleared copy of this system.</returns>
+        /// <returns>A deep, with a semi-cleared copy of this system.</returns>
         public virtual object Clone()
         {
+            // Get something to start with.
             var copy = (AbstractComponentSystem<TUpdateParameterization>)MemberwiseClone();
 
-            // Use a different list.
-            copy.components = new HashSet<IComponent>();
-            foreach (var component in components)
+            // Use a different list. Copy over non-entity components.
+            copy._components = new HashSet<IComponent>();
+            foreach (var component in _components)
             {
                 if (component.Entity == null)
                 {
-                    copy.components.Add((IComponent)component.Clone());
+                    copy._components.Add((IComponent)component.Clone());
                 }
             }
             
-            // No manager at first. Re-set in cloned manager.
+            // No manager at first. Must be re-set in (e.g. in cloned manager).
             copy.Manager = null;
 
             return copy;

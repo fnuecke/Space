@@ -37,13 +37,11 @@ namespace Space.Control
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
 
-            Simulation.Initialize(new GameState());
+            tss.Initialize(new GameState());
 
-            PhysicsSystem physics = new PhysicsSystem();
-            ShipControlSystem controls = new ShipControlSystem();
-
-            Simulation.SystemManager.AddSystem(physics);
-            Simulation.SystemManager.AddSystem(controls);
+            tss.SystemManager.AddSystem(new PhysicsSystem());
+            tss.SystemManager.AddSystem(new ShipControlSystem());
+            tss.SystemManager.AddSystem(new AvatarSystem());
         }
 
         public override void Initialize()
@@ -84,7 +82,7 @@ namespace Space.Control
         {
             var args = (PlayerEventArgs)e;
             // Player left the game, remove his ship.
-            RemoveEntity(Simulation.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player).UID);
+            RemoveEntity(tss.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID);
         }
 
         protected override bool HandleRemoteCommand(IFrameCommand command)

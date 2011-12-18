@@ -1,12 +1,16 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
 using Engine.Math;
 
 namespace Space.ComponentSystem.Components
 {
+    /// <summary>
+    /// Contains some movement restraint information.
+    /// </summary>
     public class MovementProperties : AbstractComponent
     {
+        #region Properties
+        
         /// <summary>
         /// The maximum acceleration an entity with this component can have.
         /// </summary>
@@ -17,10 +21,9 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public Fixed RotationSpeed { get; set; }
 
-        public MovementProperties(IEntity entity)
-            : base(entity)
-        {
-        }
+        #endregion
+
+        #region Serialization / Hashing
 
         public override void Packetize(Engine.Serialization.Packet packet)
         {
@@ -39,5 +42,7 @@ namespace Space.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(Acceleration.RawValue));
             hasher.Put(BitConverter.GetBytes(RotationSpeed.RawValue));
         }
+
+        #endregion
     }
 }

@@ -11,7 +11,7 @@ namespace Engine.ComponentSystem.Systems
                 return;
             }
 
-            foreach (var collidable in components)
+            foreach (var collidable in Components)
             {
                 // TODO
             }

@@ -23,8 +23,8 @@ namespace Space.Control
             Controller = new ClientController(game, Session);
             Controller.UpdateOrder = 10;
 
-            //emitter = new InputCommandEmitter(game, Session, Controller.Simulation.SystemManager.GetSystem<AvatarSystem>());
-            //Controller.AddEmitter(emitter);
+            emitter = new InputCommandEmitter(game, Session, Controller.Simulation);
+            Controller.AddEmitter(emitter);
 
             DrawOrder = 10;
         }
@@ -35,7 +35,7 @@ namespace Space.Control
             Session.PlayerLeft += HandlePlayerLeft;
 
             Game.Components.Add(Controller);
-            //Game.Components.Add(emitter);
+            Game.Components.Add(emitter);
 
             base.Initialize();
         }
@@ -54,10 +54,10 @@ namespace Space.Control
 
             Session.Dispose();
             Controller.Dispose();
-            //emitter.Dispose();
+            emitter.Dispose();
 
             Game.Components.Remove(Controller);
-            //Game.Components.Remove(emitter);
+            Game.Components.Remove(emitter);
 
             base.Dispose(disposing);
         }

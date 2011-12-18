@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
+using Engine.Math;
 using Space.ComponentSystem.Components;
 using SpaceData;
 
@@ -9,22 +10,22 @@ namespace Space.ComponentSystem.Entities
     {
         public Ship()
         {
-            components.Add(new StaticPhysics(this));
-            components.Add(new DynamicPhysics(this));
-            components.Add(new CollidableSphere(this));
-            components.Add(new MovementProperties(this));
-            components.Add(new Armament(this));
-            components.Add(new StaticPhysicsRenderer(this));
-            components.Add(new ShipControl(this));
-            components.Add(new Avatar(this));
+            AddComponent(new StaticPhysics());
+            AddComponent(new DynamicPhysics());
+            AddComponent(new CollidableSphere());
+            AddComponent(new MovementProperties());
+            AddComponent(new Armament());
+            AddComponent(new StaticPhysicsRenderer());
+            AddComponent(new ShipControl());
+            AddComponent(new Avatar());
         }
 
         public Ship(ShipData shipData, int playerNumber)
             : this()
         {
             var dphysics = GetComponent<DynamicPhysics>();
-            dphysics.Damping = 0.9;
-            dphysics.MinVelocity = 0.01;
+            dphysics.Damping = (Fixed)0.01;
+            dphysics.MinVelocity = (Fixed)0.005;
 
             var collidable = GetComponent<CollidableSphere>();
             collidable.Radius = shipData.Radius;

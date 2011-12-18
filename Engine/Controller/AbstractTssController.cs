@@ -67,15 +67,20 @@ namespace Engine.Controller
         #region Properties
 
         /// <summary>
-        /// The underlying simulation used. Directly changing this is strongly
-        /// discouraged, as it will lead to clients having to resynchronize
-        /// themselves by getting a snapshot of the complete simulation.
+        /// The underlying simulation controlled by this controller.
         /// </summary>
-        protected TSS Simulation { get; private set; }
+        public ISimulation Simulation { get { return tss; } }
 
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// The underlying simulation used. Directly changing this is strongly
+        /// discouraged, as it will lead to clients having to resynchronize
+        /// themselves by getting a snapshot of the complete simulation.
+        /// </summary>
+        protected TSS tss;
 
         /// <summary>
         /// The remainder of time we did not update last frame, which we'll add to the
@@ -96,12 +101,12 @@ namespace Engine.Controller
         public AbstractTssController(Game game, TSession session, uint[] delays)
             : base(game, session)
         {
-            Simulation = new TSS(delays);
+            tss = new TSS(delays);
         }
 
         protected override void Dispose(bool disposing)
         {
-            Simulation = null;
+            tss = null;
 
             base.Dispose(disposing);
         }
@@ -112,7 +117,7 @@ namespace Engine.Controller
 
         /// <summary>
         /// Update the simulation. This adjusts the update procedure based
-        /// on the selected timestep of the game. For fixed, it just does
+        /// on the selected time step of the game. For fixed, it just does
         /// one step. For variable, it determines how many steps to perform,
         /// based on the elapsed time.
         /// </summary>
@@ -125,7 +130,7 @@ namespace Engine.Controller
         {
             if (Game.IsFixedTimeStep)
             {
-                Simulation.Update();
+                tss.Update();
             }
             else
             {
@@ -136,17 +141,17 @@ namespace Engine.Controller
                     // If we can't actually run to the next frame, at least update
                     // back to the current frame in case rollbacks were made to
                     // accommodate player commands.
-                    Simulation.RunToFrame(Simulation.CurrentFrame);
+                    tss.RunToFrame(tss.CurrentFrame);
                 }
                 else
                 {
                     // We can run at least one frame, so do the update(s). Due to the
-                    // carry there may occur more than one simulation update per xna
+                    // carry there may occur more than one simulation update per XNA
                     // update, but that should be below the threshold of the noticeable.
                     while (elapsed >= Game.TargetElapsedTime.TotalMilliseconds)
                     {
                         elapsed -= Game.TargetElapsedTime.TotalMilliseconds;
-                        Simulation.Update();
+                        tss.Update();
                     }
                     _lastUpdateRemainder = elapsed;
                 }
@@ -166,7 +171,7 @@ namespace Engine.Controller
         /// <returns>the id the entity was assigned.</returns>
         public long AddEntity(IEntity entity)
         {
-            return AddEntity(entity, Simulation.CurrentFrame);
+            return AddEntity(entity, tss.CurrentFrame);
         }
 
         /// <summary>
@@ -180,7 +185,7 @@ namespace Engine.Controller
         public virtual long AddEntity(IEntity entity, long frame)
         {
             // Add the entity to the simulation.
-            Simulation.AddEntity(entity, frame);
+            tss.AddEntity(entity, frame);
             return entity.UID;
         }
 
@@ -191,7 +196,7 @@ namespace Engine.Controller
         /// <returns>the object, if it exists.</returns>
         public IEntity GetEntity(long entityUid)
         {
-            return Simulation.GetEntity(entityUid);
+            return tss.GetEntity(entityUid);
         }
 
         /// <summary>
@@ -201,7 +206,7 @@ namespace Engine.Controller
         /// <param name="entityId">the id of the entity to remove.</param>
         public void RemoveEntity(long entityUid)
         {
-            RemoveEntity(entityUid, Simulation.CurrentFrame);
+            RemoveEntity(entityUid, tss.CurrentFrame);
         }
 
         /// <summary>
@@ -213,7 +218,7 @@ namespace Engine.Controller
         public virtual void RemoveEntity(long entityUid, long frame)
         {
             // Remove the entity from the simulation.
-            Simulation.RemoveEntity(entityUid, frame);
+            tss.RemoveEntity(entityUid, frame);
         }
 
         /// <summary>
@@ -222,7 +227,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         protected virtual void Apply(IFrameCommand command)
         {
-            Simulation.PushCommand(command, command.Frame);
+            tss.PushCommand(command, command.Frame);
         }
 
         #endregion

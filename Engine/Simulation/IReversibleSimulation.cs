@@ -10,7 +10,7 @@ namespace Engine.Simulation
     /// pushed that was issued earlier than the current frame (if the command
     /// was authoritative, i.e. not tentative).
     /// </summary>
-    interface IReversibleState : IState
+    interface IReversibleSimulation : ISimulation
     {
         /// <summary>
         /// Dispatched when the state needs to roll back further than it can

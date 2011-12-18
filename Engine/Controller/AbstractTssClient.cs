@@ -94,9 +94,9 @@ namespace Engine.Controller
                 Session.JoinResponse += HandleJoinResponse;
             }
 
-            if (Simulation != null)
+            if (tss != null)
             {
-                Simulation.Invalidated += HandleSimulationInvalidated;
+                tss.Invalidated += HandleSimulationInvalidated;
             }
 
             base.Initialize();
@@ -112,9 +112,9 @@ namespace Engine.Controller
                 Session.JoinResponse -= HandleJoinResponse;
             }
 
-            if (Simulation != null)
+            if (tss != null)
             {
-                Simulation.Invalidated -= HandleSimulationInvalidated;
+                tss.Invalidated -= HandleSimulationInvalidated;
             }
 
             base.Dispose(disposing);
@@ -131,20 +131,20 @@ namespace Engine.Controller
         /// </summary>
         public override void Update(GameTime gameTime)
         {
-            if (Session.ConnectionState == ClientState.Connected && !Simulation.WaitingForSynchronization)
+            if (Session.ConnectionState == ClientState.Connected && !tss.WaitingForSynchronization)
             {
                 // Drive game logic.
                 UpdateSimulation(gameTime, _syncDiff.Mean());
 
                 // Hash test.
-                if (Simulation.TrailingFrame == _hashFrame)
+                if (tss.TrailingFrame == _hashFrame)
                 {
                     Hasher hasher = new Hasher();
-                    Simulation.Hash(hasher);
+                    tss.Hash(hasher);
                     if (hasher.Value != _hashValue)
                     {
                         logger.Debug("Hash mismatch: {0} != {1} ", _hashValue, hasher.Value);
-                        Simulation.Invalidate();
+                        tss.Invalidate();
                     }
                 }
 
@@ -155,7 +155,7 @@ namespace Engine.Controller
                     _lastSyncTime = DateTime.Now.Ticks;
                     Session.Send(new Packet()
                         .Write((byte)TssControllerMessage.Synchronize)
-                        .Write(Simulation.CurrentFrame));
+                        .Write(tss.CurrentFrame));
                 }
             }
 
@@ -194,11 +194,11 @@ namespace Engine.Controller
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
             // own, tentative commands.
-            if (!command.IsAuthoritative && command.Player.Equals(Session.LocalPlayer))
+            if (!command.IsAuthoritative && command.PlayerNumber == Session.LocalPlayer.Number)
             {
                 // If we're waiting for a snapshot, don't continue spamming commands for
                 // the very frame we're stuck in.
-                if (Simulation.WaitingForSynchronization)
+                if (tss.WaitingForSynchronization)
                 {
                     return;
                 }
@@ -206,7 +206,7 @@ namespace Engine.Controller
                 // Send command to host.
                 Send(command);
             }
-            else if (Simulation.WaitingForSynchronization && command.Frame <= Simulation.TrailingFrame)
+            else if (tss.WaitingForSynchronization && command.Frame <= tss.TrailingFrame)
             {
                 // We're waiting for a sync, and our trailing frame wasn't enough, so
                 // we just skip any commands whatsoever that are from before it.
@@ -233,8 +233,8 @@ namespace Engine.Controller
         /// </summary>
         private void HandleEmittedCommand(TCommand command)
         {
-            command.Player = Session.LocalPlayer;
-            command.Frame = Simulation.CurrentFrame + 1;
+            command.PlayerNumber = Session.LocalPlayer.Number;
+            command.Frame = tss.CurrentFrame + 1;
             HandleLocalCommand(command);
         }
 
@@ -268,15 +268,15 @@ namespace Engine.Controller
                     // Answer to a synchronization request.
                     // Only accept these when they come from the server, and disregard if
                     // we're waiting for a snapshot of the simulation.
-                    if (args.IsAuthoritative && !Simulation.WaitingForSynchronization)
+                    if (args.IsAuthoritative && !tss.WaitingForSynchronization)
                     {
                         // This calculation follows algorithm described here:
                         // http://www.mine-control.com/zack/timesync/timesync.html
                         long sentFrame = args.Data.ReadInt64();
                         long serverFrame = args.Data.ReadInt64();
 
-                        long latency = (Simulation.CurrentFrame - sentFrame) / 2;
-                        long clientServerDelta = (serverFrame - Simulation.CurrentFrame);
+                        long latency = (tss.CurrentFrame - sentFrame) / 2;
+                        long clientServerDelta = (serverFrame - tss.CurrentFrame);
                         long frameDelta = clientServerDelta + latency / 2;
 
                         _frameDiff.Put((int)frameDelta);
@@ -287,7 +287,7 @@ namespace Engine.Controller
                         {
                             logger.Debug("Correcting for {0} frames.", frameDelta);
                             // Adjust the current frame of the simulation.
-                            Simulation.RunToFrame(Simulation.CurrentFrame + frameDelta);
+                            tss.RunToFrame(tss.CurrentFrame + frameDelta);
                         }
                         // Push our average delay plus the delta! Otherwise we'd loose the
                         // running ('constant') delta we accumulated.
@@ -310,7 +310,7 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
-                        Simulation.Depacketize(args.Data);
+                        tss.Depacketize(args.Data);
                     }
                     break;
 
@@ -320,7 +320,7 @@ namespace Engine.Controller
                     {
                         long addFrame = args.Data.ReadInt64();
                         IEntity entity = Packetizer.Depacketize<IEntity>(args.Data);
-                        Simulation.AddEntity(entity, addFrame);
+                        tss.AddEntity(entity, addFrame);
                     }
                     break;
 
@@ -330,7 +330,7 @@ namespace Engine.Controller
                     {
                         long removeFrame = args.Data.ReadInt64();
                         long entityUid = args.Data.ReadInt64();
-                        Simulation.RemoveEntity(entityUid, removeFrame);
+                        tss.RemoveEntity(entityUid, removeFrame);
                     }
                     break;
 

@@ -18,7 +18,7 @@ namespace Engine.Simulation
     /// - Cloning of the state (may use CloneTo to take care of the basics).
     /// </para>
     /// </summary>
-    public abstract class AbstractState : IState
+    public abstract class AbstractSimulation : ISimulation
     {
         #region Properties
 
@@ -30,7 +30,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Enumerator over all children.
         /// </summary>
-        public IEnumerable<IEntity> Children { get { return entities; } }
+        public IEnumerable<IEntity> Entities { get { return _entities; } }
 
         /// <summary>
         /// The component system manager in use in this simulation.
@@ -49,13 +49,13 @@ namespace Engine.Simulation
         /// <summary>
         /// List of child entities this state drives.
         /// </summary>
-        protected IList<IEntity> entities = new List<IEntity>();
+        private IList<IEntity> _entities = new List<IEntity>();
 
         #endregion
 
         #region Constructor
 
-        protected AbstractState()
+        protected AbstractSimulation()
         {
             this.SystemManager = new CompositeComponentSystem();
         }
@@ -70,7 +70,7 @@ namespace Engine.Simulation
         /// <param name="entity">the object to add.</param>
         public void AddEntity(IEntity entity)
         {
-            entities.Add(entity);
+            _entities.Add(entity);
             foreach (var component in entity.Components)
             {
                 SystemManager.AddComponent(component);
@@ -83,7 +83,7 @@ namespace Engine.Simulation
         /// <param name="entity">the object to remove.</param>
         public void RemoveEntity(IEntity entity)
         {
-            if (entities.Remove(entity))
+            if (_entities.Remove(entity))
             {
                 foreach (var component in entity.Components)
                 {
@@ -100,12 +100,12 @@ namespace Engine.Simulation
         {
             if (entityUid >= 0)
             {
-                for (int i = 0; i < entities.Count; i++)
+                for (int i = 0; i < _entities.Count; i++)
                 {
-                    if (entities[i].UID == entityUid)
+                    if (_entities[i].UID == entityUid)
                     {
-                        IEntity entity = entities[i];
-                        entities.RemoveAt(i);
+                        IEntity entity = _entities[i];
+                        _entities.RemoveAt(i);
                         foreach (var component in entity.Components)
                         {
                             SystemManager.RemoveComponent(component);
@@ -124,11 +124,11 @@ namespace Engine.Simulation
         /// <returns>the current representation in this state.</returns>
         public IEntity GetEntity(long entityUid)
         {
-            for (int i = 0; i < entities.Count; i++)
+            for (int i = 0; i < _entities.Count; i++)
             {
-                if (entities[i].UID == entityUid)
+                if (_entities[i].UID == entityUid)
                 {
-                    return entities[i];
+                    return _entities[i];
                 }
             }
             return null;
@@ -165,7 +165,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Advance the simulation by one frame.
         /// </summary>
-        public virtual void Update()
+        public void Update()
         {
             // Increment frame number.
             ++CurrentFrame;
@@ -194,44 +194,21 @@ namespace Engine.Simulation
 
         #region Hashing / Cloning / Serialization
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">the hasher to push data to.</param>
-        public virtual void Hash(Hasher hasher)
-        {
-            hasher.Put(BitConverter.GetBytes(entities.Count));
-            List<IEntity> withId = new List<IEntity>();
-            if (entities.Count > 0)
-            {
-                foreach (var entity in entities)
-                {
-                    if (entity.UID > 0)
-                    {
-                        withId.Add(entity);
-                    }
-                }
-            }
-            withId.Sort((a, b) => a.UID.CompareTo(b.UID));
-            foreach (var entity in withId)
-            {
-                entity.Hash(hasher);
-            }
-        }
-
         public virtual void Packetize(Packet packet)
         {
+            // Write the frame number we're currently in.
             packet.Write(CurrentFrame);
 
+            // Then serialize all pending commands for the next frame.
             packet.Write(commands.Count);
             foreach (var command in commands)
             {
                 Packetizer.Packetize(command, packet);
             }
 
-            packet.Write(entities.Count);
-            foreach (var entity in entities)
+            // And eventually, the list of entities we track in this simulation.
+            packet.Write(_entities.Count);
+            foreach (var entity in _entities)
             {
                 Packetizer.Packetize(entity, packet);
             }
@@ -242,6 +219,10 @@ namespace Engine.Simulation
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
 
+            // Clear component lists. Just do a clone, which preserves the
+            // non-entity bound components for us.
+            SystemManager = (IComponentSystemManager)SystemManager.Clone();
+
             // Continue with reading the list of commands.
             commands.Clear();
             int numCommands = packet.ReadInt32();
@@ -251,18 +232,51 @@ namespace Engine.Simulation
             }
 
             // And finally the objects. Remove the one we know before that.
-            entities.Clear();
+            _entities.Clear();
             int numEntitys = packet.ReadInt32();
             for (int i = 0; i < numEntitys; ++i)
             {
-                var entity = Packetizer.Depacketize<IEntity>(packet);
-                entities.Add(entity);
+                AddEntity(Packetizer.Depacketize<IEntity>(packet));
             }
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">the hasher to push data to.</param>
+        public virtual void Hash(Hasher hasher)
+        {
+            // Write the number of entities, and then get all entities with a
+            // unique id. We only use those, because we can sort them. We cannot
+            // guarantee the order of the other entities, so we cannot guarantee
+            // a deterministic hash.
+            hasher.Put(BitConverter.GetBytes(_entities.Count));
+
+            // Get entities with an id.
+            List<IEntity> withId = new List<IEntity>();
+            foreach (var entity in _entities)
+            {
+                if (entity.UID > 0)
+                {
+                    withId.Add(entity);
+                }
+            }
+            // Sort 'em and hash 'em.
+            withId.Sort((a, b) => a.UID.CompareTo(b.UID));
+            foreach (var entity in withId)
+            {
+                entity.Hash(hasher);
+            }
+        }
+
+        /// <summary>
+        /// Implements deep cloning.
+        /// </summary>
+        /// <returns>A deep copy of this simulation.</returns>
         public virtual object Clone()
         {
-            var copy = (AbstractState)MemberwiseClone();
+            var copy = (AbstractSimulation)MemberwiseClone();
 
             // Clone system manager.
             copy.SystemManager = (IComponentSystemManager)SystemManager.Clone();
@@ -271,8 +285,8 @@ namespace Engine.Simulation
             copy.commands = new List<ICommand>(commands);
 
             // Clone all entities.
-            copy.entities = new List<IEntity>();
-            foreach (var entity in entities)
+            copy._entities = new List<IEntity>();
+            foreach (var entity in _entities)
             {
                 copy.AddEntity((IEntity)entity.Clone());
             }

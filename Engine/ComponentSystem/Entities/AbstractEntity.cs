@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 
@@ -17,20 +18,27 @@ namespace Engine.ComponentSystem.Entities
         public long UID { get; set; }
 
         /// <summary>
-        /// A list of all of this entities components.
+        /// A list of all of components this entity is composed of.
         /// </summary>
-        public ReadOnlyCollection<IComponent> Components { get { return components.AsReadOnly(); } }
+        public ReadOnlyCollection<IComponent> Components { get { return _components.AsReadOnly(); } }
 
         #endregion
 
         #region Fields
 
         /// <summary>
-        /// List of all this entities components.
+        /// List of all this entity's components.
         /// </summary>
-        protected List<IComponent> components = new List<IComponent>();
+        private List<IComponent> _components = new List<IComponent>();
+
+        /// <summary>
+        /// Cached lookup of other components of the same element.
+        /// </summary>
+        private Dictionary<Type, IComponent> _mapping = new Dictionary<Type, IComponent>();
 
         #endregion
+
+        #region Construction
 
         protected AbstractEntity()
         {
@@ -40,41 +48,60 @@ namespace Engine.ComponentSystem.Entities
         }
 
         /// <summary>
+        /// Registers a new component with this entity.
+        /// </summary>
+        /// <param name="component">the component to add.</param>
+        protected void AddComponent(IComponent component)
+        {
+            _components.Add(component);
+            component.Entity = this;
+        }
+
+        #endregion
+
+        #region Component-lookup
+
+        /// <summary>
         /// Get a component of the specified type from this entity, if it
         /// has one.
+        /// 
+        /// <para>
+        /// This performs caching internally, so subsequent calls should
+        /// be relatively fast.
+        /// </para>
         /// </summary>
         /// <typeparam name="T">the type of the component to get.</typeparam>
         /// <returns>the component, or <c>null</c> if the entity has none of this type.</returns>
-        public T GetComponent<T>()
+        public T GetComponent<T>() where T : IComponent
         {
-            foreach (var component in components)
+            // Get the type object representing the generic type.
+            Type type = typeof(T);
+
+            // See if we have that one cached.
+            if (_mapping.ContainsKey(type))
             {
-                if (component.GetType().Equals(typeof(T)))
+                // Yes, return it.
+                return (T)_mapping[type];
+            }
+
+            // No, look it up and cache it.
+            foreach (var component in _components)
+            {
+                if (component.GetType() == type)
                 {
+                    _mapping[type] = component;
                     return (T)component;
                 }
             }
+
+            // Not found at all, cache as null and return.
+            _mapping[type] = null;
             return default(T);
         }
 
-        #region Interfaces
+        #endregion
 
-        /// <summary>
-        /// Create a deep copy of the object.
-        /// </summary>
-        /// <returns></returns>
-        public virtual object Clone()
-        {
-            var copy = (AbstractEntity)MemberwiseClone();
-            copy.components = new List<IComponent>();
-            foreach (var component in components)
-            {
-                var componentCopy = (IComponent)component.Clone();
-                componentCopy.Entity = copy;
-                copy.components.Add(componentCopy);
-            }
-            return copy;
-        }
+        #region Interfaces
 
         /// <summary>
         /// Write the object's state to the given packet.
@@ -83,7 +110,7 @@ namespace Engine.ComponentSystem.Entities
         public virtual void Packetize(Serialization.Packet packet)
         {
             packet.Write(UID);
-            foreach (var component in components)
+            foreach (var component in _components)
             {
                 component.Packetize(packet);
             }
@@ -96,7 +123,7 @@ namespace Engine.ComponentSystem.Entities
         public virtual void Depacketize(Serialization.Packet packet)
         {
             UID = packet.ReadInt64();
-            foreach (var component in components)
+            foreach (var component in _components)
             {
                 component.Depacketize(packet);
             }
@@ -109,13 +136,42 @@ namespace Engine.ComponentSystem.Entities
         /// <param name="hasher">the hasher to push data to.</param>
         public virtual void Hash(Util.Hasher hasher)
         {
-            foreach (var component in components)
+            foreach (var component in _components)
             {
                 component.Hash(hasher);
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Create a deep copy of the object, duplicating all its components.
+        /// 
+        /// <para>
+        /// Subclasses must take care of duplicating reference properties / fields
+        /// they introduce.
+        /// </para>
+        /// </summary>
+        /// <returns>A deep copy of this entity.</returns>
+        public virtual object Clone()
+        {
+            // Start with a quick, shallow copy.
+            var copy = (AbstractEntity)MemberwiseClone();
 
+            // Give it its own mapper.
+            copy._mapping = new Dictionary<Type, IComponent>();
+
+            // And its own component list, then clone the components.
+            copy._components = new List<IComponent>();
+            foreach (var component in _components)
+            {
+                var componentCopy = (IComponent)component.Clone();
+                // Assign the copy as the belonging entity.
+                componentCopy.Entity = copy;
+                copy._components.Add(componentCopy);
+            }
+
+            return copy;
+        }
+
+        #endregion
     }
 }

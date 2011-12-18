@@ -104,7 +104,7 @@ namespace Space
             console.DrawOrder = 10;
 
             // Add a logging target that'll write to our console.
-            new GameConsoleTarget(this, LogLevel.Trace);
+            new GameConsoleTarget(this, LogLevel.Debug);
 
             // Register some commands for our console, making debugging that much easier ;)
             console.AddCommand("server", args =>

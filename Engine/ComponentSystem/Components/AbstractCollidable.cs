@@ -1,23 +1,27 @@
 ﻿using System;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
 using Engine.Physics;
 
 namespace Engine.ComponentSystem.Components
 {
+    /// <summary>
+    /// Base class for components that implement collision logic.
+    /// 
+    /// <para>
+    /// Requires: <c>StaticPhysics</c>.
+    /// </para>
+    /// </summary>
     public abstract class AbstractCollidable : AbstractComponent, ICollideable
     {
+        #region Fields
+
         /// <summary>
         /// Previous position of the underlying physics component (for sweep tests).
         /// </summary>
         protected FPoint previousPosition;
 
-        public AbstractCollidable(IEntity entity)
-            : base(entity)
-        {
-            this.previousPosition = entity.GetComponent<StaticPhysics>().Position;
-        }
+        #endregion
 
         #region Intersection
 
@@ -27,6 +31,8 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Logic
+        
         /// <summary>
         /// Checks for collisions between this component and others given in the parameterization.
         /// </summary>
@@ -54,6 +60,10 @@ namespace Engine.ComponentSystem.Components
             return parameterizationType.Equals(typeof(CollisionParameterization));
         }
 
+        #endregion
+
+        #region Serialization / Hashing
+
         public override void Packetize(Serialization.Packet packet)
         {
             packet.Write(previousPosition);
@@ -69,5 +79,7 @@ namespace Engine.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(previousPosition.X.RawValue));
             hasher.Put(BitConverter.GetBytes(previousPosition.Y.RawValue));
         }
+
+        #endregion
     }
 }

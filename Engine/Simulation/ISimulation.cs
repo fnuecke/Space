@@ -11,7 +11,7 @@ namespace Engine.Simulation
     /// <summary>
     /// Minimal interface to be implemented by simulation states.
     /// </summary>
-    public interface IState : ICloneable, IPacketizable, IHashable
+    public interface ISimulation : ICloneable, IPacketizable, IHashable
     {
         /// <summary>
         /// The current frame of the simulation the state represents.
@@ -21,7 +21,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Iterator over all entities registered with this simulation.
         /// </summary>
-        IEnumerable<IEntity> Children { get; }
+        IEnumerable<IEntity> Entities { get; }
 
         /// <summary>
         /// The component system manager in use in this simulation.

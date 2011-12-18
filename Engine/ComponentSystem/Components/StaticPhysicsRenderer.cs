@@ -1,16 +1,19 @@
-﻿using Engine.ComponentSystem.Entities;
-using Engine.ComponentSystem.Parameterizations;
+﻿using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Components
 {
+    /// <summary>
+    /// Implements a renderer for a simple physics object.
+    /// 
+    /// <para>
+    /// Requires: <c>StaticPhysics</c>.
+    /// </para>
+    /// </summary>
     public class StaticPhysicsRenderer : AbstractRenderer
     {
-        public StaticPhysicsRenderer(IEntity entity)
-            : base(entity)
-        {
-        }
+        #region Logic
 
         /// <summary>
         /// Render a physics object at its location.
@@ -18,22 +21,28 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">the parameterization to use.</param>
         public override void Update(object parameterization)
         {
+            // Make sure we have our texture.
             base.Update(parameterization);
+
+            // Get parameterization in proper type.
             var p = (RendererParameterization)parameterization;
 
+            // The position and orientation we're rendering at and in.
             var sphysics = Entity.GetComponent<StaticPhysics>();
 
-            // Draw the texture based on our component.
+            // Draw the texture based on our physics component.
             p.SpriteBatch.Begin();
             p.SpriteBatch.Draw(texture,
-                new Rectangle(sphysics.Position.X + (int)p.Translation.X,
-                              sphysics.Position.Y + (int)p.Translation.Y,
+                new Rectangle((int)((float)sphysics.Position.X + p.Translation.X),
+                              (int)((float)sphysics.Position.Y + p.Translation.Y),
                               texture.Width, texture.Height),
                 null, Color.White,
-                sphysics.Rotation,
+                (float)sphysics.Rotation,
                 new Vector2(texture.Width / 2, texture.Height / 2),
                 SpriteEffects.None, 0);
             p.SpriteBatch.End();
         }
+
+        #endregion
     }
 }

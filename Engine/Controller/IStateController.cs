@@ -1,6 +1,7 @@
 ﻿using Engine.Commands;
 using Engine.ComponentSystem.Entities;
 using Engine.Session;
+using Engine.Simulation;
 
 namespace Engine.Controller
 {
@@ -11,6 +12,11 @@ namespace Engine.Controller
         where TSession : ISession
         where TCommand : ICommand
     {
+        /// <summary>
+        /// The underlying simulation controlled by this controller.
+        /// </summary>
+        ISimulation Simulation { get; }
+
         /// <summary>
         /// Add a entity to the simulation. Will be inserted at the
         /// current leading frame. The entity will be given a unique

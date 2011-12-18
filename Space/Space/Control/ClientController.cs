@@ -41,19 +41,15 @@ namespace Space.Control
         public ClientController(Game game, IClientSession session)
             : base(game, session)
         {
-            Simulation.Initialize(new GameState());
+            tss.Initialize(new GameState());
 
-            PhysicsSystem physics = new PhysicsSystem();
-            ShipControlSystem controls = new ShipControlSystem();
-            AvatarSystem avatars = new AvatarSystem();
-            PlayerCenteredRenderSystem renderer = new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session);
-
-            Simulation.SystemManager.AddSystem(physics);
-            Simulation.SystemManager.AddSystem(controls);
-            Simulation.SystemManager.AddSystem(avatars);
-            Simulation.SystemManager.AddSystem(renderer);
-
+            var renderer = new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session);
             renderer.AddComponent(new Background("Textures/stars"));
+
+            tss.SystemManager.AddSystem(new PhysicsSystem());
+            tss.SystemManager.AddSystem(new ShipControlSystem());
+            tss.SystemManager.AddSystem(new AvatarSystem());
+            tss.SystemManager.AddSystem(renderer);
         }
 
         protected override void LoadContent()
@@ -71,7 +67,7 @@ namespace Space.Control
 
             if (Session.ConnectionState == ClientState.Connected)
             {
-                Simulation.SystemManager.Update(ComponentSystemUpdateType.Display);
+                tss.SystemManager.Update(ComponentSystemUpdateType.Display);
             }
         }
 
@@ -83,7 +79,7 @@ namespace Space.Control
         protected override void HandleJoinResponse(object sender, EventArgs e)
         {
             // OK, we were allowed to join, invalidate our simulation to request the current state.
-            Simulation.Invalidate();
+            tss.Invalidate();
         }
 
         /// <summary>
@@ -128,7 +124,7 @@ namespace Space.Control
 
         internal void DEBUG_InvalidateSimulation()
         {
-            Simulation.Invalidate();
+            tss.Invalidate();
         }
 
         #endregion

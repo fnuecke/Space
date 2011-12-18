@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 
 namespace Engine.ComponentSystem.Systems
 {
-    public class CompositeComponentSystem : IComponentSystemManager
+    /// <summary>
+    /// A multi-system manager, holding multiple component systems and making them
+    /// available to each other.
+    /// </summary>
+    public sealed class CompositeComponentSystem : IComponentSystemManager
     {
         #region Properties
 
@@ -21,6 +26,11 @@ namespace Engine.ComponentSystem.Systems
         /// List of all systems registered with this manager.
         /// </summary>
         private List<IComponentSystem> _systems = new List<IComponentSystem>();
+
+        /// <summary>
+        /// Lookup table for quick access to component by type.
+        /// </summary>
+        private Dictionary<Type, IComponentSystem> _mapping = new Dictionary<Type, IComponentSystem>();
 
         #endregion
 
@@ -84,7 +94,7 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Accessor
+        #region System-lookup
 
         /// <summary>
         /// Get a system of the given type.
@@ -93,13 +103,28 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>A system of the given type, or <c>null</c> if no such system exits.</returns>
         public T GetSystem<T>() where T : IComponentSystem
         {
+            // Get the type object representing the generic type.
+            Type type = typeof(T);
+
+            // See if we have that one cached.
+            if (_mapping.ContainsKey(type))
+            {
+                // Yes, return it.
+                return (T)_mapping[type];
+            }
+
+            // No, look it up and cache it.
             foreach (var system in _systems)
             {
-                if (system.GetType().Equals(typeof(T)))
+                if (system.GetType() == type)
                 {
+                    _mapping[type] = system;
                     return (T)system;
                 }
             }
+
+            // Not found at all, cache as null and return.
+            _mapping[type] = null;
             return default(T);
         }
 
@@ -109,7 +134,11 @@ namespace Engine.ComponentSystem.Systems
 
         public object Clone()
         {
+            // Start with a quick, shallow copy.
             var copy = (CompositeComponentSystem)MemberwiseClone();
+
+            // Give it its own lookup table.
+            copy._mapping = new Dictionary<Type, IComponentSystem>();
 
             // Create clones of all subsystems.
             copy._systems = new List<IComponentSystem>();

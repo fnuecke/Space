@@ -1,10 +1,17 @@
 ﻿using System;
-using Engine.ComponentSystem.Entities;
 using Engine.Math;
 using Engine.Physics.Intersection;
 
 namespace Engine.ComponentSystem.Components
 {
+    /// <summary>
+    /// Implements a box, which has a size which is used to
+    /// determine collisions.
+    /// 
+    /// <para>
+    /// Requires: <c>StaticPhysics</c>.
+    /// </para>
+    /// </summary>
     public class CollidableBox : AbstractCollidable
     {
         #region Properties
@@ -15,11 +22,6 @@ namespace Engine.ComponentSystem.Components
         public FPoint Size { get; set; }
 
         #endregion
-
-        public CollidableBox(IEntity entity)
-            : base(entity)
-        {
-        }
 
         #region Intersection
 
@@ -39,6 +41,8 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Serialization / Hashing
+
         public override void Packetize(Serialization.Packet packet)
         {
             base.Packetize(packet);
@@ -57,5 +61,7 @@ namespace Engine.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(Size.X.RawValue));
             hasher.Put(BitConverter.GetBytes(Size.Y.RawValue));
         }
+
+        #endregion
     }
 }

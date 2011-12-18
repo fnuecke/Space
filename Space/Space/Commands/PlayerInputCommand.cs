@@ -56,18 +56,18 @@ namespace Space.Commands
 
         public override void Packetize(Packet packet)
         {
+            base.Packetize(packet);
+
             packet.Write((byte)Input);
             packet.Write(TargetRotation);
-
-            base.Packetize(packet);
         }
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+
             Input = (PlayerInput)packet.ReadByte();
             TargetRotation = packet.ReadFixed();
-
-            base.Depacketize(packet);
         }
 
         #endregion

@@ -120,11 +120,6 @@ namespace SpaceData
         public WeaponSize Size;
 
         /// <summary>
-        /// The collision radius of the ship.
-        /// </summary>
-        public Fixed Radius;
-
-        /// <summary>
         /// The texture to use for rendering the weapon.
         /// </summary>
         public string Texture;
@@ -133,16 +128,6 @@ namespace SpaceData
         /// The sound to play when firing a shot.
         /// </summary>
         public string Sound;
-
-        /// <summary>
-        /// The name of the particle effect to use for shots.
-        /// </summary>
-        public string ProjectileEffect;
-
-        /// <summary>
-        /// The speed of fired projectiles.
-        /// </summary>
-        public Fixed ProjectileSpeed;
 
         /// <summary>
         /// The damage a single shot of this weapon inflicts.
@@ -154,28 +139,45 @@ namespace SpaceData
         /// </summary>
         public Fixed FireRate;
 
+        /// <summary>
+        /// The name of the particle effect to use for shots.
+        /// </summary>
+        public string ProjectileTexture;
+
+        /// <summary>
+        /// The speed of fired projectiles.
+        /// </summary>
+        public Fixed ProjectileSpeed;
+
+        /// <summary>
+        /// The collision radius of the projectiles.
+        /// </summary>
+        public Fixed ProjectileRadius;
+
         public void Packetize(Packet packet)
         {
             packet.Write(Name);
             packet.Write((byte)Size);
-            packet.Write(Radius);
             packet.Write(Texture);
             packet.Write(Sound);
-            packet.Write(ProjectileSpeed);
             packet.Write(Damage);
             packet.Write(FireRate);
+            packet.Write(ProjectileTexture);
+            packet.Write(ProjectileSpeed);
+            packet.Write(ProjectileRadius);
         }
 
         public void Depacketize(Packet packet)
         {
             Name = packet.ReadString();
             Size = (WeaponSize)packet.ReadByte();
-            Radius = packet.ReadFixed();
             Texture = packet.ReadString();
             Sound = packet.ReadString();
-            ProjectileSpeed = packet.ReadFixed();
             Damage = packet.ReadFixed();
             FireRate = packet.ReadFixed();
+            ProjectileTexture = packet.ReadString();
+            ProjectileSpeed = packet.ReadFixed();
+            ProjectileRadius = packet.ReadFixed();
         }
     }
 

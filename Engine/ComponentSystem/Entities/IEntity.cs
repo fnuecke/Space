@@ -26,9 +26,14 @@ namespace Engine.ComponentSystem.Entities
         /// <summary>
         /// Get a component of the specified type from this entity, if it
         /// has one.
+        /// 
+        /// <para>
+        /// This performs caching internally, so subsequent calls should
+        /// be relatively fast.
+        /// </para>
         /// </summary>
         /// <typeparam name="T">the type of the component to get.</typeparam>
         /// <returns>the component, or <c>null</c> if the entity has none of this type.</returns>
-        T GetComponent<T>();
+        T GetComponent<T>() where T : IComponent;
     }
 }

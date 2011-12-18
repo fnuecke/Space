@@ -6,6 +6,7 @@ using Engine.Controller;
 using Engine.Input;
 using Engine.Math;
 using Engine.Session;
+using Engine.Simulation;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -28,17 +29,17 @@ namespace Space.Control
         public bool IsEnabled { get; set; }
 
         private IClientSession _session;
-        private AvatarSystem _avatarSystem;
+        private ISimulation _simulation;
         private Fixed _previousTargetRotation;
         private Fixed _currentTargetRotation;
         private bool _rotationFinished = true;
 
-        public InputCommandEmitter(Game game, IClientSession session, AvatarSystem avatarSystem)
+        public InputCommandEmitter(Game game, IClientSession session, ISimulation simulation)
             : base(game)
         {
             this._session = session;
-            this._avatarSystem = avatarSystem;
-
+            this._simulation = simulation;
+            
             // Register for key presses and releases (movement).
             var keyboard = (IKeyboardInputManager)game.Services.GetService(typeof(IKeyboardInputManager));
             keyboard.Pressed += HandleKeyPressed;
@@ -51,6 +52,7 @@ namespace Space.Control
             mouse.Released += HandleMouseReleased;
         }
 
+        // TODO waiting for completion to re-fire causes mini-lags, which feel awkward...
         public override void Update(GameTime gameTime)
         {
             if (_session.ConnectionState == ClientState.Connected)
@@ -68,7 +70,7 @@ namespace Space.Control
                     // We stopped moving when last and current position are equal.
                     if (_previousTargetRotation == _currentTargetRotation)
                     {
-                        OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
+                        //OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
                         _rotationFinished = true;
                     }
                     _previousTargetRotation = _currentTargetRotation;
@@ -196,8 +198,9 @@ namespace Space.Control
             {
                 var sphysics = avatar.GetComponent<StaticPhysics>();
                 var dphysics = avatar.GetComponent<DynamicPhysics>();
+
                 // Get ships current orientation.
-                double shipAngle = sphysics.Rotation;
+                double shipAngle = (double)sphysics.Rotation;
 
                 // Remember where we'd like to rotate to (for finalizing).
                 _currentTargetRotation = Fixed.Create(targetRotation);
@@ -257,7 +260,7 @@ namespace Space.Control
 
         private IEntity GetLocalAvatar()
         {
-            return _avatarSystem.GetAvatar(_session.LocalPlayer);
+            return _simulation.SystemManager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
         }
 
         /// <summary>
