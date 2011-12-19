@@ -57,13 +57,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\SpaceData\SpaceData.csproj">
+    <ProjectReference Include="..\SpaceData\SpaceData.csproj">
       <Project>{48F0591F-9238-4FF0-AC34-04E14C291AA3}</Project>
       <Name>SpaceData</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\EngineSerialization\EngineSerialization.csproj">
+    <ProjectReference Include="..\EngineFixedWriter\EngineFixedWriter.csproj">
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
-      <Name>EngineSerialization</Name>
+      <Name>EngineFixedWriter</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

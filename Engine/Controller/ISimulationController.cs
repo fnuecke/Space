@@ -8,7 +8,7 @@ namespace Engine.Controller
     /// <summary>
     /// Public interface for controllers managing a game state.
     /// </summary>
-    public interface IStateController<TSession, TCommand> : IController<TSession>
+    public interface ISimulationController<TSession, TCommand> : IController<TSession>
         where TSession : ISession
         where TCommand : ICommand
     {

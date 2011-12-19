@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Content;
 namespace Engine.Serialization
 {
     /// <summary>
-    /// This is for reading data in binary format written with the FIntWriter.
+    /// This is for reading data in binary format written with the <c>FixedWriter</c>.
     /// </summary>
     public class FixedReader : ContentTypeReader<Fixed>
     {

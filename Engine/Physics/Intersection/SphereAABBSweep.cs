@@ -2,7 +2,7 @@
 
 namespace Engine.Physics.Intersection
 {
-    internal static class SphereAABBSweep
+    public static class SphereAABBSweep
     {
         /// <summary>
         /// Test for collision between moving box and sphere.

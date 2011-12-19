@@ -163,16 +163,20 @@
     <Content Include="GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Engine\Engine.csproj">
+    <ProjectReference Include="..\EngineFixedReader\EngineFixedReader.csproj">
+      <Project>{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}</Project>
+      <Name>EngineFixedReader</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Engine\Engine.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\SpaceData\SpaceData.csproj">
+    <ProjectReference Include="..\SpaceData\SpaceData.csproj">
       <Project>{48F0591F-9238-4FF0-AC34-04E14C291AA3}</Project>
       <Name>SpaceData</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceContent\SpaceContent.contentproj">
-      <Name>SpaceContent %28Content%29</Name>
+      <Name>SpaceContent %28data%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
       <Project>{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}</Project>
     </ProjectReference>

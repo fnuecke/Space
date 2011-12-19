@@ -1,15 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space", "Space\Space\Space.csproj", "{D573EB83-8626-431B-97DC-F0D754D6A99C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space", "Space\Space.csproj", "{D573EB83-8626-431B-97DC-F0D754D6A99C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceContent", "Space\SpaceContent\SpaceContent.contentproj", "{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceContent", "SpaceContent\SpaceContent.contentproj", "{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceData", "SpaceData\SpaceData.csproj", "{48F0591F-9238-4FF0-AC34-04E14C291AA3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine\Engine.csproj", "{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EngineSerialization", "EngineSerialization\EngineSerialization.csproj", "{B40055F1-158F-4C54-BC3F-D269ABB941FD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EngineFixedWriter", "EngineFixedWriter\EngineFixedWriter.csproj", "{B40055F1-158F-4C54-BC3F-D269ABB941FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EngineFixedReader", "EngineFixedReader\EngineFixedReader.csproj", "{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug|x86.Build.0 = Debug|x86
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release|x86.ActiveCfg = Debug|x86
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release|x86.Build.0 = Debug|x86
+		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug|x86.ActiveCfg = Debug|x86
+		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug|x86.Build.0 = Debug|x86
+		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release|x86.ActiveCfg = Release|x86
+		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

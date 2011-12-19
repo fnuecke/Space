@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>EngineSerialization</RootNamespace>
-    <AssemblyName>EngineSerialization</AssemblyName>
+    <RootNamespace>Engine.Serialization</RootNamespace>
+    <AssemblyName>EngineFixedWriter</AssemblyName>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
@@ -49,7 +49,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Serialization.cs" />
+    <Compile Include="FixedWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

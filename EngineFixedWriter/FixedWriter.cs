@@ -6,12 +6,11 @@ using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 
 namespace Engine.Serialization
 {
-
     /// <summary>
     /// This is for reading actual XML files in the content project.
     /// </summary>
     [ContentTypeSerializer]
-    class FIntSerializer : ContentTypeSerializer<Fixed>
+    class FixedSerializer : ContentTypeSerializer<Fixed>
     {
         protected override void Serialize(IntermediateWriter output, Fixed value, ContentSerializerAttribute format)
         {
@@ -28,7 +27,7 @@ namespace Engine.Serialization
     /// This is for writing data back in binary format.
     /// </summary>
     [ContentTypeWriter]
-    class FIntWriter : ContentTypeWriter<Fixed>
+    class FixedWriter : ContentTypeWriter<Fixed>
     {
         protected override void Write(ContentWriter output, Fixed value)
         {
@@ -40,9 +39,7 @@ namespace Engine.Serialization
         }
         public override string GetRuntimeReader(TargetPlatform targetPlatform)
         {
-            return "Engine.Serialization.FixedReader, Engine," +
-                " Version=1.0.0.0, Culture=neutral";
+            return "Engine.Serialization.FixedReader, EngineFixedReader, Version=1.0.0.0, Culture=neutral";
         }
     }
-
 }

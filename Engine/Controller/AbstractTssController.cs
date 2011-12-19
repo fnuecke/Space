@@ -12,7 +12,7 @@ namespace Engine.Controller
     /// </summary>
     public abstract class AbstractTssController<TSession>
         : AbstractController<TSession, IFrameCommand>,
-          IStateController<TSession, IFrameCommand>
+          ISimulationController<TSession, IFrameCommand>
         where TSession : ISession
     {
         #region Types
