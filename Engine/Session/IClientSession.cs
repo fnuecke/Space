@@ -32,6 +32,11 @@ namespace Engine.Session
         event EventHandler<EventArgs> JoinResponse;
 
         /// <summary>
+        /// Connection to the server was lost.
+        /// </summary>
+        event EventHandler<EventArgs> Disconnected;
+
+        /// <summary>
         /// Current state of this session.
         /// </summary>
         ClientState ConnectionState { get; }
