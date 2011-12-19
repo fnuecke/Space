@@ -24,7 +24,7 @@ namespace GameStateManagement
         {
             Client = client;
             client.Session.JoinResponse += LoginSucces;
-           
+            client.Session.Disconnected += LoginFailed;
             connect = new EditableMenueEntry(String.Empty);
             MenuEntry back = new MenuEntry("Back");
             connect.SetActive(true);
@@ -70,7 +70,12 @@ namespace GameStateManagement
             LoadingScreen.Load(ScreenManager, true,
                                 new GameplayScreen(Client));
         }
-
+        //Called if the login was handeled
+        private void LoginFailed(object sender, EventArgs e)
+        {
+            //tell that an error occured
+            connect.locked = false;
+        }
         public override void Draw(GameTime gameTime)
         {
 

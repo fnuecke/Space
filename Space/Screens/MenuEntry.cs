@@ -213,6 +213,7 @@ namespace GameStateManagement
         /// </summary>
         public virtual int GetWidth(MenuScreen screen)
         {
+            
             return (int)screen.ScreenManager.Font.MeasureString(Text).X;
         }
 

@@ -135,4 +135,13 @@
   <data name="playerName" xml:space="preserve">
     <value>Player Name: </value>
   </data>
+  <data name="language" xml:space="preserve">
+    <value>Language: </value>
+  </data>
+  <data name="NameToShort" xml:space="preserve">
+    <value>Name to short!</value>
+  </data>
+  <data name="Options" xml:space="preserve">
+    <value>Options</value>
+  </data>
 </root>
