@@ -128,7 +128,7 @@
     <Compile Include="Simulation\StaticWorld.cs" />
     <Compile Include="Commands\GameCommandType.cs" />
     <Compile Include="Commands\PlayerInputCommand.cs" />
-    <Compile Include="Simulation\GameState.cs" />
+    <Compile Include="Control\GameCommandHandler.cs" />
     <Compile Include="ComponentSystem\Entities\Ship.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />

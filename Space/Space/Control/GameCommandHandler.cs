@@ -1,23 +1,22 @@
 ﻿using Engine.Commands;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
-using Engine.Simulation;
 using Engine.Util;
 using Space.Commands;
 using Space.ComponentSystem.Components;
 
-namespace Space.Simulation
+namespace Space.Control
 {
-    class GameState : AbstractSimulation, IAuthoritativeSimulation
+    static class GameCommandHandler
     {
-        protected override void HandleCommand(ICommand command)
+        public static void HandleCommand(ICommand command, IComponentSystemManager manager)
         {
             switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player input command, apply it.
                     {
-                        IEntity avatar = SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+                        IEntity avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
                         if (avatar != null)
                         {
                             var input = avatar.GetComponent<ShipControl>();
@@ -73,20 +72,6 @@ namespace Space.Simulation
                 default:
                     break;
             }
-        }
-
-        public bool SkipTentativeCommands()
-        {
-            bool hadTentative = false;
-            for (int i = commands.Count - 1; i >= 0; --i)
-            {
-                if (!commands[i].IsAuthoritative)
-                {
-                    hadTentative = true;
-                    commands.RemoveAt(i);
-                }
-            }
-            return hadTentative;
         }
     }
 }

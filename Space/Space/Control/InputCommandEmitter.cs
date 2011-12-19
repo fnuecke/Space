@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.Commands;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
@@ -14,7 +15,7 @@ using Space.Commands;
 
 namespace Space.Control
 {
-    class InputCommandEmitter : GameComponent, ICommandEmitter<GameCommand>
+    class InputCommandEmitter : GameComponent, ICommandEmitter<IFrameCommand>
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command
@@ -24,7 +25,7 @@ namespace Space.Control
         /// with the proper generics as to match the controller it'll be registered
         /// with.
         /// </summary>
-        public event CommandEmittedEventHandler<GameCommand> CommandEmitted;
+        public event CommandEmittedEventHandler<IFrameCommand> CommandEmitted;
 
         public bool IsEnabled { get; set; }
 
@@ -70,7 +71,7 @@ namespace Space.Control
                     // We stopped moving when last and current position are equal.
                     if (_previousTargetRotation == _currentTargetRotation)
                     {
-                        //OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
+                        OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
                         _rotationFinished = true;
                     }
                     _previousTargetRotation = _currentTargetRotation;

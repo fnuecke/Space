@@ -173,6 +173,7 @@
     <Compile Include="Serialization\Packet.cs" />
     <Compile Include="Simulation\AbstractSimulation.cs" />
     <Compile Include="ComponentSystem\Entities\AbstractEntity.cs" />
+    <Compile Include="Simulation\DefaultSimulation.cs" />
     <Compile Include="Simulation\IReversibleSimulation.cs" />
     <Compile Include="Simulation\IAuthoritativeSimulation.cs" />
     <Compile Include="Simulation\ISimulation.cs" />

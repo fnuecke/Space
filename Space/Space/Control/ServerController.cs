@@ -1,10 +1,9 @@
 ﻿using System;
-using Engine.Commands;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
+using Engine.Simulation;
 using Microsoft.Xna.Framework;
-using Space.Commands;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Systems;
 using Space.Simulation;
@@ -15,7 +14,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class ServerController : AbstractTssServer<GameCommand>
+    class ServerController : AbstractTssServer
     {
         #region Logger
 
@@ -37,11 +36,13 @@ namespace Space.Control
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
 
-            tss.Initialize(new GameState());
+            var simulation = new DefaultSimulation();
+            simulation.Command += GameCommandHandler.HandleCommand;
+            tss.Initialize(simulation);
 
-            tss.SystemManager.AddSystem(new PhysicsSystem());
-            tss.SystemManager.AddSystem(new ShipControlSystem());
-            tss.SystemManager.AddSystem(new AvatarSystem());
+            tss.SystemManager.AddSystem(new PhysicsSystem())
+                .AddSystem(new ShipControlSystem())
+                .AddSystem(new AvatarSystem());
         }
 
         public override void Initialize()
@@ -83,25 +84,6 @@ namespace Space.Control
             var args = (PlayerEventArgs)e;
             // Player left the game, remove his ship.
             RemoveEntity(tss.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID);
-        }
-
-        protected override bool HandleRemoteCommand(IFrameCommand command)
-        {
-            // Check what we have.
-            switch ((GameCommandType)command.Type)
-            {
-                case GameCommandType.PlayerInput:
-                    // Player sent input.
-                    Apply(command);
-                    return true;
-
-                default:
-                    logger.Debug("Got unknown command type: {0}", command.Type);
-                    break;
-            }
-
-            // Got here -> unhandled.
-            return false;
         }
     }
 }

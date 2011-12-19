@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.Commands;
 using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Util;
@@ -15,10 +16,7 @@ namespace Engine.Controller
     /// </summary>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssClient<TCommand>
-        : AbstractTssController<IClientSession, TCommand>,
-          IClientController<IClientSession, TCommand>
-        where TCommand : IFrameCommand
+    public abstract class AbstractTssClient : AbstractTssController<IClientSession>, IClientController<IFrameCommand>
     {
         #region Logger
 
@@ -158,8 +156,17 @@ namespace Engine.Controller
                         .Write(tss.CurrentFrame));
                 }
             }
+        }
 
-            base.Update(gameTime);
+        /// <summary>
+        /// Drives rendering.
+        /// </summary>
+        public override void Draw(GameTime gameTime)
+        {
+            if (Session.ConnectionState == ClientState.Connected)
+            {
+                tss.SystemManager.Update(ComponentSystemUpdateType.Display);
+            }
         }
 
         #endregion
@@ -171,7 +178,7 @@ namespace Engine.Controller
         /// whatever commands it produces.
         /// </summary>
         /// <param name="emitter">the emitter to attach to.</param>
-        public void AddEmitter(ICommandEmitter<TCommand> emitter)
+        public void AddEmitter(ICommandEmitter<IFrameCommand> emitter)
         {
             emitter.CommandEmitted += HandleEmittedCommand;
         }
@@ -180,7 +187,7 @@ namespace Engine.Controller
         /// Remove this controller as a listener from the given emitter.
         /// </summary>
         /// <param name="emitter">the emitter to detach from.</param>
-        public void RemoveEmitter(ICommandEmitter<TCommand> emitter)
+        public void RemoveEmitter(ICommandEmitter<IFrameCommand> emitter)
         {
             emitter.CommandEmitted -= HandleEmittedCommand;
         }
@@ -231,18 +238,12 @@ namespace Engine.Controller
         /// Override this to fill in some default values in the command
         /// before it is passed on to <c>HandleLocalCommand</c>.
         /// </summary>
-        private void HandleEmittedCommand(TCommand command)
+        private void HandleEmittedCommand(IFrameCommand command)
         {
             command.PlayerNumber = Session.LocalPlayer.Number;
             command.Frame = tss.CurrentFrame + 1;
-            HandleLocalCommand(command);
+            Apply(command);
         }
-
-        /// <summary>
-        /// Implement in subclasses to handle commands generated locally.
-        /// </summary>
-        /// <param name="command">the command to handle.</param>
-        protected abstract void HandleLocalCommand(TCommand command);
 
         #endregion
 

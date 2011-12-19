@@ -89,7 +89,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="command">the command to handle.</param>
         /// <returns>whether the command was handled successfully (<c>true</c>) or not (<c>false</c>).</returns>
-        protected abstract bool HandleRemoteCommand(TCommand command);
+        protected abstract void HandleRemoteCommand(TCommand command);
 
         #endregion
 

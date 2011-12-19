@@ -24,7 +24,8 @@ namespace Engine.ComponentSystem.Systems
         /// Add the component to supported subsystems.
         /// </summary>
         /// <param name="component">The component to add.</param>
-        void AddComponent(IComponent component);
+        /// <returns>This component system manager, for chaining.</returns>
+        IComponentSystemManager AddComponent(IComponent component);
 
         /// <summary>
         /// Removes the component from supported subsystems.
@@ -36,7 +37,8 @@ namespace Engine.ComponentSystem.Systems
         /// Add the system to this manager.
         /// </summary>
         /// <param name="system">The system to add.</param>
-        void AddSystem(IComponentSystem system);
+        /// <returns>This component system manager, for chaining.</returns>
+        IComponentSystemManager AddSystem(IComponentSystem system);
 
         /// <summary>
         /// Removes the system from this manager.

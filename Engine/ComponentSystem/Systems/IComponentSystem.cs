@@ -54,7 +54,8 @@ namespace Engine.ComponentSystem.Systems
         /// Add the component to this system, if it's supported.
         /// </summary>
         /// <param name="component">The component to add.</param>
-        void AddComponent(IComponent component);
+        /// <returns>This component system, for chaining.</returns>
+        IComponentSystem AddComponent(IComponent component);
 
         /// <summary>
         /// Removes the component from the system, if it's in it.

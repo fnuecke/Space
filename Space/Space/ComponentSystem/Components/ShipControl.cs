@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Components
     /// Handles control of a single ship, represented by its relevant components.
     /// 
     /// <para>
-    /// Requires: <c>Transform</c>, <c>DynamicPhysics</c>, <c>MovementProperties</c>.
+    /// Requires: <c>Transform</c>, <c>Spin</c>, <c>Acceleration</c>, <c>MovementProperties</c>.
     /// </para>
     /// </summary>
     public class ShipControl : AbstractComponent
@@ -93,8 +93,6 @@ namespace Space.ComponentSystem.Components
         public override void Update(object parameterization)
         {
 #if DEBUG
-            // Only do this expensive check (see implementation) in debug mode,
-            // as it should not happen that this is of an invalid type anyway.
             base.Update(parameterization);
 #endif
             var p = (InputParameterization)parameterization;
@@ -102,14 +100,13 @@ namespace Space.ComponentSystem.Components
             // Get components we depend upon / modify.
             var transform = Entity.GetComponent<Transform>();
             var spin = Entity.GetComponent<Spin>();
-            var acceleration = Entity.GetComponent<Acceleration>();
             var movement = Entity.GetComponent<MovementProperties>();
 
-            // Fire?
+            // Set firing state for weapon systems.
             Entity.GetComponent<Armament>().IsShooting = IsShooting;
 
             // Update acceleration.
-            acceleration.Value = DirectionConversion.DirectionToFPoint(AccelerationDirection) * movement.Acceleration;
+            Entity.GetComponent<Acceleration>().Value = DirectionConversion.DirectionToFPoint(AccelerationDirection) * movement.Acceleration;
 
             // Update rotation / spin.
             var currentDelta = Angle.MinAngle(transform.Rotation, TargetRotation);
@@ -125,10 +122,12 @@ namespace Space.ComponentSystem.Components
                 // just set it.
                 if (Fixed.Abs(currentDelta) > movement.RotationSpeed)
                 {
+                    // Spin, the angle takes multiple frames to rotate.
                     spin.Value = requiredSpin;
                 }
                 else
                 {
+                    // Set, only one frame (this one) required.
                     transform.Rotation = TargetRotation;
                     spin.Value = Fixed.Zero;
                 }
@@ -137,13 +136,10 @@ namespace Space.ComponentSystem.Components
             // Check if we're spinning.
             if (spin.Value != Fixed.Zero)
             {
-                // Yes, check if we passed our target rotation.
-                var previousDelta = Angle.MinAngle(_previousRotation, TargetRotation);
-                //if ((currentDelta <= Fixed.Zero && previousDelta >= Fixed.Zero) ||
-                //    (currentDelta >= Fixed.Zero && previousDelta <= Fixed.Zero))
-                if (Fixed.Abs(previousDelta) < movement.RotationSpeed)
+                // Yes, check if we passed our target rotation. This is the case when the distance
+                // to the target in the last step was smaller than our rotational speed.
+                if (Fixed.Abs(Angle.MinAngle(_previousRotation, TargetRotation)) < Fixed.Abs(spin.Value))
                 {
-                    //logger.Debug("prev, target, now: {0}, {1}, {2}", _previousRotation, _targetRotation, sphysics.Rotation);
                     // Yes, set to that rotation and stop spinning.
                     transform.Rotation = TargetRotation;
                     spin.Value = Fixed.Zero;
@@ -153,7 +149,7 @@ namespace Space.ComponentSystem.Components
             // Remember rotation in this update for the next.
             _previousRotation = transform.Rotation;
 
-            // We handled this change.
+            // We handled this change, if there was one.
             _targetRotationChanged = false;
         }
 
