@@ -2,9 +2,8 @@
 using System.IO;
 using System.Net.Sockets;
 using Engine.Serialization;
-using Engine.Util;
 
-namespace Engine.Network
+namespace Engine.Util
 {
     public interface IPacketStream : IDisposable
     {
@@ -295,6 +294,9 @@ namespace Engine.Network
         #endregion
     }
 
+    /// <summary>
+    /// Implements a packet stream based on a <c>NetworkStream</c>.
+    /// </summary>
     public sealed class NetworkPacketStream : AbstractPacketStream<NetworkStream>
     {
         public NetworkPacketStream(NetworkStream stream)
@@ -308,6 +310,9 @@ namespace Engine.Network
         }
     }
 
+    /// <summary>
+    /// Implements a packet stream based on a <c>SlidingStream</c>.
+    /// </summary>
     public sealed class SlidingPacketStream : AbstractPacketStream<SlidingStream>
     {
         public SlidingPacketStream(SlidingStream source, SlidingStream sink)
