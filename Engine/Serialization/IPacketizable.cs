@@ -5,9 +5,7 @@
     /// it easier to send and receive data between network participants,
     /// or to store game data.
     /// </summary>
-    public interface IPacketizable<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public interface IPacketizable
     {
         /// <summary>
         /// Write the object's state to the given packet.
@@ -19,7 +17,7 @@
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">the packet to read from.</param>
-        /// <param name="context">contextual information provided by the <c>Packetizer</c>.</param>
-        void Depacketize(Packet packet, TPacketizerContext context);
+        /// 
+        void Depacketize(Packet packet);
     }
 }

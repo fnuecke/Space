@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Engine.Commands;
+using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -10,13 +13,7 @@ namespace Engine.Simulation
     /// Implements a Trailing State Synchronization.
     /// </summary>
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
-    public sealed class TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> :
-        IReversibleState<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public sealed class TSS : IReversibleSimulation
     {
         #region Events
 
@@ -41,12 +38,17 @@ namespace Engine.Simulation
         /// The frame number of the trailing state, i.e. the point we cannot roll
         /// back past.
         /// </summary>
-        public long TrailingFrame { get { return states[states.Length - 1].CurrentFrame; } }
+        public long TrailingFrame { get { return _states[_states.Length - 1].CurrentFrame; } }
 
         /// <summary>
         /// Enumerator over all children of the leading state.
         /// </summary>
-        public IEnumerable<TSteppable> Children { get { return LeadingState.Children; } }
+        public IEnumerable<IEntity> Entities { get { return LeadingState.Entities; } }
+
+        /// <summary>
+        /// The component system manager in use in this simulation.
+        /// </summary>
+        public IComponentSystemManager SystemManager { get; private set; }
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
@@ -54,19 +56,14 @@ namespace Engine.Simulation
         public bool WaitingForSynchronization { get; private set; }
 
         /// <summary>
-        /// Packetizer used for serialization purposes.
-        /// </summary>
-        public IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get { return LeadingState.Packetizer; } }
-
-        /// <summary>
         /// Get the trailing state.
         /// </summary>
-        private TState TrailingState { get { return states[states.Length - 1]; } }
+        private IAuthoritativeSimulation TrailingState { get { return _states[_states.Length - 1]; } }
 
         /// <summary>
         /// Get the leading state.
         /// </summary>
-        private TState LeadingState { get { return states[0]; } }
+        private IAuthoritativeSimulation LeadingState { get { return _states[0]; } }
 
         #endregion
 
@@ -75,30 +72,32 @@ namespace Engine.Simulation
         /// <summary>
         /// The delays of the individual states.
         /// </summary>
-        private uint[] delays;
+        private uint[] _delays;
 
         /// <summary>
         /// The list of running states. They are ordered in in increasing delay, i.e.
         /// the state at slot 0 is the leading one, 1 is the next newest, and so on.
         /// </summary>
-        private TState[] states;
+        private IAuthoritativeSimulation[] _states;
 
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<TSteppable>> adds = new Dictionary<long, List<TSteppable>>();
+        private Dictionary<long, List<IEntity>> _adds = new Dictionary<long, List<IEntity>>();
 
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<long>> removes = new Dictionary<long, List<long>>();
+        private Dictionary<long, List<long>> _removes = new Dictionary<long, List<long>>();
 
         /// <summary>
         /// List of commands to execute in delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>> commands = new Dictionary<long, List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>>();
+        private Dictionary<long, List<ICommand>> _commands = new Dictionary<long, List<ICommand>>();
 
         #endregion
+
+        #region Constructor
 
         /// <summary>
         /// Creates a new TSS based meta state.
@@ -106,25 +105,33 @@ namespace Engine.Simulation
         /// <param name="delays">The delays to use for trailing states, with the delays in frames.</param>
         public TSS(uint[] delays)
         {
-            this.delays = new uint[delays.Length + 1];
-            delays.CopyTo(this.delays, 1);
-            Array.Sort(this.delays);
+            this._delays = new uint[delays.Length + 1];
+            delays.CopyTo(this._delays, 1);
+            Array.Sort(this._delays);
 
             // Generate initial states.
-            states = new TState[this.delays.Length];
+            _states = new IAuthoritativeSimulation[this._delays.Length];
+
+            // Our pass-through component manager, which allows adding and
+            // removing only in the first frame (i.e. before the first update).
+            SystemManager = new TSSComponentSystemManager(this);
 
             // Mark us for need of sync.
             WaitingForSynchronization = true;
         }
+
+        #endregion
+
+        #region Invalidation / (Re-)Initialization
 
         /// <summary>
         /// Initialize the TSS to the given state. This also clears the
         /// <c>WaitingForSynchronization</c> flag.
         /// </summary>
         /// <param name="state">the state to initialize this TSS to.</param>
-        public void Initialize(TState state)
+        public void Initialize(IAuthoritativeSimulation state)
         {
-            MirrorState(state, states.Length - 1);
+            MirrorState(state, _states.Length - 1);
             WaitingForSynchronization = false;
         }
 
@@ -137,44 +144,48 @@ namespace Engine.Simulation
             OnInvalidated(EventArgs.Empty);
         }
 
+        #endregion
+
+        #region Interfaces
+
         /// <summary>
         /// Add a new object.
         /// 
         /// This will add the object to the leading state, and add it to the delayed
         /// states when they reach the current frame of the leading state.
         /// </summary>
-        /// <param name="steppable">the object to add.</param>
-        public void AddSteppable(TSteppable steppable)
+        /// <param name="entity">the object to add.</param>
+        public void AddEntity(IEntity entity)
         {
-            AddSteppable(steppable, CurrentFrame);
+            AddEntity(entity, CurrentFrame);
         }
 
         /// <summary>
         /// Add an object in a specific time frame. This will roll back, if
-        /// necessary, to insert the object, meaning it can trigger desyncs.
+        /// necessary, to insert the object, meaning it can trigger invalidation.
         /// </summary>
-        /// <param name="steppable">the object to insert.</param>
+        /// <param name="entity">the object to insert.</param>
         /// <param name="frame">the frame to insert it at.</param>
-        public void AddSteppable(TSteppable steppable, long frame)
+        public void AddEntity(IEntity entity, long frame)
         {
             // Store it to be inserted in trailing states.
-            if (!adds.ContainsKey(frame))
+            if (!_adds.ContainsKey(frame))
             {
-                adds.Add(frame, new List<TSteppable>());
+                _adds.Add(frame, new List<IEntity>());
             }
-            else if (adds[frame].Contains(steppable))
+            else if (_adds[frame].Contains(entity))
             {
                 // Don't insert the same add to the list twice.
                 return;
             }
-            else if (removes.ContainsKey(frame) && removes[frame].Contains(steppable.UID))
+            else if (_removes.ContainsKey(frame) && _removes[frame].Contains(entity.UID))
             {
                 // Do not allow removal and adding of the same object in the same
                 // frame, as this can lead to unexpected behavior (may not happen
                 // in the intended order!)
                 throw new InvalidOperationException("Cannot add an object in the same frame as it will be removed.");
             }
-            adds[frame].Add((TSteppable)steppable.Clone());
+            _adds[frame].Add((IEntity)entity.Clone());
 
             // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
@@ -184,65 +195,65 @@ namespace Engine.Simulation
         }
 
         /// <summary>
+        /// Get a entity's current representation in this state by its id.
+        /// </summary>
+        /// <param name="entityUid">the id of the entity to look up.</param>
+        /// <returns>the current representation in this state.</returns>
+        public IEntity GetEntity(long entityUid)
+        {
+            return LeadingState.GetEntity(entityUid);
+        }
+
+        /// <summary>
         /// Not supported for TSS.
         /// </summary>
-        public void RemoveSteppable(TSteppable steppable)
+        public void RemoveEntity(IEntity entity)
         {
             throw new NotSupportedException();
         }
 
         /// <summary>
-        /// Remove a steppable object by its id. Will always return <c>null</c> for TSS.
+        /// Remove a entity object by its id. Will always return <c>null</c> for TSS.
         /// </summary>
-        /// <param name="steppableUid">the remove object.</param>
-        public TSteppable RemoveSteppable(long steppableUid)
+        /// <param name="entityUid">the remove object.</param>
+        public IEntity RemoveEntity(long entityUid)
         {
-            RemoveSteppable(steppableUid, CurrentFrame);
-            return default(TSteppable);
+            RemoveEntity(entityUid, CurrentFrame);
+            return null;
         }
 
         /// <summary>
         /// Remove an object in a specific time frame. This will roll back, if
-        /// necessary, to remove the object, meaning it can trigger desyncs.
+        /// necessary, to remove the object, meaning it can trigger invalidation.
         /// </summary>
-        /// <param name="steppableId">the id of the object to remove.</param>
+        /// <param name="entityId">the id of the object to remove.</param>
         /// <param name="frame">the frame to remove it at.</param>
-        public void RemoveSteppable(long steppableUid, long frame)
+        public void RemoveEntity(long entityUid, long frame)
         {
             // Store it to be removed in trailing states.
-            if (!removes.ContainsKey(frame))
+            if (!_removes.ContainsKey(frame))
             {
-                removes.Add(frame, new List<long>());
+                _removes.Add(frame, new List<long>());
             }
-            else if (removes[frame].Contains(steppableUid))
+            else if (_removes[frame].Contains(entityUid))
             {
                 // Don't insert the same remove to the list twice.
                 return;
             }
-            else if (adds.ContainsKey(frame) && adds[frame].Find(a => a.UID == steppableUid) != null)
+            else if (_adds.ContainsKey(frame) && _adds[frame].Find(a => a.UID == entityUid) != null)
             {
                 // Do not allow removal and adding of the same object in the same
                 // frame, as this can lead to unexpected behavior (may not happen
                 // in the intended order!)
                 throw new InvalidOperationException("Cannot remove an object in the same frame as it was added.");
             }
-            removes[frame].Add(steppableUid);
+            _removes[frame].Add(entityUid);
 
             // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
             {
                 Rewind(frame);
             }
-        }
-
-        /// <summary>
-        /// Get a steppable's current representation in this state by its id.
-        /// </summary>
-        /// <param name="steppableUid">the id of the steppable to look up.</param>
-        /// <returns>the current representation in this state.</returns>
-        public TSteppable GetSteppable(long steppableUid)
-        {
-            return LeadingState.GetSteppable(steppableUid);
         }
 
         /// <summary>
@@ -253,7 +264,7 @@ namespace Engine.Simulation
         /// the next Step().
         /// </summary>
         /// <param name="command">the command to push.</param>
-        public void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        public void PushCommand(ICommand command)
         {
             PushCommand(command, CurrentFrame);
         }
@@ -261,24 +272,24 @@ namespace Engine.Simulation
         /// <summary>
         /// Push a command to be executed at the given frame.  This will roll
         /// back, if necessary, to remove the object, meaning it can trigger
-        /// desyncs.
+        /// invalidation.
         /// </summary>
         /// <param name="command">the command to push.</param>
         /// <param name="frame">the frame in which to execute the command.</param>
-        public void PushCommand(ICommand<TCommandType, TPlayerData, TPacketizerContext> command, long frame)
+        public void PushCommand(ICommand command, long frame)
         {
             // Check if we can possibly apply this command.
             if (frame >= TrailingFrame)
             {
                 // Store it to be removed in trailing states.
-                if (!commands.ContainsKey(frame))
+                if (!_commands.ContainsKey(frame))
                 {
                     // No such command yet, push it.
-                    commands.Add(frame, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
+                    _commands.Add(frame, new List<ICommand>());
                 }
                 // We don't need to check for duplicate / replacing authoritative here,
                 // because the sub-state will do that itself.
-                commands[frame].Add(command);
+                _commands[frame].Add(command);
 
                 // Rewind to the frame to retroactively apply changes.
                 if (frame < CurrentFrame)
@@ -294,13 +305,18 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Advance all states
+        /// Advance leading state to <c>CurrentFrame + 1</c> and update all trailing
+        /// states accordingly.
         /// </summary>
         public void Update()
         {
             // Advance the simulation.
             FastForward(++CurrentFrame);
         }
+
+        #endregion
+
+        #region Fine-grained playback control
 
         /// <summary>
         /// Run the simulation to the given frame, which may be in the past.
@@ -330,6 +346,121 @@ namespace Engine.Simulation
             CurrentFrame = frame;
         }
 
+        #endregion
+
+        #region Serialization / Hashing
+
+        /// <summary>
+        /// Serialize a state to a packet.
+        /// </summary>
+        /// <param name="packet">the packet to write the data to.</param>
+        public void Packetize(Packet packet)
+        {
+            packet.Write(CurrentFrame);
+
+            _states[_states.Length - 1].Packetize(packet);
+
+            packet.Write(_adds.Count);
+            foreach (var add in _adds)
+            {
+                packet.Write(add.Key);
+                packet.Write(add.Value.Count);
+                foreach (var item in add.Value)
+                {
+                    Packetizer.Packetize(item, packet);
+                }
+            }
+
+            packet.Write(_removes.Count);
+            foreach (var remove in _removes)
+            {
+                packet.Write(remove.Key);
+                packet.Write(remove.Value.Count);
+                foreach (var item in remove.Value)
+                {
+                    packet.Write(item);
+                }
+            }
+
+            packet.Write(_commands.Count);
+            foreach (var command in _commands)
+            {
+                packet.Write(command.Key);
+                packet.Write(command.Value.Count);
+                foreach (var item in command.Value)
+                {
+                    Packetizer.Packetize(item, packet);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Deserialize a state from a packet.
+        /// </summary>
+        /// <param name="packet">the packet to read the data from.</param>
+        public void Depacketize(Packet packet)
+        {
+            // Get the current frame of the simulation.
+            CurrentFrame = packet.ReadInt64();
+
+            // Unwrap the trailing state and mirror it to all the newer ones.
+            _states[_states.Length - 1].Depacketize(packet);
+            MirrorState(_states[_states.Length - 1], _states.Length - 2);
+
+            // Find adds / removes / commands that our out of date now, but keep newer ones.
+            PrunePastEvents();
+
+            // Continue with reading the list of adds.
+            int numAdds = packet.ReadInt32();
+            for (int addIdx = 0; addIdx < numAdds; ++addIdx)
+            {
+                long key = packet.ReadInt64();
+                if (!_adds.ContainsKey(key))
+                {
+                    _adds.Add(key, new List<IEntity>());
+                }
+                int numValues = packet.ReadInt32();
+                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                {
+                    _adds[key].Add(Packetizer.Depacketize<IEntity>(packet));
+                }
+            }
+
+            // Then the removes.
+            int numRemoves = packet.ReadInt32();
+            for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
+            {
+                long key = packet.ReadInt64();
+                if (!_removes.ContainsKey(key))
+                {
+                    _removes.Add(key, new List<long>());
+                }
+                int numValues = packet.ReadInt32();
+                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                {
+                    _removes[key].Add(packet.ReadInt64());
+                }
+            }
+
+            // And finally the commands.
+            int numCommands = packet.ReadInt32();
+            for (int commandIdx = 0; commandIdx < numCommands; ++commandIdx)
+            {
+                long key = packet.ReadInt64();
+                if (!_commands.ContainsKey(key))
+                {
+                    _commands.Add(key, new List<ICommand>());
+                }
+                int numValues = packet.ReadInt32();
+                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                {
+                    _commands[key].Add(Packetizer.Depacketize<ICommand>(packet));
+                }
+            }
+
+            WaitingForSynchronization = false;
+        }
+
         /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
@@ -345,119 +476,12 @@ namespace Engine.Simulation
         /// </summary>
         public object Clone()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
-        /// <summary>
-        /// Serialize a state to a packet.
-        /// </summary>
-        /// <param name="packet">the packet to write the data to.</param>
-        public void Packetize(Packet packet)
-        {
-            packet.Write(CurrentFrame);
+        #endregion
 
-            states[states.Length - 1].Packetize(packet);
-
-            packet.Write(adds.Count);
-            foreach (var add in adds)
-            {
-                packet.Write(add.Key);
-                packet.Write(add.Value.Count);
-                foreach (var item in add.Value)
-                {
-                    Packetizer.Packetize(item, packet);
-                }
-            }
-
-            packet.Write(removes.Count);
-            foreach (var remove in removes)
-            {
-                packet.Write(remove.Key);
-                packet.Write(remove.Value.Count);
-                foreach (var item in remove.Value)
-                {
-                    packet.Write(item);
-                }
-            }
-
-            packet.Write(commands.Count);
-            foreach (var command in commands)
-            {
-                packet.Write(command.Key);
-                packet.Write(command.Value.Count);
-                foreach (var item in command.Value)
-                {
-                    Packetizer.Packetize(item, packet);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Deserialize a state from a packet.
-        /// </summary>
-        /// <param name="packet">the packet to read the data from.</param>
-        public void Depacketize(Packet packet, TPacketizerContext context)
-        {
-            // Get the current frame of the simulation.
-            CurrentFrame = packet.ReadInt64();
-
-            // Unwrap the trailing state and mirror it to all the newer ones.
-            states[states.Length - 1].Depacketize(packet, context);
-            MirrorState(states[states.Length - 1], states.Length - 2);
-
-            // Find adds / removes / commands that our out of date now, but keep newer ones.
-            PrunePastEvents();
-
-            // Continue with reading the list of adds.
-            int numAdds = packet.ReadInt32();
-            for (int addIdx = 0; addIdx < numAdds; ++addIdx)
-            {
-                long key = packet.ReadInt64();
-                if (!adds.ContainsKey(key))
-                {
-                    adds.Add(key, new List<TSteppable>());
-                }
-                int numValues = packet.ReadInt32();
-                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
-                {
-                    adds[key].Add(Packetizer.Depacketize<TSteppable>(packet));
-                }
-            }
-
-            // Then the removes.
-            int numRemoves = packet.ReadInt32();
-            for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
-            {
-                long key = packet.ReadInt64();
-                if (!removes.ContainsKey(key))
-                {
-                    removes.Add(key, new List<long>());
-                }
-                int numValues = packet.ReadInt32();
-                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
-                {
-                    removes[key].Add(packet.ReadInt64());
-                }
-            }
-
-            // And finally the commands.
-            int numCommands = packet.ReadInt32();
-            for (int commandIdx = 0; commandIdx < numCommands; ++commandIdx)
-            {
-                long key = packet.ReadInt64();
-                if (!commands.ContainsKey(key))
-                {
-                    commands.Add(key, new List<ICommand<TCommandType, TPlayerData, TPacketizerContext>>());
-                }
-                int numValues = packet.ReadInt32();
-                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
-                {
-                    commands[key].Add(Packetizer.Depacketize<ICommand<TCommandType, TPlayerData, TPacketizerContext>>(packet));
-                }
-            }
-
-            WaitingForSynchronization = false;
-        }
+        #region Utility methods
 
         private void OnInvalidated(EventArgs e)
         {
@@ -479,45 +503,45 @@ namespace Engine.Simulation
         {
             // Update states. Run back to front, to allow rewinding future states
             // (if the trailing state must skip tentative commands) all in one go.
-            for (int i = states.Length - 1; i >= 0; --i)
+            for (int i = _states.Length - 1; i >= 0; --i)
             {
                 // Check if we need to rewind because the trailing state was left
                 // with a tentative command.
                 bool needsRewind = false;
 
                 // The state we're now updating.
-                TState state = states[i];
+                var state = _states[i];
 
                 // Update while we're still delaying.
-                while (state.CurrentFrame + delays[i] < frame)
+                while (state.CurrentFrame + _delays[i] < frame)
                 {
                     // The frame the state is now in, and that will be executed.
                     long stateFrame = state.CurrentFrame;
 
                     // Check if we need to add objects.
-                    if (adds.ContainsKey(stateFrame))
+                    if (_adds.ContainsKey(stateFrame))
                     {
                         // Add a copy of it.
-                        foreach (var steppable in adds[stateFrame])
+                        foreach (var entity in _adds[stateFrame])
                         {
-                            state.AddSteppable((TSteppable)steppable.Clone());
+                            state.AddEntity((IEntity)entity.Clone());
                         }
                     }
 
                     // Check if we need to remove objects.
-                    if (removes.ContainsKey(stateFrame))
+                    if (_removes.ContainsKey(stateFrame))
                     {
                         // Add a copy of it.
-                        foreach (var steppableUid in removes[stateFrame])
+                        foreach (var entityUid in _removes[stateFrame])
                         {
-                            state.RemoveSteppable(steppableUid);
+                            state.RemoveEntity(entityUid);
                         }
                     }
 
                     // Check if we have commands to execute in that frame.
-                    if (commands.ContainsKey(stateFrame))
+                    if (_commands.ContainsKey(stateFrame))
                     {
-                        foreach (var command in commands[stateFrame])
+                        foreach (var command in _commands[stateFrame])
                         {
                             state.PushCommand(command);
                         }
@@ -527,7 +551,7 @@ namespace Engine.Simulation
                     // commands. Prune them instead. If there were any, rewind
                     // to apply that removal retroactively. Do this after the
                     // loop, though, to avoid unnecessary work.
-                    if (i == states.Length - 1 && state.SkipTentativeCommands())
+                    if (i == _states.Length - 1 && state.SkipTentativeCommands())
                     {
                         needsRewind = true;
                     }
@@ -539,7 +563,7 @@ namespace Engine.Simulation
                 // Check if we had trailing tentative commands.
                 if (needsRewind)
                 {
-                    MirrorState(state, states.Length - 2);
+                    MirrorState(state, _states.Length - 2);
                 }
             }
 
@@ -558,12 +582,12 @@ namespace Engine.Simulation
         private void Rewind(long frame)
         {
             // Find first state that's not past the frame.
-            for (int i = 0; i < states.Length; ++i)
+            for (int i = 0; i < _states.Length; ++i)
             {
-                if (states[i].CurrentFrame <= frame)
+                if (_states[i].CurrentFrame <= frame)
                 {
                     // Success, mirror the state to all newer ones.
-                    MirrorState(states[i], i - 1);
+                    MirrorState(_states[i], i - 1);
                     return; // Then return, so we don't trigger resync ;)
                 }
             }
@@ -577,11 +601,11 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="state">the state to mirror.</param>
         /// <param name="start">the index to start at.</param>
-        private void MirrorState(TState state, int start)
+        private void MirrorState(IAuthoritativeSimulation state, int start)
         {
             for (int i = start; i >= 0; --i)
             {
-                states[i] = (TState)state.Clone();
+                _states[i] = (IAuthoritativeSimulation)state.Clone();
             }
         }
 
@@ -594,7 +618,7 @@ namespace Engine.Simulation
             // Remove adds / removes from the to-add list that have been added
             // to the state trailing furthest behind at this point.
             List<long> deprecated = new List<long>();
-            foreach (var key in adds.Keys)
+            foreach (var key in _adds.Keys)
             {
                 if (key < TrailingFrame)
                 {
@@ -603,11 +627,11 @@ namespace Engine.Simulation
             }
             foreach (var key in deprecated)
             {
-                adds.Remove(key);
+                _adds.Remove(key);
             }
 
             deprecated.Clear();
-            foreach (var key in removes.Keys)
+            foreach (var key in _removes.Keys)
             {
                 if (key < TrailingFrame)
                 {
@@ -616,11 +640,11 @@ namespace Engine.Simulation
             }
             foreach (var key in deprecated)
             {
-                removes.Remove(key);
+                _removes.Remove(key);
             }
 
             deprecated.Clear();
-            foreach (var key in commands.Keys)
+            foreach (var key in _commands.Keys)
             {
                 if (key < TrailingFrame)
                 {
@@ -629,8 +653,109 @@ namespace Engine.Simulation
             }
             foreach (var key in deprecated)
             {
-                commands.Remove(key);
+                _commands.Remove(key);
             }
         }
+
+        #endregion
+
+        #region ComponentSystemManager-Wrapper
+
+        /// <summary>
+        /// Helper for system initialization and accessing systems of the leading state.
+        /// </summary>
+        private class TSSComponentSystemManager : IComponentSystemManager
+        {
+            #region Properties
+
+            /// <summary>
+            /// Not supported.
+            /// </summary>
+            public ReadOnlyCollection<IComponentSystem> Systems { get { throw new NotSupportedException(); } }
+
+            #endregion
+
+            #region Fields
+            
+            /// <summary>
+            /// The TSS this wrapper is associated to.
+            /// </summary>
+            private TSS _tss;
+
+            #endregion
+
+            #region Constructor
+
+            public TSSComponentSystemManager(TSS tss)
+            {
+                this._tss = tss;
+            }
+
+            #endregion
+
+            #region Interfaces
+
+            public void AddSystem(IComponentSystem system)
+            {
+                if (_tss.CurrentFrame > 0)
+                {
+                    throw new InvalidOperationException("Cannot add systems after simulation has started.");
+                }
+                foreach (var state in _tss._states)
+                {
+                    state.SystemManager.AddSystem((IComponentSystem)system.Clone());
+                }
+            }
+
+            public void RemoveSystem(IComponentSystem system)
+            {
+                throw new InvalidOperationException("Cannot remove systems from TSS.");
+            }
+
+            public T GetSystem<T>() where T : IComponentSystem
+            {
+                return _tss.LeadingState.SystemManager.GetSystem<T>();
+            }
+
+            /// <summary>
+            /// Only render passes supported, based on leading state.
+            /// </summary>
+            public void Update(ComponentSystemUpdateType updateType)
+            {
+                if (updateType != ComponentSystemUpdateType.Display)
+                {
+                    throw new NotSupportedException();
+                }
+                _tss.LeadingState.SystemManager.Update(updateType);
+            }
+
+            /// <summary>
+            /// Not supported.
+            /// </summary>
+            public void AddComponent(ComponentSystem.Components.IComponent component)
+            {
+                throw new NotSupportedException();
+            }
+
+            /// <summary>
+            /// Not supported.
+            /// </summary>
+            public void RemoveComponent(ComponentSystem.Components.IComponent component)
+            {
+                throw new NotSupportedException();
+            }
+
+            /// <summary>
+            /// Not supported.
+            /// </summary>
+            public object Clone()
+            {
+                throw new NotSupportedException();
+            }
+
+            #endregion
+        }
+
+        #endregion
     }
 }

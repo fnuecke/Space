@@ -1,15 +1,12 @@
-﻿using Engine.Serialization;
+﻿using System;
+using Engine.Serialization;
 
 namespace Engine.Commands
 {
     /// <summary>
     /// Base class for commands that can be injected into running simulations.
     /// </summary>
-    public abstract class FrameCommand<TCommandType, TPlayerData, TPacketizerContext>
-        : Command<TCommandType, TPlayerData, TPacketizerContext>, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class FrameCommand : Command, IFrameCommand
     {
         #region Properties
 
@@ -22,7 +19,7 @@ namespace Engine.Commands
         
         #region Constructor
 
-        protected FrameCommand(TCommandType type)
+        protected FrameCommand(Enum type)
             : base(type)
         {
         }
@@ -33,27 +30,26 @@ namespace Engine.Commands
 
         public override void Packetize(Packet packet)
         {
-            packet.Write(Frame);
-
             base.Packetize(packet);
+            
+            packet.Write(Frame);
         }
 
-        public override void Depacketize(Packet packet, TPacketizerContext context)
+        public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+            
             Frame = packet.ReadInt64();
-
-            base.Depacketize(packet, context);
         }
 
         #endregion
 
         #region Equality
 
-        public override bool Equals(ICommand<TCommandType, TPlayerData, TPacketizerContext> other)
+        public override bool Equals(ICommand other)
         {
-            return other is IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> &&
-                base.Equals(other) &&
-                ((IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>)other).Frame == this.Frame;
+            return other is IFrameCommand && base.Equals(other) &&
+                ((IFrameCommand)other).Frame == this.Frame;
         }
 
         #endregion

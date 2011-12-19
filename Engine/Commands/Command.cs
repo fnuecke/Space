@@ -1,16 +1,12 @@
-﻿using Engine.Serialization;
-using Engine.Session;
+﻿using System;
+using Engine.Serialization;
 
 namespace Engine.Commands
 {
     /// <summary>
     /// Base class for commands.
     /// </summary>
-    public abstract class Command<TCommandType, TPlayerData, TPacketizerContext>
-        : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class Command : ICommand
     {
         #region Properties
 
@@ -21,20 +17,20 @@ namespace Engine.Commands
         public bool IsAuthoritative { get; set; }
 
         /// <summary>
-        /// The player that issued the command.
+        /// The number of the player that issued the command.
         /// </summary>
-        public Player<TPlayerData, TPacketizerContext> Player { get; set; }
+        public int PlayerNumber { get; set; }
 
         /// <summary>
         /// The type of the command.
         /// </summary>
-        public TCommandType Type { get; private set; }
+        public Enum Type { get; private set; }
 
         #endregion
 
         #region Constructor
 
-        protected Command(TCommandType type)
+        protected Command(Enum type)
         {
             this.Type = type;
         }
@@ -45,22 +41,22 @@ namespace Engine.Commands
 
         public virtual void Packetize(Packet packet)
         {
-            packet.Write(Player.Number);
+            packet.Write(PlayerNumber);
         }
 
-        public virtual void Depacketize(Packet packet, TPacketizerContext context)
+        public virtual void Depacketize(Packet packet)
         {
-            Player = context.Session.GetPlayer(packet.ReadInt32());
+            PlayerNumber = packet.ReadInt32();
         }
 
         #endregion
 
         #region Equality
 
-        public virtual bool Equals(ICommand<TCommandType, TPlayerData, TPacketizerContext> other)
+        public virtual bool Equals(ICommand other)
         {
             return other != null && other.Type.Equals(this.Type) &&
-                other.Player.Number == this.Player.Number;
+                other.PlayerNumber == this.PlayerNumber;
         }
 
         #endregion

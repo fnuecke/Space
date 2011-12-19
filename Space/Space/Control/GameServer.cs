@@ -1,21 +1,21 @@
 ﻿using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Space.Model;
+using Space.Simulation;
 using Space.View;
 
 namespace Space.Control
 {
     public class GameServer : DrawableGameComponent
     {
-        internal IServerSession<PlayerInfo, PacketizerContext> Session { get; private set; }
+        internal IServerSession Session { get; private set; }
         internal ServerController Controller { get; private set; }
         SpriteFont font;
 
         public GameServer(Game game)
             : base(game)
         {
-            Session = new HybridServerSession<PlayerInfo, PacketizerContext>(game, 50100, 8);
+            Session = new HybridServerSession<PlayerInfo>(game, 50100, 8);
             Controller = new ServerController(game, Session, 10, 0);
             Controller.UpdateOrder = 10;
 

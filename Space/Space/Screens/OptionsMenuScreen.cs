@@ -174,5 +174,32 @@ namespace GameStateManagement
 
 
         #endregion
+
+        #region Option
+        public class Option
+        {
+
+            #region Fields
+            Dictionary<string, string> options = new Dictionary<string, string>();
+            int current = 0;
+            #endregion
+
+            #region Initialization
+
+            public Option(Dictionary<string, string> dict)
+            {
+                options = dict;
+            }
+
+            public string getOption()
+            {
+                Dictionary<string, string>.Enumerator enume = 
+                    options.GetEnumerator();
+                current++;
+                for(int j = 0;j )
+            }
+            #endregion
+        }
+        #endregion
     }
 }

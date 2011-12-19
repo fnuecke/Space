@@ -1,10 +1,13 @@
 ﻿using System;
 using Engine.Commands;
+using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Space.Commands;
-using Space.Model;
+using Space.ComponentSystem.Entities;
+using Space.ComponentSystem.Systems;
+using Space.Simulation;
 using SpaceData;
 
 namespace Space.Control
@@ -12,7 +15,7 @@ namespace Space.Control
     /// <summary>
     /// Handles game logic on the server side.
     /// </summary>
-    class ServerController : AbstractTssServer<GameState, IGameObject, GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
+    class ServerController : AbstractTssServer<GameCommand>
     {
         #region Logger
 
@@ -29,11 +32,16 @@ namespace Space.Control
 
         #endregion
 
-        public ServerController(Game game, IServerSession<PlayerInfo, PacketizerContext> session, byte worldSize, long worldSeed)
+        public ServerController(Game game, IServerSession session, byte worldSize, long worldSeed)
             : base(game, session)
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
-            Simulation.Initialize(new GameState(game, Session));
+
+            tss.Initialize(new GameState());
+
+            tss.SystemManager.AddSystem(new PhysicsSystem());
+            tss.SystemManager.AddSystem(new ShipControlSystem());
+            tss.SystemManager.AddSystem(new AvatarSystem());
         }
 
         public override void Initialize()
@@ -62,25 +70,25 @@ namespace Space.Control
         protected override void HandleJoinRequested(object sender, EventArgs e)
         {
             // Send current game state to client.
-            var args = (JoinRequestEventArgs<PlayerInfo, PacketizerContext>)e;
+            var args = (JoinRequestEventArgs)e;
 
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
-            var ship = new Ship(args.Player.Data.ShipType, args.Player.Number, Packetizer.Context);
-            args.Player.Data.ShipUID = AddSteppable(ship);
+            var playerData = (PlayerInfo)args.Player.Data;
+            AddEntity(new Ship(playerData.Ship, args.Player.Number));
         }
 
         protected void HandlePlayerLeft(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
+            var args = (PlayerEventArgs)e;
             // Player left the game, remove his ship.
-            RemoveSteppable(args.Player.Data.ShipUID);
+            RemoveEntity(tss.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID);
         }
 
-        protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override bool HandleRemoteCommand(IFrameCommand command)
         {
             // Check what we have.
-            switch (command.Type)
+            switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player sent input.

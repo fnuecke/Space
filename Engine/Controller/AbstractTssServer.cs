@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.Commands;
+using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Session;
-using Engine.Simulation;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -13,20 +13,10 @@ namespace Engine.Controller
     /// This takes care of synchronizing the gamestates between server and
     /// client, and getting the runspeed synchronized as well.
     /// </summary>
-    /// <typeparam name="TState">the type of game state used to represent a simulation.
-    /// This is the simulation run as a substate of the TSS.</typeparam>
-    /// <typeparam name="TSteppable">the type of object we put into our simulation.</typeparam>
-    /// <typeparam name="TCommandType">the type of commands we send around.</typeparam>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssServer<TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractTssController<IServerSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TCommand : IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssServer<TCommand> : AbstractTssController<IServerSession, TCommand>
+        where TCommand : IFrameCommand
     {
         #region Logger
 
@@ -39,7 +29,7 @@ namespace Engine.Controller
         /// <summary>
         /// The interval in milliseconds after which to send a hash check to the clients.
         /// </summary>
-        private const int HashInterval = 5000;
+        private const int HashInterval = 10000;
 
         /// <summary>
         /// The interval in milliseconds after which we allow resending the game state to
@@ -54,18 +44,18 @@ namespace Engine.Controller
         /// <summary>
         /// Counter used to distribute ids.
         /// </summary>
-        private long lastUid;
+        private long _lastUid;
 
         /// <summary>
         /// Last time we sent a hash check to our clients.
         /// </summary>
-        private long lastHashTime;
+        private long _lastHashTime;
 
         /// <summary>
-        /// The last time we sent a full snapshot of the gamestate to certain
+        /// The last time we sent a full snapshot of the game state to certain
         /// player. We use this to avoid utterly overloading the network.
         /// </summary>
-        private DateTime[] lastGameStateSentTime;
+        private DateTime[] _lastGameStateSentTime;
 
         #endregion
 
@@ -79,13 +69,13 @@ namespace Engine.Controller
         /// <param name="maxPlayers">the maximum number of players in the game.</param>
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
-        protected AbstractTssServer(Game game, IServerSession<TPlayerData, TPacketizerContext> session)
+        protected AbstractTssServer(Game game, IServerSession session)
             : base(game, session, new uint[] {
                 (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
                 (uint)System.Math.Ceiling(250 / game.TargetElapsedTime.TotalMilliseconds)
             })
         {
-            lastGameStateSentTime = new DateTime[Session.MaxPlayers];
+            _lastGameStateSentTime = new DateTime[Session.MaxPlayers];
         }
 
         /// <summary>
@@ -130,16 +120,16 @@ namespace Engine.Controller
             UpdateSimulation(gameTime);
 
             // Send hash check every now and then, to check for desyncs.
-            if (new TimeSpan(DateTime.Now.Ticks - lastHashTime).TotalMilliseconds > HashInterval)
+            if (new TimeSpan(DateTime.Now.Ticks - _lastHashTime).TotalMilliseconds > HashInterval)
             {
-                lastHashTime = DateTime.Now.Ticks;
+                _lastHashTime = DateTime.Now.Ticks;
 
                 Hasher hasher = new Hasher();
-                Simulation.Hash(hasher);
+                tss.Hash(hasher);
 
                 Session.Send(new Packet()
                     .Write((byte)TssControllerMessage.HashCheck)
-                    .Write(Simulation.TrailingFrame)
+                    .Write(tss.TrailingFrame)
                     .Write(hasher.Value));
             }
 
@@ -172,58 +162,58 @@ namespace Engine.Controller
         #region Modify simulation
 
         /// <summary>
-        /// Add a steppable to the simulation. Will be inserted at the
-        /// current leading frame. The steppable will be given a unique
+        /// Add a entity to the simulation. Will be inserted at the
+        /// current leading frame. The entity will be given a unique
         /// id, by which it may later be referenced for removals.
         /// </summary>
-        /// <param name="steppable">the steppable to add.</param>
-        /// <param name="frame">the frame in which to add the steppable.</param>
-        /// <returns>the id the steppable was assigned.</returns>
-        public override long AddSteppable(TSteppable steppable, long frame)
+        /// <param name="entity">the entity to add.</param>
+        /// <param name="frame">the frame in which to add the entity.</param>
+        /// <returns>the id the entity was assigned.</returns>
+        public override long AddEntity(IEntity entity, long frame)
         {
-            // Give the steppable a unique id. Skip the zero to avoid
+            // Give the entity a unique id. Skip the zero to avoid
             // referencing that object with uninitialized 'pointers'.
-            steppable.UID = ++lastUid;
+            entity.UID = ++_lastUid;
 
-            // Add the steppable to the simulation.
-            base.AddSteppable(steppable, frame);
+            // Add the entity to the simulation.
+            base.AddEntity(entity, frame);
 
             // Notify all players in the game about this.
             Packet addedInfo = new Packet()
                 .Write((byte)TssControllerMessage.AddGameObject)
                 .Write(frame);
             // Run it through the packetizer, because we don't know the actual type.
-            Packetizer.Packetize(steppable, addedInfo);
+            Packetizer.Packetize(entity, addedInfo);
             Session.Send(addedInfo);
 
-            return steppable.UID;
+            return entity.UID;
         }
 
         /// <summary>
-        /// Removes a steppable with the given id from the simulation.
-        /// The steppable will be removed at the given frame.
+        /// Removes a entity with the given id from the simulation.
+        /// The entity will be removed at the given frame.
         /// </summary>
-        /// <param name="steppableId">the id of the steppable to remove.</param>
-        /// <param name="frame">the frame in which to remove the steppable.</param>
-        public override void RemoveSteppable(long steppableUid, long frame)
+        /// <param name="entityId">the id of the entity to remove.</param>
+        /// <param name="frame">the frame in which to remove the entity.</param>
+        public override void RemoveEntity(long entityUid, long frame)
         {
-            // Remove the steppable from the simulation.
-            base.RemoveSteppable(steppableUid, frame);
+            // Remove the entity from the simulation.
+            base.RemoveEntity(entityUid, frame);
 
             // Notify all players in the game about this.
             Session.Send(new Packet()
                 .Write((byte)TssControllerMessage.RemoveGameObject)
                 .Write(frame)
-                .Write(steppableUid));
+                .Write(entityUid));
         }
 
         /// <summary>
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected override void Apply(IFrameCommand command)
         {
-            if (command.Frame >= Simulation.TrailingFrame)
+            if (command.Frame >= tss.TrailingFrame)
             {
                 // All commands we apply are authoritative.
                 command.IsAuthoritative = true;
@@ -234,7 +224,7 @@ namespace Engine.Controller
             }
             else
             {
-                logger.Trace("Client command too old " + command.Frame + "<" + Simulation.TrailingFrame);
+                logger.Trace("Client command too old " + command.Frame + "<" + tss.TrailingFrame);
             }
         }
 
@@ -245,9 +235,9 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of server side TSS synchronization logic.
         /// </summary>
-        protected override IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
+        protected override IFrameCommand UnwrapDataForReceive(SessionDataEventArgs e)
         {
-            var args = (ServerDataEventArgs<TPlayerData, TPacketizerContext>)e;
+            var args = (ServerDataEventArgs)e;
             var type = (TssControllerMessage)args.Data.ReadByte();
             switch (type)
             {
@@ -256,6 +246,8 @@ namespace Engine.Controller
                     var command = base.UnwrapDataForReceive(e);
                     // We're the server and we received it, so it's definitely not authoritative.
                     command.IsAuthoritative = false;
+                    // Validate player number (avoid command injection for other players).
+                    command.PlayerNumber = args.Player.Number;
                     return command;
 
                 case TssControllerMessage.Synchronize:
@@ -265,17 +257,17 @@ namespace Engine.Controller
                         Session.SendTo(args.Player, new Packet()
                             .Write((byte)TssControllerMessage.Synchronize)
                             .Write(clientFrame)
-                            .Write(Simulation.CurrentFrame));
+                            .Write(tss.CurrentFrame));
                     }
                     break;
 
                 case TssControllerMessage.GameStateRequest:
                     // Client needs game state.
-                    if ((DateTime.Now - lastGameStateSentTime[args.Player.Number]).TotalMilliseconds > GameStateResendInterval) {
-                        lastGameStateSentTime[args.Player.Number] = DateTime.Now;
+                    if ((DateTime.Now - _lastGameStateSentTime[args.Player.Number]).TotalMilliseconds > GameStateResendInterval) {
+                        _lastGameStateSentTime[args.Player.Number] = DateTime.Now;
                         Session.SendTo(args.Player, new Packet()
                             .Write((byte)TssControllerMessage.GameStateResponse)
-                            .Write(Simulation));
+                            .Write(tss));
                     }
                     break;
 

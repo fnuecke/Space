@@ -1,4 +1,5 @@
 ﻿using Engine.Commands;
+using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -9,35 +10,83 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
-    public abstract class AbstractTssController<TSession, TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractController<TSession, IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>, TCommandType, TPlayerData, TPacketizerContext>,
-          IStateController<TState, TSteppable, TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommand : IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssController<TSession, TCommand>
+        : AbstractController<TSession, IFrameCommand>,
+          IStateController<TSession, TCommand>
+        where TSession : ISession
+        where TCommand : IFrameCommand
     {
+        #region Types
+
+        /// <summary>
+        /// Used in abstract TSS server and client implementations.
+        /// </summary>
+        protected enum TssControllerMessage
+        {
+            /// <summary>
+            /// Normal game command, handled in base class.
+            /// </summary>
+            Command,
+
+            /// <summary>
+            /// Server sends current frame to clients, used to synchronize
+            /// run speeds of clients to server.
+            /// </summary>
+            Synchronize,
+
+            /// <summary>
+            /// Client requested the game state, e.g. because it could not
+            /// roll back to a required state.
+            /// </summary>
+            GameStateRequest,
+
+            /// <summary>
+            /// Server sends game state to client in response to <c>GameStateRequest</c>.
+            /// </summary>
+            GameStateResponse,
+
+            /// <summary>
+            /// Server tells players about a new object to insert into the simulation.
+            /// </summary>
+            AddGameObject,
+
+            /// <summary>
+            /// Server tells players to remove an object from the simulation.
+            /// </summary>
+            RemoveGameObject,
+
+            /// <summary>
+            /// Compare the hash of the leading game state at a given frame. If
+            /// the client fails the check, it'll have to request a new snapshot.
+            /// </summary>
+            HashCheck
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
-        /// The underlying simulation used. Directly changing this is strongly
-        /// discouraged, as it will lead to clients having to resynchronize
-        /// themselves by getting a snapshot of the complete simulation.
+        /// The underlying simulation controlled by this controller.
         /// </summary>
-        public TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext> Simulation { get; private set; }
+        public ISimulation Simulation { get { return tss; } }
 
         #endregion
 
         #region Fields
 
         /// <summary>
+        /// The underlying simulation used. Directly changing this is strongly
+        /// discouraged, as it will lead to clients having to resynchronize
+        /// themselves by getting a snapshot of the complete simulation.
+        /// </summary>
+        protected TSS tss;
+
+        /// <summary>
         /// The remainder of time we did not update last frame, which we'll add to the
         /// elapsed time in the next frame update.
         /// </summary>
-        private double lastUpdateRemainder;
+        private double _lastUpdateRemainder;
 
         #endregion
 
@@ -52,12 +101,12 @@ namespace Engine.Controller
         public AbstractTssController(Game game, TSession session, uint[] delays)
             : base(game, session)
         {
-            Simulation = new TSS<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>(delays);
+            tss = new TSS(delays);
         }
 
         protected override void Dispose(bool disposing)
         {
-            Simulation = null;
+            tss = null;
 
             base.Dispose(disposing);
         }
@@ -68,7 +117,7 @@ namespace Engine.Controller
 
         /// <summary>
         /// Update the simulation. This adjusts the update procedure based
-        /// on the selected timestep of the game. For fixed, it just does
+        /// on the selected time step of the game. For fixed, it just does
         /// one step. For variable, it determines how many steps to perform,
         /// based on the elapsed time.
         /// </summary>
@@ -81,30 +130,30 @@ namespace Engine.Controller
         {
             if (Game.IsFixedTimeStep)
             {
-                Simulation.Update();
+                tss.Update();
             }
             else
             {
                 // Compensate for dynamic time step.
-                double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + lastUpdateRemainder + timeCorrection;
+                double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder + timeCorrection;
                 if (elapsed < Game.TargetElapsedTime.TotalMilliseconds)
                 {
                     // If we can't actually run to the next frame, at least update
                     // back to the current frame in case rollbacks were made to
                     // accommodate player commands.
-                    Simulation.RunToFrame(Simulation.CurrentFrame);
+                    tss.RunToFrame(tss.CurrentFrame);
                 }
                 else
                 {
                     // We can run at least one frame, so do the update(s). Due to the
-                    // carry there may occur more than one simulation update per xna
+                    // carry there may occur more than one simulation update per XNA
                     // update, but that should be below the threshold of the noticeable.
                     while (elapsed >= Game.TargetElapsedTime.TotalMilliseconds)
                     {
                         elapsed -= Game.TargetElapsedTime.TotalMilliseconds;
-                        Simulation.Update();
+                        tss.Update();
                     }
-                    lastUpdateRemainder = elapsed;
+                    _lastUpdateRemainder = elapsed;
                 }
             }
         }
@@ -114,71 +163,71 @@ namespace Engine.Controller
         #region Modify simulation
 
         /// <summary>
-        /// Add a steppable to the simulation. Will be inserted at the
-        /// current leading frame. The steppable will be given a unique
+        /// Add a entity to the simulation. Will be inserted at the
+        /// current leading frame. The entity will be given a unique
         /// id, by which it may later be referenced for removals.
         /// </summary>
-        /// <param name="steppable">the steppable to add.</param>
-        /// <returns>the id the steppable was assigned.</returns>
-        public long AddSteppable(TSteppable steppable)
+        /// <param name="entity">the entity to add.</param>
+        /// <returns>the id the entity was assigned.</returns>
+        public long AddEntity(IEntity entity)
         {
-            return AddSteppable(steppable, Simulation.CurrentFrame);
+            return AddEntity(entity, tss.CurrentFrame);
         }
 
         /// <summary>
-        /// Add a steppable to the simulation. Will be inserted at the
-        /// current leading frame. The steppable will be given a unique
+        /// Add a entity to the simulation. Will be inserted at the
+        /// current leading frame. The entity will be given a unique
         /// id, by which it may later be referenced for removals.
         /// </summary>
-        /// <param name="steppable">the steppable to add.</param>
-        /// <param name="frame">the frame in which to add the steppable.</param>
-        /// <returns>the id the steppable was assigned.</returns>
-        public virtual long AddSteppable(TSteppable steppable, long frame)
+        /// <param name="entity">the entity to add.</param>
+        /// <param name="frame">the frame in which to add the entity.</param>
+        /// <returns>the id the entity was assigned.</returns>
+        public virtual long AddEntity(IEntity entity, long frame)
         {
-            // Add the steppable to the simulation.
-            Simulation.AddSteppable(steppable, frame);
-            return steppable.UID;
+            // Add the entity to the simulation.
+            tss.AddEntity(entity, frame);
+            return entity.UID;
         }
 
         /// <summary>
-        /// Get a steppable in this simulation based on its unique identifier.
+        /// Get a entity in this simulation based on its unique identifier.
         /// </summary>
-        /// <param name="steppableUid">the id of the object.</param>
+        /// <param name="entityUid">the id of the object.</param>
         /// <returns>the object, if it exists.</returns>
-        public TSteppable GetSteppable(long steppableUid)
+        public IEntity GetEntity(long entityUid)
         {
-            return Simulation.GetSteppable(steppableUid);
+            return tss.GetEntity(entityUid);
         }
 
         /// <summary>
-        /// Removes a steppable with the given id from the simulation.
-        /// The steppable will be removed at the current frame.
+        /// Removes a entity with the given id from the simulation.
+        /// The entity will be removed at the current frame.
         /// </summary>
-        /// <param name="steppableId">the id of the steppable to remove.</param>
-        public void RemoveSteppable(long steppableUid)
+        /// <param name="entityId">the id of the entity to remove.</param>
+        public void RemoveEntity(long entityUid)
         {
-            RemoveSteppable(steppableUid, Simulation.CurrentFrame);
+            RemoveEntity(entityUid, tss.CurrentFrame);
         }
 
         /// <summary>
-        /// Removes a steppable with the given id from the simulation.
-        /// The steppable will be removed at the given frame.
+        /// Removes a entity with the given id from the simulation.
+        /// The entity will be removed at the given frame.
         /// </summary>
-        /// <param name="steppableId">the id of the steppable to remove.</param>
-        /// <param name="frame">the frame in which to remove the steppable.</param>
-        public virtual void RemoveSteppable(long steppableUid, long frame)
+        /// <param name="entityId">the id of the entity to remove.</param>
+        /// <param name="frame">the frame in which to remove the entity.</param>
+        public virtual void RemoveEntity(long entityUid, long frame)
         {
-            // Remove the steppable from the simulation.
-            Simulation.RemoveSteppable(steppableUid, frame);
+            // Remove the entity from the simulation.
+            tss.RemoveEntity(entityUid, frame);
         }
 
         /// <summary>
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected virtual void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected virtual void Apply(IFrameCommand command)
         {
-            Simulation.PushCommand(command, command.Frame);
+            tss.PushCommand(command, command.Frame);
         }
 
         #endregion
@@ -191,7 +240,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         /// <param name="packet">the final packet to send.</param>
         /// <returns>the given packet, after writing.</returns>
-        protected override Packet WrapDataForSend(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command, Packet packet)
+        protected override Packet WrapDataForSend(IFrameCommand command, Packet packet)
         {
             packet.Write((byte)TssControllerMessage.Command);
             return base.WrapDataForSend(command, packet);

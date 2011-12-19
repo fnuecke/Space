@@ -10,14 +10,14 @@
 #region Using Statements
 using System;
 using System.Net;
-using System.Threading;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Space.Control;
-using Space.Model;
+using Space.Simulation;
+using SpaceData;
 
 #endregion
 
@@ -88,7 +88,7 @@ namespace GameStateManagement
             console.AddCommand("connect", args =>
             {
                 PlayerInfo info = new PlayerInfo();
-                info.ShipType = "Sparrow";
+                info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
                 client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
             },
                 "Joins a game at the given host.",
@@ -102,7 +102,7 @@ namespace GameStateManagement
             console.AddCommand("joinfn", args =>
             {
                 PlayerInfo info = new PlayerInfo();
-                info.ShipType = "Sparrow";
+                info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
                 client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
             },
                 "autojoin fn");
@@ -110,7 +110,7 @@ namespace GameStateManagement
             console.AddCommand("joinlh", args =>
             {
                 PlayerInfo info = new PlayerInfo();
-                info.ShipType = "Sparrow";
+                info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
                 client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
             },
                 "autojoin localhost");

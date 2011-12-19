@@ -1,5 +1,4 @@
 ﻿using Engine.Commands;
-using Engine.Serialization;
 
 namespace Engine.Controller
 {
@@ -7,21 +6,15 @@ namespace Engine.Controller
     /// Signature for methods that can handle a certain type of emitted command.
     /// </summary>
     /// <param name="command">the command that was emitted.</param>
-    public delegate void CommandEmittedEventHandler<TCommand, TCommandType, TPlayerData, TPacketizerContext>(TCommand command)
-        where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>;
+    public delegate void CommandEmittedEventHandler<TCommand>(TCommand command)
+        where TCommand : ICommand;
 
     /// <summary>
     /// Interface for "command emitters", i.e. objects that generate commands
     /// in some fashion (e.g. user input commands via key presses).
     /// </summary>
-    public interface ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public interface ICommandEmitter<TCommand>
+        where TCommand : ICommand
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command
@@ -31,6 +24,6 @@ namespace Engine.Controller
         /// with the proper generics as to match the controller it'll be registered
         /// with.
         /// </summary>
-        event CommandEmittedEventHandler<TCommand, TCommandType, TPlayerData, TPacketizerContext> CommandEmitted;
+        event CommandEmittedEventHandler<TCommand> CommandEmitted;
     }
 }

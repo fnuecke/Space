@@ -2,14 +2,14 @@
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Space.Model;
+using Space.Simulation;
 using Space.View;
 
 namespace Space.Control
 {
     class GameClient : DrawableGameComponent
     {
-        internal IClientSession<PlayerInfo, PacketizerContext> Session { get; private set; }
+        internal IClientSession Session { get; private set; }
         internal ClientController Controller { get; private set; }
 
         private InputCommandEmitter emitter;
@@ -19,11 +19,11 @@ namespace Space.Control
         public GameClient(Game game)
             : base(game)
         {
-            Session = new HybridClientSession<PlayerInfo, PacketizerContext>(game);
+            Session = new HybridClientSession<PlayerInfo>(game);
             Controller = new ClientController(game, Session);
             Controller.UpdateOrder = 10;
 
-            emitter = new InputCommandEmitter(game, Session, Controller);
+            emitter = new InputCommandEmitter(game, Session, Controller.Simulation);
             Controller.AddEmitter(emitter);
 
             DrawOrder = 10;
@@ -92,7 +92,7 @@ namespace Space.Control
         /// </summary>
         protected void HandlePlayerJoined(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
+            var args = (PlayerEventArgs)e;
 
             Console.WriteLine(String.Format("CLT.NET: {0} joined.", args.Player));
         }
@@ -102,7 +102,7 @@ namespace Space.Control
         /// </summary>
         protected void HandlePlayerLeft(object sender, EventArgs e)
         {
-            var args = (PlayerEventArgs<PlayerInfo, PacketizerContext>)e;
+            var args = (PlayerEventArgs)e;
 
             Console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
         }

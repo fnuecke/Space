@@ -10,13 +10,10 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for all game controller.
     /// </summary>
-    public abstract class AbstractController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : DrawableGameComponent, IController<TSession, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        where TSession : ISession<TPlayerData, TPacketizerContext>
-        where TCommand : ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractController<TSession, TCommand>
+        : DrawableGameComponent, IController<TSession>
+        where TSession : ISession
+        where TCommand : ICommand
     {
         #region Logger
 
@@ -35,11 +32,6 @@ namespace Engine.Controller
         /// The console to log messages to, which will be the same for all controllers.
         /// </summary>
         protected IGameConsole Console { get; private set; }
-
-        /// <summary>
-        /// Packetizer used for the game session handled in this controller.
-        /// </summary>
-        protected IPacketizer<TPlayerData, TPacketizerContext> Packetizer { get; private set; }
 
         #endregion
 
@@ -61,7 +53,6 @@ namespace Engine.Controller
         public override void Initialize()
         {
             Console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
-            Packetizer = ((IPacketizer<TPlayerData, TPacketizerContext>)Game.Services.GetService(typeof(IPacketizer<TPlayerData, TPacketizerContext>))).CopyFor(Session);
 
             if (Session != null)
             {
@@ -108,9 +99,9 @@ namespace Engine.Controller
         /// May be overridden in subclasses which wish to add another protocol layer.
         /// In that case this should follow the pattern
         /// <code>
-        /// override PrepareForSend(...) {
+        /// override WrapDataForSend(...) {
         ///   packet.Write(myStuff);
-        ///   return base.PrepareForSend(...);
+        ///   return base.WrapDataForSend(...);
         /// }
         /// </code>
         /// </summary>
@@ -118,8 +109,7 @@ namespace Engine.Controller
         /// <returns>the given packet, after writing.</returns>
         protected virtual Packet WrapDataForSend(TCommand command, Packet packet)
         {
-            Packetizer.Packetize(command, packet);
-            return packet;
+            return Packetizer.Packetize(command, packet);
         }
 
         /// <summary>

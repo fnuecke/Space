@@ -31,8 +31,6 @@ namespace Engine.Serialization
         /// </summary>
         private MemoryStream _stream;
 
-        private bool _disposed;
-
         #endregion
 
         #region Constructor
@@ -57,11 +55,10 @@ namespace Engine.Serialization
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (_stream != null)
             {
                 _stream.Dispose();
                 _stream = null;
-                _disposed = true;
             }
 
             GC.SuppressFinalize(this);
@@ -237,9 +234,7 @@ namespace Engine.Serialization
             return this;
         }
 
-        public Packet Write<TPlayerData, TPacketizerContext>(IPacketizable<TPlayerData, TPacketizerContext> data)
-            where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-            where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+        public Packet Write(IPacketizable data)
         {
             data.Packetize(this);
             return this;
@@ -405,11 +400,9 @@ namespace Engine.Serialization
             return result;
         }
 
-        public void ReadPacketizable<TPlayerData, TPacketizerContext>(IPacketizable<TPlayerData, TPacketizerContext> packetizable, TPacketizerContext context)
-            where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-            where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+        public void ReadPacketizable(IPacketizable packetizable)
         {
-            packetizable.Depacketize(this, context);
+            packetizable.Depacketize(this);
         }
 
         #endregion

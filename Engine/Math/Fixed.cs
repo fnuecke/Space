@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Math
 {
@@ -316,7 +317,7 @@ namespace Engine.Math
 
         #region Casting
 
-        public static implicit operator int(Fixed src)
+        public static explicit operator int(Fixed src)
         {
             return (int)src.IntValue;
         }
@@ -326,7 +327,7 @@ namespace Engine.Math
             return (uint)src.IntValue;
         }
 
-        public static implicit operator long(Fixed src)
+        public static explicit operator long(Fixed src)
         {
             return (long)src.IntValue;
         }
@@ -341,22 +342,22 @@ namespace Engine.Math
             return (float)src.DoubleValue;
         }
 
-        public static implicit operator double(Fixed src)
+        public static explicit operator double(Fixed src)
         {
             return src.DoubleValue;
         }
 
-        public static implicit operator Fixed(int src)
+        public static explicit operator Fixed(int src)
         {
             return Fixed.Create(src, true);
         }
 
-        public static implicit operator Fixed(uint src)
+        public static explicit operator Fixed(uint src)
         {
             return Fixed.Create(src, true);
         }
 
-        public static implicit operator Fixed(long src)
+        public static explicit operator Fixed(long src)
         {
             return Fixed.Create(src, true);
         }
@@ -366,12 +367,12 @@ namespace Engine.Math
             return Fixed.Create((long)src, true);
         }
 
-        public static implicit operator Fixed(float src)
+        public static explicit operator Fixed(float src)
         {
             return Fixed.Create(src);
         }
 
-        public static implicit operator Fixed(double src)
+        public static explicit operator Fixed(double src)
         {
             return Fixed.Create(src);
         }
@@ -516,36 +517,65 @@ namespace Engine.Math
         public static Fixed Atan2(Fixed f1, Fixed f2)
         {
             if (f2.RawValue == 0 && f1.RawValue == 0)
+            {
                 return (Fixed)0;
+            }
 
             Fixed result = (Fixed)0;
             if (f2 > 0)
+            {
                 result = Atan(f1 / f2);
+            }
             else if (f2 < 0)
             {
                 if (f1 >= 0)
+                {
                     result = (InternalPI - Atan(Abs(f1 / f2)));
+                }
                 else
+                {
                     result = (InternalPI - Atan(Abs(f1 / f2))).Inverse;
+                }
             }
             else
+            {
                 result = (f1 >= 0 ? InternalPI : InternalPI.Inverse) / Fixed.Create(2, true);
+            }
 
             return result;
         }
 
         #endregion
 
-        #region Abs
+        #region Abs, Sign
 
         public static Fixed Abs(Fixed f)
         {
             if (f < 0)
+            {
                 return f.Inverse;
+            }
             else
+            {
                 return f;
+            }
         }
 
+        public static Fixed Sign(Fixed f)
+        {
+            if (f < 0)
+            {
+                return (Fixed)(-1);
+            }
+            else if (f > 0)
+            {
+                return (Fixed)1;
+            }
+            else
+            {
+                return Fixed.Zero;
+            }
+        }
         #endregion
 
         #region MaxMin
@@ -695,6 +725,18 @@ namespace Engine.Math
             return point1.X != point2.X || point1.Y != point2.Y;
         }
         #endregion
+
+        #endregion
+
+        #region Casting
+
+        public static explicit operator Vector2(FPoint src)
+        {
+            Vector2 result;
+            result.X = (float)src.X;
+            result.Y = (float)src.Y;
+            return result;
+        }
 
         #endregion
 

@@ -32,7 +32,7 @@ namespace Engine.Network
         /// <summary>
         /// The actual underlying UDP socket.
         /// </summary>
-        private UdpClient udp;
+        private UdpClient _udp;
 
         #endregion
 
@@ -46,7 +46,7 @@ namespace Engine.Network
         public UdpProtocol(IPEndPoint endPoint, byte[] protocolHeader)
             : base(protocolHeader)
         {
-            udp = new UdpClient(endPoint.Port);
+            _udp = new UdpClient(endPoint.Port);
 
             // Register as a local loopback.
             Loopback = new IPEndPoint(IPAddress.Loopback, endPoint.Port);
@@ -54,7 +54,7 @@ namespace Engine.Network
             boundPorts[endPoint.Port] = true;
 
             // Join multicast group to receive multicast messages.
-            udp.JoinMulticastGroup(endPoint.Address);
+            _udp.JoinMulticastGroup(endPoint.Address);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Engine.Network
         public UdpProtocol(byte[] protocolHeader)
             : base(protocolHeader)
         {
-            udp = new UdpClient();
+            _udp = new UdpClient();
         }
 
         /// <summary>
@@ -72,17 +72,17 @@ namespace Engine.Network
         /// </summary>
         public override void Dispose()
         {
-            if (udp != null)
+            if (_udp != null)
             {
                 if (Loopback != null)
                 {
-                    ushort port = (ushort)((IPEndPoint)udp.Client.LocalEndPoint).Port;
+                    ushort port = (ushort)((IPEndPoint)_udp.Client.LocalEndPoint).Port;
                     loopbacksByPort.Remove(port);
                     boundPorts[port] = false;
                 }
 
-                udp.Close();
-                udp = null;
+                _udp.Close();
+                _udp = null;
             }
 
             GC.SuppressFinalize(this);
@@ -101,14 +101,14 @@ namespace Engine.Network
         public override void Receive()
         {
             // TODO no idea why this happens after cleanup...
-            if (udp != null)
+            if (_udp != null)
             {
                 var remote = new IPEndPoint(0, 0);
-                while (udp.Available > 0)
+                while (_udp.Available > 0)
                 {
                     try
                     {
-                        byte[] message = udp.Receive(ref remote);
+                        byte[] message = _udp.Receive(ref remote);
                         HandleReceive(message, remote);
                     }
                     catch (SocketException ex)
@@ -137,7 +137,7 @@ namespace Engine.Network
             else
             {
                 // No, send via the network.
-                udp.Send(message, message.Length, endPoint);
+                _udp.Send(message, message.Length, endPoint);
             }
         }
 

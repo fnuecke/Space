@@ -1,17 +1,12 @@
 ﻿using System;
 using Engine.Serialization;
-using Engine.Session;
 
 namespace Engine.Commands
 {
     /// <summary>
     /// Minimal interface for commands.
     /// </summary>
-    public interface ICommand<TCommandType, TPlayerData, TPacketizerContext>
-        : IPacketizable<TPlayerData, TPacketizerContext>, IEquatable<ICommand<TCommandType, TPlayerData, TPacketizerContext>>
-        where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public interface ICommand : IPacketizable, IEquatable<ICommand>
     {
         /// <summary>
         /// Whether the command is signed (e.g. by a server) (<c>true</c>)
@@ -20,13 +15,13 @@ namespace Engine.Commands
         bool IsAuthoritative { get; set; }
 
         /// <summary>
-        /// The player that performed the action causing the command.
+        /// The number of the player that issued the command.
         /// </summary>
-        Player<TPlayerData, TPacketizerContext> Player { get; set; }
+        int PlayerNumber { get; set; }
 
         /// <summary>
         /// The type of the command, used to determine which handler to use for it.
         /// </summary>
-        TCommandType Type { get; }
+        Enum Type { get; }
     }
 }

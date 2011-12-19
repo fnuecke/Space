@@ -6,9 +6,7 @@ namespace Engine.Session
     /// <summary>
     /// Interface for server side session implementations.
     /// </summary>
-    public interface IServerSession<TPlayerData, TPacketizerContext> : ISession<TPlayerData, TPacketizerContext>
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public interface IServerSession : ISession
     {
         /// <summary>
         /// Called when an unconnected client requests game info.
@@ -25,12 +23,12 @@ namespace Engine.Session
         /// Kick a player from the session.
         /// </summary>
         /// <param name="player">the player to kick.</param>
-        void Disconnect(Player<TPlayerData, TPacketizerContext> player);
+        void Disconnect(Player player);
         
         /// <summary>
         /// Sends a data message with the the specified packet as its data to the specified player.
         /// </summary>
         /// <param name="packet">The data to send.</param>
-        void SendTo(Player<TPlayerData, TPacketizerContext> player, Packet packet);
+        void SendTo(Player player, Packet packet);
     }
 }

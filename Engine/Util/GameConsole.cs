@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
+using System.Windows;
 using Engine.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -106,16 +106,16 @@ namespace Engine.Util
         {
             get
             {
-                return bufferSize;
+                return _bufferSize;
             }
             set
             {
-                bufferSize = System.Math.Max(1, value);
-                if (buffer.Count > bufferSize)
+                _bufferSize = System.Math.Max(1, value);
+                if (_buffer.Count > _bufferSize)
                 {
-                    buffer.RemoveRange(BufferSize, buffer.Count - BufferSize);
+                    _buffer.RemoveRange(BufferSize, _buffer.Count - BufferSize);
                 }
-                buffer.TrimExcess();
+                _buffer.TrimExcess();
             }
         }
 
@@ -141,7 +141,7 @@ namespace Engine.Util
         {
             get
             {
-                return new List<string>(history.ToArray());
+                return new List<string>(_history.ToArray());
             }
         }
 
@@ -177,68 +177,68 @@ namespace Engine.Util
         /// <summary>
         /// Internal line buffer (lines of text).
         /// </summary>
-        private List<string> buffer = new List<string>();
+        private List<string> _buffer = new List<string>();
 
         /// <summary>
         /// Actual value for the maximum number of lines to keep.
         /// </summary>
-        private int bufferSize = 200;
+        private int _bufferSize = 200;
 
         /// <summary>
         /// List of known commands.
         /// </summary>
-        private Dictionary<string, CommandInfo> commands = new Dictionary<string, CommandInfo>();
+        private Dictionary<string, CommandInfo> _commands = new Dictionary<string, CommandInfo>();
 
         /// <summary>
         /// Input cursor offset.
         /// </summary>
-        private int cursor = 0;
+        private int _cursor = 0;
 
         /// <summary>
         /// The history of commands a user entered.
         /// </summary>
-        private List<string> history = new List<string>();
+        private List<string> _history = new List<string>();
 
         /// <summary>
         /// Which history index we last copied.
         /// </summary>
-        private int historyIndex = -1;
+        private int _historyIndex = -1;
 
         /// <summary>
         /// Current user input.
         /// </summary>
-        private StringBuilder input = new StringBuilder();
+        private StringBuilder _input = new StringBuilder();
 
         /// <summary>
         /// Backup of our last input, before cycling through the history.
         /// </summary>
-        private string inputBackup;
+        private string _inputBackup;
 
         /// <summary>
         /// Text we had before pressing tab the first time, to allow cycling through
         /// possible solutions.
         /// </summary>
-        private string inputBeforeTab;
+        private string _inputBeforeTab;
 
         /// <summary>
         /// Last time a key was pressed (to suppress blinking for a bit while / after typing).
         /// </summary>
-        private DateTime lastKeyPress = DateTime.MinValue;
+        private DateTime _lastKeyPress = DateTime.MinValue;
 
         /// <summary>
         /// Texture used for rendering the background.
         /// </summary>
-        private Texture2D pixelTexture;
+        private Texture2D _pixelTexture;
 
         /// <summary>
         /// The current scrolling offset.
         /// </summary>
-        private int scroll;
+        private int _scroll;
 
         /// <summary>
         /// Index of last used tab completion option.
         /// </summary>
-        private int tabCompleteIndex = -1;
+        private int _tabCompleteIndex = -1;
 
         #endregion
 
@@ -298,8 +298,8 @@ namespace Engine.Util
 
         protected override void LoadContent()
         {
-            pixelTexture = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-            pixelTexture.SetData(new[] { Color.White });
+            _pixelTexture = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+            _pixelTexture.SetData(new[] { Color.White });
 
             base.LoadContent();
         }
@@ -316,9 +316,9 @@ namespace Engine.Util
             {
                 mouse.Scrolled -= HandleMouseScrolled;
             }
-            if (pixelTexture != null)
+            if (_pixelTexture != null)
             {
-                pixelTexture.Dispose();
+                _pixelTexture.Dispose();
             }
 
             base.Dispose(disposing);
@@ -336,19 +336,19 @@ namespace Engine.Util
                 // Draw background.
 
                 // Outer.
-                SpriteBatch.Draw(pixelTexture, bounds, new Color(64, 64, 64, BackgroundColor.A));
-                SpriteBatch.Draw(pixelTexture, bounds, BackgroundColor);
+                SpriteBatch.Draw(_pixelTexture, bounds, new Color(64, 64, 64, BackgroundColor.A));
+                SpriteBatch.Draw(_pixelTexture, bounds, BackgroundColor);
 
                 // Content.
-                SpriteBatch.Draw(pixelTexture,
+                SpriteBatch.Draw(_pixelTexture,
                     new Rectangle(bounds.X + Padding / 2, bounds.Y + Padding / 2,
                         bounds.Width - Padding, bounds.Height - Padding),
                     BackgroundColor);
 
                 // Command line. We need to know the number of lines we have to properly render the background.
-                List<String> inputWrapped = WrapText("> " + input, bounds.Width - Padding * 2);
+                List<String> inputWrapped = WrapText("> " + _input, bounds.Width - Padding * 2);
 
-                SpriteBatch.Draw(pixelTexture,
+                SpriteBatch.Draw(_pixelTexture,
                     new Rectangle(bounds.X + Padding, bounds.Y + Padding + (numBufferLines - inputWrapped.Count + 1) * Font.LineSpacing,
                         bounds.Width - Padding * 2, Font.LineSpacing * inputWrapped.Count),
                     BackgroundColor);
@@ -367,10 +367,10 @@ namespace Engine.Util
                     }
 
                     // Draw the cursor.
-                    if (((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (lastKeyPress != null && new TimeSpan(DateTime.Now.Ticks - lastKeyPress.Ticks).TotalSeconds < 1))
+                    if (((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (_lastKeyPress != null && new TimeSpan(DateTime.Now.Ticks - _lastKeyPress.Ticks).TotalSeconds < 1))
                     {
                         int cursorLine;
-                        int cursorCounter = cursor + 2;
+                        int cursorCounter = _cursor + 2;
                         for (cursorLine = 0; cursorLine < inputWrapped.Count - 1; ++cursorLine)
                         {
                             if (cursorCounter < inputWrapped[cursorLine].Length)
@@ -391,14 +391,14 @@ namespace Engine.Util
                             cursorWidth = (int)Font.MeasureString(" ").X;
                         }
 
-                        SpriteBatch.Draw(pixelTexture, new Rectangle(cursorX, cursorY, cursorWidth, Font.LineSpacing), CaretColor);
+                        SpriteBatch.Draw(_pixelTexture, new Rectangle(cursorX, cursorY, cursorWidth, Font.LineSpacing), CaretColor);
                     }
                 }
 
                 // Draw text buffer.
-                for (int j = buffer.Count - 1 - scroll; j >= 0 && numBufferLines >= 0; --j)
+                for (int j = _buffer.Count - 1 - _scroll; j >= 0 && numBufferLines >= 0; --j)
                 {
-                    List<String> wrapped = WrapText(buffer[j], bounds.Width - Padding * 2);
+                    List<String> wrapped = WrapText(_buffer[j], bounds.Width - Padding * 2);
 
                     for (int i = wrapped.Count - 1; i >= 0 && numBufferLines >= 0; --i, --numBufferLines)
                     {
@@ -448,7 +448,7 @@ namespace Engine.Util
                 var info = new CommandInfo((string[])names.Clone(), handler, (string[])help.Clone());
                 foreach (var command in names)
                 {
-                    commands.Add(command, info);
+                    _commands.Add(command, info);
                 }
             }
             else
@@ -462,9 +462,9 @@ namespace Engine.Util
         /// </summary>
         public void Clear()
         {
-            scroll = 0;
-            buffer.Clear();
-            buffer.TrimExcess();
+            _scroll = 0;
+            _buffer.Clear();
+            _buffer.TrimExcess();
         }
 
         /// <summary>
@@ -482,10 +482,10 @@ namespace Engine.Util
             command = command.Trim();
 
             // Push it to our history, output it and scroll down.
-            history.Remove(command);
-            history.Insert(0, command);
+            _history.Remove(command);
+            _history.Insert(0, command);
             WriteLine("> " + command);
-            scroll = 0;
+            _scroll = 0;
 
             // Parse the input into separate strings, allowing for string literals.
             var matches = ArgPattern.Matches(command);
@@ -504,11 +504,11 @@ namespace Engine.Util
             }
 
             // Do we know that command?
-            if (commands.ContainsKey(args[0]))
+            if (_commands.ContainsKey(args[0]))
             {
                 try
                 {
-                    commands[args[0]].handler(args.ToArray());
+                    _commands[args[0]].handler(args.ToArray());
                 }
                 catch (Exception e)
                 {
@@ -537,10 +537,10 @@ namespace Engine.Util
             }
             message = message.Replace("\r\n", "\n").Replace("\r", "\n");
             string[] lines = message.Split('\n');
-            buffer.AddRange(lines);
-            if (buffer.Count > BufferSize)
+            _buffer.AddRange(lines);
+            if (_buffer.Count > BufferSize)
             {
-                buffer.RemoveRange(0, buffer.Count - BufferSize);
+                _buffer.RemoveRange(0, _buffer.Count - BufferSize);
             }
 
             foreach (var line in lines)
@@ -579,43 +579,43 @@ namespace Engine.Util
                 switch (args.Key)
                 {
                     case Keys.Back:
-                        if (cursor > 0)
+                        if (_cursor > 0)
                         {
-                            --cursor;
-                            input.Remove(cursor, 1);
+                            --_cursor;
+                            _input.Remove(_cursor, 1);
                         }
                         ResetTabCompletion();
                         break;
                     case Keys.Delete:
-                        if (cursor < input.Length)
+                        if (_cursor < _input.Length)
                         {
-                            input.Remove(cursor, 1);
+                            _input.Remove(_cursor, 1);
                         }
                         ResetTabCompletion();
                         break;
                     case Keys.Down:
-                        if (historyIndex >= 0)
+                        if (_historyIndex >= 0)
                         {
-                            --historyIndex;
-                            input.Clear();
-                            if (historyIndex == -1)
+                            --_historyIndex;
+                            _input.Clear();
+                            if (_historyIndex == -1)
                             {
-                                input.Append(inputBackup);
+                                _input.Append(_inputBackup);
                             }
                             else
                             {
-                                input.Append(history[historyIndex]);
+                                _input.Append(_history[_historyIndex]);
                             }
-                            cursor = input.Length;
+                            _cursor = _input.Length;
                             ResetTabCompletion();
                         }
                         break;
                     case Keys.End:
-                        cursor = input.Length;
+                        _cursor = _input.Length;
                         ResetTabCompletion();
                         break;
                     case Keys.Enter:
-                        Execute(input.ToString());
+                        Execute(_input.ToString());
                         ResetInput();
                         break;
                     case Keys.Escape:
@@ -623,99 +623,99 @@ namespace Engine.Util
                         ResetInput();
                         break;
                     case Keys.Home:
-                        cursor = 0;
+                        _cursor = 0;
                         ResetTabCompletion();
                         break;
                     case Keys.Left:
                         if (args.Modifier == KeyModifier.Control)
                         {
-                            int startIndex = System.Math.Max(0, cursor - 1);
-                            while (startIndex > 0 && startIndex < input.Length && input[startIndex] == ' ')
+                            int startIndex = System.Math.Max(0, _cursor - 1);
+                            while (startIndex > 0 && startIndex < _input.Length && _input[startIndex] == ' ')
                             {
                                 --startIndex;
                             }
-                            int index = input.ToString().LastIndexOf(' ', startIndex);
+                            int index = _input.ToString().LastIndexOf(' ', startIndex);
                             if (index == -1)
                             {
-                                cursor = 0;
+                                _cursor = 0;
                             }
                             else
                             {
-                                cursor = System.Math.Min(input.Length, index + 1);
+                                _cursor = System.Math.Min(_input.Length, index + 1);
                             }
                         }
                         else
                         {
-                            cursor = System.Math.Max(0, cursor - 1);
+                            _cursor = System.Math.Max(0, _cursor - 1);
                         }
                         ResetTabCompletion();
                         break;
                     case Keys.PageDown:
                         if (args.Modifier == KeyModifier.Shift)
                         {
-                            scroll = 0;
+                            _scroll = 0;
                         }
                         else
                         {
-                            scroll = System.Math.Max(0, scroll - EntriesToScroll);
+                            _scroll = System.Math.Max(0, _scroll - EntriesToScroll);
                         }
                         break;
                     case Keys.PageUp:
                         if (args.Modifier == KeyModifier.Shift)
                         {
-                            scroll = System.Math.Max(0, buffer.Count - 1);
+                            _scroll = System.Math.Max(0, _buffer.Count - 1);
                         }
                         else
                         {
-                            scroll = System.Math.Max(0, System.Math.Min(buffer.Count - 1, scroll + EntriesToScroll));
+                            _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll + EntriesToScroll));
                         }
                         break;
                     case Keys.Right:
                         if (args.Modifier == KeyModifier.Control)
                         {
-                            int index = input.ToString().IndexOf(' ', cursor);
+                            int index = _input.ToString().IndexOf(' ', _cursor);
                             if (index == -1)
                             {
-                                cursor = input.Length;
+                                _cursor = _input.Length;
                             }
                             else
                             {
-                                cursor = System.Math.Min(input.Length, index + 1);
-                                while (cursor < input.Length && input[cursor] == ' ')
+                                _cursor = System.Math.Min(_input.Length, index + 1);
+                                while (_cursor < _input.Length && _input[_cursor] == ' ')
                                 {
-                                    ++cursor;
+                                    ++_cursor;
                                 }
                             }
                         }
                         else
                         {
-                            cursor = System.Math.Min(input.Length, cursor + 1);
+                            _cursor = System.Math.Min(_input.Length, _cursor + 1);
                         }
                         ResetTabCompletion();
                         break;
                     case Keys.Tab:
-                        if (cursor > 0)
+                        if (_cursor > 0)
                         {
-                            if (inputBeforeTab == null)
+                            if (_inputBeforeTab == null)
                             {
-                                inputBeforeTab = input.ToString().Substring(0, cursor).Trim();
+                                _inputBeforeTab = _input.ToString().Substring(0, _cursor).Trim();
                             }
-                            if (inputBeforeTab.Length > 0)
+                            if (_inputBeforeTab.Length > 0)
                             {
                                 int numMatches = -1;
                                 bool testIfLast = false;
-                                foreach (var command in commands)
+                                foreach (var command in _commands)
                                 {
-                                    if (command.Key.StartsWith(inputBeforeTab, StringComparison.Ordinal))
+                                    if (command.Key.StartsWith(_inputBeforeTab, StringComparison.Ordinal))
                                     {
                                         ++numMatches;
-                                        if (!testIfLast && tabCompleteIndex < numMatches)
+                                        if (!testIfLast && _tabCompleteIndex < numMatches)
                                         {
                                             // Found a match we can use.
-                                            input.Clear();
-                                            input.Append(command.Key);
-                                            cursor = input.Length;
-                                            tabCompleteIndex = numMatches;
+                                            _input.Clear();
+                                            _input.Append(command.Key);
+                                            _cursor = _input.Length;
+                                            _tabCompleteIndex = numMatches;
                                             testIfLast = true;
                                         }
                                         else if (testIfLast)
@@ -727,7 +727,7 @@ namespace Engine.Util
                                 }
                                 if (testIfLast)
                                 {
-                                    tabCompleteIndex = -1;
+                                    _tabCompleteIndex = -1;
                                 }
                             }
                             else
@@ -737,17 +737,17 @@ namespace Engine.Util
                         }
                         break;
                     case Keys.Up:
-                        if (historyIndex < history.Count - 1)
+                        if (_historyIndex < _history.Count - 1)
                         {
-                            if (historyIndex == -1)
+                            if (_historyIndex == -1)
                             {
                                 // Make backup.
-                                inputBackup = input.ToString();
+                                _inputBackup = _input.ToString();
                             }
-                            ++historyIndex;
-                            input.Clear();
-                            input.Append(history[historyIndex]);
-                            cursor = input.Length;
+                            ++_historyIndex;
+                            _input.Clear();
+                            _input.Append(_history[_historyIndex]);
+                            _cursor = _input.Length;
                             ResetTabCompletion();
                         }
                         break;
@@ -757,15 +757,15 @@ namespace Engine.Util
                             char ch = KeyMap[args.Modifier, args.Key];
                             if (ch != '\0')
                             {
-                                input.Insert(cursor, ch);
-                                ++cursor;
+                                _input.Insert(_cursor, ch);
+                                ++_cursor;
                                 ResetTabCompletion();
                             }
                         }
                         break;
                 }
 
-                lastKeyPress = DateTime.Now;
+                _lastKeyPress = DateTime.Now;
             }
             else
             {
@@ -776,18 +776,19 @@ namespace Engine.Util
             }
         }
 
-
+        /// <summary>
+        /// Handle request to paste from clipboard.
+        /// </summary>
         private void HandleInsert(object sender, EventArgs e)
         {
-            if (IsOpen)
+            if (IsOpen && Clipboard.ContainsText())
             {
-                IDataObject dataObj = Clipboard.GetDataObject();
-
-                if (!dataObj.GetDataPresent(DataFormats.Text))
-                    return;
-
-                input.Append(dataObj.GetData(DataFormats.Text).ToString());
-                cursor = input.Length;
+                string text = Clipboard.GetText().Replace("\n", "").Replace("\r", "");
+                if (!string.IsNullOrWhiteSpace(text))
+                {
+                    _input.Append(text);
+                    _cursor = _input.Length;
+                }
             }
         }
 
@@ -798,7 +799,7 @@ namespace Engine.Util
         {
             if (IsOpen)
             {
-                scroll = System.Math.Max(0, System.Math.Min(buffer.Count - 1, scroll - System.Math.Sign(((MouseInputEventArgs)e).ScrollDelta) * EntriesToScroll));
+                _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll - System.Math.Sign(((MouseInputEventArgs)e).ScrollDelta) * EntriesToScroll));
             }
         }
 
@@ -858,17 +859,17 @@ namespace Engine.Util
 
         private void ResetInput()
         {
-            inputBackup = null;
-            historyIndex = -1;
-            cursor = 0;
-            input.Clear();
+            _inputBackup = null;
+            _historyIndex = -1;
+            _cursor = 0;
+            _input.Clear();
             ResetTabCompletion();
         }
 
         private void ResetTabCompletion()
         {
-            inputBeforeTab = null;
-            tabCompleteIndex = -1;
+            _inputBeforeTab = null;
+            _tabCompleteIndex = -1;
         }
 
         private void OnLineWritten(LineWrittenEventArgs e)
@@ -889,7 +890,7 @@ namespace Engine.Util
 
             HashSet<string> shown = new HashSet<string>();
 
-            foreach (var command in commands.Values)
+            foreach (var command in _commands.Values)
             {
                 if (shown.Contains(command.names[0]))
                 {

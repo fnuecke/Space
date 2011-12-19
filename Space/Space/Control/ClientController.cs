@@ -1,18 +1,21 @@
 ﻿using System;
 using Engine.Commands;
+using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Commands;
-using Space.Model;
+using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
+using Space.Simulation;
 
 namespace Space.Control
 {
     /// <summary>
     /// Handles game logic on the client side.
     /// </summary>
-    class ClientController : AbstractTssClient<GameState, IGameObject, GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
+    class ClientController : AbstractTssClient<GameCommand>
     {
         #region Logger
 
@@ -35,10 +38,18 @@ namespace Space.Control
         /// Creates a new game client, ready to connect to an open game.
         /// </summary>
         /// <param name="game"></param>
-        public ClientController(Game game, IClientSession<PlayerInfo, PacketizerContext> session)
+        public ClientController(Game game, IClientSession session)
             : base(game, session)
         {
-            Simulation.Initialize(new GameState(game, Session));
+            tss.Initialize(new GameState());
+
+            var renderer = new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session);
+            renderer.AddComponent(new Background("Textures/stars"));
+
+            tss.SystemManager.AddSystem(new PhysicsSystem());
+            tss.SystemManager.AddSystem(new ShipControlSystem());
+            tss.SystemManager.AddSystem(new AvatarSystem());
+            tss.SystemManager.AddSystem(renderer);
         }
 
         protected override void LoadContent()
@@ -50,40 +61,15 @@ namespace Space.Control
 
         #endregion
 
-        #region Logic
-
         public override void Draw(GameTime gameTime)
         {
+            base.Draw(gameTime);
+
             if (Session.ConnectionState == ClientState.Connected)
             {
-                var spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
-
-                // Get player's ship's position.
-                var translation = Vector2.Zero;
-                Ship ship = (Ship)Simulation.GetSteppable(Session.LocalPlayer.Data.ShipUID);
-                if (ship != null)
-                {
-                    translation.X = -ship.Position.X.IntValue + GraphicsDevice.Viewport.Width / 2;
-                    translation.Y = -ship.Position.Y.IntValue + GraphicsDevice.Viewport.Height / 2;
-                }
-
-                spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
-                spriteBatch.Draw(background, Vector2.Zero, new Rectangle(-(int)translation.X, -(int)translation.Y, spriteBatch.GraphicsDevice.Viewport.Width, spriteBatch.GraphicsDevice.Viewport.Height), Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                spriteBatch.End();
-
-                // Draw world elements.
-                spriteBatch.Begin();
-                foreach (var child in Simulation.Children)
-                {
-                    child.Draw(null, translation, spriteBatch);
-                }
-                spriteBatch.End();
+                tss.SystemManager.Update(ComponentSystemUpdateType.Display);
             }
-
-            base.Draw(gameTime);
         }
-
-        #endregion
 
         #region Events
 
@@ -93,7 +79,7 @@ namespace Space.Control
         protected override void HandleJoinResponse(object sender, EventArgs e)
         {
             // OK, we were allowed to join, invalidate our simulation to request the current state.
-            Simulation.Invalidate();
+            tss.Invalidate();
         }
 
         /// <summary>
@@ -101,7 +87,7 @@ namespace Space.Control
         /// </summary>
         protected override void HandleLocalCommand(GameCommand command)
         {
-            switch (command.Type)
+            switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player input command, high send priority.
@@ -114,10 +100,10 @@ namespace Space.Control
         /// Got command data from another client or the server.
         /// </summary>
         /// <param name="command">the received command.</param>
-        protected override bool HandleRemoteCommand(IFrameCommand<GameCommandType, PlayerInfo, PacketizerContext> command)
+        protected override bool HandleRemoteCommand(IFrameCommand command)
         {
             // Check what we have.
-            switch (command.Type)
+            switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     Apply(command);
@@ -138,7 +124,7 @@ namespace Space.Control
 
         internal void DEBUG_InvalidateSimulation()
         {
-            Simulation.Invalidate();
+            tss.Invalidate();
         }
 
         #endregion

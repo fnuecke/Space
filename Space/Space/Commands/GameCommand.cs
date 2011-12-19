@@ -1,9 +1,8 @@
 ﻿using Engine.Commands;
-using Space.Model;
 
 namespace Space.Commands
 {
-    abstract class GameCommand : FrameCommand<GameCommandType, PlayerInfo, PacketizerContext>
+    abstract class GameCommand : FrameCommand
     {
         public GameCommand(GameCommandType type)
             : base(type)

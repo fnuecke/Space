@@ -5,7 +5,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space;
 using Space.Control;
-using Space.Model;
+using Space.Simulation;
+using SpaceData;
 
 namespace GameStateManagement
 {
@@ -47,13 +48,11 @@ namespace GameStateManagement
         //Called if the Connect Entry is selected
         void ConnectEntrySelected(object sender, PlayerIndexEventArgs e)
         {
+            PlayerInfo info = new PlayerInfo();
             if (connect.Editable)
-            {
-                PlayerInfo info = new PlayerInfo();
-                info.ShipType = "Sparrow";
-                connect.locked = true;
-                Client.Session.Join(new IPEndPoint(IPAddress.Parse(connect.Text), 50100), Settings.Instance.PlayerName, info);
-            }
+            info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
+            ((EditableMenueEntry)MenuEntries[0]).locked = true;
+            Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
             else
             {
                 connect.Editable = true;

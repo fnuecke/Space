@@ -44,7 +44,7 @@ namespace Engine.Input
         /// <summary>
         /// Key combo currently active?
         /// </summary>
-        private bool isActive;
+        private bool _isActive;
 
         #endregion
 
@@ -85,18 +85,18 @@ namespace Engine.Input
 
         private void Active()
         {
-            if (!isActive)
+            if (!_isActive)
             {
-                isActive = true;
+                _isActive = true;
                 OnPressed(new KeyComboEventArgs(this));
             }
         }
 
         private void Inactive()
         {
-            if (isActive)
+            if (_isActive)
             {
-                isActive = false;
+                _isActive = false;
                 OnReleased(new KeyComboEventArgs(this));
             }
         }

@@ -1,31 +1,100 @@
 using System.Xml.Serialization;
 using Engine.Math;
+using Engine.Serialization;
 using Microsoft.Xna.Framework.Content;
 
 namespace SpaceData
 {
-    public class ShipData
+    public class ShipData : IPacketizable
     {
+        /// <summary>
+        /// The name of the ship, which serves as a unique type identifier.
+        /// </summary>
         public string Name;
 
+        /// <summary>
+        /// The collision radius of the ship.
+        /// </summary>
         public Fixed Radius;
+
+        /// <summary>
+        /// The texture to use for rendering the ship.
+        /// </summary>
         public string Texture;
 
+        /// <summary>
+        /// The maximum base life of this ship type.
+        /// </summary>
         public int Health;
+
+        /// <summary>
+        /// The maximum base fuel of this ship type.
+        /// </summary>
         public int Fuel;
 
+        /// <summary>
+        /// The base acceleration of this ship type.
+        /// </summary>
         public Fixed Acceleration;
+
+        /// <summary>
+        /// The base rotation speed of this ship type.
+        /// </summary>
         public Fixed RotationSpeed;
 
+        /// <summary>
+        /// Available slots for small weapons.
+        /// </summary>
         [ContentSerializer(Optional=true)]
         public byte SmallWeapons;
+
+        /// <summary>
+        /// Available slots for medium sized weapons.
+        /// </summary>
         [ContentSerializer(Optional = true)]
         public byte MediumWeapons;
+
+        /// <summary>
+        /// Available slots for large weapons.
+        /// </summary>
         [ContentSerializer(Optional = true)]
         public byte LargeWeapons;
 
+        /// <summary>
+        /// Available equipment slots for other items.
+        /// </summary>
         [ContentSerializer(Optional = true)]
         public byte ItemSlots;
+
+        public void Packetize(Packet packet)
+        {
+            packet.Write(Name);
+            packet.Write(Radius);
+            packet.Write(Texture);
+            packet.Write(Health);
+            packet.Write(Fuel);
+            packet.Write(Acceleration);
+            packet.Write(RotationSpeed);
+            packet.Write(SmallWeapons);
+            packet.Write(MediumWeapons);
+            packet.Write(LargeWeapons);
+            packet.Write(ItemSlots);
+        }
+
+        public void Depacketize(Packet packet)
+        {
+            Name = packet.ReadString();
+            Radius = packet.ReadFixed();
+            Texture = packet.ReadString();
+            Health = packet.ReadInt32();
+            Fuel = packet.ReadInt32();
+            Acceleration = packet.ReadFixed();
+            RotationSpeed = packet.ReadFixed();
+            SmallWeapons = packet.ReadByte();
+            MediumWeapons = packet.ReadByte();
+            LargeWeapons = packet.ReadByte();
+            ItemSlots = packet.ReadByte();
+        }
     }
 
     public enum WeaponSize
@@ -38,18 +107,78 @@ namespace SpaceData
         Large
     }
 
-    public class WeaponData
+    public class WeaponData : IPacketizable
     {
+        /// <summary>
+        /// The name of the weapon, which serves as a unique type identifier.
+        /// </summary>
         public string Name;
 
+        /// <summary>
+        /// The equipment size of this weapon, i.e. what kind of slot it occupies.
+        /// </summary>
         public WeaponSize Size;
 
+        /// <summary>
+        /// The texture to use for rendering the weapon.
+        /// </summary>
         public string Texture;
 
+        /// <summary>
+        /// The sound to play when firing a shot.
+        /// </summary>
         public string Sound;
 
+        /// <summary>
+        /// The damage a single shot of this weapon inflicts.
+        /// </summary>
         public Fixed Damage;
+
+        /// <summary>
+        /// The rate of fire of this weapon.
+        /// </summary>
         public Fixed FireRate;
+
+        /// <summary>
+        /// The name of the particle effect to use for shots.
+        /// </summary>
+        public string ProjectileTexture;
+
+        /// <summary>
+        /// The speed of fired projectiles.
+        /// </summary>
+        public Fixed ProjectileSpeed;
+
+        /// <summary>
+        /// The collision radius of the projectiles.
+        /// </summary>
+        public Fixed ProjectileRadius;
+
+        public void Packetize(Packet packet)
+        {
+            packet.Write(Name);
+            packet.Write((byte)Size);
+            packet.Write(Texture);
+            packet.Write(Sound);
+            packet.Write(Damage);
+            packet.Write(FireRate);
+            packet.Write(ProjectileTexture);
+            packet.Write(ProjectileSpeed);
+            packet.Write(ProjectileRadius);
+        }
+
+        public void Depacketize(Packet packet)
+        {
+            Name = packet.ReadString();
+            Size = (WeaponSize)packet.ReadByte();
+            Texture = packet.ReadString();
+            Sound = packet.ReadString();
+            Damage = packet.ReadFixed();
+            FireRate = packet.ReadFixed();
+            ProjectileTexture = packet.ReadString();
+            ProjectileSpeed = packet.ReadFixed();
+            ProjectileRadius = packet.ReadFixed();
+        }
     }
 
     public class ItemData

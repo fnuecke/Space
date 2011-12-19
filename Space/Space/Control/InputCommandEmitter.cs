@@ -1,17 +1,20 @@
 ﻿using System;
+using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Input;
 using Engine.Math;
 using Engine.Session;
+using Engine.Simulation;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Space.Commands;
-using Space.Model;
 
 namespace Space.Control
 {
-    class InputCommandEmitter : GameComponent, ICommandEmitter<GameCommand, GameCommandType, PlayerInfo, PacketizerContext>
+    class InputCommandEmitter : GameComponent, ICommandEmitter<GameCommand>
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command
@@ -21,21 +24,22 @@ namespace Space.Control
         /// with the proper generics as to match the controller it'll be registered
         /// with.
         /// </summary>
-        public event CommandEmittedEventHandler<GameCommand, GameCommandType, PlayerInfo, PacketizerContext> CommandEmitted;
+        public event CommandEmittedEventHandler<GameCommand> CommandEmitted;
 
-        private IClientSession<PlayerInfo, PacketizerContext> Session;
-        private ClientController simulation;
+        public bool IsEnabled { get; set; }
 
-        private Fixed previousTargetRotation;
-        private Fixed currentTargetRotation;
-        private bool rotationFinished = true;
+        private IClientSession _session;
+        private ISimulation _simulation;
+        private Fixed _previousTargetRotation;
+        private Fixed _currentTargetRotation;
+        private bool _rotationFinished = true;
 
-        public InputCommandEmitter(Game game, IClientSession<PlayerInfo, PacketizerContext> session, ClientController simulation)
+        public InputCommandEmitter(Game game, IClientSession session, ISimulation simulation)
             : base(game)
         {
-            this.Session = session;
-            this.simulation = simulation;
-
+            this._session = session;
+            this._simulation = simulation;
+            
             // Register for key presses and releases (movement).
             var keyboard = (IKeyboardInputManager)game.Services.GetService(typeof(IKeyboardInputManager));
             keyboard.Pressed += HandleKeyPressed;
@@ -48,9 +52,10 @@ namespace Space.Control
             mouse.Released += HandleMouseReleased;
         }
 
+        // TODO waiting for completion to re-fire causes mini-lags, which feel awkward...
         public override void Update(GameTime gameTime)
         {
-            if (Session.ConnectionState == ClientState.Connected)
+            if (_session.ConnectionState == ClientState.Connected)
             {
                 // This test is necessary to figure out when player has stopped
                 // moving his mouse, so we can send a finalizing rotation command.
@@ -60,15 +65,15 @@ namespace Space.Control
                 // we don't send commands that would only update the target angle,
                 // but not the direction), which saves us quite a few commands,
                 // and thus net traffic.
-                if (!rotationFinished)
+                if (!_rotationFinished)
                 {
                     // We stopped moving when last and current position are equal.
-                    if (previousTargetRotation == currentTargetRotation)
+                    if (_previousTargetRotation == _currentTargetRotation)
                     {
-                        OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, currentTargetRotation));
-                        rotationFinished = true;
+                        //OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
+                        _rotationFinished = true;
                     }
-                    previousTargetRotation = currentTargetRotation;
+                    _previousTargetRotation = _currentTargetRotation;
                 }
             }
 
@@ -80,7 +85,7 @@ namespace Space.Control
         /// </summary>
         private void HandleKeyPressed(object sender, EventArgs e)
         {
-            if (Session.ConnectionState != ClientState.Connected)
+            if (_session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -128,7 +133,7 @@ namespace Space.Control
         /// </summary>
         private void HandleKeyReleased(object sender, EventArgs e)
         {
-            if (Session.ConnectionState != ClientState.Connected)
+            if (_session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -164,7 +169,7 @@ namespace Space.Control
 
         private void HandleMouseMoved(object sender, EventArgs e)
         {
-            if (Session.ConnectionState != ClientState.Connected)
+            if (_session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -188,14 +193,17 @@ namespace Space.Control
         /// <param name="targetRotation">the new direction to face.</param>
         private void UpdateTargetRotation(double targetRotation)
         {
-            Ship ship = (Ship)simulation.GetSteppable(Session.LocalPlayer.Data.ShipUID);
-            if (ship != null)
+            IEntity avatar = GetLocalAvatar();
+            if (avatar != null)
             {
+                var sphysics = avatar.GetComponent<StaticPhysics>();
+                var dphysics = avatar.GetComponent<DynamicPhysics>();
+
                 // Get ships current orientation.
-                double shipAngle = ship.Rotation.DoubleValue;
+                double shipAngle = (double)sphysics.Rotation;
 
                 // Remember where we'd like to rotate to (for finalizing).
-                currentTargetRotation = Fixed.Create(targetRotation);
+                _currentTargetRotation = Fixed.Create(targetRotation);
 
                 // Get the smaller angle between our current and our target angles.
                 double deltaAngle = Angle.MinAngle(shipAngle, targetRotation);
@@ -209,20 +217,20 @@ namespace Space.Control
                 // a lot of superfluous input commands this way, reducing network
                 // load somewhat (still pretty bad if user moves his mouse slowly,
                 // but meh).
-                if ((deltaAngle > 10e-3 && ship.Spin <= Fixed.Zero) ||
-                    (deltaAngle < -10e-3 && ship.Spin >= Fixed.Zero))
+                if ((deltaAngle > 10e-3 && dphysics.Spin <= Fixed.Zero) ||
+                    (deltaAngle < -10e-3 && dphysics.Spin >= Fixed.Zero))
                 {
-                    OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, currentTargetRotation));
+                    OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
                 }
 
                 // Set our flag to remember we might have to finalize the movement.
-                rotationFinished = false;
+                _rotationFinished = false;
             }
         }
 
         void HandleMousePressed(object sender, EventArgs e)
         {
-            if (Session.ConnectionState != ClientState.Connected)
+            if (_session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -237,7 +245,7 @@ namespace Space.Control
 
         void HandleMouseReleased(object sender, EventArgs e)
         {
-            if (Session.ConnectionState != ClientState.Connected)
+            if (_session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -248,6 +256,11 @@ namespace Space.Control
             {
                 OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.CeaseFire));
             }
+        }
+
+        private IEntity GetLocalAvatar()
+        {
+            return _simulation.SystemManager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
         }
 
         /// <summary>

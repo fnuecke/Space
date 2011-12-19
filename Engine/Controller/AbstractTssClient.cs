@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.Commands;
+using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Session;
-using Engine.Simulation;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -13,21 +13,12 @@ namespace Engine.Controller
     /// This takes care of synchronizing the game states between server and
     /// client, and getting the run speed synchronized as well.
     /// </summary>
-    /// <typeparam name="TState">the type of game state used to represent a simulation.
-    /// This is the simulation run as a sub-state of the TSS.</typeparam>
-    /// <typeparam name="TSteppable">the type of object we put into our simulation.</typeparam>
-    /// <typeparam name="TCommandType">the type of commands we send around.</typeparam>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssClient<TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        : AbstractTssController<IClientSession<TPlayerData, TPacketizerContext>, TState, TSteppable, TCommand, TCommandType, TPlayerData, TPacketizerContext>,
-          IClientController<IClientSession<TPlayerData, TPacketizerContext>, TCommand, TCommandType, TPlayerData, TPacketizerContext>
-        where TState : IReversibleSubstate<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TSteppable : ISteppable<TState, TSteppable, TCommandType, TPlayerData, TPacketizerContext>
-        where TCommand : IFrameCommand<TCommandType, TPlayerData, TPacketizerContext>
-        where TCommandType : struct
-        where TPlayerData : IPacketizable<TPlayerData, TPacketizerContext>, new()
-        where TPacketizerContext : IPacketizerContext<TPlayerData, TPacketizerContext>
+    public abstract class AbstractTssClient<TCommand>
+        : AbstractTssController<IClientSession, TCommand>,
+          IClientController<IClientSession, TCommand>
+        where TCommand : IFrameCommand
     {
         #region Logger
 
@@ -51,28 +42,28 @@ namespace Engine.Controller
         /// <summary>
         /// Last time we sent a sync command to the server.
         /// </summary>
-        private long lastSyncTime = 0;
+        private long _lastSyncTime = 0;
 
         /// <summary>
         /// Keep track of the average number of frames we had to sync.
         /// </summary>
-        private DoubleSampling syncDiff = new DoubleSampling(5);
+        private DoubleSampling _syncDiff = new DoubleSampling(5);
 
         /// <summary>
         /// Difference in current frame to server, as determined by the
         /// last few syncs.
         /// </summary>
-        private IntSampling frameDiff = new IntSampling(5);
+        private IntSampling _frameDiff = new IntSampling(5);
 
         /// <summary>
         /// The last frame we know the server's state hash of.
         /// </summary>
-        private long hashFrame = -1;
+        private long _hashFrame = -1;
 
         /// <summary>
         /// The hash value of the server's state.
         /// </summary>
-        private int hashValue;
+        private int _hashValue;
 
         #endregion
 
@@ -84,7 +75,7 @@ namespace Engine.Controller
         /// <param name="game">the game this belongs to.</param>
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
-        public AbstractTssClient(Game game, IClientSession<TPlayerData, TPacketizerContext> session)
+        public AbstractTssClient(Game game, IClientSession session)
             : base(game, session, new uint[] {
                 (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
                 (uint)System.Math.Ceiling(150 / game.TargetElapsedTime.TotalMilliseconds),
@@ -103,9 +94,9 @@ namespace Engine.Controller
                 Session.JoinResponse += HandleJoinResponse;
             }
 
-            if (Simulation != null)
+            if (tss != null)
             {
-                Simulation.Invalidated += HandleSimulationInvalidated;
+                tss.Invalidated += HandleSimulationInvalidated;
             }
 
             base.Initialize();
@@ -121,9 +112,9 @@ namespace Engine.Controller
                 Session.JoinResponse -= HandleJoinResponse;
             }
 
-            if (Simulation != null)
+            if (tss != null)
             {
-                Simulation.Invalidated -= HandleSimulationInvalidated;
+                tss.Invalidated -= HandleSimulationInvalidated;
             }
 
             base.Dispose(disposing);
@@ -140,31 +131,31 @@ namespace Engine.Controller
         /// </summary>
         public override void Update(GameTime gameTime)
         {
-            if (Session.ConnectionState == ClientState.Connected && !Simulation.WaitingForSynchronization)
+            if (Session.ConnectionState == ClientState.Connected && !tss.WaitingForSynchronization)
             {
                 // Drive game logic.
-                UpdateSimulation(gameTime, syncDiff.Mean());
+                UpdateSimulation(gameTime, _syncDiff.Mean());
 
                 // Hash test.
-                if (Simulation.TrailingFrame == hashFrame)
+                if (tss.TrailingFrame == _hashFrame)
                 {
                     Hasher hasher = new Hasher();
-                    Simulation.Hash(hasher);
-                    if (hasher.Value != hashValue)
+                    tss.Hash(hasher);
+                    if (hasher.Value != _hashValue)
                     {
-                        logger.Debug("Hash mismatch: {0} != {1} ", hashValue, hasher.Value);
-                        Simulation.Invalidate();
+                        logger.Debug("Hash mismatch: {0} != {1} ", _hashValue, hasher.Value);
+                        tss.Invalidate();
                     }
                 }
 
                 // Send sync command every now and then, to keep game clock synchronized.
                 // No need to sync for a server that runs in the same program, though.
-                if (new TimeSpan(DateTime.Now.Ticks - lastSyncTime).TotalMilliseconds > SyncInterval)
+                if (new TimeSpan(DateTime.Now.Ticks - _lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
-                    lastSyncTime = DateTime.Now.Ticks;
+                    _lastSyncTime = DateTime.Now.Ticks;
                     Session.Send(new Packet()
                         .Write((byte)TssControllerMessage.Synchronize)
-                        .Write(Simulation.CurrentFrame));
+                        .Write(tss.CurrentFrame));
                 }
             }
 
@@ -180,7 +171,7 @@ namespace Engine.Controller
         /// whatever commands it produces.
         /// </summary>
         /// <param name="emitter">the emitter to attach to.</param>
-        public void AddEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter)
+        public void AddEmitter(ICommandEmitter<TCommand> emitter)
         {
             emitter.CommandEmitted += HandleEmittedCommand;
         }
@@ -189,7 +180,7 @@ namespace Engine.Controller
         /// Remove this controller as a listener from the given emitter.
         /// </summary>
         /// <param name="emitter">the emitter to detach from.</param>
-        public void RemoveEmitter(ICommandEmitter<TCommand, TCommandType, TPlayerData, TPacketizerContext> emitter)
+        public void RemoveEmitter(ICommandEmitter<TCommand> emitter)
         {
             emitter.CommandEmitted -= HandleEmittedCommand;
         }
@@ -198,16 +189,16 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected override void Apply(IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> command)
+        protected override void Apply(IFrameCommand command)
         {
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
             // own, tentative commands.
-            if (!command.IsAuthoritative && command.Player.Equals(Session.LocalPlayer))
+            if (!command.IsAuthoritative && command.PlayerNumber == Session.LocalPlayer.Number)
             {
                 // If we're waiting for a snapshot, don't continue spamming commands for
                 // the very frame we're stuck in.
-                if (Simulation.WaitingForSynchronization)
+                if (tss.WaitingForSynchronization)
                 {
                     return;
                 }
@@ -215,7 +206,7 @@ namespace Engine.Controller
                 // Send command to host.
                 Send(command);
             }
-            else if (Simulation.WaitingForSynchronization && command.Frame <= Simulation.TrailingFrame)
+            else if (tss.WaitingForSynchronization && command.Frame <= tss.TrailingFrame)
             {
                 // We're waiting for a sync, and our trailing frame wasn't enough, so
                 // we just skip any commands whatsoever that are from before it.
@@ -242,8 +233,8 @@ namespace Engine.Controller
         /// </summary>
         private void HandleEmittedCommand(TCommand command)
         {
-            command.Player = Session.LocalPlayer;
-            command.Frame = Simulation.CurrentFrame + 1;
+            command.PlayerNumber = Session.LocalPlayer.Number;
+            command.Frame = tss.CurrentFrame + 1;
             HandleLocalCommand(command);
         }
 
@@ -260,7 +251,7 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of client side TSS synchronization logic.
         /// </summary>
-        protected override IFrameCommand<TCommandType, TPlayerData, TPacketizerContext> UnwrapDataForReceive(SessionDataEventArgs e)
+        protected override IFrameCommand UnwrapDataForReceive(SessionDataEventArgs e)
         {
             var args = (ClientDataEventArgs)e;
             var type = (TssControllerMessage)args.Data.ReadByte();
@@ -277,30 +268,30 @@ namespace Engine.Controller
                     // Answer to a synchronization request.
                     // Only accept these when they come from the server, and disregard if
                     // we're waiting for a snapshot of the simulation.
-                    if (args.IsAuthoritative && !Simulation.WaitingForSynchronization)
+                    if (args.IsAuthoritative && !tss.WaitingForSynchronization)
                     {
                         // This calculation follows algorithm described here:
                         // http://www.mine-control.com/zack/timesync/timesync.html
                         long sentFrame = args.Data.ReadInt64();
                         long serverFrame = args.Data.ReadInt64();
 
-                        long latency = (Simulation.CurrentFrame - sentFrame) / 2;
-                        long clientServerDelta = (serverFrame - Simulation.CurrentFrame);
+                        long latency = (tss.CurrentFrame - sentFrame) / 2;
+                        long clientServerDelta = (serverFrame - tss.CurrentFrame);
                         long frameDelta = clientServerDelta + latency / 2;
 
-                        frameDiff.Put((int)frameDelta);
-                        int median = frameDiff.Median();
-                        double stdDev = frameDiff.StandardDeviation();
+                        _frameDiff.Put((int)frameDelta);
+                        int median = _frameDiff.Median();
+                        double stdDev = _frameDiff.StandardDeviation();
 
                         if (System.Math.Abs(frameDelta) > 1 && frameDelta < (int)(median + stdDev))
                         {
                             logger.Debug("Correcting for {0} frames.", frameDelta);
                             // Adjust the current frame of the simulation.
-                            Simulation.RunToFrame(Simulation.CurrentFrame + frameDelta);
+                            tss.RunToFrame(tss.CurrentFrame + frameDelta);
                         }
                         // Push our average delay plus the delta! Otherwise we'd loose the
                         // running ('constant') delta we accumulated.
-                        syncDiff.Put(frameDelta * Game.TargetElapsedTime.TotalMilliseconds / SyncInterval);
+                        _syncDiff.Put(frameDelta * Game.TargetElapsedTime.TotalMilliseconds / SyncInterval);
                     }
                     break;
 
@@ -308,8 +299,8 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
-                        hashFrame = args.Data.ReadInt64();
-                        hashValue = args.Data.ReadInt32();
+                        _hashFrame = args.Data.ReadInt64();
+                        _hashValue = args.Data.ReadInt32();
                     }
                     break;
 
@@ -319,7 +310,7 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
-                        Simulation.Depacketize(args.Data, Packetizer.Context);
+                        tss.Depacketize(args.Data);
                     }
                     break;
 
@@ -328,8 +319,8 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long addFrame = args.Data.ReadInt64();
-                        TSteppable steppable = Packetizer.Depacketize<TSteppable>(args.Data);
-                        Simulation.AddSteppable(steppable, addFrame);
+                        IEntity entity = Packetizer.Depacketize<IEntity>(args.Data);
+                        tss.AddEntity(entity, addFrame);
                     }
                     break;
 
@@ -338,8 +329,8 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long removeFrame = args.Data.ReadInt64();
-                        long steppableUid = args.Data.ReadInt64();
-                        Simulation.RemoveSteppable(steppableUid, removeFrame);
+                        long entityUid = args.Data.ReadInt64();
+                        tss.RemoveEntity(entityUid, removeFrame);
                     }
                     break;
 
