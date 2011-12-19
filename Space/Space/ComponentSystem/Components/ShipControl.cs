@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Components
     /// Handles control of a single ship, represented by its relevant components.
     /// 
     /// <para>
-    /// Requires: <c>StaticPhysics</c>, <c>DynamicPhysics</c>, <c>MovementProperties</c>.
+    /// Requires: <c>Transform</c>, <c>DynamicPhysics</c>, <c>MovementProperties</c>.
     /// </para>
     /// </summary>
     public class ShipControl : AbstractComponent
@@ -100,41 +100,42 @@ namespace Space.ComponentSystem.Components
             var p = (InputParameterization)parameterization;
             
             // Get components we depend upon / modify.
-            var sphysics = Entity.GetComponent<StaticPhysics>();
-            var dphysics = Entity.GetComponent<DynamicPhysics>();
+            var transform = Entity.GetComponent<Transform>();
+            var spin = Entity.GetComponent<Spin>();
+            var acceleration = Entity.GetComponent<Acceleration>();
             var movement = Entity.GetComponent<MovementProperties>();
 
             // Fire?
             Entity.GetComponent<Armament>().IsShooting = IsShooting;
 
             // Update acceleration.
-            dphysics.Acceleration = DirectionConversion.DirectionToFPoint(AccelerationDirection) * movement.Acceleration;
+            acceleration.Value = DirectionConversion.DirectionToFPoint(AccelerationDirection) * movement.Acceleration;
 
             // Update rotation / spin.
-            var currentDelta = Angle.MinAngle(sphysics.Rotation, TargetRotation);
+            var currentDelta = Angle.MinAngle(transform.Rotation, TargetRotation);
             var requiredSpin = (currentDelta > 0
                         ? DirectionConversion.DirectionToFixed(Directions.Right)
                         : DirectionConversion.DirectionToFixed(Directions.Left))
                         * movement.RotationSpeed;
             // If the target rotation changed and we're either not spinning, or spinning the wrong way.
-            if (_targetRotationChanged && Fixed.Sign(dphysics.Spin) != Fixed.Sign(requiredSpin))
+            if (_targetRotationChanged && Fixed.Sign(spin.Value) != Fixed.Sign(requiredSpin))
             {
                 // Is it worth starting to spin, or should we just jump to the position?
                 // If the distance we need to spin is lower than what we spin in one tick,
                 // just set it.
                 if (Fixed.Abs(currentDelta) > movement.RotationSpeed)
                 {
-                    dphysics.Spin = requiredSpin;
+                    spin.Value = requiredSpin;
                 }
                 else
                 {
-                    sphysics.Rotation = TargetRotation;
-                    dphysics.Spin = Fixed.Zero;
+                    transform.Rotation = TargetRotation;
+                    spin.Value = Fixed.Zero;
                 }
             }
 
             // Check if we're spinning.
-            if (dphysics.Spin != Fixed.Zero)
+            if (spin.Value != Fixed.Zero)
             {
                 // Yes, check if we passed our target rotation.
                 var previousDelta = Angle.MinAngle(_previousRotation, TargetRotation);
@@ -144,13 +145,13 @@ namespace Space.ComponentSystem.Components
                 {
                     //logger.Debug("prev, target, now: {0}, {1}, {2}", _previousRotation, _targetRotation, sphysics.Rotation);
                     // Yes, set to that rotation and stop spinning.
-                    sphysics.Rotation = TargetRotation;
-                    dphysics.Spin = Fixed.Zero;
+                    transform.Rotation = TargetRotation;
+                    spin.Value = Fixed.Zero;
                 }
             }
 
             // Remember rotation in this update for the next.
-            _previousRotation = sphysics.Rotation;
+            _previousRotation = transform.Rotation;
 
             // We handled this change.
             _targetRotationChanged = false;

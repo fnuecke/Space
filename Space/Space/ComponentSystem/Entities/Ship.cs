@@ -10,22 +10,30 @@ namespace Space.ComponentSystem.Entities
     {
         public Ship()
         {
-            AddComponent(new StaticPhysics());
-            AddComponent(new DynamicPhysics());
+            AddComponent(new Transform());
+            AddComponent(new Velocity());
+            AddComponent(new Spin());
+            AddComponent(new Acceleration());
+            AddComponent(new Friction());
+            AddComponent(new Physics());
+
             AddComponent(new CollidableSphere());
-            AddComponent(new MovementProperties());
+
             AddComponent(new Armament());
-            AddComponent(new StaticPhysicsRenderer());
+            AddComponent(new MovementProperties());
             AddComponent(new ShipControl());
+
             AddComponent(new Avatar());
+
+            AddComponent(new TransformedRenderer());
         }
 
         public Ship(ShipData shipData, int playerNumber)
             : this()
         {
-            var dphysics = GetComponent<DynamicPhysics>();
-            dphysics.Damping = (Fixed)0.01;
-            dphysics.MinVelocity = (Fixed)0.005;
+            var friction = GetComponent<Friction>();
+            friction.Value = (Fixed)0.01;
+            friction.MinVelocity = (Fixed)0.005;
 
             var collidable = GetComponent<CollidableSphere>();
             collidable.Radius = shipData.Radius;
@@ -34,7 +42,7 @@ namespace Space.ComponentSystem.Entities
             movement.Acceleration = shipData.Acceleration;
             movement.RotationSpeed = shipData.RotationSpeed;
 
-            var renderer = GetComponent<StaticPhysicsRenderer>();
+            var renderer = GetComponent<TransformedRenderer>();
             renderer.TextureName = shipData.Texture;
 
             var avatar = GetComponent<Avatar>();

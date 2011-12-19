@@ -37,7 +37,7 @@ namespace Space.ComponentSystem.Systems
             {
                 return new Vector2(parameterization.SpriteBatch.GraphicsDevice.Viewport.Width / 2,
                                    parameterization.SpriteBatch.GraphicsDevice.Viewport.Height / 2)
-                                   - (Vector2)avatar.GetComponent<StaticPhysics>().Position;
+                                   - (Vector2)avatar.GetComponent<Transform>().Translation;
             }
             return Vector2.Zero;
         }

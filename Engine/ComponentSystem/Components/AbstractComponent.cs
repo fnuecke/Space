@@ -56,17 +56,23 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// To be implemented by subclasses.
         /// </summary>
-        public abstract void Packetize(Serialization.Packet packet);
+        public virtual void Packetize(Serialization.Packet packet)
+        {
+        }
 
         /// <summary>
         /// To be implemented by subclasses.
         /// </summary>
-        public abstract void Depacketize(Serialization.Packet packet);
+        public virtual void Depacketize(Serialization.Packet packet)
+        {
+        }
 
         /// <summary>
         /// To be implemented by subclasses.
         /// </summary>
-        public abstract void Hash(Util.Hasher hasher);
+        public virtual void Hash(Util.Hasher hasher)
+        {
+        }
 
         /// <summary>
         /// Creates a member-wise clone of this instance. Subclasses may

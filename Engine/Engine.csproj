@@ -106,7 +106,11 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\IFrameCommand.cs" />
     <Compile Include="Commands\FrameCommand.cs" />
+    <Compile Include="ComponentSystem\Components\Acceleration.cs" />
     <Compile Include="ComponentSystem\Components\Avatar.cs" />
+    <Compile Include="ComponentSystem\Components\Friction.cs" />
+    <Compile Include="ComponentSystem\Components\Spin.cs" />
+    <Compile Include="ComponentSystem\Components\Velocity.cs" />
     <Compile Include="ComponentSystem\Parameterizations\AvatarParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\AvatarSystem.cs" />
     <Compile Include="ComponentSystem\Systems\AbstractComponentSystem.cs" />
@@ -117,10 +121,10 @@
     <Compile Include="ComponentSystem\Components\CollidableBox.cs" />
     <Compile Include="ComponentSystem\Components\CollidableSphere.cs" />
     <Compile Include="ComponentSystem\Components\AbstractRenderer.cs" />
-    <Compile Include="ComponentSystem\Components\StaticPhysicsRenderer.cs" />
+    <Compile Include="ComponentSystem\Components\TransformedRenderer.cs" />
     <Compile Include="ComponentSystem\Components\IComponent.cs" />
-    <Compile Include="ComponentSystem\Components\DynamicPhysics.cs" />
-    <Compile Include="ComponentSystem\Components\StaticPhysics.cs" />
+    <Compile Include="ComponentSystem\Components\Physics.cs" />
+    <Compile Include="ComponentSystem\Components\Transform.cs" />
     <Compile Include="ComponentSystem\Systems\IComponentSystem.cs" />
     <Compile Include="ComponentSystem\Parameterizations\CollisionParameterization.cs" />
     <Compile Include="ComponentSystem\Parameterizations\RendererParameterization.cs" />

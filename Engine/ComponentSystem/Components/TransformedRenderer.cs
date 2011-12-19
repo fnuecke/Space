@@ -5,13 +5,13 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Engine.ComponentSystem.Components
 {
     /// <summary>
-    /// Implements a renderer for a simple physics object.
+    /// Implements a renderer based on a transformation for position and rotation.
     /// 
     /// <para>
-    /// Requires: <c>StaticPhysics</c>.
+    /// Requires: <c>Transform</c>.
     /// </para>
     /// </summary>
-    public class StaticPhysicsRenderer : AbstractRenderer
+    public class TransformedRenderer : AbstractRenderer
     {
         #region Logic
 
@@ -28,13 +28,13 @@ namespace Engine.ComponentSystem.Components
             var p = (RendererParameterization)parameterization;
 
             // The position and orientation we're rendering at and in.
-            var sphysics = Entity.GetComponent<StaticPhysics>();
+            var sphysics = Entity.GetComponent<Transform>();
 
             // Draw the texture based on our physics component.
             p.SpriteBatch.Begin();
             p.SpriteBatch.Draw(texture,
-                new Rectangle((int)sphysics.Position.X + (int)p.Translation.X,
-                              (int)sphysics.Position.Y + (int)p.Translation.Y,
+                new Rectangle((int)sphysics.Translation.X + (int)p.Translation.X,
+                              (int)sphysics.Translation.Y + (int)p.Translation.Y,
                               texture.Width, texture.Height),
                 null, Color.White,
                 (float)sphysics.Rotation,

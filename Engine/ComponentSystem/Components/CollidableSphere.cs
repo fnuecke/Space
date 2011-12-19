@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.Components
     /// determine collisions.
     /// 
     /// <para>
-    /// Requires: <c>StaticPhysics</c>.
+    /// Requires: <c>Transform</c>.
     /// </para>
     /// </summary>
     public class CollidableSphere : AbstractCollidable
@@ -28,14 +28,14 @@ namespace Engine.ComponentSystem.Components
         public override bool Intersects(FPoint extents, FPoint previousPosition, FPoint position)
         {
             return SphereAABBSweep.Test(
-                this.Radius, this.previousPosition, this.Entity.GetComponent<StaticPhysics>().Position,
+                this.Radius, this.previousPosition, this.Entity.GetComponent<Transform>().Translation,
                 extents, previousPosition, position);
         }
 
         public override bool Intersects(Fixed radius, FPoint previousPosition, FPoint position)
         {
             return SphereSweep.Test(
-                this.Radius, this.previousPosition, this.Entity.GetComponent<StaticPhysics>().Position,
+                this.Radius, this.previousPosition, this.Entity.GetComponent<Transform>().Translation,
                 radius, previousPosition, position);
         }
 

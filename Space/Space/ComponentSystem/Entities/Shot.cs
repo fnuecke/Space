@@ -9,30 +9,33 @@ namespace Space.ComponentSystem.Entities
     {
         public Shot()
         {
-            AddComponent(new StaticPhysics());
-            AddComponent(new DynamicPhysics());
+            AddComponent(new Transform());
+            AddComponent(new Velocity());
+            AddComponent(new Physics());
+
             AddComponent(new CollidableSphere());
-            AddComponent(new StaticPhysicsRenderer());
+
+            AddComponent(new TransformedRenderer());
         }
 
         public Shot(WeaponData weaponData, FPoint position, FPoint velocity)
             : this()
         {
             // Give this entity a position.
-            var sphysics = GetComponent<StaticPhysics>();
-            sphysics.Position = position;
+            var sphysics = GetComponent<Transform>();
+            sphysics.Translation = position;
             sphysics.Rotation = Fixed.Atan2(velocity.Y, velocity.X);
 
             // And a dynamic component for movement and rotation.
-            var dphysics = GetComponent<DynamicPhysics>();
-            dphysics.Velocity = velocity;
+            var speed = GetComponent<Velocity>();
+            speed.Value = velocity;
 
             // Also make it collidable.
             var collidable = GetComponent<CollidableSphere>();
             collidable.Radius = weaponData.ProjectileRadius;
 
             // And finally, allow it to be rendered.
-            var draw = GetComponent<StaticPhysicsRenderer>();
+            var draw = GetComponent<TransformedRenderer>();
             draw.TextureName = weaponData.ProjectileTexture;
         }
     }

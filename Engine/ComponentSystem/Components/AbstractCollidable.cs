@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.Components
     /// Base class for components that implement collision logic.
     /// 
     /// <para>
-    /// Requires: <c>StaticPhysics</c>.
+    /// Requires: <c>Transform</c>.
     /// </para>
     /// </summary>
     public abstract class AbstractCollidable : AbstractComponent, ICollideable
@@ -47,7 +47,7 @@ namespace Engine.ComponentSystem.Components
             var p = (CollisionParameterization)parameterization;
             // TODO parameterization must contain list of objects to test collision with and possibility to return collision results
 
-            previousPosition = Entity.GetComponent<StaticPhysics>().Position;
+            previousPosition = Entity.GetComponent<Transform>().Translation;
         }
 
         /// <summary>
