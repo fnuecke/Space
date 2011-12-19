@@ -695,7 +695,7 @@ namespace Engine.Simulation
 
             #region Interfaces
 
-            public void AddSystem(IComponentSystem system)
+            public IComponentSystemManager AddSystem(IComponentSystem system)
             {
                 if (_tss.CurrentFrame > 0)
                 {
@@ -705,6 +705,7 @@ namespace Engine.Simulation
                 {
                     state.SystemManager.AddSystem((IComponentSystem)system.Clone());
                 }
+                return this;
             }
 
             public void RemoveSystem(IComponentSystem system)
@@ -732,7 +733,7 @@ namespace Engine.Simulation
             /// <summary>
             /// Not supported.
             /// </summary>
-            public void AddComponent(ComponentSystem.Components.IComponent component)
+            public IComponentSystemManager AddComponent(ComponentSystem.Components.IComponent component)
             {
                 throw new NotSupportedException();
             }

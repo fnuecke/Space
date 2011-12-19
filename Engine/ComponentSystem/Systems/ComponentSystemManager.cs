@@ -52,12 +52,14 @@ namespace Engine.ComponentSystem.Systems
         /// Add the component to supported subsystems.
         /// </summary>
         /// <param name="component">The component to add.</param>
-        public void AddComponent(IComponent component)
+        /// <returns>This component system manager, for chaining.</returns>
+        public IComponentSystemManager AddComponent(IComponent component)
         {
             foreach (var system in _systems)
             {
                 system.AddComponent(component);
             }
+            return this;
         }
 
         /// <summary>
@@ -76,10 +78,12 @@ namespace Engine.ComponentSystem.Systems
         /// Add the system to this manager.
         /// </summary>
         /// <param name="system">The system to add.</param>
-        public void AddSystem(IComponentSystem system)
+        /// <returns>This component system manager, for chaining.</returns>
+        public IComponentSystemManager AddSystem(IComponentSystem system)
         {
             _systems.Add(system);
             system.Manager = this;
+            return this;
         }
 
         /// <summary>

@@ -10,11 +10,10 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
-    public abstract class AbstractTssController<TSession, TCommand>
+    public abstract class AbstractTssController<TSession>
         : AbstractController<TSession, IFrameCommand>,
-          IStateController<TSession, TCommand>
+          ISimulationController<TSession, IFrameCommand>
         where TSession : ISession
-        where TCommand : IFrameCommand
     {
         #region Types
 
@@ -233,6 +232,15 @@ namespace Engine.Controller
         #endregion
 
         #region Protocol layer
+
+        /// <summary>
+        /// Got command data from another client or the server.
+        /// </summary>
+        /// <param name="command">the received command.</param>
+        protected override void HandleRemoteCommand(IFrameCommand command)
+        {
+            Apply(command);
+        }
 
         /// <summary>
         /// Prepends all normal command messages with the corresponding flag.

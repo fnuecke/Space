@@ -6,8 +6,7 @@ namespace Engine.Controller
     /// <summary>
     /// Public interface for client controllers, which take some form of direct input.
     /// </summary>
-    public interface IClientController<TSession, TCommand> : IController<TSession>
-        where TSession : ISession
+    public interface IClientController<TCommand> : IController<IClientSession>
         where TCommand : ICommand
     {
         /// <summary>

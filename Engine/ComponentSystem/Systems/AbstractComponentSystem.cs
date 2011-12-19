@@ -55,7 +55,8 @@ namespace Engine.ComponentSystem.Systems
         /// Add the component to this system, if it's supported.
         /// </summary>
         /// <param name="component">The component to add.</param>
-        public void AddComponent(IComponent component)
+        /// <returns>This component system, for chaining.</returns>
+        public IComponentSystem AddComponent(IComponent component)
         {
             if (!_components.Contains(component))
             {
@@ -65,6 +66,7 @@ namespace Engine.ComponentSystem.Systems
                     HandleComponentAdded(component);
                 }
             }
+            return this;
         }
 
         /// <summary>

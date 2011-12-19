@@ -2,7 +2,7 @@
 
 namespace Engine.Physics.Intersection
 {
-    internal static class AABBSweep
+    public static class AABBSweep
     {
         /// <summary>
         /// Sweep two AABB's to see if and when they first and last were overlapping.

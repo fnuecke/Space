@@ -10,13 +10,12 @@ namespace Engine.Controller
 {
     /// <summary>
     /// Base class for TSS based multiplayer servers using a UDP connection.
-    /// This takes care of synchronizing the gamestates between server and
-    /// client, and getting the runspeed synchronized as well.
+    /// This takes care of synchronizing the game states between server and
+    /// client, and getting the run speed synchronized as well.
     /// </summary>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssServer<TCommand> : AbstractTssController<IServerSession, TCommand>
-        where TCommand : IFrameCommand
+    public abstract class AbstractTssServer : AbstractTssController<IServerSession>
     {
         #region Logger
 
@@ -119,7 +118,7 @@ namespace Engine.Controller
             // Drive game logic.
             UpdateSimulation(gameTime);
 
-            // Send hash check every now and then, to check for desyncs.
+            // Send hash check every now and then, to check for loss of synchronization.
             if (new TimeSpan(DateTime.Now.Ticks - _lastHashTime).TotalMilliseconds > HashInterval)
             {
                 _lastHashTime = DateTime.Now.Ticks;
@@ -132,8 +131,6 @@ namespace Engine.Controller
                     .Write(tss.TrailingFrame)
                     .Write(hasher.Value));
             }
-
-            base.Update(gameTime);
         }
 
         #endregion

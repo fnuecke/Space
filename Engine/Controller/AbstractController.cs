@@ -57,7 +57,6 @@ namespace Engine.Controller
             if (Session != null)
             {
                 Session.Data += HandlePlayerData;
-                Game.Components.Add(Session);
             }
 
             base.Initialize();
@@ -71,8 +70,6 @@ namespace Engine.Controller
             if (Session != null)
             {
                 Session.Data -= HandlePlayerData;
-                Game.Components.Remove(Session);
-                Session.Dispose();
                 Session = default(TSession);
             }
 
@@ -89,7 +86,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="command">the command to handle.</param>
         /// <returns>whether the command was handled successfully (<c>true</c>) or not (<c>false</c>).</returns>
-        protected abstract bool HandleRemoteCommand(TCommand command);
+        protected abstract void HandleRemoteCommand(TCommand command);
 
         #endregion
 

@@ -13,7 +13,7 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <XnaPlatform>Windows</XnaPlatform>
-    <XnaProfile>HiDef</XnaProfile>
+    <XnaProfile>Reach</XnaProfile>
     <XnaCrossPlatformGroupID>6bff4e72-5bc8-46cc-b228-7dd235b61a3c</XnaCrossPlatformGroupID>
     <XnaOutputType>Library</XnaOutputType>
   </PropertyGroup>
@@ -106,7 +106,11 @@
     <Compile Include="Commands\ICommand.cs" />
     <Compile Include="Commands\IFrameCommand.cs" />
     <Compile Include="Commands\FrameCommand.cs" />
+    <Compile Include="ComponentSystem\Components\Acceleration.cs" />
     <Compile Include="ComponentSystem\Components\Avatar.cs" />
+    <Compile Include="ComponentSystem\Components\Friction.cs" />
+    <Compile Include="ComponentSystem\Components\Spin.cs" />
+    <Compile Include="ComponentSystem\Components\Velocity.cs" />
     <Compile Include="ComponentSystem\Parameterizations\AvatarParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\AvatarSystem.cs" />
     <Compile Include="ComponentSystem\Systems\AbstractComponentSystem.cs" />
@@ -117,10 +121,10 @@
     <Compile Include="ComponentSystem\Components\CollidableBox.cs" />
     <Compile Include="ComponentSystem\Components\CollidableSphere.cs" />
     <Compile Include="ComponentSystem\Components\AbstractRenderer.cs" />
-    <Compile Include="ComponentSystem\Components\StaticPhysicsRenderer.cs" />
+    <Compile Include="ComponentSystem\Components\TransformedRenderer.cs" />
     <Compile Include="ComponentSystem\Components\IComponent.cs" />
-    <Compile Include="ComponentSystem\Components\DynamicPhysics.cs" />
-    <Compile Include="ComponentSystem\Components\StaticPhysics.cs" />
+    <Compile Include="ComponentSystem\Components\Physics.cs" />
+    <Compile Include="ComponentSystem\Components\Transform.cs" />
     <Compile Include="ComponentSystem\Systems\IComponentSystem.cs" />
     <Compile Include="ComponentSystem\Parameterizations\CollisionParameterization.cs" />
     <Compile Include="ComponentSystem\Parameterizations\RendererParameterization.cs" />
@@ -137,7 +141,7 @@
     <Compile Include="Controller\IClientController.cs" />
     <Compile Include="Controller\ICommandEmitter.cs" />
     <Compile Include="Controller\IController.cs" />
-    <Compile Include="Controller\IStateController.cs" />
+    <Compile Include="Controller\ISimulationController.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />
     <Compile Include="Input\KeyboardInputEventArgs.cs" />
@@ -149,7 +153,7 @@
     <Compile Include="Input\MouseInputEventArgs.cs" />
     <Compile Include="Input\MouseInputManager.cs" />
     <Compile Include="Network\AbstractProtocol.cs" />
-    <Compile Include="Network\PacketStream.cs" />
+    <Compile Include="Util\PacketStream.cs" />
     <Compile Include="Network\UdpProtocol.cs" />
     <Compile Include="Network\EventArgs.cs" />
     <Compile Include="Network\IProtocolInfo.cs" />
@@ -169,6 +173,7 @@
     <Compile Include="Serialization\Packet.cs" />
     <Compile Include="Simulation\AbstractSimulation.cs" />
     <Compile Include="ComponentSystem\Entities\AbstractEntity.cs" />
+    <Compile Include="Simulation\DefaultSimulation.cs" />
     <Compile Include="Simulation\IReversibleSimulation.cs" />
     <Compile Include="Simulation\IAuthoritativeSimulation.cs" />
     <Compile Include="Simulation\ISimulation.cs" />
@@ -179,7 +184,6 @@
     <Compile Include="Physics\Intersection\SphereAABBSweep.cs" />
     <Compile Include="Physics\Intersection\SphereSweep.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serialization\FixedReader.cs" />
     <Compile Include="Simulation\TSS.cs" />
     <Compile Include="Util\Angle.cs" />
     <Compile Include="Util\GameConsoleTarget.cs" />
