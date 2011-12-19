@@ -7,7 +7,7 @@ using Space.View;
 
 namespace Space.Control
 {
-    class GameClient : DrawableGameComponent
+    public class GameClient : DrawableGameComponent
     {
         internal IClientSession Session { get; private set; }
         internal ClientController Controller { get; private set; }

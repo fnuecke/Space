@@ -27,8 +27,7 @@ namespace GameStateManagement
 
         #region Initialization
 
-        private GameServer _server;
-        private GameClient _client;
+        
 
         /// <summary>
         /// Constructor fills in the menu contents.
@@ -41,7 +40,7 @@ namespace GameStateManagement
             MenuEntry playGameMenuEntry = new MenuEntry(Strings.join);
             MenuEntry startServerMenuEntry = new MenuEntry(Strings.host);
             MenuEntry optionsMenuEntry = new MenuEntry(Strings.Options);
-            MenuEntry exitMenuEntry = new MenuEntry("Exit");
+            MenuEntry exitMenuEntry = new MenuEntry(Strings.Exit);
 
             // Hook up menu event handlers.
             playGameMenuEntry.Selected += PlayGameMenuEntrySelected;
@@ -67,22 +66,22 @@ namespace GameStateManagement
         /// </summary>
         void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            RestartClient();
+            ScreenManager.RestartClient();
 
-            ScreenManager.AddScreen(new ConnectScreen(_client));
+            ScreenManager.AddScreen(new ConnectScreen(ScreenManager.Client));
         }
 
         void StartServerMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            RestartServer();
-            RestartClient();
+            ScreenManager.RestartServer();
+            ScreenManager.RestartClient();
 
             // Autojoin self.
             PlayerInfo info = new PlayerInfo();
             info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-            _client.Session.Join(_server.Session, Settings.Instance.PlayerName, info);
+            ScreenManager.Client.Session.Join(ScreenManager.Server.Session, Settings.Instance.PlayerName, info);
 
-            LoadingScreen.Load(ScreenManager, true, new GameplayScreen(_client));
+            LoadingScreen.Load(ScreenManager, true, new GameplayScreen());
         }
 
         /// <summary>
@@ -122,27 +121,7 @@ namespace GameStateManagement
 
         #region Utility Methods
         
-        private void RestartServer()
-        {
-            if (_server != null)
-            {
-                _server.Dispose();
-                ScreenManager.Game.Components.Remove(_server);
-            }
-            _server = new GameServer(ScreenManager.Game);
-            ScreenManager.Game.Components.Add(_server);
-        }
-
-        private void RestartClient()
-        {
-            if (_client != null)
-            {
-                _client.Dispose();
-                ScreenManager.Game.Components.Remove(_client);
-            }
-            _client = new GameClient(ScreenManager.Game);
-            ScreenManager.Game.Components.Add(_client);
-        }
+        
 
         #endregion
     }

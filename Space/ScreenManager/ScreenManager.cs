@@ -14,6 +14,8 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Space.Control;
+
 //using Microsoft.Xna.Framework.Input.Touch;
 #endregion
 
@@ -42,7 +44,9 @@ namespace GameStateManagement
         /// </summary>
         public Texture2D PixelTexture { get; private set; }
         bool isInitialized;
-
+        public GameServer Server { get; set; }
+        public GameClient Client { get; set; }
+        
         bool traceEnabled;
 
         #endregion
@@ -59,6 +63,7 @@ namespace GameStateManagement
             get { return spriteBatch; }
         }
 
+      
 
         /// <summary>
         /// A default font shared by all the screens. This saves
@@ -93,8 +98,9 @@ namespace GameStateManagement
         public ScreenManager(Game game)
             : base(game)
         {
-            Game games = game;
- 
+            
+
+            DrawOrder = 1337;
             // we must set EnabledGestures before we can query for them, but
             // we don't assume the game wants to read them.
             //TouchPanel.EnabledGestures = GestureType.None;
@@ -219,7 +225,42 @@ namespace GameStateManagement
             Debug.WriteLine(string.Join(", ", screenNames.ToArray()));
         }
 
+        public void DisposeGame()
+        {
+            if (Client != null)
+            {
+                Client.Dispose();
+                Game.Components.Remove(Client);
+                Client = null;
+            }
+            if (Server != null)
+            {
+                Server.Dispose();
+                Game.Components.Remove(Server);
+                Server = null;
+            }
+        }
+        public void RestartServer()
+        {
+            if (Server != null)
+            {
+                Server.Dispose();
+                Game.Components.Remove(Server);
+            }
+            Server = new GameServer(Game);
+            Game.Components.Add(Server);
+        }
 
+        public void RestartClient()
+        {
+            if (Client != null)
+            {
+                Client.Dispose();
+                Game.Components.Remove(Client);
+            }
+            Client = new GameClient(Game);
+            Game.Components.Add(Client);
+        }
         /// <summary>
         /// Tells each screen to draw itself.
         /// </summary>

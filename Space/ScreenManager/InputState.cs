@@ -130,8 +130,7 @@ namespace GameStateManagement
         /// </summary>
         public bool IsMenuSelect()
         {
-            return IsNewKeyPress(Keys.Space) ||
-                   IsNewKeyPress(Keys.Enter) ||
+            return IsNewKeyPress(Keys.Enter) ||
                    IsNewButtonPress(Buttons.A) ||
                    IsNewButtonPress(Buttons.Start);
         }

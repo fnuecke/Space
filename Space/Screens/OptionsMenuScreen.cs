@@ -53,7 +53,7 @@ namespace GameStateManagement
         /// Constructor.
         /// </summary>
         public OptionsMenuScreen()
-            : base("Options")
+            : base(Strings.Options)
         {
             // Create our menu entries.
             languages["en"] = Strings.en;
@@ -64,7 +64,7 @@ namespace GameStateManagement
             
             SetMenuEntryText();
 
-            MenuEntry back = new MenuEntry("Back");
+            MenuEntry back = new MenuEntry(Strings.Back);
 
             // Hook up menu event handlers.
             languageMenuEntry.Selected += LanguageMenuEntrySelected;
