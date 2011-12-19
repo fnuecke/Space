@@ -144,4 +144,16 @@
   <data name="Options" xml:space="preserve">
     <value>Optionen</value>
   </data>
+  <data name="Back" xml:space="preserve">
+    <value>Zurück</value>
+  </data>
+  <data name="ConnectionFailed" xml:space="preserve">
+    <value>Verbindung zum Server konnte </value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Beenden</value>
+  </data>
+  <data name="InvalidHost" xml:space="preserve">
+    <value>Host oder IP Falsch</value>
+  </data>
 </root>

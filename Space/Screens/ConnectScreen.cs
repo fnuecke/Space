@@ -17,16 +17,15 @@ namespace GameStateManagement
 
         EditableMenueEntry connect;
 
-        public GameClient Client { get; private set; }
         #endregion
         public ConnectScreen(GameClient client)
             : base(Strings.join)
         {
-            Client = client;
+            
             client.Session.JoinResponse += LoginSucces;
             client.Session.Disconnected += LoginFailed;
             connect = new EditableMenueEntry(String.Empty);
-            MenuEntry back = new MenuEntry("Back");
+            MenuEntry back = new MenuEntry(Strings.Back);
             connect.SetActive(true);
 
             connect.Selected += ConnectEntrySelected;
@@ -55,7 +54,16 @@ namespace GameStateManagement
                 
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
                 ((EditableMenueEntry)MenuEntries[0]).locked = true;
-                Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
+                try
+                {
+                    ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
+                }
+                catch (Exception)
+                {
+
+                    ErrorText = Strings.InvalidHost;
+                }
+                
             }
             else
             {
@@ -68,11 +76,12 @@ namespace GameStateManagement
         {
             ((EditableMenueEntry)MenuEntries[0]).locked = false;
             LoadingScreen.Load(ScreenManager, true,
-                                new GameplayScreen(Client));
+                                new GameplayScreen());
         }
         //Called if the login was handeled
         private void LoginFailed(object sender, EventArgs e)
         {
+            ErrorText = Strings.ConnectionFailed;
             //tell that an error occured
             connect.locked = false;
         }

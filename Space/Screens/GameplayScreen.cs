@@ -47,7 +47,7 @@ namespace GameStateManagement
         float pauseAlpha;
 
 
-        private GameClient client;
+        
 
         #endregion
 
@@ -57,12 +57,12 @@ namespace GameStateManagement
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GameplayScreen(GameClient client)
+        public GameplayScreen()
         {
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
 
-            this.client = client;
+            
 
            
         }
@@ -82,20 +82,20 @@ namespace GameStateManagement
            
             console.AddCommand("search", args =>
             {
-                client.Session.Search();
+                ScreenManager.Client.Session.Search();
             },
                 "Search for games available on the local subnet.");
             console.AddCommand("connect", args =>
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
+                ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
             },
                 "Joins a game at the given host.",
                 "connect <host> <port> - join the host with the given hostname or IP.");
             console.AddCommand("leave", args =>
             {
-                client.Session.Leave();
+                ScreenManager.Client.Session.Leave();
             },
                 "Leave the current game.");
             // Just for me, joining default testing server.
@@ -103,7 +103,7 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
+                ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
             },
                 "autojoin fn");
             // Just for me, joining default testing server.
@@ -111,13 +111,13 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
+                ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
             },
                 "autojoin localhost");
 
             console.AddCommand("invalidate", args =>
             {
-                client.Controller.DEBUG_InvalidateSimulation();
+                ScreenManager.Client.Controller.DEBUG_InvalidateSimulation();
             },
                 "Invalidates the client game state, requesting a snapshot from the server.");
 
@@ -201,30 +201,7 @@ namespace GameStateManagement
             }
             else
             {
-                // Otherwise move the player position.
-                Vector2 movement = Vector2.Zero;
-
-                if (keyboardState.IsKeyDown(Keys.Left))
-                    movement.X--;
-
-                if (keyboardState.IsKeyDown(Keys.Right))
-                    movement.X++;
-
-                if (keyboardState.IsKeyDown(Keys.Up))
-                    movement.Y--;
-
-                if (keyboardState.IsKeyDown(Keys.Down))
-                    movement.Y++;
-
-                Vector2 thumbstick = gamePadState.ThumbSticks.Left;
-
-                movement.X += thumbstick.X;
-                movement.Y -= thumbstick.Y;
-
-                if (movement.Length() > 1)
-                    movement.Normalize();
-
-                playerPosition += movement * 2;
+                
             }
         }
 
@@ -235,8 +212,8 @@ namespace GameStateManagement
         public override void Draw(GameTime gameTime)
         {
             // This game has a blue background. Why? Because!
-            ScreenManager.GraphicsDevice.Clear(ClearOptions.Target,
-                                               Color.CornflowerBlue, 0, 0);
+            //ScreenManager.GraphicsDevice.Clear(ClearOptions.Target,
+            //                                   Color.CornflowerBlue, 0, 0);
 
             //// Our player and enemy are both actually just text strings.
             //SpriteBatch spriteBatch = ScreenManager.SpriteBatch;

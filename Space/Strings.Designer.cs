@@ -61,6 +61,24 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Back.
+        /// </summary>
+        internal static string Back {
+            get {
+                return ResourceManager.GetString("Back", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Connection could not be established.
+        /// </summary>
+        internal static string ConnectionFailed {
+            get {
+                return ResourceManager.GetString("ConnectionFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to German.
         /// </summary>
         internal static string de {
@@ -79,11 +97,29 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Exit.
+        /// </summary>
+        internal static string Exit {
+            get {
+                return ResourceManager.GetString("Exit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Host a game.
         /// </summary>
         internal static string host {
             get {
                 return ResourceManager.GetString("host", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Invalid Host or IP Adress.
+        /// </summary>
+        internal static string InvalidHost {
+            get {
+                return ResourceManager.GetString("InvalidHost", resourceCulture);
             }
         }
         

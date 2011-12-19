@@ -69,6 +69,8 @@ namespace GameStateManagement
         /// </summary>
         void ConfirmQuitMessageBoxAccepted(object sender, PlayerIndexEventArgs e)
         {
+            ScreenManager.DisposeGame();
+                
             LoadingScreen.Load(ScreenManager, false, null, new BackgroundScreen(),
                                                            new MainMenuScreen());
         }
