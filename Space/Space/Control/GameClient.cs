@@ -34,6 +34,7 @@ namespace Space.Control
             Session.PlayerJoined += HandlePlayerJoined;
             Session.PlayerLeft += HandlePlayerLeft;
 
+            Game.Components.Add(Session);
             Game.Components.Add(Controller);
             Game.Components.Add(emitter);
 
@@ -56,6 +57,7 @@ namespace Space.Control
             Controller.Dispose();
             emitter.Dispose();
 
+            Game.Components.Remove(Session);
             Game.Components.Remove(Controller);
             Game.Components.Remove(emitter);
 

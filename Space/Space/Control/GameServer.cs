@@ -24,6 +24,7 @@ namespace Space.Control
 
         public override void Initialize()
         {
+            Game.Components.Add(Session);
             Game.Components.Add(Controller);
 
             base.Initialize();
@@ -41,6 +42,7 @@ namespace Space.Control
             Session.Dispose();
             Controller.Dispose();
 
+            Game.Components.Remove(Session);
             Game.Components.Remove(Controller);
 
             base.Dispose(disposing);

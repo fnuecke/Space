@@ -57,7 +57,6 @@ namespace Engine.Controller
             if (Session != null)
             {
                 Session.Data += HandlePlayerData;
-                Game.Components.Add(Session);
             }
 
             base.Initialize();
@@ -71,8 +70,6 @@ namespace Engine.Controller
             if (Session != null)
             {
                 Session.Data -= HandlePlayerData;
-                Game.Components.Remove(Session);
-                Session.Dispose();
                 Session = default(TSession);
             }
 
