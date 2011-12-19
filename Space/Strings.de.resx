@@ -133,6 +133,15 @@
     <value>Spiel hosten</value>
   </data>
   <data name="playerName" xml:space="preserve">
-    <value>Spieler Name:</value>
+    <value>Spieler Name: </value>
+  </data>
+  <data name="language" xml:space="preserve">
+    <value>Sprache: </value>
+  </data>
+  <data name="NameToShort" xml:space="preserve">
+    <value>Name zu kurz!</value>
+  </data>
+  <data name="Options" xml:space="preserve">
+    <value>Optionen</value>
   </data>
 </root>

@@ -30,6 +30,8 @@ namespace GameStateManagement
         protected int selectedEntry = 0;
         string menuTitle;
 
+        public string ErrorText { get; set; }
+
         #endregion
 
         #region Properties
@@ -56,7 +58,7 @@ namespace GameStateManagement
         public MenuScreen(string menuTitle)
         {
             this.menuTitle = menuTitle;
-
+            ErrorText = "";
             TransitionOnTime = TimeSpan.FromSeconds(0.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
         }
@@ -76,28 +78,35 @@ namespace GameStateManagement
             // Move to the previous menu entry?
             if (input.IsMenuUp())
             {
-                MenuEntries[selectedEntry].Active = false;
+                MenuEntries[selectedEntry].SetActive(false);
                 selectedEntry--;
 
                 if (selectedEntry < 0)
                     selectedEntry = menuEntries.Count - 1;
-                MenuEntries[selectedEntry].Active = true;
-                
+                MenuEntries[selectedEntry].SetActive(true);
+                OnPrev();
             }
 
             // Move to the next menu entry?
             if (input.IsMenuDown())
             {
-                MenuEntries[selectedEntry].Active = false;
+                MenuEntries[selectedEntry].SetActive(false);
                 
                 selectedEntry++;
 
                 if (selectedEntry >= menuEntries.Count)
                     selectedEntry = 0;
-                MenuEntries[selectedEntry].Active = true;
-                
+                MenuEntries[selectedEntry].SetActive(true);
+                OnNext();
             }
-
+            if (input.IsMenuNext())
+            {
+                MenuEntries[selectedEntry].OnNextEntry();
+            }
+            if (input.IsMenuPrev())
+            {
+                MenuEntries[selectedEntry].OnPrevEntry();
+            }
             // Accept or cancel the menu? We pass in our ControllingPlayer, which may
             // either be null (to accept input from any player) or a specific index.
             // If we pass a null controlling player, the InputState helper returns to
@@ -121,6 +130,7 @@ namespace GameStateManagement
         /// </summary>
         protected virtual void OnSelectEntry(int entryIndex)
         {
+            ErrorText = "";
             menuEntries[entryIndex].OnSelectEntry();
         }
 
@@ -142,6 +152,14 @@ namespace GameStateManagement
             OnCancel();
         }
 
+        protected virtual void OnNext()
+        {
+
+        }
+        protected virtual void OnPrev()
+        {
+
+        }
 
         #endregion
 
@@ -241,6 +259,7 @@ namespace GameStateManagement
 
             spriteBatch.DrawString(font,menuTitle, titlePosition, titleColor, 0,
                                    titleOrigin, titleScale, SpriteEffects.None, 0);
+            spriteBatch.DrawString(font, ErrorText, new Vector2(graphics.Viewport.Width / 2 - font.MeasureString(ErrorText).X/2, graphics.Viewport.Height - font.MeasureString(ErrorText).Y), Color.Red);
 
             spriteBatch.End();
         }

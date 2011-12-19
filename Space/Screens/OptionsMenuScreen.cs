@@ -13,6 +13,7 @@ using Engine.Input;
 using Microsoft.Xna.Framework;
 using Space;
 using System.Collections.Generic;
+using System;
 #endregion
 
 namespace GameStateManagement
@@ -28,8 +29,8 @@ namespace GameStateManagement
 
         MenuEntry languageMenuEntry;
         private EditableMenueEntry playerName;
-        
 
+        private Option language;
       
 
         static Dictionary<string,string> languages= new Dictionary<string,string>();
@@ -57,7 +58,7 @@ namespace GameStateManagement
             // Create our menu entries.
             languages["en"] = Strings.en;
             languages["de"] = Strings.de;
-            
+            language = new Option(languages);
             languageMenuEntry = new MenuEntry(string.Empty);
             playerName = new EditableMenueEntry(Strings.playerName);
             
@@ -68,10 +69,14 @@ namespace GameStateManagement
             // Hook up menu event handlers.
             languageMenuEntry.Selected += LanguageMenuEntrySelected;
             languageMenuEntry.next += LanguageMenuEntryNext;
+            languageMenuEntry.prev += LanguageMenuEntryPrev;
             back.Selected += OnCancel;
 
             playerName.Selected += PlayerNameSelected;
+            //Graphics
             
+
+
             // Add entries to the menu.
             MenuEntries.Add(languageMenuEntry);
             MenuEntries.Add(playerName);
@@ -91,7 +96,8 @@ namespace GameStateManagement
         /// </summary>
         void SetMenuEntryText()
         {
-           languageMenuEntry.Text = "Language: " + languages[Settings.Instance.Language];
+            languageMenuEntry.Text = Strings.language + languages[Settings.Instance.Language];
+            language.SetCurrent(Settings.Instance.Language);
             playerName.SetInputText(Settings.Instance.PlayerName);
         }
 
@@ -109,9 +115,9 @@ namespace GameStateManagement
         /// </summary>
         void LanguageMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            
-            
-            currentLanguage = (currentLanguage + 1) % languages.Count;
+
+
+            Settings.Instance.Language = language.GetKey();
 
             SetMenuEntryText();
         }
@@ -122,20 +128,52 @@ namespace GameStateManagement
         void PlayerNameSelected(object sender, PlayerIndexEventArgs e)
         {
 
+            if (playerName.Editable)
+            {
+                if (playerName.GetInputText().Length < 3)
+                {
+                    ErrorText = Strings.NameToShort;
+                }
+                else
+                {
 
-            Settings.Instance.PlayerName = playerName.GetInputText();
 
-            SetMenuEntryText();
+                    Settings.Instance.PlayerName = playerName.GetInputText();
+                    playerName.Editable = false;
+                    SetMenuEntryText();
+                }
+            }
+            else
+            {
+                playerName.Editable = true;
+            }
         }
         void LanguageMenuEntryNext(object sender, PlayerIndexEventArgs e)
         {
 
+            
 
-            currentLanguage = (currentLanguage + 1) % languages.Count;
+            languageMenuEntry.Text = Strings.language+ language.GetNextOption();
 
+            
+        }
+        void LanguageMenuEntryPrev(object sender, PlayerIndexEventArgs e)
+        {
+
+
+
+            languageMenuEntry.Text = Strings.language + language.GetPrevOption();
+
+
+        }
+        protected override void OnNext()
+        {
             SetMenuEntryText();
         }
-
+        protected override void OnPrev()
+        {
+            SetMenuEntryText();
+        }
 
         /// <summary>
         /// Event handler for when the Frobnicate menu entry is selected.
@@ -159,6 +197,62 @@ namespace GameStateManagement
         }
 
 
+        #endregion
+
+        #region Option
+        public class Option
+        {
+
+            #region Fields
+            Dictionary<string, string> options = new Dictionary<string, string>();
+            List<string> keyList;
+            int current = 0;
+            #endregion
+
+            #region Initialization
+
+            public Option(Dictionary<string, string> dict)
+            {
+                options = dict;
+                keyList = new List<string>(options.Keys);
+            }
+
+            public string GetNextOption()
+            {
+                current = ++current % keyList.Count;
+                return GetOption();
+                
+            }
+            public string GetPrevOption()
+            {
+                current = (--current+keyList.Count) % keyList.Count;
+                return GetOption();
+
+            }
+            public string GetOption()
+            {
+                return options[GetKey()];
+
+            }
+
+            public string GetKey()
+            {
+                return keyList[current];
+            }
+
+            public void SetCurrent(string key)
+            {
+                for (int i = 0; i < keyList.Count; i++)
+                {
+                    current = i;
+                    if (keyList[i].Equals(key))
+                        return;
+                }
+                    //not found use 1;
+                    current = 0;
+            }
+            #endregion
+        }
         #endregion
     }
 }

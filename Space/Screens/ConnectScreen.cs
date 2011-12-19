@@ -15,7 +15,7 @@ namespace GameStateManagement
     {
         #region Fields
 
-
+        EditableMenueEntry connect;
 
         public GameClient Client { get; private set; }
         #endregion
@@ -24,9 +24,10 @@ namespace GameStateManagement
         {
             Client = client;
             client.Session.JoinResponse += LoginSucces;
-            EditableMenueEntry connect = new EditableMenueEntry(String.Empty);
+            client.Session.Disconnected += LoginFailed;
+            connect = new EditableMenueEntry(String.Empty);
             MenuEntry back = new MenuEntry("Back");
-            connect.Active = true;
+            connect.SetActive(true);
 
             connect.Selected += ConnectEntrySelected;
 
@@ -49,9 +50,18 @@ namespace GameStateManagement
         void ConnectEntrySelected(object sender, PlayerIndexEventArgs e)
         {
             PlayerInfo info = new PlayerInfo();
-            info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-            ((EditableMenueEntry)MenuEntries[0]).locked = true;
-            Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
+            if (connect.Editable)
+            {
+                
+                info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
+                ((EditableMenueEntry)MenuEntries[0]).locked = true;
+                Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
+            }
+            else
+            {
+                connect.Editable = true;
+            }
+            
         }
         //Called if the login was handeled
         private void LoginSucces(object sender, EventArgs e)
@@ -60,7 +70,12 @@ namespace GameStateManagement
             LoadingScreen.Load(ScreenManager, true,
                                 new GameplayScreen(Client));
         }
-
+        //Called if the login was handeled
+        private void LoginFailed(object sender, EventArgs e)
+        {
+            //tell that an error occured
+            connect.locked = false;
+        }
         public override void Draw(GameTime gameTime)
         {
 

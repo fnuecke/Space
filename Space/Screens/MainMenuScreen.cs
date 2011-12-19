@@ -40,7 +40,7 @@ namespace GameStateManagement
             // Create our menu entries.
             MenuEntry playGameMenuEntry = new MenuEntry(Strings.join);
             MenuEntry startServerMenuEntry = new MenuEntry(Strings.host);
-            MenuEntry optionsMenuEntry = new MenuEntry("Options");
+            MenuEntry optionsMenuEntry = new MenuEntry(Strings.Options);
             MenuEntry exitMenuEntry = new MenuEntry("Exit");
 
             // Hook up menu event handlers.
