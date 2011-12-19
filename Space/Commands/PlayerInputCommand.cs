@@ -54,12 +54,12 @@ namespace Space.Commands
 
         #region Serialization
 
-        public override void Packetize(Packet packet)
+        public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet);
-
-            packet.Write((byte)Input);
-            packet.Write(TargetRotation);
+            return base
+                .Packetize(packet)
+                .Write((byte)Input)
+                .Write(TargetRotation);
         }
 
         public override void Depacketize(Packet packet)

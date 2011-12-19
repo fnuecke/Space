@@ -2,6 +2,8 @@
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
 using Engine.Physics;
+using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -64,17 +66,17 @@ namespace Engine.ComponentSystem.Components
 
         #region Serialization / Hashing
 
-        public override void Packetize(Serialization.Packet packet)
+        public override Packet Packetize(Packet packet)
         {
-            packet.Write(previousPosition);
+            return packet.Write(previousPosition);
         }
 
-        public override void Depacketize(Serialization.Packet packet)
+        public override void Depacketize(Packet packet)
         {
             previousPosition = packet.ReadFPoint();
         }
 
-        public override void Hash(Util.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(previousPosition.X.RawValue));
             hasher.Put(BitConverter.GetBytes(previousPosition.Y.RawValue));

@@ -223,8 +223,7 @@ namespace Engine.Serialization
 
         public Packet Write(string data)
         {
-            Write(Encoding.UTF8.GetBytes(data));
-            return this;
+            return Write(Encoding.UTF8.GetBytes(data));
         }
 
         public Packet Write(FPoint data)
@@ -236,8 +235,7 @@ namespace Engine.Serialization
 
         public Packet Write(IPacketizable data)
         {
-            data.Packetize(this);
-            return this;
+            return data.Packetize(this);
         }
 
         #endregion

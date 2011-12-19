@@ -7,9 +7,9 @@ namespace Space.Simulation
     {
         public ShipData Ship { get; set; }
 
-        public void Packetize(Packet packet)
+        public Packet Packetize(Packet packet)
         {
-            packet.Write(Ship);
+            return packet.Write(Ship);
         }
 
         public void Depacketize(Packet packet)

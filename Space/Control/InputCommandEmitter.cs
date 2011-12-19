@@ -42,15 +42,43 @@ namespace Space.Control
             this._simulation = simulation;
             
             // Register for key presses and releases (movement).
-            var keyboard = (IKeyboardInputManager)game.Services.GetService(typeof(IKeyboardInputManager));
-            keyboard.Pressed += HandleKeyPressed;
-            keyboard.Released += HandleKeyReleased;
+            var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
+            if (keyboard != null)
+            {
+                keyboard.Pressed += HandleKeyPressed;
+                keyboard.Released += HandleKeyReleased;
+            }
 
             // Register for mouse movement (orientation) and buttons (shooting).
-            var mouse = (IMouseInputManager)game.Services.GetService(typeof(IMouseInputManager));
-            mouse.Moved += HandleMouseMoved;
-            mouse.Pressed += HandleMousePressed;
-            mouse.Released += HandleMouseReleased;
+            var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
+            if (mouse != null)
+            {
+                mouse.Moved += HandleMouseMoved;
+                mouse.Pressed += HandleMousePressed;
+                mouse.Released += HandleMouseReleased;
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            // Register for key presses and releases (movement).
+            var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
+            if (keyboard != null)
+            {
+                keyboard.Pressed -= HandleKeyPressed;
+                keyboard.Released -= HandleKeyReleased;
+            }
+
+            // Register for mouse movement (orientation) and buttons (shooting).
+            var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
+            if (mouse != null)
+            {
+                mouse.Moved -= HandleMouseMoved;
+                mouse.Pressed -= HandleMousePressed;
+                mouse.Released -= HandleMouseReleased;
+            }
+
+            base.Dispose(disposing);
         }
 
         // TODO waiting for completion to re-fire causes mini-lags, which feel awkward...
@@ -261,7 +289,7 @@ namespace Space.Control
 
         private IEntity GetLocalAvatar()
         {
-            return _simulation.SystemManager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
+            return _simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
         }
 
         /// <summary>

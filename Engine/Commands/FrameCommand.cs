@@ -28,11 +28,11 @@ namespace Engine.Commands
         
         #region Serialization
 
-        public override void Packetize(Packet packet)
+        public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet);
-            
-            packet.Write(Frame);
+            return base
+                .Packetize(packet)
+                .Write(Frame);
         }
 
         public override void Depacketize(Packet packet)

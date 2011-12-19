@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Parameterizations;
+using Engine.Math;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -38,6 +39,9 @@ namespace Engine.ComponentSystem.Systems
             }
             else if (updateType == ComponentSystemUpdateType.Display)
             {
+                // Get position of listener, i.e. what the sounds are relative to.
+                FPoint listenerPosition = GetListenerPosition();
+
                 // Actually play the sounds that should be this update.
                 foreach (var sound in _sounds)
                 {
@@ -45,6 +49,15 @@ namespace Engine.ComponentSystem.Systems
                     // TODO only play sounds again after a certain timeout (50ms or so) if XACT doesn't do that itself (which it probably doesn't?)
                 }
             }
+        }
+
+        /// <summary>
+        /// Get the position of the listener (e.g. player avatar).
+        /// </summary>
+        /// <returns></returns>
+        protected FPoint GetListenerPosition()
+        {
+            return FPoint.Zero;
         }
 
         #endregion

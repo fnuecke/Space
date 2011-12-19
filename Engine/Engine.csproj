@@ -127,11 +127,13 @@
     <Compile Include="ComponentSystem\Components\IComponent.cs" />
     <Compile Include="ComponentSystem\Components\Physics.cs" />
     <Compile Include="ComponentSystem\Components\Transform.cs" />
+    <Compile Include="ComponentSystem\Systems\EntityManager.cs" />
     <Compile Include="ComponentSystem\Systems\IComponentSystem.cs" />
     <Compile Include="ComponentSystem\Parameterizations\CollisionParameterization.cs" />
     <Compile Include="ComponentSystem\Parameterizations\RendererParameterization.cs" />
     <Compile Include="ComponentSystem\Parameterizations\PhysicsParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\IComponentSystemManager.cs" />
+    <Compile Include="ComponentSystem\Systems\IEntityManager.cs" />
     <Compile Include="ComponentSystem\Systems\PhysicsSystem.cs" />
     <Compile Include="ComponentSystem\Systems\RenderSystem.cs" />
     <Compile Include="ComponentSystem\Systems\SoundSystem.cs" />
@@ -144,6 +146,7 @@
     <Compile Include="Controller\IClientController.cs" />
     <Compile Include="Controller\ICommandEmitter.cs" />
     <Compile Include="Controller\IController.cs" />
+    <Compile Include="Controller\IReversibleSimulationController.cs" />
     <Compile Include="Controller\ISimulationController.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />

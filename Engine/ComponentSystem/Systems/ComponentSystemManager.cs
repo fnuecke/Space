@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.Systems
     /// A multi-system manager, holding multiple component systems and making them
     /// available to each other.
     /// </summary>
-    public sealed class CompositeComponentSystem : IComponentSystemManager
+    public sealed class ComponentSystemManager : IComponentSystemManager
     {
         #region Properties
 
@@ -17,6 +17,11 @@ namespace Engine.ComponentSystem.Systems
         /// A list of registered subsystems.
         /// </summary>
         public ReadOnlyCollection<IComponentSystem> Systems { get { return _systems.AsReadOnly(); } }
+
+        /// <summary>
+        /// The component system manager used together with this entity manager.
+        /// </summary>
+        public IEntityManager EntityManager { get; set; }
 
         #endregion
 
@@ -139,7 +144,7 @@ namespace Engine.ComponentSystem.Systems
         public object Clone()
         {
             // Start with a quick, shallow copy.
-            var copy = (CompositeComponentSystem)MemberwiseClone();
+            var copy = (ComponentSystemManager)MemberwiseClone();
 
             // Give it its own lookup table.
             copy._mapping = new Dictionary<Type, IComponentSystem>();

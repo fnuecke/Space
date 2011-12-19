@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
+using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Entities
 {
@@ -48,7 +49,8 @@ namespace Engine.ComponentSystem.Entities
         }
 
         /// <summary>
-        /// Registers a new component with this entity.
+        /// Registers a new component with this entity. These must only be
+        /// added during the construction of the entity.
         /// </summary>
         /// <param name="component">the component to add.</param>
         protected void AddComponent(IComponent component)
@@ -123,20 +125,22 @@ namespace Engine.ComponentSystem.Entities
         /// Write the object's state to the given packet.
         /// </summary>
         /// <param name="packet">the packet to write the data to.</param>
-        public virtual void Packetize(Serialization.Packet packet)
+        public virtual Packet Packetize(Packet packet)
         {
             packet.Write(UID);
             foreach (var component in _components)
             {
                 component.Packetize(packet);
             }
+
+            return packet;
         }
 
         /// <summary>
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">the packet to read from.</param>
-        public virtual void Depacketize(Serialization.Packet packet)
+        public virtual void Depacketize(Packet packet)
         {
             UID = packet.ReadInt64();
             foreach (var component in _components)

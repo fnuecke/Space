@@ -10,14 +10,14 @@
         /// <summary>
         /// Write the object's state to the given packet.
         /// </summary>
-        /// <param name="packet">the packet to write the data to.</param>
-        void Packetize(Packet packet);
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
+        Packet Packetize(Packet packet);
 
         /// <summary>
         /// Bring the object to the state in the given packet.
         /// </summary>
-        /// <param name="packet">the packet to read from.</param>
-        /// 
+        /// <param name="packet">The packet to read from.</param>
         void Depacketize(Packet packet);
     }
 }

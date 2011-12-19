@@ -1,5 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Parameterizations;
+using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -28,17 +30,17 @@ namespace Engine.ComponentSystem.Components
 
         #region Serialization / Hashing
 
-        public override void Packetize(Serialization.Packet packet)
+        public override Packet Packetize(Packet packet)
         {
-            packet.Write(PlayerNumber);
+            return packet.Write(PlayerNumber);
         }
 
-        public override void Depacketize(Serialization.Packet packet)
+        public override void Depacketize(Packet packet)
         {
             PlayerNumber = packet.ReadInt32();
         }
 
-        public override void Hash(Util.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(PlayerNumber));
         }

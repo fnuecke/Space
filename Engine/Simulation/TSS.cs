@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.Commands;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -41,14 +42,9 @@ namespace Engine.Simulation
         public long TrailingFrame { get { return _states[_states.Length - 1].CurrentFrame; } }
 
         /// <summary>
-        /// Enumerator over all children of the leading state.
-        /// </summary>
-        public IEnumerable<IEntity> Entities { get { return LeadingState.Entities; } }
-
-        /// <summary>
         /// The component system manager in use in this simulation.
         /// </summary>
-        public IComponentSystemManager SystemManager { get; private set; }
+        public IEntityManager EntityManager { get; private set; }
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
@@ -114,7 +110,7 @@ namespace Engine.Simulation
 
             // Our pass-through component manager, which allows adding and
             // removing only in the first frame (i.e. before the first update).
-            SystemManager = new TSSComponentSystemManager(this);
+            EntityManager = new TSSEntityManager(this);
 
             // Mark us for need of sync.
             WaitingForSynchronization = true;
@@ -147,114 +143,6 @@ namespace Engine.Simulation
         #endregion
 
         #region Interfaces
-
-        /// <summary>
-        /// Add a new object.
-        /// 
-        /// This will add the object to the leading state, and add it to the delayed
-        /// states when they reach the current frame of the leading state.
-        /// </summary>
-        /// <param name="entity">the object to add.</param>
-        public void AddEntity(IEntity entity)
-        {
-            AddEntity(entity, CurrentFrame);
-        }
-
-        /// <summary>
-        /// Add an object in a specific time frame. This will roll back, if
-        /// necessary, to insert the object, meaning it can trigger invalidation.
-        /// </summary>
-        /// <param name="entity">the object to insert.</param>
-        /// <param name="frame">the frame to insert it at.</param>
-        public void AddEntity(IEntity entity, long frame)
-        {
-            // Store it to be inserted in trailing states.
-            if (!_adds.ContainsKey(frame))
-            {
-                _adds.Add(frame, new List<IEntity>());
-            }
-            else if (_adds[frame].Contains(entity))
-            {
-                // Don't insert the same add to the list twice.
-                return;
-            }
-            else if (_removes.ContainsKey(frame) && _removes[frame].Contains(entity.UID))
-            {
-                // Do not allow removal and adding of the same object in the same
-                // frame, as this can lead to unexpected behavior (may not happen
-                // in the intended order!)
-                throw new InvalidOperationException("Cannot add an object in the same frame as it will be removed.");
-            }
-            _adds[frame].Add((IEntity)entity.Clone());
-
-            // Rewind to the frame to retroactively apply changes.
-            if (frame < CurrentFrame)
-            {
-                Rewind(frame);
-            }
-        }
-
-        /// <summary>
-        /// Get a entity's current representation in this state by its id.
-        /// </summary>
-        /// <param name="entityUid">the id of the entity to look up.</param>
-        /// <returns>the current representation in this state.</returns>
-        public IEntity GetEntity(long entityUid)
-        {
-            return LeadingState.GetEntity(entityUid);
-        }
-
-        /// <summary>
-        /// Not supported for TSS.
-        /// </summary>
-        public void RemoveEntity(IEntity entity)
-        {
-            throw new NotSupportedException();
-        }
-
-        /// <summary>
-        /// Remove a entity object by its id. Will always return <c>null</c> for TSS.
-        /// </summary>
-        /// <param name="entityUid">the remove object.</param>
-        public IEntity RemoveEntity(long entityUid)
-        {
-            RemoveEntity(entityUid, CurrentFrame);
-            return null;
-        }
-
-        /// <summary>
-        /// Remove an object in a specific time frame. This will roll back, if
-        /// necessary, to remove the object, meaning it can trigger invalidation.
-        /// </summary>
-        /// <param name="entityId">the id of the object to remove.</param>
-        /// <param name="frame">the frame to remove it at.</param>
-        public void RemoveEntity(long entityUid, long frame)
-        {
-            // Store it to be removed in trailing states.
-            if (!_removes.ContainsKey(frame))
-            {
-                _removes.Add(frame, new List<long>());
-            }
-            else if (_removes[frame].Contains(entityUid))
-            {
-                // Don't insert the same remove to the list twice.
-                return;
-            }
-            else if (_adds.ContainsKey(frame) && _adds[frame].Find(a => a.UID == entityUid) != null)
-            {
-                // Do not allow removal and adding of the same object in the same
-                // frame, as this can lead to unexpected behavior (may not happen
-                // in the intended order!)
-                throw new InvalidOperationException("Cannot remove an object in the same frame as it was added.");
-            }
-            _removes[frame].Add(entityUid);
-
-            // Rewind to the frame to retroactively apply changes.
-            if (frame < CurrentFrame)
-            {
-                Rewind(frame);
-            }
-        }
 
         /// <summary>
         /// Push a command to all sub states.
@@ -316,6 +204,78 @@ namespace Engine.Simulation
 
         #endregion
 
+        #region Time specific adding / removal of entities
+
+        /// <summary>
+        /// Add an object in a specific time frame. This will roll back, if
+        /// necessary, to insert the object, meaning it can trigger invalidation.
+        /// </summary>
+        /// <param name="entity">the object to insert.</param>
+        /// <param name="frame">the frame to insert it at.</param>
+        public void AddEntity(IEntity entity, long frame)
+        {
+            // Store it to be inserted in trailing states.
+            if (!_adds.ContainsKey(frame))
+            {
+                _adds.Add(frame, new List<IEntity>());
+            }
+            else if (_adds[frame].Contains(entity))
+            {
+                // Don't insert the same add to the list twice.
+                return;
+            }
+            else if (_removes.ContainsKey(frame) && _removes[frame].Contains(entity.UID))
+            {
+                // Do not allow removal and adding of the same object in the same
+                // frame, as this can lead to unexpected behavior (may not happen
+                // in the intended order!)
+                throw new InvalidOperationException("Cannot add an object in the same frame as it will be removed.");
+            }
+            _adds[frame].Add((IEntity)entity.Clone());
+
+            // Rewind to the frame to retroactively apply changes.
+            if (frame < CurrentFrame)
+            {
+                Rewind(frame);
+            }
+        }
+
+        /// <summary>
+        /// Remove an object in a specific time frame. This will roll back, if
+        /// necessary, to remove the object, meaning it can trigger invalidation.
+        /// </summary>
+        /// <param name="entityId">the id of the object to remove.</param>
+        /// <param name="frame">the frame to remove it at.</param>
+        public void RemoveEntity(long entityUid, long frame)
+        {
+            // Store it to be removed in trailing states.
+            if (!_removes.ContainsKey(frame))
+            {
+                _removes.Add(frame, new List<long>());
+            }
+            else if (_removes[frame].Contains(entityUid))
+            {
+                // Don't insert the same remove to the list twice.
+                return;
+            }
+            else if (_adds.ContainsKey(frame) && _adds[frame].Find(a => a.UID == entityUid) != null)
+            {
+                // Do not allow removal and adding of the same object in the same
+                // frame, as this can lead to unexpected behavior (may not happen
+                // in the intended order!)
+                throw new InvalidOperationException("Cannot remove an object in the same frame as it was added.");
+            }
+            _removes[frame].Add(entityUid);
+
+            // Rewind to the frame to retroactively apply changes.
+            if (frame < CurrentFrame)
+            {
+                Rewind(frame);
+            }
+        }
+
+        #endregion
+
         #region Fine-grained playback control
 
         /// <summary>
@@ -354,7 +314,7 @@ namespace Engine.Simulation
         /// Serialize a state to a packet.
         /// </summary>
         /// <param name="packet">the packet to write the data to.</param>
-        public void Packetize(Packet packet)
+        public Packet Packetize(Packet packet)
         {
             packet.Write(CurrentFrame);
 
@@ -392,6 +352,8 @@ namespace Engine.Simulation
                     Packetizer.Packetize(item, packet);
                 }
             }
+
+            return packet;
         }
 
         /// <summary>
@@ -524,7 +486,7 @@ namespace Engine.Simulation
                         // Add a copy of it.
                         foreach (var entity in _adds[stateFrame])
                         {
-                            state.AddEntity((IEntity)entity.Clone());
+                            state.EntityManager.AddEntity((IEntity)entity.Clone());
                         }
                     }
 
@@ -534,7 +496,7 @@ namespace Engine.Simulation
                         // Add a copy of it.
                         foreach (var entityUid in _removes[stateFrame])
                         {
-                            state.RemoveEntity(entityUid);
+                            state.EntityManager.RemoveEntity(entityUid);
                         }
                     }
 
@@ -659,22 +621,90 @@ namespace Engine.Simulation
 
         #endregion
 
-        #region ComponentSystemManager-Wrapper
+        #region Manager-Wrappers
+
+        private class TSSEntityManager : IEntityManager
+        {
+            #region Properties
+            
+            public ReadOnlyCollection<IEntity> Entities { get { throw new NotSupportedException(); } }
+
+            public IComponentSystemManager SystemManager { get { return _systemManager; } set { throw new NotSupportedException(); } }
+            
+            #endregion
+
+            #region Fields
+            
+            /// <summary>
+            /// The TSS this wrapper is associated to.
+            /// </summary>
+            private TSS _tss;
+
+            private IComponentSystemManager _systemManager;
+
+            #endregion
+
+            #region Constructor
+
+            public TSSEntityManager(TSS tss)
+            {
+                this._tss = tss;
+                this._systemManager = new TSSComponentSystemManager(_tss);
+            }
+
+            #endregion
+
+            public void AddEntity(IEntity entity)
+            {
+                _tss.AddEntity(entity, _tss.CurrentFrame);
+            }
+
+            public IEntity RemoveEntity(long entityUid)
+            {
+                _tss.RemoveEntity(entityUid, _tss.CurrentFrame);
+                return null;
+            }
+
+            public IEntity GetEntity(long entityUid)
+            {
+                return _tss.LeadingState.EntityManager.GetEntity(entityUid);
+            }
+
+            #region Unsupported
+
+            public void RemoveEntity(IEntity entity)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Packet Packetize(Packet packet)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Depacketize(Packet packet)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Hash(Hasher hasher)
+            {
+                throw new NotSupportedException();
+            }
+
+            public object Clone()
+            {
+                throw new NotSupportedException();
+            }
+
+            #endregion
+        }
 
         /// <summary>
         /// Helper for system initialization and accessing systems of the leading state.
         /// </summary>
         private class TSSComponentSystemManager : IComponentSystemManager
         {
-            #region Properties
-
-            /// <summary>
-            /// Not supported.
-            /// </summary>
-            public ReadOnlyCollection<IComponentSystem> Systems { get { throw new NotSupportedException(); } }
-
-            #endregion
-
             #region Fields
             
             /// <summary>
@@ -703,19 +733,14 @@ namespace Engine.Simulation
                 }
                 foreach (var state in _tss._states)
                 {
-                    state.SystemManager.AddSystem((IComponentSystem)system.Clone());
+                    state.EntityManager.SystemManager.AddSystem((IComponentSystem)system.Clone());
                 }
                 return this;
             }
 
-            public void RemoveSystem(IComponentSystem system)
-            {
-                throw new InvalidOperationException("Cannot remove systems from TSS.");
-            }
-
             public T GetSystem<T>() where T : IComponentSystem
             {
-                return _tss.LeadingState.SystemManager.GetSystem<T>();
+                return _tss.LeadingState.EntityManager.SystemManager.GetSystem<T>();
             }
 
             /// <summary>
@@ -727,28 +752,48 @@ namespace Engine.Simulation
                 {
                     throw new NotSupportedException();
                 }
-                _tss.LeadingState.SystemManager.Update(updateType);
+                _tss.LeadingState.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display);
             }
 
-            /// <summary>
-            /// Not supported.
-            /// </summary>
-            public IComponentSystemManager AddComponent(ComponentSystem.Components.IComponent component)
+            #endregion
+
+            #region Unsupported
+
+            public ReadOnlyCollection<IComponentSystem> Systems
+            {
+                get
+                {
+                    throw new NotSupportedException();
+                }
+            }
+
+            public IEntityManager EntityManager
+            {
+                get
+                {
+                    throw new NotSupportedException();
+                }
+                set
+                {
+                    throw new NotSupportedException();
+                }
+            }
+
+            public void RemoveSystem(IComponentSystem system)
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Not supported.
-            /// </summary>
-            public void RemoveComponent(ComponentSystem.Components.IComponent component)
+            public IComponentSystemManager AddComponent(IComponent component)
             {
                 throw new NotSupportedException();
             }
 
-            /// <summary>
-            /// Not supported.
-            /// </summary>
+            public void RemoveComponent(IComponent component)
+            {
+                throw new NotSupportedException();
+            }
+
             public object Clone()
             {
                 throw new NotSupportedException();

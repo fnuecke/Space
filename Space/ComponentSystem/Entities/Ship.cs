@@ -19,7 +19,8 @@ namespace Space.ComponentSystem.Entities
 
             AddComponent(new CollidableSphere());
 
-            AddComponent(new Armament());
+            AddComponent(new WeaponControl());
+            AddComponent(new WeaponSlot());
             AddComponent(new MovementProperties());
             AddComponent(new ShipControl());
 

@@ -15,6 +15,11 @@ namespace Engine.ComponentSystem.Systems
         ReadOnlyCollection<IComponentSystem> Systems { get; }
 
         /// <summary>
+        /// The component system manager used together with this entity manager.
+        /// </summary>
+        IEntityManager EntityManager { get; set; }
+
+        /// <summary>
         /// Update all subsystems.
         /// </summary>
         /// <param name="updateType">The type of update to perform.</param>

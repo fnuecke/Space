@@ -66,19 +66,20 @@ namespace SpaceData
         [ContentSerializer(Optional = true)]
         public byte ItemSlots;
 
-        public void Packetize(Packet packet)
+        public Packet Packetize(Packet packet)
         {
-            packet.Write(Name);
-            packet.Write(Radius);
-            packet.Write(Texture);
-            packet.Write(Health);
-            packet.Write(Fuel);
-            packet.Write(Acceleration);
-            packet.Write(RotationSpeed);
-            packet.Write(SmallWeapons);
-            packet.Write(MediumWeapons);
-            packet.Write(LargeWeapons);
-            packet.Write(ItemSlots);
+            return packet
+                .Write(Name)
+                .Write(Radius)
+                .Write(Texture)
+                .Write(Health)
+                .Write(Fuel)
+                .Write(Acceleration)
+                .Write(RotationSpeed)
+                .Write(SmallWeapons)
+                .Write(MediumWeapons)
+                .Write(LargeWeapons)
+                .Write(ItemSlots);
         }
 
         public void Depacketize(Packet packet)
@@ -135,9 +136,9 @@ namespace SpaceData
         public Fixed Damage;
 
         /// <summary>
-        /// The rate of fire of this weapon.
+        /// The cooldown-time for this weapon, in game frames.
         /// </summary>
-        public Fixed FireRate;
+        public int Cooldown;
 
         /// <summary>
         /// The name of the particle effect to use for shots.
@@ -154,17 +155,18 @@ namespace SpaceData
         /// </summary>
         public Fixed ProjectileRadius;
 
-        public void Packetize(Packet packet)
+        public Packet Packetize(Packet packet)
         {
-            packet.Write(Name);
-            packet.Write((byte)Size);
-            packet.Write(Texture);
-            packet.Write(Sound);
-            packet.Write(Damage);
-            packet.Write(FireRate);
-            packet.Write(ProjectileTexture);
-            packet.Write(ProjectileSpeed);
-            packet.Write(ProjectileRadius);
+            return packet
+                .Write(Name)
+                .Write((byte)Size)
+                .Write(Texture)
+                .Write(Sound)
+                .Write(Damage)
+                .Write(Cooldown)
+                .Write(ProjectileTexture)
+                .Write(ProjectileSpeed)
+                .Write(ProjectileRadius);
         }
 
         public void Depacketize(Packet packet)
@@ -174,7 +176,7 @@ namespace SpaceData
             Texture = packet.ReadString();
             Sound = packet.ReadString();
             Damage = packet.ReadFixed();
-            FireRate = packet.ReadFixed();
+            Cooldown = packet.ReadInt32();
             ProjectileTexture = packet.ReadString();
             ProjectileSpeed = packet.ReadFixed();
             ProjectileRadius = packet.ReadFixed();

@@ -1,6 +1,8 @@
 ﻿using System;
 using Engine.Math;
 using Engine.Physics.Intersection;
+using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -43,19 +45,20 @@ namespace Engine.ComponentSystem.Components
 
         #region Serialization / Hashing
 
-        public override void Packetize(Serialization.Packet packet)
+        public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet);
-            packet.Write(Size);
+            return base
+                .Packetize(packet)
+                .Write(Size);
         }
 
-        public override void Depacketize(Serialization.Packet packet)
+        public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
             Size = packet.ReadFPoint();
         }
 
-        public override void Hash(Util.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
             hasher.Put(BitConverter.GetBytes(Size.X.RawValue));

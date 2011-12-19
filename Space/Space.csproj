@@ -113,8 +113,9 @@
     <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
     <Compile Include="ComponentSystem\Components\MovementProperties.cs" />
-    <Compile Include="ComponentSystem\Components\Armament.cs" />
-    <Compile Include="ComponentSystem\Parameterizations\ArmamentParameterization.cs" />
+    <Compile Include="ComponentSystem\Components\WeaponControl.cs" />
+    <Compile Include="ComponentSystem\Components\WeaponSlot.cs" />
+    <Compile Include="ComponentSystem\Parameterizations\WeaponParameterization.cs" />
     <Compile Include="ComponentSystem\Parameterizations\InputParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\PlayerCenteredRenderSystem.cs" />
     <Compile Include="ComponentSystem\Systems\ShipControlSystem.cs" />
@@ -123,6 +124,7 @@
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Control\InputCommandEmitter.cs" />
     <Compile Include="Control\ServerController.cs" />
+    <Compile Include="Control\WeaponSystem.cs" />
     <Compile Include="Simulation\PlayerInfo.cs" />
     <Compile Include="ComponentSystem\Entities\Shot.cs" />
     <Compile Include="Simulation\StaticWorld.cs" />

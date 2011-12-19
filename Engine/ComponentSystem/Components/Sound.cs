@@ -78,7 +78,7 @@ namespace Engine.ComponentSystem.Components
                 }
                 if (velocity != null)
                 {
-                    p.velocity = velocity.Value;
+                    p.Velocity = velocity.Value;
                 }
             }
 
@@ -112,7 +112,7 @@ namespace Engine.ComponentSystem.Components
 
         #region Serialization / Hashing
 
-        public override void Packetize(Packet packet)
+        public override Packet Packetize(Packet packet)
         {
             packet.Write(TriggeringMessages.Count);
             foreach (var messageType in TriggeringMessages)
@@ -121,6 +121,8 @@ namespace Engine.ComponentSystem.Components
             }
             packet.Write(SoundCue);
             packet.Write(_play);
+
+            return packet;
         }
 
         public override void Depacketize(Packet packet)

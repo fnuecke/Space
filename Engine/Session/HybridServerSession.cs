@@ -103,7 +103,7 @@ namespace Engine.Session
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (disposing && _tcp != null)
             {
                 _tcp.Stop();
                 _tcp.Server.Close();

@@ -129,6 +129,12 @@ namespace Engine.Controller
         /// </summary>
         public override void Update(GameTime gameTime)
         {
+            // Already disposed. Thanks, XNA.
+            if (Session == null)
+            {
+                return;
+            }
+
             if (Session.ConnectionState == ClientState.Connected && !tss.WaitingForSynchronization)
             {
                 // Drive game logic.
@@ -165,7 +171,7 @@ namespace Engine.Controller
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                tss.SystemManager.Update(ComponentSystemUpdateType.Display);
+                tss.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display);
             }
         }
 

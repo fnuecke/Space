@@ -21,6 +21,6 @@ namespace Engine.ComponentSystem.Parameterizations
         /// <summary>
         /// The velocity of the sound's source / emitter.
         /// </summary>
-        public FPoint velocity { get; set; }
+        public FPoint Velocity { get; set; }
     }
 }

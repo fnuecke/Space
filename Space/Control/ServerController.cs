@@ -40,7 +40,7 @@ namespace Space.Control
             simulation.Command += GameCommandHandler.HandleCommand;
             tss.Initialize(simulation);
 
-            tss.SystemManager.AddSystem(new PhysicsSystem())
+            tss.EntityManager.SystemManager.AddSystem(new PhysicsSystem())
                 .AddSystem(new ShipControlSystem())
                 .AddSystem(new AvatarSystem());
         }
@@ -76,14 +76,14 @@ namespace Space.Control
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
             var playerData = (PlayerInfo)args.Player.Data;
-            AddEntity(new Ship(playerData.Ship, args.Player.Number));
+            Simulation.EntityManager.AddEntity(new Ship(playerData.Ship, args.Player.Number));
         }
 
         protected void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs)e;
             // Player left the game, remove his ship.
-            RemoveEntity(tss.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID);
+            Simulation.EntityManager.RemoveEntity(tss.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID);
         }
     }
 }

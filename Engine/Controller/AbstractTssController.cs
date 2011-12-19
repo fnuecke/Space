@@ -12,7 +12,7 @@ namespace Engine.Controller
     /// </summary>
     public abstract class AbstractTssController<TSession>
         : AbstractController<TSession, IFrameCommand>,
-          ISimulationController<TSession, IFrameCommand>
+          IReversibleSimulationController<TSession>
         where TSession : ISession
     {
         #region Types
@@ -127,6 +127,12 @@ namespace Engine.Controller
         /// game speed.</param>
         protected void UpdateSimulation(GameTime gameTime, double timeCorrection = 0)
         {
+            // Already disposed. Thanks, XNA.
+            if (tss == null)
+            {
+                return;
+            }
+
             if (Game.IsFixedTimeStep)
             {
                 tss.Update();
@@ -167,45 +173,11 @@ namespace Engine.Controller
         /// id, by which it may later be referenced for removals.
         /// </summary>
         /// <param name="entity">the entity to add.</param>
-        /// <returns>the id the entity was assigned.</returns>
-        public long AddEntity(IEntity entity)
-        {
-            return AddEntity(entity, tss.CurrentFrame);
-        }
-
-        /// <summary>
-        /// Add a entity to the simulation. Will be inserted at the
-        /// current leading frame. The entity will be given a unique
-        /// id, by which it may later be referenced for removals.
-        /// </summary>
-        /// <param name="entity">the entity to add.</param>
         /// <param name="frame">the frame in which to add the entity.</param>
-        /// <returns>the id the entity was assigned.</returns>
-        public virtual long AddEntity(IEntity entity, long frame)
+        public virtual void AddEntity(IEntity entity, long frame)
         {
             // Add the entity to the simulation.
             tss.AddEntity(entity, frame);
-            return entity.UID;
-        }
-
-        /// <summary>
-        /// Get a entity in this simulation based on its unique identifier.
-        /// </summary>
-        /// <param name="entityUid">the id of the object.</param>
-        /// <returns>the object, if it exists.</returns>
-        public IEntity GetEntity(long entityUid)
-        {
-            return tss.GetEntity(entityUid);
-        }
-
-        /// <summary>
-        /// Removes a entity with the given id from the simulation.
-        /// The entity will be removed at the current frame.
-        /// </summary>
-        /// <param name="entityId">the id of the entity to remove.</param>
-        public void RemoveEntity(long entityUid)
-        {
-            RemoveEntity(entityUid, tss.CurrentFrame);
         }
 
         /// <summary>

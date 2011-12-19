@@ -49,8 +49,7 @@ namespace Engine.Serialization
             if (_constructors.ContainsKey(type.FullName))
             {
                 packet.Write(type.FullName);
-                value.Packetize(packet);
-                return packet;
+                return packet.Write(value);
             }
             else
             {

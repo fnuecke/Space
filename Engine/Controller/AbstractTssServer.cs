@@ -41,11 +41,6 @@ namespace Engine.Controller
         #region Fields
 
         /// <summary>
-        /// Counter used to distribute ids.
-        /// </summary>
-        private long _lastUid;
-
-        /// <summary>
         /// Last time we sent a hash check to our clients.
         /// </summary>
         private long _lastHashTime;
@@ -166,12 +161,8 @@ namespace Engine.Controller
         /// <param name="entity">the entity to add.</param>
         /// <param name="frame">the frame in which to add the entity.</param>
         /// <returns>the id the entity was assigned.</returns>
-        public override long AddEntity(IEntity entity, long frame)
+        public override void AddEntity(IEntity entity, long frame)
         {
-            // Give the entity a unique id. Skip the zero to avoid
-            // referencing that object with uninitialized 'pointers'.
-            entity.UID = ++_lastUid;
-
             // Add the entity to the simulation.
             base.AddEntity(entity, frame);
 
@@ -182,8 +173,6 @@ namespace Engine.Controller
             // Run it through the packetizer, because we don't know the actual type.
             Packetizer.Packetize(entity, addedInfo);
             Session.Send(addedInfo);
-
-            return entity.UID;
         }
 
         /// <summary>

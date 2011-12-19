@@ -39,9 +39,9 @@ namespace Engine.Commands
 
         #region Serialization
 
-        public virtual void Packetize(Packet packet)
+        public virtual Packet Packetize(Packet packet)
         {
-            packet.Write(PlayerNumber);
+            return packet.Write(PlayerNumber);
         }
 
         public virtual void Depacketize(Packet packet)

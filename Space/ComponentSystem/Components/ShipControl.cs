@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.Math;
+using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Parameterizations;
 
@@ -103,7 +104,7 @@ namespace Space.ComponentSystem.Components
             var movement = Entity.GetComponent<MovementProperties>();
 
             // Set firing state for weapon systems.
-            Entity.GetComponent<Armament>().IsShooting = IsShooting;
+            Entity.GetComponent<WeaponControl>().IsShooting = IsShooting;
 
             // Update acceleration.
             Entity.GetComponent<Acceleration>().Value = DirectionConversion.DirectionToFPoint(AccelerationDirection) * movement.Acceleration;
@@ -167,16 +168,17 @@ namespace Space.ComponentSystem.Components
 
         #region Serialization / Hashing
 
-        public override void Packetize(Engine.Serialization.Packet packet)
+        public override Packet Packetize(Packet packet)
         {
-            packet.Write(IsShooting);
-            packet.Write((byte)AccelerationDirection);
-            packet.Write(_targetRotationChanged);
-            packet.Write(_targetRotation);
-            packet.Write(_previousRotation);
+            return packet
+                .Write(IsShooting)
+                .Write((byte)AccelerationDirection)
+                .Write(_targetRotationChanged)
+                .Write(_targetRotation)
+                .Write(_previousRotation);
         }
 
-        public override void Depacketize(Engine.Serialization.Packet packet)
+        public override void Depacketize(Packet packet)
         {
             IsShooting = packet.ReadBoolean();
             AccelerationDirection = (Directions)packet.ReadByte();
@@ -185,7 +187,7 @@ namespace Space.ComponentSystem.Components
             _previousRotation = packet.ReadFixed();
         }
 
-        public override void Hash(Engine.Util.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             hasher.Put((byte)AccelerationDirection);
             hasher.Put(BitConverter.GetBytes(IsShooting));

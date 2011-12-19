@@ -9,14 +9,14 @@ namespace Space.Control
 {
     static class GameCommandHandler
     {
-        public static void HandleCommand(ICommand command, IComponentSystemManager manager)
+        public static void HandleCommand(ICommand command, IEntityManager manager)
         {
             switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
                     // Player input command, apply it.
                     {
-                        IEntity avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+                        IEntity avatar = manager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
                         if (avatar != null)
                         {
                             var input = avatar.GetComponent<ShipControl>();

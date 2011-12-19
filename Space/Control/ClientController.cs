@@ -28,7 +28,7 @@ namespace Space.Control
             simulation.Command += GameCommandHandler.HandleCommand;
             tss.Initialize(simulation);
 
-            tss.SystemManager.AddSystem(new PhysicsSystem())
+            tss.EntityManager.SystemManager.AddSystem(new PhysicsSystem())
                 .AddSystem(new ShipControlSystem())
                 .AddSystem(new AvatarSystem())
                 .AddSystem(new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session)

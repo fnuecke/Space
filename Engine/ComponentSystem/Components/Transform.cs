@@ -1,5 +1,6 @@
 ﻿using System;
 using Engine.Math;
+using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -59,13 +60,14 @@ namespace Engine.ComponentSystem.Components
 
         #region Serialization / Hashing
 
-        public override void Packetize(Serialization.Packet packet)
+        public override Packet Packetize(Packet packet)
         {
-            packet.Write(Translation);
-            packet.Write(Rotation);
+            return packet
+                .Write(Translation)
+                .Write(Rotation);
         }
 
-        public override void Depacketize(Serialization.Packet packet)
+        public override void Depacketize(Packet packet)
         {
             Translation = packet.ReadFPoint();
             Rotation = packet.ReadFixed();

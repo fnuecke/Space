@@ -12,8 +12,8 @@ namespace Engine.Simulation
     /// </para>
     /// </summary>
     /// <param name="command">The command to process.</param>
-    /// <param name="systemManager">The relevant system manager.</param>
-    public delegate void CommandHandler(ICommand command, IComponentSystemManager manager);
+    /// <param name="systemManager">The relevant entity manager.</param>
+    public delegate void CommandHandler(ICommand command, IEntityManager manager);
 
     /// <summary>
     /// A delegate-based implementation of a simulation that supports pruning non-authoritative
@@ -72,7 +72,7 @@ namespace Engine.Simulation
         {
             if (Command != null)
             {
-                Command(command, SystemManager);
+                Command(command, EntityManager);
             }
         }
 

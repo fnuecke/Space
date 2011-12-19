@@ -1,6 +1,8 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.Math;
+using Engine.Serialization;
+using Engine.Util;
 
 namespace Space.ComponentSystem.Components
 {
@@ -25,19 +27,20 @@ namespace Space.ComponentSystem.Components
 
         #region Serialization / Hashing
 
-        public override void Packetize(Engine.Serialization.Packet packet)
+        public override Packet Packetize(Packet packet)
         {
-            packet.Write(Acceleration);
-            packet.Write(RotationSpeed);
+            return packet
+                .Write(Acceleration)
+                .Write(RotationSpeed);
         }
 
-        public override void Depacketize(Engine.Serialization.Packet packet)
+        public override void Depacketize(Packet packet)
         {
             Acceleration = packet.ReadFixed();
             RotationSpeed = packet.ReadFixed();
         }
 
-        public override void Hash(Engine.Util.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(Acceleration.RawValue));
             hasher.Put(BitConverter.GetBytes(RotationSpeed.RawValue));

@@ -691,6 +691,10 @@ namespace Engine.Math
             result.Y = point.Y * scalar;
             return result;
         }
+        public static FPoint operator *(Fixed scalar, FPoint point)
+        {
+            return point * scalar;
+        }
         public static FPoint operator *(FPoint point, int scalar)
         {
             return point * (Fixed)scalar;

@@ -448,6 +448,8 @@ namespace Engine.Util
                 var info = new CommandInfo((string[])names.Clone(), handler, (string[])help.Clone());
                 foreach (var command in names)
                 {
+                    // Remove old variant, if there is one.
+                    _commands.Remove(command);
                     _commands.Add(command, info);
                 }
             }

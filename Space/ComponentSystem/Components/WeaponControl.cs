@@ -1,21 +1,21 @@
 ﻿using System;
-using Engine.Math;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 
-namespace Engine.ComponentSystem.Components
+namespace Space.ComponentSystem.Components
 {
     /// <summary>
-    /// Represents the velocity of an object.
+    /// Controls whether weapons on an entity should be shooting.
     /// </summary>
-    public class Velocity : AbstractComponent
+    public class WeaponControl : AbstractComponent
     {
         #region Properties
 
         /// <summary>
-        /// The directed speed of the object.
+        /// Whether ima currently firin mah lazer or not.
         /// </summary>
-        public FPoint Value { get; set; }
+        public bool IsShooting { get; set; }
 
         #endregion
 
@@ -23,18 +23,17 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return packet.Write(Value);
+            return packet.Write(IsShooting);
         }
 
         public override void Depacketize(Packet packet)
         {
-            Value = packet.ReadFPoint();
+            IsShooting = packet.ReadBoolean();
         }
 
         public override void Hash(Hasher hasher)
         {
-            hasher.Put(BitConverter.GetBytes(Value.X.RawValue));
-            hasher.Put(BitConverter.GetBytes(Value.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(IsShooting));
         }
 
         #endregion

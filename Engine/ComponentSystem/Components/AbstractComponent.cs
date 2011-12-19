@@ -71,8 +71,9 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// To be implemented by subclasses.
         /// </summary>
-        public virtual void Packetize(Packet packet)
+        public virtual Packet Packetize(Packet packet)
         {
+            return packet;
         }
 
         /// <summary>
