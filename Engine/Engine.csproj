@@ -109,9 +109,11 @@
     <Compile Include="ComponentSystem\Components\Acceleration.cs" />
     <Compile Include="ComponentSystem\Components\Avatar.cs" />
     <Compile Include="ComponentSystem\Components\Friction.cs" />
+    <Compile Include="ComponentSystem\Components\Sound.cs" />
     <Compile Include="ComponentSystem\Components\Spin.cs" />
     <Compile Include="ComponentSystem\Components\Velocity.cs" />
     <Compile Include="ComponentSystem\Parameterizations\AvatarParameterization.cs" />
+    <Compile Include="ComponentSystem\Parameterizations\SoundParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\AvatarSystem.cs" />
     <Compile Include="ComponentSystem\Systems\AbstractComponentSystem.cs" />
     <Compile Include="ComponentSystem\Systems\CollisionSystem.cs" />
@@ -132,6 +134,7 @@
     <Compile Include="ComponentSystem\Systems\IComponentSystemManager.cs" />
     <Compile Include="ComponentSystem\Systems\PhysicsSystem.cs" />
     <Compile Include="ComponentSystem\Systems\RenderSystem.cs" />
+    <Compile Include="ComponentSystem\Systems\SoundSystem.cs" />
     <Compile Include="Controller\AbstractCommandEmitter.cs" />
     <Compile Include="Controller\AbstractController.cs" />
     <Compile Include="Controller\AbstractTssClient.cs" />
@@ -202,7 +205,9 @@
   <ItemGroup>
     <None Include="EngineKey.snk" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ComponentSystem\Components\Messages\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

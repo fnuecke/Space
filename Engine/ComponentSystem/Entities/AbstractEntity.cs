@@ -101,6 +101,22 @@ namespace Engine.ComponentSystem.Entities
 
         #endregion
 
+        #region Component messaging
+
+        /// <summary>
+        /// Send a message to all components of this entity.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        public void SendMessage(object message)
+        {
+            foreach (var component in _components)
+            {
+                component.HandleMessage(message);
+            }
+        }
+
+        #endregion
+
         #region Interfaces
 
         /// <summary>

@@ -24,5 +24,16 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterizationType">The parameterization type to check.</param>
         /// <returns>Whether the type is supported.</returns>
         bool SupportsParameterization(Type parameterizationType);
+
+        /// <summary>
+        /// Inform a component of a message that was sent by a component of
+        /// the entity the component belongs to.
+        /// 
+        /// <para>
+        /// Note that components will also receive the messages they send themselves.
+        /// </para>
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        void HandleMessage(object message);
     }
 }

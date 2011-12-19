@@ -10,16 +10,26 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public class RenderSystem : AbstractComponentSystem<RendererParameterization>
     {
+        #region Fields
+
         /// <summary>
         /// The reusable parameterization.
         /// </summary>
         protected RendererParameterization parameterization;
 
+        #endregion
+
+        #region Constructor
+        
         public RenderSystem(SpriteBatch spriteBatch, ContentManager contentManager)
         {
             parameterization = new RendererParameterization(spriteBatch, contentManager);
         }
 
+        #endregion
+
+        #region Logic
+        
         public override void Update(ComponentSystemUpdateType updateType)
         {
             if (updateType != ComponentSystemUpdateType.Display)
@@ -44,5 +54,7 @@ namespace Engine.ComponentSystem.Systems
         {
             return Vector2.Zero;
         }
+
+        #endregion
     }
 }

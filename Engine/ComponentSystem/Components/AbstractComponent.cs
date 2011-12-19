@@ -1,5 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Entities;
+using Engine.Serialization;
+using Engine.Util;
 namespace Engine.ComponentSystem.Components
 {
     /// <summary>
@@ -49,6 +51,19 @@ namespace Engine.ComponentSystem.Components
             return false;
         }
 
+        /// <summary>
+        /// Inform a component of a message that was sent by a component of
+        /// the entity the component belongs to.
+        /// 
+        /// <para>
+        /// Note that components will also receive the messages they send themselves.
+        /// </para>
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        public virtual void HandleMessage(object message)
+        {
+        }
+
         #endregion
 
         #region Serialization / Hashing
@@ -56,21 +71,21 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// To be implemented by subclasses.
         /// </summary>
-        public virtual void Packetize(Serialization.Packet packet)
+        public virtual void Packetize(Packet packet)
         {
         }
 
         /// <summary>
         /// To be implemented by subclasses.
         /// </summary>
-        public virtual void Depacketize(Serialization.Packet packet)
+        public virtual void Depacketize(Packet packet)
         {
         }
 
         /// <summary>
         /// To be implemented by subclasses.
         /// </summary>
-        public virtual void Hash(Util.Hasher hasher)
+        public virtual void Hash(Hasher hasher)
         {
         }
 

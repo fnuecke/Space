@@ -35,5 +35,11 @@ namespace Engine.ComponentSystem.Entities
         /// <typeparam name="T">the type of the component to get.</typeparam>
         /// <returns>the component, or <c>null</c> if the entity has none of this type.</returns>
         T GetComponent<T>() where T : IComponent;
+
+        /// <summary>
+        /// Send a message to all components of this entity.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        void SendMessage(object message);
     }
 }

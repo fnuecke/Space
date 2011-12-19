@@ -16,7 +16,7 @@ namespace Engine.ComponentSystem.Systems
         Logic,
 
         /// <summary>
-        /// Performs rendering pass.
+        /// Performs rendering pass (also plays sounds).
         /// </summary>
         Display
     }
