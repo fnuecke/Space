@@ -107,6 +107,7 @@ namespace Engine.Session
             {
                 _tcp.Stop();
                 _tcp.Server.Close();
+                _tcp = null;
 
                 for (int i = 0; i < MaxPlayers; ++i)
                 {
@@ -129,6 +130,12 @@ namespace Engine.Session
 
         public override void Update(GameTime gameTime)
         {
+            // Already disposed (happens in same update step it was removed from components).
+            if (_tcp == null)
+            {
+                return;
+            }
+
             // Check for incoming connections.
             while (NumPlayers < MaxPlayers && _tcp.Pending())
             {
