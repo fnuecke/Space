@@ -24,6 +24,7 @@ namespace GameStateManagement
         {
             Client = client;
             client.Session.JoinResponse += LoginSucces;
+           
             connect = new EditableMenueEntry(String.Empty);
             MenuEntry back = new MenuEntry("Back");
             connect.SetActive(true);
@@ -50,9 +51,12 @@ namespace GameStateManagement
         {
             PlayerInfo info = new PlayerInfo();
             if (connect.Editable)
-            info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-            ((EditableMenueEntry)MenuEntries[0]).locked = true;
-            Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
+            {
+                
+                info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
+                ((EditableMenueEntry)MenuEntries[0]).locked = true;
+                Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
+            }
             else
             {
                 connect.Editable = true;
