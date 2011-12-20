@@ -117,7 +117,7 @@ namespace Engine.ComponentSystem.Components
             packet.Write(TriggeringMessages.Count);
             foreach (var messageType in TriggeringMessages)
             {
-                packet.Write(messageType.FullName);
+                packet.Write(messageType.AssemblyQualifiedName);
             }
             packet.Write(SoundCue);
             packet.Write(_play);
