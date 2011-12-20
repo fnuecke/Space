@@ -80,14 +80,14 @@ namespace Space.Control
             var playerData = (PlayerInfo)args.Player.Data;
             var ship = EntityFactory.CreateShip(playerData.Ship, args.Player.Number);
             ship.GetComponent<WeaponSlot>().Weapon = playerData.Weapon;
-            Simulation.EntityManager.AddEntity(ship);
+            AddEntity(ship, Simulation.CurrentFrame);
         }
 
         protected void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs)e;
             // Player left the game, remove his ship.
-            Simulation.EntityManager.RemoveEntity(tss.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID);
+            RemoveEntity(tss.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID, Simulation.CurrentFrame);
         }
     }
 }
