@@ -11,7 +11,7 @@ namespace Engine.ComponentSystem.Entities
     /// <summary>
     /// Base class for entities, implementing logic for distributing unique ids.
     /// </summary>
-    public abstract class AbstractEntity : IEntity
+    public class Entity : IEntity
     {
         #region Properties
 
@@ -53,7 +53,7 @@ namespace Engine.ComponentSystem.Entities
 
         #region Construction
 
-        protected AbstractEntity()
+        public Entity()
         {
             // Init to -1 as a default, so these aren't found due to
             // badly initialized 'pointers'.
@@ -285,7 +285,7 @@ namespace Engine.ComponentSystem.Entities
         public virtual object Clone()
         {
             // Start with a quick, shallow copy.
-            var copy = (AbstractEntity)MemberwiseClone();
+            var copy = (Entity)MemberwiseClone();
 
             // Not belonging to a manager for now, has to be re-set.
             copy.Manager = null;

@@ -78,7 +78,7 @@ namespace Space.Control
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
             var playerData = (PlayerInfo)args.Player.Data;
-            var ship = new Ship(playerData.Ship, args.Player.Number);
+            var ship = EntityFactory.CreateShip(playerData.Ship, args.Player.Number);
             ship.GetComponent<WeaponSlot>().Weapon = playerData.Weapon;
             Simulation.EntityManager.AddEntity(ship);
         }

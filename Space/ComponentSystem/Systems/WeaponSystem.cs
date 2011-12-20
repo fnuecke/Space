@@ -26,7 +26,7 @@ namespace Space.ComponentSystem.Systems
                     if (parameterization.Weapon != null)
                     {
                         // Got a shot.
-                        var shot = new Shot(parameterization.Weapon,
+                        var shot = EntityFactory.CreateShot(parameterization.Weapon,
                             parameterization.Position,
                             parameterization.Velocity,
                             parameterization.Direction);

@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem;
 using Engine.Input;
 using Engine.Serialization;
 using Engine.Util;
@@ -10,7 +10,6 @@ using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using Space.Commands;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Entities;
 using Space.Control;
 
 namespace Space
@@ -88,8 +87,7 @@ namespace Space
             Packetizer.Register<ShipControl>();
             Packetizer.Register<WeaponControl>();
             Packetizer.Register<WeaponSlot>();
-            Packetizer.Register<Ship>();
-            Packetizer.Register<Shot>();
+
             Packetizer.Register<PlayerInputCommand>();
 
 
