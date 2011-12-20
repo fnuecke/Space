@@ -5,7 +5,7 @@
       <Name>Cheap Laser</Name>
       <Size>Small</Size>
       <Texture>Textures/ship</Texture>
-      <Sound>Sounds/laser1</Sound>
+      <Sound>laser</Sound>
       <Damage>5</Damage>
       <Cooldown>30</Cooldown>
       <ProjectileTexture>Textures/ship</ProjectileTexture>

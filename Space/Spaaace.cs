@@ -6,6 +6,7 @@ using Engine.Serialization;
 using Engine.Util;
 using GameStateManagement;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using Space.Commands;
@@ -28,6 +29,10 @@ namespace Space
         GameConsole console;
 
         GameServer server;
+
+        AudioEngine audioEngine;
+        WaveBank waveBank;
+        SoundBank soundBank;
 
         public Spaaace()
         {
@@ -164,6 +169,12 @@ namespace Space
             console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
 
             console.WriteLine("Game Console. Type 'help' for available commands.");
+
+            audioEngine = new AudioEngine("data/Audio/SpaceAudio.xgs");
+            waveBank = new WaveBank(audioEngine, "data/Audio/Wave Bank.xwb");
+            soundBank = new SoundBank(audioEngine, "data/Audio/Sound Bank.xsb");
+
+            Services.AddService(typeof(SoundBank), soundBank);
         }
 
         /// <summary>

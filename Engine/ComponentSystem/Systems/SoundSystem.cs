@@ -13,27 +13,38 @@ namespace Engine.ComponentSystem.Systems
     public class SoundSystem : AbstractComponentSystem<SoundParameterization>
     {
         #region Fields
-        
+
         /// <summary>
         /// A list of sounds to play in this update.
         /// </summary>
         private List<SoundParameterization> _sounds = new List<SoundParameterization>();
-        private Dictionary<string ,int > playedSounds = new Dictionary<string, int>();
 
         /// <summary>
-        /// Time in which the sound shall not be played again
+        /// Map sound cue names to their remaining timeouts.
         /// </summary>
-        private const int Cooldown = 5;
-        protected SoundBank SoundBank;
-        #endregion
+        private Dictionary<string, int> _playedSounds = new Dictionary<string, int>();
 
+        /// <summary>
+        /// Time in which a sound shall not be played again.
+        /// </summary>
+        private const int _cooldown = 5;
+
+        /// <summary>
+        /// The sound bank we use to get actual sounds for our cue names.
+        /// </summary>
+        private SoundBank _soundBank;
+
+        #endregion
 
         #region Constructor
+
         public SoundSystem(SoundBank soundBank)
         {
-            SoundBank = soundBank;
+            _soundBank = soundBank;
         }
+
         #endregion
+
         #region Logic
 
         public override void Update(ComponentSystemUpdateType updateType)
@@ -54,14 +65,14 @@ namespace Engine.ComponentSystem.Systems
             }
             else if (updateType == ComponentSystemUpdateType.Display)
             {
-
-
-                foreach (var key in playedSounds.Keys)
+                foreach (var key in new List<string>(_playedSounds.Keys))
                 {
-                    if (--playedSounds[key] == 0)
-                        playedSounds.Remove(key);
-                    
+                    if (--_playedSounds[key] == 0)
+                    {
+                        _playedSounds.Remove(key);
+                    }
                 }
+
                 // Get position of listener, i.e. what the sounds are relative to.
                 FPoint listenerPosition = GetListenerPosition();
                 FPoint listenerVelocity = GetListenerVelocity();
@@ -85,11 +96,11 @@ namespace Engine.ComponentSystem.Systems
                 foreach (var sound in _sounds)
                 {
                     //sound was not played in the last clicks
-                    if (!playedSounds.ContainsKey(sound.SoundCueToPlay))
+                    if (!_playedSounds.ContainsKey(sound.SoundCueToPlay))
                     {
-                        playedSounds.Add(sound.SoundCueToPlay,Cooldown);
+                        _playedSounds.Add(sound.SoundCueToPlay, _cooldown);
                         var emitter = new AudioEmitter();
-                        
+
 
                         //Emitter
 
@@ -99,37 +110,37 @@ namespace Engine.ComponentSystem.Systems
                         velocity.Y = (float)sound.Velocity.Y;
                         velocity.Z = 0;
                         emitter.Velocity = velocity;
-                        
+
                         //Position
                         Vector3 positionEmitter;
                         positionEmitter.X = (float)sound.Position.X;
                         positionEmitter.Y = (float)sound.Position.Y;
                         positionEmitter.Z = 0;
                         emitter.Position = positionEmitter;
-                        SoundBank.PlayCue(sound.SoundCueToPlay,listener,emitter);
+                        _soundBank.PlayCue(sound.SoundCueToPlay, listener, emitter);
                     }
-                    
                 }
-
             }
         }
 
         /// <summary>
         /// Get the position of the listener (e.g. player avatar).
         /// </summary>
-        /// <returns></returns>
-        protected FPoint GetListenerPosition()
+        /// <returns>The position of the listener.</returns>
+        protected virtual FPoint GetListenerPosition()
         {
             return FPoint.Zero;
         }
+
         /// <summary>
-        /// Get the position of the listener (e.g. player avatar).
+        /// Get the velocity of the listener (e.g. player avatar).
         /// </summary>
-        /// <returns></returns>
-        protected FPoint GetListenerVelocity()
+        /// <returns>The velocity of the listener.</returns>
+        protected virtual FPoint GetListenerVelocity()
         {
             return FPoint.Zero;
         }
+
         #endregion
 
         #region Cloning
@@ -140,6 +151,9 @@ namespace Engine.ComponentSystem.Systems
 
             // Get own list of sounds to play.
             copy._sounds = new List<SoundParameterization>(_sounds);
+            
+            // And own list of cooldowns.
+            copy._playedSounds = new Dictionary<string, int>(_playedSounds);
 
             return copy;
         }

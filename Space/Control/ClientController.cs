@@ -4,6 +4,7 @@ using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
@@ -32,7 +33,7 @@ namespace Space.Control
                 .AddSystem(new ShipControlSystem())
                 .AddSystem(new WeaponSystem())
                 .AddSystem(new AvatarSystem())
-                .AddSystem(new SoundSystem())
+                .AddSystem(new SoundSystem((SoundBank)game.Services.GetService(typeof(SoundBank))))
                 .AddSystem(new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session)
                             .AddComponent(new Background("Textures/stars")));
         }
