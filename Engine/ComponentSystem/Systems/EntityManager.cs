@@ -59,11 +59,11 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="entity">The entity to add.</param>
         public void AddEntity(IEntity entity)
         {
-            if (entity.UID == 0)
+            if (entity.Manager == this)
             {
-                throw new ArgumentException("Invalid entity UID.", "entity");
+                return;
             }
-            else if (entity.UID > 0)
+            else if (entity.Manager != null)
             {
                 throw new ArgumentException("Entity is already part of an entity manager.", "entity");
             }
@@ -81,6 +81,10 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="updateable">The entity to remove.</param>
         public void RemoveEntity(IEntity entity)
         {
+            if (entity.Manager != this)
+            {
+                return;
+            }
             RemoveEntity(entity.UID);
         }
 
@@ -98,13 +102,14 @@ namespace Engine.ComponentSystem.Systems
                 int index = _entities.FindIndex(e => e.UID == entityUid);
                 if (index >= 0)
                 {
-                    IEntity entity = _entities[index];
+                    var entity = _entities[index];
                     foreach (var component in entity.Components)
                     {
                         SystemManager.RemoveComponent(component);
                     }
                     _entities.RemoveAt(index);
                     entity.UID = -1;
+                    entity.Manager = null;
                     return entity;
                 }
             }
@@ -118,12 +123,9 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>The current representation in this manager.</returns>
         public IEntity GetEntity(long entityUid)
         {
-            for (int i = 0; i < _entities.Count; i++)
+            if (entityUid > 0)
             {
-                if (_entities[i].UID == entityUid)
-                {
-                    return _entities[i];
-                }
+                return _entities.Find(e => e.UID == entityUid);
             }
             return null;
         }
@@ -139,6 +141,7 @@ namespace Engine.ComponentSystem.Systems
         private void AddEntityUnchecked(IEntity entity)
         {
             _entities.Add(entity);
+            entity.Manager = this;
             foreach (var component in entity.Components)
             {
                 SystemManager.AddComponent(component);
@@ -158,6 +161,9 @@ namespace Engine.ComponentSystem.Systems
                 Packetizer.Packetize(entity, packet);
             }
 
+            // Next id we'll distribute.
+            packet.Write(_nextEntityId);
+
             return packet;
         }
 
@@ -174,6 +180,9 @@ namespace Engine.ComponentSystem.Systems
             {
                 AddEntityUnchecked(Packetizer.Depacketize<IEntity>(packet));
             }
+
+            // Next id we'll distribute.
+            _nextEntityId = packet.ReadInt64();
         }
 
         public void Hash(Hasher hasher)

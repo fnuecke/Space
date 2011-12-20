@@ -30,6 +30,7 @@ namespace Space.Control
 
             tss.EntityManager.SystemManager.AddSystem(new PhysicsSystem())
                 .AddSystem(new ShipControlSystem())
+                .AddSystem(new WeaponSystem())
                 .AddSystem(new AvatarSystem())
                 .AddSystem(new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session)
                             .AddComponent(new Background("Textures/stars")));

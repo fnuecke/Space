@@ -22,5 +22,10 @@ namespace Space.ComponentSystem.Parameterizations
         /// The initial velocity of the shot.
         /// </summary>
         public FPoint Velocity { get; set; }
+
+        /// <summary>
+        /// The direction the shot was fired in.
+        /// </summary>
+        public FPoint Direction { get; set; }
     }
 }

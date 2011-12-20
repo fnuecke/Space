@@ -8,6 +8,13 @@ namespace Engine.ComponentSystem.Components
     public interface IComponent : ICloneable, IPacketizable, IHashable
     {
         /// <summary>
+        /// Unique ID in the context of its entity. This means there can be
+        /// multiple components with the same id, but no two components with
+        /// the same id attached to the same entity.
+        /// </summary>
+        int UID { get; set; }
+
+        /// <summary>
         /// Gets the entity this component belongs to.
         /// </summary>
         IEntity Entity { get; set; }
@@ -34,6 +41,6 @@ namespace Engine.ComponentSystem.Components
         /// </para>
         /// </summary>
         /// <param name="message">The sent message.</param>
-        void HandleMessage(object message);
+        void HandleMessage(ValueType message);
     }
 }

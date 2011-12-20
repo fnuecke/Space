@@ -100,7 +100,7 @@ namespace Engine.ComponentSystem.Components
 
         #region Message handling
 
-        public override void HandleMessage(object message)
+        public override void HandleMessage(ValueType message)
         {
             if (TriggeringMessages.Contains(message.GetType()))
             {

@@ -48,11 +48,11 @@ namespace GameStateManagement
         //Called if the Connect Entry is selected
         void ConnectEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            PlayerInfo info = new PlayerInfo();
             if (connect.Editable)
             {
-                
+                PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
+                info.Weapon = this.ScreenManager.Game.Content.Load<WeaponData[]>("Data/weapons")[0];
                 ((EditableMenueEntry)MenuEntries[0]).locked = true;
                 try
                 {

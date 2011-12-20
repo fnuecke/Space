@@ -16,11 +16,29 @@ namespace Engine.ComponentSystem.Components
     public abstract class AbstractComponent : IComponent
     {
         #region Properties
-        
+
+        /// <summary>
+        /// Unique ID in the context of its entity. This means there can be
+        /// multiple components with the same id, but no two components with
+        /// the same id attached to the same entity.
+        /// </summary>
+        public int UID { get; set; }
+
         /// <summary>
         /// Gets the entity this component belongs to.
         /// </summary>
         public IEntity Entity { get; set; }
+
+        #endregion
+
+        #region Constructor
+
+        protected AbstractComponent()
+        {
+            // Avoid accidentally getting components due to uninitialized
+            // indexes (default = 0).
+            UID = -1;
+        }
 
         #endregion
 
@@ -60,7 +78,7 @@ namespace Engine.ComponentSystem.Components
         /// </para>
         /// </summary>
         /// <param name="message">The sent message.</param>
-        public virtual void HandleMessage(object message)
+        public virtual void HandleMessage(ValueType message)
         {
         }
 

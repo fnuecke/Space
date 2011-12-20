@@ -18,13 +18,13 @@ namespace Space.ComponentSystem.Entities
             AddComponent(new TransformedRenderer());
         }
 
-        public Shot(WeaponData weaponData, FPoint position, FPoint velocity)
+        public Shot(WeaponData weaponData, FPoint position, FPoint velocity, FPoint direction)
             : this()
         {
             // Give this entity a position.
             var sphysics = GetComponent<Transform>();
             sphysics.Translation = position;
-            sphysics.Rotation = Fixed.Atan2(velocity.Y, velocity.X);
+            sphysics.Rotation = Fixed.Atan2(direction.Y, direction.X);
 
             // And a dynamic component for movement and rotation.
             var speed = GetComponent<Velocity>();

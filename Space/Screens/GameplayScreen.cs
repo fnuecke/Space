@@ -89,6 +89,7 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
+                info.Weapon = this.ScreenManager.Game.Content.Load<WeaponData[]>("Data/weapons")[0];
                 ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
             },
                 "Joins a game at the given host.",
@@ -103,6 +104,7 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
+                info.Weapon = this.ScreenManager.Game.Content.Load<WeaponData[]>("Data/weapons")[0];
                 ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
             },
                 "autojoin fn");
@@ -111,6 +113,7 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
+                info.Weapon = this.ScreenManager.Game.Content.Load<WeaponData[]>("Data/weapons")[0];
                 ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
             },
                 "autojoin localhost");

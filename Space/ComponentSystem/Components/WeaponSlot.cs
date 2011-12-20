@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Components;
 using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
+using Space.ComponentSystem.Components.Messages;
 using Space.ComponentSystem.Parameterizations;
 using SpaceData;
 
@@ -23,7 +24,30 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// A list of weapons currently active.
         /// </summary>
-        public WeaponData Weapon { get; set; }
+        public WeaponData Weapon
+        {
+            get
+            {
+                return _weapon;
+            }
+            set
+            {
+                if (_sound > 0)
+                {
+                    Entity.RemoveComponent(_sound);
+                    _sound = -1;
+                }
+                _weapon = value;
+                if (_weapon != null)
+                {
+                    var sound = new Sound();
+                    sound.SoundCue = _weapon.Sound;
+                    sound.TriggeringMessages.Add(typeof(WeaponFired));
+                    Entity.AddComponent(sound);
+                    _sound = sound.UID;
+                }
+            }
+        }
 
         /// <summary>
         /// Remaining cooldown time for weapons, in game updates.
@@ -40,6 +64,30 @@ namespace Space.ComponentSystem.Components
         /// as a normalized vector.
         /// </summary>
         public FPoint MountDirection { get; set; }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The id of the sound component we use to play our weapon sound.
+        /// </summary>
+        private int _sound;
+
+        /// <summary>
+        /// The actual weapon data.
+        /// </summary>
+        private WeaponData _weapon;
+
+        #endregion
+
+        #region Constructor
+
+        public WeaponSlot()
+        {
+            MountDirection = FPoint.Create((Fixed)1, (Fixed)0);
+            _sound = -1;
+        }
 
         #endregion
 
@@ -75,11 +123,15 @@ namespace Space.ComponentSystem.Components
                     if (transfrom != null)
                     {
                         p.Position += transfrom.Translation;
+                        p.Direction = FPoint.Rotate(FPoint.Create((Fixed)1, (Fixed)0), transfrom.Rotation);
+                        p.Velocity = FPoint.Rotate(p.Velocity, transfrom.Rotation);
                     }
                     if (velocity != null)
                     {
                         p.Velocity += velocity.Value;
                     }
+
+                    Entity.SendMessage(WeaponFired.Create());
                 }
             }
         }
@@ -101,27 +153,29 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return packet
-                .Write(Weapon == null ? new Packet() : (new Packet().Write(Weapon)))
                 .Write(Cooldown)
                 .Write(MountPoint)
-                .Write(MountDirection);
+                .Write(MountDirection)
+                .Write(_sound)
+                .Write(_weapon == null ? new Packet() : (new Packet().Write(_weapon)));
         }
 
         public override void Depacketize(Packet packet)
         {
-            var weaponData = packet.ReadPacket();
-            if (weaponData.Length > 0)
-            {
-                Weapon = new WeaponData();
-                Weapon.Depacketize(weaponData);
-            }
-            else
-            {
-                Weapon = null;
-            }
             Cooldown = packet.ReadInt32();
             MountPoint = packet.ReadFPoint();
             MountDirection = packet.ReadFPoint();
+            _sound = packet.ReadInt32();
+            var weaponData = packet.ReadPacket();
+            if (weaponData.Length > 0)
+            {
+                _weapon = new WeaponData();
+                _weapon.Depacketize(weaponData);
+            }
+            else
+            {
+                _weapon = null;
+            }
         }
 
         public override void Hash(Hasher hasher)
@@ -132,6 +186,7 @@ namespace Space.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(MountPoint.Y.RawValue));
             hasher.Put(BitConverter.GetBytes(MountDirection.X.RawValue));
             hasher.Put(BitConverter.GetBytes(MountDirection.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(_sound));
         }
 
         #endregion

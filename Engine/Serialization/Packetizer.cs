@@ -45,15 +45,15 @@ namespace Engine.Serialization
         /// <returns>the specified packet with the value written to it.</returns>
         public static Packet Packetize<T>(T value, Packet packet) where T : IPacketizable
         {
-            Type type = value.GetType();
-            if (_constructors.ContainsKey(type.FullName))
+            string fullName = value.GetType().FullName;
+            if (_constructors.ContainsKey(fullName))
             {
-                packet.Write(type.FullName);
+                packet.Write(fullName);
                 return packet.Write(value);
             }
             else
             {
-                throw new ArgumentException("T");
+                throw new ArgumentException(string.Format("Unregistered type: {0}", fullName), "T");
             }
         }
 
@@ -75,7 +75,7 @@ namespace Engine.Serialization
             }
             else
             {
-                throw new ArgumentException("T");
+                throw new ArgumentException(string.Format("Unregistered type: {0}", fullName), "T");
             }
         }
         #endregion

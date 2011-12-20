@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using Engine.ComponentSystem.Components;
 using Engine.Input;
 using Engine.Serialization;
 using Engine.Util;
@@ -8,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using Space.Commands;
+using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Entities;
 using Space.Control;
 
@@ -80,9 +82,16 @@ namespace Space
             // to actually know what it'll get. This is used in game states, e.g.
             // where the state only knows it has IEntities, but not what the
             // actual implementations are.
+            PacketizerRegistration.RegisterEngineComponentsWithPacketizer();
+
+            Packetizer.Register<MovementProperties>();
+            Packetizer.Register<ShipControl>();
+            Packetizer.Register<WeaponControl>();
+            Packetizer.Register<WeaponSlot>();
             Packetizer.Register<Ship>();
             Packetizer.Register<Shot>();
             Packetizer.Register<PlayerInputCommand>();
+
 
             // Add some more utility components.
             Components.Add(new KeyboardInputManager(this));

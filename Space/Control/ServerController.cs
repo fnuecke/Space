@@ -4,6 +4,7 @@ using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Systems;
 using Space.Simulation;
@@ -42,6 +43,7 @@ namespace Space.Control
 
             tss.EntityManager.SystemManager.AddSystem(new PhysicsSystem())
                 .AddSystem(new ShipControlSystem())
+                .AddSystem(new WeaponSystem())
                 .AddSystem(new AvatarSystem());
         }
 
@@ -76,7 +78,9 @@ namespace Space.Control
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
             var playerData = (PlayerInfo)args.Player.Data;
-            Simulation.EntityManager.AddEntity(new Ship(playerData.Ship, args.Player.Number));
+            var ship = new Ship(playerData.Ship, args.Player.Number);
+            ship.GetComponent<WeaponSlot>().Weapon = playerData.Weapon;
+            Simulation.EntityManager.AddEntity(ship);
         }
 
         protected void HandlePlayerLeft(object sender, EventArgs e)

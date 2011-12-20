@@ -43,11 +43,12 @@ namespace Space.ComponentSystem.Entities
             movement.Acceleration = shipData.Acceleration;
             movement.RotationSpeed = shipData.RotationSpeed;
 
+            var avatar = GetComponent<Avatar>();
+            avatar.PlayerNumber = playerNumber;
+
             var renderer = GetComponent<TransformedRenderer>();
             renderer.TextureName = shipData.Texture;
 
-            var avatar = GetComponent<Avatar>();
-            avatar.PlayerNumber = playerNumber;
         }
     }
 }

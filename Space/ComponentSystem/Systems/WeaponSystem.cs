@@ -1,8 +1,9 @@
 ﻿using Engine.ComponentSystem.Systems;
 using Engine.Math;
+using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Parameterizations;
 
-namespace Space.Control
+namespace Space.ComponentSystem.Systems
 {
     /// <summary>
     /// System responsible for firing weapons.
@@ -25,7 +26,11 @@ namespace Space.Control
                     if (parameterization.Weapon != null)
                     {
                         // Got a shot.
-
+                        var shot = new Shot(parameterization.Weapon,
+                            parameterization.Position,
+                            parameterization.Velocity,
+                            parameterization.Direction);
+                        Manager.EntityManager.AddEntity(shot);
                     }
 
                     // Reset for next iteration.

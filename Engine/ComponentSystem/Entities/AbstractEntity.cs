@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Entities
 {
@@ -23,6 +25,11 @@ namespace Engine.ComponentSystem.Entities
         /// </summary>
         public ReadOnlyCollection<IComponent> Components { get { return _components.AsReadOnly(); } }
 
+        /// <summary>
+        /// The entity manager this entity is currently in.
+        /// </summary>
+        public IEntityManager Manager { get; set; }
+
         #endregion
 
         #region Fields
@@ -36,6 +43,11 @@ namespace Engine.ComponentSystem.Entities
         /// Cached lookup of other components of the same element.
         /// </summary>
         private Dictionary<Type, IComponent> _mapping = new Dictionary<Type, IComponent>();
+        
+        /// <summary>
+        /// Running counter to uniquely number components.
+        /// </summary>
+        private int _nextComponentId = 1;
 
         #endregion
 
@@ -48,20 +60,31 @@ namespace Engine.ComponentSystem.Entities
             this.UID = -1;
         }
 
-        /// <summary>
-        /// Registers a new component with this entity. These must only be
-        /// added during the construction of the entity.
-        /// </summary>
-        /// <param name="component">the component to add.</param>
-        protected void AddComponent(IComponent component)
-        {
-            _components.Add(component);
-            component.Entity = this;
-        }
-
         #endregion
 
-        #region Component-lookup
+        #region Components
+
+        /// <summary>
+        /// Registers a new component with this entity. If the entity is in a managed
+        /// system, the component will be registered with all applicable component systems.
+        /// </summary>
+        /// <param name="component">The component to add.</param>
+        public void AddComponent(IComponent component)
+        {
+            if (component.Entity == this)
+            {
+                return;
+            }
+            if (component.Entity != null)
+            {
+                throw new ArgumentException("Component is already part of an entity.", "component");
+            }
+            else
+            {
+                component.UID = _nextComponentId++;
+                AddComponentUnchecked(component);
+            }
+        }
 
         /// <summary>
         /// Get a component of the specified type from this entity, if it
@@ -101,6 +124,79 @@ namespace Engine.ComponentSystem.Entities
             return default(T);
         }
 
+        /// <summary>
+        /// Get a component by its id.
+        /// </summary>
+        /// <param name="componentId">The id of the component to get.</param>
+        /// <returns>The component, or <c>null</c> if there is no component
+        /// with the specified id.</returns>
+        public IComponent GetComponent(int componentId)
+        {
+            if (componentId > 0)
+            {
+                return _components.Find(c => c.UID == componentId);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Removes a component from this entity. If the entity is in a managed
+        /// system, the component will be removed from all applicable component
+        /// systems.
+        /// </summary>
+        /// <param name="component">The component to remove.</param>
+        public void RemoveComponent(IComponent component)
+        {
+            if (component.Entity != this)
+            {
+                return;
+            }
+            RemoveComponent(component.UID);
+        }
+
+        /// <summary>
+        /// Removes a component by its id from this entity. If the entity is in
+        /// a managed system, the component will be removed from all applicable
+        /// component systems.
+        /// </summary>
+        /// <param name="componentUid">The id of the component to remove.</param>
+        /// <returns>The removed component, or <c>null</c> if this entity has no
+        /// component with the specified id.</returns>
+        public IComponent RemoveComponent(int componentUid)
+        {
+            if (componentUid > 0)
+            {
+                int index = _components.FindIndex(c => c.UID == componentUid);
+                if (index >= 0)
+                {
+                    var component = _components[index];
+                    if (Manager != null)
+                    {
+                        Manager.SystemManager.RemoveComponent(component);
+                    }
+                    _components.RemoveAt(index);
+                    component.UID = -1;
+                    component.Entity = null;
+                    return component;
+                }
+            }
+            return null;
+        }
+
+        #endregion
+
+        #region Utility methods
+
+        private void AddComponentUnchecked(IComponent component)
+        {
+            _components.Add(component);
+            component.Entity = this;
+            if (Manager != null)
+            {
+                Manager.SystemManager.AddComponent(component);
+            }
+        }
+
         #endregion
 
         #region Component messaging
@@ -109,7 +205,7 @@ namespace Engine.ComponentSystem.Entities
         /// Send a message to all components of this entity.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public void SendMessage(object message)
+        public void SendMessage(ValueType message)
         {
             foreach (var component in _components)
             {
@@ -127,11 +223,18 @@ namespace Engine.ComponentSystem.Entities
         /// <param name="packet">the packet to write the data to.</param>
         public virtual Packet Packetize(Packet packet)
         {
+            // Id of this entity.
             packet.Write(UID);
+
+            // All components in this entity.
+            packet.Write(_components.Count);
             foreach (var component in _components)
             {
-                component.Packetize(packet);
+                Packetizer.Packetize(component, packet);
             }
+
+            // Next id we'll distribute.
+            packet.Write(_nextComponentId);
 
             return packet;
         }
@@ -142,11 +245,19 @@ namespace Engine.ComponentSystem.Entities
         /// <param name="packet">the packet to read from.</param>
         public virtual void Depacketize(Packet packet)
         {
+            // Id of this entity.
             UID = packet.ReadInt64();
-            foreach (var component in _components)
+
+            // All components in this entity.
+            _components.Clear();
+            int numComponents = packet.ReadInt32();
+            for (int i = 0; i < numComponents; ++i)
             {
-                component.Depacketize(packet);
+                AddComponentUnchecked(Packetizer.Depacketize<IComponent>(packet));
             }
+
+            // Next id we'll distribute.
+            _nextComponentId = packet.ReadInt32();
         }
 
         /// <summary>
@@ -154,7 +265,7 @@ namespace Engine.ComponentSystem.Entities
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">the hasher to push data to.</param>
-        public virtual void Hash(Util.Hasher hasher)
+        public virtual void Hash(Hasher hasher)
         {
             foreach (var component in _components)
             {
@@ -175,6 +286,9 @@ namespace Engine.ComponentSystem.Entities
         {
             // Start with a quick, shallow copy.
             var copy = (AbstractEntity)MemberwiseClone();
+
+            // Not belonging to a manager for now, has to be re-set.
+            copy.Manager = null;
 
             // Give it its own mapper.
             copy._mapping = new Dictionary<Type, IComponent>();
