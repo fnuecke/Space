@@ -159,4 +159,13 @@
   <data name="Resolution" xml:space="preserve">
     <value>Resolution: </value>
   </data>
+  <data name="Fullscreen" xml:space="preserve">
+    <value>Fullscreen: </value>
+  </data>
+  <data name="Fullscreen_false" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="Fullscreen_true" xml:space="preserve">
+    <value>On</value>
+  </data>
 </root>

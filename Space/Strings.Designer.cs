@@ -106,6 +106,33 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Fullscreen: .
+        /// </summary>
+        internal static string Fullscreen {
+            get {
+                return ResourceManager.GetString("Fullscreen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Off.
+        /// </summary>
+        internal static string Fullscreen_false {
+            get {
+                return ResourceManager.GetString("Fullscreen_false", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to On.
+        /// </summary>
+        internal static string Fullscreen_true {
+            get {
+                return ResourceManager.GetString("Fullscreen_true", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Host a game.
         /// </summary>
         internal static string host {

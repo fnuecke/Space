@@ -31,21 +31,16 @@ namespace GameStateManagement
         MenuEntry languageMenuEntry;
         MenuEntry resolutionMenuEntry;
         private EditableMenueEntry playerName;
+        private MenuEntry fullscreenMenuEntry;
+
 
         private Option<string> language;
         private Option<string> resolution;
-
+        private Option<bool> fullscreen;
         static Dictionary<string,string> languages= new Dictionary<string,string>();
 
     
-        static int currentLanguage = 0;
-
-            
-
-        static bool frobnicate = true;
-
-        static int elf = 23;
-
+       
         #endregion
 
         #region Initialization
@@ -100,7 +95,8 @@ namespace GameStateManagement
                     }
                     else if (!added && mode.Width == width && mode.Height > height)
                     {
-                        dict.Add(width + "x" + height, width + " x " + height);
+                        if (!dict.ContainsKey(width + "x" + height))
+                            dict.Add(width + "x" + height, width + " x " + height);
                         added = true;
                     }
                         dict.Add(mode.Width + "x" + mode.Height, mode.Width + " x " + mode.Height);
@@ -109,11 +105,25 @@ namespace GameStateManagement
             }
             resolution = new Option<string>(dict);
 
+            fullscreenMenuEntry = new MenuEntry(string.Empty);
+            fullscreenMenuEntry.Selected += FullscreenMenuEntrySelected;
+            fullscreenMenuEntry.next += FullscreenMenuEntryNext;
+            fullscreenMenuEntry.prev += FullscreenMenuEntryPrev;
+
+            var screenDict = new Dictionary<bool, string>
+                                 {
+                                     {false, Strings.Fullscreen_false},
+                                     {true, Strings.Fullscreen_true}
+                                 };
+            fullscreen = new Option<bool>(screenDict);
+
+
             SetMenuEntryText();
             // Add entries to the menu.
             MenuEntries.Add(languageMenuEntry);
             MenuEntries.Add(playerName);
             MenuEntries.Add(resolutionMenuEntry);
+            MenuEntries.Add(fullscreenMenuEntry);
             MenuEntries.Add(back);
         }
 
@@ -134,6 +144,10 @@ namespace GameStateManagement
             language.SetCurrent(Settings.Instance.Language);
             resolutionMenuEntry.Text = Strings.Resolution + Settings.Instance.ScreenWidth + " x " + Settings.Instance.ScreenHeight;
             resolution.SetCurrent(Settings.Instance.ScreenWidth + "x" + Settings.Instance.ScreenHeight);
+
+            fullscreen.SetCurrent(Settings.Instance.Fullscreen);
+            fullscreenMenuEntry.Text = Strings.Fullscreen+fullscreen.GetOption();
+
             playerName.SetInputText(Settings.Instance.PlayerName);
         }
 
@@ -234,6 +248,36 @@ namespace GameStateManagement
 
             SetMenuEntryText();
         }
+
+        void FullscreenMenuEntryNext(object sender, PlayerIndexEventArgs e)
+        {
+
+
+
+            fullscreenMenuEntry.Text = Strings.Fullscreen + fullscreen.GetNextOption();
+
+
+        }
+        void FullscreenMenuEntryPrev(object sender, PlayerIndexEventArgs e)
+        {
+
+
+
+            fullscreenMenuEntry.Text = Strings.Fullscreen + fullscreen.GetPrevOption();
+
+
+        }
+        /// <summary>
+        /// Event handler for when the Language menu entry is selected.
+        /// </summary>
+        void FullscreenMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        {
+
+
+            Settings.Instance.Fullscreen = fullscreen.GetKey();
+
+            SetMenuEntryText();
+        }
         protected override void OnNext()
         {
             SetMenuEntryText();
@@ -243,26 +287,10 @@ namespace GameStateManagement
             SetMenuEntryText();
         }
 
-        /// <summary>
-        /// Event handler for when the Frobnicate menu entry is selected.
-        /// </summary>
-        void FrobnicateMenuEntrySelected(object sender, PlayerIndexEventArgs e)
-        {
-            frobnicate = !frobnicate;
-
-            SetMenuEntryText();
-        }
+       
 
 
-        /// <summary>
-        /// Event handler for when the Elf menu entry is selected.
-        /// </summary>
-        void ElfMenuEntrySelected(object sender, PlayerIndexEventArgs e)
-        {
-            elf++;
-
-            SetMenuEntryText();
-        }
+       
 
 
         #endregion
@@ -308,7 +336,7 @@ namespace GameStateManagement
                 return keyList[current];
             }
 
-            public void SetCurrent(string key)
+            public void SetCurrent(T key)
             {
                 for (int i = 0; i < keyList.Count; i++)
                 {
