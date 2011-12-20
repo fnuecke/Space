@@ -29,8 +29,8 @@ namespace GameStateManagement
             : base("Paused")
         {
             // Create our menu entries.
-            MenuEntry resumeGameMenuEntry = new MenuEntry("Resume Game");
-            MenuEntry quitGameMenuEntry = new MenuEntry("Quit Game");
+            var resumeGameMenuEntry = new MenuEntry("Resume Game");
+            var quitGameMenuEntry = new MenuEntry("Quit Game");
             
             // Hook up menu event handlers.
             resumeGameMenuEntry.Selected += OnCancel;
