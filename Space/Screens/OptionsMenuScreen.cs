@@ -32,8 +32,8 @@ namespace GameStateManagement
         MenuEntry resolutionMenuEntry;
         private EditableMenueEntry playerName;
 
-        private Option language;
-        private Option resolution;
+        private Option<string> language;
+        private Option<string> resolution;
 
         static Dictionary<string,string> languages= new Dictionary<string,string>();
 
@@ -60,7 +60,7 @@ namespace GameStateManagement
             // Create our menu entries.
             languages["en"] = Strings.en;
             languages["de"] = Strings.de;
-            language = new Option(languages);
+            language = new Option<string>(languages);
             languageMenuEntry = new MenuEntry(string.Empty);
             playerName = new EditableMenueEntry(Strings.playerName);
             resolutionMenuEntry = new MenuEntry(Settings.Instance.ScreenWidth + " x " + Settings.Instance.ScreenHeight);
@@ -107,7 +107,7 @@ namespace GameStateManagement
                 }
                     
             }
-            resolution = new Option(dict);
+            resolution = new Option<string>(dict);
 
             SetMenuEntryText();
             // Add entries to the menu.
@@ -268,21 +268,21 @@ namespace GameStateManagement
         #endregion
 
         #region Option
-        public class Option
+        public class Option<T>
         {
 
             #region Fields
-            Dictionary<string, string> options = new Dictionary<string, string>();
-            List<string> keyList;
+            Dictionary<T, string> options = new Dictionary<T, string>();
+            List<T> keyList;
             int current = 0;
             #endregion
 
             #region Initialization
 
-            public Option(Dictionary<string, string> dict)
+            public Option(Dictionary<T, string> dict)
             {
                 options = dict;
-                keyList = new List<string>(options.Keys);
+                keyList = new List<T>(options.Keys);
             }
 
             public string GetNextOption()
@@ -303,7 +303,7 @@ namespace GameStateManagement
 
             }
 
-            public string GetKey()
+            public T GetKey()
             {
                 return keyList[current];
             }
