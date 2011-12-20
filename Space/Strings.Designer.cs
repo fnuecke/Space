@@ -176,5 +176,14 @@ namespace Space {
                 return ResourceManager.GetString("playerName", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Resolution: .
+        /// </summary>
+        internal static string Resolution {
+            get {
+                return ResourceManager.GetString("Resolution", resourceCulture);
+            }
+        }
     }
 }

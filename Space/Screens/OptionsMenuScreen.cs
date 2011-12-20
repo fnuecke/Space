@@ -14,6 +14,7 @@ using Microsoft.Xna.Framework;
 using Space;
 using System.Collections.Generic;
 using System;
+using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace GameStateManagement
@@ -28,10 +29,11 @@ namespace GameStateManagement
         #region Fields
 
         MenuEntry languageMenuEntry;
+        MenuEntry resolutionMenuEntry;
         private EditableMenueEntry playerName;
 
         private Option language;
-      
+        private Option resolution;
 
         static Dictionary<string,string> languages= new Dictionary<string,string>();
 
@@ -61,8 +63,9 @@ namespace GameStateManagement
             language = new Option(languages);
             languageMenuEntry = new MenuEntry(string.Empty);
             playerName = new EditableMenueEntry(Strings.playerName);
+            resolutionMenuEntry = new MenuEntry(Settings.Instance.ScreenWidth + " x " + Settings.Instance.ScreenHeight);
+           
             
-            SetMenuEntryText();
 
             MenuEntry back = new MenuEntry(Strings.Back);
 
@@ -74,12 +77,43 @@ namespace GameStateManagement
 
             playerName.Selected += PlayerNameSelected;
             //Graphics
-            
+             resolutionMenuEntry.next += ResolutionMenuEntryNext;
+            resolutionMenuEntry.prev += ResolutionMenuEntryPrev;
+            resolutionMenuEntry.Selected += ResolutionMenuEntrySelected;
 
+            var dict = new Dictionary<string, string>();
+            var added = false;
+            var height = Settings.Instance.ScreenHeight;
+            var width = Settings.Instance.ScreenWidth;
+            foreach (DisplayMode mode in GraphicsAdapter.DefaultAdapter.SupportedDisplayModes)
+            {
+                //Console.WriteLine(mode.Height + " x " + mode.Width);
+                if (!dict.ContainsKey(mode.Width + "x" + mode.Height))
+                {
+                    if (!added && mode.Width > width)
+                    {
+                        if (!dict.ContainsKey(width + "x" + height))
+                        {
+                            dict.Add(width + "x" + height, width + " x " + height);
+                        }
+                        added = true;
+                    }
+                    else if (!added && mode.Width == width && mode.Height > height)
+                    {
+                        dict.Add(width + "x" + height, width + " x " + height);
+                        added = true;
+                    }
+                        dict.Add(mode.Width + "x" + mode.Height, mode.Width + " x " + mode.Height);
+                }
+                    
+            }
+            resolution = new Option(dict);
 
+            SetMenuEntryText();
             // Add entries to the menu.
             MenuEntries.Add(languageMenuEntry);
             MenuEntries.Add(playerName);
+            MenuEntries.Add(resolutionMenuEntry);
             MenuEntries.Add(back);
         }
 
@@ -98,6 +132,8 @@ namespace GameStateManagement
         {
             languageMenuEntry.Text = Strings.language + languages[Settings.Instance.Language];
             language.SetCurrent(Settings.Instance.Language);
+            resolutionMenuEntry.Text = Strings.Resolution + Settings.Instance.ScreenWidth + " x " + Settings.Instance.ScreenHeight;
+            resolution.SetCurrent(Settings.Instance.ScreenWidth + "x" + Settings.Instance.ScreenHeight);
             playerName.SetInputText(Settings.Instance.PlayerName);
         }
 
@@ -165,6 +201,38 @@ namespace GameStateManagement
             languageMenuEntry.Text = Strings.language + language.GetPrevOption();
 
 
+        }
+
+        void ResolutionMenuEntryNext(object sender, PlayerIndexEventArgs e)
+        {
+
+
+
+            resolutionMenuEntry.Text = Strings.Resolution + resolution.GetNextOption();
+
+
+        }
+        void ResolutionMenuEntryPrev(object sender, PlayerIndexEventArgs e)
+        {
+
+
+
+            resolutionMenuEntry.Text = Strings.Resolution + resolution.GetPrevOption();
+
+
+        }
+        /// <summary>
+        /// Event handler for when the Language menu entry is selected.
+        /// </summary>
+        void ResolutionMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        {
+
+
+            string[] words = resolution.GetKey().Split('x');
+            Settings.Instance.ScreenWidth = int.Parse(words[0]);
+            Settings.Instance.ScreenHeight = int.Parse(words[1]);
+
+            SetMenuEntryText();
         }
         protected override void OnNext()
         {

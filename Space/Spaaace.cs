@@ -47,7 +47,7 @@ namespace Space
             graphics.PreferredBackBufferWidth = Settings.Instance.ScreenWidth;
             graphics.PreferredBackBufferHeight = Settings.Instance.ScreenHeight;
             graphics.IsFullScreen = Settings.Instance.Fullscreen;
-
+            
             // We really want to do this, because it keeps the game from running at one billion
             // frames per second -- which sounds fun, but isn't, because game states won't update
             // properly anymore (because elapsed time since last step will always appear to be zero).

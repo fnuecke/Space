@@ -156,4 +156,7 @@
   <data name="InvalidHost" xml:space="preserve">
     <value>Invalid Host or IP Adress</value>
   </data>
+  <data name="Resolution" xml:space="preserve">
+    <value>Resolution: </value>
+  </data>
 </root>
