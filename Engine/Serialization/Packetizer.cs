@@ -27,10 +27,12 @@ namespace Engine.Serialization
         /// <typeparam name="T">the type to register.</typeparam>
         public static void Register<T>() where T : IPacketizable, new()
         {
-            Type type = typeof(T);
-            if (!_constructors.ContainsKey(type.FullName))
+            string fullName = typeof(T).AssemblyQualifiedName;
+            if (!_constructors.ContainsKey(fullName))
             {
-                _constructors.Add(type.FullName, delegate() { return (T)typeof(T).GetConstructor(new Type[0]).Invoke(new object[0]); });
+                _constructors.Add(fullName, delegate() {
+                    return (T)Activator.CreateInstance(typeof(T));
+                });
             }
         }
 
@@ -45,7 +47,7 @@ namespace Engine.Serialization
         /// <returns>the specified packet with the value written to it.</returns>
         public static Packet Packetize<T>(T value, Packet packet) where T : IPacketizable
         {
-            string fullName = value.GetType().FullName;
+            string fullName = value.GetType().AssemblyQualifiedName;
             if (_constructors.ContainsKey(fullName))
             {
                 packet.Write(fullName);
