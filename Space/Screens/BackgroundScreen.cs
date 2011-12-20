@@ -94,7 +94,15 @@ namespace GameStateManagement
         {
             SpriteBatch spriteBatch = ScreenManager.SpriteBatch;
             Viewport viewport = ScreenManager.GraphicsDevice.Viewport;
-            Rectangle fullscreen = new Rectangle(0, 0, viewport.Width, viewport.Height);
+
+            double heightRatio = viewport.Height / (double)backgroundTexture.Height;
+            double widthRatio = viewport.Width / (double)backgroundTexture.Width;
+            double ratio = System.Math.Max(heightRatio, widthRatio);
+
+            int width = (int)Math.Ceiling(ratio * backgroundTexture.Width);
+            int height = (int)Math.Ceiling(ratio * backgroundTexture.Height);
+
+            Rectangle fullscreen = new Rectangle((viewport.Width - width) / 2, (viewport.Height - height) / 2, width, height);
 
             spriteBatch.Begin();
 
