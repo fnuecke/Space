@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Parameterizations;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -13,6 +14,15 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class TransformedRenderer : AbstractRenderer
     {
+        #region Packetizer registration
+
+        static TransformedRenderer()
+        {
+            Packetizer.Register<TransformedRenderer>();
+        }
+
+        #endregion
+
         #region Logic
 
         /// <summary>

@@ -199,9 +199,10 @@ namespace Engine.Controller
         }
 
         /// <summary>
-        /// Apply a command.
+        /// Apply a command. If this command was generated locally, it'll be sent to the
+        /// server. Otherwise we'll simply try to push it to the simulation.
         /// </summary>
-        /// <param name="command">the command to send.</param>
+        /// <param name="command">The command to apply.</param>
         protected override void Apply(IFrameCommand command)
         {
             // As a client we only send commands that are our own AND have not been sent
@@ -237,7 +238,12 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="sender">the underlying session.</param>
         /// <param name="e">information of the type <c>JoinResponseEventArgs</c>.</param>
-        protected abstract void HandleJoinResponse(object sender, EventArgs e);
+        protected virtual void HandleJoinResponse(object sender, EventArgs e)
+        {
+            // OK, we were allowed to join, invalidate our simulation to request
+            // the current state.
+            tss.Invalidate();
+        }
 
         /// <summary>
         /// A command emitter we're attached to has generated a new event.

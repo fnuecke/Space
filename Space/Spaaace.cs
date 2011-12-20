@@ -1,16 +1,12 @@
 using System;
 using System.Globalization;
-using Engine.ComponentSystem;
 using Engine.Input;
-using Engine.Serialization;
 using Engine.Util;
 using GameStateManagement;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
-using Space.Commands;
-using Space.ComponentSystem.Components;
 using Space.Control;
 
 namespace Space
@@ -80,21 +76,6 @@ namespace Space
             // Some window settings.
             Window.Title = "Spaaaaaace. Space. Spaaace. So much space!";
             IsMouseVisible = true;
-
-            // Make some class available through the packetizer. The classes registered
-            // here can be deserialized without the code triggering the deserialization
-            // to actually know what it'll get. This is used in game states, e.g.
-            // where the state only knows it has IEntities, but not what the
-            // actual implementations are.
-            PacketizerRegistration.RegisterEngineComponentsWithPacketizer();
-
-            Packetizer.Register<MovementProperties>();
-            Packetizer.Register<ShipControl>();
-            Packetizer.Register<WeaponControl>();
-            Packetizer.Register<WeaponSlot>();
-
-            Packetizer.Register<PlayerInputCommand>();
-
 
             // Add some more utility components.
             Components.Add(new KeyboardInputManager(this));
@@ -174,7 +155,16 @@ namespace Space
             waveBank = new WaveBank(audioEngine, "data/Audio/Wave Bank.xwb");
             soundBank = new SoundBank(audioEngine, "data/Audio/Sound Bank.xsb");
 
+            audioEngine.Update();
+
             Services.AddService(typeof(SoundBank), soundBank);
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+            audioEngine.Update();
+
+            base.Update(gameTime);
         }
 
         /// <summary>

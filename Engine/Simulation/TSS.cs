@@ -325,9 +325,9 @@ namespace Engine.Simulation
             {
                 packet.Write(add.Key);
                 packet.Write(add.Value.Count);
-                foreach (var item in add.Value)
+                foreach (var entity in add.Value)
                 {
-                    Packetizer.Packetize(item, packet);
+                    packet.Write(entity);
                 }
             }
 
@@ -336,9 +336,9 @@ namespace Engine.Simulation
             {
                 packet.Write(remove.Key);
                 packet.Write(remove.Value.Count);
-                foreach (var item in remove.Value)
+                foreach (var entityUid in remove.Value)
                 {
-                    packet.Write(item);
+                    packet.Write(entityUid);
                 }
             }
 
@@ -384,7 +384,7 @@ namespace Engine.Simulation
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    _adds[key].Add(Packetizer.Depacketize<IEntity>(packet));
+                    _adds[key].Add(packet.ReadPacketizable(new Entity()));
                 }
             }
 

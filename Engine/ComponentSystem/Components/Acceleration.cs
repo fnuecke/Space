@@ -10,6 +10,15 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class Acceleration : AbstractComponent
     {
+        #region Packetizer registration
+
+        static Acceleration()
+        {
+            Packetizer.Register<Acceleration>();
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>

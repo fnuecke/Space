@@ -158,7 +158,7 @@ namespace Engine.ComponentSystem.Systems
             packet.Write(_entities.Count);
             foreach (var entity in _entities)
             {
-                Packetizer.Packetize(entity, packet);
+                packet.Write(entity);
             }
 
             // Next id we'll distribute.
@@ -178,7 +178,7 @@ namespace Engine.ComponentSystem.Systems
             int numEntitys = packet.ReadInt32();
             for (int i = 0; i < numEntitys; ++i)
             {
-                AddEntityUnchecked(Packetizer.Depacketize<IEntity>(packet));
+                AddEntityUnchecked(packet.ReadPacketizable(new Entity()));
             }
 
             // Next id we'll distribute.

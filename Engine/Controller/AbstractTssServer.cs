@@ -161,18 +161,16 @@ namespace Engine.Controller
         /// <param name="entity">the entity to add.</param>
         /// <param name="frame">the frame in which to add the entity.</param>
         /// <returns>the id the entity was assigned.</returns>
-        public override void AddEntity(IEntity entity, long frame)
+        public void AddEntity(IEntity entity, long frame)
         {
             // Add the entity to the simulation.
-            base.AddEntity(entity, frame);
+            tss.AddEntity(entity, frame);
 
             // Notify all players in the game about this.
-            Packet addedInfo = new Packet()
+            Session.Send(new Packet()
                 .Write((byte)TssControllerMessage.AddGameObject)
-                .Write(frame);
-            // Run it through the packetizer, because we don't know the actual type.
-            Packetizer.Packetize(entity, addedInfo);
-            Session.Send(addedInfo);
+                .Write(frame)
+                .Write(entity));
         }
 
         /// <summary>
@@ -181,10 +179,10 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="entityId">the id of the entity to remove.</param>
         /// <param name="frame">the frame in which to remove the entity.</param>
-        public override void RemoveEntity(long entityUid, long frame)
+        public void RemoveEntity(long entityUid, long frame)
         {
             // Remove the entity from the simulation.
-            base.RemoveEntity(entityUid, frame);
+            tss.RemoveEntity(entityUid, frame);
 
             // Notify all players in the game about this.
             Session.Send(new Packet()
@@ -210,7 +208,7 @@ namespace Engine.Controller
             }
             else
             {
-                logger.Trace("Client command too old " + command.Frame + "<" + tss.TrailingFrame);
+                logger.Trace("Client command too old: {0} < {1}. Ignoring.", command.Frame, tss.TrailingFrame);
             }
         }
 

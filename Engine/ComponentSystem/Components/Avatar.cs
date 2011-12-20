@@ -10,6 +10,15 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class Avatar : AbstractComponent
     {
+        #region Packetizer registration
+
+        static Avatar()
+        {
+            Packetizer.Register<Avatar>();
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>

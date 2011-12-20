@@ -398,9 +398,11 @@ namespace Engine.Serialization
             return result;
         }
 
-        public void ReadPacketizable(IPacketizable packetizable)
+        public T ReadPacketizable<T>(T packetizable)
+            where T : IPacketizable
         {
             packetizable.Depacketize(this);
+            return packetizable;
         }
 
         #endregion

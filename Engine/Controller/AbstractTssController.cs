@@ -1,5 +1,4 @@
 ﻿using Engine.Commands;
-using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -10,9 +9,7 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
-    public abstract class AbstractTssController<TSession>
-        : AbstractController<TSession, IFrameCommand>,
-          IReversibleSimulationController<TSession>
+    public abstract class AbstractTssController<TSession> : AbstractController<TSession, IFrameCommand>
         where TSession : ISession
     {
         #region Types
@@ -168,34 +165,9 @@ namespace Engine.Controller
         #region Modify simulation
 
         /// <summary>
-        /// Add a entity to the simulation. Will be inserted at the
-        /// current leading frame. The entity will be given a unique
-        /// id, by which it may later be referenced for removals.
+        /// Apply a command. This will apply the command to the frame it was issued in.
         /// </summary>
-        /// <param name="entity">the entity to add.</param>
-        /// <param name="frame">the frame in which to add the entity.</param>
-        public virtual void AddEntity(IEntity entity, long frame)
-        {
-            // Add the entity to the simulation.
-            tss.AddEntity(entity, frame);
-        }
-
-        /// <summary>
-        /// Removes a entity with the given id from the simulation.
-        /// The entity will be removed at the given frame.
-        /// </summary>
-        /// <param name="entityId">the id of the entity to remove.</param>
-        /// <param name="frame">the frame in which to remove the entity.</param>
-        public virtual void RemoveEntity(long entityUid, long frame)
-        {
-            // Remove the entity from the simulation.
-            tss.RemoveEntity(entityUid, frame);
-        }
-
-        /// <summary>
-        /// Apply a command.
-        /// </summary>
-        /// <param name="command">the command to send.</param>
+        /// <param name="command">The command to push.</param>
         protected virtual void Apply(IFrameCommand command)
         {
             tss.PushCommand(command, command.Frame);

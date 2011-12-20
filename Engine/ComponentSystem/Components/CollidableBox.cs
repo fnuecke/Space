@@ -16,6 +16,15 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class CollidableBox : AbstractCollidable
     {
+        #region Packetizer registration
+
+        static CollidableBox()
+        {
+            Packetizer.Register<CollidableBox>();
+        }
+
+        #endregion
+
         #region Properties
         
         /// <summary>

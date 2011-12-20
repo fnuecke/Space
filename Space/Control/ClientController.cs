@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Systems;
+﻿using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation;
@@ -36,19 +35,6 @@ namespace Space.Control
                 .AddSystem(new SoundSystem((SoundBank)game.Services.GetService(typeof(SoundBank))))
                 .AddSystem(new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session)
                             .AddComponent(new Background("Textures/stars")));
-        }
-
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// Got a server response to our request to join it.
-        /// </summary>
-        protected override void HandleJoinResponse(object sender, EventArgs e)
-        {
-            // OK, we were allowed to join, invalidate our simulation to request the current state.
-            tss.Invalidate();
         }
 
         #endregion

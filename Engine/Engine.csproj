@@ -109,7 +109,6 @@
     <Compile Include="ComponentSystem\Components\Acceleration.cs" />
     <Compile Include="ComponentSystem\Components\Avatar.cs" />
     <Compile Include="ComponentSystem\Components\Friction.cs" />
-    <Compile Include="ComponentSystem\PacketizerRegistration.cs" />
     <Compile Include="ComponentSystem\Components\Sound.cs" />
     <Compile Include="ComponentSystem\Components\Spin.cs" />
     <Compile Include="ComponentSystem\Components\Velocity.cs" />
@@ -147,7 +146,6 @@
     <Compile Include="Controller\IClientController.cs" />
     <Compile Include="Controller\ICommandEmitter.cs" />
     <Compile Include="Controller\IController.cs" />
-    <Compile Include="Controller\IReversibleSimulationController.cs" />
     <Compile Include="Controller\ISimulationController.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />
@@ -197,6 +195,7 @@
     <Compile Include="Util\Hasher.cs" />
     <Compile Include="Util\IHashable.cs" />
     <Compile Include="Util\ISampling.cs" />
+    <Compile Include="Util\MersenneTwister.cs" />
     <Compile Include="Util\Sampling.cs" />
     <Compile Include="Util\Compression.cs" />
     <Compile Include="Util\Direction.cs" />

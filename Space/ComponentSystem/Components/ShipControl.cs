@@ -17,6 +17,15 @@ namespace Space.ComponentSystem.Components
     public class ShipControl : AbstractComponent
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        
+        #region Packetizer registration
+
+        static ShipControl()
+        {
+            Packetizer.Register<ShipControl>();
+        }
+
+        #endregion
 
         #region Properties
         

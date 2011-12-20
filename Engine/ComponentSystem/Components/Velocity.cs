@@ -10,6 +10,15 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class Velocity : AbstractComponent
     {
+        #region Packetizer registration
+
+        static Velocity()
+        {
+            Packetizer.Register<Velocity>();
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>

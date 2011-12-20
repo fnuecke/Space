@@ -19,6 +19,15 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class WeaponSlot : AbstractComponent
     {
+        #region Packetizer registration
+
+        static WeaponSlot()
+        {
+            Packetizer.Register<WeaponSlot>();
+        }
+
+        #endregion
+
         #region Properties
         
         /// <summary>
