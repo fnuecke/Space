@@ -31,11 +31,13 @@
 
    This C# porting is done by stlalv on October 8, 2010.
    e-mail:stlalv @ nifty.com (remove space)
+   Documentation and adjustment of interface to mimic that of .Net's Random API by fnuecke, Dec 20 2011.
    Original C code is found at http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html as mt19937ar.tgz
 */
 
 using System;
 using Engine.Serialization;
+
 namespace Engine.Util
 {
     /// <summary>
@@ -43,7 +45,7 @@ namespace Engine.Util
     /// </summary>
     public sealed class MersenneTwister : IPacketizable, ICloneable
     {
-        #region Period parameters
+        #region Constants: period parameters
 
         /// <summary>
         /// Degree of recurrence.
@@ -80,31 +82,42 @@ namespace Engine.Util
         private ulong[] mt = new ulong[N];
 
         /// <summary>
-        /// mti==N+1 means mt[N] is not initialized.
+        /// 
         /// </summary>
-        private int mti = N + 1;
+        private int mti;
 
         #endregion
 
         #region Constructor
 
         /// <summary>
-        /// Set default seeds.
+        /// Initializes a new instance of the <c>MersenneTwister</c> class,
+        /// using a time-dependent default seed value.
         /// </summary>
         public MersenneTwister()
             : this((ulong)Environment.TickCount)
         {
-            //init_by_array(new ulong[] { 0x123, 0x234, 0x345, 0x456 });
         }
 
-        //public Random(ulong[] init_key)
-        //{
-        //    init_by_array(init_key);
-        //}
-
+        /// <summary>
+        /// Initializes a new instance of the <c>MersenneTwister</c> class,
+        /// using the specified seed value.
+        /// </summary>
+        /// <param name="seed">A number used to calculate a starting value for
+        /// the pseudo-random number sequence.</param>
         public MersenneTwister(ulong seed)
         {
-            init_genrand(seed);
+            mt[0] = seed & 0xffffffffUL;
+            for (mti = 1; mti < N; mti++)
+            {
+                mt[mti] = (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + (ulong)mti);
+                /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
+                /* In the previous versions, MSBs of the seed affect   */
+                /* only MSBs of the array mt[].                        */
+                /* 2002/01/09 modified by Makoto Matsumoto             */
+                mt[mti] &= 0xffffffffUL;
+                /* for >32 bit machines */
+            }
         }
         
         #endregion
@@ -112,13 +125,12 @@ namespace Engine.Util
         #region Public API
 
         /// <summary>
-        /// Returns a random number between 0.0 and 1.0.
+        /// Returns a random number between 0.0 and 1.0, i.e. [0.0, 1.0).
         /// </summary>
         /// <returns>A double-precision floating point number greater than or
         /// equal to 0.0, and less than 1.0.</returns>
         public double NextDouble()
         {
-            // Divide by 2^32.
             return Sample() * (1.0 / 4294967296.0);
         }
 
@@ -188,13 +200,10 @@ namespace Engine.Util
             ulong[] mag01 = new ulong[] { 0x0UL, MATRIX_A };
             ulong y = 0;
             // mag01[x] = x * MATRIX_A  for x=0,1
-            if (mti >= N)
-            {	// generate N words at one time
+            if (mti == N)
+            {
+                // generate N words at one time
                 int kk;
-                if (mti == N + 1)
-                {			// if init_genrand() has not been called,
-                    init_genrand(5489UL);	// a default initial seed is used
-                }
                 for (kk = 0; kk < N - M; kk++)
                 {
                     y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
@@ -216,58 +225,6 @@ namespace Engine.Util
             y ^= (y << 15) & 0xefc60000UL;
             y ^= (y >> 18);
             return y;
-        }
-
-        /// <summary>
-        /// Initializes mt[N] with a seed.
-        /// </summary>
-        /// <param name="s"></param>
-        private void init_genrand(ulong s)
-        {
-            mt[0] = s & 0xffffffffUL;
-            for (mti = 1; mti < N; mti++)
-            {
-                mt[mti] = (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + (ulong)mti);
-                /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
-                /* In the previous versions, MSBs of the seed affect   */
-                /* only MSBs of the array mt[].                        */
-                /* 2002/01/09 modified by Makoto Matsumoto             */
-                mt[mti] &= 0xffffffffUL;
-                /* for >32 bit machines */
-            }
-        }
-
-        // initialize by an array with array-length
-        // init_key is the array for initializing keys
-        // init_key.Length is its length
-        private void init_by_array(ulong[] init_key)
-        {
-            init_genrand(19650218UL);
-            int i = 1;
-            int j = 0;
-            int k = (N > init_key.Length ? N : init_key.Length);
-            for (; k != 0; k--)
-            {
-                mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1664525UL)) + init_key[j] + (ulong)j; /* non linear */
-                mt[i] &= 0xffffffffUL; /* for WORDSIZE > 32 machines */
-                i++; j++;
-                if (i >= N)
-                {
-                    mt[0] = mt[N - 1]; i = 1;
-                }
-                if (j >= init_key.Length)
-                {
-                    j = 0;
-                }
-            }
-            for (k = N - 1; k != 0; k--)
-            {
-                mt[i] = (mt[i] ^ ((mt[i - 1] ^ (mt[i - 1] >> 30)) * 1566083941UL)) - (ulong)i; // non linear
-                mt[i] &= 0xffffffffUL; // for WORDSIZE > 32 machines
-                i++;
-                if (i >= N) { mt[0] = mt[N - 1]; i = 1; }
-            }
-            mt[0] = 0x80000000UL; // MSB is 1; assuring non-zero initial array 
         }
 
         #endregion
