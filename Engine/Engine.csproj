@@ -211,7 +211,6 @@
     <None Include="EngineKey.snk" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="ComponentSystem\Components\Messages\" />
     <Folder Include="Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

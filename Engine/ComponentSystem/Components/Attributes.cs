@@ -9,6 +9,15 @@ namespace Engine.ComponentSystem.Components
     public class Attributes<TAttribute> : AbstractComponent
         where TAttribute : struct
     {
+        #region Packetizer registration
+
+        static Attributes()
+        {
+            Packetizer.Register<Attributes<TAttribute>>();
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -43,12 +52,14 @@ namespace Engine.ComponentSystem.Components
         /// Get the accumulative value of all attributes in this component.
         /// 
         /// <para>
-        /// This will result in the same value as calling <c>EntityAttribute.Compute</c>,
+        /// This will result in the same value as calling <c>EntityAttribute.Accumulate</c>,
         /// but will cache the result, so repetitive calls will be faster.
         /// </para>
         /// </summary>
-        /// <param name="attributeType"></param>
-        /// <returns></returns>
+        /// <param name="attributeType">The type for which to compute the
+        /// overall value.</param>
+        /// <returns>The accumulative value of the specified attribute type
+        /// over all attributes tracked by this component.</returns>
         public Fixed GetValue(TAttribute attributeType)
         {
             if (_cached.ContainsKey(attributeType))

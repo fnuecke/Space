@@ -20,6 +20,7 @@ namespace Space.ComponentSystem.Entities
 
             ship.AddComponent(new CollidableSphere());
 
+            ship.AddComponent(new Attributes<EntityAttributeType>());
             ship.AddComponent(new WeaponControl());
             ship.AddComponent(new WeaponSlot());
             ship.AddComponent(new MovementProperties());
