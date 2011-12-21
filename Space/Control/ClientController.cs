@@ -32,7 +32,7 @@ namespace Space.Control
                 .AddSystem(new ShipControlSystem())
                 .AddSystem(new WeaponSystem())
                 .AddSystem(new AvatarSystem())
-                .AddSystem(new SoundSystem((SoundBank)game.Services.GetService(typeof(SoundBank))))
+                .AddSystem(new PlayerCenteredSoundSystem((SoundBank)game.Services.GetService(typeof(SoundBank)),Session))
                 .AddSystem(new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session)
                             .AddComponent(new Background("Textures/stars")));
         }
