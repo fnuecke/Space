@@ -66,7 +66,7 @@ namespace Engine.ComponentSystem.Components
                     // it'd be hard to. We only stop if we were faster than the minimum,
                     // before application of friction. Otherwise we might have problems
                     // getting moving at all, if the acceleration is too low.
-                    if (previousVelocity > friction.MinVelocity &&
+                    if (previousVelocity >= friction.MinVelocity &&
                         velocity.Value.Norm < friction.MinVelocity)
                     {
                         velocity.Value = FPoint.Zero;

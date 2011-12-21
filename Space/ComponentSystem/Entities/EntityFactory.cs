@@ -32,7 +32,7 @@ namespace Space.ComponentSystem.Entities
 
             var friction = ship.GetComponent<Friction>();
             friction.Value = (Fixed)0.01;
-            friction.MinVelocity = (Fixed)0.005;
+            friction.MinVelocity = (Fixed)0.02;
 
             var collidable = ship.GetComponent<CollidableSphere>();
             collidable.Radius = shipData.Radius;
