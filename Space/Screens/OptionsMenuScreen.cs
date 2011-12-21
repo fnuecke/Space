@@ -14,6 +14,7 @@ using Microsoft.Xna.Framework;
 using Space;
 using System.Collections.Generic;
 using System;
+using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace GameStateManagement
@@ -28,22 +29,18 @@ namespace GameStateManagement
         #region Fields
 
         MenuEntry languageMenuEntry;
+        MenuEntry resolutionMenuEntry;
         private EditableMenueEntry playerName;
+        private MenuEntry fullscreenMenuEntry;
 
-        private Option language;
-      
 
+        private Option<string> language;
+        private Option<string> resolution;
+        private Option<bool> fullscreen;
         static Dictionary<string,string> languages= new Dictionary<string,string>();
 
     
-        static int currentLanguage = 0;
-
-            
-
-        static bool frobnicate = true;
-
-        static int elf = 23;
-
+       
         #endregion
 
         #region Initialization
@@ -58,11 +55,12 @@ namespace GameStateManagement
             // Create our menu entries.
             languages["en"] = Strings.en;
             languages["de"] = Strings.de;
-            language = new Option(languages);
+            language = new Option<string>(languages);
             languageMenuEntry = new MenuEntry(string.Empty);
             playerName = new EditableMenueEntry(Strings.playerName);
+            resolutionMenuEntry = new MenuEntry(Settings.Instance.ScreenWidth + " x " + Settings.Instance.ScreenHeight);
+           
             
-            SetMenuEntryText();
 
             MenuEntry back = new MenuEntry(Strings.Back);
 
@@ -74,12 +72,58 @@ namespace GameStateManagement
 
             playerName.Selected += PlayerNameSelected;
             //Graphics
-            
+             resolutionMenuEntry.next += ResolutionMenuEntryNext;
+            resolutionMenuEntry.prev += ResolutionMenuEntryPrev;
+            resolutionMenuEntry.Selected += ResolutionMenuEntrySelected;
+
+            var dict = new Dictionary<string, string>();
+            var added = false;
+            var height = Settings.Instance.ScreenHeight;
+            var width = Settings.Instance.ScreenWidth;
+            foreach (DisplayMode mode in GraphicsAdapter.DefaultAdapter.SupportedDisplayModes)
+            {
+                //Console.WriteLine(mode.Height + " x " + mode.Width);
+                if (!dict.ContainsKey(mode.Width + "x" + mode.Height))
+                {
+                    if (!added && mode.Width > width)
+                    {
+                        if (!dict.ContainsKey(width + "x" + height))
+                        {
+                            dict.Add(width + "x" + height, width + " x " + height);
+                        }
+                        added = true;
+                    }
+                    else if (!added && mode.Width == width && mode.Height > height)
+                    {
+                        if (!dict.ContainsKey(width + "x" + height))
+                            dict.Add(width + "x" + height, width + " x " + height);
+                        added = true;
+                    }
+                        dict.Add(mode.Width + "x" + mode.Height, mode.Width + " x " + mode.Height);
+                }
+                    
+            }
+            resolution = new Option<string>(dict);
+
+            fullscreenMenuEntry = new MenuEntry(string.Empty);
+            fullscreenMenuEntry.Selected += FullscreenMenuEntrySelected;
+            fullscreenMenuEntry.next += FullscreenMenuEntryNext;
+            fullscreenMenuEntry.prev += FullscreenMenuEntryPrev;
+
+            var screenDict = new Dictionary<bool, string>
+                                 {
+                                     {false, Strings.Fullscreen_false},
+                                     {true, Strings.Fullscreen_true}
+                                 };
+            fullscreen = new Option<bool>(screenDict);
 
 
+            SetMenuEntryText();
             // Add entries to the menu.
             MenuEntries.Add(languageMenuEntry);
             MenuEntries.Add(playerName);
+            MenuEntries.Add(resolutionMenuEntry);
+            MenuEntries.Add(fullscreenMenuEntry);
             MenuEntries.Add(back);
         }
 
@@ -98,6 +142,12 @@ namespace GameStateManagement
         {
             languageMenuEntry.Text = Strings.language + languages[Settings.Instance.Language];
             language.SetCurrent(Settings.Instance.Language);
+            resolutionMenuEntry.Text = Strings.Resolution + Settings.Instance.ScreenWidth + " x " + Settings.Instance.ScreenHeight;
+            resolution.SetCurrent(Settings.Instance.ScreenWidth + "x" + Settings.Instance.ScreenHeight);
+
+            fullscreen.SetCurrent(Settings.Instance.Fullscreen);
+            fullscreenMenuEntry.Text = Strings.Fullscreen+fullscreen.GetOption();
+
             playerName.SetInputText(Settings.Instance.PlayerName);
         }
 
@@ -130,6 +180,7 @@ namespace GameStateManagement
 
             if (playerName.Editable)
             {
+                
                 if (playerName.GetInputText().Length < 3)
                 {
                     ErrorText = Strings.NameToShort;
@@ -140,11 +191,13 @@ namespace GameStateManagement
 
                     Settings.Instance.PlayerName = playerName.GetInputText();
                     playerName.Editable = false;
+                    playerName.locked = false;
                     SetMenuEntryText();
                 }
             }
             else
             {
+                playerName.locked = true;
                 playerName.Editable = true;
             }
         }
@@ -166,6 +219,68 @@ namespace GameStateManagement
 
 
         }
+
+        void ResolutionMenuEntryNext(object sender, PlayerIndexEventArgs e)
+        {
+
+
+
+            resolutionMenuEntry.Text = Strings.Resolution + resolution.GetNextOption();
+
+
+        }
+        void ResolutionMenuEntryPrev(object sender, PlayerIndexEventArgs e)
+        {
+
+
+
+            resolutionMenuEntry.Text = Strings.Resolution + resolution.GetPrevOption();
+
+
+        }
+        /// <summary>
+        /// Event handler for when the Language menu entry is selected.
+        /// </summary>
+        void ResolutionMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        {
+
+
+            string[] words = resolution.GetKey().Split('x');
+            Settings.Instance.ScreenWidth = int.Parse(words[0]);
+            Settings.Instance.ScreenHeight = int.Parse(words[1]);
+
+            SetMenuEntryText();
+        }
+
+        void FullscreenMenuEntryNext(object sender, PlayerIndexEventArgs e)
+        {
+
+
+
+            fullscreenMenuEntry.Text = Strings.Fullscreen + fullscreen.GetNextOption();
+
+
+        }
+        void FullscreenMenuEntryPrev(object sender, PlayerIndexEventArgs e)
+        {
+
+
+
+            fullscreenMenuEntry.Text = Strings.Fullscreen + fullscreen.GetPrevOption();
+
+
+        }
+        /// <summary>
+        /// Event handler for when the Language menu entry is selected.
+        /// </summary>
+        void FullscreenMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        {
+
+
+            Settings.Instance.Fullscreen = fullscreen.GetKey();
+
+            SetMenuEntryText();
+        }
         protected override void OnNext()
         {
             SetMenuEntryText();
@@ -174,47 +289,34 @@ namespace GameStateManagement
         {
             SetMenuEntryText();
         }
-
-        /// <summary>
-        /// Event handler for when the Frobnicate menu entry is selected.
-        /// </summary>
-        void FrobnicateMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        protected override void OnMenuChange()
         {
-            frobnicate = !frobnicate;
-
             SetMenuEntryText();
         }
+       
 
 
-        /// <summary>
-        /// Event handler for when the Elf menu entry is selected.
-        /// </summary>
-        void ElfMenuEntrySelected(object sender, PlayerIndexEventArgs e)
-        {
-            elf++;
-
-            SetMenuEntryText();
-        }
+       
 
 
         #endregion
 
         #region Option
-        public class Option
+        public class Option<T>
         {
 
             #region Fields
-            Dictionary<string, string> options = new Dictionary<string, string>();
-            List<string> keyList;
+            Dictionary<T, string> options = new Dictionary<T, string>();
+            List<T> keyList;
             int current = 0;
             #endregion
 
             #region Initialization
 
-            public Option(Dictionary<string, string> dict)
+            public Option(Dictionary<T, string> dict)
             {
                 options = dict;
-                keyList = new List<string>(options.Keys);
+                keyList = new List<T>(options.Keys);
             }
 
             public string GetNextOption()
@@ -235,12 +337,12 @@ namespace GameStateManagement
 
             }
 
-            public string GetKey()
+            public T GetKey()
             {
                 return keyList[current];
             }
 
-            public void SetCurrent(string key)
+            public void SetCurrent(T key)
             {
                 for (int i = 0; i < keyList.Count; i++)
                 {

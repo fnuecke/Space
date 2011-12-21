@@ -30,10 +30,12 @@ namespace GameStateManagement
 
         public  KeyboardState CurrentKeyboardState;
         public  GamePadState CurrentGamePadState;
+        public MouseState CurrentMouseState;
+
 
         public  KeyboardState LastKeyboardState;
         public  GamePadState LastGamePadState;
-
+        public MouseState LastMouseState;
         public  bool GamePadWasConnected;
 
         //public TouchCollection TouchState;
@@ -64,12 +66,13 @@ namespace GameStateManagement
         public void Update()
         {
             
-                LastKeyboardState = CurrentKeyboardState;
-                LastGamePadState = CurrentGamePadState;
+            LastKeyboardState = CurrentKeyboardState;
+            LastGamePadState = CurrentGamePadState;
+            LastMouseState = CurrentMouseState;
 
-                CurrentKeyboardState = Keyboard.GetState();
-                CurrentGamePadState = GamePad.GetState(0);
-
+            CurrentKeyboardState = Keyboard.GetState();
+            CurrentGamePadState = GamePad.GetState(0);
+            CurrentMouseState = Mouse.GetState();
                 // Keep track of whether a gamepad has ever been
                 // connected, so we can detect if it is unplugged.
                 if (CurrentGamePadState.IsConnected)
@@ -105,7 +108,14 @@ namespace GameStateManagement
            
         }
 
-
+        public bool IsMouseWheelUp()
+        {
+            return (CurrentMouseState.ScrollWheelValue > LastMouseState.ScrollWheelValue);
+        }
+        public bool IsMouseWheelDown()
+        {
+            return (CurrentMouseState.ScrollWheelValue < LastMouseState.ScrollWheelValue);
+        }
         /// <summary>
         /// Helper for checking if a button was newly pressed during this update.
         /// The controllingPlayer parameter specifies which player to read input for.
@@ -121,6 +131,11 @@ namespace GameStateManagement
             
         }
 
+        public bool IsLeftMouseKeyPress()
+        {
+            return CurrentMouseState.LeftButton == ButtonState.Pressed &&
+                   LastMouseState.LeftButton == ButtonState.Released;
+        }
 
         /// <summary>
         /// Checks for a "menu select" input action.
@@ -172,6 +187,7 @@ namespace GameStateManagement
             
             return IsNewKeyPress(Keys.Up) ||
                    IsNewButtonPress(Buttons.DPadUp) ||
+                   IsMouseWheelUp() ||
                    IsNewButtonPress(Buttons.LeftThumbstickUp);
         }
 
@@ -186,6 +202,7 @@ namespace GameStateManagement
             
             return IsNewKeyPress(Keys.Down) ||
                    IsNewButtonPress(Buttons.DPadDown) ||
+                  IsMouseWheelDown() ||
                    IsNewButtonPress(Buttons.LeftThumbstickDown);
         }
 

@@ -76,7 +76,7 @@ namespace GameStateManagement
         public override void HandleInput(InputState input)
         {
             // Move to the previous menu entry?
-            if (input.IsMenuUp())
+            if (input.IsMenuUp() && !MenuEntries[selectedEntry].locked)
             {
                 MenuEntries[selectedEntry].SetActive(false);
                 selectedEntry--;
@@ -85,10 +85,11 @@ namespace GameStateManagement
                     selectedEntry = menuEntries.Count - 1;
                 MenuEntries[selectedEntry].SetActive(true);
                 OnPrev();
+                OnMenuChange();
             }
 
             // Move to the next menu entry?
-            if (input.IsMenuDown())
+            else if (input.IsMenuDown()&&!MenuEntries[selectedEntry].locked)
             {
                 MenuEntries[selectedEntry].SetActive(false);
                 
@@ -98,12 +99,13 @@ namespace GameStateManagement
                     selectedEntry = 0;
                 MenuEntries[selectedEntry].SetActive(true);
                 OnNext();
+                OnMenuChange();
             }
-            if (input.IsMenuNext())
+            else if (input.IsMenuNext())
             {
                 MenuEntries[selectedEntry].OnNextEntry();
             }
-            if (input.IsMenuPrev())
+            else if (input.IsMenuPrev())
             {
                 MenuEntries[selectedEntry].OnPrevEntry();
             }
@@ -112,9 +114,9 @@ namespace GameStateManagement
             // If we pass a null controlling player, the InputState helper returns to
             // us which player actually provided the input. We pass that through to
             // OnSelectEntry and OnCancel, so they can tell which player triggered them.
-            
 
-            if (input.IsMenuSelect())
+
+            else if (input.IsMenuSelect())
             {
                 OnSelectEntry(selectedEntry);
             }
@@ -122,6 +124,62 @@ namespace GameStateManagement
             {
                 OnCancel();
             }
+
+            //Mouse stuff
+            float transitionOffset = (float)Math.Pow(TransitionPosition, 2);
+
+            Vector2 position = new Vector2(0f, 175f);
+// ReSharper disable PossibleLossOfFraction
+            position.Y -= ScreenManager.Font.LineSpacing/2;
+// ReSharper restore PossibleLossOfFraction
+            int MouseX = input.LastMouseState.X;
+            int MouseY = input.LastMouseState.Y;
+            // update each menu entry's location in turn
+            bool hover = false;
+            
+            for (int i = 0; i < menuEntries.Count; i++)
+            {
+                MenuEntry menuEntry = menuEntries[i];
+                int menuWidth = menuEntry.GetWidth(this);
+                int menuHeight = menuEntry.GetHeight(this);
+               // Console.WriteLine(menuHeight);
+                // each entry is to be centered horizontally
+                position.X = ScreenManager.GraphicsDevice.Viewport.Width / 2 - menuEntry.GetWidth(this) / 2;
+
+                if (ScreenState == ScreenState.TransitionOn)
+                    position.X -= transitionOffset * 256;
+                else
+                    position.X += transitionOffset * 512;
+
+                // set the entry's position
+                menuEntry.Position = position;
+                
+                //check if mouse is within bounds
+                if (MouseX > position.X && MouseX < position.X + menuWidth
+                    && MouseY > position.Y && MouseY < position.Y + menuHeight )
+                {
+                    //hovering
+                    hover = true;
+                    //only update for new entry
+                    if (i != selectedEntry && !MenuEntries[selectedEntry].locked)
+                    {
+                        MenuEntries[selectedEntry].SetActive(false);
+                        selectedEntry = i;
+                        MenuEntries[selectedEntry].SetActive(true);
+                        
+                        OnMenuChange();
+                    }
+                    break;
+
+                }
+                //if hovering treat leftklick as selected
+                
+
+                // move down for the next entry the size of this entry
+                position.Y += menuHeight;
+            }
+            if (hover && input.IsLeftMouseKeyPress())
+                OnSelectEntry(selectedEntry);
         }
 
 
@@ -160,7 +218,14 @@ namespace GameStateManagement
         {
 
         }
-
+        /// <summary>
+        /// Called if a new Menu entry is choosen
+        /// 
+        /// </summary>
+        protected virtual void OnMenuChange()
+        {
+            
+        }
         #endregion
 
         #region Update and Draw
