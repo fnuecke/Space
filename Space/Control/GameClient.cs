@@ -24,7 +24,6 @@ namespace Space.Control
             Controller.UpdateOrder = 10;
 
             emitter = new InputCommandEmitter(game, Session, Controller.Simulation);
-            Controller.AddEmitter(emitter);
 
             DrawOrder = 10;
         }
@@ -33,6 +32,8 @@ namespace Space.Control
         {
             Session.PlayerJoined += HandlePlayerJoined;
             Session.PlayerLeft += HandlePlayerLeft;
+
+            Controller.AddEmitter(emitter);
 
             Game.Components.Add(Session);
             Game.Components.Add(Controller);
@@ -52,6 +53,8 @@ namespace Space.Control
         {
             Session.PlayerJoined -= HandlePlayerJoined;
             Session.PlayerLeft -= HandlePlayerLeft;
+
+            Controller.RemoveEmitter(emitter);
 
             Session.Dispose();
             Controller.Dispose();
