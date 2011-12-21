@@ -168,4 +168,7 @@
   <data name="Fullscreen_true" xml:space="preserve">
     <value>On</value>
   </data>
+  <data name="QuitGameConfirmation" xml:space="preserve">
+    <value>Are you sure you want to quit the Game?</value>
+  </data>
 </root>

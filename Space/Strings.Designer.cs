@@ -205,6 +205,15 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Are you sure you want to quit the Game?.
+        /// </summary>
+        internal static string QuitGameConfirmation {
+            get {
+                return ResourceManager.GetString("QuitGameConfirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Resolution: .
         /// </summary>
         internal static string Resolution {

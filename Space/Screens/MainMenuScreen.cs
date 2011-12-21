@@ -98,7 +98,7 @@ namespace GameStateManagement
         /// </summary>
         protected override void OnCancel()
         {
-            const string message = "Are you sure you want to exit this sample?";
+            string message = Strings.QuitGameConfirmation;
 
             MessageBoxScreen confirmExitMessageBox = new MessageBoxScreen(message);
 

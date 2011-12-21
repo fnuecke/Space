@@ -9,6 +9,7 @@
 
 #region Using Statements
 using Microsoft.Xna.Framework;
+using Space;
 #endregion
 
 namespace GameStateManagement
@@ -52,7 +53,7 @@ namespace GameStateManagement
         /// </summary>
         void QuitGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
-            const string message = "Are you sure you want to quit this game?";
+            string message = Strings.QuitGameConfirmation;
 
             MessageBoxScreen confirmQuitMessageBox = new MessageBoxScreen(message);
 
