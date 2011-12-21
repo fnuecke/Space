@@ -33,7 +33,10 @@ namespace GameStateManagement
         /// The text rendered for this entry.
         /// </summary>
         string text;
-
+        /// <summary>
+        /// indicator if the entry is locked and therefore cannot be switched to next entry
+        /// </summary>
+        public bool locked { get; set; }
         /// <summary>
         /// Tracks a fading selection effect on the entry.
         /// </summary>

@@ -180,6 +180,7 @@ namespace GameStateManagement
 
             if (playerName.Editable)
             {
+                
                 if (playerName.GetInputText().Length < 3)
                 {
                     ErrorText = Strings.NameToShort;
@@ -190,11 +191,13 @@ namespace GameStateManagement
 
                     Settings.Instance.PlayerName = playerName.GetInputText();
                     playerName.Editable = false;
+                    playerName.locked = false;
                     SetMenuEntryText();
                 }
             }
             else
             {
+                playerName.locked = true;
                 playerName.Editable = true;
             }
         }
@@ -286,7 +289,10 @@ namespace GameStateManagement
         {
             SetMenuEntryText();
         }
-
+        protected override void OnMenuChange()
+        {
+            SetMenuEntryText();
+        }
        
 
 

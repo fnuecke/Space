@@ -9,7 +9,7 @@ namespace GameStateManagement
     class EditableMenueEntry:MenuEntry
     {
         #region Fields
-        public bool locked{get;set;}
+        
 
         public bool Editable { get; set; }
         public KeyMap KeyMap { get; set; }

@@ -76,7 +76,7 @@ namespace GameStateManagement
         public override void HandleInput(InputState input)
         {
             // Move to the previous menu entry?
-            if (input.IsMenuUp())
+            if (input.IsMenuUp() && !MenuEntries[selectedEntry].locked)
             {
                 MenuEntries[selectedEntry].SetActive(false);
                 selectedEntry--;
@@ -89,7 +89,7 @@ namespace GameStateManagement
             }
 
             // Move to the next menu entry?
-            else if (input.IsMenuDown())
+            else if (input.IsMenuDown()&&!MenuEntries[selectedEntry].locked)
             {
                 MenuEntries[selectedEntry].SetActive(false);
                 
@@ -156,12 +156,12 @@ namespace GameStateManagement
                 
                 //check if mouse is within bounds
                 if (MouseX > position.X && MouseX < position.X + menuWidth
-                    && MouseY > position.Y && MouseY < position.Y + menuHeight)
+                    && MouseY > position.Y && MouseY < position.Y + menuHeight )
                 {
                     //hovering
                     hover = true;
                     //only update for new entry
-                    if (i != selectedEntry)
+                    if (i != selectedEntry && !MenuEntries[selectedEntry].locked)
                     {
                         MenuEntries[selectedEntry].SetActive(false);
                         selectedEntry = i;
