@@ -107,6 +107,7 @@
     <Compile Include="Commands\IFrameCommand.cs" />
     <Compile Include="Commands\FrameCommand.cs" />
     <Compile Include="ComponentSystem\Components\Acceleration.cs" />
+    <Compile Include="ComponentSystem\Components\Attributes.cs" />
     <Compile Include="ComponentSystem\Components\Avatar.cs" />
     <Compile Include="ComponentSystem\Components\Friction.cs" />
     <Compile Include="ComponentSystem\Components\Sound.cs" />
@@ -147,6 +148,7 @@
     <Compile Include="Controller\ICommandEmitter.cs" />
     <Compile Include="Controller\IController.cs" />
     <Compile Include="Controller\ISimulationController.cs" />
+    <Compile Include="ComponentSystem\Components\EntityAttribute.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />
     <Compile Include="Input\KeyboardInputEventArgs.cs" />
@@ -210,6 +212,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ComponentSystem\Components\Messages\" />
+    <Folder Include="Data\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />

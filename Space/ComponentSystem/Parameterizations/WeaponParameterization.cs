@@ -1,5 +1,5 @@
 ﻿using Engine.Math;
-using SpaceData;
+using Space.Data;
 
 namespace Space.ComponentSystem.Parameterizations
 {

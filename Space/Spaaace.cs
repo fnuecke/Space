@@ -143,7 +143,6 @@ namespace Space
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
             Services.AddService(typeof(SpriteBatch), spriteBatch);
 
             console.SpriteBatch = spriteBatch;
@@ -151,6 +150,7 @@ namespace Space
 
             console.WriteLine("Game Console. Type 'help' for available commands.");
 
+            // Set up audio stuff.
             audioEngine = new AudioEngine("data/Audio/SpaceAudio.xgs");
             waveBank = new WaveBank(audioEngine, "data/Audio/Wave Bank.xwb");
             soundBank = new SoundBank(audioEngine, "data/Audio/Sound Bank.xsb");

@@ -165,9 +165,9 @@
     <Content Include="GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineFixedReader\EngineFixedReader.csproj">
+    <ProjectReference Include="..\EngineReaders\EngineReaders.csproj">
       <Project>{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}</Project>
-      <Name>EngineFixedReader</Name>
+      <Name>EngineReaders</Name>
     </ProjectReference>
     <ProjectReference Include="..\Engine\Engine.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>

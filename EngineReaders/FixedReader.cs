@@ -6,7 +6,7 @@ namespace Engine.Serialization
     /// <summary>
     /// This is for reading data in binary format written with the <c>FixedWriter</c>.
     /// </summary>
-    public class FixedReader : ContentTypeReader<Fixed>
+    public sealed class FixedReader : ContentTypeReader<Fixed>
     {
         protected override Fixed Read(ContentReader input, Fixed existingInstance)
         {

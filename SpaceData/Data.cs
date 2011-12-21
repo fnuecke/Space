@@ -1,9 +1,10 @@
 using System.Xml.Serialization;
+using Engine.ComponentSystem.Components;
 using Engine.Math;
 using Engine.Serialization;
 using Microsoft.Xna.Framework.Content;
 
-namespace SpaceData
+namespace Space.Data
 {
     public class ShipData : IPacketizable
     {
@@ -23,42 +24,14 @@ namespace SpaceData
         public string Texture;
 
         /// <summary>
-        /// The maximum base life of this ship type.
+        /// Basic attributes for the ship.
         /// </summary>
-        public int Health;
+        public EntityAttribute<EntityAttributeType>[] BaseAttributes;
 
         /// <summary>
-        /// The maximum base fuel of this ship type.
+        /// Available slots for weapons.
         /// </summary>
-        public int Fuel;
-
-        /// <summary>
-        /// The base acceleration of this ship type.
-        /// </summary>
-        public Fixed Acceleration;
-
-        /// <summary>
-        /// The base rotation speed of this ship type.
-        /// </summary>
-        public Fixed RotationSpeed;
-
-        /// <summary>
-        /// Available slots for small weapons.
-        /// </summary>
-        [ContentSerializer(Optional=true)]
-        public byte SmallWeapons;
-
-        /// <summary>
-        /// Available slots for medium sized weapons.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public byte MediumWeapons;
-
-        /// <summary>
-        /// Available slots for large weapons.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public byte LargeWeapons;
+        public byte WeaponSlots;
 
         /// <summary>
         /// Available equipment slots for other items.
@@ -68,18 +41,18 @@ namespace SpaceData
 
         public Packet Packetize(Packet packet)
         {
-            return packet
+            packet
                 .Write(Name)
                 .Write(Radius)
                 .Write(Texture)
-                .Write(Health)
-                .Write(Fuel)
-                .Write(Acceleration)
-                .Write(RotationSpeed)
-                .Write(SmallWeapons)
-                .Write(MediumWeapons)
-                .Write(LargeWeapons)
-                .Write(ItemSlots);
+                .Write(WeaponSlots)
+                .Write(ItemSlots)
+                .Write(BaseAttributes.Length);
+            foreach (var attribute in BaseAttributes)
+            {
+                packet.Write(attribute);
+            }
+            return packet;
         }
 
         public void Depacketize(Packet packet)
@@ -87,25 +60,15 @@ namespace SpaceData
             Name = packet.ReadString();
             Radius = packet.ReadFixed();
             Texture = packet.ReadString();
-            Health = packet.ReadInt32();
-            Fuel = packet.ReadInt32();
-            Acceleration = packet.ReadFixed();
-            RotationSpeed = packet.ReadFixed();
-            SmallWeapons = packet.ReadByte();
-            MediumWeapons = packet.ReadByte();
-            LargeWeapons = packet.ReadByte();
+            WeaponSlots = packet.ReadByte();
             ItemSlots = packet.ReadByte();
+            var numAttributes = packet.ReadInt32();
+            BaseAttributes = new EntityAttribute<EntityAttributeType>[numAttributes];
+            for (int i = 0; i < numAttributes; i++)
+            {
+                BaseAttributes[i] = packet.ReadPacketizable(new EntityAttribute<EntityAttributeType>());
+            }
         }
-    }
-
-    public enum WeaponSize
-    {
-        [XmlEnum(Name = "Small")]
-        Small,
-        [XmlEnum(Name = "Medium")]
-        Medium,
-        [XmlEnum(Name = "Large")]
-        Large
     }
 
     public class WeaponData : IPacketizable
@@ -114,11 +77,6 @@ namespace SpaceData
         /// The name of the weapon, which serves as a unique type identifier.
         /// </summary>
         public string Name;
-
-        /// <summary>
-        /// The equipment size of this weapon, i.e. what kind of slot it occupies.
-        /// </summary>
-        public WeaponSize Size;
 
         /// <summary>
         /// The texture to use for rendering the weapon.
@@ -159,7 +117,6 @@ namespace SpaceData
         {
             return packet
                 .Write(Name)
-                .Write((byte)Size)
                 .Write(Texture)
                 .Write(Sound)
                 .Write(Damage)
@@ -172,7 +129,6 @@ namespace SpaceData
         public void Depacketize(Packet packet)
         {
             Name = packet.ReadString();
-            Size = (WeaponSize)packet.ReadByte();
             Texture = packet.ReadString();
             Sound = packet.ReadString();
             Damage = packet.ReadFixed();

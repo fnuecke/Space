@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Engine.Serialization</RootNamespace>
-    <AssemblyName>EngineFixedWriter</AssemblyName>
+    <AssemblyName>EngineWriters</AssemblyName>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
@@ -49,10 +49,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EntityAttributeWriter.cs" />
     <Compile Include="FixedWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EngineReaders\EngineReaders.csproj">
+      <Project>{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}</Project>
+      <Name>EngineReaders</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Engine\Engine.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine</Name>

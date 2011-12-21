@@ -1,4 +1,4 @@
-﻿using SpaceData;
+﻿using Space.Data;
 
 namespace Space.Simulation
 {

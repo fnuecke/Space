@@ -7,8 +7,8 @@ using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Systems;
+using Space.Data;
 using Space.Simulation;
-using SpaceData;
 
 namespace Space.Control
 {

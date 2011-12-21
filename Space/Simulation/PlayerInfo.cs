@@ -1,5 +1,5 @@
 ﻿using Engine.Serialization;
-using SpaceData;
+using Space.Data;
 
 namespace Space.Simulation
 {

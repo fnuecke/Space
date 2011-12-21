@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
-  <Asset Type="SpaceData.ItemData[]">
+  <Asset Type="Space.Data.ItemData[]">
     <Item>
       <Name>Cheap Thrusters</Name>
       <Acceleration>10</Acceleration>

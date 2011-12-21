@@ -1,9 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
-  <Asset Type="SpaceData.WeaponData[]">
+  <Asset Type="Space.Data.WeaponData[]">
     <Item>
       <Name>Cheap Laser</Name>
-      <Size>Small</Size>
       <Texture>Textures/ship</Texture>
       <Sound>laser</Sound>
       <Damage>5</Damage>

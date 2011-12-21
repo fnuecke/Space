@@ -16,10 +16,10 @@ namespace Engine.Serialization
         {
             output.Xml.WriteValue(value.DoubleValue);
         }
+
         protected override Fixed Deserialize(IntermediateReader input, ContentSerializerAttribute format, Fixed existingInstance)
         {
-            Fixed result = Fixed.Create(input.Xml.ReadContentAsDouble());
-            return result;
+            return Fixed.Create(input.Xml.ReadContentAsDouble());
         }
     }
 
@@ -33,13 +33,15 @@ namespace Engine.Serialization
         {
             output.Write(value.DoubleValue);
         }
+
         public override string GetRuntimeType(TargetPlatform targetPlatform)
         {
             return typeof(Fixed).AssemblyQualifiedName;
         }
+
         public override string GetRuntimeReader(TargetPlatform targetPlatform)
         {
-            return "Engine.Serialization.FixedReader, EngineFixedReader, Version=1.0.0.0, Culture=neutral";
+            return typeof(FixedReader).AssemblyQualifiedName;
         }
     }
 }

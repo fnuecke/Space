@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Engine.Serialization</RootNamespace>
-    <AssemblyName>EngineFixedReader</AssemblyName>
+    <AssemblyName>EngineReaders</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
@@ -92,6 +92,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EntityAttributeReader.cs" />
     <Compile Include="FixedReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

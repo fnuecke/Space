@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
-  <Asset Type="SpaceData.DropData[]">
+  <Asset Type="Space.Data.DropData[]">
     <Item>
       <ID>Tier0_CheapLaser</ID>
       <Type>Weapon</Type>

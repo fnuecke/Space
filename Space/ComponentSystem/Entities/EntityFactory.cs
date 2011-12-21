@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.Entities;
 using Engine.Math;
 using Space.ComponentSystem.Components;
-using SpaceData;
+using Space.Data;
 
 namespace Space.ComponentSystem.Entities
 {
@@ -37,8 +37,8 @@ namespace Space.ComponentSystem.Entities
             collidable.Radius = shipData.Radius;
 
             var movement = ship.GetComponent<MovementProperties>();
-            movement.Acceleration = shipData.Acceleration;
-            movement.RotationSpeed = shipData.RotationSpeed;
+            movement.Acceleration = shipData.BaseAttributes.Accumulate(EntityAttributeType.Acceleration);
+            movement.RotationSpeed = shipData.BaseAttributes.Accumulate(EntityAttributeType.RotationSpeed);
 
             var avatar = ship.GetComponent<Avatar>();
             avatar.PlayerNumber = playerNumber;

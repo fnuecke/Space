@@ -9,8 +9,8 @@
 
 #region Using Statements
 using Space;
+using Space.Data;
 using Space.Simulation;
-using SpaceData;
 
 #endregion
 
