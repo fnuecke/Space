@@ -9,15 +9,6 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class Transform : AbstractComponent
     {
-        #region Packetizer registration
-
-        static Transform()
-        {
-            Packetizer.Register<Transform>();
-        }
-
-        #endregion
-
         #region Properties
         
         /// <summary>

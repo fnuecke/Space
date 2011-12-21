@@ -1,7 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
-using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -15,15 +14,6 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class Physics : AbstractComponent
     {
-        #region Packetizer registration
-
-        static Physics()
-        {
-            Packetizer.Register<Physics>();
-        }
-
-        #endregion
-
         #region Logic
 
         /// <summary>

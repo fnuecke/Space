@@ -11,15 +11,6 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class MovementProperties : AbstractComponent
     {
-        #region Packetizer registration
-
-        static MovementProperties()
-        {
-            Packetizer.Register<MovementProperties>();
-        }
-
-        #endregion
-
         #region Properties
         
         /// <summary>

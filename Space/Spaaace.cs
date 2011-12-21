@@ -1,13 +1,17 @@
 using System;
 using System.Globalization;
+using Engine.ComponentSystem.Components;
 using Engine.Input;
+using Engine.Serialization;
 using Engine.Util;
 using GameStateManagement;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
+using Space.ComponentSystem.Components;
 using Space.Control;
+using Space.Data;
 
 namespace Space
 {
@@ -85,6 +89,12 @@ namespace Space
             console.Hotkey = Settings.Instance.ConsoleKey;
             Components.Add(console);
 
+            // Register types for serialization.
+            PacketizerRegistration.Initialize<EntityAttributeType>();
+            Packetizer.Register<MovementProperties>();
+            Packetizer.Register<ShipControl>();
+            Packetizer.Register<WeaponControl>();
+            Packetizer.Register<WeaponSlot>();
 
             // Create the screen manager component.
             var screenManager = new ScreenManager(this);

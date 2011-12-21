@@ -9,15 +9,6 @@ namespace Engine.ComponentSystem.Components
     public class Attributes<TAttribute> : AbstractComponent
         where TAttribute : struct
     {
-        #region Packetizer registration
-
-        static Attributes()
-        {
-            Packetizer.Register<Attributes<TAttribute>>();
-        }
-
-        #endregion
-
         #region Properties
 
         /// <summary>

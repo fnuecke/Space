@@ -15,15 +15,6 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class Sound : AbstractComponent
     {
-        #region Packetizer registration
-
-        static Sound()
-        {
-            Packetizer.Register<Sound>();
-        }
-
-        #endregion
-
         #region Properties
         
         /// <summary>

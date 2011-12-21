@@ -10,15 +10,6 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class Spin : AbstractComponent
     {
-        #region Packetizer registration
-
-        static Spin()
-        {
-            Packetizer.Register<Spin>();
-        }
-
-        #endregion
-
         #region Properties
 
         /// <summary>

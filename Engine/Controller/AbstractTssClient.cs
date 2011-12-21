@@ -332,7 +332,7 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long addFrame = args.Data.ReadInt64();
-                        IEntity entity = Packetizer.Depacketize<IEntity>(args.Data);
+                        IEntity entity = args.Data.ReadPacketizable(new Entity());
                         tss.AddEntity(entity, addFrame);
                     }
                     break;

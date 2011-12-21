@@ -18,15 +18,6 @@ namespace Space.ComponentSystem.Components
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
         
-        #region Packetizer registration
-
-        static ShipControl()
-        {
-            Packetizer.Register<ShipControl>();
-        }
-
-        #endregion
-
         #region Properties
         
         /// <summary>

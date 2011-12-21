@@ -10,15 +10,6 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class Friction : AbstractComponent
     {
-        #region Packetizer registration
-
-        static Friction()
-        {
-            Packetizer.Register<Friction>();
-        }
-
-        #endregion
-
         #region Properties
 
         /// <summary>

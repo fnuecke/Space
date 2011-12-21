@@ -110,6 +110,7 @@
     <Compile Include="ComponentSystem\Components\Attributes.cs" />
     <Compile Include="ComponentSystem\Components\Avatar.cs" />
     <Compile Include="ComponentSystem\Components\Friction.cs" />
+    <Compile Include="ComponentSystem\Components\PacketizerRegistration.cs" />
     <Compile Include="ComponentSystem\Components\Sound.cs" />
     <Compile Include="ComponentSystem\Components\Spin.cs" />
     <Compile Include="ComponentSystem\Components\Velocity.cs" />
