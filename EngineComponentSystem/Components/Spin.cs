@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
@@ -7,6 +8,10 @@ namespace Engine.ComponentSystem.Components
 {
     /// <summary>
     /// Represents rotation speed of an object.
+    /// 
+    /// <para>
+    /// Requires: <c>Transform</c>.
+    /// </para>
     /// </summary>
     public sealed class Spin : AbstractComponent
     {
@@ -16,6 +21,38 @@ namespace Engine.ComponentSystem.Components
         /// The current rotation speed of the object.
         /// </summary>
         public Fixed Value { get; set; }
+
+        #endregion
+
+        #region Logic
+
+        /// <summary>
+        /// Updates the rotation based on this spin.
+        /// </summary>
+        /// <param name="parameterization">The parameterization to use.</param>
+        public override void Update(object parameterization)
+        {
+#if DEBUG
+            base.Update(parameterization);
+#endif
+            var transform = Entity.GetComponent<Transform>();
+
+            // Apply rotation if transform is available.
+            if (transform != null)
+            {
+                transform.AddRotation(Value);
+            }
+        }
+
+        /// <summary>
+        /// Accepts <c>DefaultLogicParameterization</c>s.
+        /// </summary>
+        /// <param name="parameterizationType">the type to check.</param>
+        /// <returns>whether the type's supported or not.</returns>
+        public override bool SupportsParameterization(Type parameterizationType)
+        {
+            return parameterizationType == typeof(DefaultLogicParameterization);
+        }
 
         #endregion
 

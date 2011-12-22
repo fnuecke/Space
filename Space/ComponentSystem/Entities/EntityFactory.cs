@@ -12,21 +12,16 @@ namespace Space.ComponentSystem.Entities
         {
             var ship = new Entity();
             ship.AddComponent(new Transform());
-            ship.AddComponent(new Velocity());
-            ship.AddComponent(new Spin());
             ship.AddComponent(new Acceleration());
             ship.AddComponent(new Friction());
-            ship.AddComponent(new Physics());
-
+            ship.AddComponent(new Spin());
+            ship.AddComponent(new Velocity());
             ship.AddComponent(new CollidableSphere());
-
             ship.AddComponent(new EntityModules<ShipModule, EntityAttributeType>());
             ship.AddComponent(new WeaponControl());
             ship.AddComponent(new WeaponSlot());
             ship.AddComponent(new ShipControl());
-
             ship.AddComponent(new Avatar());
-
             ship.AddComponent(new TransformedRenderer());
 
             var friction = ship.GetComponent<Friction>();
@@ -53,11 +48,8 @@ namespace Space.ComponentSystem.Entities
             var shot = new Entity();
             shot.AddComponent(new Transform());
             shot.AddComponent(new Velocity());
-            shot.AddComponent(new Physics());
             shot.AddComponent(new Expiration());
-
             shot.AddComponent(new CollidableSphere());
-
             shot.AddComponent(new TransformedRenderer());
 
             // Give this entity a position.

@@ -104,7 +104,6 @@
     <Compile Include="Components\Friction.cs" />
     <Compile Include="Components\IComponent.cs" />
     <Compile Include="Components\PacketizerRegistration.cs" />
-    <Compile Include="Components\Physics.cs" />
     <Compile Include="Components\Sound.cs" />
     <Compile Include="Components\Spin.cs" />
     <Compile Include="Components\Transform.cs" />

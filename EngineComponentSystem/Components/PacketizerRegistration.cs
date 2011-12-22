@@ -16,7 +16,6 @@ namespace Engine.ComponentSystem.Components
             Packetizer.Register<CollidableBox>();
             Packetizer.Register<CollidableSphere>();
             Packetizer.Register<Friction>();
-            Packetizer.Register<Physics>();
             Packetizer.Register<Sound>();
             Packetizer.Register<Spin>();
             Packetizer.Register<Transform>();
