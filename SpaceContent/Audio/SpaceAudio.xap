@@ -210,9 +210,162 @@ Global Settings
         Read Only = 0;
         Time = 0;
         Value = 0.000000;
-        Initial Value = 0.000000;
+        Initial Value = -0.000000;
         Min = 0.000000;
-        Max = 1000000.000000;
+        Max = 2500.000000;
+    }
+
+    RPC
+    {
+        Name = Attenuation Weapons;
+
+        RPC Curve
+        {
+            Name = Sound::3c54123e-c7a9-4c6c-839c-a326ce23376f;
+            Property = 0;
+            Sound = 1;
+            Line Color = 4284282674;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = Distance;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 0.000000;
+                Curve = 3;
+            }
+
+            RPC Point
+            {
+                X = 2500.000000;
+                Y = -9600.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Attenuation Ambient;
+
+        RPC Curve
+        {
+            Name = Sound::09294017-f44b-415c-95c7-86b84a934b17;
+            Property = 0;
+            Sound = 1;
+            Line Color = 4278255360;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = Distance;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 0.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 2500.000000;
+                Y = -9600.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = Attenuation Missiles;
+
+        RPC Curve
+        {
+            Name = Sound::480d1718-5c07-4efb-8fc2-143142e07680;
+            Property = 0;
+            Sound = 1;
+            Line Color = 4278255360;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = Distance;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = 0.000000;
+                Curve = 1;
+            }
+
+            RPC Point
+            {
+                X = 2500.000000;
+                Y = -9600.000000;
+                Curve = 0;
+            }
+        }
+    }
+
+    RPC
+    {
+        Name = DopplerPitch;
+
+        RPC Curve
+        {
+            Name = Sound::f140c970-ec63-412d-93bd-367773f2dd29;
+            Property = 1;
+            Sound = 1;
+            Line Color = 4278190335;
+            Viewable = 1;
+
+            Variable Entry
+            {
+                Name = DopplerPitchScalar;
+            }
+
+            RPC Point
+            {
+                X = 0.000000;
+                Y = -1200.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 1.000000;
+                Y = 17.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 2.060000;
+                Y = 1183.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 2.768473;
+                Y = 1200.000000;
+                Curve = 0;
+            }
+
+            RPC Point
+            {
+                X = 4.000000;
+                Y = 1183.000000;
+                Curve = 0;
+            }
+        }
     }
 }
 
@@ -225,6 +378,12 @@ Wave Bank
     Windows Bank Path Edited = 0;
     Seek Tables = 1;
     Compression Preset Name = <none>;
+    Xbox Bank Last Modified Low = 0;
+    Xbox Bank Last Modified High = 0;
+    PC Bank Last Modified Low = 0;
+    PC Bank Last Modified High = 0;
+    Header Last Modified Low = 0;
+    Header Last Modified High = 0;
     Bank Last Revised Low = 3691894760;
     Bank Last Revised High = 30195377;
 
@@ -259,6 +418,8 @@ Sound Bank
     Windows File = Win\Sound Bank.xsb;
     Xbox Bank Path Edited = 0;
     Windows Bank Path Edited = 0;
+    Header Last Modified High = 0;
+    Header Last Modified Low = 0;
 
     Sound
     {
@@ -270,6 +431,16 @@ Sound Bank
         Category Entry
         {
             Name = Default;
+        }
+
+        RPC Entry
+        {
+            RPC Name = Attenuation Weapons;
+        }
+
+        RPC Entry
+        {
+            RPC Name = DopplerPitch;
         }
 
         Track

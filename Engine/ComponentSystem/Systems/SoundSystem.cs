@@ -17,35 +17,43 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Number of frames to wait before disallowing a sound to be played.
         /// </summary>
-        private const int GracePeriod = 20;
+        private const int GracePeriod = 60;
+
+        /// <summary>
+        /// Number of frames to check into the past if a sound has been played.
+        /// </summary>
+        private const int DeadPeriod = 15;
+
+        /// <summary>
+        /// Epsilon range (norm, not distance) in which sound events of the
+        /// same cue type are considered equal (avoid multi-play due to late
+        /// command altering position or velocity slightly).
+        /// </summary>
+        private static readonly Fixed Epsilon = Fixed.Create(4);
 
         #endregion
 
         #region Fields
 
         /// <summary>
-        /// The sound bank we use to get actual sounds for our cue names. This
-        /// will be the same across all copies / clones.
+        /// The sound bank we use to get actual sounds for our cue names.
         /// </summary>
         private SoundBank _soundBank;
 
         /// <summary>
-        /// The sound listener to use for relative position. This will be the
-        /// same across all copies / clones.
+        /// The sound listener to use for relative position.
         /// </summary>
         private AudioListener _listener = new AudioListener();
 
         /// <summary>
-        /// The sound emitter to use for emitted sound positioning. This will
-        /// be the same across all copies / clones.
+        /// The sound emitter to use for emitted sound positioning.
         /// </summary>
         private AudioEmitter _emitter = new AudioEmitter();
 
         /// <summary>
         /// A list of sounds not to play again int their respective time
         /// frames. This list is kept in addition to the sounds to play one,
-        /// to avoid replaying sounds, e.g. on TSS rollbacks. This will be the
-        /// same across all copies / clones.
+        /// to avoid replaying sounds, e.g. on TSS rollbacks.
         /// </summary>
         private Dictionary<long, List<SoundParameterization>> _recentlyPlayed =
             new Dictionary<long, List<SoundParameterization>>();
@@ -53,7 +61,6 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The newest frame in which we were asked to played a sound. As an
         /// array as that's the simplest way to make it a reference type :P
-        /// This will be the same across all copies / clones.
         /// </summary>
         private long[] _lastFrame = new long[] { 0 };
 
@@ -180,17 +187,12 @@ namespace Engine.ComponentSystem.Systems
         {
             // Check if we may play the sound, or if it already was, in some
             // other update.
-            if (_recentlyPlayed.ContainsKey(frame))
+            if (WasRecentlyPlayed(p, frame))
             {
-                // Got a list for this frame, check if the same sound was
-                // played at the same position already.
-                if (ContainsWithPosition(_recentlyPlayed[frame], p))
-                {
-                    // Yes, skip it.
-                    return;
-                }
+                // Yes, skip it.
+                return;
             }
-            else
+            else if (!_recentlyPlayed.ContainsKey(frame))
             {
                 // No entries for that frame yet, allocate for this one.
                 _recentlyPlayed.Add(frame, new List<SoundParameterization>());
@@ -207,6 +209,30 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
+        /// Test if a certain sound was in the recent past.
+        /// </summary>
+        /// <param name="p">The sound information to check.</param>
+        /// <param name="frame">The frame the sound would play in.</param>
+        /// <returns>Whether the sound has been recently played or not.</returns>
+        private bool WasRecentlyPlayed(SoundParameterization p, long frame)
+        {
+            for (long testFrame = frame - DeadPeriod; testFrame <= frame; ++testFrame)
+            {
+                if (_recentlyPlayed.ContainsKey(testFrame))
+                {
+                    // Got a list for this frame, check if the same sound was
+                    // played at the same position already.
+                    if (ContainsWithPosition(_recentlyPlayed[testFrame], p))
+                    {
+                        // Yes, skip it.
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Checks if a sound event is in the given lists, tested by sound cue
         /// name, emitter position and emitter velocity.
         /// </summary>
@@ -218,35 +244,15 @@ namespace Engine.ComponentSystem.Systems
             foreach (var item in list)
             {
                 if (item.SoundCueToPlay.Equals(p.SoundCueToPlay) &&
-                    item.Position == p.Position &&
-                    item.Velocity == p.Velocity)
+                    (item.Position == p.Position ||
+                    Fixed.Abs((item.Position - p.Position).Norm) < Epsilon) &&
+                    (item.Velocity == p.Velocity ||
+                    Fixed.Abs((item.Velocity - p.Velocity).Norm) < Epsilon))
                 {
                     return true;
                 }
             }
             return false;
-        }
-
-        #endregion
-
-        #region Cloning
-
-        public override object Clone()
-        {
-            var copy = (SoundSystem)base.Clone();
-
-            // Get own list of sounds to play.
-            copy._soundsToPlay = new Dictionary<long, List<SoundParameterization>>();
-            foreach (var entry in _soundsToPlay)
-            {
-                copy._soundsToPlay.Add(entry.Key, new List<SoundParameterization>(entry.Value));
-            }
-            
-            // Note: keep the SAME list of recently played sounds across all
-            // states, to avoid forgetting about played sounds when rolling
-            // back in TSS.
-            
-            return copy;
         }
 
         #endregion

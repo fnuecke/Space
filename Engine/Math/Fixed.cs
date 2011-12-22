@@ -746,8 +746,8 @@ namespace Engine.Math
         {
             Vector3 result;
             result.X = (float)src.X;
-            result.Y = (float)src.Y;
-            result.Z = 0;
+            result.Y = 0;
+            result.Z = (float)src.Y;
             return result;
         }
 
