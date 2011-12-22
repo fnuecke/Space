@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
+using Space.Commands;
 using Space.ComponentSystem.Components;
 using Space.Control;
 using Space.Data;
@@ -90,6 +91,7 @@ namespace Space
             Components.Add(console);
 
             // Register types for serialization.
+            Packetizer.Register<PlayerInputCommand>();
             PacketizerRegistration.Initialize<EntityAttributeType>();
             Packetizer.Register<MovementProperties>();
             Packetizer.Register<ShipControl>();

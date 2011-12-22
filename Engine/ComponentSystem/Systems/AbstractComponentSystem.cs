@@ -47,7 +47,8 @@ namespace Engine.ComponentSystem.Systems
         /// Default implementation does nothing.
         /// </summary>
         /// <param name="updateType">The type of update to perform.</param>
-        public virtual void Update(ComponentSystemUpdateType updateType)
+        /// <param name="frame">The frame in which the update is applied.</param>
+        public virtual void Update(ComponentSystemUpdateType updateType, long frame)
         {
         }
 

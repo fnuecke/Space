@@ -12,8 +12,8 @@ namespace Space.ComponentSystem.Systems
     {
 
         #region Logic
-        
-        public override void Update(ComponentSystemUpdateType updateType)
+
+        public override void Update(ComponentSystemUpdateType updateType, long frame)
         {
             if (updateType == ComponentSystemUpdateType.Logic)
             {

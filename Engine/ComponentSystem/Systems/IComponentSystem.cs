@@ -48,7 +48,8 @@ namespace Engine.ComponentSystem.Systems
         /// Update all components in this system.
         /// </summary>
         /// <param name="updateType">The type of update to perform.</param>
-        void Update(ComponentSystemUpdateType updateType);
+        /// <param name="frame">The frame in which the update is applied.</param>
+        void Update(ComponentSystemUpdateType updateType, long frame);
 
         /// <summary>
         /// Add the component to this system, if it's supported.

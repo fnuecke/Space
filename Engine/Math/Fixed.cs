@@ -742,6 +742,15 @@ namespace Engine.Math
             return result;
         }
 
+        public static explicit operator Vector3(FPoint src)
+        {
+            Vector3 result;
+            result.X = (float)src.X;
+            result.Y = (float)src.Y;
+            result.Z = 0;
+            return result;
+        }
+
         #endregion
 
         public override bool Equals(object obj)

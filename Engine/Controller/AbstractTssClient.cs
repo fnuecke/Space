@@ -171,7 +171,7 @@ namespace Engine.Controller
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                tss.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display);
+                tss.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display, tss.CurrentFrame);
             }
         }
 

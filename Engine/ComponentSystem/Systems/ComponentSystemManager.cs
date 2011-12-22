@@ -45,11 +45,12 @@ namespace Engine.ComponentSystem.Systems
         /// Update all known systems.
         /// </summary>
         /// <param name="updateType">The type of update to perform.</param>
-        public void Update(ComponentSystemUpdateType updateType)
+        /// <param name="frame">The frame in which the update is applied.</param>
+        public void Update(ComponentSystemUpdateType updateType, long frame)
         {
             foreach (var system in _systems)
             {
-                system.Update(updateType);
+                system.Update(updateType, frame);
             }
         }
 
