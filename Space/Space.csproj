@@ -193,7 +193,7 @@
       <Project>{96E70AC4-C288-478C-866E-5C7280067642}</Project>
       <Name>Engine.Simulation</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Engine\Engine.Base.csproj">
+    <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
     </ProjectReference>

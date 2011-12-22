@@ -101,7 +101,7 @@
       <Project>{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}</Project>
       <Name>Engine.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Engine\Engine.Base.csproj">
+    <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
     </ProjectReference>
