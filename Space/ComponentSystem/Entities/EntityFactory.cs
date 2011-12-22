@@ -54,6 +54,7 @@ namespace Space.ComponentSystem.Entities
             shot.AddComponent(new Transform());
             shot.AddComponent(new Velocity());
             shot.AddComponent(new Physics());
+            shot.AddComponent(new Expiration());
 
             shot.AddComponent(new CollidableSphere());
 
@@ -67,6 +68,9 @@ namespace Space.ComponentSystem.Entities
             // And a dynamic component for movement and rotation.
             var speed = shot.GetComponent<Velocity>();
             speed.Value = velocity;
+
+            var expiration = shot.GetComponent<Expiration>();
+            expiration.TimeToLive = weaponData.ProjectileTTL;
 
             // Also make it collidable.
             var collidable = shot.GetComponent<CollidableSphere>();

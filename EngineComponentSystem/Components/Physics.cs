@@ -75,13 +75,13 @@ namespace Engine.ComponentSystem.Components
         }
 
         /// <summary>
-        /// Accepts <c>PhysicsParameterization</c>s.
+        /// Accepts <c>DefaultLogicParameterization</c>s.
         /// </summary>
         /// <param name="parameterizationType">the type to check.</param>
         /// <returns>whether the type's supported or not.</returns>
         public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterizationType.Equals(typeof(PhysicsParameterization));
+            return parameterizationType == typeof(DefaultLogicParameterization);
         }
 
         #endregion

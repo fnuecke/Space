@@ -30,19 +30,23 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return packet
+            return base.Packetize(packet)
                 .Write(Value)
                 .Write(MinVelocity);
         }
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+            
             Value = packet.ReadFixed();
             MinVelocity = packet.ReadFixed();
         }
 
         public override void Hash(Hasher hasher)
         {
+            base.Hash(hasher);
+            
             hasher.Put(BitConverter.GetBytes(Value.RawValue));
             hasher.Put(BitConverter.GetBytes(MinVelocity.RawValue));
         }

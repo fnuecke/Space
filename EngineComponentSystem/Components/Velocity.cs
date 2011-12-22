@@ -23,16 +23,21 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return packet.Write(Value);
+            return base.Packetize(packet)
+                .Write(Value);
         }
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+            
             Value = packet.ReadFPoint();
         }
 
         public override void Hash(Hasher hasher)
         {
+            base.Hash(hasher);
+            
             hasher.Put(BitConverter.GetBytes(Value.X.RawValue));
             hasher.Put(BitConverter.GetBytes(Value.Y.RawValue));
         }

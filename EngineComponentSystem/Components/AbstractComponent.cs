@@ -91,7 +91,7 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public virtual Packet Packetize(Packet packet)
         {
-            return packet;
+            return packet.Write(UID);
         }
 
         /// <summary>
@@ -99,6 +99,7 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public virtual void Depacketize(Packet packet)
         {
+            UID = packet.ReadInt32();
         }
 
         /// <summary>
@@ -106,6 +107,7 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public virtual void Hash(Hasher hasher)
         {
+            hasher.Put(BitConverter.GetBytes(UID));
         }
 
         /// <summary>

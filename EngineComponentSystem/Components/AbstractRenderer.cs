@@ -79,16 +79,21 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return packet.Write(TextureName);
+            return base.Packetize(packet)
+                .Write(TextureName);
         }
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+
             TextureName = packet.ReadString();
         }
 
         public override void Hash(Hasher hasher)
         {
+            base.Hash(hasher);
+
             hasher.Put(Encoding.UTF8.GetBytes(TextureName));
         }
 

@@ -62,19 +62,23 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return packet
+            return base.Packetize(packet)
                 .Write(Translation)
                 .Write(Rotation);
         }
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+            
             Translation = packet.ReadFPoint();
             Rotation = packet.ReadFixed();
         }
 
         public override void Hash(Util.Hasher hasher)
         {
+            base.Hash(hasher);
+            
             hasher.Put(BitConverter.GetBytes(Translation.X.RawValue));
             hasher.Put(BitConverter.GetBytes(Translation.Y.RawValue));
             hasher.Put(BitConverter.GetBytes(Rotation.RawValue));

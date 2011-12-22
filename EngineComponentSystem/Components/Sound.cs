@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -114,7 +116,8 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            packet.Write(TriggeringMessages.Count);
+            base.Packetize(packet)
+                .Write(TriggeringMessages.Count);
             foreach (var messageType in TriggeringMessages)
             {
                 packet.Write(messageType.AssemblyQualifiedName);
@@ -127,6 +130,8 @@ namespace Engine.ComponentSystem.Components
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+            
             int numTriggeringMessages = packet.ReadInt32();
             for (int i = 0; i < numTriggeringMessages; ++i)
             {
@@ -136,10 +141,19 @@ namespace Engine.ComponentSystem.Components
             _play = packet.ReadBoolean();
         }
 
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put(Encoding.UTF8.GetBytes(SoundCue));
+        }
+
         public override object Clone()
         {
             var copy = (Sound)base.Clone();
+
             copy.TriggeringMessages = new List<Type>(TriggeringMessages);
+
             return copy;
         }
 

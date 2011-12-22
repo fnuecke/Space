@@ -28,7 +28,8 @@ namespace Space.Control
             simulation.Command += GameCommandHandler.HandleCommand;
             tss.Initialize(simulation);
 
-            tss.EntityManager.SystemManager.AddSystem(new PhysicsSystem())
+            tss.EntityManager.SystemManager
+                .AddSystem(new DefaultLogicSystem())
                 .AddSystem(new ShipControlSystem())
                 .AddSystem(new WeaponSystem())
                 .AddSystem(new AvatarSystem())

@@ -47,6 +47,12 @@ namespace Space.Data
         /// </summary>
         public Fixed ProjectileRadius;
 
+        /// <summary>
+        /// The collision radius of the projectiles.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public int ProjectileTTL = 5 * 60; // Default: 5 seconds.
+
         public Packet Packetize(Packet packet)
         {
             return packet

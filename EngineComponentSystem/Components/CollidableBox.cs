@@ -47,20 +47,21 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return base
-                .Packetize(packet)
+            return base.Packetize(packet)
                 .Write(Size);
         }
 
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
+
             Size = packet.ReadFPoint();
         }
 
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
+
             hasher.Put(BitConverter.GetBytes(Size.X.RawValue));
             hasher.Put(BitConverter.GetBytes(Size.Y.RawValue));
         }

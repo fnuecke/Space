@@ -100,6 +100,7 @@
     <Compile Include="Components\Avatar.cs" />
     <Compile Include="Components\CollidableBox.cs" />
     <Compile Include="Components\CollidableSphere.cs" />
+    <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
     <Compile Include="Components\IComponent.cs" />
     <Compile Include="Components\PacketizerRegistration.cs" />
@@ -113,7 +114,7 @@
     <Compile Include="Entities\IEntity.cs" />
     <Compile Include="Parameterizations\AvatarParameterization.cs" />
     <Compile Include="Parameterizations\CollisionParameterization.cs" />
-    <Compile Include="Parameterizations\PhysicsParameterization.cs" />
+    <Compile Include="Parameterizations\DefaultLogicParameterization.cs" />
     <Compile Include="Parameterizations\RendererParameterization.cs" />
     <Compile Include="Parameterizations\SoundParameterization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -121,11 +122,11 @@
     <Compile Include="Systems\AvatarSystem.cs" />
     <Compile Include="Systems\CollisionSystem.cs" />
     <Compile Include="Systems\ComponentSystemManager.cs" />
+    <Compile Include="Systems\DefaultLogicSystem.cs" />
     <Compile Include="Systems\EntityManager.cs" />
     <Compile Include="Systems\IComponentSystem.cs" />
     <Compile Include="Systems\IComponentSystemManager.cs" />
     <Compile Include="Systems\IEntityManager.cs" />
-    <Compile Include="Systems\PhysicsSystem.cs" />
     <Compile Include="Systems\RenderSystem.cs" />
     <Compile Include="Systems\SoundSystem.cs" />
   </ItemGroup>

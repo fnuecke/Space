@@ -150,7 +150,8 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            packet.Write(_modules.Count);
+            base.Packetize(packet)
+                .Write(_modules.Count);
             foreach (var module in _modules)
             {
                 packet.Write(module);
@@ -160,6 +161,8 @@ namespace Engine.ComponentSystem.Components
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+
             _modules.Clear();
             int numModules = packet.ReadInt32();
             for (int i = 0; i < numModules; i++)
@@ -173,6 +176,8 @@ namespace Engine.ComponentSystem.Components
 
         public override void Hash(Hasher hasher)
         {
+            base.Hash(hasher);
+            
             foreach (var module in _modules)
             {
                 module.Hash(hasher);

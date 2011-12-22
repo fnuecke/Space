@@ -32,16 +32,21 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return packet.Write(PlayerNumber);
+            return base.Packetize(packet)
+                .Write(PlayerNumber);
         }
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+
             PlayerNumber = packet.ReadInt32();
         }
 
         public override void Hash(Hasher hasher)
         {
+            base.Hash(hasher);
+
             hasher.Put(BitConverter.GetBytes(PlayerNumber));
         }
 

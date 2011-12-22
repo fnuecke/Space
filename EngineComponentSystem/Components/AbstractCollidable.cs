@@ -68,16 +68,21 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return packet.Write(previousPosition);
+            return base.Packetize(packet)
+                .Write(previousPosition);
         }
 
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+
             previousPosition = packet.ReadFPoint();
         }
 
         public override void Hash(Hasher hasher)
         {
+            base.Hash(hasher);
+
             hasher.Put(BitConverter.GetBytes(previousPosition.X.RawValue));
             hasher.Put(BitConverter.GetBytes(previousPosition.Y.RawValue));
         }

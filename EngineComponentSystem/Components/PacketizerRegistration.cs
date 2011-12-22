@@ -12,6 +12,7 @@ namespace Engine.ComponentSystem.Components
             Packetizer.Register<Acceleration>();
             Packetizer.Register<Avatar>();
             Packetizer.Register<EntityModules<TModule, TAttribute>>();
+            Packetizer.Register<Expiration>();
             Packetizer.Register<CollidableBox>();
             Packetizer.Register<CollidableSphere>();
             Packetizer.Register<Friction>();
