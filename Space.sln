@@ -3,17 +3,27 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space", "Space\Space.csproj", "{D573EB83-8626-431B-97DC-F0D754D6A99C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceContent", "SpaceContent\SpaceContent.contentproj", "{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Content", "SpaceContent\Space.Content.contentproj", "{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceData", "SpaceData\SpaceData.csproj", "{48F0591F-9238-4FF0-AC34-04E14C291AA3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Data", "SpaceData\Space.Data.csproj", "{48F0591F-9238-4FF0-AC34-04E14C291AA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpaceWriters", "SpaceWriters\SpaceWriters.csproj", "{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Serialization.Writers", "SpaceWriters\Space.Serialization.Writers.csproj", "{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine", "Engine\Engine.csproj", "{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Base", "Engine\Engine.Base.csproj", "{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EngineWriters", "EngineWriters\EngineWriters.csproj", "{B40055F1-158F-4C54-BC3F-D269ABB941FD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Serialization.Writers", "EngineWriters\Engine.Serialization.Writers.csproj", "{B40055F1-158F-4C54-BC3F-D269ABB941FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EngineReaders", "EngineReaders\EngineReaders.csproj", "{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Serialization.Readers", "EngineReaders\Engine.Serialization.Readers.csproj", "{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Data", "EngineData\Engine.Data.csproj", "{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Simulation", "EngineSimulation\Engine.Simulation.csproj", "{96E70AC4-C288-478C-866E-5C7280067642}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem", "EngineComponentSystem\Engine.ComponentSystem.csproj", "{C82769BC-E5C6-4382-8AFE-3648C6B8627B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Controller", "EngineController\Engine.Controller.csproj", "{10945D08-8588-4F0E-9671-0E90D374EB78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Session", "EngineSession\Engine.Session.csproj", "{93B52E9C-6872-40F0-B577-D3D9363F7AF1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +41,10 @@ Global
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug|x86.Build.0 = Debug|x86
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release|x86.ActiveCfg = Release|x86
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release|x86.Build.0 = Release|x86
+		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug|x86.ActiveCfg = Debug|x86
+		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug|x86.Build.0 = Debug|x86
+		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release|x86.ActiveCfg = Debug|x86
+		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release|x86.Build.0 = Debug|x86
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug|x86.ActiveCfg = Debug|x86
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug|x86.Build.0 = Debug|x86
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Release|x86.ActiveCfg = Release|x86
@@ -43,10 +57,26 @@ Global
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug|x86.Build.0 = Debug|x86
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release|x86.ActiveCfg = Release|x86
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release|x86.Build.0 = Release|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug|x86.ActiveCfg = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug|x86.Build.0 = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release|x86.ActiveCfg = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release|x86.Build.0 = Debug|x86
+		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug|x86.ActiveCfg = Debug|x86
+		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug|x86.Build.0 = Debug|x86
+		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release|x86.ActiveCfg = Release|x86
+		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release|x86.Build.0 = Release|x86
+		{96E70AC4-C288-478C-866E-5C7280067642}.Debug|x86.ActiveCfg = Debug|x86
+		{96E70AC4-C288-478C-866E-5C7280067642}.Debug|x86.Build.0 = Debug|x86
+		{96E70AC4-C288-478C-866E-5C7280067642}.Release|x86.ActiveCfg = Release|x86
+		{96E70AC4-C288-478C-866E-5C7280067642}.Release|x86.Build.0 = Release|x86
+		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug|x86.ActiveCfg = Debug|x86
+		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug|x86.Build.0 = Debug|x86
+		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release|x86.ActiveCfg = Release|x86
+		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release|x86.Build.0 = Release|x86
+		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug|x86.ActiveCfg = Debug|x86
+		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug|x86.Build.0 = Debug|x86
+		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release|x86.ActiveCfg = Release|x86
+		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release|x86.Build.0 = Release|x86
+		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug|x86.ActiveCfg = Debug|x86
+		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug|x86.Build.0 = Debug|x86
+		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release|x86.ActiveCfg = Release|x86
+		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,9 +1,9 @@
-﻿using Engine.Commands;
-using Engine.ComponentSystem.Entities;
+﻿using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
+using Engine.Simulation.Commands;
 using Engine.Util;
-using Space.Commands;
 using Space.ComponentSystem.Components;
+using Space.Simulation.Commands;
 
 namespace Space.Control
 {

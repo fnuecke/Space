@@ -109,7 +109,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\GameCommand.cs" />
+    <Compile Include="Simulation\Commands\GameCommand.cs" />
     <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
@@ -130,8 +130,8 @@
     <Compile Include="ComponentSystem\Systems\WeaponSystem.cs" />
     <Compile Include="Simulation\PlayerInfo.cs" />
     <Compile Include="Simulation\StaticWorld.cs" />
-    <Compile Include="Commands\GameCommandType.cs" />
-    <Compile Include="Commands\PlayerInputCommand.cs" />
+    <Compile Include="Simulation\Commands\GameCommandType.cs" />
+    <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />
     <Compile Include="Control\GameCommandHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
@@ -166,20 +166,40 @@
     <Content Include="GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineReaders\EngineReaders.csproj">
+    <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
+      <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
+      <Name>Engine.ComponentSystem</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineController\Engine.Controller.csproj">
+      <Project>{10945D08-8588-4F0E-9671-0E90D374EB78}</Project>
+      <Name>Engine.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineData\Engine.Data.csproj">
+      <Project>{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}</Project>
+      <Name>Engine.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineReaders\Engine.Serialization.Readers.csproj">
       <Project>{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}</Project>
-      <Name>EngineReaders</Name>
+      <Name>Engine.Serialization.Readers</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Engine\Engine.csproj">
+    <ProjectReference Include="..\EngineSession\Engine.Session.csproj">
+      <Project>{93B52E9C-6872-40F0-B577-D3D9363F7AF1}</Project>
+      <Name>Engine.Session</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineSimulation\Engine.Simulation.csproj">
+      <Project>{96E70AC4-C288-478C-866E-5C7280067642}</Project>
+      <Name>Engine.Simulation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Engine\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
-      <Name>Engine</Name>
+      <Name>Engine.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceData\SpaceData.csproj">
+    <ProjectReference Include="..\SpaceData\Space.Data.csproj">
       <Project>{48F0591F-9238-4FF0-AC34-04E14C291AA3}</Project>
-      <Name>SpaceData</Name>
+      <Name>Space.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceContent\SpaceContent.contentproj">
-      <Name>SpaceContent %28data%29</Name>
+    <ProjectReference Include="..\SpaceContent\Space.Content.contentproj">
+      <Name>Space.Content %28data%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
       <Project>{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}</Project>
     </ProjectReference>

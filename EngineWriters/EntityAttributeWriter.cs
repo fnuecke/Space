@@ -1,6 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
-using Engine.ComponentSystem.Components;
+using Engine.Data;
 using Engine.Math;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Content.Pipeline;

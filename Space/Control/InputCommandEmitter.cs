@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.Commands;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
@@ -8,10 +7,11 @@ using Engine.Input;
 using Engine.Math;
 using Engine.Session;
 using Engine.Simulation;
+using Engine.Simulation.Commands;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Space.Commands;
+using Space.Simulation.Commands;
 
 namespace Space.Control
 {

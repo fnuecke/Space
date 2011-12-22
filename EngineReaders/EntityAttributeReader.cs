@@ -1,5 +1,5 @@
 using System;
-using Engine.ComponentSystem.Components;
+using Engine.Data;
 using Engine.Math;
 using Microsoft.Xna.Framework.Content;
 
