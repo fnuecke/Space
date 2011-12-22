@@ -9,10 +9,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
+using Space.Commands;
 using Space.ComponentSystem.Components;
 using Space.Control;
 using Space.Data;
-using Space.Simulation;
 
 namespace Space
 {
@@ -91,7 +91,8 @@ namespace Space
             Components.Add(console);
 
             // Register types for serialization.
-            //PacketizerRegistration.Initialize<EntityAttributeType>();
+            Packetizer.Register<PlayerInputCommand>();
+            PacketizerRegistration.Initialize<EntityAttributeType>();
             Packetizer.Register<MovementProperties>();
             Packetizer.Register<ShipControl>();
             Packetizer.Register<WeaponControl>();

@@ -746,13 +746,13 @@ namespace Engine.Simulation
             /// <summary>
             /// Only render passes supported, based on leading state.
             /// </summary>
-            public void Update(ComponentSystemUpdateType updateType)
+            public void Update(ComponentSystemUpdateType updateType, long frame)
             {
                 if (updateType != ComponentSystemUpdateType.Display)
                 {
                     throw new NotSupportedException();
                 }
-                _tss.LeadingState.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display);
+                _tss.LeadingState.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display, frame);
             }
 
             #endregion

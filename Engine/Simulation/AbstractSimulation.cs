@@ -97,7 +97,7 @@ namespace Engine.Simulation
             commands.Clear();
 
             // Update all systems.
-            EntityManager.SystemManager.Update(ComponentSystemUpdateType.Logic);
+            EntityManager.SystemManager.Update(ComponentSystemUpdateType.Logic, CurrentFrame);
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.Systems
     {
         private PhysicsParameterization _parameterization = new PhysicsParameterization();
 
-        public override void Update(ComponentSystemUpdateType updateType)
+        public override void Update(ComponentSystemUpdateType updateType, long frame)
         {
             if (updateType != ComponentSystemUpdateType.Logic)
             {

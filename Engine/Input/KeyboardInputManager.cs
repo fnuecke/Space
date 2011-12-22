@@ -115,6 +115,14 @@ namespace Engine.Input
         /// </summary>
         public override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
+
+            // Do not handle input, if the game is not the active window.
+            if (!Game.IsActive)
+            {
+                return;
+            }
+
             // Get a shortcut to the current keyboard state.
             var currentState = Keyboard.GetState();
 
@@ -181,8 +189,6 @@ namespace Engine.Input
             }
 
             _previousState = currentState;
-
-            base.Update(gameTime);
         }
 
         private void OnPressed(KeyboardInputEventArgs e)

@@ -7,7 +7,7 @@ namespace Space.ComponentSystem.Systems
     {
         private InputParameterization _parameterization = new InputParameterization();
 
-        public override void Update(ComponentSystemUpdateType updateType)
+        public override void Update(ComponentSystemUpdateType updateType, long frame)
         {
             if (updateType != ComponentSystemUpdateType.Logic)
             {

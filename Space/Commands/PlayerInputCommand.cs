@@ -6,15 +6,6 @@ namespace Space.Commands
 {
     class PlayerInputCommand : GameCommand
     {
-        #region Packetizer registration
-
-        static PlayerInputCommand()
-        {
-            Packetizer.Register<PlayerInputCommand>();
-        }
-
-        #endregion
-
         public enum PlayerInput
         {
             AccelerateUp,

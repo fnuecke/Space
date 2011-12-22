@@ -181,7 +181,7 @@ namespace Engine.Serialization
         {
             if (data == null)
             {
-                Write((ushort)0);
+                Write((int)0);
             }
             else
             {
@@ -196,15 +196,8 @@ namespace Engine.Serialization
             {
                 throw new ArgumentNullException("data");
             }
-            if (length > ushort.MaxValue)
-            {
-                throw new ArgumentException("Data is too long.", "length");
-            }
-            else
-            {
-                Write((ushort)length);
-                _stream.Write(data, 0, length);
-            }
+            Write(length);
+            _stream.Write(data, 0, length);
             return this;
         }
 
@@ -212,7 +205,7 @@ namespace Engine.Serialization
         {
             if (data == null)
             {
-                Write((ushort)0);
+                Write((int)0);
             }
             else
             {
@@ -367,7 +360,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read byte[].");
             }
-            byte[] bytes = new byte[ReadUInt16()];
+            byte[] bytes = new byte[ReadInt32()];
             _stream.Read(bytes, 0, bytes.Length);
             return bytes;
         }
@@ -582,9 +575,9 @@ namespace Engine.Serialization
 
         public bool HasByteArray()
         {
-            if (HasUInt16())
+            if (HasInt32())
             {
-                return Available >= sizeof(ushort) + PeekUInt16();
+                return Available >= sizeof(int) + PeekInt32();
             }
             return false;
         }

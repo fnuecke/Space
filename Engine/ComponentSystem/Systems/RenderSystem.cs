@@ -29,8 +29,8 @@ namespace Engine.ComponentSystem.Systems
         #endregion
 
         #region Logic
-        
-        public override void Update(ComponentSystemUpdateType updateType)
+
+        public override void Update(ComponentSystemUpdateType updateType, long frame)
         {
             if (updateType != ComponentSystemUpdateType.Display)
             {
