@@ -128,7 +128,10 @@
     <Compile Include="Control\InputCommandEmitter.cs" />
     <Compile Include="Control\ServerController.cs" />
     <Compile Include="ComponentSystem\Systems\WeaponSystem.cs" />
+    <Compile Include="Simulation\AsteroidBelt.cs" />
     <Compile Include="Simulation\PlayerInfo.cs" />
+    <Compile Include="Simulation\SpecialSystem.cs" />
+    <Compile Include="Simulation\SolarSystem.cs" />
     <Compile Include="Simulation\StaticWorld.cs" />
     <Compile Include="Commands\GameCommandType.cs" />
     <Compile Include="Commands\PlayerInputCommand.cs" />
@@ -151,6 +154,7 @@
     <Compile Include="Screens\PauseMenuScreen.cs" />
     <Compile Include="Screens\PlayerIndexEventArgs.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Simulation\System.cs" />
     <Compile Include="Spaaace.cs" />
     <Compile Include="SpaceContentManager.cs" />
     <Compile Include="Strings.Designer.cs">

@@ -32,7 +32,7 @@ namespace Space.Control
 
         #endregion
 
-        public ServerController(Game game, IServerSession session, byte worldSize, long worldSeed)
+        public ServerController(Game game, IServerSession session, byte worldSize, ulong worldSeed)
             : base(game, session)
         {
             world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
