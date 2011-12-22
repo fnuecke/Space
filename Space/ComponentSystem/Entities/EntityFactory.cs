@@ -1,6 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
-using Engine.Data;
 using Engine.Math;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -21,10 +20,9 @@ namespace Space.ComponentSystem.Entities
 
             ship.AddComponent(new CollidableSphere());
 
-            ship.AddComponent(new Attributes<EntityAttributeType>());
+            ship.AddComponent(new EntityModules<ShipModule, EntityAttributeType>());
             ship.AddComponent(new WeaponControl());
             ship.AddComponent(new WeaponSlot());
-            ship.AddComponent(new MovementProperties());
             ship.AddComponent(new ShipControl());
 
             ship.AddComponent(new Avatar());
@@ -38,9 +36,8 @@ namespace Space.ComponentSystem.Entities
             var collidable = ship.GetComponent<CollidableSphere>();
             collidable.Radius = shipData.Radius;
 
-            var movement = ship.GetComponent<MovementProperties>();
-            movement.Acceleration = shipData.BaseAttributes.Accumulate(EntityAttributeType.Acceleration);
-            movement.RotationSpeed = shipData.BaseAttributes.Accumulate(EntityAttributeType.RotationSpeed);
+            var modules = ship.GetComponent<EntityModules<ShipModule, EntityAttributeType>>();
+            modules.AddModules(shipData.BaseModules);
 
             var avatar = ship.GetComponent<Avatar>();
             avatar.PlayerNumber = playerNumber;

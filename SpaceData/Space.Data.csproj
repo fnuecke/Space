@@ -96,6 +96,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EntityAttributeType.cs" />
     <Compile Include="ShipData.cs" />
+    <Compile Include="ShipModule.cs" />
+    <Compile Include="ShipModuleType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineData\Engine.Data.csproj">

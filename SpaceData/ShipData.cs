@@ -1,7 +1,6 @@
-﻿using Engine.Data;
+﻿using System.Collections.Generic;
 using Engine.Math;
 using Engine.Serialization;
-using Microsoft.Xna.Framework.Content;
 
 namespace Space.Data
 {
@@ -23,20 +22,14 @@ namespace Space.Data
         public string Texture;
 
         /// <summary>
-        /// Basic attributes for the ship.
+        /// Available module slots per type for this ship.
         /// </summary>
-        public EntityAttribute<EntityAttributeType>[] BaseAttributes;
+        public Dictionary<ShipModuleType, int> Slots = new Dictionary<ShipModuleType, int>();
 
         /// <summary>
-        /// Available slots for weapons.
+        /// Default modules for required slots.
         /// </summary>
-        public byte WeaponSlots;
-
-        /// <summary>
-        /// Available equipment slots for other items.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public byte ItemSlots;
+        public ShipModule[] BaseModules = new ShipModule[0];
 
         public Packet Packetize(Packet packet)
         {
@@ -44,12 +37,16 @@ namespace Space.Data
                 .Write(Name)
                 .Write(Radius)
                 .Write(Texture)
-                .Write(WeaponSlots)
-                .Write(ItemSlots)
-                .Write(BaseAttributes.Length);
-            foreach (var attribute in BaseAttributes)
+                .Write(Slots.Count);
+            foreach (var slot in Slots)
             {
-                packet.Write(attribute);
+                packet.Write((byte)slot.Key);
+                packet.Write(slot.Value);
+            }
+            packet.Write(BaseModules.Length);
+            foreach (var module in BaseModules)
+            {
+                packet.Write(module);
             }
             return packet;
         }
@@ -59,13 +56,20 @@ namespace Space.Data
             Name = packet.ReadString();
             Radius = packet.ReadFixed();
             Texture = packet.ReadString();
-            WeaponSlots = packet.ReadByte();
-            ItemSlots = packet.ReadByte();
-            var numAttributes = packet.ReadInt32();
-            BaseAttributes = new EntityAttribute<EntityAttributeType>[numAttributes];
-            for (int i = 0; i < numAttributes; i++)
+
+            Slots.Clear();
+            var numSlots = packet.ReadInt32();
+            for (int i = 0; i < numSlots; i++)
             {
-                BaseAttributes[i] = packet.ReadPacketizable(new EntityAttribute<EntityAttributeType>());
+                var key = (ShipModuleType)packet.ReadByte();
+                var value = packet.ReadInt32();
+                Slots.Add(key, value);
+            }
+            var numModules = packet.ReadInt32();
+            BaseModules = new ShipModule[numModules];
+            for (int i = 0; i < numModules; i++)
+            {
+                BaseModules[i] = packet.ReadPacketizable(new ShipModule());
             }
         }
     }

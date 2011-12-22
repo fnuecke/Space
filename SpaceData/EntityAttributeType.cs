@@ -28,14 +28,19 @@
         EnergyRegeneration,
 
         /// <summary>
-        /// Acceleration modifier for an entity.
+        /// Mass of an entity, determines how well it accelerates / rotates.
         /// </summary>
-        Acceleration,
+        Mass,
 
         /// <summary>
-        /// Rotation speed modifier for an entity.
+        /// Modifier for force applied for acceleration for an entity.
         /// </summary>
-        RotationSpeed,
+        AccelerationForce,
+
+        /// <summary>
+        /// Modifier for force applied for rotation for an entity.
+        /// </summary>
+        RotationForce,
 
         /// <summary>
         /// Energy consumption of all engines on the entity.

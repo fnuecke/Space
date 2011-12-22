@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using Engine.Math;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.Data
 {
@@ -28,16 +30,12 @@ namespace Engine.Data
     /// <summary>
     /// Base class for attributes.
     /// </summary>
-    public sealed class EntityAttribute<TAttribute> : IPacketizable, ICloneable
+    /// <typeparam name="TAttribute">The enum that holds the possible types of
+    /// attributes.</typeparam>
+    public sealed class EntityAttribute<TAttribute> : ICloneable, IPacketizable, IHashable
         where TAttribute : struct
     {
         #region Properties
-
-        /// <summary>
-        /// Unique ID of the attribute relative to the component it is
-        /// currently handled by.
-        /// </summary>
-        public int UID { get; set; }
 
         /// <summary>
         /// The actual type of this attribute, which tells the game how to
@@ -58,16 +56,6 @@ namespace Engine.Data
 
         #endregion
 
-        #region Constructor
-
-        public EntityAttribute()
-        {
-            // Avoid being indexed by 0.
-            UID = -1;
-        }
-
-        #endregion
-
         #region Serialization / Cloning
 
         public Packet Packetize(Packet packet)
@@ -83,6 +71,13 @@ namespace Engine.Data
             Type = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
             ComputationType = (EntityAttributeComputationType)packet.ReadByte();
             Value = packet.ReadFixed();
+        }
+
+        public void Hash(Hasher hasher)
+        {
+            hasher.Put(Encoding.UTF8.GetBytes(Enum.GetName(typeof(TAttribute), Type)));
+            hasher.Put(BitConverter.GetBytes((byte)ComputationType));
+            hasher.Put(BitConverter.GetBytes(Value.RawValue));
         }
 
         public object Clone()

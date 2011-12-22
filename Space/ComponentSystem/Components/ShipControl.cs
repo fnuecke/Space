@@ -4,6 +4,7 @@ using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Parameterizations;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -101,27 +102,36 @@ namespace Space.ComponentSystem.Components
             // Get components we depend upon / modify.
             var transform = Entity.GetComponent<Transform>();
             var spin = Entity.GetComponent<Spin>();
-            var movement = Entity.GetComponent<MovementProperties>();
+            var modules = Entity.GetComponent<EntityModules<ShipModule, EntityAttributeType>>();
+
+            // Get the mass of the ship.
+            var mass = modules.GetValue(EntityAttributeType.Mass);
+            // Compute its current acceleration.
+            var acceleration = modules.GetValue(EntityAttributeType.AccelerationForce) / mass;
+            // Compute its rotation speed. Yes, this is actually the rotation acceleration,
+            // but whatever...
+            var rotation = modules.GetValue(EntityAttributeType.RotationForce) / mass;
 
             // Set firing state for weapon systems.
             Entity.GetComponent<WeaponControl>().IsShooting = IsShooting;
 
             // Update acceleration.
-            Entity.GetComponent<Acceleration>().Value = DirectionConversion.DirectionToFPoint(AccelerationDirection) * movement.Acceleration;
+            Entity.GetComponent<Acceleration>().Value = DirectionConversion.
+                DirectionToFPoint(AccelerationDirection) * acceleration;
 
             // Update rotation / spin.
             var currentDelta = Angle.MinAngle(transform.Rotation, TargetRotation);
             var requiredSpin = (currentDelta > 0
                         ? DirectionConversion.DirectionToFixed(Directions.Right)
                         : DirectionConversion.DirectionToFixed(Directions.Left))
-                        * movement.RotationSpeed;
+                        * rotation;
             // If the target rotation changed and we're either not spinning, or spinning the wrong way.
             if (_targetRotationChanged && Fixed.Sign(spin.Value) != Fixed.Sign(requiredSpin))
             {
                 // Is it worth starting to spin, or should we just jump to the position?
                 // If the distance we need to spin is lower than what we spin in one tick,
                 // just set it.
-                if (Fixed.Abs(currentDelta) > movement.RotationSpeed)
+                if (Fixed.Abs(currentDelta) > rotation)
                 {
                     // Spin, the angle takes multiple frames to rotate.
                     spin.Value = requiredSpin;

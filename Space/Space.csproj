@@ -113,7 +113,6 @@
     <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
-    <Compile Include="ComponentSystem\Components\MovementProperties.cs" />
     <Compile Include="ComponentSystem\Components\WeaponControl.cs" />
     <Compile Include="ComponentSystem\Components\WeaponSlot.cs" />
     <Compile Include="ComponentSystem\Entities\EntityFactory.cs" />

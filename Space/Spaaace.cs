@@ -92,8 +92,7 @@ namespace Space
 
             // Register types for serialization.
             Packetizer.Register<PlayerInputCommand>();
-            PacketizerRegistration.Initialize<EntityAttributeType>();
-            Packetizer.Register<MovementProperties>();
+            PacketizerRegistration.Initialize<ShipModule, EntityAttributeType>();
             Packetizer.Register<ShipControl>();
             Packetizer.Register<WeaponControl>();
             Packetizer.Register<WeaponSlot>();
