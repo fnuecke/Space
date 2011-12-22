@@ -91,7 +91,7 @@ namespace Space
             Components.Add(console);
 
             // Register types for serialization.
-            PacketizerRegistration.Initialize<EntityAttributeType>();
+            //PacketizerRegistration.Initialize<EntityAttributeType>();
             Packetizer.Register<MovementProperties>();
             Packetizer.Register<ShipControl>();
             Packetizer.Register<WeaponControl>();
