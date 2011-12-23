@@ -43,8 +43,8 @@
           <Projectiles>
             <Item>
               <Texture>Textures/ship</Texture>
-              <Damage>5</Damage>
               <CollisionRadius>3</CollisionRadius>
+              <Damage>5</Damage>
               <InitialVelocity>10</InitialVelocity>
             </Item>
           </Projectiles>
