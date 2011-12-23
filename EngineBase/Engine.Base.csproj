@@ -113,6 +113,7 @@
     <Compile Include="Input\MouseInputEventArgs.cs" />
     <Compile Include="Input\MouseInputManager.cs" />
     <Compile Include="Network\AbstractProtocol.cs" />
+    <Compile Include="Util\IdManager.cs" />
     <Compile Include="Util\PacketStream.cs" />
     <Compile Include="Network\UdpProtocol.cs" />
     <Compile Include="Network\EventArgs.cs" />
@@ -120,7 +121,6 @@
     <Compile Include="Network\ProtocolInfo.cs" />
     <Compile Include="Serialization\IPacketizable.cs" />
     <Compile Include="Serialization\PacketException.cs" />
-    <Compile Include="Serialization\Packetizer.cs" />
     <Compile Include="Network\IProtocol.cs" />
     <Compile Include="Serialization\Packet.cs" />
     <Compile Include="Math\Fixed.cs" />

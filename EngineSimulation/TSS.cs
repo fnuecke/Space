@@ -84,7 +84,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<long>> _removes = new Dictionary<long, List<long>>();
+        private Dictionary<long, List<int>> _removes = new Dictionary<long, List<int>>();
 
         /// <summary>
         /// List of commands to execute in delayed states when they reach the given frame.
@@ -246,12 +246,12 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="entityId">the id of the object to remove.</param>
         /// <param name="frame">the frame to remove it at.</param>
-        public void RemoveEntity(long entityUid, long frame)
+        public void RemoveEntity(int entityUid, long frame)
         {
             // Store it to be removed in trailing states.
             if (!_removes.ContainsKey(frame))
             {
-                _removes.Add(frame, new List<long>());
+                _removes.Add(frame, new List<int>());
             }
             else if (_removes[frame].Contains(entityUid))
             {
@@ -382,12 +382,12 @@ namespace Engine.Simulation
                 long key = packet.ReadInt64();
                 if (!_removes.ContainsKey(key))
                 {
-                    _removes.Add(key, new List<long>());
+                    _removes.Add(key, new List<int>());
                 }
                 int numValues = packet.ReadInt32();
                 for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
-                    _removes[key].Add(packet.ReadInt64());
+                    _removes[key].Add(packet.ReadInt32());
                 }
             }
 
@@ -640,18 +640,19 @@ namespace Engine.Simulation
 
             #endregion
 
-            public void AddEntity(IEntity entity)
+            public int AddEntity(IEntity entity)
             {
                 _tss.AddEntity(entity, _tss.CurrentFrame);
+                return -1;
             }
 
-            public IEntity RemoveEntity(long entityUid)
+            public IEntity RemoveEntity(int entityUid)
             {
                 _tss.RemoveEntity(entityUid, _tss.CurrentFrame);
                 return null;
             }
 
-            public IEntity GetEntity(long entityUid)
+            public IEntity GetEntity(int entityUid)
             {
                 return _tss.LeadingState.EntityManager.GetEntity(entityUid);
             }

@@ -181,11 +181,16 @@ namespace Engine.Session
                     IPacketStream stream = _pending[i].stream;
                     try
                     {
-                        Packet packet;
-                        if ((packet = stream.Read()) != null)
+                        using (var packet = stream.Read())
                         {
-                            SessionMessage type = (SessionMessage)packet.ReadByte();
-                            HandlePendingData(i, type, packet.ReadPacket());
+                            if (packet != null)
+                            {
+                                SessionMessage type = (SessionMessage)packet.ReadByte();
+                                using (var data = packet.ReadPacket())
+                                {
+                                    HandlePendingData(i, type, data);
+                                }
+                            }
                         }
                     }
                     catch (IOException ex)
@@ -214,12 +219,24 @@ namespace Engine.Session
                     try
                     {
                         // Read packets while the stream is still alive.
-                        Packet packet;
-                        while (_streams[i] != null && (packet = _streams[i].Read()) != null)
+                        while (_streams[i] != null)
                         {
-                            // Get the type and have it handled.
-                            SessionMessage type = (SessionMessage)packet.ReadByte();
-                            HandleTcpData(i, type, packet.ReadPacket());
+                            using (var packet = _streams[i].Read())
+                            {
+                                if (packet == null)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    // Get the type and have it handled.
+                                    SessionMessage type = (SessionMessage)packet.ReadByte();
+                                    using (var data = packet.ReadPacket())
+                                    {
+                                        HandleTcpData(i, type, data);
+                                    }
+                                }
+                            }
                         }
                     }
                     catch (IOException ex)
@@ -272,8 +289,10 @@ namespace Engine.Session
         {
             if (HasPlayer(player))
             {
-                SendTo(player, SessionMessage.PlayerLeft, new Packet().
-                    Write(player.Number));
+                using (var packet = new Packet())
+                {
+                    SendTo(player, SessionMessage.PlayerLeft, packet.Write(player.Number));
+                }
                 Remove(player.Number);
             }
         }
@@ -317,9 +336,12 @@ namespace Engine.Session
             }
             try
             {
-                _streams[player.Number].Write(new Packet().
-                    Write((byte)type).
-                    Write(packet));
+                using (var wrapper = new Packet())
+                {
+                    _streams[player.Number].Write(wrapper.
+                        Write((byte)type).
+                        Write(packet));
+                }
             }
             catch (IOException ex)
             {
@@ -349,29 +371,36 @@ namespace Engine.Session
             SessionMessage type = (SessionMessage)args.Data.ReadByte();
 
             // Get additional data.
-            Packet data = args.Data.HasPacket() ? args.Data.ReadPacket() : null;
-
-            switch (type)
+            using (var data = args.Data.HasPacket() ? args.Data.ReadPacket() : null)
             {
-                case SessionMessage.GameInfoRequest:
-                    // Game info was requested. Wrap it up and send it to the one asking.
-                    {
-                        RequestEventArgs requestArgs = new RequestEventArgs();
-                        OnGameInfoRequested(requestArgs); //< Get custom data to send, if any.
-                        udp.Send(new Packet().
-                            Write((byte)SessionMessage.GameInfoResponse).
-                            Write(new Packet()
-                                .Write(MaxPlayers)
-                                .Write(NumPlayers)
-                                .Write(requestArgs.Data)),
-                            args.RemoteEndPoint);
-                    }
-                    break;
+                switch (type)
+                {
+                    case SessionMessage.GameInfoRequest:
+                        // Game info was requested. Wrap it up and send it to the one asking.
+                        {
+                            using (var requestArgs = new RequestEventArgs())
+                            {
+                                OnGameInfoRequested(requestArgs); //< Get custom data to send, if any.
+                                using (var packet = new Packet())
+                                using (var packetInner = new Packet())
+                                {
+                                    udp.Send(packet
+                                        .Write((byte)SessionMessage.GameInfoResponse)
+                                        .Write(packetInner
+                                            .Write(MaxPlayers)
+                                            .Write(NumPlayers)
+                                            .Write(requestArgs.Data)),
+                                        args.RemoteEndPoint);
+                                }
+                            }
+                        }
+                        break;
 
-                // Ignore the rest.
-                default:
-                    logger.Trace("Unknown SessionMessage via UDP: {0}.", type);
-                    break;
+                    // Ignore the rest.
+                    default:
+                        logger.Trace("Unknown SessionMessage via UDP: {0}.", type);
+                        break;
+                }
             }
         }
 
@@ -410,75 +439,83 @@ namespace Engine.Session
                         // validation / prepping of the joining player's player
                         // info, or allow manual override -- disallowing the
                         // player to join.
-                        var requestArgs = new JoinRequestEventArgs(player);
-                        try
+                        using (var requestArgs = new JoinRequestEventArgs(player))
                         {
-                            OnJoinRequested(requestArgs);
-                        }
-                        catch (Exception ex)
-                        {
-                            // Something went wrong, possible wrong data provided by the client.
-                            // In any case, block him.
-                            logger.ErrorException("Failed getting join response data.", ex);
-                            requestArgs.ShouldBlock = true;
-                        }
-
-                        // Should we block the player?
-                        if (requestArgs.ShouldBlock)
-                        {
-                            throw new ArgumentException("Invalid data or actively blocked.");
-                        }
-
-                        // After getting here it's official! We have a new player.
-
-                        // Store the player's info.
-                        players[playerNumber] = player;
-                        _slots[playerNumber] = true;
-                        _clients[playerNumber] = _pending[pendingIndex].client;
-                        _streams[playerNumber] = _pending[pendingIndex].stream;
-
-                        _pending.RemoveAt(pendingIndex);
-                        if (++NumPlayers == MaxPlayers)
-                        {
-                            // Ignore connection requests, we're full.
-                            _tcp.Stop();
-                            // Also kill all other pending connections.
-                            foreach (var pending in _pending)
+                            try
                             {
-                                pending.stream.Dispose();
+                                OnJoinRequested(requestArgs);
                             }
-                            _pending.Clear();
+                            catch (Exception ex)
+                            {
+                                // Something went wrong, possible wrong data provided by the client.
+                                // In any case, block him.
+                                logger.ErrorException("Failed getting join response data.", ex);
+                                requestArgs.ShouldBlock = true;
+                            }
+
+                            // Should we block the player?
+                            if (requestArgs.ShouldBlock)
+                            {
+                                throw new ArgumentException("Invalid data or actively blocked.");
+                            }
+
+                            // After getting here it's official! We have a new player.
+
+                            // Store the player's info.
+                            players[playerNumber] = player;
+                            _slots[playerNumber] = true;
+                            _clients[playerNumber] = _pending[pendingIndex].client;
+                            _streams[playerNumber] = _pending[pendingIndex].stream;
+
+                            _pending.RemoveAt(pendingIndex);
+                            if (++NumPlayers == MaxPlayers)
+                            {
+                                // Ignore connection requests, we're full.
+                                _tcp.Stop();
+                                // Also kill all other pending connections.
+                                foreach (var pending in _pending)
+                                {
+                                    pending.stream.Dispose();
+                                }
+                                _pending.Clear();
+                            }
+
+                            // Build the response.
+                            using (var response = new Packet())
+                            {
+                                response
+                                    .Write(playerNumber)
+                                    .Write(NumPlayers)
+                                    .Write(MaxPlayers)
+                                    .Write(requestArgs.Data);
+
+                                // Send info about all players in the game (including himself).
+                                foreach (var p in AllPlayers)
+                                {
+                                    response
+                                        .Write(p.Number)
+                                        .Write(p.Name)
+                                        .Write((TPlayerData)p.Data);
+                                }
+
+                                // Send the response!
+                                SendTo(player, SessionMessage.JoinResponse, response);
+                            }
                         }
-
-                        // Build the response.
-                        Packet response = new Packet()
-                            .Write(playerNumber)
-                            .Write(NumPlayers)
-                            .Write(MaxPlayers)
-                            .Write(requestArgs.Data);
-
-                        // Send info about all players in the game (including himself).
-                        foreach (var p in AllPlayers)
-                        {
-                            response
-                                .Write(p.Number)
-                                .Write(p.Name)
-                                .Write((TPlayerData)p.Data);
-                        }
-
-                        // Send the response!
-                        SendTo(player, SessionMessage.JoinResponse, response);
 
                         // Tell the other players.
-                        var joined = new Packet()
-                            .Write(playerNumber)
-                            .Write(playerName)
-                            .Write(playerData);
-                        foreach (var p in AllPlayers)
+                        using (var joined = new Packet())
                         {
-                            if (!p.Equals(player))
+                            joined
+                                .Write(playerNumber)
+                                .Write(playerName)
+                                .Write(playerData);
+                            foreach (var p in AllPlayers)
                             {
-                                SendTo(p, SessionMessage.PlayerJoined, joined);
+                                if (!p.Equals(player))
+                                {
+                                    SendTo(p, SessionMessage.PlayerJoined, joined);
+                                }
                             }
                         }
 
@@ -547,7 +584,10 @@ namespace Engine.Session
 
                 if (player != null)
                 {
-                    Send(SessionMessage.PlayerLeft, new Packet().Write(playerNumber));
+                    using (var packet = new Packet())
+                    {
+                        Send(SessionMessage.PlayerLeft, packet.Write(playerNumber));
+                    }
                     OnPlayerLeft(new PlayerEventArgs(player));
                 }
             }

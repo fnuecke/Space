@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HullModule.cs" />
+    <Compile Include="ProjectileData.cs" />
     <Compile Include="ThrusterModule.cs" />
     <Compile Include="ReactorModule.cs" />
     <Compile Include="Data.cs" />

@@ -18,7 +18,7 @@ namespace Engine.ComponentSystem.Entities
         /// <summary>
         /// A globally unique id for this object.
         /// </summary>
-        public long UID { get; set; }
+        public int UID { get; set; }
 
         /// <summary>
         /// A list of all of components this entity is composed of.
@@ -47,7 +47,7 @@ namespace Engine.ComponentSystem.Entities
         /// <summary>
         /// Running counter to uniquely number components.
         /// </summary>
-        private int _nextComponentId = 1;
+        private IdManager _idManager = new IdManager();
 
         #endregion
 
@@ -81,7 +81,7 @@ namespace Engine.ComponentSystem.Entities
             }
             else
             {
-                component.UID = _nextComponentId++;
+                component.UID = _idManager.GetId();
                 AddComponentUnchecked(component);
             }
         }
@@ -174,6 +174,7 @@ namespace Engine.ComponentSystem.Entities
                     {
                         Manager.SystemManager.RemoveComponent(component);
                     }
+                    _idManager.ReleaseId(component.UID);
                     _components.RemoveAt(index);
                     component.UID = -1;
                     component.Entity = null;
@@ -229,8 +230,8 @@ namespace Engine.ComponentSystem.Entities
             // All components in this entity.
             .WriteWithTypeInfo(_components)
 
-            // Next id we'll distribute.
-            .Write(_nextComponentId);
+            // Id manager.
+            .Write(_idManager);
         }
 
         /// <summary>
@@ -240,7 +241,7 @@ namespace Engine.ComponentSystem.Entities
         public void Depacketize(Packet packet)
         {
             // Id of this entity.
-            UID = packet.ReadInt64();
+            UID = packet.ReadInt32();
 
             // All components in this entity.
             _components.Clear();
@@ -249,8 +250,8 @@ namespace Engine.ComponentSystem.Entities
                 AddComponentUnchecked(component);
             }
 
-            // Next id we'll distribute.
-            _nextComponentId = packet.ReadInt32();
+            // Id manager.
+            packet.ReadPacketizableInto(_idManager);
         }
 
         /// <summary>
@@ -295,6 +296,9 @@ namespace Engine.ComponentSystem.Entities
                 componentCopy.Entity = copy;
                 copy._components.Add(componentCopy);
             }
+
+            // Clone id manager.
+            copy._idManager = (IdManager)_idManager.Clone();
 
             return copy;
         }

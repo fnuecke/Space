@@ -51,12 +51,17 @@ namespace Engine.ComponentSystem.Systems
         private AudioEmitter _emitter = new AudioEmitter();
 
         /// <summary>
+        /// Reused parameterization.
+        /// </summary>
+        private SoundParameterization _parameterization = new SoundParameterization();
+
+        /// <summary>
         /// A list of sounds not to play again int their respective time
         /// frames. This list is kept in addition to the sounds to play one,
         /// to avoid replaying sounds, e.g. on TSS rollbacks.
         /// </summary>
-        private Dictionary<long, List<SoundParameterization>> _recentlyPlayed =
-            new Dictionary<long, List<SoundParameterization>>();
+        private Dictionary<long, List<SoundEvent>> _recentlyPlayed =
+            new Dictionary<long, List<SoundEvent>>();
 
         /// <summary>
         /// The newest frame in which we were asked to played a sound. As an
@@ -70,8 +75,8 @@ namespace Engine.ComponentSystem.Systems
         /// from states that might not be run through the display update
         /// regularly (TSS trailing states).
         /// </summary>
-        private Dictionary<long, List<SoundParameterization>> _soundsToPlay =
-            new Dictionary<long, List<SoundParameterization>>();
+        private Dictionary<long, List<SoundEvent>> _soundsToPlay =
+            new Dictionary<long, List<SoundEvent>>();
 
         #endregion
 
@@ -120,13 +125,15 @@ namespace Engine.ComponentSystem.Systems
                 // Get a list of sounds that should be played this frame.
                 foreach (var component in Components)
                 {
+                    _parameterization.SoundCues.Clear();
+                    _parameterization.Position = FPoint.Zero;
+                    _parameterization.Velocity = FPoint.Zero;
                     // Get infos for this component.
-                    var parameterization = new SoundParameterization();
-                    component.Update(parameterization);
-                    if (!string.IsNullOrEmpty(parameterization.SoundCueToPlay))
+                    component.Update(_parameterization);
+                    foreach (var soundCue in _parameterization.SoundCues)
                     {
-                        // Wants to play a sound.
-                        Enqueue(parameterization, frame);
+                        // Enqueue play a sound.
+                        Enqueue(new SoundEvent(soundCue, _parameterization), frame);
                     }
                 }
             }
@@ -148,7 +155,7 @@ namespace Engine.ComponentSystem.Systems
                     _emitter.Velocity = (Vector3)sound.Velocity;
 
                     // Let there be sound!
-                    _soundBank.PlayCue(sound.SoundCueToPlay, _listener, _emitter);
+                    _soundBank.PlayCue(sound.SoundCue, _listener, _emitter);
                 }
 
                 // Remove all sound from the list, we played them.
@@ -183,7 +190,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="p">The sound event information.</param>
         /// <param name="frame">The frame in which the sound was triggered.</param>
-        private void Enqueue(SoundParameterization p, long frame)
+        private void Enqueue(SoundEvent p, long frame)
         {
             // Check if we may play the sound, or if it already was, in some
             // other update.
@@ -195,13 +202,13 @@ namespace Engine.ComponentSystem.Systems
             else if (!_recentlyPlayed.ContainsKey(frame))
             {
                 // No entries for that frame yet, allocate for this one.
-                _recentlyPlayed.Add(frame, new List<SoundParameterization>());
+                _recentlyPlayed.Add(frame, new List<SoundEvent>());
             }
 
             // Allocate list for that frame.
             if (!_soundsToPlay.ContainsKey(frame))
             {
-                _soundsToPlay.Add(frame, new List<SoundParameterization>());
+                _soundsToPlay.Add(frame, new List<SoundEvent>());
             }
 
             _soundsToPlay[frame].Add(p);
@@ -211,10 +218,10 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Test if a certain sound was in the recent past.
         /// </summary>
-        /// <param name="p">The sound information to check.</param>
+        /// <param name="e">The sound information to check.</param>
         /// <param name="frame">The frame the sound would play in.</param>
         /// <returns>Whether the sound has been recently played or not.</returns>
-        private bool WasRecentlyPlayed(SoundParameterization p, long frame)
+        private bool WasRecentlyPlayed(SoundEvent e, long frame)
         {
             for (long testFrame = frame - DeadPeriod; testFrame <= frame; ++testFrame)
             {
@@ -222,7 +229,7 @@ namespace Engine.ComponentSystem.Systems
                 {
                     // Got a list for this frame, check if the same sound was
                     // played at the same position already.
-                    if (ContainsWithPosition(_recentlyPlayed[testFrame], p))
+                    if (ContainsWithPosition(_recentlyPlayed[testFrame], e))
                     {
                         // Yes, skip it.
                         return true;
@@ -237,22 +244,39 @@ namespace Engine.ComponentSystem.Systems
         /// name, emitter position and emitter velocity.
         /// </summary>
         /// <param name="list">The list to look in.</param>
-        /// <param name="p">The parameterization with the event info.</param>
+        /// <param name="e">The parameterization with the event info.</param>
         /// <returns>Whether such an event was already played.</returns>
-        private bool ContainsWithPosition(ICollection<SoundParameterization> list, SoundParameterization p)
+        private bool ContainsWithPosition(ICollection<SoundEvent> list, SoundEvent e)
         {
             foreach (var item in list)
             {
-                if (item.SoundCueToPlay.Equals(p.SoundCueToPlay) &&
-                    (item.Position == p.Position ||
-                    Fixed.Abs((item.Position - p.Position).Norm) < Epsilon) &&
-                    (item.Velocity == p.Velocity ||
-                    Fixed.Abs((item.Velocity - p.Velocity).Norm) < Epsilon))
+                if (item.SoundCue.Equals(e.SoundCue) &&
+                    (item.Position == e.Position ||
+                    Fixed.Abs((item.Position - e.Position).Norm) < Epsilon) &&
+                    (item.Velocity == e.Velocity ||
+                    Fixed.Abs((item.Velocity - e.Velocity).Norm) < Epsilon))
                 {
                     return true;
                 }
             }
             return false;
+        }
+
+        #endregion
+
+        #region Utility class
+
+        private class SoundEvent
+        {
+            public string SoundCue { get; set; }
+            public FPoint Position { get; set; }
+            public FPoint Velocity { get; set; }
+            public SoundEvent(string soundCue, SoundParameterization p)
+            {
+                this.SoundCue = soundCue;
+                this.Position = p.Position;
+                this.Velocity = p.Velocity;
+            }
         }
 
         #endregion

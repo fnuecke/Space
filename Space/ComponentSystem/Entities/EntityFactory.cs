@@ -19,7 +19,7 @@ namespace Space.ComponentSystem.Entities
             ship.AddComponent(new CollidableSphere());
             ship.AddComponent(new EntityModules<EntityAttributeType>());
             ship.AddComponent(new WeaponControl());
-            ship.AddComponent(new WeaponSlot());
+            ship.AddComponent(new WeaponSound());
             ship.AddComponent(new ShipControl());
             ship.AddComponent(new Avatar());
             ship.AddComponent(new TransformedRenderer());
@@ -47,36 +47,68 @@ namespace Space.ComponentSystem.Entities
             return ship;
         }
 
-        public static IEntity CreateShot(WeaponData weaponData, FPoint position, FPoint velocity, FPoint direction)
+        public static IEntity CreateProjectile(IEntity emitter, ProjectileData projectile)
         {
-            var shot = new Entity();
-            shot.AddComponent(new Transform());
-            shot.AddComponent(new Velocity());
-            shot.AddComponent(new Expiration());
-            shot.AddComponent(new CollidableSphere());
-            shot.AddComponent(new TransformedRenderer());
+            var entity = new Entity();
 
-            // Give this entity a position.
-            var sphysics = shot.GetComponent<Transform>();
-            sphysics.Translation = position;
-            sphysics.Rotation = Fixed.Atan2(direction.Y, direction.X);
+            // Give the projectile its position.
+            var transform = new Transform();
+            var emitterTransform = emitter.GetComponent<Transform>();
+            if (emitterTransform != null)
+            {
+                transform.Translation = emitterTransform.Translation;
+                transform.Rotation = emitterTransform.Rotation;
+            }
+            entity.AddComponent(transform);
 
-            // And a dynamic component for movement and rotation.
-            var speed = shot.GetComponent<Velocity>();
-            speed.Value = velocity;
+            // Make it visible.
+            if (!string.IsNullOrWhiteSpace(projectile.Texture))
+            {
+                var renderer = new TransformedRenderer();
+                renderer.TextureName = projectile.Texture;
+                entity.AddComponent(renderer);
+            }
 
-            var expiration = shot.GetComponent<Expiration>();
-            expiration.TimeToLive = weaponData.ProjectileTTL;
+            // Give it its initial velocity.
+            var velocity = new Velocity();
+            if (projectile.InitialVelocity != Fixed.Zero)
+            {
+                FPoint rotation = FPoint.Create((Fixed)1, (Fixed)0);
+                if (emitterTransform != null)
+                {
+                    rotation = FPoint.Rotate(rotation, transform.Rotation);
+                }
+                velocity.Value = rotation * projectile.InitialVelocity;
+            }
+            var emitterVelocity = entity.GetComponent<Velocity>();
+            if (emitterVelocity != null)
+            {
+                velocity.Value += emitterVelocity.Value;
+            }
+            entity.AddComponent(velocity);
 
-            // Also make it collidable.
-            var collidable = shot.GetComponent<CollidableSphere>();
-            collidable.Radius = weaponData.ProjectileRadius;
+            // Make it collidable.
+            var collision = new CollidableSphere();
+            collision.Radius = projectile.CollisionRadius;
+            entity.AddComponent(collision);
 
-            // And finally, allow it to be rendered.
-            var draw = shot.GetComponent<TransformedRenderer>();
-            draw.TextureName = weaponData.ProjectileTexture;
+            // Give it some friction.
+            if (projectile.Friction > 0)
+            {
+                var friction = new Friction();
+                friction.Value = projectile.Friction;
+                entity.AddComponent(friction);
+            }
 
-            return shot;
+            // Make it expire after some time.
+            if (projectile.TimeToLive > 0)
+            {
+                var expiration = new Expiration();
+                expiration.TimeToLive = projectile.TimeToLive;
+                entity.AddComponent(expiration);
+            }
+
+            return entity;
         }
 
         public static IEntity CreateStar(string texture,FPoint position)

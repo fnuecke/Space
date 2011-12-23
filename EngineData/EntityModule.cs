@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework.Content;
 
 namespace Engine.Data
 {
@@ -17,9 +18,16 @@ namespace Engine.Data
         #region Properties
 
         /// <summary>
+        /// Unique id of this component relative to its current entity module.
+        /// </summary>
+        [ContentSerializerIgnore]
+        public int UID { get; set; }
+
+        /// <summary>
         /// A list of all known attributes this module brings with it.
         /// </summary>
-        public List<EntityAttribute<TAttribute>> Attributes { get; set; }
+        [ContentSerializer(Optional = true)]
+        public List<ModuleAttribute<TAttribute>> Attributes { get; set; }
 
         #endregion
 
@@ -27,7 +35,8 @@ namespace Engine.Data
 
         protected AbstractEntityModule()
         {
-            this.Attributes = new List<EntityAttribute<TAttribute>>();
+            this.UID = -1;
+            this.Attributes = new List<ModuleAttribute<TAttribute>>();
         }
 
         #endregion
@@ -36,17 +45,21 @@ namespace Engine.Data
 
         public virtual Packet Packetize(Packet packet)
         {
-            return packet.Write(Attributes);
+            return packet
+                .Write(UID)
+                .Write(Attributes);
         }
 
         public virtual void Depacketize(Packet packet)
         {
+            UID = packet.ReadInt32();
             Attributes.Clear();
-            Attributes.AddRange(packet.ReadPacketizables<EntityAttribute<TAttribute>>());
+            Attributes.AddRange(packet.ReadPacketizables<ModuleAttribute<TAttribute>>());
         }
 
         public void Hash(Hasher hasher)
         {
+            hasher.Put(BitConverter.GetBytes(UID));
             foreach (var attribute in Attributes)
             {
                 attribute.Hash(hasher);
@@ -58,10 +71,10 @@ namespace Engine.Data
             var copy = (AbstractEntityModule<TAttribute>)MemberwiseClone();
 
             // Create copies of the attributes.
-            copy.Attributes = new List<EntityAttribute<TAttribute>>();
+            copy.Attributes = new List<ModuleAttribute<TAttribute>>();
             foreach (var attribute in Attributes)
             {
-                copy.Attributes.Add((EntityAttribute<TAttribute>)attribute.Clone());
+                copy.Attributes.Add((ModuleAttribute<TAttribute>)attribute.Clone());
             }
 
             return copy;

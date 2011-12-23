@@ -127,17 +127,19 @@ namespace Engine.Network
         protected bool HandleReceive(byte[] buffer, IPEndPoint endPoint)
         {
             // Can we parse it?
-            Packet message;
-            if ((message = ParseMessage(buffer)) != null)
+            using (var message = ParseMessage(buffer))
             {
-                // Yes, so let's pass it on.
-                OnData(new ProtocolDataEventArgs(endPoint, message));
-                return true;
-            }
-            else
-            {
-                // Invalid data received.
-                return false;
+                if (message != null)
+                {
+                    // Yes, so let's pass it on.
+                    OnData(new ProtocolDataEventArgs(endPoint, message));
+                    return true;
+                }
+                else
+                {
+                    // Invalid data received.
+                    return false;
+                }
             }
         }
 

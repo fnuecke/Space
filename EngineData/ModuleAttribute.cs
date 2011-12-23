@@ -8,11 +8,11 @@ using Engine.Util;
 namespace Engine.Data
 {
     /// <summary>
-    /// Computation types of entity attributes. This is how they should be
+    /// Computation types of module attributes. This is how they should be
     /// computed when evaluating a specific attribute type (determined by its
     /// actual class).
     /// </summary>
-    public enum EntityAttributeComputationType
+    public enum ModuleAttributeComputationType
     {
         /// <summary>
         /// Additive operation. For reducing influences use a
@@ -32,7 +32,7 @@ namespace Engine.Data
     /// </summary>
     /// <typeparam name="TAttribute">The enum that holds the possible types of
     /// attributes.</typeparam>
-    public sealed class EntityAttribute<TAttribute> : ICloneable, IPacketizable, IHashable
+    public sealed class ModuleAttribute<TAttribute> : ICloneable, IPacketizable, IHashable
         where TAttribute : struct
     {
         #region Properties
@@ -47,7 +47,7 @@ namespace Engine.Data
         /// The computation type of this attribute, i.e. how it should be used
         /// in computation.
         /// </summary>
-        public EntityAttributeComputationType ComputationType { get; set; }
+        public ModuleAttributeComputationType ComputationType { get; set; }
 
         /// <summary>
         /// The actual value for this specific attribute.
@@ -69,7 +69,7 @@ namespace Engine.Data
         public void Depacketize(Packet packet)
         {
             Type = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
-            ComputationType = (EntityAttributeComputationType)packet.ReadByte();
+            ComputationType = (ModuleAttributeComputationType)packet.ReadByte();
             Value = packet.ReadFixed();
         }
 
@@ -93,9 +93,9 @@ namespace Engine.Data
         {
             switch (ComputationType)
             {
-                case EntityAttributeComputationType.Additive:
+                case ModuleAttributeComputationType.Additive:
                     return Value.DoubleValue + " " + Type.ToString();
-                case EntityAttributeComputationType.Multiplicative:
+                case ModuleAttributeComputationType.Multiplicative:
                 default:
                     return (1 - Value.DoubleValue) + "% " + Type.ToString();
             }
@@ -106,7 +106,7 @@ namespace Engine.Data
 
     #region Utility methods
 
-    public static class EntityAttributeExtension
+    public static class ModuleAttributeExtension
     {
 
         /// <summary>
@@ -118,10 +118,10 @@ namespace Engine.Data
         /// <param name="attributes">The list of attributes to use.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes in the specified list.</returns>
-        public static Fixed Accumulate<TAttribute>(this EntityAttribute<TAttribute>[] attributes, TAttribute attributeType)
+        public static Fixed Accumulate<TAttribute>(this ModuleAttribute<TAttribute>[] attributes, TAttribute attributeType)
             where TAttribute : struct
         {
-            return new List<EntityAttribute<TAttribute>>(attributes).Accumulate(attributeType);
+            return new List<ModuleAttribute<TAttribute>>(attributes).Accumulate(attributeType);
         }
 
         /// <summary>
@@ -133,14 +133,14 @@ namespace Engine.Data
         /// <param name="attributes">The list of attributes to use.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes in the specified list.</returns>
-        public static Fixed Accumulate<TAttribute>(this ICollection<EntityAttribute<TAttribute>> attributes, TAttribute attributeType)
+        public static Fixed Accumulate<TAttribute>(this ICollection<ModuleAttribute<TAttribute>> attributes, TAttribute attributeType)
             where TAttribute : struct
         {
             Fixed result = Fixed.Zero;
             foreach (var attribute in attributes)
             {
                 if (attribute.Type.Equals(attributeType) &&
-                    attribute.ComputationType == EntityAttributeComputationType.Additive)
+                    attribute.ComputationType == ModuleAttributeComputationType.Additive)
                 {
                     result += attribute.Value;
                 }
@@ -148,7 +148,7 @@ namespace Engine.Data
             foreach (var attribute in attributes)
             {
                 if (attribute.Type.Equals(attributeType) &&
-                    attribute.ComputationType == EntityAttributeComputationType.Multiplicative)
+                    attribute.ComputationType == ModuleAttributeComputationType.Multiplicative)
                 {
                     result *= attribute.Value;
                 }

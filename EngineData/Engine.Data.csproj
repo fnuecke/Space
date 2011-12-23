@@ -92,7 +92,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EntityAttribute.cs" />
+    <Compile Include="ModuleAttribute.cs" />
     <Compile Include="EntityModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

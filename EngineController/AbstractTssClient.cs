@@ -157,9 +157,12 @@ namespace Engine.Controller
                 if (new TimeSpan(DateTime.Now.Ticks - _lastSyncTime).TotalMilliseconds > SyncInterval)
                 {
                     _lastSyncTime = DateTime.Now.Ticks;
-                    Session.Send(new Packet()
-                        .Write((byte)TssControllerMessage.Synchronize)
-                        .Write(tss.CurrentFrame));
+                    using (var packet = new Packet())
+                    {
+                        Session.Send(packet
+                            .Write((byte)TssControllerMessage.Synchronize)
+                            .Write(tss.CurrentFrame));
+                    }
                 }
             }
         }
@@ -342,7 +345,7 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long removeFrame = args.Data.ReadInt64();
-                        long entityUid = args.Data.ReadInt64();
+                        int entityUid = args.Data.ReadInt32();
                         tss.RemoveEntity(entityUid, removeFrame);
                     }
                     break;
@@ -366,7 +369,10 @@ namespace Engine.Controller
         {
             // So we request it.
             logger.Debug("Simulation invalidated, requesting server state.");
-            Session.Send(new Packet().Write((byte)TssControllerMessage.GameStateRequest));
+            using (var packet = new Packet())
+            {
+                Session.Send(packet.Write((byte)TssControllerMessage.GameStateRequest));
+            }
         }
 
         #endregion

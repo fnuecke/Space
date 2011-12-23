@@ -28,7 +28,8 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <param name="entity">The entity to add.</param>
-        void AddEntity(IEntity entity);
+        /// <returns>The id that was assigned to the entity.</returns>
+        int AddEntity(IEntity entity);
 
         /// <summary>
         /// Remove an entity from this manager. This will remove all the
@@ -52,13 +53,13 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="entityUid">The id of the entity to remove.</param>
         /// <returns>The removed entity, or <c>null</c> if this manager has
         /// no entity with the specified id.</returns>
-        IEntity RemoveEntity(long entityUid);
+        IEntity RemoveEntity(int entityUid);
 
         /// <summary>
         /// Get a entity's current representation in this manager by its id.
         /// </summary>
         /// <param name="entityUid">The id of the entity to look up.</param>
         /// <returns>The current representation in this manager.</returns>
-        IEntity GetEntity(long entityUid);
+        IEntity GetEntity(int entityUid);
     }
 }

@@ -12,26 +12,26 @@ namespace Engine.Serialization
     /// <summary>
     /// This is for reading actual XML files in the content project.
     /// </summary>
-    public abstract class AbstractEntityAttributeSerializer<TAttribute> : ContentTypeSerializer<EntityAttribute<TAttribute>>
+    public abstract class AbstractEntityAttributeSerializer<TAttribute> : ContentTypeSerializer<ModuleAttribute<TAttribute>>
         where TAttribute : struct
     {
         
         private static readonly Regex AttributePattern = new Regex(@"^\s*(?<type>[\+\-])?(?<value>[0-9]*(\.[0-9]+)?)(?<percentual>%)?\s+(?<class>\w+)\s*$", RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
-        protected override void Serialize(IntermediateWriter output, EntityAttribute<TAttribute> value, ContentSerializerAttribute format)
+        protected override void Serialize(IntermediateWriter output, ModuleAttribute<TAttribute> value, ContentSerializerAttribute format)
         {
             switch (value.ComputationType)
             {
-                case EntityAttributeComputationType.Additive:
+                case ModuleAttributeComputationType.Additive:
                     output.Xml.WriteValue(value.Value.DoubleValue.ToString() + " " + value.Type.ToString());
                     break;
-                case EntityAttributeComputationType.Multiplicative:
+                case ModuleAttributeComputationType.Multiplicative:
                     output.Xml.WriteValue((value.Value.DoubleValue - 1).ToString() + "% " + value.Type.ToString());
                     break;
             }
         }
 
-        protected override EntityAttribute<TAttribute> Deserialize(IntermediateReader input, ContentSerializerAttribute format, EntityAttribute<TAttribute> existingInstance)
+        protected override ModuleAttribute<TAttribute> Deserialize(IntermediateReader input, ContentSerializerAttribute format, ModuleAttribute<TAttribute> existingInstance)
         {
             // Parse the content.
             var match = AttributePattern.Match(input.Xml.ReadContentAsString());
@@ -39,7 +39,7 @@ namespace Engine.Serialization
             {
                 if (existingInstance == null)
                 {
-                    existingInstance = new EntityAttribute<TAttribute>();
+                    existingInstance = new ModuleAttribute<TAttribute>();
                 }
 
                 // Pattern was OK, get the enum.
@@ -60,11 +60,11 @@ namespace Engine.Serialization
                 if (percentual.Success)
                 {
                     value = ((Fixed)1) + value;
-                    existingInstance.ComputationType = EntityAttributeComputationType.Multiplicative;
+                    existingInstance.ComputationType = ModuleAttributeComputationType.Multiplicative;
                 }
                 else
                 {
-                    existingInstance.ComputationType = EntityAttributeComputationType.Additive;
+                    existingInstance.ComputationType = ModuleAttributeComputationType.Additive;
                 }
 
                 // Set final value in our instance.
@@ -82,10 +82,10 @@ namespace Engine.Serialization
     /// <summary>
     /// This is for writing data back in binary format.
     /// </summary>
-    public abstract class AbstractEntityAttributeWriter<TAttribute> : ContentTypeWriter<EntityAttribute<TAttribute>>
+    public abstract class AbstractEntityAttributeWriter<TAttribute> : ContentTypeWriter<ModuleAttribute<TAttribute>>
         where TAttribute : struct
     {
-        protected override void Write(ContentWriter output, EntityAttribute<TAttribute> value)
+        protected override void Write(ContentWriter output, ModuleAttribute<TAttribute> value)
         {
             output.Write(Enum.GetName(typeof(TAttribute), value.Type));
             output.Write((byte)value.ComputationType);
@@ -94,7 +94,7 @@ namespace Engine.Serialization
 
         public override string GetRuntimeType(TargetPlatform targetPlatform)
         {
-            return typeof(EntityAttribute<TAttribute>).AssemblyQualifiedName;
+            return typeof(ModuleAttribute<TAttribute>).AssemblyQualifiedName;
         }
 
         public override string GetRuntimeReader(TargetPlatform targetPlatform)

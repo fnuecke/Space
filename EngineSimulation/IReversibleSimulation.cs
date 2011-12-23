@@ -51,7 +51,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="entityUid">the id of the object to remove.</param>
         /// <param name="frame">the frame to remove it at.</param>
-        void RemoveEntity(long entityUid, long frame);
+        void RemoveEntity(int entityUid, long frame);
 
         /// <summary>
         /// Push a command to be executed at the given frame.  This will roll

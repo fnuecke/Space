@@ -1,11 +1,15 @@
-﻿namespace Space.ComponentSystem.Components.Messages
+﻿using Space.Data;
+namespace Space.ComponentSystem.Components.Messages
 {
     public struct WeaponFired
     {
-        public static WeaponFired Create()
+        public WeaponModule Weapon;
+
+        public static WeaponFired Create(WeaponModule weapon)
         {
-            WeaponFired value;
-            return value;
+            WeaponFired result;
+            result.Weapon = weapon;
+            return result;
         }
     }
 }

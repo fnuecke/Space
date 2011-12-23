@@ -52,7 +52,6 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                info.Weapon = this.ScreenManager.Game.Content.Load<WeaponData[]>("Data/weapons")[0];
                 ((EditableMenueEntry)MenuEntries[0]).locked = true;
                 try
                 {

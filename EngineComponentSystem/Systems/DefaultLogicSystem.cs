@@ -29,6 +29,7 @@ namespace Engine.ComponentSystem.Systems
         {
             if (updateType == ComponentSystemUpdateType.Logic)
             {
+                _parameterization.Frame = frame;
                 foreach (var component in Components)
                 {
                     component.Update(_parameterization);

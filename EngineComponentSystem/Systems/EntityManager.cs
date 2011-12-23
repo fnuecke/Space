@@ -32,11 +32,9 @@ namespace Engine.ComponentSystem.Systems
         private List<IEntity> _entities = new List<IEntity>();
 
         /// <summary>
-        /// The counter used to assign ids to added entities. Start at one
-        /// to avoid referencing the first added object with invalidly
-        /// initialized "pointers".
+        /// Manager for entity ids.
         /// </summary>
-        private long _nextEntityId = 1;
+        private IdManager _idManager = new IdManager();
 
         #endregion
 
@@ -57,11 +55,12 @@ namespace Engine.ComponentSystem.Systems
         /// entity's components to the associated component system manager.
         /// </summary>
         /// <param name="entity">The entity to add.</param>
-        public void AddEntity(IEntity entity)
+        /// <returns>The id that was assigned to the entity.</returns>
+        public int AddEntity(IEntity entity)
         {
             if (entity.Manager == this)
             {
-                return;
+                return entity.UID;
             }
             else if (entity.Manager != null)
             {
@@ -69,8 +68,9 @@ namespace Engine.ComponentSystem.Systems
             }
             else
             {
-                entity.UID = _nextEntityId++;
+                entity.UID = _idManager.GetId();
                 AddEntityUnchecked(entity);
+                return entity.UID;
             }
         }
 
@@ -95,7 +95,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="entityUid">The id of the entity to remove.</param>
         /// <returns>The removed entity, or <c>null</c> if this manager has
         /// no entity with the specified id.</returns>
-        public IEntity RemoveEntity(long entityUid)
+        public IEntity RemoveEntity(int entityUid)
         {
             if (entityUid > 0)
             {
@@ -108,6 +108,7 @@ namespace Engine.ComponentSystem.Systems
                         SystemManager.RemoveComponent(component);
                     }
                     _entities.RemoveAt(index);
+                    _idManager.ReleaseId(entity.UID);
                     entity.UID = -1;
                     entity.Manager = null;
                     return entity;
@@ -121,7 +122,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="entityUid">The id of the entity to look up.</param>
         /// <returns>The current representation in this manager.</returns>
-        public IEntity GetEntity(long entityUid)
+        public IEntity GetEntity(int entityUid)
         {
             if (entityUid > 0)
             {
@@ -157,8 +158,8 @@ namespace Engine.ComponentSystem.Systems
             // Write the list of entities we track.
             return packet.Write(_entities)
 
-            // Next id we'll distribute.
-            .Write(_nextEntityId);
+            // Id manager.
+            .Write(_idManager);
         }
 
         public void Depacketize(Packet packet)
@@ -174,8 +175,8 @@ namespace Engine.ComponentSystem.Systems
                 AddEntityUnchecked(entity);
             }
 
-            // Next id we'll distribute.
-            _nextEntityId = packet.ReadInt64();
+            // Id manager.
+            packet.ReadPacketizableInto(_idManager);
         }
 
         public void Hash(Hasher hasher)
@@ -200,6 +201,9 @@ namespace Engine.ComponentSystem.Systems
             {
                 copy.AddEntityUnchecked((IEntity)entity.Clone());
             }
+
+            // Clone the id manager.
+            copy._idManager = (IdManager)_idManager.Clone();
 
             return copy;
         }

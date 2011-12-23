@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Engine.ComponentSystem.Components.Messages;
 using Engine.Data;
 using Engine.Math;
@@ -39,7 +41,17 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Cached computation results for accumulative attribute values.
         /// </summary>
-        private Dictionary<TAttribute, Fixed> _cached = new Dictionary<TAttribute, Fixed>();
+        private Dictionary<TAttribute, Fixed> _attributeCache = new Dictionary<TAttribute, Fixed>();
+
+        /// <summary>
+        /// Cached lists of components by type.
+        /// </summary>
+        private Dictionary<Type, object[]> _moduleCache = new Dictionary<Type, object[]>();
+
+        /// <summary>
+        /// Manager for component ids.
+        /// </summary>
+        private IdManager _idManager = new IdManager();
 
         #endregion
 
@@ -59,18 +71,44 @@ namespace Engine.ComponentSystem.Components
         /// over all attributes tracked by this component.</returns>
         public Fixed GetValue(TAttribute attributeType)
         {
-            if (_cached.ContainsKey(attributeType))
+            if (_attributeCache.ContainsKey(attributeType))
             {
-                return _cached[attributeType];
+                return _attributeCache[attributeType];
             }
-            var attributes = new List<EntityAttribute<TAttribute>>();
+            var attributes = new List<ModuleAttribute<TAttribute>>();
             foreach (var module in _modules)
             {
                 attributes.AddRange(module.Attributes);
             }
             var result = attributes.Accumulate(attributeType);
-            _cached[attributeType] = result;
+            _attributeCache[attributeType] = result;
             return result;
+        }
+
+        /// <summary>
+        /// Get a list of all modules of the given type registered with this
+        /// component.
+        /// </summary>
+        /// <typeparam name="T">The type of the component to get.</typeparam>
+        /// <returns></returns>
+        public T[] GetModules<T>()
+            where T : AbstractEntityModule<TAttribute>
+        {
+            Type type = typeof(T);
+            if (_moduleCache.ContainsKey(type))
+            {
+                return (T[])_moduleCache[type];
+            }
+            var modules = new List<AbstractEntityModule<TAttribute>>();
+            foreach (var module in _modules)
+            {
+                if (module.GetType() == type)
+                {
+                    modules.Add(module);
+                }
+            }
+            _moduleCache[type] = modules.Cast<T>().ToArray();
+            return (T[])_moduleCache[type];
         }
 
         /// <summary>
@@ -86,11 +124,21 @@ namespace Engine.ComponentSystem.Components
         /// <param name="module">The module to add.</param>
         public void AddModule(AbstractEntityModule<TAttribute> module)
         {
+            if (module == null || _modules.Contains(module))
+            {
+                return;
+            }
+            if (module.UID > 0)
+            {
+                throw new ArgumentException("Module is already part of another component.", "module");
+            }
             _modules.Add(module);
-            // Invalidate cache.
+            module.UID = _idManager.GetId();
+            // Invalidate caches.
+            _moduleCache.Remove(module.GetType());
             foreach (var attribute in module.Attributes)
             {
-                _cached.Remove(attribute.Type);
+                _attributeCache.Remove(attribute.Type);
             }
             if (Entity != null)
             {
@@ -113,20 +161,7 @@ namespace Engine.ComponentSystem.Components
         {
             foreach (var module in modules)
             {
-                if (module == null)
-                {
-                    continue;
-                }
-                _modules.Add(module);
-                // Invalidate cache.
-                foreach (var attribute in module.Attributes)
-                {
-                    _cached.Remove(attribute.Type);
-                    if (Entity != null)
-                    {
-                        Entity.SendMessage(ModuleAdded<TAttribute>.Create(module));
-                    }
-                }
+                AddModule(module);
             }
         }
 
@@ -134,20 +169,25 @@ namespace Engine.ComponentSystem.Components
         /// Removes a module from this component.
         /// </summary>
         /// <param name="module">The module to remove.</param>
-        public void RemoveModule(AbstractEntityModule<TAttribute> module)
+        public AbstractEntityModule<TAttribute> RemoveModule(AbstractEntityModule<TAttribute> module)
         {
             if (_modules.Remove(module))
             {
-                // Invalidate cache.
+                // Invalidate caches.
+                _moduleCache.Remove(module.GetType());
                 foreach (var attribute in module.Attributes)
                 {
-                    _cached.Remove(attribute.Type);
+                    _attributeCache.Remove(attribute.Type);
                 }
+                // Notify others *before* resetting the id.
                 if (Entity != null)
                 {
                     Entity.SendMessage(ModuleRemoved<TAttribute>.Create(module));
                 }
+                _idManager.ReleaseId(module.UID);
+                module.UID = -1;
             }
+            return module;
         }
 
         /// <summary>
@@ -157,9 +197,7 @@ namespace Engine.ComponentSystem.Components
         /// <returns>The removed module.</returns>
         public AbstractEntityModule<TAttribute> RemoveModuleAt(int index)
         {
-            var module = _modules[index];
-            RemoveModule(module);
-            return module;
+            return RemoveModule(_modules[index]);
         }
 
         #endregion
@@ -169,7 +207,8 @@ namespace Engine.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .WriteWithTypeInfo(_modules);
+                .WriteWithTypeInfo(_modules)
+                .Write(_idManager);
         }
 
         public override void Depacketize(Packet packet)
@@ -182,8 +221,10 @@ namespace Engine.ComponentSystem.Components
                 _modules.Add(module);
             }
 
+            packet.ReadPacketizableInto(_idManager);
+
             // Invalidate caches.
-            _cached.Clear();
+            _attributeCache.Clear();
         }
 
         public override void Hash(Hasher hasher)
@@ -207,8 +248,12 @@ namespace Engine.ComponentSystem.Components
                 copy._modules.Add((AbstractEntityModule<TAttribute>)module.Clone());
             }
 
-            // Copy the cache as well.
-            copy._cached = new Dictionary<TAttribute, Fixed>(_cached);
+            // Copy the caches as well.
+            copy._attributeCache = new Dictionary<TAttribute, Fixed>(_attributeCache);
+            copy._moduleCache = new Dictionary<Type, object[]>();
+
+            // And the id manager.
+            copy._idManager = (IdManager)_idManager.Clone();
 
             return copy;
         }
