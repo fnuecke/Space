@@ -109,6 +109,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentSystem\Systems\UniversalSystem.cs" />
     <Compile Include="Simulation\Commands\GameCommand.cs" />
     <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
@@ -128,6 +129,8 @@
     <Compile Include="Control\ServerController.cs" />
     <Compile Include="ComponentSystem\Systems\WeaponSystem.cs" />
     <Compile Include="Simulation\AsteroidBelt.cs" />
+    <Compile Include="Simulation\Objects\Astronomical Objects\Planet.cs" />
+    <Compile Include="Simulation\Objects\Astronomical Objects\Sun.cs" />
     <Compile Include="Simulation\PlayerInfo.cs" />
     <Compile Include="Simulation\SpecialSystem.cs" />
     <Compile Include="Simulation\SolarSystem.cs" />
@@ -250,7 +253,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Simulation\Objects\Stations\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

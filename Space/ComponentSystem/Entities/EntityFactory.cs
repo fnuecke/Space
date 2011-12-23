@@ -78,5 +78,21 @@ namespace Space.ComponentSystem.Entities
 
             return shot;
         }
+
+        public static IEntity CreateStar(string texture,FPoint position)
+        {
+            var star = new Entity();
+            star.AddComponent(new Transform());
+
+            star.AddComponent(new TransformedRenderer());
+
+            var transform = star.GetComponent<Transform>();
+            transform.Translation = position;
+
+            var renderer = star.GetComponent<TransformedRenderer>();
+            renderer.TextureName = texture;
+
+            return star;
+        }
     }
 }
