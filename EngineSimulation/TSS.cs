@@ -323,11 +323,7 @@ namespace Engine.Simulation
             foreach (var add in _adds)
             {
                 packet.Write(add.Key);
-                packet.Write(add.Value.Count);
-                foreach (var entity in add.Value)
-                {
-                    packet.Write(entity);
-                }
+                packet.Write(add.Value);
             }
 
             packet.Write(_removes.Count);
@@ -345,11 +341,7 @@ namespace Engine.Simulation
             foreach (var command in _commands)
             {
                 packet.Write(command.Key);
-                packet.Write(command.Value.Count);
-                foreach (var item in command.Value)
-                {
-                    Packetizer.Packetize(item, packet);
-                }
+                packet.WriteWithTypeInfo(command.Value);
             }
 
             return packet;
@@ -365,7 +357,7 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Unwrap the trailing state and mirror it to all the newer ones.
-            packet.ReadPacketizable(_states[_states.Length - 1]);
+            packet.ReadPacketizableInto(_states[_states.Length - 1]);
             MirrorState(_states[_states.Length - 1], _states.Length - 2);
 
             // Find adds / removes / commands that our out of date now, but keep newer ones.
@@ -380,10 +372,9 @@ namespace Engine.Simulation
                 {
                     _adds.Add(key, new List<IEntity>());
                 }
-                int numValues = packet.ReadInt32();
-                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                foreach (var entity in packet.ReadPacketizables<Entity>())
                 {
-                    _adds[key].Add(packet.ReadPacketizable(new Entity()));
+                    _adds[key].Add(entity);
                 }
             }
 
@@ -412,10 +403,9 @@ namespace Engine.Simulation
                 {
                     _commands.Add(key, new List<ICommand>());
                 }
-                int numValues = packet.ReadInt32();
-                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                foreach (var command in packet.ReadPacketizablesWithTypeInfo<ICommand>())
                 {
-                    _commands[key].Add(Packetizer.Depacketize<ICommand>(packet));
+                    _commands[key].Add(command);
                 }
             }
 

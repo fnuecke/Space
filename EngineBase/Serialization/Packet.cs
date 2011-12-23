@@ -240,7 +240,20 @@ namespace Engine.Serialization
             }
         }
 
-        public Packet Write(ICollection<IPacketizable> data)
+        public Packet WriteWithTypeInfo(IPacketizable data)
+        {
+            if (data == null)
+            {
+                return Write((Packet)null);
+            }
+            else
+            {
+                return Write(Packetizer.Packetize(data, new Packet()));
+            }
+        }
+
+        public Packet Write<T>(ICollection<T> data)
+            where T : IPacketizable
         {
             if (data == null)
             {
@@ -252,6 +265,24 @@ namespace Engine.Serialization
                 foreach (var item in data)
                 {
                     Write(item);
+                }
+                return this;
+            }
+        }
+
+        public Packet WriteWithTypeInfo<T>(ICollection<T> data)
+            where T : IPacketizable
+        {
+            if (data == null)
+            {
+                return Write((int)(-1));
+            }
+            else
+            {
+                Write(data.Count);
+                foreach (var item in data)
+                {
+                    WriteWithTypeInfo(item);
                 }
                 return this;
             }
@@ -433,7 +464,7 @@ namespace Engine.Serialization
             return result;
         }
 
-        public T ReadPacketizable<T>(T packetizable)
+        public T ReadPacketizableInto<T>(T existingInstance)
             where T : IPacketizable
         {
             var packet = ReadPacket();
@@ -443,8 +474,38 @@ namespace Engine.Serialization
             }
             else
             {
+                existingInstance.Depacketize(packet);
+                return existingInstance;
+            }
+        }
+
+        public T ReadPacketizable<T>()
+            where T : IPacketizable, new()
+        {
+            var packet = ReadPacket();
+            if (packet == null)
+            {
+                return default(T);
+            }
+            else
+            {
+                var packetizable = new T();
                 packetizable.Depacketize(packet);
                 return packetizable;
+            }
+        }
+
+        public T ReadPacketizableWithTypeInfo<T>()
+            where T : IPacketizable
+        {
+            var packet = ReadPacket();
+            if (packet == null)
+            {
+                return default(T);
+            }
+            else
+            {
+                return Packetizer.Depacketize<T>(packet);
             }
         }
 
@@ -461,7 +522,26 @@ namespace Engine.Serialization
                 T[] result = new T[numPacketizables];
                 for (int i = 0; i < numPacketizables; i++)
                 {
-                    result[i] = ReadPacketizable(new T());
+                    result[i] = ReadPacketizable<T>();
+                }
+                return result;
+            }
+        }
+
+        public T[] ReadPacketizablesWithTypeInfo<T>()
+            where T : IPacketizable
+        {
+            int numPacketizables = ReadInt32();
+            if (numPacketizables < 0)
+            {
+                return null;
+            }
+            else
+            {
+                T[] result = new T[numPacketizables];
+                for (int i = 0; i < numPacketizables; i++)
+                {
+                    result[i] = ReadPacketizableWithTypeInfo<T>();
                 }
                 return result;
             }

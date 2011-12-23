@@ -36,22 +36,13 @@ namespace Engine.Data
 
         public virtual Packet Packetize(Packet packet)
         {
-            packet.Write(Attributes.Count);
-            foreach (var attribute in Attributes)
-            {
-                packet.Write(attribute);
-            }
-            return packet;
+            return packet.Write(Attributes);
         }
 
         public virtual void Depacketize(Packet packet)
         {
             Attributes.Clear();
-            int numAttributes = packet.ReadInt32();
-            for (int i = 0; i < numAttributes; i++)
-            {
-                Attributes.Add(packet.ReadPacketizable(new EntityAttribute<TAttribute>()));
-            }
+            Attributes.AddRange(packet.ReadPacketizables<EntityAttribute<TAttribute>>());
         }
 
         public void Hash(Hasher hasher)

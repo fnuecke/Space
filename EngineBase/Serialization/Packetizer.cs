@@ -72,7 +72,7 @@ namespace Engine.Serialization
             if (_constructors.ContainsKey(fullName))
             {
                 T result = (T)_constructors[fullName]();
-                return packet.ReadPacketizable<T>(result);
+                return packet.ReadPacketizableInto(result);
             }
             else
             {

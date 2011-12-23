@@ -166,7 +166,7 @@ namespace Space.ComponentSystem.Components
             MountPoint = packet.ReadFPoint();
             MountDirection = packet.ReadFPoint();
             _sound = packet.ReadInt32();
-            _weapon = packet.ReadPacketizable(new WeaponData());
+            _weapon = packet.ReadPacketizable<WeaponData>();
         }
 
         public override void Hash(Hasher hasher)

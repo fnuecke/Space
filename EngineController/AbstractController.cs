@@ -106,7 +106,7 @@ namespace Engine.Controller
         /// <returns>the given packet, after writing.</returns>
         protected virtual Packet WrapDataForSend(TCommand command, Packet packet)
         {
-            return Packetizer.Packetize(command, packet);
+            return packet.WriteWithTypeInfo(command);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Engine.Controller
         protected virtual TCommand UnwrapDataForReceive(SessionDataEventArgs args)
         {
             // Parse the actual command.
-            return Packetizer.Depacketize<TCommand>(args.Data);
+            return args.Data.ReadPacketizableWithTypeInfo<TCommand>();
         }
 
         #endregion

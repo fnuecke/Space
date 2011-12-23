@@ -155,16 +155,10 @@ namespace Engine.ComponentSystem.Systems
         public Packet Packetize(Packet packet)
         {
             // Write the list of entities we track.
-            packet.Write(_entities.Count);
-            foreach (var entity in _entities)
-            {
-                packet.Write(entity);
-            }
+            return packet.Write(_entities)
 
             // Next id we'll distribute.
-            packet.Write(_nextEntityId);
-
-            return packet;
+            .Write(_nextEntityId);
         }
 
         public void Depacketize(Packet packet)
@@ -175,10 +169,9 @@ namespace Engine.ComponentSystem.Systems
 
             // And finally the objects. Remove the one we know before that.
             _entities.Clear();
-            int numEntitys = packet.ReadInt32();
-            for (int i = 0; i < numEntitys; ++i)
+            foreach (var entity in packet.ReadPacketizables<Entity>())
             {
-                AddEntityUnchecked(packet.ReadPacketizable(new Entity()));
+                AddEntityUnchecked(entity);
             }
 
             // Next id we'll distribute.

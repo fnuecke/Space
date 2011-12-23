@@ -122,11 +122,7 @@ namespace Engine.Simulation
             packet.Write(EntityManager);
 
             // Then serialize all pending commands for the next frame.
-            packet.Write(commands.Count);
-            foreach (var command in commands)
-            {
-                Packetizer.Packetize(command, packet);
-            }
+            packet.WriteWithTypeInfo(commands);
 
             return packet;
         }
@@ -137,14 +133,13 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Get entities.
-            packet.ReadPacketizable(EntityManager);
+            packet.ReadPacketizableInto(EntityManager);
 
             // Continue with reading the list of commands.
             commands.Clear();
-            int numCommands = packet.ReadInt32();
-            for (int j = 0; j < numCommands; ++j)
+            foreach (var command in packet.ReadPacketizablesWithTypeInfo<ICommand>())
             {
-                PushCommand(Packetizer.Depacketize<ICommand>(packet));
+                PushCommand(command);
             }
         }
 

@@ -323,7 +323,7 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
-                        args.Data.ReadPacketizable(tss);
+                        args.Data.ReadPacketizableInto(tss);
                     }
                     break;
 
@@ -332,7 +332,7 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long addFrame = args.Data.ReadInt64();
-                        IEntity entity = args.Data.ReadPacketizable(new Entity());
+                        IEntity entity = args.Data.ReadPacketizable<Entity>();
                         tss.AddEntity(entity, addFrame);
                     }
                     break;

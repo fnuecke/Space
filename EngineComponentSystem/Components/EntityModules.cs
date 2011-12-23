@@ -172,7 +172,7 @@ namespace Engine.ComponentSystem.Components
                 .Write(_modules.Count);
             foreach (var module in _modules)
             {
-                Packetizer.Packetize(module, packet);
+                packet.WriteWithTypeInfo(module);
             }
             return packet;
         }
@@ -185,7 +185,7 @@ namespace Engine.ComponentSystem.Components
             int numModules = packet.ReadInt32();
             for (int i = 0; i < numModules; i++)
             {
-                _modules.Add(Packetizer.Depacketize<AbstractEntityModule<TAttribute>>(packet));
+                _modules.Add(packet.ReadPacketizableWithTypeInfo<AbstractEntityModule<TAttribute>>());
             }
 
             // Invalidate caches.

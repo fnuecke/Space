@@ -224,19 +224,13 @@ namespace Engine.ComponentSystem.Entities
         public Packet Packetize(Packet packet)
         {
             // Id of this entity.
-            packet.Write(UID);
+            return packet.Write(UID)
 
             // All components in this entity.
-            packet.Write(_components.Count);
-            foreach (var component in _components)
-            {
-                Packetizer.Packetize(component, packet);
-            }
+            .WriteWithTypeInfo(_components)
 
             // Next id we'll distribute.
-            packet.Write(_nextComponentId);
-
-            return packet;
+            .Write(_nextComponentId);
         }
 
         /// <summary>
@@ -250,10 +244,9 @@ namespace Engine.ComponentSystem.Entities
 
             // All components in this entity.
             _components.Clear();
-            int numComponents = packet.ReadInt32();
-            for (int i = 0; i < numComponents; ++i)
+            foreach (var component in packet.ReadPacketizablesWithTypeInfo<IComponent>())
             {
-                AddComponentUnchecked(Packetizer.Depacketize<IComponent>(packet));
+                AddComponentUnchecked(component);
             }
 
             // Next id we'll distribute.
