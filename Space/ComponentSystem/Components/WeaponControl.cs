@@ -36,6 +36,11 @@ namespace Space.ComponentSystem.Components
 
         #region Logic
 
+        /// <summary>
+        /// Takes care of firing weapons that are not on cooldown, and reducing
+        /// cooldown for weapons that are.
+        /// </summary>
+        /// <param name="parameterization">The parameters to use.</param>
         public override void Update(object parameterization)
         {
 #if DEBUG
@@ -78,26 +83,37 @@ namespace Space.ComponentSystem.Components
             }
         }
 
+        /// <summary>
+        /// Accepts parameterizations of type <c>DefaultLogicParameterization</c>.
+        /// </summary>
+        /// <param name="parameterizationType">The type to check.</param>
+        /// <returns>Whether the type is supported or not.</returns>
         public override bool SupportsParameterization(Type parameterizationType)
         {
             return parameterizationType == typeof(DefaultLogicParameterization);
         }
 
+        /// <summary>
+        /// Handles messages to check if a weapon was equipped or unequipped.
+        /// </summary>
+        /// <param name="message">The message to handle.</param>
         public override void HandleMessage(ValueType message)
         {
-            if (message.GetType() == typeof(ModuleAdded<EntityAttributeType>))
+            if (message is ModuleAdded<EntityAttributeType>)
             {
                 var added = (ModuleAdded<EntityAttributeType>)message;
-                if (added.Module.GetType() == typeof(WeaponModule))
+                if (added.Module is WeaponModule)
                 {
+                    // Weapon was equipped, track a cooldown for it.
                     _cooldowns.Add(added.Module.UID, 0);
                 }
             }
-            else if (message.GetType() == typeof(ModuleRemoved<EntityAttributeType>))
+            else if (message is ModuleRemoved<EntityAttributeType>)
             {
                 var removed = (ModuleRemoved<EntityAttributeType>)message;
-                if (removed.Module.GetType() == typeof(WeaponModule))
+                if (removed.Module is WeaponModule)
                 {
+                    // Weapon was unequipped, stop tracking.
                     _cooldowns.Remove(removed.Module.UID);
                 }
             }

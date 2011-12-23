@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
-using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -19,17 +18,17 @@ namespace Engine.ComponentSystem.Components
         #region Fields
 
         /// <summary>
-        /// Whether to play the sound this update or not.
+        /// The sounds to play in the next update.
         /// </summary>
-        private List<string> _play = new List<string>();
+        private List<string> _soundsToPlay = new List<string>();
 
         #endregion
 
         #region Logic
 
         /// <summary>
-        /// Checks if this sound should be played this update, and if yes writes
-        /// the name. If possible, it also writes a position and velocity of
+        /// Checks if any sounds should be played this update, and if yes writes
+        /// the names. If possible, it also writes a position and velocity of
         /// the sound's emitter.
         /// </summary>
         /// <param name="parameterization"></param>
@@ -41,10 +40,10 @@ namespace Engine.ComponentSystem.Components
             var p = (SoundParameterization)parameterization;
 
             // Should we play? (Was a message fired for us?)
-            if (_play.Count > 0)
+            if (_soundsToPlay.Count > 0)
             {
                 // Yes, write the cue name.
-                p.SoundCues.AddRange(_play);
+                p.SoundCues.AddRange(_soundsToPlay);
 
                 // Also check if we can fill in position and velocity.
                 var transform = Entity.GetComponent<Transform>();
@@ -61,7 +60,7 @@ namespace Engine.ComponentSystem.Components
             }
 
             // We played, unset for next update.
-            _play.Clear();
+            _soundsToPlay.Clear();
         }
 
         /// <summary>
@@ -74,6 +73,12 @@ namespace Engine.ComponentSystem.Components
             return parameterizationType == typeof(SoundParameterization);
         }
 
+        /// <summary>
+        /// To be overridden by subclasses, to tell if a message should result
+        /// in a sound being played, and if yes, which.
+        /// </summary>
+        /// <param name="message">The message to check.</param>
+        /// <returns>The sound to be played.</returns>
         protected abstract string GetSoundForMessage(ValueType message);
 
         #endregion
@@ -85,7 +90,7 @@ namespace Engine.ComponentSystem.Components
             var sound = GetSoundForMessage(message);
             if (!string.IsNullOrWhiteSpace(sound))
             {
-                _play.Add(sound);
+                _soundsToPlay.Add(sound);
             }
         }
 
@@ -97,8 +102,8 @@ namespace Engine.ComponentSystem.Components
         {
             base.Packetize(packet);
 
-            packet.Write(_play.Count);
-            foreach (var sound in _play)
+            packet.Write(_soundsToPlay.Count);
+            foreach (var sound in _soundsToPlay)
             {
                 packet.Write(sound);
             }
@@ -110,21 +115,11 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            _play.Clear();
+            _soundsToPlay.Clear();
             int numSounds = packet.ReadInt32();
             for (int i = 0; i < numSounds; ++i)
             {
-                _play.Add(packet.ReadString());
-            }
-        }
-
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            foreach (var sound in _play)
-            {
-               // hasher.Put(Encoding.UTF8.GetBytes(sound));
+                _soundsToPlay.Add(packet.ReadString());
             }
         }
 
@@ -132,7 +127,7 @@ namespace Engine.ComponentSystem.Components
         {
             var copy = (AbstractSound)base.Clone();
 
-            copy._play = new List<string>(_play);
+            copy._soundsToPlay = new List<string>(_soundsToPlay);
 
             return copy;
         }
