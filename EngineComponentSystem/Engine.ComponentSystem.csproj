@@ -103,6 +103,8 @@
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
     <Compile Include="Components\IComponent.cs" />
+    <Compile Include="Components\Messages\ModuleRemoved.cs" />
+    <Compile Include="Components\Messages\ModuleAdded.cs" />
     <Compile Include="Components\PacketizerRegistration.cs" />
     <Compile Include="Components\Sound.cs" />
     <Compile Include="Components\Spin.cs" />

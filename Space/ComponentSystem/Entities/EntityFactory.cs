@@ -17,7 +17,7 @@ namespace Space.ComponentSystem.Entities
             ship.AddComponent(new Spin());
             ship.AddComponent(new Velocity());
             ship.AddComponent(new CollidableSphere());
-            ship.AddComponent(new EntityModules<ShipModule, EntityAttributeType>());
+            ship.AddComponent(new EntityModules<EntityAttributeType>());
             ship.AddComponent(new WeaponControl());
             ship.AddComponent(new WeaponSlot());
             ship.AddComponent(new ShipControl());
@@ -31,8 +31,12 @@ namespace Space.ComponentSystem.Entities
             var collidable = ship.GetComponent<CollidableSphere>();
             collidable.Radius = shipData.Radius;
 
-            var modules = ship.GetComponent<EntityModules<ShipModule, EntityAttributeType>>();
-            modules.AddModules(shipData.BaseModules);
+            var modules = ship.GetComponent<EntityModules<EntityAttributeType>>();
+            modules.AddModules(shipData.Hulls);
+            modules.AddModules(shipData.Reactors);
+            modules.AddModules(shipData.Thrusters);
+            modules.AddModules(shipData.Shields);
+            modules.AddModules(shipData.Weapons);
 
             var avatar = ship.GetComponent<Avatar>();
             avatar.PlayerNumber = playerNumber;

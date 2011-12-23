@@ -71,9 +71,8 @@ namespace Engine.Serialization
             string fullName = packet.ReadString();
             if (_constructors.ContainsKey(fullName))
             {
-                IPacketizable result = _constructors[fullName]();
-                result.Depacketize(packet);
-                return (T)result;
+                T result = (T)_constructors[fullName]();
+                return packet.ReadPacketizable<T>(result);
             }
             else
             {

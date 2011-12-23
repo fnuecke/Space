@@ -92,12 +92,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HullModule.cs" />
+    <Compile Include="ThrusterModule.cs" />
+    <Compile Include="ReactorModule.cs" />
     <Compile Include="Data.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EntityAttributeType.cs" />
     <Compile Include="ShipData.cs" />
-    <Compile Include="ShipModule.cs" />
-    <Compile Include="ShipModuleType.cs" />
+    <Compile Include="ShieldModule.cs" />
+    <Compile Include="WeaponModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineData\Engine.Data.csproj">

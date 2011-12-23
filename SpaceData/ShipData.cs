@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Engine.Math;
+﻿using Engine.Math;
 using Engine.Serialization;
+using Microsoft.Xna.Framework.Content;
 
 namespace Space.Data
 {
@@ -22,33 +22,43 @@ namespace Space.Data
         public string Texture;
 
         /// <summary>
-        /// Available module slots per type for this ship.
+        /// Slots, occupied or not, of hulls for this ship.
         /// </summary>
-        public Dictionary<ShipModuleType, int> Slots = new Dictionary<ShipModuleType, int>();
+        public HullModule[] Hulls = new HullModule[0];
 
         /// <summary>
-        /// Default modules for required slots.
+        /// Slots, occupied or not, of hulls for this ship.
         /// </summary>
-        public ShipModule[] BaseModules = new ShipModule[0];
+        public ReactorModule[] Reactors = new ReactorModule[0];
+
+        /// <summary>
+        /// Slots, occupied or not, of hulls for this ship.
+        /// </summary>
+        public ThrusterModule[] Thrusters = new ThrusterModule[0];
+
+        /// <summary>
+        /// Slots, occupied or not, of hulls for this ship.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public ShieldModule[] Shields = new ShieldModule[0];
+
+        /// <summary>
+        /// Slots, occupied or not, of hulls for this ship.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public WeaponModule[] Weapons = new WeaponModule[0];
 
         public Packet Packetize(Packet packet)
         {
-            packet
+            return packet
                 .Write(Name)
                 .Write(Radius)
                 .Write(Texture)
-                .Write(Slots.Count);
-            foreach (var slot in Slots)
-            {
-                packet.Write((byte)slot.Key);
-                packet.Write(slot.Value);
-            }
-            packet.Write(BaseModules.Length);
-            foreach (var module in BaseModules)
-            {
-                packet.Write(module);
-            }
-            return packet;
+                .Write(Hulls)
+                .Write(Reactors)
+                .Write(Thrusters)
+                .Write(Shields)
+                .Write(Weapons);
         }
 
         public void Depacketize(Packet packet)
@@ -56,21 +66,11 @@ namespace Space.Data
             Name = packet.ReadString();
             Radius = packet.ReadFixed();
             Texture = packet.ReadString();
-
-            Slots.Clear();
-            var numSlots = packet.ReadInt32();
-            for (int i = 0; i < numSlots; i++)
-            {
-                var key = (ShipModuleType)packet.ReadByte();
-                var value = packet.ReadInt32();
-                Slots.Add(key, value);
-            }
-            var numModules = packet.ReadInt32();
-            BaseModules = new ShipModule[numModules];
-            for (int i = 0; i < numModules; i++)
-            {
-                BaseModules[i] = packet.ReadPacketizable(new ShipModule());
-            }
+            Hulls = packet.ReadPacketizables<HullModule>();
+            Reactors = packet.ReadPacketizables<ReactorModule>();
+            Thrusters = packet.ReadPacketizables<ThrusterModule>();
+            Shields = packet.ReadPacketizables<ShieldModule>();
+            Weapons = packet.ReadPacketizables<WeaponModule>();
         }
     }
 }

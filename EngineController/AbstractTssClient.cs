@@ -323,7 +323,7 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
-                        tss.Depacketize(args.Data);
+                        args.Data.ReadPacketizable(tss);
                     }
                     break;
 

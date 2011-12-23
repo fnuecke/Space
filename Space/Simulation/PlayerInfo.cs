@@ -17,10 +17,8 @@ namespace Space.Simulation
 
         public void Depacketize(Packet packet)
         {
-            Ship = new ShipData();
-            Ship.Depacketize(packet);
-            Weapon = new WeaponData();
-            Weapon.Depacketize(packet);
+            Ship = packet.ReadPacketizable(new ShipData());
+            Weapon = packet.ReadPacketizable(new WeaponData());
         }
     }
 }

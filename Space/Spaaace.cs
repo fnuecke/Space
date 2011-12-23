@@ -91,8 +91,16 @@ namespace Space
             Components.Add(console);
 
             // Register types for serialization.
+            PacketizerRegistration.Initialize<EntityAttributeType>();
+
             Packetizer.Register<PlayerInputCommand>();
-            PacketizerRegistration.Initialize<ShipModule, EntityAttributeType>();
+
+            Packetizer.Register<HullModule>();
+            Packetizer.Register<ReactorModule>();
+            Packetizer.Register<ThrusterModule>();
+            Packetizer.Register<ShieldModule>();
+            Packetizer.Register<WeaponModule>();
+
             Packetizer.Register<ShipControl>();
             Packetizer.Register<WeaponControl>();
             Packetizer.Register<WeaponSlot>();

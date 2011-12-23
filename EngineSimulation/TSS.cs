@@ -316,11 +316,10 @@ namespace Engine.Simulation
         /// <param name="packet">the packet to write the data to.</param>
         public Packet Packetize(Packet packet)
         {
-            packet.Write(CurrentFrame);
+            packet.Write(CurrentFrame)
+                .Write(_states[_states.Length - 1])
 
-            _states[_states.Length - 1].Packetize(packet);
-
-            packet.Write(_adds.Count);
+                .Write(_adds.Count);
             foreach (var add in _adds)
             {
                 packet.Write(add.Key);
@@ -366,7 +365,7 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Unwrap the trailing state and mirror it to all the newer ones.
-            _states[_states.Length - 1].Depacketize(packet);
+            packet.ReadPacketizable(_states[_states.Length - 1]);
             MirrorState(_states[_states.Length - 1], _states.Length - 2);
 
             // Find adds / removes / commands that our out of date now, but keep newer ones.

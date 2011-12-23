@@ -56,8 +56,7 @@ namespace Space.Simulation.Commands
 
         public override Packet Packetize(Packet packet)
         {
-            return base
-                .Packetize(packet)
+            return base.Packetize(packet)
                 .Write((byte)Input)
                 .Write(TargetRotation);
         }

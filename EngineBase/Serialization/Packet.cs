@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Engine.Math;
@@ -181,37 +182,38 @@ namespace Engine.Serialization
         {
             if (data == null)
             {
-                Write((int)0);
+                return Write((int)(-1));
             }
             else
             {
-                Write(data, data.Length);
+                return Write(data, data.Length);
             }
-            return this;
         }
 
         public Packet Write(byte[] data, int length)
         {
             if (data == null)
             {
-                throw new ArgumentNullException("data");
+                return Write((int)(-1));
             }
-            Write(length);
-            _stream.Write(data, 0, length);
-            return this;
+            else
+            {
+                Write(length);
+                _stream.Write(data, 0, length);
+                return this;
+            }
         }
 
         public Packet Write(Packet data)
         {
             if (data == null)
             {
-                Write((int)0);
+                return Write((byte[])null);
             }
             else
             {
-                Write(data.GetBuffer());
+                return Write(data.GetBuffer());
             }
-            return this;
         }
 
         public Packet Write(string data)
@@ -228,7 +230,31 @@ namespace Engine.Serialization
 
         public Packet Write(IPacketizable data)
         {
-            return data.Packetize(this);
+            if (data == null)
+            {
+                return Write((Packet)null);
+            }
+            else
+            {
+                return Write(data.Packetize(new Packet()));
+            }
+        }
+
+        public Packet Write(ICollection<IPacketizable> data)
+        {
+            if (data == null)
+            {
+                return Write((int)(-1));
+            }
+            else
+            {
+                Write(data.Count);
+                foreach (var item in data)
+                {
+                    Write(item);
+                }
+                return this;
+            }
         }
 
         #endregion
@@ -360,9 +386,17 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read byte[].");
             }
-            byte[] bytes = new byte[ReadInt32()];
-            _stream.Read(bytes, 0, bytes.Length);
-            return bytes;
+            int length = ReadInt32();
+            if (length < 0)
+            {
+                return null;
+            }
+            else
+            {
+                byte[] bytes = new byte[length];
+                _stream.Read(bytes, 0, bytes.Length);
+                return bytes;
+            }
         }
 
         public Packet ReadPacket()
@@ -371,7 +405,15 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read packet.");
             }
-            return new Packet(ReadByteArray());
+            var buffer = ReadByteArray();
+            if (buffer == null)
+            {
+                return null;
+            }
+            else
+            {
+                return new Packet(buffer);
+            }
         }
 
         public string ReadString()
@@ -394,8 +436,35 @@ namespace Engine.Serialization
         public T ReadPacketizable<T>(T packetizable)
             where T : IPacketizable
         {
-            packetizable.Depacketize(this);
-            return packetizable;
+            var packet = ReadPacket();
+            if (packet == null)
+            {
+                return default(T);
+            }
+            else
+            {
+                packetizable.Depacketize(packet);
+                return packetizable;
+            }
+        }
+
+        public T[] ReadPacketizables<T>()
+            where T : IPacketizable, new()
+        {
+            int numPacketizables = ReadInt32();
+            if (numPacketizables < 0)
+            {
+                return null;
+            }
+            else
+            {
+                T[] result = new T[numPacketizables];
+                for (int i = 0; i < numPacketizables; i++)
+                {
+                    result[i] = ReadPacketizable(new T());
+                }
+                return result;
+            }
         }
 
         #endregion
@@ -577,7 +646,7 @@ namespace Engine.Serialization
         {
             if (HasInt32())
             {
-                return Available >= sizeof(int) + PeekInt32();
+                return Available >= sizeof(int) + System.Math.Max(0, PeekInt32());
             }
             return false;
         }

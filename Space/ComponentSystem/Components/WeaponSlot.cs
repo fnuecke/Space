@@ -157,7 +157,7 @@ namespace Space.ComponentSystem.Components
                 .Write(MountPoint)
                 .Write(MountDirection)
                 .Write(_sound)
-                .Write(_weapon == null ? new Packet() : (new Packet().Write(_weapon)));
+                .Write(_weapon);
         }
 
         public override void Depacketize(Packet packet)
@@ -166,16 +166,7 @@ namespace Space.ComponentSystem.Components
             MountPoint = packet.ReadFPoint();
             MountDirection = packet.ReadFPoint();
             _sound = packet.ReadInt32();
-            var weaponData = packet.ReadPacket();
-            if (weaponData.Length > 0)
-            {
-                _weapon = new WeaponData();
-                _weapon.Depacketize(weaponData);
-            }
-            else
-            {
-                _weapon = null;
-            }
+            _weapon = packet.ReadPacketizable(new WeaponData());
         }
 
         public override void Hash(Hasher hasher)

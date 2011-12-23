@@ -119,7 +119,7 @@ namespace Engine.Simulation
             packet.Write(CurrentFrame);
 
             // Write entities.
-            EntityManager.Packetize(packet);
+            packet.Write(EntityManager);
 
             // Then serialize all pending commands for the next frame.
             packet.Write(commands.Count);
@@ -137,7 +137,7 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Get entities.
-            EntityManager.Depacketize(packet);
+            packet.ReadPacketizable(EntityManager);
 
             // Continue with reading the list of commands.
             commands.Clear();

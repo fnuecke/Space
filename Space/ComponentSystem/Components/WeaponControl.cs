@@ -1,7 +1,9 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Components.Messages;
 using Engine.Serialization;
 using Engine.Util;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -16,6 +18,30 @@ namespace Space.ComponentSystem.Components
         /// Whether ima currently firin mah lazer or not.
         /// </summary>
         public bool IsShooting { get; set; }
+
+        #endregion
+
+        #region Logic
+
+        public override void HandleMessage(ValueType message)
+        {
+            if (message.GetType() == typeof(ModuleAdded<EntityAttributeType>))
+            {
+                var added = (ModuleAdded<EntityAttributeType>)message;
+                if (added.Module.GetType() == typeof(WeaponModule))
+                {
+
+                }
+            }
+            else if (message.GetType() == typeof(ModuleRemoved<EntityAttributeType>))
+            {
+                var removed = (ModuleRemoved<EntityAttributeType>)message;
+                if (removed.Module.GetType() == typeof(WeaponModule))
+                {
+
+                }
+            }
+        }
 
         #endregion
 

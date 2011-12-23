@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Engine.ComponentSystem.Components.Messages;
 using Engine.Data;
 using Engine.Math;
 using Engine.Serialization;
@@ -16,8 +17,7 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     /// <typeparam name="TAttribute">The enum that holds the possible types of
     /// attributes.</typeparam>
-    public sealed class EntityModules<TModule, TAttribute> : AbstractComponent
-        where TModule : AbstractEntityModule<TAttribute>, new()
+    public sealed class EntityModules<TAttribute> : AbstractComponent
         where TAttribute : struct
     {
         #region Properties
@@ -25,7 +25,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// A list of all known attributes.
         /// </summary>
-        public ReadOnlyCollection<TModule> Modules { get { return _modules.AsReadOnly(); } }
+        public ReadOnlyCollection<AbstractEntityModule<TAttribute>> Modules { get { return _modules.AsReadOnly(); } }
 
         #endregion
 
@@ -34,7 +34,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Actual list of attributes registered.
         /// </summary>
-        private List<TModule> _modules = new List<TModule>();
+        private List<AbstractEntityModule<TAttribute>> _modules = new List<AbstractEntityModule<TAttribute>>();
 
         /// <summary>
         /// Cached computation results for accumulative attribute values.
@@ -43,7 +43,7 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        #region Attributes
+        #region Attributes / Modules
         
         /// <summary>
         /// Get the accumulative value of all attributes in this component.
@@ -84,13 +84,17 @@ namespace Engine.ComponentSystem.Components
         /// </para>
         /// </summary>
         /// <param name="module">The module to add.</param>
-        public void AddModule(TModule module)
+        public void AddModule(AbstractEntityModule<TAttribute> module)
         {
             _modules.Add(module);
             // Invalidate cache.
             foreach (var attribute in module.Attributes)
             {
                 _cached.Remove(attribute.Type);
+            }
+            if (Entity != null)
+            {
+                Entity.SendMessage(ModuleAdded<TAttribute>.Create(module));
             }
         }
 
@@ -105,14 +109,24 @@ namespace Engine.ComponentSystem.Components
         /// </para>
         /// </summary>
         /// <param name="modules">The modules to add.</param>
-        public void AddModules(IEnumerable<TModule> modules)
+        public void AddModules(IEnumerable<AbstractEntityModule<TAttribute>> modules)
         {
-            _modules.AddRange(modules);
-            // Invalidate cache.
             foreach (var module in modules)
-            foreach (var attribute in module.Attributes)
             {
-                _cached.Remove(attribute.Type);
+                if (module == null)
+                {
+                    continue;
+                }
+                _modules.Add(module);
+                // Invalidate cache.
+                foreach (var attribute in module.Attributes)
+                {
+                    _cached.Remove(attribute.Type);
+                    if (Entity != null)
+                    {
+                        Entity.SendMessage(ModuleAdded<TAttribute>.Create(module));
+                    }
+                }
             }
         }
 
@@ -120,7 +134,7 @@ namespace Engine.ComponentSystem.Components
         /// Removes a module from this component.
         /// </summary>
         /// <param name="module">The module to remove.</param>
-        public void RemoveModule(TModule module)
+        public void RemoveModule(AbstractEntityModule<TAttribute> module)
         {
             if (_modules.Remove(module))
             {
@@ -128,6 +142,10 @@ namespace Engine.ComponentSystem.Components
                 foreach (var attribute in module.Attributes)
                 {
                     _cached.Remove(attribute.Type);
+                }
+                if (Entity != null)
+                {
+                    Entity.SendMessage(ModuleRemoved<TAttribute>.Create(module));
                 }
             }
         }
@@ -137,7 +155,7 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="index">The index of the module to remove.</param>
         /// <returns>The removed module.</returns>
-        public TModule RemoveModuleAt(int index)
+        public AbstractEntityModule<TAttribute> RemoveModuleAt(int index)
         {
             var module = _modules[index];
             RemoveModule(module);
@@ -154,7 +172,7 @@ namespace Engine.ComponentSystem.Components
                 .Write(_modules.Count);
             foreach (var module in _modules)
             {
-                packet.Write(module);
+                Packetizer.Packetize(module, packet);
             }
             return packet;
         }
@@ -167,7 +185,7 @@ namespace Engine.ComponentSystem.Components
             int numModules = packet.ReadInt32();
             for (int i = 0; i < numModules; i++)
             {
-                _modules.Add(packet.ReadPacketizable(new TModule()));
+                _modules.Add(Packetizer.Depacketize<AbstractEntityModule<TAttribute>>(packet));
             }
 
             // Invalidate caches.
@@ -186,13 +204,13 @@ namespace Engine.ComponentSystem.Components
 
         public override object Clone()
         {
-            var copy = (EntityModules<TModule, TAttribute>)base.Clone();
+            var copy = (EntityModules<TAttribute>)base.Clone();
 
             // Create a new list and copy all modules.
-            copy._modules = new List<TModule>();
+            copy._modules = new List<AbstractEntityModule<TAttribute>>();
             foreach (var module in _modules)
             {
-                copy._modules.Add((TModule)module.Clone());
+                copy._modules.Add((AbstractEntityModule<TAttribute>)module.Clone());
             }
 
             // Copy the cache as well.

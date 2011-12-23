@@ -7,53 +7,37 @@
       <Radius>5</Radius>
       <Texture>Textures/ship</Texture>
 
-      <Slots>
-        <Item>
-          <Key>Hull</Key>
-          <Value>1</Value>
-        </Item>
-        <Item>
-          <Key>Reactor</Key>
-          <Value>1</Value>
-        </Item>
-        <Item>
-          <Key>Thruster</Key>
-          <Value>1</Value>
-        </Item>
-        <Item>
-          <Key>Shield</Key>
-          <Value>0</Value>
-        </Item>
-        <Item>
-          <Key>Weapon</Key>
-          <Value>1</Value>
-        </Item>
-      </Slots>
-      
-      <BaseModules>
+      <Hulls>
         <Item>
           <Attributes>
             <Item>50 Health</Item>
             <Item>10 Mass</Item>
           </Attributes>
-          <Type>Hull</Type>
         </Item>
+      </Hulls>
+
+      <Reactors>
         <Item>
           <Attributes>
             <Item>100 Energy</Item>
             <Item>5 Mass</Item>
           </Attributes>
-          <Type>Reactor</Type>
         </Item>
+      </Reactors>
+
+      <Thrusters>
         <Item>
           <Attributes>
             <Item>2 AccelerationForce</Item>
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
           </Attributes>
-          <Type>Thruster</Type>
         </Item>
-      </BaseModules>
+      </Thrusters>
+
+      <Weapons>
+        <Item Null="true"/>
+      </Weapons>
     </Item>
   </Asset>
 </XnaContent>

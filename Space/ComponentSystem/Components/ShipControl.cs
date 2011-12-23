@@ -102,7 +102,7 @@ namespace Space.ComponentSystem.Components
             // Get components we depend upon / modify.
             var transform = Entity.GetComponent<Transform>();
             var spin = Entity.GetComponent<Spin>();
-            var modules = Entity.GetComponent<EntityModules<ShipModule, EntityAttributeType>>();
+            var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
 
             // Get the mass of the ship.
             var mass = modules.GetValue(EntityAttributeType.Mass);

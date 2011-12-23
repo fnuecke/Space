@@ -1,17 +1,16 @@
-﻿using Engine.Data;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Components
 {
     public static class PacketizerRegistration
     {
-        public static void Initialize<TModule, TAttribute>()
-            where TModule : AbstractEntityModule<TAttribute>, new()
+        public static void Initialize<TAttribute>()
             where TAttribute : struct
         {
+            Packetizer.Register<EntityModules<TAttribute>>();
+
             Packetizer.Register<Acceleration>();
             Packetizer.Register<Avatar>();
-            Packetizer.Register<EntityModules<TModule, TAttribute>>();
             Packetizer.Register<Expiration>();
             Packetizer.Register<CollidableBox>();
             Packetizer.Register<CollidableSphere>();
