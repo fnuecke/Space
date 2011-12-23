@@ -168,13 +168,8 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet)
-                .Write(_modules.Count);
-            foreach (var module in _modules)
-            {
-                packet.WriteWithTypeInfo(module);
-            }
-            return packet;
+            return base.Packetize(packet)
+                .WriteWithTypeInfo(_modules);
         }
 
         public override void Depacketize(Packet packet)
@@ -182,10 +177,9 @@ namespace Engine.ComponentSystem.Components
             base.Depacketize(packet);
 
             _modules.Clear();
-            int numModules = packet.ReadInt32();
-            for (int i = 0; i < numModules; i++)
+            foreach (var module in packet.ReadPacketizablesWithTypeInfo<AbstractEntityModule<TAttribute>>())
             {
-                _modules.Add(packet.ReadPacketizableWithTypeInfo<AbstractEntityModule<TAttribute>>());
+                _modules.Add(module);
             }
 
             // Invalidate caches.

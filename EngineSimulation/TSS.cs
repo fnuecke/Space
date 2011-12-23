@@ -372,10 +372,7 @@ namespace Engine.Simulation
                 {
                     _adds.Add(key, new List<IEntity>());
                 }
-                foreach (var entity in packet.ReadPacketizables<Entity>())
-                {
-                    _adds[key].Add(entity);
-                }
+                _adds[key].AddRange(packet.ReadPacketizables<Entity>());
             }
 
             // Then the removes.
