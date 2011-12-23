@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
@@ -15,37 +14,14 @@ namespace Engine.ComponentSystem.Components
     /// Optional: <c>Transform</c>, <c>Velocity</c>.
     /// </para>
     /// </summary>
-    public class Sound : AbstractComponent
+    public abstract class AbstractSound : AbstractComponent
     {
-        #region Properties
-        
-        /// <summary>
-        /// The component messages this sound should be played on.
-        /// </summary>
-        public List<Type> TriggeringMessages { get; private set; }
-
-        /// <summary>
-        /// The name of the XACT sound cue to play.
-        /// </summary>
-        public string SoundCue { get; set; }
-
-        #endregion
-
         #region Fields
 
         /// <summary>
         /// Whether to play the sound this update or not.
         /// </summary>
-        private bool _play;
-
-        #endregion
-
-        #region Constructor
-
-        public Sound()
-        {
-            TriggeringMessages = new List<Type>();
-        }
+        private List<string> _play = new List<string>();
 
         #endregion
 
@@ -65,10 +41,10 @@ namespace Engine.ComponentSystem.Components
             var p = (SoundParameterization)parameterization;
 
             // Should we play? (Was a message fired for us?)
-            if (_play)
+            if (_play.Count > 0)
             {
                 // Yes, write the cue name.
-                p.SoundCueToPlay = SoundCue;
+                p.SoundCues.AddRange(_play);
 
                 // Also check if we can fill in position and velocity.
                 var transform = Entity.GetComponent<Transform>();
@@ -85,7 +61,7 @@ namespace Engine.ComponentSystem.Components
             }
 
             // We played, unset for next update.
-            _play = false;
+            _play.Clear();
         }
 
         /// <summary>
@@ -98,15 +74,18 @@ namespace Engine.ComponentSystem.Components
             return parameterizationType == typeof(SoundParameterization);
         }
 
+        protected abstract string GetSoundForMessage(ValueType message);
+
         #endregion
 
         #region Message handling
 
         public override void HandleMessage(ValueType message)
         {
-            if (TriggeringMessages.Contains(message.GetType()))
+            var sound = GetSoundForMessage(message);
+            if (!string.IsNullOrWhiteSpace(sound))
             {
-                _play = true;
+                _play.Add(sound);
             }
         }
 
@@ -116,14 +95,13 @@ namespace Engine.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet)
-                .Write(TriggeringMessages.Count);
-            foreach (var messageType in TriggeringMessages)
+            base.Packetize(packet);
+
+            packet.Write(_play.Count);
+            foreach (var sound in _play)
             {
-                packet.Write(messageType.AssemblyQualifiedName);
+                packet.Write(sound);
             }
-            packet.Write(SoundCue);
-            packet.Write(_play);
 
             return packet;
         }
@@ -131,28 +109,30 @@ namespace Engine.ComponentSystem.Components
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
-            
-            int numTriggeringMessages = packet.ReadInt32();
-            for (int i = 0; i < numTriggeringMessages; ++i)
+
+            _play.Clear();
+            int numSounds = packet.ReadInt32();
+            for (int i = 0; i < numSounds; ++i)
             {
-                TriggeringMessages.Add(Type.GetType(packet.ReadString()));
+                _play.Add(packet.ReadString());
             }
-            SoundCue = packet.ReadString();
-            _play = packet.ReadBoolean();
         }
 
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 
-            hasher.Put(Encoding.UTF8.GetBytes(SoundCue));
+            foreach (var sound in _play)
+            {
+               // hasher.Put(Encoding.UTF8.GetBytes(sound));
+            }
         }
 
         public override object Clone()
         {
-            var copy = (Sound)base.Clone();
+            var copy = (AbstractSound)base.Clone();
 
-            copy.TriggeringMessages = new List<Type>(TriggeringMessages);
+            copy._play = new List<string>(_play);
 
             return copy;
         }

@@ -78,7 +78,6 @@ namespace GameStateManagement
             // Autojoin self.
             PlayerInfo info = new PlayerInfo();
             info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-            info.Weapon = this.ScreenManager.Game.Content.Load<WeaponData[]>("Data/weapons")[0];
             ScreenManager.Client.Session.Join(ScreenManager.Server.Session, Settings.Instance.PlayerName, info);
 
             LoadingScreen.Load(ScreenManager, true, new GameplayScreen());

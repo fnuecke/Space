@@ -36,7 +36,19 @@
       </Thrusters>
 
       <Weapons>
-        <Item Null="true"/>
+        <Item>
+          <Texture>Textures/ship</Texture>
+          <Sound>laser</Sound>
+          <Cooldown>30</Cooldown>
+          <Projectiles>
+            <Item>
+              <Texture>Textures/ship</Texture>
+              <Damage>5</Damage>
+              <CollisionRadius>3</CollisionRadius>
+              <InitialVelocity>10</InitialVelocity>
+            </Item>
+          </Projectiles>
+        </Item>
       </Weapons>
     </Item>
   </Asset>

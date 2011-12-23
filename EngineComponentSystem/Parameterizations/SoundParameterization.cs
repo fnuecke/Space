@@ -1,4 +1,5 @@
-﻿using Engine.Math;
+﻿using System.Collections.Generic;
+using Engine.Math;
 
 namespace Engine.ComponentSystem.Parameterizations
 {
@@ -11,7 +12,7 @@ namespace Engine.ComponentSystem.Parameterizations
         /// The name of the sound queue that should be played. Leave untouched if
         /// no sound is to be played.
         /// </summary>
-        public string SoundCueToPlay { get; set; }
+        public List<string> SoundCues { get; set; }
 
         /// <summary>
         /// The source position of the sound's source / emitter.
@@ -22,5 +23,10 @@ namespace Engine.ComponentSystem.Parameterizations
         /// The velocity of the sound's source / emitter.
         /// </summary>
         public FPoint Velocity { get; set; }
+
+        public SoundParameterization()
+        {
+            this.SoundCues = new List<string>();
+        }
     }
 }

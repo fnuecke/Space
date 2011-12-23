@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
+using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
+using Space.ComponentSystem.Components.Messages;
+using Space.ComponentSystem.Entities;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -21,7 +25,63 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// Cooldowns of known weapon components.
+        /// </summary>
+        private Dictionary<int, int> _cooldowns = new Dictionary<int, int>();
+
+        #endregion
+
         #region Logic
+
+        public override void Update(object parameterization)
+        {
+#if DEBUG
+            base.Update(parameterization);
+#endif
+            // Reduce cooldowns.
+            foreach (var componentUid in new List<int>(_cooldowns.Keys))
+            {
+                if (_cooldowns[componentUid] > 0)
+                {
+                    --_cooldowns[componentUid];
+                }
+            }
+
+            // Check all weapon modules.
+            if (IsShooting)
+            {
+                var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
+                if (modules != null)
+                {
+                    foreach (var weapon in modules.GetModules<WeaponModule>())
+                    {
+                        // Test if this weapon is on cooldown.
+                        if (_cooldowns[weapon.UID] == 0)
+                        {
+                            // No, fire it.
+                            _cooldowns[weapon.UID] = weapon.Cooldown;
+
+                            // Generate projectiles.
+                            foreach (var projectile in weapon.Projectiles)
+                            {
+                                Entity.Manager.AddEntity(EntityFactory.CreateProjectile(Entity, projectile));
+                            }
+
+                            // Generate message.
+                            Entity.SendMessage(WeaponFired.Create(weapon));
+                        }
+                    }
+                }
+            }
+        }
+
+        public override bool SupportsParameterization(Type parameterizationType)
+        {
+            return parameterizationType == typeof(DefaultLogicParameterization);
+        }
 
         public override void HandleMessage(ValueType message)
         {
@@ -30,7 +90,7 @@ namespace Space.ComponentSystem.Components
                 var added = (ModuleAdded<EntityAttributeType>)message;
                 if (added.Module.GetType() == typeof(WeaponModule))
                 {
-
+                    _cooldowns.Add(added.Module.UID, 0);
                 }
             }
             else if (message.GetType() == typeof(ModuleRemoved<EntityAttributeType>))
@@ -38,7 +98,7 @@ namespace Space.ComponentSystem.Components
                 var removed = (ModuleRemoved<EntityAttributeType>)message;
                 if (removed.Module.GetType() == typeof(WeaponModule))
                 {
-
+                    _cooldowns.Remove(removed.Module.UID);
                 }
             }
         }
@@ -49,17 +109,43 @@ namespace Space.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return packet.Write(IsShooting);
+            packet.Write(IsShooting);
+
+            packet.Write(_cooldowns.Count);
+            foreach (var kv in _cooldowns)
+            {
+                packet.Write(kv.Key);
+                packet.Write(kv.Value);
+            }
+
+            return packet;
         }
 
         public override void Depacketize(Packet packet)
         {
             IsShooting = packet.ReadBoolean();
+            _cooldowns.Clear();
+            var numCooldowns = packet.ReadInt32();
+            for (int i = 0; i < numCooldowns; i++)
+            {
+                int key = packet.ReadInt32();
+                var value = packet.ReadInt32();
+                _cooldowns.Add(key, value);
+            }
         }
 
         public override void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(IsShooting));
+        }
+
+        public override object Clone()
+        {
+            var copy = (WeaponControl)base.Clone();
+
+            copy._cooldowns = new Dictionary<int, int>(_cooldowns);
+
+            return copy;
         }
 
         #endregion

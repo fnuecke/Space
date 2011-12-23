@@ -31,7 +31,6 @@ namespace Space.Control
             tss.EntityManager.SystemManager
                 .AddSystem(new DefaultLogicSystem())
                 .AddSystem(new ShipControlSystem())
-                .AddSystem(new WeaponSystem())
                 .AddSystem(new AvatarSystem())
                 .AddSystem(new PlayerCenteredSoundSystem((SoundBank)game.Services.GetService(typeof(SoundBank)),Session))
                 .AddSystem(new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session)

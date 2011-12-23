@@ -345,7 +345,7 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long removeFrame = args.Data.ReadInt64();
-                        long entityUid = args.Data.ReadInt64();
+                        int entityUid = args.Data.ReadInt32();
                         tss.RemoveEntity(entityUid, removeFrame);
                     }
                     break;

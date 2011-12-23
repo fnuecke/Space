@@ -79,14 +79,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\weapons.xml">
-      <Name>weapons</Name>
-      <Importer>XmlImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-      <SubType>Designer</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Data\items.xml">
       <Name>items</Name>
       <Importer>XmlImporter</Importer>

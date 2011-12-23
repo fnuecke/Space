@@ -185,7 +185,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="entityId">the id of the entity to remove.</param>
         /// <param name="frame">the frame in which to remove the entity.</param>
-        public void RemoveEntity(long entityUid, long frame)
+        public void RemoveEntity(int entityUid, long frame)
         {
             // Remove the entity from the simulation.
             tss.RemoveEntity(entityUid, frame);

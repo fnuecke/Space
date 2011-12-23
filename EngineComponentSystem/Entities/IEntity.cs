@@ -17,7 +17,7 @@ namespace Engine.ComponentSystem.Entities
         /// <summary>
         /// A globally unique id for this object.
         /// </summary>
-        long UID { get; set; }
+        int UID { get; set; }
 
         /// <summary>
         /// A list of all of this entities components.

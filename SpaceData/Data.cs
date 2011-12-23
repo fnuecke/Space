@@ -1,84 +1,9 @@
 using System.Xml.Serialization;
 using Engine.Math;
-using Engine.Serialization;
 using Microsoft.Xna.Framework.Content;
 
 namespace Space.Data
 {
-    public class WeaponData : IPacketizable
-    {
-        /// <summary>
-        /// The name of the weapon, which serves as a unique type identifier.
-        /// </summary>
-        public string Name;
-
-        /// <summary>
-        /// The texture to use for rendering the weapon.
-        /// </summary>
-        public string Texture;
-
-        /// <summary>
-        /// The sound to play when firing a shot.
-        /// </summary>
-        public string Sound;
-
-        /// <summary>
-        /// The damage a single shot of this weapon inflicts.
-        /// </summary>
-        public Fixed Damage;
-
-        /// <summary>
-        /// The cooldown-time for this weapon, in game frames.
-        /// </summary>
-        public int Cooldown;
-
-        /// <summary>
-        /// The name of the particle effect to use for shots.
-        /// </summary>
-        public string ProjectileTexture;
-
-        /// <summary>
-        /// The speed of fired projectiles.
-        /// </summary>
-        public Fixed ProjectileSpeed;
-
-        /// <summary>
-        /// The collision radius of the projectiles.
-        /// </summary>
-        public Fixed ProjectileRadius;
-
-        /// <summary>
-        /// The collision radius of the projectiles.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public int ProjectileTTL = 5 * 60; // Default: 5 seconds.
-
-        public Packet Packetize(Packet packet)
-        {
-            return packet
-                .Write(Name)
-                .Write(Texture)
-                .Write(Sound)
-                .Write(Damage)
-                .Write(Cooldown)
-                .Write(ProjectileTexture)
-                .Write(ProjectileSpeed)
-                .Write(ProjectileRadius);
-        }
-
-        public void Depacketize(Packet packet)
-        {
-            Name = packet.ReadString();
-            Texture = packet.ReadString();
-            Sound = packet.ReadString();
-            Damage = packet.ReadFixed();
-            Cooldown = packet.ReadInt32();
-            ProjectileTexture = packet.ReadString();
-            ProjectileSpeed = packet.ReadFixed();
-            ProjectileRadius = packet.ReadFixed();
-        }
-    }
-
     public class ItemData
     {
         public string Name;

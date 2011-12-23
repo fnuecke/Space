@@ -109,14 +109,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentSystem\Components\WeaponSound.cs" />
     <Compile Include="Simulation\Commands\GameCommand.cs" />
     <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
     <Compile Include="ComponentSystem\Components\WeaponControl.cs" />
-    <Compile Include="ComponentSystem\Components\WeaponSlot.cs" />
     <Compile Include="ComponentSystem\Entities\EntityFactory.cs" />
-    <Compile Include="ComponentSystem\Parameterizations\WeaponParameterization.cs" />
     <Compile Include="ComponentSystem\Parameterizations\InputParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\PlayerCenteredRenderSystem.cs" />
     <Compile Include="ComponentSystem\Systems\PlayerCenteredSoundSystem.cs" />
@@ -126,7 +125,6 @@
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Control\InputCommandEmitter.cs" />
     <Compile Include="Control\ServerController.cs" />
-    <Compile Include="ComponentSystem\Systems\WeaponSystem.cs" />
     <Compile Include="Simulation\AsteroidBelt.cs" />
     <Compile Include="Simulation\PlayerInfo.cs" />
     <Compile Include="Simulation\SpecialSystem.cs" />
