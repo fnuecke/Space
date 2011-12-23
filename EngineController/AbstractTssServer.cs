@@ -121,10 +121,13 @@ namespace Engine.Controller
                 Hasher hasher = new Hasher();
                 tss.Hash(hasher);
 
-                Session.Send(new Packet()
-                    .Write((byte)TssControllerMessage.HashCheck)
-                    .Write(tss.TrailingFrame)
-                    .Write(hasher.Value));
+                using (var packet = new Packet())
+                {
+                    Session.Send(packet
+                        .Write((byte)TssControllerMessage.HashCheck)
+                        .Write(tss.TrailingFrame)
+                        .Write(hasher.Value));
+                }
             }
         }
 
@@ -167,10 +170,13 @@ namespace Engine.Controller
             tss.AddEntity(entity, frame);
 
             // Notify all players in the game about this.
-            Session.Send(new Packet()
-                .Write((byte)TssControllerMessage.AddGameObject)
-                .Write(frame)
-                .Write(entity));
+            using (var packet = new Packet())
+            {
+                Session.Send(packet
+                    .Write((byte)TssControllerMessage.AddGameObject)
+                    .Write(frame)
+                    .Write(entity));
+            }
         }
 
         /// <summary>
@@ -185,10 +191,13 @@ namespace Engine.Controller
             tss.RemoveEntity(entityUid, frame);
 
             // Notify all players in the game about this.
-            Session.Send(new Packet()
-                .Write((byte)TssControllerMessage.RemoveGameObject)
-                .Write(frame)
-                .Write(entityUid));
+            using (var packet = new Packet())
+            {
+                Session.Send(packet
+                    .Write((byte)TssControllerMessage.RemoveGameObject)
+                    .Write(frame)
+                    .Write(entityUid));
+            }
         }
 
         /// <summary>
@@ -238,10 +247,13 @@ namespace Engine.Controller
                     // Client re-synchronizing.
                     {
                         long clientFrame = args.Data.ReadInt64();
-                        Session.SendTo(args.Player, new Packet()
-                            .Write((byte)TssControllerMessage.Synchronize)
-                            .Write(clientFrame)
-                            .Write(tss.CurrentFrame));
+                        using (var packet = new Packet())
+                        {
+                            Session.SendTo(args.Player, packet
+                                .Write((byte)TssControllerMessage.Synchronize)
+                                .Write(clientFrame)
+                                .Write(tss.CurrentFrame));
+                        }
                     }
                     break;
 
@@ -249,9 +261,12 @@ namespace Engine.Controller
                     // Client needs game state.
                     if ((DateTime.Now - _lastGameStateSentTime[args.Player.Number]).TotalMilliseconds > GameStateResendInterval) {
                         _lastGameStateSentTime[args.Player.Number] = DateTime.Now;
-                        Session.SendTo(args.Player, new Packet()
-                            .Write((byte)TssControllerMessage.GameStateResponse)
-                            .Write(tss));
+                        using (var packet = new Packet())
+                        {
+                            Session.SendTo(args.Player, packet
+                                .Write((byte)TssControllerMessage.GameStateResponse)
+                                .Write(tss));
+                        }
                     }
                     break;
 

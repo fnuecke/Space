@@ -125,7 +125,7 @@ namespace Engine.Session
     /// <summary>
     /// Used for <see cref="Engine.Session.IServerSession#GameInfoRequested"/>.
     /// </summary>
-    public class RequestEventArgs : EventArgs
+    public class RequestEventArgs : EventArgs, IDisposable
     {
         /// <summary>
         /// Data that should be sent should be written to this packet.
@@ -135,6 +135,17 @@ namespace Engine.Session
         public RequestEventArgs()
         {
             this.Data = new Packet();
+        }
+
+        public void Dispose()
+        {
+            if (Data != null)
+            {
+                Data.Dispose();
+                Data = null;
+            }
+
+            GC.SuppressFinalize(this);
         }
     }
 

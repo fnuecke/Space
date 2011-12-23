@@ -133,7 +133,10 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         protected void Send(TCommand command)
         {
-            Session.Send(WrapDataForSend(command, new Packet()));
+            using (var packet = new Packet())
+            {
+                Session.Send(WrapDataForSend(command, packet));
+            }
         }
 
         #endregion
