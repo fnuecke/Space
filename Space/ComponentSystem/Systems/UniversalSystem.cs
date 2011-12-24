@@ -1,95 +1,107 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
-using Space.Data;
+using Engine.Math;
 using Engine.Util;
 using Space.ComponentSystem.Entities;
-using Engine.Math;
-using Engine.ComponentSystem.Entities;
+using Space.ComponentSystem.Systems.Messages;
+using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    class UniversalSystem : IComponentSystem
+    public class UniversalSystem : AbstractComponentSystem<NullParameterization>
     {
-        public Dictionary<long, List<int>> zellEntitys; 
-        public IComponentSystemManager Manager
-        {
-            get;
-            set;
-        }
-        public WorldConstaints Constaints;
+        #region Properties
+        
+        public ulong WorldSeed { get; set; }
 
-        public MersenneTwister Twister;
+        #endregion
 
-        public System.Collections.ObjectModel.ReadOnlyCollection<Engine.ComponentSystem.Components.IComponent> Components
-        {
-            get { throw new NotSupportedException(); }
-        }
+        #region Fields
+        
+        private WorldConstaints _constaints;
 
+        private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
+
+        #endregion
+
+        #region Constructor
+        
         public UniversalSystem(WorldConstaints constaits)
         {
-            Constaints = constaits;
-            zellEntitys = new Dictionary<long, List<int>>();
-            
+            _constaints = constaits;
         }
 
-        public void Update(ComponentSystemUpdateType updateType, long frame)
-        {
-            //not used
-        }
+        #endregion
 
-        public IComponentSystem AddComponent(Engine.ComponentSystem.Components.IComponent component)
-        {
-            //
-            return null;
-        }
+        #region Logic
 
-        public void RemoveComponent(Engine.ComponentSystem.Components.IComponent component)
+        public override void HandleMessage(ValueType message)
         {
-           //not used
-        }
-
-        public object Clone()
-        {
-            return this;
-        }
-
-        public void HandleMessage(int x, int y, bool alive)
-        {
-            long shiftx = ((long)x)<< 32;
-            long result = shiftx | (long)y;
-
-            if (alive)
+            if (message is CellStateChanged)
             {
-                Twister = new MersenneTwister();
-                List<int> list;
+                var info = (CellStateChanged)message;
 
-                if (x == 0 && y == 0)
-                    list = CreateStartSystem();
-                list = CreateSunSystem(x,y,result);
-
-                zellEntitys.Add(result, list);
-                
-            }
-
-            else
-            {
-                foreach (int id in zellEntitys[result])
+                if (info.State)
                 {
-                    Manager.EntityManager.RemoveEntity(id);
-                    
+                    var random = new MersenneTwister();
+                    List<int> list;
+
+                    if (info.X == 0 && info.Y == 0)
+                    {
+                        list = CreateStartSystem();
+                    }
+                    else
+                    {
+                        list = CreateSunSystem(info.X, info.Y, new MersenneTwister(info.Id ^ WorldSeed));
+                    }
+
+                    _entities.Add(info.Id, list);
                 }
-                zellEntitys.Remove(result);
+                else
+                {
+                    foreach (int id in _entities[info.Id])
+                    {
+                        Manager.EntityManager.RemoveEntity(id);
+                    }
+
+                    _entities.Remove(info.Id);
+                }
             }
         }
 
-        private List<int> CreateSunSystem(int x,int y,long result)
+        #endregion
+
+        #region Cloning
+
+        public override object Clone()
         {
-            FPoint center = FPoint.Create(Fixed.Create(x),Fixed.Create(y));
+            var copy = (UniversalSystem)base.Clone();
+
+            copy._entities = new Dictionary<ulong, List<int>>();
+            foreach (var item in _entities)
+            {
+                copy._entities.Add(item.Key, new List<int>(item.Value));
+            }
+
+            return copy;
+        }
+
+        #endregion
+
+        #region Utility methods
+
+        private List<int> CreateSunSystem(int x, int y, MersenneTwister random)
+        {
             List<int> list = new List<int>();
-            IEntity entity = EntityFactory.CreateStar("Texture/sun", center);
+
+            var cellSize = Manager.GetSystem<CellSystem>().CellSize;
+
+            FPoint center = FPoint.Create(Fixed.Create(cellSize * x), Fixed.Create(cellSize * y));
+            
+            IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
             Manager.EntityManager.AddEntity(entity);
             list.Add(entity.UID);
 
@@ -98,37 +110,42 @@ namespace Space.ComponentSystem.Systems
 
         private List<int> CreateStartSystem()
         {
+            var random = new MersenneTwister(WorldSeed);
+
             List<int> list = new List<int>();
-            
-            Twister = new MersenneTwister(Constaints.WorldSeed);
+
             FPoint center = FPoint.Zero;
-            center.X += Twister.Next(2000) - 1000;
-            center.Y += Twister.Next(2000) - 1000;
-            IEntity entity = EntityFactory.CreateStar("Texture/sun", center);
+            center.X += random.Next(2000) - 1000;
+            center.Y += random.Next(2000) - 1000;
+
+            IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
+            Manager.EntityManager.AddEntity(entity);
+            list.Add(entity.UID);
 
             return list;
         }
+
         private List<int> CreateAsteroidBelt()
         {
             List<int> list = new List<int>();
 
             return list;
         }
+
         private List<int> CreateNebula()
         {
-            var list = new List<int>();
+            List<int> list = new List<int>();
 
             return list;
         }
+
         private List<int> CreateSpecialSystem()
         {
-            var list = new List<int>();
+            List<int> list = new List<int>();
 
             return list;
         }
 
-
-
-        
+        #endregion
     }
 }

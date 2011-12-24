@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
+using Engine.Serialization;
+using Engine.Util;
 namespace Engine.ComponentSystem.Systems
 {
     /// <summary>
     /// Interface to component system managers, which hold multiple systems
     /// which may communicate with each other via the manager.
     /// </summary>
-    public interface IComponentSystemManager : ICloneable
+    public interface IComponentSystemManager : ICloneable, IPacketizable, IHashable
     {
         /// <summary>
         /// A list of registered subsystems.
@@ -58,5 +60,11 @@ namespace Engine.ComponentSystem.Systems
         /// <typeparam name="T">The type of the system to get.</typeparam>
         /// <returns>The first system of the given type, or <c>null</c> if no such system exits.</returns>
         T GetSystem<T>() where T : IComponentSystem;
+        
+        /// <summary>
+        /// Send a message to all systems of this component system manager.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        void SendMessage(ValueType message);
     }
 }

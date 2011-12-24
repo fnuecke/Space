@@ -58,23 +58,28 @@ namespace Space
             // to almost no desyncs at all! Yay!
             this.IsFixedTimeStep = false;
 
+            // Create our own, localized content manager.
+            Content = new LocalizedContentManager(Services);
+
             // Get locale for localized content.
+            CultureInfo culture;
             try
             {
-                Strings.Culture = new System.Globalization.CultureInfo(Settings.Instance.Language);
+                culture = CultureInfo.GetCultureInfo(Settings.Instance.Language);
             }
             catch (CultureNotFoundException)
             {
-                Strings.Culture = new System.Globalization.CultureInfo("en");
-                Settings.Instance.Language = "en";
+                culture = CultureInfo.InvariantCulture;
+                Settings.Instance.Language = culture.Name;
             }
-            Content = new SpaceContentManager(Services, Settings.Instance.Language);
+            Strings.Culture = culture;
+            ((LocalizedContentManager)Content).Culture = culture;
 
             // Remember to keep this in sync with the content project.
             Content.RootDirectory = "data";
 
             // Some window settings.
-            Window.Title = "Spaaaaaace. Space. Spaaace. So much space!";
+            Window.Title = "Space. The Game. Seriously.";
             IsMouseVisible = true;
 
             // Add some more utility components.
@@ -98,19 +103,11 @@ namespace Space
             // Add a logging target that'll write to our console.
             new GameConsoleTarget(this, LogLevel.Debug);
 
-            // Register some commands for our console, making debugging that much easier ;)
-            console.AddCommand("server", args =>
-            {
-                RestartServer();
-            },
-                "Restart server logic.");
-
             console.AddCommand(new[] { "fullscreen", "fs" }, args =>
             {
                 graphics.ToggleFullScreen();
             },
                 "Toggles fullscreen mode.");
-
 
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
@@ -119,19 +116,6 @@ namespace Space
             {
                 Console.WriteLine(((LineWrittenEventArgs)e).Message);
             };
-        }
-
-        /// <summary>
-        /// Allows the game to perform any initialization it needs to before starting to run.
-        /// This is where it can query for any required services and load any non-graphic
-        /// related content.  Calling base.Initialize will enumerate through any components
-        /// and initialize them as well.
-        /// </summary>
-        protected override void Initialize()
-        {
-            // TODO: Add your initialization logic here
-
-            base.Initialize();
         }
 
         /// <summary>
@@ -186,17 +170,6 @@ namespace Space
             spriteBatch.DrawString(console.Font, info, infoPosition, Color.White);
 
             spriteBatch.End();
-        }
-
-        private void RestartServer()
-        {
-            if (server != null)
-            {
-                server.Dispose();
-                Components.Remove(server);
-            }
-            server = new GameServer(this);
-            Components.Add(server);
         }
     }
 }

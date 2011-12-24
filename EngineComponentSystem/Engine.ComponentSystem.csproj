@@ -73,6 +73,7 @@
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
+    <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -116,6 +117,7 @@
     <Compile Include="Parameterizations\AvatarParameterization.cs" />
     <Compile Include="Parameterizations\CollisionParameterization.cs" />
     <Compile Include="Parameterizations\DefaultLogicParameterization.cs" />
+    <Compile Include="Parameterizations\NullParameterization.cs" />
     <Compile Include="Parameterizations\RendererParameterization.cs" />
     <Compile Include="Parameterizations\SoundParameterization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

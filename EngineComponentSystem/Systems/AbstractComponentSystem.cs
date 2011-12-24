@@ -1,6 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Parameterizations;
+using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -30,9 +34,27 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         public ReadOnlyCollection<IComponent> Components { get { return new List<IComponent>(_components).AsReadOnly(); } }
 
+        /// <summary>
+        /// Tells if this component system should be packetized and sent via
+        /// the network (server to client). This should only be true for logic
+        /// related systems, that affect functionality that has to work exactly
+        /// the same on both server and client.
+        /// 
+        /// <para>
+        /// If the game has no network functionality, this flag is irrelevant.
+        /// </para>
+        /// </summary>
+        public bool ShouldSynchronize { get; protected set; }
+
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// Whether the parameterization for the implementing class is the null
+        /// parameterization, meaning we will never get any components.
+        /// </summary>
+        private readonly bool _isNullParameterized = (typeof(TUpdateParameterization) == typeof(NullParameterization));
 
         /// <summary>
         /// List of all currently registered components.
@@ -59,7 +81,7 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>This component system, for chaining.</returns>
         public IComponentSystem AddComponent(IComponent component)
         {
-            if (!_components.Contains(component))
+            if (!_isNullParameterized && !_components.Contains(component))
             {
                 if (component.SupportsParameterization(typeof(TUpdateParameterization)))
                 {
@@ -76,15 +98,41 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component to remove.</param>
         public void RemoveComponent(IComponent component)
         {
-            if (_components.Remove(component))
+            if (!_isNullParameterized && _components.Remove(component))
             {
                 HandleComponentRemoved(component);
             }
         }
 
+        /// <summary>
+        /// Inform a system of a message that was sent by another system.
+        /// 
+        /// <para>
+        /// Note that systems will also receive the messages they send themselves.
+        /// </para>
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        public virtual void HandleMessage(ValueType message)
+        {
+        }
+
         #endregion
 
-        #region Cloning
+        #region Serialization / Hashing / Cloning
+
+        public virtual Packet Packetize(Packet packet)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void Depacketize(Packet packet)
+        {
+            throw new NotSupportedException();
+        }
+
+        public virtual void Hash(Hasher hasher)
+        {
+        }
 
         /// <summary>
         /// Creates a deep copy, with a component list only containing
@@ -102,13 +150,17 @@ namespace Engine.ComponentSystem.Systems
             // Get something to start with.
             var copy = (AbstractComponentSystem<TUpdateParameterization>)MemberwiseClone();
 
-            // Use a different list. Copy over non-entity components.
-            copy._components = new HashSet<IComponent>();
-            foreach (var component in _components)
+            // If we're not null parameterized, use a different list. Copy over
+            // non-entity components.
+            if (!_isNullParameterized)
             {
-                if (component.Entity == null)
+                copy._components = new HashSet<IComponent>();
+                foreach (var component in _components)
                 {
-                    copy._components.Add((IComponent)component.Clone());
+                    if (component.Entity == null)
+                    {
+                        copy._components.Add((IComponent)component.Clone());
+                    }
                 }
             }
             

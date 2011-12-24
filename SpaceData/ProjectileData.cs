@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Space.Data
 {
-    public sealed class ProjectileData : ICloneable, IPacketizable, IHashable
+    public sealed class ProjectileData : IPacketizable, IHashable
     {
         /// <summary>
         /// The texture to use to render the projectile.
@@ -46,7 +46,7 @@ namespace Space.Data
         [ContentSerializer(Optional = true)]
         public int TimeToLive = 5 * 60; // ~5 seconds
 
-        #region Serialization / Hashing / Cloning
+        #region Serialization / Hashing
 
         public Packet Packetize(Packet packet)
         {
@@ -75,13 +75,9 @@ namespace Space.Data
             hasher.Put(BitConverter.GetBytes(CollisionRadius.RawValue));
             hasher.Put(BitConverter.GetBytes(Damage.RawValue));
             hasher.Put(BitConverter.GetBytes(InitialVelocity.RawValue));
+            hasher.Put(BitConverter.GetBytes(AccelerationForce.RawValue));
             hasher.Put(BitConverter.GetBytes(Friction.RawValue));
             hasher.Put(BitConverter.GetBytes(TimeToLive));
-        }
-
-        public object Clone()
-        {
-            return MemberwiseClone();
         }
 
         #endregion

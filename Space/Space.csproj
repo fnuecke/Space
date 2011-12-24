@@ -111,6 +111,8 @@
   <ItemGroup>
     <Compile Include="ComponentSystem\Systems\UniversalSystem.cs" />
     <Compile Include="ComponentSystem\Components\WeaponSound.cs" />
+    <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
+    <Compile Include="ComponentSystem\Systems\Messages\CellStateChanged.cs" />
     <Compile Include="Simulation\Commands\GameCommand.cs" />
 
     <Compile Include="ComponentSystem\Components\Background.cs" />
@@ -157,7 +159,6 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Simulation\System.cs" />
     <Compile Include="Spaaace.cs" />
-    <Compile Include="SpaceContentManager.cs" />
     <Compile Include="Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

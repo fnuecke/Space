@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Text;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
-using Engine.Util;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Components
@@ -75,7 +73,7 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        #region Serialization / Hashing
+        #region Serialization
 
         public override Packet Packetize(Packet packet)
         {
@@ -88,13 +86,6 @@ namespace Engine.ComponentSystem.Components
             base.Depacketize(packet);
 
             TextureName = packet.ReadString();
-        }
-
-        public override void Hash(Hasher hasher)
-        {
-            base.Hash(hasher);
-
-            hasher.Put(Encoding.UTF8.GetBytes(TextureName));
         }
 
         #endregion

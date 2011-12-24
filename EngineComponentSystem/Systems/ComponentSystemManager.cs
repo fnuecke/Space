@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
+using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -140,7 +142,68 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Cloning
+        #region System messaging
+
+        /// <summary>
+        /// Send a message to all systems of this component system manager.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        public void SendMessage(ValueType message)
+        {
+            foreach (var system in _systems)
+            {
+                system.HandleMessage(message);
+            }
+        }
+
+        #endregion
+
+        #region Serialization / Hashing / Cloning
+
+        public Packet Packetize(Packet packet)
+        {
+            int numToSync = 0;
+            foreach (var system in _systems)
+            {
+                if (system.ShouldSynchronize)
+                {
+                    ++numToSync;
+                }
+            }
+            packet.Write(numToSync);
+
+            foreach (var system in _systems)
+            {
+                if (system.ShouldSynchronize)
+                {
+                    packet.Write(system.GetType().AssemblyQualifiedName);
+                    packet.Write(system);
+                }
+            }
+
+            return packet;
+        }
+
+        public void Depacketize(Packet packet)
+        {
+            int numToSync = packet.ReadInt32();
+            for (int i = 0; i < numToSync; i++)
+            {
+                Type type = Type.GetType(packet.ReadString());
+                packet.ReadPacketizableInto(_mapping[type]);
+            }
+        }
+
+        public void Hash(Hasher hasher)
+        {
+            foreach (var system in _systems)
+            {
+                if (system.ShouldSynchronize)
+                {
+                    system.Hash(hasher);
+                }
+            }
+        }
 
         public object Clone()
         {

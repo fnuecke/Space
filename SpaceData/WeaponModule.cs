@@ -1,5 +1,7 @@
-﻿using Engine.Data;
+﻿using System;
+using Engine.Data;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Space.Data
 {
@@ -49,6 +51,17 @@ namespace Space.Data
             Sound = packet.ReadString();
             Cooldown = packet.ReadInt32();
             Projectiles = packet.ReadPacketizables<ProjectileData>();
+        }
+
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put(BitConverter.GetBytes(Cooldown));
+            foreach (var projectile in Projectiles)
+            {
+                projectile.Hash(hasher);
+            }
         }
 
         public override object Clone()

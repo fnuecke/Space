@@ -110,6 +110,12 @@ namespace Engine.Controller
         /// </summary>
         public override void Update(GameTime gameTime)
         {
+            // Can happen when removed from components list while in update.
+            if (tss == null)
+            {
+                return;
+            }
+
             // Drive game logic.
             UpdateSimulation(gameTime);
 

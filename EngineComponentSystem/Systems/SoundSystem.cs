@@ -84,7 +84,8 @@ namespace Engine.ComponentSystem.Systems
 
         public SoundSystem(SoundBank soundBank)
         {
-            _soundBank = soundBank;
+            this._soundBank = soundBank;
+
         }
 
         #endregion

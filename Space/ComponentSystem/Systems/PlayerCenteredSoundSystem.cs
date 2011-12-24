@@ -1,25 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Math;
-using Microsoft.Xna.Framework.Audio;
 using Engine.Session;
-using Engine.ComponentSystem.Components;
+using Microsoft.Xna.Framework.Audio;
 
 namespace Space.ComponentSystem.Systems
 {
+    /// <summary>
+    /// Defines a sound system which uses the local player's avatar to
+    /// determine the listener position.
+    /// </summary>
     class PlayerCenteredSoundSystem : SoundSystem
     {
         #region Fields
+
+        /// <summary>
+        /// The session this system belongs to, for fetching the local player.
+        /// </summary>
         IClientSession _session;
+
         #endregion
+
+        #region Constructor
+        
         public PlayerCenteredSoundSystem(SoundBank soundbank, IClientSession session)
-            :base(soundbank)
+            : base(soundbank)
         {
-            _session = session;
+            this._session = session;
         }
+
+        #endregion
+
+        #region Logic
+
+        /// <summary>
+        /// Returns the position of the local player's avatar.
+        /// </summary>
         protected override FPoint GetListenerPosition()
         {
             var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
@@ -30,6 +46,9 @@ namespace Space.ComponentSystem.Systems
             return FPoint.Zero;
         }
 
+        /// <summary>
+        /// Returns the velocity of the local player's avatar.
+        /// </summary>
         protected override FPoint GetListenerVelocity()
         {
             var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
@@ -39,5 +58,7 @@ namespace Space.ComponentSystem.Systems
             }
             return FPoint.Zero;
         }
+
+        #endregion
     }
 }

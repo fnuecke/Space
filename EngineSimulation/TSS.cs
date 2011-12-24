@@ -781,6 +781,26 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
+            public void SendMessage(ValueType message)
+            {
+                throw new NotSupportedException();
+            }
+
+            public Packet Packetize(Packet packet)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Depacketize(Packet packet)
+            {
+                throw new NotSupportedException();
+            }
+
+            public void Hash(Hasher hasher)
+            {
+                throw new NotSupportedException();
+            }
+
             public object Clone()
             {
                 throw new NotSupportedException();

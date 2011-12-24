@@ -114,6 +114,7 @@
     <Compile Include="Input\MouseInputManager.cs" />
     <Compile Include="Network\AbstractProtocol.cs" />
     <Compile Include="Util\IdManager.cs" />
+    <Compile Include="Util\LocalizedContentManager.cs" />
     <Compile Include="Util\PacketStream.cs" />
     <Compile Include="Network\UdpProtocol.cs" />
     <Compile Include="Network\EventArgs.cs" />

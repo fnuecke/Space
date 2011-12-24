@@ -48,6 +48,8 @@ namespace Space.Data
         [ContentSerializer(Optional = true)]
         public WeaponModule[] Weapons = new WeaponModule[0];
 
+        #region Serialization
+        
         public Packet Packetize(Packet packet)
         {
             return packet
@@ -72,5 +74,7 @@ namespace Space.Data
             Shields = packet.ReadPacketizables<ShieldModule>();
             Weapons = packet.ReadPacketizables<WeaponModule>();
         }
+
+        #endregion
     }
 }
