@@ -110,6 +110,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComponentSystem\Components\WeaponSound.cs" />
+    <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
+    <Compile Include="ComponentSystem\Systems\Messages\CellStateChanged.cs" />
     <Compile Include="Simulation\Commands\GameCommand.cs" />
     <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />

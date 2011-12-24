@@ -63,5 +63,15 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to remove.</param>
         void RemoveComponent(IComponent component);
+
+        /// <summary>
+        /// Inform a system of a message that was sent by another system.
+        /// 
+        /// <para>
+        /// Note that systems will also receive the messages they send themselves.
+        /// </para>
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        void HandleMessage(ValueType message);
     }
 }

@@ -43,7 +43,8 @@ namespace Space.Control
             tss.EntityManager.SystemManager
                 .AddSystem(new DefaultLogicSystem())
                 .AddSystem(new ShipControlSystem())
-                .AddSystem(new AvatarSystem());
+                .AddSystem(new AvatarSystem())
+                .AddSystem(new CellSystem());
         }
 
         public override void Initialize()

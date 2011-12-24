@@ -140,6 +140,22 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
+        #region System messaging
+
+        /// <summary>
+        /// Send a message to all systems of this component system manager.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        public void SendMessage(ValueType message)
+        {
+            foreach (var system in _systems)
+            {
+                system.HandleMessage(message);
+            }
+        }
+
+        #endregion
+
         #region Cloning
 
         public object Clone()

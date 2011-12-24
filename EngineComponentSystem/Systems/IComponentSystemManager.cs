@@ -58,5 +58,11 @@ namespace Engine.ComponentSystem.Systems
         /// <typeparam name="T">The type of the system to get.</typeparam>
         /// <returns>The first system of the given type, or <c>null</c> if no such system exits.</returns>
         T GetSystem<T>() where T : IComponentSystem;
+        
+        /// <summary>
+        /// Send a message to all systems of this component system manager.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        void SendMessage(ValueType message);
     }
 }

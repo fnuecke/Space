@@ -781,6 +781,11 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
+            public void SendMessage(ValueType message)
+            {
+                throw new NotSupportedException();
+            }
+
             public object Clone()
             {
                 throw new NotSupportedException();

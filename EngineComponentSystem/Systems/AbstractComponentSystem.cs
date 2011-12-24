@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 
@@ -80,6 +81,18 @@ namespace Engine.ComponentSystem.Systems
             {
                 HandleComponentRemoved(component);
             }
+        }
+
+        /// <summary>
+        /// Inform a system of a message that was sent by another system.
+        /// 
+        /// <para>
+        /// Note that systems will also receive the messages they send themselves.
+        /// </para>
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        public virtual void HandleMessage(ValueType message)
+        {
         }
 
         #endregion
