@@ -153,6 +153,10 @@ namespace Space.ComponentSystem.Components
         public override void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(IsShooting));
+            foreach (var cooldown in _cooldowns.Values)
+            {
+                hasher.Put(BitConverter.GetBytes(cooldown));
+            }
         }
 
         public override object Clone()

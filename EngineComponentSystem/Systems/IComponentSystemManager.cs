@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
+using Engine.Serialization;
+using Engine.Util;
 namespace Engine.ComponentSystem.Systems
 {
     /// <summary>
     /// Interface to component system managers, which hold multiple systems
     /// which may communicate with each other via the manager.
     /// </summary>
-    public interface IComponentSystemManager : ICloneable
+    public interface IComponentSystemManager : ICloneable, IPacketizable, IHashable
     {
         /// <summary>
         /// A list of registered subsystems.

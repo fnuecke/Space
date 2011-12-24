@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
+using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -32,7 +34,7 @@ namespace Engine.ComponentSystem.Systems
     /// copied.
     /// </para>
     /// </summary>
-    public interface IComponentSystem : ICloneable
+    public interface IComponentSystem : ICloneable, IPacketizable, IHashable
     {
         /// <summary>
         /// The component system manager this system is part of.
@@ -43,6 +45,24 @@ namespace Engine.ComponentSystem.Systems
         /// A list of components registered in this system.
         /// </summary>
         ReadOnlyCollection<IComponent> Components { get; }
+
+        /// <summary>
+        /// Tells if this component system should be packetized and sent via
+        /// the network (server to client). This should only be true for logic
+        /// related systems, that affect functionality that has to work exactly
+        /// the same on both server and client.
+        /// 
+        /// <para>
+        /// If the game has no network functionality, this flag is irrelevant.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// Note to implementors: a state should never send its list of
+        /// components, nor depend on it for its state, as that list will
+        /// always be dynamically rebuilt on the client by deserializing
+        /// entities.
+        /// </remarks>
+        bool ShouldSynchronize { get; }
 
         /// <summary>
         /// Update all components in this system.

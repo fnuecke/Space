@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Math;
 using Engine.Util;
@@ -12,12 +11,10 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    public class UniversalSystem : IComponentSystem
+    public class UniversalSystem : AbstractComponentSystem<NullParameterization>
     {
         #region Properties
         
-        public IComponentSystemManager Manager { get; set; }
-
         public ulong WorldSeed { get; set; }
 
         #endregion
@@ -26,7 +23,7 @@ namespace Space.ComponentSystem.Systems
         
         private WorldConstaints _constaints;
 
-        private Dictionary<ulong, List<int>> _entities;
+        private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
 
         #endregion
 
@@ -35,14 +32,13 @@ namespace Space.ComponentSystem.Systems
         public UniversalSystem(WorldConstaints constaits)
         {
             _constaints = constaits;
-            _entities = new Dictionary<ulong, List<int>>();
         }
 
         #endregion
 
         #region Logic
 
-        public void HandleMessage(ValueType message)
+        public override void HandleMessage(ValueType message)
         {
             if (message is CellStateChanged)
             {
@@ -80,9 +76,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Cloning
 
-        public object Clone()
+        public override object Clone()
         {
-            var copy = (UniversalSystem)MemberwiseClone();
+            var copy = (UniversalSystem)base.Clone();
 
             copy._entities = new Dictionary<ulong, List<int>>();
             foreach (var item in _entities)
@@ -91,25 +87,6 @@ namespace Space.ComponentSystem.Systems
             }
 
             return copy;
-        }
-
-        #endregion
-
-        #region Not supported / implemented
-
-        public ReadOnlyCollection<IComponent> Components { get { throw new NotSupportedException(); } }
-
-        public void Update(ComponentSystemUpdateType updateType, long frame)
-        {
-        }
-
-        public IComponentSystem AddComponent(IComponent component)
-        {
-            return this;
-        }
-
-        public void RemoveComponent(IComponent component)
-        {
         }
 
         #endregion

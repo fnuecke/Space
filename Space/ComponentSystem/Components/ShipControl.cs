@@ -17,8 +17,6 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class ShipControl : AbstractComponent
     {
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-        
         #region Properties
         
         /// <summary>

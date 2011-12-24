@@ -261,6 +261,7 @@ namespace Engine.ComponentSystem.Entities
         /// <param name="hasher">the hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
+            hasher.Put(BitConverter.GetBytes(UID));
             foreach (var component in _components)
             {
                 component.Hash(hasher);

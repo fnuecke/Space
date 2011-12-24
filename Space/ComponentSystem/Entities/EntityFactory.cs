@@ -111,20 +111,19 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture,FPoint position)
+        public static IEntity CreateStar(string texture, FPoint position)
         {
-            var star = new Entity();
-            star.AddComponent(new Transform());
+            var entity = new Entity();
 
-            star.AddComponent(new TransformedRenderer());
-
-            var transform = star.GetComponent<Transform>();
+            var transform = new Transform();
             transform.Translation = position;
+            entity.AddComponent(transform);
 
-            var renderer = star.GetComponent<TransformedRenderer>();
+            var renderer = new TransformedRenderer();
             renderer.TextureName = texture;
+            entity.AddComponent(renderer);
 
-            return star;
+            return entity;
         }
     }
 }

@@ -57,7 +57,7 @@ namespace Engine.Data
             Attributes.AddRange(packet.ReadPacketizables<ModuleAttribute<TAttribute>>());
         }
 
-        public void Hash(Hasher hasher)
+        public virtual void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(UID));
             foreach (var attribute in Attributes)

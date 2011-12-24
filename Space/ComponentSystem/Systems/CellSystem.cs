@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
+using Engine.Util;
 using Space.ComponentSystem.Systems.Messages;
 
 namespace Space.ComponentSystem.Systems
@@ -45,6 +47,15 @@ namespace Space.ComponentSystem.Systems
         /// List of cells that are currently marked as alive.
         /// </summary>
         private HashSet<ulong> _livingCells = new HashSet<ulong>();
+
+        #endregion
+
+        #region Constructor
+
+        public CellSystem()
+        {
+            this.ShouldSynchronize = true;
+        }
 
         #endregion
 
@@ -136,7 +147,42 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Cloning
+        #region Serialization / Hashing / Cloning
+
+        public override Packet Packetize(Packet packet)
+        {
+            base.Packetize(packet);
+
+            packet.Write(_livingCells.Count);
+            foreach (var cellId in _livingCells)
+            {
+                packet.Write(cellId);
+            }
+
+            return packet;
+        }
+
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+
+            _livingCells.Clear();
+            int numCells = packet.ReadInt32();
+            for (int i = 0; i < numCells; i++)
+            {
+                _livingCells.Add(packet.ReadUInt64());
+            }
+        }
+
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            foreach (var cellId in _livingCells)
+            {
+                hasher.Put(BitConverter.GetBytes(cellId));
+            }
+        }
 
         public override object Clone()
         {
