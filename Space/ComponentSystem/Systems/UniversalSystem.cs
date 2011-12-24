@@ -1,134 +1,174 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Collections.ObjectModel;
+using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
-using Space.Data;
+using Engine.Math;
 using Engine.Util;
 using Space.ComponentSystem.Entities;
-using Engine.Math;
-using Engine.ComponentSystem.Entities;
+using Space.ComponentSystem.Systems.Messages;
+using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    class UniversalSystem : IComponentSystem
+    public class UniversalSystem : IComponentSystem
     {
-        public Dictionary<long, List<long>> zellEntitys; 
-        public IComponentSystemManager Manager
-        {
-            get;
-            set;
-        }
-        public WorldConstaints Constaints;
+        #region Properties
+        
+        public IComponentSystemManager Manager { get; set; }
 
-        public MersenneTwister Twister;
+        public ulong WorldSeed { get; set; }
 
-        public System.Collections.ObjectModel.ReadOnlyCollection<Engine.ComponentSystem.Components.IComponent> Components
-        {
-            get { throw new NotSupportedException(); }
-        }
+        #endregion
 
+        #region Fields
+        
+        private WorldConstaints _constaints;
+
+        private Dictionary<ulong, List<int>> _entities;
+
+        #endregion
+
+        #region Constructor
+        
         public UniversalSystem(WorldConstaints constaits)
         {
-            Constaints = constaits;
-            zellEntitys = new Dictionary<long, List<long>>();
-            HandleMessage(0, 0, true);
+            _constaints = constaits;
+            _entities = new Dictionary<ulong, List<int>>();
         }
 
-        public void Update(ComponentSystemUpdateType updateType, long frame)
+        #endregion
+
+        #region Logic
+
+        public void HandleMessage(ValueType message)
         {
-            //not used
+            if (message is CellStateChanged)
+            {
+                var info = (CellStateChanged)message;
+
+                if (info.State)
+                {
+                    var random = new MersenneTwister();
+                    List<int> list;
+
+                    if (info.X == 0 && info.Y == 0)
+                    {
+                        list = CreateStartSystem();
+                    }
+                    else
+                    {
+                        list = CreateSunSystem(info.X, info.Y, new MersenneTwister(info.Id ^ WorldSeed));
+                    }
+
+                    _entities.Add(info.Id, list);
+                }
+                else
+                {
+                    foreach (int id in _entities[info.Id])
+                    {
+                        Manager.EntityManager.RemoveEntity(id);
+                    }
+
+                    _entities.Remove(info.Id);
+                }
+            }
         }
 
-        public IComponentSystem AddComponent(Engine.ComponentSystem.Components.IComponent component)
-        {
-            //
-            throw new NotSupportedException();
-        }
+        #endregion
 
-        public void RemoveComponent(Engine.ComponentSystem.Components.IComponent component)
-        {
-           //not used
-        }
+        #region Cloning
 
         public object Clone()
         {
-            throw new NotImplementedException();
-        }
+            var copy = (UniversalSystem)MemberwiseClone();
 
-        public void HandleMessage(int x, int y, bool alive)
-        {
-            long shiftx = ((long)x)<< 32;
-            long result = shiftx | (long)y;
-
-            if (alive)
+            copy._entities = new Dictionary<ulong, List<int>>();
+            foreach (var item in _entities)
             {
-                Twister = new MersenneTwister();
-                List<long> list;
-
-                if (x == 0 && y == 0)
-                    list = CreateStartSystem();
-                list = CreateSunSystem(x,y,result);
-
-                zellEntitys.Add(result, list);
-                
+                copy._entities.Add(item.Key, new List<int>(item.Value));
             }
 
-            else
-            {
-                foreach (long id in zellEntitys[result])
-                {
-                    Manager.EntityManager.RemoveEntity(id);
-                    
-                }
-                zellEntitys.Remove(result);
-            }
+            return copy;
         }
 
-        private List<long> CreateSunSystem(int x,int y,long result)
+        #endregion
+
+        #region Not supported / implemented
+
+        public ReadOnlyCollection<IComponent> Components { get { throw new NotSupportedException(); } }
+
+        public void Update(ComponentSystemUpdateType updateType, long frame)
         {
-            FPoint center = FPoint.Create(Fixed.Create(GridSystem.GridSize*x),Fixed.Create(GridSystem.GridSize*y));
-            List<long> list = new List<long>();
-            IEntity entity = EntityFactory.CreateStar("Texture/sun", center);
+        }
+
+        public IComponentSystem AddComponent(IComponent component)
+        {
+            return this;
+        }
+
+        public void RemoveComponent(IComponent component)
+        {
+        }
+
+        #endregion
+
+        #region Utility methods
+
+        private List<int> CreateSunSystem(int x, int y, MersenneTwister random)
+        {
+            List<int> list = new List<int>();
+
+            var cellSize = Manager.GetSystem<CellSystem>().CellSize;
+
+            FPoint center = FPoint.Create(Fixed.Create(cellSize * x), Fixed.Create(cellSize * y));
+            
+            IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
             Manager.EntityManager.AddEntity(entity);
             list.Add(entity.UID);
 
             return list;
         }
 
-        private List<long> CreateStartSystem()
+        private List<int> CreateStartSystem()
         {
-            List<long> list = new List<long>();
-            
-            Twister = new MersenneTwister(Constaints.WorldSeed);
+            var random = new MersenneTwister(WorldSeed);
+
+            List<int> list = new List<int>();
+
             FPoint center = FPoint.Zero;
-            center.X += Twister.Next(2000) - 1000;
-            center.Y += Twister.Next(2000) - 1000;
-            IEntity entity = EntityFactory.CreateStar("Texture/sun", center);
+            center.X += random.Next(2000) - 1000;
+            center.Y += random.Next(2000) - 1000;
+
+            IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
+            Manager.EntityManager.AddEntity(entity);
+            list.Add(entity.UID);
 
             return list;
         }
-        private List<long> CreateAsteroidBelt()
+
+        private List<int> CreateAsteroidBelt()
         {
-            List<long> list = new List<long>();
+            List<int> list = new List<int>();
 
             return list;
         }
-        private List<long> CreateNebula()
+
+        private List<int> CreateNebula()
         {
-            List<long> list = new List<long>();
+            List<int> list = new List<int>();
 
             return list;
         }
-        private List<long> CreateSpecialSystem()
+
+        private List<int> CreateSpecialSystem()
         {
-            List<long> list = new List<long>();
+            List<int> list = new List<int>();
 
             return list;
         }
 
-
-
-        
+        #endregion
     }
 }

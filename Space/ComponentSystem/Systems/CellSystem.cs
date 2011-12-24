@@ -30,12 +30,21 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// The size of a single cell in world units (normally: pixels).
+        /// </summary>
+        public int CellSize { get { return 2 << _cellSize; } }
+
+        #endregion
+
         #region Fields
         
         /// <summary>
         /// List of cells that are currently marked as alive.
         /// </summary>
-        private HashSet<long> _livingCells = new HashSet<long>();
+        private HashSet<ulong> _livingCells = new HashSet<ulong>();
 
         #endregion
 
@@ -53,7 +62,7 @@ namespace Space.ComponentSystem.Systems
             {
                 // Check the positions of all avatars to check which cells
                 // should live, and which should die / stay dead.
-                var newCells = new HashSet<long>();
+                var newCells = new HashSet<ulong>();
                 foreach (var avatar in Components)
                 {
                     var transform = avatar.Entity.GetComponent<Transform>();
@@ -66,21 +75,21 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Get the cells that became alive.
-                var bornCells = new HashSet<long>(newCells);
+                var bornCells = new HashSet<ulong>(newCells);
                 bornCells.ExceptWith(_livingCells);
                 foreach (var bornCell in bornCells)
                 {
                     var xy = Split(bornCell);
-                    Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, true));
+                    Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true));
                 }
 
                 // Get the cells that died.
-                var deceasedCells = new HashSet<long>(_livingCells);
+                var deceasedCells = new HashSet<ulong>(_livingCells);
                 deceasedCells.ExceptWith(newCells);
                 foreach (var deceasedCell in deceasedCells)
                 {
                     var xy = Split(deceasedCell);
-                    Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, false));
+                    Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false));
                 }
 
                 _livingCells = newCells;
@@ -98,7 +107,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="x">The x coordinate of the main cell.</param>
         /// <param name="y">The y coordinate of the main cell.</param>
         /// <param name="cells">The set of cells to add to.</param>
-        private void AddCellAndNeighbors(int x, int y, HashSet<long> cells)
+        private void AddCellAndNeighbors(int x, int y, HashSet<ulong> cells)
         {
             for (int ny = y - 1; ny <= y + 1; ny++)
             {
@@ -115,12 +124,12 @@ namespace Space.ComponentSystem.Systems
         /// <param name="x">The coordinates to merge.</param>
         /// <param name="y"></param>
         /// <returns></returns>
-        private static long Combine(int x, int y)
+        private static ulong Combine(int x, int y)
         {
-            return ((long)x << 32) | (uint)y;
+            return ((ulong)x << 32) | (uint)y;
         }
 
-        private static Tuple<int, int> Split(long xy)
+        private static Tuple<int, int> Split(ulong xy)
         {
             return Tuple.Create((int)(xy >> 32), (int)(xy & 0xFFFFFFFF));
         }
@@ -133,7 +142,7 @@ namespace Space.ComponentSystem.Systems
         {
             var copy = (CellSystem)base.Clone();
 
-            copy._livingCells = new HashSet<long>(_livingCells);
+            copy._livingCells = new HashSet<ulong>(_livingCells);
 
             return copy;
         }
