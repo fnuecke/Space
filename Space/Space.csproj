@@ -155,7 +155,6 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Simulation\System.cs" />
     <Compile Include="Spaaace.cs" />
-    <Compile Include="SpaceContentManager.cs" />
     <Compile Include="Strings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

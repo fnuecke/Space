@@ -178,7 +178,13 @@
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Compile Include="Textures\background.de.png">
+      <Name>background.de</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
   <ItemGroup>
     <Compile Include="Audio\SpaceAudio.xap">
       <Name>SpaceAudio</Name>

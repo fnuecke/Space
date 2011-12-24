@@ -10,7 +10,6 @@
 #region Using Statements
 using System;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 #endregion
 
@@ -25,13 +24,11 @@ namespace GameStateManagement
     {
         #region Fields
 
-        ContentManager content;
         Texture2D backgroundTexture;
 
         #endregion
 
         #region Initialization
-
 
         /// <summary>
         /// Constructor.
@@ -42,7 +39,6 @@ namespace GameStateManagement
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
         }
 
-
         /// <summary>
         /// Loads graphics content for this screen. The background texture is quite
         /// big, so we use our own local ContentManager to load it. This allows us
@@ -52,26 +48,12 @@ namespace GameStateManagement
         /// </summary>
         public override void LoadContent()
         {
-            if (content == null)
-                content = new ContentManager(ScreenManager.Game.Services, "data");
-
-            backgroundTexture = content.Load<Texture2D>("Textures/background");
+            backgroundTexture = ScreenManager.Game.Content.Load<Texture2D>("Textures/background");
         }
-
-
-        /// <summary>
-        /// Unloads graphics content for this screen.
-        /// </summary>
-        public override void UnloadContent()
-        {
-            content.Unload();
-        }
-
 
         #endregion
 
         #region Update and Draw
-
 
         /// <summary>
         /// Updates the background screen. Unlike most screens, this should not
@@ -85,7 +67,6 @@ namespace GameStateManagement
         {
             base.Update(gameTime, otherScreenHasFocus, false);
         }
-
 
         /// <summary>
         /// Draws the background screen.
@@ -111,7 +92,6 @@ namespace GameStateManagement
 
             spriteBatch.End();
         }
-
 
         #endregion
     }
