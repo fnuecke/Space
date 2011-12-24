@@ -8,6 +8,7 @@ using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Systems;
 using Space.Data;
 using Space.Simulation;
+using Engine.Math;
 
 namespace Space.Control
 {
@@ -45,6 +46,7 @@ namespace Space.Control
                 .AddSystem(new ShipControlSystem())
                 .AddSystem(new AvatarSystem())
                 .AddSystem(new CellSystem());
+                .AddSystem(new UniversalSystem(Game.Content.Load<WorldConstaints>("Data/world")));
         }
 
         public override void Initialize()

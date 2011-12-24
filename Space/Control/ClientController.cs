@@ -7,6 +7,9 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
+using Space.ComponentSystem.Entities;
+using Engine.Math;
+using Space.Data;
 
 namespace Space.Control
 {
@@ -35,7 +38,9 @@ namespace Space.Control
                 .AddSystem(new CellSystem())
                 .AddSystem(new PlayerCenteredSoundSystem((SoundBank)game.Services.GetService(typeof(SoundBank)),Session))
                 .AddSystem(new PlayerCenteredRenderSystem((SpriteBatch)game.Services.GetService(typeof(SpriteBatch)), game.Content, Session)
-                            .AddComponent(new Background("Textures/stars")));
+                            .AddComponent(new Background("Textures/stars")))
+                .AddSystem(new UniversalSystem(Game.Content.Load<WorldConstaints>("Data/world")));
+           
         }
 
         #endregion

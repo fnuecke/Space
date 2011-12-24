@@ -4,6 +4,8 @@ namespace Space.Data
 {
     public class WorldConstaints
     {
+
+        public ulong WorldSeed;
         /// <summary>
         /// Average overall radius of a solar system.
         /// </summary>
