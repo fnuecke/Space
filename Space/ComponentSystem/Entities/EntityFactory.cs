@@ -126,7 +126,7 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture,int longRadius,int shortRadius, int Period)
+        public static IEntity CreateStar(string texture,FPoint center,int longRadius,int shortRadius, int period,double phi)
         {
             var star = new Entity();
             star.AddComponent(new Transform());
@@ -142,10 +142,33 @@ namespace Space.ComponentSystem.Entities
             var ellipse = star.GetComponent<EllipsePathComponent>();
             ellipse.LongRadius = longRadius;
             ellipse.ShortRadius = shortRadius;
-            ellipse.CenterPoint = FPoint.Zero;
-            ellipse.Period = Period;
+            ellipse.CenterPoint = center;
+            ellipse.Period = period;
+            ellipse.Phi = phi;
+            
             return star;
         }
+        public static IEntity CreateStar(string texture, IEntity center, int longRadius, int shortRadius, int period, double phi)
+        {
+            var star = new Entity();
+            star.AddComponent(new Transform());
 
+            star.AddComponent(new TransformedRenderer());
+            star.AddComponent(new EllipsePathComponent());
+
+            var transform = star.GetComponent<Transform>();
+
+
+            var renderer = star.GetComponent<TransformedRenderer>();
+            renderer.TextureName = texture;
+            var ellipse = star.GetComponent<EllipsePathComponent>();
+            ellipse.LongRadius = longRadius;
+            ellipse.ShortRadius = shortRadius;
+            ellipse.CenterEntity = center;
+            ellipse.Period = period;
+            ellipse.Phi = phi;
+
+            return star;
+        }
     }
 }

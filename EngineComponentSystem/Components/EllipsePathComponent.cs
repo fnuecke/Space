@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
 
@@ -15,9 +16,12 @@ namespace Engine.ComponentSystem.Components
         /// The directed speed of the object.
         /// </summary>
         public FPoint CenterPoint { get; set; }
+
+        public IEntity CenterEntity { get; set; }
         public int LongRadius { get; set; }
         public int ShortRadius { get; set; }
         public int Period { get; set; }
+        public double Phi { get; set; }
         public long Frame;
         #endregion
 
@@ -35,13 +39,18 @@ namespace Engine.ComponentSystem.Components
             // Only if a transform is set.
             if (transform != null)
             {
+                if (CenterEntity != null && CenterEntity.GetComponent<Transform>()!= null)
+                {
+                    CenterPoint = CenterEntity.GetComponent<Transform>().Translation;
+                }
                 var DefaultLogicParameterization = (DefaultLogicParameterization)parameterization;
                 var Point = FPoint.Zero;
-                //Console.Write("cos: " + System.Math.Cos(System.Math.PI * Frame / 100) + " ," + Frame + " " + Period + " System.Math.PI * Frame / Period: " + System.Math.PI * Frame / Period);
-                Point.X = Fixed.Create(LongRadius * System.Math.Cos(System.Math.PI * DefaultLogicParameterization.Frame / 100));
-                Point.Y = Fixed.Create(ShortRadius * System.Math.Sin(System.Math.PI * DefaultLogicParameterization.Frame / 100));
+                var t = (System.Math.PI*DefaultLogicParameterization.Frame/Period);
+                //Console.WriteLine("T: "+t+ "");
+                Point.X = Fixed.Create(CenterPoint.X.IntValue + LongRadius * System.Math.Cos(t)*System.Math.Cos(Phi)-ShortRadius*System.Math.Sin(t)*System.Math.Sin(Phi));
+                Point.Y = Fixed.Create(CenterPoint.Y.IntValue + LongRadius * System.Math.Cos(t) * System.Math.Sin(Phi) + ShortRadius * System.Math.Sin(t) * System.Math.Cos(Phi));
                 
-                Console.WriteLine(Point);
+                //Console.WriteLine(Point);
                 transform.Translation = Point;
             }
         }

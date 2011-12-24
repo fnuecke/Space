@@ -120,8 +120,18 @@ namespace Space.ComponentSystem.Systems
 
             IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
             Manager.EntityManager.AddEntity(entity);
-            list.Add(entity.UID);
 
+            
+            
+            list.Add(entity.UID);
+            entity = EntityFactory.CreateStar("Textures/sun", center,1000, 300, 500, 41);
+            Manager.EntityManager.AddEntity(entity);
+
+            list.Add(entity.UID);
+            entity = EntityFactory.CreateStar("Textures/sun", entity, 200, 100, 100, 41);
+            Manager.EntityManager.AddEntity(entity);
+
+            list.Add(entity.UID);
             return list;
         }
 
