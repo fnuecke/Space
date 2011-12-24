@@ -47,6 +47,7 @@ namespace Space.Control
                 .AddSystem(new AvatarSystem())
                 .AddSystem(new UniversalSystem(Game.Content.Load<WorldConstaints>("Data/world")));
             //tss.EntityManager.AddEntity(EntityFactory.CreateStar("Textures/sun", FPoint.Zero));
+            //tss.EntityManager.AddEntity(EntityFactory.CreateStar("Textures/sun",100,200,100));        
         }
 
         public override void Initialize()

@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Systems
 {
     class UniversalSystem : IComponentSystem
     {
-        public Dictionary<long, List<long>> zellEntitys; 
+        public Dictionary<long, List<int>> zellEntitys; 
         public IComponentSystemManager Manager
         {
             get;
@@ -31,8 +31,8 @@ namespace Space.ComponentSystem.Systems
         public UniversalSystem(WorldConstaints constaits)
         {
             Constaints = constaits;
-            zellEntitys = new Dictionary<long, List<long>>();
-            HandleMessage(0, 0, true);
+            zellEntitys = new Dictionary<long, List<int>>();
+            
         }
 
         public void Update(ComponentSystemUpdateType updateType, long frame)
@@ -43,7 +43,7 @@ namespace Space.ComponentSystem.Systems
         public IComponentSystem AddComponent(Engine.ComponentSystem.Components.IComponent component)
         {
             //
-            throw new NotSupportedException();
+            return null;
         }
 
         public void RemoveComponent(Engine.ComponentSystem.Components.IComponent component)
@@ -53,7 +53,7 @@ namespace Space.ComponentSystem.Systems
 
         public object Clone()
         {
-            throw new NotImplementedException();
+            return this;
         }
 
         public void HandleMessage(int x, int y, bool alive)
@@ -64,7 +64,7 @@ namespace Space.ComponentSystem.Systems
             if (alive)
             {
                 Twister = new MersenneTwister();
-                List<long> list;
+                List<int> list;
 
                 if (x == 0 && y == 0)
                     list = CreateStartSystem();
@@ -76,7 +76,7 @@ namespace Space.ComponentSystem.Systems
 
             else
             {
-                foreach (long id in zellEntitys[result])
+                foreach (int id in zellEntitys[result])
                 {
                     Manager.EntityManager.RemoveEntity(id);
                     
@@ -85,10 +85,10 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        private List<long> CreateSunSystem(int x,int y,long result)
+        private List<int> CreateSunSystem(int x,int y,long result)
         {
-            FPoint center = FPoint.Create(Fixed.Create(GridSystem.GridSize*x),Fixed.Create(GridSystem.GridSize*y));
-            List<long> list = new List<long>();
+            FPoint center = FPoint.Create(Fixed.Create(x),Fixed.Create(y));
+            List<int> list = new List<int>();
             IEntity entity = EntityFactory.CreateStar("Texture/sun", center);
             Manager.EntityManager.AddEntity(entity);
             list.Add(entity.UID);
@@ -96,9 +96,9 @@ namespace Space.ComponentSystem.Systems
             return list;
         }
 
-        private List<long> CreateStartSystem()
+        private List<int> CreateStartSystem()
         {
-            List<long> list = new List<long>();
+            List<int> list = new List<int>();
             
             Twister = new MersenneTwister(Constaints.WorldSeed);
             FPoint center = FPoint.Zero;
@@ -108,21 +108,21 @@ namespace Space.ComponentSystem.Systems
 
             return list;
         }
-        private List<long> CreateAsteroidBelt()
+        private List<int> CreateAsteroidBelt()
         {
-            List<long> list = new List<long>();
+            List<int> list = new List<int>();
 
             return list;
         }
-        private List<long> CreateNebula()
+        private List<int> CreateNebula()
         {
-            List<long> list = new List<long>();
+            var list = new List<int>();
 
             return list;
         }
-        private List<long> CreateSpecialSystem()
+        private List<int> CreateSpecialSystem()
         {
-            List<long> list = new List<long>();
+            var list = new List<int>();
 
             return list;
         }
