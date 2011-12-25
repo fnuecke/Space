@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Systems
                     if (transform != null)
                     {
                         int x = ((int)transform.Translation.X) >> _cellSize;
-                        int y = ((int)transform.Translation.X) >> _cellSize;
+                        int y = ((int)transform.Translation.Y) >> _cellSize;
                         AddCellAndNeighbors(x, y, newCells);
                     }
                 }
