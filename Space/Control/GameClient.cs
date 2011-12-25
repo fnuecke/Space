@@ -159,7 +159,7 @@ namespace Space.Control
 
                         arrowPos.Y += GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Sin(phi);
                         //Console.WriteLine(arrowPos);
-                        var size = 20/distance;
+                        var size = 40/distance;
                         if (distX > GraphicsDevice.Viewport.Width / 2.0||distY>GraphicsDevice.Viewport.Height/2.0)
                             SpriteBatch.Draw(arrow, arrowPos, null, color, (float)phi, new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
                                          SpriteEffects.None,1);

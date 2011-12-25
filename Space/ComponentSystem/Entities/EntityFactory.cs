@@ -113,7 +113,7 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture, FPoint position,AstronomicBodyType type)
+        public static IEntity CreateStar(string texture, FPoint position, AstronomicBodyType type)
         {
             var entity = new Entity();
 
@@ -136,7 +136,9 @@ namespace Space.ComponentSystem.Entities
         {
             var entity = new Entity();
 
-            entity.AddComponent(new Transform());
+            var transform = new Transform();
+            transform.Translation = center.GetComponent<Transform>().Translation;
+            entity.AddComponent(transform);
 
             var ellipse = new EllipsePathComponent();
             ellipse.CenterEntityId = center.UID;

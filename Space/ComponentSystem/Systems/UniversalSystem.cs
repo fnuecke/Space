@@ -189,11 +189,11 @@ namespace Space.ComponentSystem.Systems
             IEntity entity = EntityFactory.CreateStar("Textures/sun", center,AstronomicBodyType.Sun);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
-            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)500, (Fixed)200, (Fixed)1, 240,AstronomicBodyType.Planet);
+            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)5000, (Fixed)4000, (Fixed)1, 3560,AstronomicBodyType.Planet);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
             
-            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)200, (Fixed)100, (Fixed)100, 60,AstronomicBodyType.Moon);
+            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)200, (Fixed)180, (Fixed)100, 300,AstronomicBodyType.Moon);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
             return list;
