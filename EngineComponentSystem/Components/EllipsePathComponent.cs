@@ -111,13 +111,13 @@ namespace Engine.ComponentSystem.Components
                 var sinT = Fixed.Sin(t);
                 var cosT = Fixed.Cos(t);
 
+                var f = Fixed.Sqrt(Fixed.Abs(MinorRadius * MinorRadius - MajorRadius * MajorRadius));
+
                 // Compute the current position and set it.
-                FPoint point;
-                //FPoint.Create(
-                point.X = center.X + MajorRadius * cosT * _cosPhi - MinorRadius * sinT * _sinPhi;
-                point.Y = center.Y + MajorRadius * cosT * _sinPhi + MinorRadius * sinT * _cosPhi;
-                //)
-                transform.Translation = point;
+                transform.Translation = FPoint.Create(
+                    center.X + f * _cosPhi + MajorRadius * cosT * _cosPhi - MinorRadius * sinT * _sinPhi,
+                    center.Y + f * _sinPhi + MajorRadius * cosT * _sinPhi + MinorRadius * sinT * _cosPhi
+                );
             }
         }
 
