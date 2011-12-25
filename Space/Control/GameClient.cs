@@ -131,7 +131,20 @@ namespace Space.Control
                     var entity = entityManager.GetEntity(i);
                     if (entity != null && entity.GetComponent<Transform>() != null)
                     {
-                        
+
+                        var color = Color.Teal;
+                        switch (entity.GetComponent<AstronomicBody>().Type)
+                        {
+                            case AstronomicBodyType.Sun:
+                                color = Color.Yellow;
+                                break;
+                            case AstronomicBodyType.Planet:
+                                color = Color.Blue;
+                                break;
+                            case AstronomicBodyType.Moon:
+                                color = Color.Gray;
+                                break;
+                        }
                         var position = entity.GetComponent<Transform>().Translation;
                        
                         var distX = Math.Abs((double) position.X - (double) x);
@@ -148,8 +161,8 @@ namespace Space.Control
                         //Console.WriteLine(arrowPos);
                         var size = 20/distance;
                         if (distX > GraphicsDevice.Viewport.Width / 2.0||distY>GraphicsDevice.Viewport.Height/2.0)
-                            SpriteBatch.Draw(arrow, arrowPos, null, Color.Green, (float)phi, new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
-                                         SpriteEffects.None, 1);
+                            SpriteBatch.Draw(arrow, arrowPos, null, color, (float)phi, new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
+                                         SpriteEffects.None,1);
                         SpriteBatch.DrawString(font, "Position: " + position + "phi:" + phi+" Distance: "+distance+ "size: "+size, new Vector2(20, count * 20+20), Color.White);
 
                         //spriteBatch.Draw(rocketTexture, rocketPosition, null, players[currentPlayer].Color, rocketAngle, new Vector2(42, 240), 0.1f, SpriteEffects.None, 1);

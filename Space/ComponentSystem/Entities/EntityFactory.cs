@@ -114,7 +114,7 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture, FPoint position)
+        public static IEntity CreateStar(string texture, FPoint position,AstronomicBodyType type)
         {
             var entity = new Entity();
 
@@ -126,10 +126,14 @@ namespace Space.ComponentSystem.Entities
             renderer.TextureName = texture;
             entity.AddComponent(renderer);
 
+
+            var astronomicBody = new AstronomicBody();
+            astronomicBody.Type = type;
+            entity.AddComponent(astronomicBody);
             return entity;
         }
 
-        public static IEntity CreateStar(string texture, IEntity center, Fixed majorRadius, Fixed minorRadius, Fixed angle, int period)
+        public static IEntity CreateStar(string texture, IEntity center, Fixed majorRadius, Fixed minorRadius, Fixed angle, int period, AstronomicBodyType type)
         {
             var entity = new Entity();
 
@@ -147,6 +151,9 @@ namespace Space.ComponentSystem.Entities
             renderer.TextureName = texture;
             entity.AddComponent(renderer);
 
+            var astronomicBody = new AstronomicBody();
+            astronomicBody.Type = type;
+            entity.AddComponent(astronomicBody);
             return entity;
         }
     }

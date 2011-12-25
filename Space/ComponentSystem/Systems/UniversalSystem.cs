@@ -152,21 +152,21 @@ namespace Space.ComponentSystem.Systems
 
             FPoint center = FPoint.Create(Fixed.Create(cellSize * x) + (cellSize >> 1), Fixed.Create(cellSize * y) + (cellSize >> 1));
 
-            IEntity sun = EntityFactory.CreateStar("Textures/sun", center);
+            IEntity sun = EntityFactory.CreateStar("Textures/sun", center,AstronomicBodyType.Sun);
             list.Add(Manager.EntityManager.AddEntity(sun));
 
-            for (int i = 0; i < random.Next(0, 12); i++)
+            for (int i = 1; i < random.Next(1, 12); i++)
             {
                 var planet = EntityFactory.CreateStar("Textures/sun", sun,
                     (Fixed)random.Next(i * 100, i * 130), (Fixed)random.Next(i * 100, i * 130),
-                    (Fixed)random.Next(200, 500) * i, random.Next(200, 355));
+                    (Fixed)random.Next(200, 500) * i, random.Next(200, 355),AstronomicBodyType.Planet);
                 list.Add(Manager.EntityManager.AddEntity(planet));
 
-                for (int j = 0; j < random.Next(0, 3); j++)
+                for (int j = 1; j < random.Next(1, 4); j++)
                 {
                     var moon = EntityFactory.CreateStar("Textures/sun", planet,
-                        (Fixed)random.Next(j * 10, j * 30), (Fixed)random.Next(i * 10, i * 13),
-                        (Fixed)random.Next(200, 500) * j, random.Next(200, 355));
+                        (Fixed)random.Next(j * 10, j * 30), (Fixed)random.Next(j * 10, j * 13),
+                        (Fixed)random.Next(200, 500) * j, random.Next(200, 355),AstronomicBodyType.Moon);
                     list.Add(Manager.EntityManager.AddEntity(moon));
                 }
             }
@@ -184,14 +184,14 @@ namespace Space.ComponentSystem.Systems
 
             FPoint center = FPoint.Create((Fixed)(cellSize >> 1), (Fixed)(cellSize >> 1));
             Console.WriteLine(center);
-            IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
+            IEntity entity = EntityFactory.CreateStar("Textures/sun", center,AstronomicBodyType.Sun);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
-            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)500, (Fixed)200, (Fixed)1, 240);
+            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)500, (Fixed)200, (Fixed)1, 240,AstronomicBodyType.Planet);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
             
-            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)200, (Fixed)100, (Fixed)100, 60);
+            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)200, (Fixed)100, (Fixed)100, 60,AstronomicBodyType.Moon);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
             return list;
