@@ -183,15 +183,14 @@ namespace Space.ComponentSystem.Systems
             var cellSize = Manager.GetSystem<CellSystem>().CellSize;
 
             FPoint center = FPoint.Create((Fixed)(cellSize >> 1), (Fixed)(cellSize >> 1));
-
+            Console.WriteLine(center);
             IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
-            Manager.EntityManager.AddEntity(entity);
             entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)500, (Fixed)200, (Fixed)1, 240);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
-            list.Add(entity.UID);
+            
             entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)200, (Fixed)100, (Fixed)100, 60);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
@@ -218,7 +217,10 @@ namespace Space.ComponentSystem.Systems
 
             return list;
         }
-
+        public List<int> GetSystemList(ulong id)
+        {
+            return _entities[id];
+        }
         #endregion
     }
 }
