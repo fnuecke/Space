@@ -28,16 +28,30 @@ namespace Space.ComponentSystem.Systems
         /// Dictates the size of cells, where the actual cell size is 2 to the
         /// power of this value.
         /// </summary>
-        private const int _cellSize = 14;
+        private const int _cellSize = 12;
 
         #endregion
 
         #region Properties
 
         /// <summary>
+        /// A list of all cells that are currently active.
+        /// </summary>
+        public IEnumerable<Tuple<int, int>> ActiveSystems
+        {
+            get
+            {
+                foreach (var cellId in _livingCells)
+                {
+                    yield return Split(cellId);
+                }
+            }
+        }
+
+        /// <summary>
         /// The size of a single cell in world units (normally: pixels).
         /// </summary>
-        public int CellSize { get { return 2 << _cellSize; } }
+        public int CellSize { get { return 1 << _cellSize; } }
 
         #endregion
 
