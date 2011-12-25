@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Systems
         /// Dictates the size of cells, where the actual cell size is 2 to the
         /// power of this value.
         /// </summary>
-        public const int CellSize = 12;
+        public const int CellSizeShiftAmount = 12;
 
         #endregion
 
@@ -51,7 +51,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The size of a single cell in world units (normally: pixels).
         /// </summary>
-        public int CellSize { get { return 1 << _cellSize; } }
+        public int CellSize { get { return 1 << CellSizeShiftAmount; } }
 
         #endregion
 
@@ -93,8 +93,8 @@ namespace Space.ComponentSystem.Systems
                     var transform = avatar.Entity.GetComponent<Transform>();
                     if (transform != null)
                     {
-                        int x = ((int)transform.Translation.X) >> _cellSize;
-                        int y = ((int)transform.Translation.Y) >> _cellSize;
+                        int x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
+                        int y = ((int)transform.Translation.Y) >> CellSizeShiftAmount;
                         AddCellAndNeighbors(x, y, newCells);
                     }
                 }
