@@ -81,20 +81,20 @@ namespace GameStateManagement
            
             console.AddCommand("search", args =>
             {
-                ScreenManager.Client.Session.Search();
+                ScreenManager.Client.Controller.Session.Search();
             },
                 "Search for games available on the local subnet.");
             console.AddCommand("connect", args =>
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
+                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
             },
                 "Joins a game at the given host.",
                 "connect <host> <port> - join the host with the given hostname or IP.");
             console.AddCommand("leave", args =>
             {
-                ScreenManager.Client.Session.Leave();
+                ScreenManager.Client.Controller.Session.Leave();
             },
                 "Leave the current game.");
             // Just for me, joining default testing server.
@@ -102,7 +102,7 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
+                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
             },
                 "autojoin fn");
             // Just for me, joining default testing server.
@@ -110,16 +110,9 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
+                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
             },
                 "autojoin localhost");
-
-            console.AddCommand("invalidate", args =>
-            {
-                ScreenManager.Client.Controller.DEBUG_InvalidateSimulation();
-            },
-                "Invalidates the client game state, requesting a snapshot from the server.");
-
 
             gameFont = content.Load<SpriteFont>("Fonts/gamefont");
             

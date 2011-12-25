@@ -1,45 +1,81 @@
 ﻿using System;
+using Engine.ComponentSystem.Systems;
+using Engine.Controller;
 using Engine.Session;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
+using Space.Data;
 using Space.Simulation;
-using Space.View;
 
 namespace Space.Control
 {
     public class GameClient : DrawableGameComponent
     {
-        internal IClientSession Session { get; private set; }
-        internal ClientController Controller { get; private set; }
+        #region Logger
+        
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private InputCommandEmitter emitter;
+        #endregion
+
+        #region Properties
+        
+        /// <summary>
+        /// The controller used by this game client.
+        /// </summary>
+        public SimpleClientController<PlayerInfo> Controller { get; private set; }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        ///  Command emitter used to get player input.
+        /// </summary>
+        private InputCommandEmitter _emitter;
+
+        #endregion
 
         SpriteFont font;
 
         public GameClient(Game game)
             : base(game)
         {
-            Session = new HybridClientSession<PlayerInfo>(game);
-            Controller = new ClientController(game, Session);
-            Controller.UpdateOrder = 10;
+            var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
+            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
 
-            emitter = new InputCommandEmitter(game, Session, Controller.Simulation);
+            // Create our client controller.
+            Controller = new SimpleClientController<PlayerInfo>(GameCommandHandler.HandleCommand);
 
-            DrawOrder = 10;
-        }
+            // Register for events.
+            Controller.Session.PlayerJoined += HandlePlayerJoined;
+            Controller.Session.PlayerLeft += HandlePlayerLeft;
 
-        public override void Initialize()
-        {
-            Session.PlayerJoined += HandlePlayerJoined;
-            Session.PlayerLeft += HandlePlayerLeft;
+            // Add all systems we need in our game.
+            Controller.Simulation.EntityManager.SystemManager.AddSystems(
+                new[]
+                {
+                    new DefaultLogicSystem(),
+                    new ShipControlSystem(),
+                    new AvatarSystem(),
+                    new CellSystem(),
+                    new PlayerCenteredSoundSystem(soundBank, Controller.Session),
+                    new PlayerCenteredRenderSystem(spriteBatch, game.Content, Controller.Session)
+                                .AddComponent(new Background("Textures/stars")),
+                    new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world"))
+                });
 
-            Controller.AddEmitter(emitter);
+            // Create our input command emitter, which is used to grab user
+            // input and convert it into commands that can be injected into our
+            // simulation.
+            _emitter = new InputCommandEmitter(game, Controller.Session, Controller.Simulation);
+            Controller.AddEmitter(_emitter);
+            Game.Components.Add(_emitter);
 
-            Game.Components.Add(Session);
-            Game.Components.Add(Controller);
-            Game.Components.Add(emitter);
-
-            base.Initialize();
+            // Draw underneath menus etc.
+            DrawOrder = -50;
         }
 
         protected override void LoadContent()
@@ -51,34 +87,28 @@ namespace Space.Control
 
         protected override void Dispose(bool disposing)
         {
-            Session.PlayerJoined -= HandlePlayerJoined;
-            Session.PlayerLeft -= HandlePlayerLeft;
+            Controller.Session.PlayerJoined -= HandlePlayerJoined;
+            Controller.Session.PlayerLeft -= HandlePlayerLeft;
 
-            Controller.RemoveEmitter(emitter);
+            Controller.RemoveEmitter(_emitter);
 
-            Session.Dispose();
+            Game.Components.Remove(_emitter);
+
+            _emitter.Dispose();
+
             Controller.Dispose();
-            emitter.Dispose();
-
-            Game.Components.Remove(Session);
-            Game.Components.Remove(Controller);
-            Game.Components.Remove(emitter);
 
             base.Dispose(disposing);
         }
 
+        public override void Update(GameTime gameTime)
+        {
+            Controller.Update(gameTime);
+        }
+
         public override void Draw(GameTime gameTime)
         {
-            var spriteBatch = (SpriteBatch)Game.Services.GetService(typeof(SpriteBatch));
-
-            // Draw debug stuff.
-            var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 230, GraphicsDevice.Viewport.Height - 140);
-            var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 360, GraphicsDevice.Viewport.Height - 140);
-
-            SessionInfo.Draw("Client", Session, sessionOffset, font, spriteBatch);
-            //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
-
-            base.Draw(gameTime);
+            Controller.Draw();
         }
 
         /// <summary>
@@ -89,7 +119,7 @@ namespace Space.Control
             var args = (GameInfoReceivedEventArgs)e;
 
             var info = args.Data.ReadString();
-            Console.WriteLine(String.Format("CLT.NET: Found a game: [{0}] {1} ({2}/{3})", args.Host.ToString(), info, args.NumPlayers, args.MaxPlayers));
+            logger.Debug("Found a game: [{0}] {1} ({2}/{3})", args.Host.ToString(), info, args.NumPlayers, args.MaxPlayers);
         }
 
         /// <summary>
@@ -99,7 +129,7 @@ namespace Space.Control
         {
             var args = (PlayerEventArgs)e;
 
-            Console.WriteLine(String.Format("CLT.NET: {0} joined.", args.Player));
+            logger.Debug("{0} joined.", args.Player);
         }
 
         /// <summary>
@@ -109,8 +139,7 @@ namespace Space.Control
         {
             var args = (PlayerEventArgs)e;
 
-            Console.WriteLine(String.Format("CLT.NET: {0} left.", args.Player));
+            logger.Debug("{0} left.", args.Player);
         }
-
     }
 }

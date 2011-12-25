@@ -114,7 +114,6 @@
     <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
     <Compile Include="ComponentSystem\Systems\Messages\CellStateChanged.cs" />
     <Compile Include="Simulation\Commands\GameCommand.cs" />
-
     <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
@@ -124,7 +123,6 @@
     <Compile Include="ComponentSystem\Systems\PlayerCenteredRenderSystem.cs" />
     <Compile Include="ComponentSystem\Systems\PlayerCenteredSoundSystem.cs" />
     <Compile Include="ComponentSystem\Systems\ShipControlSystem.cs" />
-    <Compile Include="Control\ClientController.cs" />
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Control\InputCommandEmitter.cs" />

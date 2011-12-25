@@ -95,6 +95,18 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
+        /// Add multiple systems to this manager.
+        /// </summary>
+        /// <param name="systems">The systems to add.</param>
+        public void AddSystems(IEnumerable<IComponentSystem> systems)
+        {
+            foreach (var system in systems)
+            {
+                AddSystem(system);
+            }
+        }
+
+        /// <summary>
         /// Removes the system from this manager.
         /// </summary>
         /// <param name="system">The system to remove.</param>

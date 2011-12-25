@@ -22,8 +22,8 @@ namespace GameStateManagement
             : base(Strings.join)
         {
             
-            client.Session.JoinResponse += LoginSucces;
-            client.Session.Disconnected += LoginFailed;
+            client.Controller.Session.JoinResponse += LoginSucces;
+            client.Controller.Session.Disconnected += LoginFailed;
             connect = new EditableMenueEntry(String.Empty);
             MenuEntry back = new MenuEntry(Strings.Back);
             connect.SetActive(true);
@@ -55,7 +55,7 @@ namespace GameStateManagement
                 ((EditableMenueEntry)MenuEntries[0]).locked = true;
                 try
                 {
-                    ScreenManager.Client.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
+                    ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
                 }
                 catch (Exception)
                 {

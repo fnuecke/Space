@@ -272,6 +272,9 @@ namespace Engine.Util
 
             // Register with game.
             game.Services.AddService(typeof(IGameConsole), this);
+
+            // Draw on top of everything else.
+            DrawOrder = int.MaxValue;
         }
 
         #endregion

@@ -5,11 +5,10 @@ using System.Text;
 using Engine.Network;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
-    public abstract class AbstractHybridSession : GameComponent, ISession
+    public abstract class AbstractHybridSession : ISession
     {
         #region Types
 
@@ -67,7 +66,12 @@ namespace Engine.Session
         /// <summary>
         /// The default multicast group address we'll use for searching games.
         /// </summary>
-        protected readonly IPEndPoint DefaultMulticastEndpoint = new IPEndPoint(new IPAddress(new byte[] { 224, 1, 33, 7 }), 51337);
+        protected static readonly IPEndPoint _defaultMulticastEndpoint = new IPEndPoint(new IPAddress(new byte[] { 224, 1, 33, 7 }), 51337);
+
+        /// <summary>
+        /// Udp header to use to identify messages part of our protocol.
+        /// </summary>
+        protected static readonly byte[] _udpHeader;
 
         #endregion
 
@@ -114,56 +118,65 @@ namespace Engine.Session
         /// <summary>
         /// The connection to the server, used to (unreliably) send data.
         /// </summary>
-        protected UdpProtocol udp;
-
-        /// <summary>
-        /// Udp header to use to identify messages part of our protocol.
-        /// </summary>
-        protected byte[] udpHeader;
+        protected UdpProtocol _udp;
 
         /// <summary>
         /// List of all players known to be in this session.
         /// </summary>
-        protected Player[] players;
+        protected Player[] _players;
 
         #endregion
         
         #region Construction / Destruction
 
-        public AbstractHybridSession(Game game)
-            : base(game)
+        static AbstractHybridSession()
         {
             // Get ourselves a unique header, based on the program we're running in.
-            udpHeader = BitConverter.GetBytes(
+            _udpHeader = BitConverter.GetBytes(
                 new Hasher().
-                    Put(Encoding.UTF8.GetBytes(game.GetType().FullName)).
+                    Put(Encoding.UTF8.GetBytes(System.Reflection.Assembly.GetExecutingAssembly().GetName().FullName)).
                     Put(Encoding.UTF8.GetBytes(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())).
                     Value);
         }
 
-        public override void Initialize()
+        public AbstractHybridSession(UdpProtocol udp)
         {
-            udp.Data += HandleUdpData;
-
-            base.Initialize();
+            _udp = udp;
+            _udp.Data += HandleUdpData;
         }
 
-        protected override void Dispose(bool disposing)
+        public void Dispose()
+        {
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                udp.Dispose();
+                if (_udp != null)
+                {
+                    _udp.Dispose();
+                    _udp = null;
+                }
+
+                _players = null;
             }
 
-            base.Dispose(disposing);
+            GC.SuppressFinalize(this);
         }
-        
-        public override void Update(GameTime gameTime)
+
+        /// <summary>
+        /// Called when the session needs to be updated. This should be called
+        /// regularly (in each game's Update) to ensure proper flow of network
+        /// traffic.
+        /// </summary>
+        public virtual void Update()
         {
             // Drive UDP network.
-            udp.Receive();
-
-            base.Update(gameTime);
+            _udp.Receive();
         }
 
         /// <summary>
@@ -177,7 +190,7 @@ namespace Engine.Session
             {
                 throw new ArgumentException("playerNumber");
             }
-            return (players == null) ? null : players[playerNumber];
+            return (_players == null) ? null : _players[playerNumber];
         }
 
         /// <summary>
@@ -191,7 +204,7 @@ namespace Engine.Session
             {
                 throw new ArgumentException("playerNumber");
             }
-            return (players != null) && (players[playerNumber] != null);
+            return (_players != null) && (_players[playerNumber] != null);
         }
 
         /// <summary>

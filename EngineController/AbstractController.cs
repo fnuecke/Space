@@ -2,7 +2,6 @@
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
@@ -10,8 +9,7 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for all game controller.
     /// </summary>
-    public abstract class AbstractController<TSession, TCommand>
-        : DrawableGameComponent, IController<TSession>
+    public abstract class AbstractController<TSession, TCommand> : IController<TSession>
         where TSession : ISession
         where TCommand : ICommand
     {
@@ -28,11 +26,6 @@ namespace Engine.Controller
         /// </summary>
         public TSession Session { get; private set; }
 
-        /// <summary>
-        /// The console to log messages to, which will be the same for all controllers.
-        /// </summary>
-        protected IGameConsole Console { get; private set; }
-
         #endregion
 
         #region Construction / Destruction
@@ -41,39 +34,47 @@ namespace Engine.Controller
         /// Initialize the controller.
         /// </summary>
         /// <param name="game">the game this belongs to.</param>
-        public AbstractController(Game game, TSession session)
-            : base(game)
+        public AbstractController(TSession session)
         {
             this.Session = session;
+            Session.Data += HandlePlayerData;
         }
 
         /// <summary>
-        /// Attach ourselves as listeners.
+        /// Dispose this controller.
         /// </summary>
-        public override void Initialize()
+        public void Dispose()
         {
-            Console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
+            Dispose(true);
 
-            if (Session != null)
-            {
-                Session.Data += HandlePlayerData;
-            }
-
-            base.Initialize();
+            GC.SuppressFinalize(this);
         }
 
         /// <summary>
         /// Remove ourselves as listeners.
         /// </summary>
-        protected override void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing)
         {
-            if (Session != null)
-            {
-                Session.Data -= HandlePlayerData;
-                Session = default(TSession);
-            }
+            Session.Data -= HandlePlayerData;
+        }
 
-            base.Dispose(disposing);
+        #endregion
+
+        #region Logic
+        
+        /// <summary>
+        /// Called when the controller needs to be updated.
+        /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
+        public virtual void Update(GameTime gameTime)
+        {
+        }
+
+        /// <summary>
+        /// Called when the controller needs to be rendered.
+        /// </summary>
+        public virtual void Draw()
+        {
         }
 
         #endregion

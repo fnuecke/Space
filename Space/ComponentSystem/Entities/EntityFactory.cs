@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Entities
                 }
                 velocity.Value = rotation * projectile.InitialVelocity;
             }
-            var emitterVelocity = entity.GetComponent<Velocity>();
+            var emitterVelocity = emitter.GetComponent<Velocity>();
             if (emitterVelocity != null)
             {
                 velocity.Value += emitterVelocity.Value;

@@ -63,27 +63,16 @@ namespace Engine.Controller
         /// <param name="maxPlayers">the maximum number of players in the game.</param>
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
-        protected AbstractTssServer(Game game, IServerSession session)
-            : base(game, session, new uint[] {
-                (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
-                (uint)System.Math.Ceiling(250 / game.TargetElapsedTime.TotalMilliseconds)
+        protected AbstractTssServer(IServerSession session)
+            : base(session, new uint[] {
+                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds),
+                (uint)System.Math.Ceiling(250 / _targetElapsedMilliseconds)
             })
         {
             _lastGameStateSentTime = new DateTime[Session.MaxPlayers];
-        }
 
-        /// <summary>
-        /// Attach ourselves as listeners.
-        /// </summary>
-        public override void Initialize()
-        {
-            if (Session != null)
-            {
-                Session.GameInfoRequested += HandleGameInfoRequested;
-                Session.JoinRequested += HandleJoinRequested;
-            }
-
-            base.Initialize();
+            Session.GameInfoRequested += HandleGameInfoRequested;
+            Session.JoinRequested += HandleJoinRequested;
         }
 
         /// <summary>
@@ -91,10 +80,13 @@ namespace Engine.Controller
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            if (Session != null)
+            if (disposing)
             {
-                Session.GameInfoRequested -= HandleGameInfoRequested;
-                Session.JoinRequested -= HandleJoinRequested;
+                if (Session != null)
+                {
+                    Session.GameInfoRequested -= HandleGameInfoRequested;
+                    Session.JoinRequested -= HandleJoinRequested;
+                }
             }
 
             base.Dispose(disposing);
@@ -110,12 +102,6 @@ namespace Engine.Controller
         /// </summary>
         public override void Update(GameTime gameTime)
         {
-            // Can happen when removed from components list while in update.
-            if (tss == null)
-            {
-                return;
-            }
-
             // Drive game logic.
             UpdateSimulation(gameTime);
 

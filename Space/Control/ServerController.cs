@@ -22,20 +22,9 @@ namespace Space.Control
 
         #endregion
 
-        #region Fields
-
-        /// <summary>
-        /// The static base information about the game world.
-        /// </summary>
-        private StaticWorld world;
-
-        #endregion
-
         public ServerController(Game game, IServerSession session, byte worldSize, ulong worldSeed)
-            : base(game, session)
+            : base(session)
         {
-            world = new StaticWorld(worldSize, worldSeed, Game.Content.Load<WorldConstaints>("Data/world"));
-
             var simulation = new DefaultSimulation();
             simulation.Command += GameCommandHandler.HandleCommand;
             tss.Initialize(simulation);
@@ -45,21 +34,14 @@ namespace Space.Control
                 .AddSystem(new ShipControlSystem())
                 .AddSystem(new AvatarSystem())
                 .AddSystem(new CellSystem())
-                .AddSystem(new UniversalSystem(Game.Content.Load<WorldConstaints>("Data/world")));
-            //tss.EntityManager.AddEntity(EntityFactory.CreateStar("Textures/sun", FPoint.Zero));
-            //tss.EntityManager.AddEntity(     
-        }
+                .AddSystem(new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world")));
 
-        public override void Initialize()
-        {
             Session.PlayerLeft += HandlePlayerLeft;
-
-            base.Initialize();
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (Session != null)
+            if (disposing)
             {
                 Session.PlayerLeft -= HandlePlayerLeft;
             }

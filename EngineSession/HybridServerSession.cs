@@ -7,7 +7,6 @@ using System.Net.Sockets;
 using Engine.Network;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
@@ -78,8 +77,8 @@ namespace Engine.Session
 
         #region Constructor / Cleanup
 
-        public HybridServerSession(Game game, ushort port, int maxPlayers)
-            : base(game)
+        public HybridServerSession(ushort port, int maxPlayers)
+            : base(new UdpProtocol(_defaultMulticastEndpoint, _udpHeader))
         {
             if (maxPlayers < 0)
             {
@@ -90,10 +89,9 @@ namespace Engine.Session
 
             _tcp = new TcpListener(IPAddress.Any, port);
             _tcp.Start();
-            udp = new UdpProtocol(DefaultMulticastEndpoint, udpHeader);
 
             this.MaxPlayers = (int)maxPlayers;
-            players = new Player[maxPlayers];
+            _players = new Player[maxPlayers];
             this._clients = new TcpClient[maxPlayers];
             this._streams = new IPacketStream[maxPlayers];
             _slots = new BitArray(maxPlayers, false);
@@ -103,11 +101,16 @@ namespace Engine.Session
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && _tcp != null)
+            if (disposing)
             {
                 _tcp.Stop();
                 _tcp.Server.Close();
-                _tcp = null;
+
+                foreach (var pending in _pending)
+                {
+                    pending.stream.Dispose();
+                }
+                _pending.Clear();
 
                 for (int i = 0; i < MaxPlayers; ++i)
                 {
@@ -128,14 +131,8 @@ namespace Engine.Session
 
         #region Logic
 
-        public override void Update(GameTime gameTime)
+        public override void Update()
         {
-            // Already disposed (happens in same update step it was removed from components).
-            if (_tcp == null)
-            {
-                return;
-            }
-
             // Check for incoming connections.
             while (NumPlayers < MaxPlayers && _tcp.Pending())
             {
@@ -254,7 +251,7 @@ namespace Engine.Session
                 }
             }
 
-            base.Update(gameTime);
+            base.Update();
         }
         
         /// <summary>
@@ -384,7 +381,7 @@ namespace Engine.Session
                                 using (var packet = new Packet())
                                 using (var packetInner = new Packet())
                                 {
-                                    udp.Send(packet
+                                    _udp.Send(packet
                                         .Write((byte)SessionMessage.GameInfoResponse)
                                         .Write(packetInner
                                             .Write(MaxPlayers)
@@ -462,7 +459,7 @@ namespace Engine.Session
                             // After getting here it's official! We have a new player.
 
                             // Store the player's info.
-                            players[playerNumber] = player;
+                            _players[playerNumber] = player;
                             _slots[playerNumber] = true;
                             _clients[playerNumber] = _pending[pendingIndex].client;
                             _streams[playerNumber] = _pending[pendingIndex].stream;
@@ -520,7 +517,7 @@ namespace Engine.Session
                         }
 
                         // Tell the local program the player has joined.
-                        OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
+                        OnPlayerJoined(new PlayerEventArgs(_players[playerNumber]));
                     }
                     break;
 
@@ -568,13 +565,13 @@ namespace Engine.Session
             if (_slots[playerNumber])
             {
                 // Keep for event dispatching.
-                var player = players[playerNumber];
+                var player = _players[playerNumber];
 
                 _streams[playerNumber].Dispose();
                 _clients[playerNumber] = null;
                 _streams[playerNumber] = null;
                 _slots[playerNumber] = false;
-                players[playerNumber] = null;
+                _players[playerNumber] = null;
 
                 --NumPlayers;
 

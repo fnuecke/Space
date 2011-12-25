@@ -9,7 +9,8 @@ namespace Engine.Controller
     /// <summary>
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
-    public abstract class AbstractTssController<TSession> : AbstractController<TSession, IFrameCommand>
+    public abstract class AbstractTssController<TSession>
+        : AbstractController<TSession, IFrameCommand>, ISimulationController<TSession>
         where TSession : ISession
     {
         #region Types
@@ -60,6 +61,15 @@ namespace Engine.Controller
 
         #endregion
 
+        #region Constants
+
+        /// <summary>
+        /// The number of milliseconds a single update should take.
+        /// </summary>
+        protected const double _targetElapsedMilliseconds = 1000.0 / 60.0;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -94,17 +104,10 @@ namespace Engine.Controller
         /// <param name="game">the game this belongs to.</param>
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
-        public AbstractTssController(Game game, TSession session, uint[] delays)
-            : base(game, session)
+        public AbstractTssController(TSession session, uint[] delays)
+            : base(session)
         {
             tss = new TSS(delays);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            tss = null;
-
-            base.Dispose(disposing);
         }
 
         #endregion
@@ -112,9 +115,7 @@ namespace Engine.Controller
         #region Logic
 
         /// <summary>
-        /// Update the simulation. This adjusts the update procedure based
-        /// on the selected time step of the game. For fixed, it just does
-        /// one step. For variable, it determines how many steps to perform,
+        /// Update the simulation. This determines how many steps to perform,
         /// based on the elapsed time.
         /// </summary>
         /// <param name="gameTime">the game time information for the current
@@ -130,33 +131,26 @@ namespace Engine.Controller
                 return;
             }
 
-            if (Game.IsFixedTimeStep)
+            // Compensate for dynamic time step.
+            double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder + timeCorrection;
+            if (elapsed < _targetElapsedMilliseconds)
             {
-                tss.Update();
+                // If we can't actually run to the next frame, at least update
+                // back to the current frame in case rollbacks were made to
+                // accommodate player commands.
+                tss.RunToFrame(tss.CurrentFrame);
             }
             else
             {
-                // Compensate for dynamic time step.
-                double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder + timeCorrection;
-                if (elapsed < Game.TargetElapsedTime.TotalMilliseconds)
+                // We can run at least one frame, so do the update(s). Due to the
+                // carry there may occur more than one simulation update per XNA
+                // update, but that should be below the threshold of the noticeable.
+                while (elapsed >= _targetElapsedMilliseconds)
                 {
-                    // If we can't actually run to the next frame, at least update
-                    // back to the current frame in case rollbacks were made to
-                    // accommodate player commands.
-                    tss.RunToFrame(tss.CurrentFrame);
+                    elapsed -= _targetElapsedMilliseconds;
+                    tss.Update();
                 }
-                else
-                {
-                    // We can run at least one frame, so do the update(s). Due to the
-                    // carry there may occur more than one simulation update per XNA
-                    // update, but that should be below the threshold of the noticeable.
-                    while (elapsed >= Game.TargetElapsedTime.TotalMilliseconds)
-                    {
-                        elapsed -= Game.TargetElapsedTime.TotalMilliseconds;
-                        tss.Update();
-                    }
-                    _lastUpdateRemainder = elapsed;
-                }
+                _lastUpdateRemainder = elapsed;
             }
         }
 

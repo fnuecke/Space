@@ -725,6 +725,14 @@ namespace Engine.Simulation
                 return this;
             }
 
+            public void AddSystems(IEnumerable<IComponentSystem> systems)
+            {
+                foreach (var system in systems)
+                {
+                    AddSystem(system);
+                }
+            }
+
             public T GetSystem<T>() where T : IComponentSystem
             {
                 return _tss.LeadingState.EntityManager.SystemManager.GetSystem<T>();

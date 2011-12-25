@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using Space.Control;
+using Space.View;
 
 namespace Space
 {
@@ -98,8 +99,6 @@ namespace Space
             screenManager.AddScreen(new BackgroundScreen());
             screenManager.AddScreen(new MainMenuScreen());
 
-            console.DrawOrder = 10;
-
             // Add a logging target that'll write to our console.
             new GameConsoleTarget(this, LogLevel.Debug);
 
@@ -151,16 +150,13 @@ namespace Space
             base.Update(gameTime);
         }
 
+#if DEBUG
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            //GraphicsDevice.Clear(Color.Black);
-
-            base.Draw(gameTime);
-
             spriteBatch.Begin();
 
             string info = String.Format("FPS: {0:f} | Slow: {1}",
@@ -170,6 +166,33 @@ namespace Space
             spriteBatch.DrawString(console.Font, info, infoPosition, Color.White);
 
             spriteBatch.End();
+
+            foreach (var component in Components)
+            {
+                if (component is GameClient)
+                {
+                    var client = (GameClient)component;
+
+                    var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 230, GraphicsDevice.Viewport.Height - 140);
+                    var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 360, GraphicsDevice.Viewport.Height - 140);
+
+                    SessionInfo.Draw("Client", client.Controller.Session, sessionOffset, console.Font, spriteBatch);
+                    //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
+                }
+                else if (component is GameServer)
+                {
+                    var server = (GameServer)component;
+
+                    var ngOffset = new Vector2(150, GraphicsDevice.Viewport.Height - 140);
+                    var sessionOffset = new Vector2(10, GraphicsDevice.Viewport.Height - 140);
+
+                    SessionInfo.Draw("Server", server.Session, sessionOffset, console.Font, spriteBatch);
+                    //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
+                }
+            }
+
+            base.Draw(gameTime);
         }
+#endif
     }
 }

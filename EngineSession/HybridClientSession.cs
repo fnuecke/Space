@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using Engine.Network;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
@@ -84,10 +83,9 @@ namespace Engine.Session
 
         #region Construction / Destruction
 
-        public HybridClientSession(Game game)
-            : base(game)
+        public HybridClientSession()
+            : base(new UdpProtocol(_udpHeader))
         {
-            udp = new UdpProtocol(udpHeader);
             ConnectionState = ClientState.Unconnected;
             _localPlayerNumber = -1;
         }
@@ -100,12 +98,18 @@ namespace Engine.Session
                 {
                     _stream.Dispose();
                 }
+
                 if (_tcp != null)
                 {
                     _tcp.Close();
                 }
-                _stream = null;
+
+                ConnectionState = ClientState.Unconnected;
+
                 _tcp = null;
+                _stream = null;
+                _localPlayerNumber = -1;
+                _playerData = default(TPlayerData);
             }
 
             base.Dispose(disposing);
@@ -115,7 +119,7 @@ namespace Engine.Session
 
         #region Logic
 
-        public override void Update(GameTime gameTime)
+        public override void Update()
         {
             if (_stream != null)
             {
@@ -154,7 +158,7 @@ namespace Engine.Session
                 }
             }
 
-            base.Update(gameTime);
+            base.Update();
         }
 
         #endregion
@@ -170,7 +174,7 @@ namespace Engine.Session
             logger.Trace("Sending ping to search for open games.");
             using (var packet = new Packet())
             {
-                udp.Send(packet.Write((byte)SessionMessage.GameInfoRequest), DefaultMulticastEndpoint);
+                _udp.Send(packet.Write((byte)SessionMessage.GameInfoRequest), _defaultMulticastEndpoint);
             }
         }
 
@@ -422,7 +426,7 @@ namespace Engine.Session
                         }
 
                         // Allocate array for the players in the session.
-                        players = new Player[MaxPlayers];
+                        _players = new Player[MaxPlayers];
 
                         // Get other game relevant data (e.g. game state).
                         using (var joinData = packet.ReadPacket())
@@ -434,7 +438,7 @@ namespace Engine.Session
                                 int playerNumber = packet.ReadInt32();
 
                                 // Sanity checks.
-                                if (playerNumber < 0 || playerNumber >= MaxPlayers || players[playerNumber] != null)
+                                if (playerNumber < 0 || playerNumber >= MaxPlayers || _players[playerNumber] != null)
                                 {
                                     throw new PacketException("Invalid player number.");
                                 }
@@ -446,7 +450,7 @@ namespace Engine.Session
                                 var playerData = packet.ReadPacketizable<TPlayerData>();
 
                                 // All OK, add the player.
-                                players[playerNumber] = new Player(playerNumber, playerName, playerData);
+                                _players[playerNumber] = new Player(playerNumber, playerName, playerData);
                             }
 
                             // New state :)
@@ -485,7 +489,7 @@ namespace Engine.Session
                         int playerNumber = packet.ReadInt32();
 
                         // Sanity checks.
-                        if (playerNumber < 0 || playerNumber >= MaxPlayers || players[playerNumber] != null)
+                        if (playerNumber < 0 || playerNumber >= MaxPlayers || _players[playerNumber] != null)
                         {
                             throw new PacketException("Invalid player number.");
                         }
@@ -497,10 +501,10 @@ namespace Engine.Session
                         TPlayerData playerData = packet.ReadPacketizable<TPlayerData>();
 
                         // All OK, add the player.
-                        players[playerNumber] = new Player(playerNumber, playerName, playerData);
+                        _players[playerNumber] = new Player(playerNumber, playerName, playerData);
 
                         // The the local program about it.
-                        OnPlayerJoined(new PlayerEventArgs(players[playerNumber]));
+                        OnPlayerJoined(new PlayerEventArgs(_players[playerNumber]));
                     }
                     break;
 
@@ -525,8 +529,8 @@ namespace Engine.Session
                         else
                         {
                             // OK, remove the player.
-                            Player player = players[playerNumber];
-                            players[playerNumber] = null;
+                            Player player = _players[playerNumber];
+                            _players[playerNumber] = null;
 
                             // Tell the local program about it.
                             OnPlayerLeft(new PlayerEventArgs(player));
@@ -562,7 +566,7 @@ namespace Engine.Session
             {
                 logger.Debug("Resetting session.");
 
-                players = null;
+                _players = null;
                 _localPlayerNumber = -1;
                 NumPlayers = 0;
                 MaxPlayers = 0;

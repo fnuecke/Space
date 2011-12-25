@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.ComponentSystem.Entities;
-using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
@@ -16,7 +15,8 @@ namespace Engine.Controller
     /// </summary>
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
-    public abstract class AbstractTssClient : AbstractTssController<IClientSession>, IClientController<IFrameCommand>
+    public abstract class AbstractTssClient
+        : AbstractTssController<IClientSession>, IClientController<IFrameCommand>
     {
         #region Logger
 
@@ -73,31 +73,15 @@ namespace Engine.Controller
         /// <param name="game">the game this belongs to.</param>
         /// <param name="port">the port to listen on.</param>
         /// <param name="header">the protocol header.</param>
-        public AbstractTssClient(Game game, IClientSession session)
-            : base(game, session, new uint[] {
-                (uint)System.Math.Ceiling(50 / game.TargetElapsedTime.TotalMilliseconds),
-                (uint)System.Math.Ceiling(150 / game.TargetElapsedTime.TotalMilliseconds),
-                (uint)System.Math.Ceiling(300 / game.TargetElapsedTime.TotalMilliseconds)
+        public AbstractTssClient(IClientSession session)
+            : base(session, new uint[] {
+                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds),
+                (uint)System.Math.Ceiling(150 / _targetElapsedMilliseconds),
+                (uint)System.Math.Ceiling(300 / _targetElapsedMilliseconds)
             })
         {
-        }
-
-        /// <summary>
-        /// Attach ourselves as listeners.
-        /// </summary>
-        public override void Initialize()
-        {
-            if (Session != null)
-            {
-                Session.JoinResponse += HandleJoinResponse;
-            }
-
-            if (tss != null)
-            {
-                tss.Invalidated += HandleSimulationInvalidated;
-            }
-
-            base.Initialize();
+            Session.JoinResponse += HandleJoinResponse;
+            tss.Invalidated += HandleSimulationInvalidated;
         }
 
         /// <summary>
@@ -105,13 +89,9 @@ namespace Engine.Controller
         /// </summary>
         protected override void Dispose(bool disposing)
         {
-            if (Session != null)
+            if (disposing)
             {
                 Session.JoinResponse -= HandleJoinResponse;
-            }
-
-            if (tss != null)
-            {
                 tss.Invalidated -= HandleSimulationInvalidated;
             }
 
@@ -129,12 +109,6 @@ namespace Engine.Controller
         /// </summary>
         public override void Update(GameTime gameTime)
         {
-            // Already disposed. Thanks, XNA.
-            if (Session == null)
-            {
-                return;
-            }
-
             if (Session.ConnectionState == ClientState.Connected && !tss.WaitingForSynchronization)
             {
                 // Drive game logic.
@@ -164,17 +138,6 @@ namespace Engine.Controller
                             .Write(tss.CurrentFrame));
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Drives rendering.
-        /// </summary>
-        public override void Draw(GameTime gameTime)
-        {
-            if (Session.ConnectionState == ClientState.Connected)
-            {
-                tss.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display, tss.CurrentFrame);
             }
         }
 
@@ -307,7 +270,7 @@ namespace Engine.Controller
                         }
                         // Push our average delay plus the delta! Otherwise we'd loose the
                         // running ('constant') delta we accumulated.
-                        _syncDiff.Put(frameDelta * Game.TargetElapsedTime.TotalMilliseconds / SyncInterval);
+                        _syncDiff.Put(frameDelta * _targetElapsedMilliseconds / SyncInterval);
                     }
                     break;
 

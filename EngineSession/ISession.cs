@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Serialization;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Session
 {
@@ -9,7 +8,7 @@ namespace Engine.Session
     /// <summary>
     /// Common interface for sessions of either server or client type.
     /// </summary>
-    public interface ISession : IGameComponent, IDisposable
+    public interface ISession : IDisposable
     {
         /// <summary>
         /// Called when a new player joins the session.
@@ -67,5 +66,12 @@ namespace Engine.Session
         /// </summary>
         /// <param name="packet">the data to send.</param>
         void Send(Packet packet);
+
+        /// <summary>
+        /// Called when the session needs to be updated. This should be called
+        /// regularly (in each game's Update) to ensure proper flow of network
+        /// traffic.
+        /// </summary>
+        void Update();
     }
 }

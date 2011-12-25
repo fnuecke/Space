@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
@@ -47,6 +48,12 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="system">The system to add.</param>
         /// <returns>This component system manager, for chaining.</returns>
         IComponentSystemManager AddSystem(IComponentSystem system);
+
+        /// <summary>
+        /// Add multiple systems to this manager.
+        /// </summary>
+        /// <param name="systems">The systems to add.</param>
+        void AddSystems(IEnumerable<IComponentSystem> systems);
 
         /// <summary>
         /// Removes the system from this manager.

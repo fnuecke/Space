@@ -8,9 +8,8 @@
 #endregion
 
 #region Using Statements
-using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -98,9 +97,6 @@ namespace GameStateManagement
         public ScreenManager(Game game)
             : base(game)
         {
-            
-
-            DrawOrder = 1337;
             // we must set EnabledGestures before we can query for them, but
             // we don't assume the game wants to read them.
             //TouchPanel.EnabledGestures = GestureType.None;
