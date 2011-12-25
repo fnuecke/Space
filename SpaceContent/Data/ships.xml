@@ -28,7 +28,7 @@
       <Thrusters>
         <Item>
           <Attributes>
-            <Item>2 AccelerationForce</Item>
+            <Item>8 AccelerationForce</Item>
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
           </Attributes>
