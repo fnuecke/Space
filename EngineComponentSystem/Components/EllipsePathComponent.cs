@@ -43,15 +43,20 @@ namespace Engine.ComponentSystem.Components
                 {
                     CenterPoint = CenterEntity.GetComponent<Transform>().Translation;
                 }
-                var DefaultLogicParameterization = (DefaultLogicParameterization)parameterization;
-                var Point = FPoint.Zero;
-                var t = (System.Math.PI*DefaultLogicParameterization.Frame/Period);
+                var defaultLogicParameterization = (DefaultLogicParameterization)parameterization;
+                var point = FPoint.Zero;
+                var t = (System.Math.PI*defaultLogicParameterization.Frame/Period);
+                var cosT = System.Math.Cos(t);
+                var sinT = System.Math.Sin(t);
+                var cosPhi = System.Math.Cos(Phi);
+                var sinPhi = System.Math.Sin(Phi);
+                var f = System.Math.Sqrt(System.Math.Abs(System.Math.Pow(ShortRadius, 2) - System.Math.Pow(LongRadius, 2)));
                 //Console.WriteLine("T: "+t+ "");
-                Point.X = Fixed.Create(CenterPoint.X.IntValue + LongRadius * System.Math.Cos(t)*System.Math.Cos(Phi)-ShortRadius*System.Math.Sin(t)*System.Math.Sin(Phi));
-                Point.Y = Fixed.Create(CenterPoint.Y.IntValue + LongRadius * System.Math.Cos(t) * System.Math.Sin(Phi) + ShortRadius * System.Math.Sin(t) * System.Math.Cos(Phi));
+                point.X = Fixed.Create(CenterPoint.X.IntValue +f*cosPhi+ LongRadius * cosT * cosPhi - ShortRadius * sinT * sinPhi);
+                point.Y = Fixed.Create(CenterPoint.Y.IntValue +f*sinPhi+ LongRadius * cosT * sinPhi + ShortRadius * sinT * cosPhi);
                 
                 //Console.WriteLine(Point);
-                transform.Translation = Point;
+                transform.Translation = point;
             }
         }
 

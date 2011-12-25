@@ -100,10 +100,29 @@ namespace Space.ComponentSystem.Systems
             var cellSize = Manager.GetSystem<CellSystem>().CellSize;
 
             FPoint center = FPoint.Create(Fixed.Create(cellSize * x), Fixed.Create(cellSize * y));
-            
+
+            center.X += random.Next(2000) - 1000;
+            center.Y += random.Next(2000) - 1000;
+
             IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
             Manager.EntityManager.AddEntity(entity);
             list.Add(entity.UID);
+            for (int i = 0; i < random.Next(0, 12); i++)
+            {
+                Console.WriteLine("Create Sun: " + i);
+                //U = sqrt(4pi²a³/G(M+M2))
+                entity = EntityFactory.CreateStar("Textures/sun", center, random.Next(i * 100, i * 130), random.Next(i * 100, i * 130), random.Next(200, 500) * i, random.Next(0, 355));
+                Manager.EntityManager.AddEntity(entity);
+                list.Add(entity.UID);
+                for (int j = 0; j < random.Next(0, 3); j++)
+                {
+                    Console.WriteLine("Create moon: " + j);
+                    entity = EntityFactory.CreateStar("Textures/sun", entity, random.Next(j * 10, j * 30), random.Next(i * 10, i * 13), random.Next(200, 500) * j, random.Next(0, 355));
+                    Manager.EntityManager.AddEntity(entity);
+
+                    list.Add(entity.UID);
+                }
+            }
 
             return list;
         }
@@ -120,18 +139,28 @@ namespace Space.ComponentSystem.Systems
 
             IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
             Manager.EntityManager.AddEntity(entity);
+            list.Add(entity.UID);
+            for (int i = 0; i < random.Next(4, 12);i++ )
+            {
+                Console.WriteLine("Create Sun: " + i);
+                //U = sqrt(4pi²a³/G(M+M2))
+                entity = EntityFactory.CreateStar("Textures/sun", center, random.Next(i * 100, i * 130), random.Next(i * 100, i * 130),random.Next(200,500)*i, random.Next(0,355));
+                Manager.EntityManager.AddEntity(entity);
+                list.Add(entity.UID);
+                for (int j = 0; j < random.Next(0, 3); j++)
+                {
+                    Console.WriteLine("Create moon: "+j);
+                    entity = EntityFactory.CreateStar("Textures/sun", entity, random.Next(j * 10, j * 30), random.Next(i * 10, i * 13), random.Next(200, 500) * j, random.Next(0, 355));
+                    Manager.EntityManager.AddEntity(entity);
 
+                    list.Add(entity.UID);
+                }
+            }
             
             
-            list.Add(entity.UID);
-            entity = EntityFactory.CreateStar("Textures/sun", center,1000, 300, 500, 41);
-            Manager.EntityManager.AddEntity(entity);
 
-            list.Add(entity.UID);
-            entity = EntityFactory.CreateStar("Textures/sun", entity, 200, 100, 100, 41);
-            Manager.EntityManager.AddEntity(entity);
-
-            list.Add(entity.UID);
+            
+           
             return list;
         }
 
