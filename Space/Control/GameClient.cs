@@ -159,6 +159,12 @@ namespace Space.Control
                 }
                 SpriteBatch.DrawString(font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
 
+                string activeSystems = "Active cells: ";
+                foreach (var item in Controller.Simulation.EntityManager.SystemManager.GetSystem<CellSystem>().ActiveSystems)
+                {
+                    activeSystems += item.Item1 + ":" + item.Item2 + "  ";
+                }
+                SpriteBatch.DrawString(font, activeSystems, new Vector2(20, count * 20 + 80), Color.White);
             }
             catch (Exception ex)
             {

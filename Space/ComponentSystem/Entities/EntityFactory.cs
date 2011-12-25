@@ -2,7 +2,6 @@
 using Engine.ComponentSystem.Entities;
 using Engine.Math;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Systems;
 using Space.Data;
 
 namespace Space.ComponentSystem.Entities
@@ -25,7 +24,7 @@ namespace Space.ComponentSystem.Entities
             ship.AddComponent(new Avatar());
             ship.AddComponent(new TransformedRenderer());
 
-            ship.GetComponent<Transform>().Translation = FPoint.Create((Fixed)16384, (Fixed)16384);
+            ship.GetComponent<Transform>().Translation = FPoint.Create((Fixed)2000, (Fixed)2000);
 
             var friction = ship.GetComponent<Friction>();
             friction.Value = (Fixed)0.01;
