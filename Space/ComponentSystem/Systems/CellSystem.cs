@@ -151,8 +151,6 @@ namespace Space.ComponentSystem.Systems
 
         public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet);
-
             packet.Write(_livingCells.Count);
             foreach (var cellId in _livingCells)
             {
@@ -164,8 +162,6 @@ namespace Space.ComponentSystem.Systems
 
         public override void Depacketize(Packet packet)
         {
-            base.Depacketize(packet);
-
             _livingCells.Clear();
             int numCells = packet.ReadInt32();
             for (int i = 0; i < numCells; i++)
@@ -176,8 +172,6 @@ namespace Space.ComponentSystem.Systems
 
         public override void Hash(Hasher hasher)
         {
-            base.Hash(hasher);
-
             foreach (var cellId in _livingCells)
             {
                 hasher.Put(BitConverter.GetBytes(cellId));

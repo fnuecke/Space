@@ -127,14 +127,16 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>A system of the given type, or <c>null</c> if no such system exits.</returns>
         public T GetSystem<T>() where T : IComponentSystem
         {
-            // Get the type object representing the generic type.
-            Type type = typeof(T);
+            return (T)GetSystem(typeof(T));
+        }
 
+        private IComponentSystem GetSystem(Type type)
+        {
             // See if we have that one cached.
             if (_mapping.ContainsKey(type))
             {
                 // Yes, return it.
-                return (T)_mapping[type];
+                return _mapping[type];
             }
 
             // No, look it up and cache it.
@@ -143,13 +145,13 @@ namespace Engine.ComponentSystem.Systems
                 if (system.GetType() == type)
                 {
                     _mapping[type] = system;
-                    return (T)system;
+                    return system;
                 }
             }
 
             // Not found at all, cache as null and return.
             _mapping[type] = null;
-            return default(T);
+            return null;
         }
 
         #endregion
@@ -202,7 +204,7 @@ namespace Engine.ComponentSystem.Systems
             for (int i = 0; i < numToSync; i++)
             {
                 Type type = Type.GetType(packet.ReadString());
-                packet.ReadPacketizableInto(_mapping[type]);
+                packet.ReadPacketizableInto(GetSystem(type));
             }
         }
 

@@ -254,6 +254,8 @@ namespace Engine.ComponentSystem.Entities
             packet.ReadPacketizableInto(_idManager);
         }
 
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
@@ -266,6 +268,8 @@ namespace Engine.ComponentSystem.Entities
             {
                 component.Hash(hasher);
             }
+
+            logger.Trace("Hash: {0}", hasher.Value);
         }
 
         /// <summary>

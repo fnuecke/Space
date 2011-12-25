@@ -155,11 +155,16 @@ namespace Engine.ComponentSystem.Systems
 
         public Packet Packetize(Packet packet)
         {
+            // Systems that need synchronization.
+            packet.Write(SystemManager);
+
             // Write the list of entities we track.
-            return packet.Write(_entities)
+            packet.Write(_entities);
 
             // Id manager.
-            .Write(_idManager);
+            packet.Write(_idManager);
+
+            return packet;
         }
 
         public void Depacketize(Packet packet)
@@ -167,6 +172,7 @@ namespace Engine.ComponentSystem.Systems
             // Clear component lists. Just do a clone, which preserves the
             // non-entity bound components for us.
             SystemManager = (IComponentSystemManager)SystemManager.Clone();
+            packet.ReadPacketizableInto(SystemManager);
 
             // And finally the objects. Remove the one we know before that.
             _entities.Clear();

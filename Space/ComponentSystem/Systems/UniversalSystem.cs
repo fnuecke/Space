@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Math;
+using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Systems.Messages;
@@ -13,14 +14,16 @@ namespace Space.ComponentSystem.Systems
 {
     public class UniversalSystem : AbstractComponentSystem<NullParameterization>
     {
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         #region Properties
-        
+
         public ulong WorldSeed { get; set; }
 
         #endregion
 
         #region Fields
-        
+
         private WorldConstaints _constaints;
 
         private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
@@ -28,10 +31,11 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Constructor
-        
+
         public UniversalSystem(WorldConstaints constaits)
         {
             _constaints = constaits;
+            ShouldSynchronize = true;
         }
 
         #endregion
@@ -46,28 +50,26 @@ namespace Space.ComponentSystem.Systems
 
                 if (info.State)
                 {
-                    var random = new MersenneTwister();
-                    List<int> list;
-
                     if (info.X == 0 && info.Y == 0)
                     {
-                        list = CreateStartSystem();
+                        _entities.Add(info.Id, CreateStartSystem());
                     }
                     else
                     {
-                        list = CreateSunSystem(info.X, info.Y, new MersenneTwister(info.Id ^ WorldSeed));
+                        _entities.Add(info.Id, CreateSunSystem(info.X, info.Y, new MersenneTwister(info.Id ^ WorldSeed)));
                     }
-
-                    _entities.Add(info.Id, list);
                 }
                 else
                 {
-                    foreach (int id in _entities[info.Id])
+                    if (_entities.ContainsKey(info.Id))
                     {
-                        Manager.EntityManager.RemoveEntity(id);
-                    }
+                        foreach (int id in _entities[info.Id])
+                        {
+                            Manager.EntityManager.RemoveEntity(id);
+                        }
 
-                    _entities.Remove(info.Id);
+                        _entities.Remove(info.Id);
+                    }
                 }
             }
         }
@@ -75,6 +77,55 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Cloning
+
+        public override Packet Packetize(Packet packet)
+        {
+            packet.Write(WorldSeed);
+
+            packet.Write(_entities.Count);
+            foreach (var item in _entities)
+            {
+                packet.Write(item.Key);
+                packet.Write(item.Value.Count);
+                foreach (var entityId in item.Value)
+                {
+                    packet.Write(entityId);
+                }
+            }
+
+            return packet;
+        }
+
+        public override void Depacketize(Packet packet)
+        {
+            WorldSeed = packet.ReadUInt64();
+
+            _entities.Clear();
+            int numCells = packet.ReadInt32();
+            for (int i = 0; i < numCells; i++)
+            {
+                var key = packet.ReadUInt64();
+                var list = new List<int>();
+                int numEntities = packet.ReadInt32();
+                for (int j = 0; j < numEntities; j++)
+                {
+                    list.Add(packet.ReadInt32());
+                }
+                _entities.Add(key, list);
+            }
+        }
+
+        public override void Hash(Hasher hasher)
+        {
+            hasher.Put(BitConverter.GetBytes(WorldSeed));
+            foreach (var entities in _entities.Values)
+            {
+                foreach (var entity in entities)
+                {
+                    hasher.Put(BitConverter.GetBytes(entity));
+                }
+            }
+        }
 
         public override object Clone()
         {
@@ -100,7 +151,7 @@ namespace Space.ComponentSystem.Systems
             var cellSize = Manager.GetSystem<CellSystem>().CellSize;
 
             FPoint center = FPoint.Create(Fixed.Create(cellSize * x), Fixed.Create(cellSize * y));
-            
+
             IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
