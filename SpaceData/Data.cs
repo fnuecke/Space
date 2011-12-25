@@ -5,23 +5,7 @@ namespace Space.Data
     public class WorldConstaints
     {
 
-        public ulong WorldSeed;
-        /// <summary>
-        /// Average overall radius of a solar system.
-        /// </summary>
-        public Fixed SolarSystemRadiusMean;
-
-        /// <summary>
-        /// The allowed deviation from the mean for a solar system, as a
-        /// fraction of it's mean size.
-        /// </summary>
-        public Fixed SolarSystemRadiusStdDevFraction;
-
-        /// <summary>
-        /// The chance, in percent, that a solar system has more than one sun.
-        /// </summary>
         public Fixed SolarSystemMultiSunChance;
-
         /// <summary>
         /// The number of suns a system may have at max.
         /// </summary>
@@ -37,6 +21,12 @@ namespace Space.Data
         /// as a fraction of the average planet size.
         /// </summary>
         public Fixed PlanetRadiusStdDev;
+
+
+        /// <summary>
+        /// The Average Orbit size
+        /// </summary>
+        public Fixed PlanetOrbitMean;
         
         /// <summary>
         /// The upward deviation from the minimum buffer (being: next lower
@@ -55,5 +45,16 @@ namespace Space.Data
         /// radius.
         /// </summary>
         public Fixed MoonRadiusStdDevFraction;
+
+        /// <summary>
+        /// The mean size of a moon as a fraction of the planet it'll belong to.
+        /// </summary>
+        public Fixed MoonOrbitMean;
+
+        /// <summary>
+        /// The standard deviation of a moon's size as the fraction of its
+        /// radius.
+        /// </summary>
+        public Fixed MoonOrbitStdDevFraction;
     }
 }

@@ -113,9 +113,9 @@ namespace Space.Control
                 var entityManager = Controller.Simulation.EntityManager;
                 var systemManager = entityManager.SystemManager;
                 var avatar = systemManager.GetSystem<AvatarSystem>().GetAvatar(Controller.Session.LocalPlayer.Number);
-                var cellSize = systemManager.GetSystem<CellSystem>().CellSize;
-                var cellX = ((int)avatar.GetComponent<Transform>().Translation.X)/cellSize;
-                var cellY = ((int)avatar.GetComponent<Transform>().Translation.Y) /cellSize;
+                var cellSize = CellSystem.CellSizeShiftAmount;
+                var cellX = ((int)avatar.GetComponent<Transform>().Translation.X)>>cellSize;
+                var cellY = ((int)avatar.GetComponent<Transform>().Translation.Y)>>cellSize;
                 var x = avatar.GetComponent<Transform>().Translation.X;
                 var y = avatar.GetComponent<Transform>().Translation.Y;
                 var id = ((ulong)cellX << 32) | (uint)cellY;
@@ -172,12 +172,6 @@ namespace Space.Control
                 }
                 SpriteBatch.DrawString(font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
 
-                string activeSystems = "Active cells: ";
-                foreach (var item in Controller.Simulation.EntityManager.SystemManager.GetSystem<CellSystem>().ActiveSystems)
-                {
-                    activeSystems += item.Item1 + ":" + item.Item2 + "  ";
-                }
-                SpriteBatch.DrawString(font, activeSystems, new Vector2(20, count * 20 + 80), Color.White);
             }
             catch (Exception ex)
             {

@@ -1,15 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
   <Asset Type="Space.Data.WorldConstaints">
-    <WorldSeed>1</WorldSeed>
-    <SolarSystemRadiusMean>2000</SolarSystemRadiusMean>
-    <SolarSystemRadiusStdDevFraction>0.3</SolarSystemRadiusStdDevFraction>
     <SolarSystemMultiSunChance>0.01</SolarSystemMultiSunChance>
     <SolarSystemMaxSuns>3</SolarSystemMaxSuns>
     <PlanetRadiusMean>80</PlanetRadiusMean>
     <PlanetRadiusStdDev>0.25</PlanetRadiusStdDev>
+    <PlanetOrbitMean>2000</PlanetOrbitMean>
     <PlanetOrbitStdDev>100</PlanetOrbitStdDev>
     <MoonRadiusMean>0.2</MoonRadiusMean>
     <MoonRadiusStdDevFraction>0.2</MoonRadiusStdDevFraction>
+    <MoonOrbitMean>200</MoonOrbitMean>
+    <MoonOrbitStdDevFraction>20</MoonOrbitStdDevFraction>
   </Asset>
 </XnaContent>

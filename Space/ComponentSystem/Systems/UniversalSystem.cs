@@ -154,19 +154,21 @@ namespace Space.ComponentSystem.Systems
 
             IEntity sun = EntityFactory.CreateStar("Textures/sun", center,AstronomicBodyType.Sun);
             list.Add(Manager.EntityManager.AddEntity(sun));
-
-            for (int i = 1; i < random.Next(1, 12); i++)
+            var angle = (Fixed)( random.NextDouble()*Math.PI*2);
+            for (int i = 1; i < random.Next(1, 8); i++)
             {
                 var planet = EntityFactory.CreateStar("Textures/sun", sun,
-                    (Fixed)random.Next(i * 100, i * 130), (Fixed)random.Next(i * 100, i * 130),
-                    (Fixed)random.Next(200, 500) * i, random.Next(200, 355),AstronomicBodyType.Planet);
+                   i * i * _constaints.PlanetOrbitMean / 2 + (Fixed)random.NextDouble() * _constaints.PlanetRadiusStdDev * 2 - _constaints.PlanetRadiusStdDev,
+                   i * i * _constaints.PlanetOrbitMean / 2 + (Fixed)random.NextDouble() * _constaints.PlanetRadiusStdDev * 2 - _constaints.PlanetRadiusStdDev,
+                    angle,(int) Math.Sqrt(Math.Pow(i * i * (double)_constaints.PlanetOrbitMean/2, 3)), AstronomicBodyType.Planet);
                 list.Add(Manager.EntityManager.AddEntity(planet));
 
                 for (int j = 1; j < random.Next(1, 4); j++)
                 {
                     var moon = EntityFactory.CreateStar("Textures/sun", planet,
-                        (Fixed)random.Next(j * 10, j * 30), (Fixed)random.Next(j * 10, j * 13),
-                        (Fixed)random.Next(200, 500) * j, random.Next(200, 355),AstronomicBodyType.Moon);
+                   j * j * _constaints.MoonOrbitMean / 2 + (Fixed)random.NextDouble() * _constaints.MoonOrbitStdDevFraction * 2 - _constaints.MoonOrbitStdDevFraction,
+                   j * j * _constaints.MoonOrbitMean / 2 + (Fixed)random.NextDouble() * _constaints.MoonOrbitStdDevFraction * 2 - _constaints.MoonOrbitStdDevFraction,
+                    angle, (int)Math.Sqrt(Math.Pow(j * j * (double)_constaints.MoonOrbitMean / 2, 3)), AstronomicBodyType.Moon);
                     list.Add(Manager.EntityManager.AddEntity(moon));
                 }
             }

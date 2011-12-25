@@ -29,6 +29,7 @@ namespace Space.ComponentSystem.Systems
         /// power of this value.
         /// </summary>
         public const int CellSizeShiftAmount = 12;
+    
 
         #endregion
 
