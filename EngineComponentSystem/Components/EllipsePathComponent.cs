@@ -1,29 +1,82 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
+using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {
+    /// <summary>
+    /// When attached to a component with a transform, this will automatically
+    /// position the component to follow an ellipsoid path around a specified
+    /// center entity.
+    /// </summary>
     public sealed class EllipsePathComponent : AbstractComponent
     {
         #region Properties
 
         /// <summary>
-        /// The directed speed of the object.
+        /// The id of the entity the entity this component belongs to
+        /// rotates around.
         /// </summary>
-        public FPoint CenterPoint { get; set; }
+        public int CenterEntityId { get; set; }
 
-        public IEntity CenterEntity { get; set; }
-        public int LongRadius { get; set; }
-        public int ShortRadius { get; set; }
+        /// <summary>
+        /// The radius of the ellipse along the major axis.
+        /// </summary>
+        public Fixed MajorRadius { get; set; }
+
+        /// <summary>
+        /// The radius of the ellipse along the minor axis.
+        /// </summary>
+        public Fixed MinorRadius { get; set; }
+
+        /// <summary>
+        /// The angle of the ellipse's major axis to the global x axis.
+        /// </summary>
+        public Fixed Angle
+        {
+            get
+            {
+                return _angle;
+            }
+            set
+            {
+                _angle = value;
+                _sinPhi = Fixed.Sin(value);
+                _cosPhi = Fixed.Cos(value);
+            }
+        }
+
+        /// <summary>
+        /// The time in frames it takes for the component to perform a full
+        /// rotation around its center.
+        /// </summary>
         public int Period { get; set; }
-        public double Phi { get; set; }
-        public long Frame;
+
         #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// Actual value of the angle.
+        /// </summary>
+        Fixed _angle;
+
+        /// <summary>
+        /// Precomputed sine of the angle.
+        /// </summary>
+        Fixed _sinPhi;
+
+        /// <summary>
+        /// Precomputed cosine of the angle.
+        /// </summary>
+        Fixed _cosPhi = (Fixed)1;
+
+        #endregion
+
+        #region Logic
 
         /// <summary>
         /// Updates an objects position based on this velocity.
@@ -39,19 +92,32 @@ namespace Engine.ComponentSystem.Components
             // Only if a transform is set.
             if (transform != null)
             {
-                if (CenterEntity != null && CenterEntity.GetComponent<Transform>()!= null)
+                var args = (DefaultLogicParameterization)parameterization;
+
+                // Try to get the center of the entity we're rotating around.
+                FPoint center = FPoint.Zero;
+                var centerEntity = Entity.Manager.GetEntity(CenterEntityId);
+                if (centerEntity != null)
                 {
-                    CenterPoint = CenterEntity.GetComponent<Transform>().Translation;
+                    var centerTransform = centerEntity.GetComponent<Transform>();
+                    if (centerTransform != null)
+                    {
+                        center = centerTransform.Translation;
+                    }
                 }
-                var DefaultLogicParameterization = (DefaultLogicParameterization)parameterization;
-                var Point = FPoint.Zero;
-                var t = (System.Math.PI*DefaultLogicParameterization.Frame/Period);
-                //Console.WriteLine("T: "+t+ "");
-                Point.X = Fixed.Create(CenterPoint.X.IntValue + LongRadius * System.Math.Cos(t)*System.Math.Cos(Phi)-ShortRadius*System.Math.Sin(t)*System.Math.Sin(Phi));
-                Point.Y = Fixed.Create(CenterPoint.Y.IntValue + LongRadius * System.Math.Cos(t) * System.Math.Sin(Phi) + ShortRadius * System.Math.Sin(t) * System.Math.Cos(Phi));
-                
-                //Console.WriteLine(Point);
-                transform.Translation = Point;
+
+                // Get the angle based on the time passed.
+                var t = Fixed.PI * (Fixed)args.Frame / (Fixed)Period;
+                var sinT = Fixed.Sin(t);
+                var cosT = Fixed.Cos(t);
+
+                // Compute the current position and set it.
+                FPoint point;
+                //FPoint.Create(
+                point.X = center.X + MajorRadius * cosT * _cosPhi - MinorRadius * sinT * _sinPhi;
+                point.Y = center.Y + MajorRadius * cosT * _sinPhi + MinorRadius * sinT * _cosPhi;
+                //)
+                transform.Translation = point;
             }
         }
 
@@ -64,5 +130,41 @@ namespace Engine.ComponentSystem.Components
         {
             return parameterizationType == typeof(DefaultLogicParameterization);
         }
+
+        #endregion
+
+        #region Serialization / Hashing
+
+        public override Packet Packetize(Packet packet)
+        {
+            return base.Packetize(packet)
+                .Write(CenterEntityId)
+                .Write(MajorRadius)
+                .Write(MinorRadius)
+                .Write(Angle)
+                .Write(Period);
+        }
+
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+            CenterEntityId = packet.ReadInt32();
+            MajorRadius = packet.ReadFixed();
+            MinorRadius = packet.ReadFixed();
+            Angle = packet.ReadFixed();
+            Period = packet.ReadInt32();
+        }
+
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+            hasher.Put(BitConverter.GetBytes(CenterEntityId));
+            hasher.Put(BitConverter.GetBytes(MajorRadius.RawValue));
+            hasher.Put(BitConverter.GetBytes(MinorRadius.RawValue));
+            hasher.Put(BitConverter.GetBytes(Angle.RawValue));
+            hasher.Put(BitConverter.GetBytes(Period));
+        }
+
+        #endregion
     }
 }

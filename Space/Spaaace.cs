@@ -25,8 +25,6 @@ namespace Space
         SpriteBatch spriteBatch;
         GameConsole console;
 
-        GameServer server;
-
         AudioEngine audioEngine;
         WaveBank waveBank;
         SoundBank soundBank;
@@ -157,6 +155,8 @@ namespace Space
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            base.Draw(gameTime);
+
             spriteBatch.Begin();
 
             string info = String.Format("FPS: {0:f} | Slow: {1}",
@@ -190,8 +190,6 @@ namespace Space
                     //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
                 }
             }
-
-            base.Draw(gameTime);
         }
 #endif
     }

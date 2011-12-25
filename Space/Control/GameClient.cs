@@ -38,8 +38,6 @@ namespace Space.Control
 
         #endregion
 
-        SpriteFont font;
-
         public GameClient(Game game)
             : base(game)
         {
@@ -76,13 +74,6 @@ namespace Space.Control
 
             // Draw underneath menus etc.
             DrawOrder = -50;
-        }
-
-        protected override void LoadContent()
-        {
-            font = Game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
-
-            base.LoadContent();
         }
 
         protected override void Dispose(bool disposing)

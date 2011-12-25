@@ -102,8 +102,7 @@ namespace Space.ComponentSystem.Systems
             FPoint center = FPoint.Create(Fixed.Create(cellSize * x), Fixed.Create(cellSize * y));
             
             IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
-            Manager.EntityManager.AddEntity(entity);
-            list.Add(entity.UID);
+            list.Add(Manager.EntityManager.AddEntity(entity));
 
             return list;
         }
@@ -119,19 +118,14 @@ namespace Space.ComponentSystem.Systems
             center.Y += random.Next(2000) - 1000;
 
             IEntity entity = EntityFactory.CreateStar("Textures/sun", center);
-            Manager.EntityManager.AddEntity(entity);
+            list.Add(Manager.EntityManager.AddEntity(entity));
 
-            
-            
-            list.Add(entity.UID);
-            entity = EntityFactory.CreateStar("Textures/sun", center,1000, 300, 500, 41);
-            Manager.EntityManager.AddEntity(entity);
+            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)500, (Fixed)200, (Fixed)1, 240);
+            list.Add(Manager.EntityManager.AddEntity(entity));
 
-            list.Add(entity.UID);
-            entity = EntityFactory.CreateStar("Textures/sun", entity, 200, 100, 100, 41);
-            Manager.EntityManager.AddEntity(entity);
+            entity = EntityFactory.CreateStar("Textures/sun", entity, (Fixed)200, (Fixed)100, (Fixed)100, 60);
+            list.Add(Manager.EntityManager.AddEntity(entity));
 
-            list.Add(entity.UID);
             return list;
         }
 

@@ -126,49 +126,25 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture,FPoint center,int longRadius,int shortRadius, int period,double phi)
+        public static IEntity CreateStar(string texture, IEntity center, Fixed majorRadius, Fixed minorRadius, Fixed angle, int period)
         {
-            var star = new Entity();
-            star.AddComponent(new Transform());
+            var entity = new Entity();
 
-            star.AddComponent(new TransformedRenderer());
-            star.AddComponent(new EllipsePathComponent());
+            entity.AddComponent(new Transform());
 
-            var transform = star.GetComponent<Transform>();
-            
-
-            var renderer = star.GetComponent<TransformedRenderer>();
-            renderer.TextureName = texture;
-            var ellipse = star.GetComponent<EllipsePathComponent>();
-            ellipse.LongRadius = longRadius;
-            ellipse.ShortRadius = shortRadius;
-            ellipse.CenterPoint = center;
+            var ellipse = new EllipsePathComponent();
+            ellipse.CenterEntityId = center.UID;
+            ellipse.MajorRadius = majorRadius;
+            ellipse.MinorRadius = minorRadius;
+            ellipse.Angle = angle;
             ellipse.Period = period;
-            ellipse.Phi = phi;
-            
-            return star;
-        }
-        public static IEntity CreateStar(string texture, IEntity center, int longRadius, int shortRadius, int period, double phi)
-        {
-            var star = new Entity();
-            star.AddComponent(new Transform());
+            entity.AddComponent(ellipse);
 
-            star.AddComponent(new TransformedRenderer());
-            star.AddComponent(new EllipsePathComponent());
-
-            var transform = star.GetComponent<Transform>();
-
-
-            var renderer = star.GetComponent<TransformedRenderer>();
+            var renderer = new TransformedRenderer();
             renderer.TextureName = texture;
-            var ellipse = star.GetComponent<EllipsePathComponent>();
-            ellipse.LongRadius = longRadius;
-            ellipse.ShortRadius = shortRadius;
-            ellipse.CenterEntity = center;
-            ellipse.Period = period;
-            ellipse.Phi = phi;
+            entity.AddComponent(renderer);
 
-            return star;
+            return entity;
         }
     }
 }

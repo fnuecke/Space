@@ -36,23 +36,6 @@ namespace Space.Control
                 .AddSystem(new CellSystem())
                 .AddSystem(new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world")));
 
-            Session.PlayerLeft += HandlePlayerLeft;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                Session.PlayerLeft -= HandlePlayerLeft;
-            }
-
-            base.Dispose(disposing);
-        }
-
-        protected override void HandleGameInfoRequested(object sender, EventArgs e)
-        {
-            var args = (RequestEventArgs)e;
-            args.Data.Write("Hello there!");
         }
 
         protected override void HandleJoinRequested(object sender, EventArgs e)
@@ -65,13 +48,6 @@ namespace Space.Control
             var playerData = (PlayerInfo)args.Player.Data;
             var ship = EntityFactory.CreateShip(playerData.Ship, args.Player.Number);
             AddEntity(ship, Simulation.CurrentFrame);
-        }
-
-        protected void HandlePlayerLeft(object sender, EventArgs e)
-        {
-            var args = (PlayerEventArgs)e;
-            // Player left the game, remove his ship.
-            RemoveEntity(tss.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID, Simulation.CurrentFrame);
         }
     }
 }

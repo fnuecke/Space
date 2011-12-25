@@ -71,7 +71,6 @@ namespace Engine.Controller
         {
             _lastGameStateSentTime = new DateTime[Session.MaxPlayers];
 
-            Session.GameInfoRequested += HandleGameInfoRequested;
             Session.JoinRequested += HandleJoinRequested;
         }
 
@@ -84,7 +83,6 @@ namespace Engine.Controller
             {
                 if (Session != null)
                 {
-                    Session.GameInfoRequested -= HandleGameInfoRequested;
                     Session.JoinRequested -= HandleJoinRequested;
                 }
             }
@@ -126,14 +124,6 @@ namespace Engine.Controller
         #endregion
 
         #region Events
-
-        /// <summary>
-        /// Some remote machine sent a request for open games. Use this callback
-        /// to send back some custom data.
-        /// </summary>
-        /// <param name="sender">the underlying session.</param>
-        /// <param name="e">information of the type <c>RequestEventArgs</c>.</param>
-        protected abstract void HandleGameInfoRequested(object sender, EventArgs e);
 
         /// <summary>
         /// A player asked to join our game. He passed the session checks (game full,

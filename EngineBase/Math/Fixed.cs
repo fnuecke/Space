@@ -427,6 +427,7 @@ namespace Engine.Math
 
         public static Fixed Sin(Fixed f)
         {
+            /*
             Fixed j = (Fixed)0;
             for (; f < 0; f += Fixed.Create(25736, false)) ;
             if (f > Fixed.Create(25736, false))
@@ -443,6 +444,8 @@ namespace Engine.Math
                 return sin_lookup(k - Fixed.Create(180, false), j).Inverse;
             else
                 return sin_lookup(Fixed.Create(360, false) - k, j).Inverse;
+            */
+            return (Fixed)System.Math.Sin((double)f);
         }
 
         private static Fixed sin_lookup(Fixed i, Fixed j)
