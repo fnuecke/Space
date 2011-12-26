@@ -55,7 +55,7 @@ namespace GameStateManagement
                 ((EditableMenueEntry)MenuEntries[0]).locked = true;
                 try
                 {
-                    ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 50100), Settings.Instance.PlayerName, info);
+                    ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 7777), Settings.Instance.PlayerName, info);
                 }
                 catch (Exception)
                 {

@@ -102,7 +102,7 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 50100), "player", info);
+                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 7777), "player", info);
             },
                 "autojoin fn");
             // Just for me, joining default testing server.
@@ -110,7 +110,7 @@ namespace GameStateManagement
             {
                 PlayerInfo info = new PlayerInfo();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 50100), "player", info);
+                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777), "player", info);
             },
                 "autojoin localhost");
 

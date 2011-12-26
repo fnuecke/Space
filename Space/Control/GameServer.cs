@@ -14,7 +14,7 @@ namespace Space.Control
         public GameServer(Game game)
             : base(game)
         {
-            Session = new HybridServerSession<PlayerInfo>(50100, 8);
+            Session = new HybridServerSession<PlayerInfo>(7777, 8);
             Controller = new ServerController(game, Session, 10, 0);
 
             Session.GameInfoRequested += HandleGameInfoRequested;
