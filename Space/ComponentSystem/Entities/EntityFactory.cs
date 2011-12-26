@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Entities
             var entity = new Entity();
 
             var transform = new Transform();
-            transform.Translation = FPoint.Create((Fixed)2000, (Fixed)2000);
+            transform.Translation = FPoint.Create((Fixed)16000, (Fixed)16000);
             entity.AddComponent(transform);
 
             var friction = new Friction();
@@ -44,6 +44,10 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new WeaponSound());
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new Index());
+
+            var Grav = new GravitationalComponent();
+            Grav.GravitationType = GravitationalComponent.GravitationTypes.Atractee;
+            entity.AddComponent(Grav);
 
             // Add before modules to get proper values.
             var health = new Health();
@@ -144,9 +148,11 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture, FPoint position, AstronomicBodyType type)
+        public static IEntity CreateStar(string texture, FPoint position, AstronomicBodyType type,Fixed mass)
         {
             var entity = new Entity();
+
+            entity.AddComponent(new Index());
 
             var transform = new Transform();
             transform.Translation = position;
@@ -156,6 +162,10 @@ namespace Space.ComponentSystem.Entities
             renderer.TextureName = texture;
             entity.AddComponent(renderer);
 
+            var grav = new GravitationalComponent();
+            grav.GravitationType = GravitationalComponent.GravitationTypes.Atractor;
+            grav.Mass = mass;
+            entity.AddComponent(grav);
 
             var astronomicBody = new AstronomicBody();
             astronomicBody.Type = type;
@@ -163,7 +173,7 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture, IEntity center, Fixed majorRadius, Fixed minorRadius, Fixed angle, int period, AstronomicBodyType type)
+        public static IEntity CreateStar(string texture, IEntity center, Fixed majorRadius, Fixed minorRadius, Fixed angle, int period, AstronomicBodyType type,Fixed mass)
         {
             var entity = new Entity();
 
@@ -179,14 +189,22 @@ namespace Space.ComponentSystem.Entities
             ellipse.Period = period;
             entity.AddComponent(ellipse);
 
+            entity.AddComponent(new Index());
+
             var renderer = new TransformedRenderer();
             renderer.TextureName = texture;
             entity.AddComponent(renderer);
+
+            var grav = new GravitationalComponent();
+            grav.GravitationType = GravitationalComponent.GravitationTypes.Atractor;
+            grav.Mass = mass;
+            entity.AddComponent(grav);
 
             var astronomicBody = new AstronomicBody();
             astronomicBody.Type = type;
             entity.AddComponent(astronomicBody);
             return entity;
+
         }
     }
 }
