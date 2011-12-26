@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
@@ -37,18 +36,14 @@ namespace Space.Control
         /// </summary>
         private InputCommandEmitter _emitter;
 
-        private SpriteBatch SpriteBatch;
-        private Texture2D arrow;
-        private SpriteFont font;
         #endregion
 
         public GameClient(Game game)
             : base(game)
         {
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
-            SpriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
-            arrow = game.Content.Load<Texture2D>("Textures/arrow");
-            font = game.Content.Load<SpriteFont>("Fonts/ConsoleFont");
+            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
+
             // Create our client controller.
             Controller = new SimpleClientController<PlayerInfo>(GameCommandHandler.HandleCommand);
 
@@ -66,7 +61,7 @@ namespace Space.Control
                     new CellSystem(),
                     new IndexSystem(),
                     new PlayerCenteredSoundSystem(soundBank, Controller.Session),
-                    new PlayerCenteredRenderSystem(SpriteBatch, game.Content, Controller.Session)
+                    new PlayerCenteredRenderSystem(spriteBatch, game.Content, Controller.Session)
                                 .AddComponent(new Background("Textures/stars")),
                     new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world"))
                 });
@@ -106,87 +101,6 @@ namespace Space.Control
         public override void Draw(GameTime gameTime)
         {
             Controller.Draw();
-            
-            SpriteBatch.Begin();
-
-            try
-            {
-                var entityManager = Controller.Simulation.EntityManager;
-                var systemManager = entityManager.SystemManager;
-                var avatar = systemManager.GetSystem<AvatarSystem>().GetAvatar(Controller.Session.LocalPlayer.Number);
-                if (avatar != null)
-                {
-                    var cellSize = CellSystem.CellSizeShiftAmount;
-                    var cellX = ((int)avatar.GetComponent<Transform>().Translation.X) >> cellSize;
-                    var cellY = ((int)avatar.GetComponent<Transform>().Translation.Y) >> cellSize;
-                    var x = avatar.GetComponent<Transform>().Translation.X;
-                    var y = avatar.GetComponent<Transform>().Translation.Y;
-                    var id = ((ulong)cellX << 32) | (uint)cellY;
-
-                    var list = systemManager.GetSystem<UniversalSystem>().GetSystemList(id);
-                    SpriteBatch.DrawString(font, "Cellx: " + cellX + " CellY: " + cellY + "posx: " + x + " PosY" + y, new Vector2(20, 20), Color.White);
-                    var count = 0;
-                    var screensize =
-                               Math.Sqrt(Math.Pow(GraphicsDevice.Viewport.Width / 2.0, 2) +
-                                         Math.Pow(GraphicsDevice.Viewport.Height / 2.0, 2));
-                    foreach (var i in list)
-                    {
-                        var entity = entityManager.GetEntity(i);
-                        if (entity != null && entity.GetComponent<Transform>() != null)
-                        {
-
-                            var color = Color.Teal;
-                            switch (entity.GetComponent<AstronomicBody>().Type)
-                            {
-                                case AstronomicBodyType.Sun:
-                                    color = Color.Yellow;
-                                    break;
-                                case AstronomicBodyType.Planet:
-                                    color = Color.Blue;
-                                    break;
-                                case AstronomicBodyType.Moon:
-                                    color = Color.Gray;
-                                    break;
-                            }
-                            var position = entity.GetComponent<Transform>().Translation;
-
-                            var distX = Math.Abs((double)position.X - (double)x);
-                            var distY = Math.Abs((double)position.Y - (double)y);
-                            var distance = Math.Sqrt(Math.Pow((double)position.Y - (double)y, 2) +
-                                          Math.Pow((double)position.X - (double)x, 2));
-                            count++;
-                            var phi = Math.Atan2((double)position.Y - (double)y, (double)position.X - (double)x);
-                            var arrowPos = new Vector2(GraphicsDevice.Viewport.Width / 2.0f,
-                                                       GraphicsDevice.Viewport.Height / 2.0f);
-                            arrowPos.X += GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Cos(phi);
-
-                            arrowPos.Y += GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Sin(phi);
-                            //Console.WriteLine(arrowPos);
-                            var size = 40 / distance;
-                            if (distX > GraphicsDevice.Viewport.Width / 2.0 || distY > GraphicsDevice.Viewport.Height / 2.0)
-                                SpriteBatch.Draw(arrow, arrowPos, null, color, (float)phi, new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
-                                             SpriteEffects.None, 1);
-                            SpriteBatch.DrawString(font, "Position: " + position + "phi:" + phi + " Distance: " + distance + "size: " + size, new Vector2(20, count * 20 + 20), Color.White);
-
-                            //spriteBatch.Draw(rocketTexture, rocketPosition, null, players[currentPlayer].Color, rocketAngle, new Vector2(42, 240), 0.1f, SpriteEffects.None, 1);
-
-                        }
-
-                    }
-                    SpriteBatch.DrawString(font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
-
-                    var index = systemManager.GetSystem<IndexSystem>();
-                    var neighbors = index.GetNeighbors(avatar);
-                    SpriteBatch.DrawString(font, "Neighbors: " + neighbors.Count, new Vector2(20, count * 20 + 80), Color.White);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.StackTrace);
-                //nothing
-            }
-            //sensor end
-            SpriteBatch.End();
         }
 
         /// <summary>
