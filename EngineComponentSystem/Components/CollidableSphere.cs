@@ -27,17 +27,27 @@ namespace Engine.ComponentSystem.Components
 
         #region Intersection
 
-        public override bool Intersects(FPoint extents, FPoint previousPosition, FPoint position)
+        /// <summary>
+        /// Test if this collidable collides with the specified one.
+        /// </summary>
+        /// <param name="collidable">The other collidable to test against.</param>
+        /// <returns>Whether the two collide or not.</returns>
+        public override bool Intersects(AbstractCollidable collidable)
+        {
+            return collidable.Intersects(Radius, _previousPosition, this.Entity.GetComponent<Transform>().Translation);
+        }
+
+        internal override bool Intersects(FPoint extents, FPoint previousPosition, FPoint position)
         {
             return SphereAABBSweep.Test(
-                this.Radius, this.previousPosition, this.Entity.GetComponent<Transform>().Translation,
+                this.Radius, this._previousPosition, this.Entity.GetComponent<Transform>().Translation,
                 extents, previousPosition, position);
         }
 
-        public override bool Intersects(Fixed radius, FPoint previousPosition, FPoint position)
+        internal override bool Intersects(Fixed radius, FPoint previousPosition, FPoint position)
         {
             return SphereSweep.Test(
-                this.Radius, this.previousPosition, this.Entity.GetComponent<Transform>().Translation,
+                this.Radius, this._previousPosition, this.Entity.GetComponent<Transform>().Translation,
                 radius, previousPosition, position);
         }
 

@@ -109,7 +109,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentSystem\Components\AbstractRegeneratingValue.cs" />
     <Compile Include="ComponentSystem\Components\AstronomicBody.cs" />
+    <Compile Include="ComponentSystem\Components\CollisionDamage.cs" />
+    <Compile Include="ComponentSystem\Components\Energy.cs" />
+    <Compile Include="ComponentSystem\Components\Health.cs" />
     <Compile Include="ComponentSystem\Systems\UniversalSystem.cs" />
     <Compile Include="ComponentSystem\Components\WeaponSound.cs" />
     <Compile Include="ComponentSystem\Systems\CellSystem.cs" />

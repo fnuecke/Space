@@ -35,6 +35,7 @@ namespace Space.Control
                 .AddSystem(new AvatarSystem())
                 .AddSystem(new CellSystem())
                 .AddSystem(new IndexSystem())
+                .AddSystem(new CollisionSystem())
                 .AddSystem(new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world")));
 
         }

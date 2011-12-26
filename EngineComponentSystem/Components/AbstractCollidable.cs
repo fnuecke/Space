@@ -1,7 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Math;
-using Engine.Physics;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -14,22 +13,39 @@ namespace Engine.ComponentSystem.Components
     /// Requires: <c>Transform</c>.
     /// </para>
     /// </summary>
-    public abstract class AbstractCollidable : AbstractComponent, ICollideable
+    public abstract class AbstractCollidable : AbstractComponent
     {
+        #region Properties
+
+        /// <summary>
+        /// This components collision group. Components from the same group
+        /// are <em>not</em> tested against each other.
+        /// </summary>
+        public byte CollisionGroup { get; set; }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
         /// Previous position of the underlying physics component (for sweep tests).
         /// </summary>
-        protected FPoint previousPosition;
+        protected FPoint _previousPosition;
 
         #endregion
 
         #region Intersection
 
-        public abstract bool Intersects(FPoint extents, FPoint previousPosition, FPoint position);
+        /// <summary>
+        /// Test if this collidable collides with the specified one.
+        /// </summary>
+        /// <param name="collidable">The other collidable to test against.</param>
+        /// <returns>Whether the two collide or not.</returns>
+        public abstract bool Intersects(AbstractCollidable collidable);
 
-        public abstract bool Intersects(Fixed radius, FPoint previousPosition, FPoint position);
+        internal abstract bool Intersects(FPoint extents, FPoint previousPosition, FPoint position);
+
+        internal abstract bool Intersects(Fixed radius, FPoint previousPosition, FPoint position);
 
         #endregion
 
@@ -46,10 +62,7 @@ namespace Engine.ComponentSystem.Components
             // as it should not happen that this is of an invalid type anyway.
             base.Update(parameterization);
 #endif
-            var p = (CollisionParameterization)parameterization;
-            // TODO parameterization must contain list of objects to test collision with and possibility to return collision results
-
-            previousPosition = Entity.GetComponent<Transform>().Translation;
+            _previousPosition = Entity.GetComponent<Transform>().Translation;
         }
 
         /// <summary>
@@ -59,7 +72,7 @@ namespace Engine.ComponentSystem.Components
         /// <returns>whether the type's supported or not.</returns>
         public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterizationType.Equals(typeof(CollisionParameterization));
+            return parameterizationType== typeof(CollisionParameterization);
         }
 
         #endregion
@@ -69,22 +82,25 @@ namespace Engine.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(previousPosition);
+                .Write(CollisionGroup)
+                .Write(_previousPosition);
         }
 
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
 
-            previousPosition = packet.ReadFPoint();
+            CollisionGroup = packet.ReadByte();
+            _previousPosition = packet.ReadFPoint();
         }
 
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(previousPosition.X.RawValue));
-            hasher.Put(BitConverter.GetBytes(previousPosition.Y.RawValue));
+            hasher.Put(CollisionGroup);
+            hasher.Put(BitConverter.GetBytes(_previousPosition.X.RawValue));
+            hasher.Put(BitConverter.GetBytes(_previousPosition.Y.RawValue));
         }
 
         #endregion

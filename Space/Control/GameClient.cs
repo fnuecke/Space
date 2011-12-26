@@ -60,6 +60,7 @@ namespace Space.Control
                     new AvatarSystem(),
                     new CellSystem(),
                     new IndexSystem(),
+                    new CollisionSystem(),
                     new PlayerCenteredSoundSystem(soundBank, Controller.Session),
                     new PlayerCenteredRenderSystem(spriteBatch, game.Content, Controller.Session)
                                 .AddComponent(new Background("Textures/stars")),

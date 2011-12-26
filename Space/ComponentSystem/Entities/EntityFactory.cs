@@ -23,6 +23,7 @@ namespace Space.ComponentSystem.Entities
 
             var collidable = new CollidableSphere();
             collidable.Radius = shipData.Radius;
+            collidable.CollisionGroup = (byte)playerNumber;
             entity.AddComponent(collidable);
 
             var modules = new EntityModules<EntityAttributeType>();
@@ -44,11 +45,21 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new Index());
 
+            // Add before modules to get proper values.
+            var health = new Health();
+            entity.AddComponent(health);
+            var energy = new Energy();
+            entity.AddComponent(energy);
+
             modules.AddModules(shipData.Hulls);
             modules.AddModules(shipData.Reactors);
             modules.AddModules(shipData.Thrusters);
             modules.AddModules(shipData.Shields);
             modules.AddModules(shipData.Weapons);
+
+            // Set value to max after equipping.
+            health.Value = health.MaxValue;
+            energy.Value = energy.MaxValue;
 
             return entity;
         }
@@ -94,9 +105,14 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(velocity);
 
             // Make it collidable.
-            var collision = new CollidableSphere();
-            collision.Radius = projectile.CollisionRadius;
-            entity.AddComponent(collision);
+            var collidable = new CollidableSphere();
+            collidable.Radius = projectile.CollisionRadius;
+            var avatar = emitter.GetComponent<Avatar>();
+            if (avatar != null)
+            {
+                collidable.CollisionGroup = (byte)avatar.PlayerNumber;
+            }
+            entity.AddComponent(collidable);
 
             // Give it some friction.
             if (projectile.Friction > 0)
@@ -112,6 +128,14 @@ namespace Space.ComponentSystem.Entities
                 var expiration = new Expiration();
                 expiration.TimeToLive = projectile.TimeToLive;
                 entity.AddComponent(expiration);
+            }
+
+            // The damage it does.
+            if (projectile.Damage != 0)
+            {
+                var damage = new CollisionDamage();
+                damage.Damage = projectile.Damage;
+                entity.AddComponent(damage);
             }
 
             // Make it indexable.
