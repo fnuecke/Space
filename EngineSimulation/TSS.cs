@@ -16,6 +16,8 @@ namespace Engine.Simulation
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
     public sealed class TSS : IReversibleSimulation
     {
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
         #region Events
 
         /// <summary>
@@ -511,6 +513,7 @@ namespace Engine.Simulation
                 // Check if we had trailing tentative commands.
                 if (needsRewind)
                 {
+                    logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
                     MirrorState(state, _states.Length - 2);
                 }
             }

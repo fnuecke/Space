@@ -31,13 +31,14 @@ namespace Space.Control
 
             tss.EntityManager.SystemManager
                 .AddSystem(new DefaultLogicSystem())
-                .AddSystem(new ShipControlSystem())
-                .AddSystem(new AvatarSystem())
-                .AddSystem(new CellSystem())
                 .AddSystem(new IndexSystem())
                 .AddSystem(new CollisionSystem())
-                .AddSystem(new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world")));
+                .AddSystem(new AvatarSystem())
+                .AddSystem(new CellSystem())
 
+                .AddSystem(new ShipControlSystem())
+                .AddSystem(new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world")))
+            ;
         }
 
         protected override void HandleJoinRequested(object sender, EventArgs e)

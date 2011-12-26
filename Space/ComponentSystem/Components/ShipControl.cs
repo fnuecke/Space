@@ -102,48 +102,49 @@ namespace Space.ComponentSystem.Components
             var spin = Entity.GetComponent<Spin>();
             var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
 
-            // Get the mass of the ship.
-            var mass = modules.GetValue(EntityAttributeType.Mass);
-            // Compute its current acceleration.
-            var acceleration = modules.GetValue(EntityAttributeType.AccelerationForce) / mass;
-            // Compute its rotation speed. Yes, this is actually the rotation acceleration,
-            // but whatever...
-            var rotation = modules.GetValue(EntityAttributeType.RotationForce) / mass;
-
-            // Set firing state for weapon systems.
-            Entity.GetComponent<WeaponControl>().IsShooting = IsShooting;
-
-            // Update acceleration.
-            Entity.GetComponent<Acceleration>().Value = DirectionConversion.
-                DirectionToFPoint(AccelerationDirection) * acceleration;
-
-            // Update rotation / spin.
-            var currentDelta = Angle.MinAngle(transform.Rotation, TargetRotation);
-            var requiredSpin = (currentDelta > 0
-                        ? DirectionConversion.DirectionToFixed(Directions.Right)
-                        : DirectionConversion.DirectionToFixed(Directions.Left))
-                        * rotation;
-            // If the target rotation changed and we're either not spinning, or spinning the wrong way.
-            if (_targetRotationChanged && Fixed.Sign(spin.Value) != Fixed.Sign(requiredSpin))
+            if (modules != null)
             {
-                // Is it worth starting to spin, or should we just jump to the position?
-                // If the distance we need to spin is lower than what we spin in one tick,
-                // just set it.
-                if (Fixed.Abs(currentDelta) > rotation)
+                // Get the mass of the ship.
+                var mass = modules.GetValue(EntityAttributeType.Mass);
+                // Compute its current acceleration.
+                var acceleration = modules.GetValue(EntityAttributeType.AccelerationForce) / mass;
+                // Compute its rotation speed. Yes, this is actually the rotation acceleration,
+                // but whatever...
+                var rotation = modules.GetValue(EntityAttributeType.RotationForce) / mass;
+
+                // Update acceleration.
+                Entity.GetComponent<Acceleration>().Value = DirectionConversion.
+                    DirectionToFPoint(AccelerationDirection) * acceleration;
+
+                // Update rotation / spin.
+                var currentDelta = Angle.MinAngle(transform.Rotation, TargetRotation);
+                var requiredSpin = (currentDelta > 0
+                            ? DirectionConversion.DirectionToFixed(Directions.Right)
+                            : DirectionConversion.DirectionToFixed(Directions.Left))
+                            * rotation;
+
+                // If the target rotation changed and we're either not spinning, or spinning the wrong way.
+                if (spin != null &&_targetRotationChanged && Fixed.Sign(spin.Value) != Fixed.Sign(requiredSpin))
                 {
-                    // Spin, the angle takes multiple frames to rotate.
-                    spin.Value = requiredSpin;
-                }
-                else
-                {
-                    // Set, only one frame (this one) required.
-                    transform.Rotation = TargetRotation;
-                    spin.Value = Fixed.Zero;
+                    // Is it worth starting to spin, or should we just jump to the position?
+                    // If the distance we need to spin is lower than what we spin in one tick,
+                    // just set it.
+                    if (Fixed.Abs(currentDelta) > rotation)
+                    {
+                        // Spin, the angle takes multiple frames to rotate.
+                        spin.Value = requiredSpin;
+                    }
+                    else
+                    {
+                        // Set, only one frame (this one) required.
+                        transform.Rotation = TargetRotation;
+                        spin.Value = Fixed.Zero;
+                    }
                 }
             }
 
             // Check if we're spinning.
-            if (spin.Value != Fixed.Zero)
+            if (spin != null && spin.Value != Fixed.Zero)
             {
                 // Yes, check if we passed our target rotation. This is the case when the distance
                 // to the target in the last step was smaller than our rotational speed.
@@ -153,6 +154,13 @@ namespace Space.ComponentSystem.Components
                     transform.Rotation = TargetRotation;
                     spin.Value = Fixed.Zero;
                 }
+            }
+
+            // Set firing state for weapon systems.
+            var weapons = Entity.GetComponent<WeaponControl>();
+            if (weapons != null)
+            {
+                weapons.IsShooting = IsShooting;
             }
 
             // Remember rotation in this update for the next.

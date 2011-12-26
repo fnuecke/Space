@@ -94,6 +94,7 @@
   <ItemGroup>
     <Compile Include="AstronomicBodyTypes.cs" />
     <Compile Include="HullModule.cs" />
+    <Compile Include="Profile.cs" />
     <Compile Include="ProjectileData.cs" />
     <Compile Include="ThrusterModule.cs" />
     <Compile Include="ReactorModule.cs" />

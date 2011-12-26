@@ -97,7 +97,7 @@
     <Compile Include="Components\AbstractComponent.cs" />
     <Compile Include="Components\AbstractRenderer.cs" />
     <Compile Include="Components\Acceleration.cs" />
-    <Compile Include="Components\EllipsePathComponent.cs" />
+    <Compile Include="Components\EllipsePath.cs" />
     <Compile Include="Components\EntityModules.cs" />
     <Compile Include="Components\Avatar.cs" />
     <Compile Include="Components\CollidableBox.cs" />

@@ -56,15 +56,17 @@ namespace Space.Control
                 new[]
                 {
                     new DefaultLogicSystem(),
-                    new ShipControlSystem(),
-                    new AvatarSystem(),
-                    new CellSystem(),
                     new IndexSystem(),
                     new CollisionSystem(),
+                    new AvatarSystem(),
+                    new CellSystem(),
+
+                    new ShipControlSystem(),
+                    new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world")),
+
                     new PlayerCenteredSoundSystem(soundBank, Controller.Session),
                     new PlayerCenteredRenderSystem(spriteBatch, game.Content, Controller.Session)
-                                .AddComponent(new Background("Textures/stars")),
-                    new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world"))
+                                .AddComponent(new Background("Textures/stars"))
                 });
 
             // Create our input command emitter, which is used to grab user

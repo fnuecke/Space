@@ -139,7 +139,8 @@ namespace Engine.ComponentSystem.Systems
             if (updateType == ComponentSystemUpdateType.Logic)
             {
                 // Check all components for changes.
-                foreach (var component in Components)
+                var currentComponents = Components;
+                foreach (var component in currentComponents)
                 {
                     _parameterization.PositionChanged = false;
                     component.Update(_parameterization);

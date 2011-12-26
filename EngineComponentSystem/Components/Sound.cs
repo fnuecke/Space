@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -96,32 +95,7 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        #region Serialization / Hashing
-
-        public override Packet Packetize(Packet packet)
-        {
-            base.Packetize(packet);
-
-            packet.Write(_soundsToPlay.Count);
-            foreach (var sound in _soundsToPlay)
-            {
-                packet.Write(sound);
-            }
-
-            return packet;
-        }
-
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            _soundsToPlay.Clear();
-            int numSounds = packet.ReadInt32();
-            for (int i = 0; i < numSounds; ++i)
-            {
-                _soundsToPlay.Add(packet.ReadString());
-            }
-        }
+        #region Cloning
 
         public override object Clone()
         {

@@ -77,5 +77,14 @@ namespace Engine.ComponentSystem.Components
         }
 
         #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            return GetType().Name + ": " + Size.ToString();
+        }
+
+        #endregion
     }
 }

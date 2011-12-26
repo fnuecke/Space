@@ -124,7 +124,8 @@ namespace Engine.ComponentSystem.Systems
                 }
 
                 // Get a list of sounds that should be played this frame.
-                foreach (var component in Components)
+                var currentComponents = Components;
+                foreach (var component in currentComponents)
                 {
                     _parameterization.SoundCues.Clear();
                     _parameterization.Position = FPoint.Zero;

@@ -58,11 +58,13 @@ namespace Engine.ComponentSystem.Components
         public override void Update(object parameterization)
         {
 #if DEBUG
-            // Only do this expensive check (see implementation) in debug mode,
-            // as it should not happen that this is of an invalid type anyway.
             base.Update(parameterization);
 #endif
-            _previousPosition = Entity.GetComponent<Transform>().Translation;
+            var transform = Entity.GetComponent<Transform>();
+            if (transform != null)
+            {
+                _previousPosition = transform.Translation;
+            }
         }
 
         /// <summary>

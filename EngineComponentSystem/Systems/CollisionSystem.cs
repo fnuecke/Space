@@ -6,6 +6,12 @@ using Engine.ComponentSystem.Parameterizations;
 
 namespace Engine.ComponentSystem.Systems
 {
+    /// <summary>
+    /// This system takes care of components that support collision (anything
+    /// that extends <c>AbstractCollidable</c>). It fetches the components
+    /// neighbors and checks their collision groups, keeping the number of
+    /// actual collision checks that have to be performed low.
+    /// </summary>
     public class CollisionSystem : AbstractComponentSystem<CollisionParameterization>
     {
         #region Fields
@@ -29,11 +35,11 @@ namespace Engine.ComponentSystem.Systems
         {
             if (updateType == ComponentSystemUpdateType.Logic)
             {
-                // Loop through all components. Run backwards to be immune to
-                // removes during the iteration.
-                for (int i = Components.Count - 2; i >= 0 ; --i)
+                // Loop through all components.
+                var currentComponents = Components;
+                for (int i = 0; i < currentComponents.Count; ++i)
                 {
-                    var currentCollidable = (AbstractCollidable)Components[i];
+                    var currentCollidable = (AbstractCollidable)currentComponents[i];
 
                     // Get a list of components actually nearby.
                     HashSet<IEntity> neighbors = null;
@@ -45,9 +51,9 @@ namespace Engine.ComponentSystem.Systems
 
                     // Loop through all other components. Only do the interval
                     // (i, #components) avoid duplicate checks (i vs j == j vs i).
-                    for (int j = Components.Count - 1; j > i; --j)
+                    for (int j = i + 1; j < currentComponents.Count; ++j)
                     {
-                        var otherCollidable = (AbstractCollidable)Components[j];
+                        var otherCollidable = (AbstractCollidable)currentComponents[j];
 
                         // Only test if its from a different collision group.
                         if (currentCollidable.CollisionGroup == otherCollidable.CollisionGroup)
@@ -71,7 +77,7 @@ namespace Engine.ComponentSystem.Systems
                 }
 
                 // Update previous position for all collidables.
-                foreach (var component in Components)
+                foreach (var component in currentComponents)
                 {
                     component.Update(_parameterization);
                 }

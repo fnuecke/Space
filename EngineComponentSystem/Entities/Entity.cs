@@ -267,9 +267,11 @@ namespace Engine.ComponentSystem.Entities
             foreach (var component in _components)
             {
                 component.Hash(hasher);
+
+                logger.Trace("{0} component {1}; # = {2}", UID, component.ToString(), hasher.Value);
             }
 
-            logger.Trace("Hash: {0}", hasher.Value);
+            logger.Trace("{0} total: {1}", UID, hasher.Value);
         }
 
         /// <summary>

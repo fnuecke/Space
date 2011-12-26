@@ -171,7 +171,7 @@ namespace Space.ComponentSystem.Entities
             transform.Translation = center.GetComponent<Transform>().Translation;
             entity.AddComponent(transform);
 
-            var ellipse = new EllipsePathComponent();
+            var ellipse = new EllipsePath();
             ellipse.CenterEntityId = center.UID;
             ellipse.MajorRadius = majorRadius;
             ellipse.MinorRadius = minorRadius;

@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem.Components
     /// position the component to follow an ellipsoid path around a specified
     /// center entity.
     /// </summary>
-    public sealed class EllipsePathComponent : AbstractComponent
+    public sealed class EllipsePath : AbstractComponent
     {
         #region Properties
 

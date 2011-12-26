@@ -32,17 +32,17 @@ namespace Engine.ComponentSystem.Systems
 
         public override void Update(ComponentSystemUpdateType updateType, long frame)
         {
-            if (updateType != ComponentSystemUpdateType.Display)
+            if (updateType == ComponentSystemUpdateType.Display)
             {
-                return;
-            }
 
-            // Get translation, which may be overridden.
-            parameterization.Translation = GetTranslation();
-            // Then render all components.
-            foreach (var component in Components)
-            {
-                component.Update(parameterization);
+                // Get translation, which may be overridden.
+                parameterization.Translation = GetTranslation();
+                // Then render all components.
+                var currentComponents = Components;
+                foreach (var component in currentComponents)
+                {
+                    component.Update(parameterization);
+                }
             }
         }
 

@@ -209,64 +209,72 @@ namespace Space
                             var y = avatar.GetComponent<Transform>().Translation.Y;
                             var id = ((ulong)cellX << 32) | (uint)cellY;
 
-                            var list = systemManager.GetSystem<UniversalSystem>().GetSystemList(id);
-
-                            spriteBatch.DrawString(console.Font, "Cellx: " + cellX + " CellY: " + cellY + "posx: " + x + " PosY" + y, new Vector2(20, 20), Color.White);
+                            var universe = systemManager.GetSystem<UniversalSystem>();
                             var count = 0;
-                            var screensize =
-                                        Math.Sqrt(Math.Pow(GraphicsDevice.Viewport.Width / 2.0, 2) +
-                                                    Math.Pow(GraphicsDevice.Viewport.Height / 2.0, 2));
-                            foreach (var i in list)
+                            if (universe != null)
                             {
-                                var entity = entityManager.GetEntity(i);
-                                if (entity != null && entity.GetComponent<Transform>() != null)
+                                var list = universe.GetSystemList(id);
+
+                                spriteBatch.DrawString(console.Font, "Cellx: " + cellX + " CellY: " + cellY + "posx: " + x + " PosY" + y, new Vector2(20, 20), Color.White);
+                                var screensize =
+                                            Math.Sqrt(Math.Pow(GraphicsDevice.Viewport.Width / 2.0, 2) +
+                                                        Math.Pow(GraphicsDevice.Viewport.Height / 2.0, 2));
+                                foreach (var i in list)
                                 {
-
-                                    var color = Color.Teal;
-                                    switch (entity.GetComponent<AstronomicBody>().Type)
+                                    var entity = entityManager.GetEntity(i);
+                                    if (entity != null && entity.GetComponent<Transform>() != null)
                                     {
-                                        case AstronomicBodyType.Sun:
-                                            color = Color.Yellow;
-                                            break;
-                                        case AstronomicBodyType.Planet:
-                                            color = Color.Blue;
-                                            break;
-                                        case AstronomicBodyType.Moon:
-                                            color = Color.Gray;
-                                            break;
+
+                                        var color = Color.Teal;
+                                        switch (entity.GetComponent<AstronomicBody>().Type)
+                                        {
+                                            case AstronomicBodyType.Sun:
+                                                color = Color.Yellow;
+                                                break;
+                                            case AstronomicBodyType.Planet:
+                                                color = Color.Blue;
+                                                break;
+                                            case AstronomicBodyType.Moon:
+                                                color = Color.Gray;
+                                                break;
+                                        }
+                                        var position = entity.GetComponent<Transform>().Translation;
+
+                                        var distX = Math.Abs((double)position.X - (double)x);
+                                        var distY = Math.Abs((double)position.Y - (double)y);
+                                        var distance = Math.Sqrt(Math.Pow((double)position.Y - (double)y, 2) +
+                                                        Math.Pow((double)position.X - (double)x, 2));
+                                        count++;
+                                        var phi = Math.Atan2((double)position.Y - (double)y, (double)position.X - (double)x);
+                                        var arrowPos = new Vector2(GraphicsDevice.Viewport.Width / 2.0f,
+                                                                    GraphicsDevice.Viewport.Height / 2.0f);
+                                        arrowPos.X += GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Cos(phi);
+
+                                        arrowPos.Y += GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Sin(phi);
+                                        //Console.WriteLine(arrowPos);
+                                        var size = 40 / distance;
+                                        if (distX > GraphicsDevice.Viewport.Width / 2.0 || distY > GraphicsDevice.Viewport.Height / 2.0)
+                                            spriteBatch.Draw(arrow, arrowPos, null, color, (float)phi, new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
+                                                            SpriteEffects.None, 1);
+                                        spriteBatch.DrawString(console.Font, "Position: " + position + "phi:" + phi + " Distance: " + distance + "size: " + size, new Vector2(20, count * 20 + 20), Color.White);
+
+                                        //spriteBatch.Draw(rocketTexture, rocketPosition, null, players[currentPlayer].Color, rocketAngle, new Vector2(42, 240), 0.1f, SpriteEffects.None, 1);
+
                                     }
-                                    var position = entity.GetComponent<Transform>().Translation;
-
-                                    var distX = Math.Abs((double)position.X - (double)x);
-                                    var distY = Math.Abs((double)position.Y - (double)y);
-                                    var distance = Math.Sqrt(Math.Pow((double)position.Y - (double)y, 2) +
-                                                    Math.Pow((double)position.X - (double)x, 2));
-                                    count++;
-                                    var phi = Math.Atan2((double)position.Y - (double)y, (double)position.X - (double)x);
-                                    var arrowPos = new Vector2(GraphicsDevice.Viewport.Width / 2.0f,
-                                                                GraphicsDevice.Viewport.Height / 2.0f);
-                                    arrowPos.X += GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Cos(phi);
-
-                                    arrowPos.Y += GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Sin(phi);
-                                    //Console.WriteLine(arrowPos);
-                                    var size = 40 / distance;
-                                    if (distX > GraphicsDevice.Viewport.Width / 2.0 || distY > GraphicsDevice.Viewport.Height / 2.0)
-                                        spriteBatch.Draw(arrow, arrowPos, null, color, (float)phi, new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
-                                                        SpriteEffects.None, 1);
-                                    spriteBatch.DrawString(console.Font, "Position: " + position + "phi:" + phi + " Distance: " + distance + "size: " + size, new Vector2(20, count * 20 + 20), Color.White);
-
-                                    //spriteBatch.Draw(rocketTexture, rocketPosition, null, players[currentPlayer].Color, rocketAngle, new Vector2(42, 240), 0.1f, SpriteEffects.None, 1);
 
                                 }
-
+                                spriteBatch.DrawString(console.Font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
                             }
-                            spriteBatch.DrawString(console.Font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
 
                             var index = systemManager.GetSystem<IndexSystem>();
                             var neighbors = index.GetNeighbors(avatar);
                             spriteBatch.DrawString(console.Font, "Neighbors: " + neighbors.Count, new Vector2(20, count * 20 + 80), Color.White);
 
-                            spriteBatch.DrawString(console.Font, "Health: " + avatar.GetComponent<Health>().Value, new Vector2(20, count * 20 + 100), Color.White);
+                            var health = avatar.GetComponent<Health>();
+                            if (health != null)
+                            {
+                                spriteBatch.DrawString(console.Font, "Health: " + health.Value, new Vector2(20, count * 20 + 100), Color.White);
+                            }
 
                             spriteBatch.End();
                         }
