@@ -21,7 +21,7 @@ namespace Engine.ComponentSystem.Components
         /// This components collision group. Components from the same group
         /// are <em>not</em> tested against each other.
         /// </summary>
-        public byte CollisionGroup { get; set; }
+        public int CollisionGroup { get; set; }
 
         #endregion
 
@@ -72,7 +72,7 @@ namespace Engine.ComponentSystem.Components
         /// <returns>whether the type's supported or not.</returns>
         public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterizationType== typeof(CollisionParameterization);
+            return parameterizationType == typeof(CollisionParameterization);
         }
 
         #endregion
@@ -90,7 +90,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            CollisionGroup = packet.ReadByte();
+            CollisionGroup = packet.ReadInt32();
             _previousPosition = packet.ReadFPoint();
         }
 
@@ -98,7 +98,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(CollisionGroup);
+            hasher.Put(BitConverter.GetBytes(CollisionGroup));
             hasher.Put(BitConverter.GetBytes(_previousPosition.X.RawValue));
             hasher.Put(BitConverter.GetBytes(_previousPosition.Y.RawValue));
         }

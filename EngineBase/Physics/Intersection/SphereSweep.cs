@@ -39,12 +39,32 @@ namespace Engine.Physics.Intersection
             {
                 return true;
             }
+            else if (va.Norm == 0 && vb.Norm == 0)
+            {
+                // neither is moving, cannot collide.
+                return false;
+            }
 
             //check if they hit each other
             // during the frame
-            if (b * b - 4 * a * c >= 0)
+            var q = b * b - 4 * a * c;
+            if (q >= 0)
             {
-                return true;
+                q = Fixed.Sqrt(q);
+                Fixed d = (Fixed)1 / (a + a);
+                if (d > 0)
+                {
+                    var r1 = (-b + q) * d;
+                    var r2 = (-b - q) * d;
+                    if (r2 > r1)
+                    {
+                        r1 = r2;
+                    }
+                    if (r1 >= 0 && r1 <= 1)
+                    {
+                        return true;
+                    }
+                }
             }
 
             return false;

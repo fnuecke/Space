@@ -11,6 +11,7 @@
         <Item>
           <Attributes>
             <Item>50 Health</Item>
+            <Item>0.05 HealthRegeneration</Item>
             <Item>10 Mass</Item>
           </Attributes>
         </Item>

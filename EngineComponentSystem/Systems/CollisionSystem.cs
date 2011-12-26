@@ -68,9 +68,12 @@ namespace Engine.ComponentSystem.Systems
                             otherCollidable.Entity.SendMessage(Collision.Create(currentCollidable.Entity));
                         }
                     }
+                }
 
-                    // Call update, to update components previous position.
-                    currentCollidable.Update(_parameterization);
+                // Update previous position for all collidables.
+                foreach (var component in Components)
+                {
+                    component.Update(_parameterization);
                 }
             }
         }

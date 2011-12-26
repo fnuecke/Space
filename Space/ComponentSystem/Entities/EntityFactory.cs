@@ -23,7 +23,7 @@ namespace Space.ComponentSystem.Entities
 
             var collidable = new CollidableSphere();
             collidable.Radius = shipData.Radius;
-            collidable.CollisionGroup = (byte)playerNumber;
+            collidable.CollisionGroup = playerNumber;
             entity.AddComponent(collidable);
 
             var modules = new EntityModules<EntityAttributeType>();
@@ -110,7 +110,7 @@ namespace Space.ComponentSystem.Entities
             var avatar = emitter.GetComponent<Avatar>();
             if (avatar != null)
             {
-                collidable.CollisionGroup = (byte)avatar.PlayerNumber;
+                collidable.CollisionGroup = avatar.PlayerNumber;
             }
             entity.AddComponent(collidable);
 
