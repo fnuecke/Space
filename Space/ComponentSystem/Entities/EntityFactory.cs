@@ -22,7 +22,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(friction);
 
             var collidable = new CollidableSphere();
-            collidable.Radius = shipData.Radius;
+            collidable.Radius = shipData.CollisionRadius;
             collidable.CollisionGroup = playerNumber;
             entity.AddComponent(collidable);
 

@@ -14,7 +14,7 @@ namespace Space.Data
         /// <summary>
         /// The collision radius of the ship.
         /// </summary>
-        public Fixed Radius;
+        public Fixed CollisionRadius;
 
         /// <summary>
         /// The texture to use for rendering the ship.
@@ -54,7 +54,7 @@ namespace Space.Data
         {
             return packet
                 .Write(Name)
-                .Write(Radius)
+                .Write(CollisionRadius)
                 .Write(Texture)
                 .Write(Hulls)
                 .Write(Reactors)
@@ -66,7 +66,7 @@ namespace Space.Data
         public void Depacketize(Packet packet)
         {
             Name = packet.ReadString();
-            Radius = packet.ReadFixed();
+            CollisionRadius = packet.ReadFixed();
             Texture = packet.ReadString();
             Hulls = packet.ReadPacketizables<HullModule>();
             Reactors = packet.ReadPacketizables<ReactorModule>();

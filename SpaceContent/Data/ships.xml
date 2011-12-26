@@ -4,7 +4,7 @@
     <Item>
       <Name>Sparrow</Name>
 
-      <Radius>5</Radius>
+      <CollisionRadius>15</CollisionRadius>
       <Texture>Textures/ship</Texture>
 
       <Hulls>
