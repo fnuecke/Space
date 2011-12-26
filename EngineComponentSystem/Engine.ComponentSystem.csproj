@@ -105,8 +105,10 @@
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
     <Compile Include="Components\IComponent.cs" />
+    <Compile Include="Components\Index.cs" />
     <Compile Include="Components\Messages\ModuleRemoved.cs" />
     <Compile Include="Components\Messages\ModuleAdded.cs" />
+    <Compile Include="Components\Messages\TranslationChanged.cs" />
     <Compile Include="Components\Sound.cs" />
     <Compile Include="Components\Spin.cs" />
     <Compile Include="Components\Transform.cs" />
@@ -117,6 +119,7 @@
     <Compile Include="Parameterizations\AvatarParameterization.cs" />
     <Compile Include="Parameterizations\CollisionParameterization.cs" />
     <Compile Include="Parameterizations\DefaultLogicParameterization.cs" />
+    <Compile Include="Parameterizations\IndexParameterization.cs" />
     <Compile Include="Parameterizations\NullParameterization.cs" />
     <Compile Include="Parameterizations\RendererParameterization.cs" />
     <Compile Include="Parameterizations\SoundParameterization.cs" />
@@ -130,6 +133,7 @@
     <Compile Include="Systems\IComponentSystem.cs" />
     <Compile Include="Systems\IComponentSystemManager.cs" />
     <Compile Include="Systems\IEntityManager.cs" />
+    <Compile Include="Systems\IndexSystem.cs" />
     <Compile Include="Systems\RenderSystem.cs" />
     <Compile Include="Systems\SoundSystem.cs" />
   </ItemGroup>

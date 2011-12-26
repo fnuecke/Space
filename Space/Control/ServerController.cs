@@ -34,6 +34,7 @@ namespace Space.Control
                 .AddSystem(new ShipControlSystem())
                 .AddSystem(new AvatarSystem())
                 .AddSystem(new CellSystem())
+                .AddSystem(new IndexSystem())
                 .AddSystem(new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world")));
 
         }

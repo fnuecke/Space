@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Components.Messages;
 using Engine.Math;
 using Engine.Serialization;
 
@@ -14,12 +15,39 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Current position of the object.
         /// </summary>
-        public FPoint Translation { get; set; }
+        public FPoint Translation
+        {
+            get
+            {
+                return _translation;
+            }
+            set
+            {
+                if (value != _translation)
+                {
+                    var previousPosition = _translation;
+                    _translation = value;
+                    if (Entity != null)
+                    {
+                        Entity.SendMessage(TranslationChanged.Create(previousPosition));
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// The angle of the current orientation.
         /// </summary>
         public Fixed Rotation { get; set; }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// Actual value holder for <c>Translation</c> property.
+        /// </summary>
+        private FPoint _translation;
 
         #endregion
 

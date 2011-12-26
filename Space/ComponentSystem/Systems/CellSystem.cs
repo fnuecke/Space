@@ -43,7 +43,7 @@ namespace Space.ComponentSystem.Systems
             {
                 foreach (var cellId in _livingCells)
                 {
-                    yield return Split(cellId);
+                    yield return CoordinateIds.Split(cellId);
                 }
             }
         }
@@ -104,7 +104,7 @@ namespace Space.ComponentSystem.Systems
                 bornCells.ExceptWith(_livingCells);
                 foreach (var bornCell in bornCells)
                 {
-                    var xy = Split(bornCell);
+                    var xy = CoordinateIds.Split(bornCell);
                     Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true));
                 }
 
@@ -113,7 +113,7 @@ namespace Space.ComponentSystem.Systems
                 deceasedCells.ExceptWith(newCells);
                 foreach (var deceasedCell in deceasedCells)
                 {
-                    var xy = Split(deceasedCell);
+                    var xy = CoordinateIds.Split(deceasedCell);
                     Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false));
                 }
 
@@ -138,25 +138,9 @@ namespace Space.ComponentSystem.Systems
             {
                 for (int nx = x - 1; nx <= x + 1; nx++)
                 {
-                    cells.Add(Combine(nx, ny));
+                    cells.Add(CoordinateIds.Combine(nx, ny));
                 }
             }   
-        }
-
-        /// <summary>
-        /// Combine two coordinates into one.
-        /// </summary>
-        /// <param name="x">The coordinates to merge.</param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        private static ulong Combine(int x, int y)
-        {
-            return ((ulong)x << 32) | (uint)y;
-        }
-
-        private static Tuple<int, int> Split(ulong xy)
-        {
-            return Tuple.Create((int)(xy >> 32), (int)(xy & 0xFFFFFFFF));
         }
 
         #endregion

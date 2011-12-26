@@ -10,43 +10,47 @@ namespace Space.ComponentSystem.Entities
     {
         public static IEntity CreateShip(ShipData shipData, int playerNumber)
         {
-            var ship = new Entity();
-            ship.AddComponent(new Transform());
-            ship.AddComponent(new Acceleration());
-            ship.AddComponent(new Friction());
-            ship.AddComponent(new Spin());
-            ship.AddComponent(new Velocity());
-            ship.AddComponent(new CollidableSphere());
-            ship.AddComponent(new EntityModules<EntityAttributeType>());
-            ship.AddComponent(new WeaponControl());
-            ship.AddComponent(new WeaponSound());
-            ship.AddComponent(new ShipControl());
-            ship.AddComponent(new Avatar());
-            ship.AddComponent(new TransformedRenderer());
+            var entity = new Entity();
 
-            ship.GetComponent<Transform>().Translation = FPoint.Create((Fixed)2000, (Fixed)2000);
+            var transform = new Transform();
+            transform.Translation = FPoint.Create((Fixed)2000, (Fixed)2000);
+            entity.AddComponent(transform);
 
-            var friction = ship.GetComponent<Friction>();
+            var friction = new Friction();
             friction.Value = (Fixed)0.01;
             friction.MinVelocity = (Fixed)0.02;
+            entity.AddComponent(friction);
 
-            var collidable = ship.GetComponent<CollidableSphere>();
+            var collidable = new CollidableSphere();
             collidable.Radius = shipData.Radius;
+            entity.AddComponent(collidable);
 
-            var modules = ship.GetComponent<EntityModules<EntityAttributeType>>();
+            var modules = new EntityModules<EntityAttributeType>();
+            entity.AddComponent(modules);
+
+            var avatar = new Avatar();
+            avatar.PlayerNumber = playerNumber;
+            entity.AddComponent(avatar);
+
+            var renderer = new TransformedRenderer();
+            renderer.TextureName = shipData.Texture;
+            entity.AddComponent(renderer);
+
+            entity.AddComponent(new Acceleration());
+            entity.AddComponent(new Spin());
+            entity.AddComponent(new Velocity());
+            entity.AddComponent(new WeaponControl());
+            entity.AddComponent(new WeaponSound());
+            entity.AddComponent(new ShipControl());
+            entity.AddComponent(new Index());
+
             modules.AddModules(shipData.Hulls);
             modules.AddModules(shipData.Reactors);
             modules.AddModules(shipData.Thrusters);
             modules.AddModules(shipData.Shields);
             modules.AddModules(shipData.Weapons);
 
-            var avatar = ship.GetComponent<Avatar>();
-            avatar.PlayerNumber = playerNumber;
-
-            var renderer = ship.GetComponent<TransformedRenderer>();
-            renderer.TextureName = shipData.Texture;
-
-            return ship;
+            return entity;
         }
 
         public static IEntity CreateProjectile(IEntity emitter, ProjectileData projectile)
@@ -109,6 +113,9 @@ namespace Space.ComponentSystem.Entities
                 expiration.TimeToLive = projectile.TimeToLive;
                 entity.AddComponent(expiration);
             }
+
+            // Make it indexable.
+            entity.AddComponent(new Index());
 
             return entity;
         }
