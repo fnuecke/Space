@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Entities
             var entity = new Entity();
 
             var transform = new Transform();
-            transform.Translation = new Vector2(2000, 2000);
+            transform.Translation = new Vector2(16000, 16000);
             entity.AddComponent(transform);
 
             var friction = new Friction();
@@ -44,6 +44,11 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new WeaponSound());
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new Index());
+
+            var gravitation = new Gravitation();
+            gravitation.GravitationType = Gravitation.GravitationTypes.Atractee;
+            gravitation.Mass = 1; // TODO compute based on equipped components
+            entity.AddComponent(gravitation);
 
             // Add before modules to get proper values.
             var health = new Health();
@@ -154,9 +159,11 @@ namespace Space.ComponentSystem.Entities
             return result;
         }
 
-        public static IEntity CreateStar(string texture, Vector2 position, AstronomicBodyType type)
+        public static IEntity CreateStar(string texture, Vector2 position, AstronomicBodyType type, float mass)
         {
             var entity = new Entity();
+
+            entity.AddComponent(new Index());
 
             var transform = new Transform();
             transform.Translation = position;
@@ -166,6 +173,10 @@ namespace Space.ComponentSystem.Entities
             renderer.TextureName = texture;
             entity.AddComponent(renderer);
 
+            var grav = new Gravitation();
+            grav.GravitationType = Gravitation.GravitationTypes.Atractor;
+            grav.Mass = mass;
+            entity.AddComponent(grav);
 
             var astronomicBody = new AstronomicBody();
             astronomicBody.Type = type;
@@ -173,7 +184,7 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture, IEntity center, float majorRadius, float minorRadius, float angle, int period, AstronomicBodyType type)
+        public static IEntity CreateStar(string texture, IEntity center, float majorRadius, float minorRadius, float angle, int period, AstronomicBodyType type, float mass)
         {
             var entity = new Entity();
 
@@ -189,14 +200,22 @@ namespace Space.ComponentSystem.Entities
             ellipse.Period = period;
             entity.AddComponent(ellipse);
 
+            entity.AddComponent(new Index());
+
             var renderer = new TransformedRenderer();
             renderer.TextureName = texture;
             entity.AddComponent(renderer);
+
+            var grav = new Gravitation();
+            grav.GravitationType = Gravitation.GravitationTypes.Atractor;
+            grav.Mass = mass;
+            entity.AddComponent(grav);
 
             var astronomicBody = new AstronomicBody();
             astronomicBody.Type = type;
             entity.AddComponent(astronomicBody);
             return entity;
+
         }
     }
 }
