@@ -102,10 +102,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Collections\Node.cs" />
-    <Compile Include="Collections\Point.cs" />
-    <Compile Include="Collections\Rectangle.cs" />
-    <Compile Include="Collections\RTree.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />
     <Compile Include="Input\KeyboardInputEventArgs.cs" />
