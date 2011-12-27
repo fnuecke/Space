@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -30,7 +30,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Previous position of the underlying physics component (for sweep tests).
         /// </summary>
-        protected FPoint _previousPosition;
+        protected Vector2 _previousPosition;
 
         #endregion
 
@@ -43,9 +43,9 @@ namespace Engine.ComponentSystem.Components
         /// <returns>Whether the two collide or not.</returns>
         public abstract bool Intersects(AbstractCollidable collidable);
 
-        internal abstract bool Intersects(FPoint extents, FPoint previousPosition, FPoint position);
+        internal abstract bool Intersects(Vector2 extents, Vector2 previousPosition, Vector2 position);
 
-        internal abstract bool Intersects(Fixed radius, FPoint previousPosition, FPoint position);
+        internal abstract bool Intersects(float radius, Vector2 previousPosition, Vector2 position);
 
         #endregion
 
@@ -93,7 +93,7 @@ namespace Engine.ComponentSystem.Components
             base.Depacketize(packet);
 
             CollisionGroup = packet.ReadInt32();
-            _previousPosition = packet.ReadFPoint();
+            _previousPosition = packet.ReadVector2();
         }
 
         public override void Hash(Hasher hasher)
@@ -101,8 +101,8 @@ namespace Engine.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(BitConverter.GetBytes(CollisionGroup));
-            hasher.Put(BitConverter.GetBytes(_previousPosition.X.RawValue));
-            hasher.Put(BitConverter.GetBytes(_previousPosition.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(_previousPosition.X));
+            hasher.Put(BitConverter.GetBytes(_previousPosition.Y));
         }
 
         #endregion

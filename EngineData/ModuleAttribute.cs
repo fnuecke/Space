@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -52,7 +51,7 @@ namespace Engine.Data
         /// <summary>
         /// The actual value for this specific attribute.
         /// </summary>
-        public Fixed Value { get; set; }
+        public float Value { get; set; }
 
         #endregion
 
@@ -70,14 +69,14 @@ namespace Engine.Data
         {
             Type = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
             ComputationType = (ModuleAttributeComputationType)packet.ReadByte();
-            Value = packet.ReadFixed();
+            Value = packet.ReadSingle();
         }
 
         public void Hash(Hasher hasher)
         {
             hasher.Put(Encoding.UTF8.GetBytes(Enum.GetName(typeof(TAttribute), Type)));
             hasher.Put(BitConverter.GetBytes((byte)ComputationType));
-            hasher.Put(BitConverter.GetBytes(Value.RawValue));
+            hasher.Put(BitConverter.GetBytes(Value));
         }
 
         public object Clone()
@@ -94,10 +93,10 @@ namespace Engine.Data
             switch (ComputationType)
             {
                 case ModuleAttributeComputationType.Additive:
-                    return Value.DoubleValue + " " + Type.ToString();
+                    return Value + " " + Type.ToString();
                 case ModuleAttributeComputationType.Multiplicative:
                 default:
-                    return (1 - Value.DoubleValue) + "% " + Type.ToString();
+                    return (1 - Value) + "% " + Type.ToString();
             }
         }
 
@@ -118,7 +117,7 @@ namespace Engine.Data
         /// <param name="attributes">The list of attributes to use.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes in the specified list.</returns>
-        public static Fixed Accumulate<TAttribute>(this ModuleAttribute<TAttribute>[] attributes, TAttribute attributeType)
+        public static float Accumulate<TAttribute>(this ModuleAttribute<TAttribute>[] attributes, TAttribute attributeType)
             where TAttribute : struct
         {
             return new List<ModuleAttribute<TAttribute>>(attributes).Accumulate(attributeType);
@@ -133,10 +132,10 @@ namespace Engine.Data
         /// <param name="attributes">The list of attributes to use.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes in the specified list.</returns>
-        public static Fixed Accumulate<TAttribute>(this ICollection<ModuleAttribute<TAttribute>> attributes, TAttribute attributeType)
+        public static float Accumulate<TAttribute>(this ICollection<ModuleAttribute<TAttribute>> attributes, TAttribute attributeType)
             where TAttribute : struct
         {
-            Fixed result = Fixed.Zero;
+            float result = 0;
             foreach (var attribute in attributes)
             {
                 if (attribute.Type.Equals(attributeType) &&

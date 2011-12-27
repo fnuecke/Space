@@ -1,8 +1,8 @@
 ﻿using System;
-using Engine.Math;
 using Engine.Physics.Intersection;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -21,7 +21,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The bounds of this box.
         /// </summary>
-        public FPoint Size { get; set; }
+        public Vector2 Size { get; set; }
 
         #endregion
 
@@ -37,14 +37,14 @@ namespace Engine.ComponentSystem.Components
             return collidable.Intersects(Size, _previousPosition, this.Entity.GetComponent<Transform>().Translation);
         }
 
-        internal override bool Intersects(FPoint extents, FPoint previousPosition, FPoint position)
+        internal override bool Intersects(Vector2 extents, Vector2 previousPosition, Vector2 position)
         {
             return AABBSweep.Test(
                 this.Size, this._previousPosition, this.Entity.GetComponent<Transform>().Translation,
                 extents, previousPosition, position);
         }
 
-        internal override bool Intersects(Fixed radius, FPoint previousPosition, FPoint position)
+        internal override bool Intersects(float radius, Vector2 previousPosition, Vector2 position)
         {
             return SphereAABBSweep.Test(
                 radius, previousPosition, position,
@@ -65,15 +65,15 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Size = packet.ReadFPoint();
+            Size = packet.ReadVector2();
         }
 
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Size.X.RawValue));
-            hasher.Put(BitConverter.GetBytes(Size.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(Size.X));
+            hasher.Put(BitConverter.GetBytes(Size.Y));
         }
 
         #endregion

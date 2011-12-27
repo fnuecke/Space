@@ -1,4 +1,4 @@
-﻿using Engine.Math;
+﻿using Microsoft.Xna.Framework;
 
 namespace Engine.Physics.Intersection
 {
@@ -15,31 +15,31 @@ namespace Engine.Physics.Intersection
         /// <param name="B1">current position of sphere B</param>
         /// <returns>true if the spheres (did) collide.</returns>
         /// <see cref="http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=2"/> 
-        public static bool Test(Fixed ra, FPoint A0, FPoint A1, Fixed rb, FPoint B0, FPoint B1)
+        public static bool Test(float ra, Vector2 A0, Vector2 A1, float rb, Vector2 B0, Vector2 B1)
         {
-            FPoint va = A1 - A0;
-            FPoint vb = B1 - B0;
-            FPoint AB = B0 - A0;
+            Vector2 va = A1 - A0;
+            Vector2 vb = B1 - B0;
+            Vector2 AB = B0 - A0;
 
             //relative velocity (in normalized time)
-            FPoint vab = vb - va;
-            Fixed rab = ra + rb;
+            Vector2 vab = vb - va;
+            float rab = ra + rb;
 
             //u*u coefficient
-            Fixed a = FPoint.Dot(vab, vab);
+            float a = Vector2.Dot(vab, vab);
 
             //u coefficient
-            Fixed b = 2 * FPoint.Dot(vab, AB);
+            float b = 2 * Vector2.Dot(vab, AB);
 
             //constant term 
-            Fixed c = FPoint.Dot(AB, AB) - rab * rab;
+            float c = Vector2.Dot(AB, AB) - rab * rab;
 
             //check if they're currently overlapping
-            if (FPoint.Dot(AB, AB) <= rab * rab)
+            if (Vector2.Dot(AB, AB) <= rab * rab)
             {
                 return true;
             }
-            else if (va.Norm == 0 && vb.Norm == 0)
+            else if (va.X == 0 && va.Y == 0 && vb.X == 0 && vb.Y == 0)
             {
                 // neither is moving, cannot collide.
                 return false;
@@ -50,8 +50,8 @@ namespace Engine.Physics.Intersection
             var q = b * b - 4 * a * c;
             if (q >= 0)
             {
-                q = Fixed.Sqrt(q);
-                Fixed d = (Fixed)1 / (a + a);
+                q = (float)System.Math.Sqrt(q);
+                float d = 1 / (a + a);
                 if (d > 0)
                 {
                     var r1 = (-b + q) * d;

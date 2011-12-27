@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -20,14 +20,14 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The damping to apply to this objects movement (simulates friction).
         /// </summary>
-        public Fixed Value { get; set; }
+        public float Value { get; set; }
 
         /// <summary>
         /// Minimum velocity of an object before it is stopped (avoids jitter
         /// for very low velocity, due to which objects with damping never
         /// stop, even though they should).
         /// </summary>
-        public Fixed MinVelocity { get; set; }
+        public float MinVelocity { get; set; }
 
         #endregion
 
@@ -43,7 +43,7 @@ namespace Engine.ComponentSystem.Components
             base.Update(parameterization);
 #endif
             // Apply friction only if set to a positive value.
-            if (Value > (Fixed)0)
+            if (Value > 0)
             {
                 // Get velocity.
                 var velocity = Entity.GetComponent<Velocity>();
@@ -52,19 +52,19 @@ namespace Engine.ComponentSystem.Components
                 if (velocity != null)
                 {
                     // Save previous velocity for stop check (due to MinVelocity).
-                    var previousVelocity = velocity.Value.Norm;
+                    var previousVelocity = velocity.Value.LengthSquared();
 
                     // Apply friction.
-                    velocity.Value = velocity.Value * ((Fixed)1 - Value);
+                    velocity.Value = velocity.Value * (1 - Value);
 
                     // If we're below a certain minimum speed, just stop, otherwise
                     // it'd be hard to. We only stop if we were faster than the minimum,
                     // before application of friction. Otherwise we might have problems
                     // getting moving at all, if the acceleration is too low.
                     if (previousVelocity >= MinVelocity &&
-                        velocity.Value.Norm < MinVelocity)
+                        velocity.Value.LengthSquared() < MinVelocity)
                     {
-                        velocity.Value = FPoint.Zero;
+                        velocity.Value = Vector2.Zero;
                     }
                 }
             }
@@ -94,17 +94,17 @@ namespace Engine.ComponentSystem.Components
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
-            
-            Value = packet.ReadFixed();
-            MinVelocity = packet.ReadFixed();
+
+            Value = packet.ReadSingle();
+            MinVelocity = packet.ReadSingle();
         }
 
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
             
-            hasher.Put(BitConverter.GetBytes(Value.RawValue));
-            hasher.Put(BitConverter.GetBytes(MinVelocity.RawValue));
+            hasher.Put(BitConverter.GetBytes(Value));
+            hasher.Put(BitConverter.GetBytes(MinVelocity));
         }
 
         #endregion

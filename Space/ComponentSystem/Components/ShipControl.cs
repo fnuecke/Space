@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Parameterizations;
@@ -32,7 +31,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The rotation we're targeting at the moment.
         /// </summary>
-        public Fixed TargetRotation
+        public float TargetRotation
         {
             get
             {
@@ -57,12 +56,12 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The current target rotation (setting invalidation flag so we need to store this ourselves).
         /// </summary>
-        private Fixed _targetRotation;
+        private float _targetRotation;
 
         /// <summary>
         /// The rotation we had in the previous update.
         /// </summary>
-        private Fixed _previousRotation;
+        private float _previousRotation;
 
         #endregion
 
@@ -114,22 +113,22 @@ namespace Space.ComponentSystem.Components
 
                 // Update acceleration.
                 Entity.GetComponent<Acceleration>().Value = DirectionConversion.
-                    DirectionToFPoint(AccelerationDirection) * acceleration;
+                    DirectionToVector(AccelerationDirection) * acceleration;
 
                 // Update rotation / spin.
                 var currentDelta = Angle.MinAngle(transform.Rotation, TargetRotation);
                 var requiredSpin = (currentDelta > 0
-                            ? DirectionConversion.DirectionToFixed(Directions.Right)
-                            : DirectionConversion.DirectionToFixed(Directions.Left))
+                            ? DirectionConversion.DirectionToScalar(Directions.Right)
+                            : DirectionConversion.DirectionToScalar(Directions.Left))
                             * rotation;
 
                 // If the target rotation changed and we're either not spinning, or spinning the wrong way.
-                if (spin != null &&_targetRotationChanged && Fixed.Sign(spin.Value) != Fixed.Sign(requiredSpin))
+                if (spin != null && _targetRotationChanged && System.Math.Sign(spin.Value) != System.Math.Sign(requiredSpin))
                 {
                     // Is it worth starting to spin, or should we just jump to the position?
                     // If the distance we need to spin is lower than what we spin in one tick,
                     // just set it.
-                    if (Fixed.Abs(currentDelta) > rotation)
+                    if (System.Math.Abs(currentDelta) > rotation)
                     {
                         // Spin, the angle takes multiple frames to rotate.
                         spin.Value = requiredSpin;
@@ -138,21 +137,21 @@ namespace Space.ComponentSystem.Components
                     {
                         // Set, only one frame (this one) required.
                         transform.Rotation = TargetRotation;
-                        spin.Value = Fixed.Zero;
+                        spin.Value = 0;
                     }
                 }
             }
 
             // Check if we're spinning.
-            if (spin != null && spin.Value != Fixed.Zero)
+            if (spin != null && spin.Value != 0)
             {
                 // Yes, check if we passed our target rotation. This is the case when the distance
                 // to the target in the last step was smaller than our rotational speed.
-                if (Fixed.Abs(Angle.MinAngle(_previousRotation, TargetRotation)) < Fixed.Abs(spin.Value))
+                if (System.Math.Abs(Angle.MinAngle(_previousRotation, TargetRotation)) < System.Math.Abs(spin.Value))
                 {
                     // Yes, set to that rotation and stop spinning.
                     transform.Rotation = TargetRotation;
-                    spin.Value = Fixed.Zero;
+                    spin.Value = 0;
                 }
             }
 
@@ -199,8 +198,8 @@ namespace Space.ComponentSystem.Components
             IsShooting = packet.ReadBoolean();
             AccelerationDirection = (Directions)packet.ReadByte();
             _targetRotationChanged = packet.ReadBoolean();
-            _targetRotation = packet.ReadFixed();
-            _previousRotation = packet.ReadFixed();
+            _targetRotation = packet.ReadSingle();
+            _previousRotation = packet.ReadSingle();
         }
 
         public override void Hash(Hasher hasher)
@@ -208,8 +207,8 @@ namespace Space.ComponentSystem.Components
             hasher.Put((byte)AccelerationDirection);
             hasher.Put(BitConverter.GetBytes(IsShooting));
             hasher.Put(BitConverter.GetBytes(_targetRotationChanged));
-            hasher.Put(BitConverter.GetBytes(_targetRotation.RawValue));
-            hasher.Put(BitConverter.GetBytes(_previousRotation.RawValue));
+            hasher.Put(BitConverter.GetBytes(_targetRotation));
+            hasher.Put(BitConverter.GetBytes(_previousRotation));
         }
 
         #endregion

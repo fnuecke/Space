@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.Math;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Util
 {
@@ -93,27 +93,27 @@ namespace Engine.Util
     /// </summary>
     public static class DirectionConversion
     {
-        private static readonly Fixed SqrtOneHalf = Fixed.Create(System.Math.Sqrt(0.5));
+        private static readonly float SqrtOneHalf = (float)System.Math.Sqrt(0.5);
 
         /// <summary>
         /// Lookup table for FPoint conversion.
         /// </summary>
-        private static readonly Dictionary<Directions, FPoint> fpointLookup = new Dictionary<Directions, FPoint>()
+        private static readonly Dictionary<Directions, Vector2> fpointLookup = new Dictionary<Directions, Vector2>()
         {
-            { Directions.None, FPoint.Zero },
-            { Directions.North, FPoint.Create((Fixed)0, -(Fixed)1) },
-            { Directions.NorthAlt, FPoint.Create((Fixed)0, -(Fixed)1) },
-            { Directions.East, FPoint.Create((Fixed)1, (Fixed)0) },
-            { Directions.EastAlt, FPoint.Create((Fixed)1, (Fixed)0) },
-            { Directions.South, FPoint.Create((Fixed)0, (Fixed)1) },
-            { Directions.SouthAlt, FPoint.Create((Fixed)0, (Fixed)1) },
-            { Directions.West, FPoint.Create(-(Fixed)1, (Fixed)0) },
-            { Directions.WestAlt, FPoint.Create(-(Fixed)1, (Fixed)0) },
+            { Directions.None, Vector2.Zero },
+            { Directions.North, -Vector2.UnitY },
+            { Directions.NorthAlt, -Vector2.UnitY },
+            { Directions.East, Vector2.UnitX },
+            { Directions.EastAlt, Vector2.UnitX },
+            { Directions.South, Vector2.UnitY },
+            { Directions.SouthAlt, Vector2.UnitY },
+            { Directions.West, -Vector2.UnitX },
+            { Directions.WestAlt, -Vector2.UnitX },
             
-            { Directions.NorthEast, FPoint.Create(SqrtOneHalf, -SqrtOneHalf) },
-            { Directions.NorthWest, FPoint.Create(-SqrtOneHalf, -SqrtOneHalf) },
-            { Directions.SouthEast, FPoint.Create(SqrtOneHalf, SqrtOneHalf) },
-            { Directions.SouthWest, FPoint.Create(-SqrtOneHalf, SqrtOneHalf) }
+            { Directions.NorthEast, new Vector2(SqrtOneHalf, -SqrtOneHalf) },
+            { Directions.NorthWest, new Vector2(-SqrtOneHalf, -SqrtOneHalf) },
+            { Directions.SouthEast, new Vector2(SqrtOneHalf, SqrtOneHalf) },
+            { Directions.SouthWest, new Vector2(-SqrtOneHalf, SqrtOneHalf) }
         };
 
         /// <summary>
@@ -121,7 +121,7 @@ namespace Engine.Util
         /// </summary>
         /// <param name="direction">the direction to convert.</param>
         /// <returns>the unit FPoint corresponding to that direction.</returns>
-        public static FPoint DirectionToFPoint(Directions direction)
+        public static Vector2 DirectionToVector(Directions direction)
         {
             if (fpointLookup.ContainsKey(direction))
             {
@@ -138,9 +138,9 @@ namespace Engine.Util
         /// </summary>
         /// <param name="direction">the direction to convert.</param>
         /// <returns><c>-1</c> for left / up, <c>1</c> for right / down.</returns>
-        public static Fixed DirectionToFixed(Directions direction)
+        public static float DirectionToScalar(Directions direction)
         {
-            FPoint point = DirectionToFPoint(direction);
+            Vector2 point = DirectionToVector(direction);
             return point.X + point.Y;
         }
     }

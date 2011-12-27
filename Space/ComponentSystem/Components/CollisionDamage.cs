@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -37,7 +36,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The amount of damage to deal upon collision.
         /// </summary>
-        public Fixed Damage { get; set; }
+        public float Damage { get; set; }
 
         #endregion
 
@@ -94,7 +93,10 @@ namespace Space.ComponentSystem.Components
         /// <param name="message"></param>
         public override void HandleMessage(ValueType message)
         {
-            if (message is Collision)
+            // Only handle collisions, and only if we weren't removed yet.
+            // This can happen if we collide with two things in one frame
+            // but are a oneshot.
+            if (message is Collision && Entity.Manager != null)
             {
                 var entity = ((Collision)message).OtherEntity;
 
@@ -161,7 +163,7 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Cooldown = packet.ReadInt32();
-            Damage = packet.ReadFixed();
+            Damage = packet.ReadSingle();
 
             int numCooldowns = packet.ReadInt32();
             if (numCooldowns > 0)
@@ -192,7 +194,7 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(BitConverter.GetBytes(Cooldown));
-            hasher.Put(BitConverter.GetBytes(Damage.RawValue));
+            hasher.Put(BitConverter.GetBytes(Damage));
         }
 
         public override object Clone()

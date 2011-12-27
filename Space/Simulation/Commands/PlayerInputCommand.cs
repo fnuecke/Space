@@ -1,5 +1,4 @@
-﻿using Engine.Math;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Simulation.Commands;
 
 namespace Space.Simulation.Commands
@@ -29,7 +28,7 @@ namespace Space.Simulation.Commands
         /// <summary>
         /// For rotate commands this is the targeted rotation angle.
         /// </summary>
-        public Fixed TargetRotation { get; private set; }
+        public float TargetRotation { get; private set; }
 
         /// <summary>
         /// For deserialization.
@@ -45,7 +44,7 @@ namespace Space.Simulation.Commands
             this.Input = input;
         }
 
-        public PlayerInputCommand(PlayerInput input, Fixed targetRotation)
+        public PlayerInputCommand(PlayerInput input, float targetRotation)
             : this()
         {
             this.Input = input;
@@ -66,7 +65,7 @@ namespace Space.Simulation.Commands
             base.Depacketize(packet);
 
             Input = (PlayerInput)packet.ReadByte();
-            TargetRotation = packet.ReadFixed();
+            TargetRotation = packet.ReadSingle();
         }
 
         #endregion

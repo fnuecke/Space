@@ -1,7 +1,7 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
-using Engine.Math;
 using Engine.Session;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
 namespace Space.ComponentSystem.Systems
@@ -36,27 +36,27 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Returns the position of the local player's avatar.
         /// </summary>
-        protected override FPoint GetListenerPosition()
+        protected override Vector2 GetListenerPosition()
         {
             var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
             if (avatar != null)
             {
                 return avatar.GetComponent<Transform>().Translation;
             }
-            return FPoint.Zero;
+            return Vector2.Zero;
         }
 
         /// <summary>
         /// Returns the velocity of the local player's avatar.
         /// </summary>
-        protected override FPoint GetListenerVelocity()
+        protected override Vector2 GetListenerVelocity()
         {
             var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
             if (avatar != null)
             {
                 return avatar.GetComponent<Velocity>().Value;
             }
-            return FPoint.Zero;
+            return Vector2.Zero;
         }
 
         #endregion

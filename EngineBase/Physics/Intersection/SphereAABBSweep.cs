@@ -1,4 +1,4 @@
-﻿using Engine.Math;
+﻿using Microsoft.Xna.Framework;
 
 namespace Engine.Physics.Intersection
 {
@@ -15,11 +15,11 @@ namespace Engine.Physics.Intersection
         /// <param name="B1">current position of AABB</param>
         /// <returns>true if the objects (did) collide.</returns>
         /// <see cref="http://www.geometrictools.com/LibMathematics/Intersection/Wm5IntrBox2Circle2.cpp"/> 
-        public static bool Test(Fixed ra, FPoint A0, FPoint A1, FPoint eb, FPoint B0, FPoint B1)
+        public static bool Test(float ra, Vector2 A0, Vector2 A1, Vector2 eb, Vector2 B0, Vector2 B1)
         {
             // Convert circle center to box coordinates.
-            FPoint diff = A1 - (B1 + eb / 2);
-            FPoint vel = (B1 - B0) - (A1 - A0);
+            Vector2 diff = A1 - (B1 + eb / 2);
+            Vector2 vel = (B1 - B0) - (A1 - A0);
 
             if (diff.X < -eb.X)
             {
@@ -76,27 +76,27 @@ namespace Engine.Physics.Intersection
             }
         }
 
-        private static bool TestVertexRegion(Fixed ra, Fixed cx, Fixed cy, Fixed vx, Fixed vy, Fixed ex, Fixed ey)
+        private static bool TestVertexRegion(float ra, float cx, float cy, float vx, float vy, float ex, float ey)
         {
-            Fixed dx = cx + ex;
-            Fixed dy = cy + ey;
-            Fixed rsqr = ra * ra;
-            Fixed diff = dx * dx + dy * dy - rsqr;
-            if (diff <= (Fixed)0)
+            float dx = cx + ex;
+            float dy = cy + ey;
+            float rsqr = ra * ra;
+            float diff = dx * dx + dy * dy - rsqr;
+            if (diff <= 0)
             {
                 // Circle is already intersecting the box.
                 return true;
             }
 
-            Fixed dot = vx * dx + vy * dy;
-            if (dot >= (Fixed)0)
+            float dot = vx * dx + vy * dy;
+            if (dot >= 0)
             {
                 // Circle not moving towards box.
                 return false;
             }
 
-            Fixed dotPerp = vx * dy - vy * dx;
-            if (dotPerp >= (Fixed)0)
+            float dotPerp = vx * dy - vy * dx;
+            if (dotPerp >= 0)
             {
                 // Potential contact on left edge.
                 if (dotPerp <= ra * vy)
@@ -105,16 +105,16 @@ namespace Engine.Physics.Intersection
                     return true;
                 }
 
-                if (vx <= (Fixed)0)
+                if (vx <= 0)
                 {
                     // Passed corner, moving away from box.
                     return false;
                 }
 
-                Fixed vsqr = vx * vx + vy * vy;
+                float vsqr = vx * vx + vy * vy;
                 dy = cy - ey;
                 dotPerp = vx * dy - vy * dx;
-                if (dotPerp >= (Fixed)0 && dotPerp * dotPerp > rsqr * vsqr)
+                if (dotPerp >= 0 && dotPerp * dotPerp > rsqr * vsqr)
                 {
                     // Circle misses box.
                     return false;
@@ -129,16 +129,16 @@ namespace Engine.Physics.Intersection
                     return true;
                 }
 
-                if (vy <= (Fixed)0)
+                if (vy <= 0)
                 {
                     // Passed corner, moving away from box.
                     return false;
                 }
 
-                Fixed vsqr = vx * vx + vy * vy;
+                float vsqr = vx * vx + vy * vy;
                 dx = cx - ex;
                 dotPerp = vx * dy - vy * dx;
-                if (-dotPerp >= (Fixed)0 && dotPerp * dotPerp > rsqr * vsqr)
+                if (-dotPerp >= 0 && dotPerp * dotPerp > rsqr * vsqr)
                 {
                     // Circle misses box.
                     return false;
@@ -148,29 +148,29 @@ namespace Engine.Physics.Intersection
             return true;
         }
 
-        private static bool TestEdgeRegion(Fixed ra, Fixed cx, Fixed cy, Fixed vx, Fixed vy, Fixed ex, Fixed ey)
+        private static bool TestEdgeRegion(float ra, float cx, float cy, float vx, float vy, float ex, float ey)
         {
-            Fixed dx = cx + ex;
-            Fixed xSignedDist = dx + ra;
-            if (xSignedDist >= (Fixed)0)
+            float dx = cx + ex;
+            float xSignedDist = dx + ra;
+            if (xSignedDist >= 0)
             {
                 // Circle is already intersecting the box.
                 return true;
             }
 
-            if (vx <= (Fixed)0)
+            if (vx <= 0)
             {
                 // Circle not moving towards box.
                 return false;
             }
 
-            Fixed rsqr = ra * ra;
-            Fixed vsqr = vx * vx + vy * vy;
-            if (vy >= (Fixed)0)
+            float rsqr = ra * ra;
+            float vsqr = vx * vx + vy * vy;
+            if (vy >= 0)
             {
-                Fixed dy = cy - ey;
-                Fixed dotPerp = vx * dy - vy * dx;
-                if (dotPerp >= (Fixed)0 && dotPerp * dotPerp > rsqr * vsqr)
+                float dy = cy - ey;
+                float dotPerp = vx * dy - vy * dx;
+                if (dotPerp >= 0 && dotPerp * dotPerp > rsqr * vsqr)
                 {
                     // Circle misses box.
                     return false;
@@ -178,9 +178,9 @@ namespace Engine.Physics.Intersection
             }
             else
             {
-                Fixed dy = cy + ey;
-                Fixed dotPerp = vx * dy - vy * dx;
-                if (dotPerp <= (Fixed)0 && dotPerp * dotPerp > rsqr * vsqr)
+                float dy = cy + ey;
+                float dotPerp = vx * dy - vy * dx;
+                if (dotPerp <= 0 && dotPerp * dotPerp > rsqr * vsqr)
                 {
                     // Circle misses box.
                     return false;

@@ -1,7 +1,6 @@
 using System;
 using System.Text.RegularExpressions;
 using Engine.Data;
-using Engine.Math;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Content.Pipeline;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
@@ -23,10 +22,10 @@ namespace Engine.Serialization
             switch (value.ComputationType)
             {
                 case ModuleAttributeComputationType.Additive:
-                    output.Xml.WriteValue(value.Value.DoubleValue.ToString() + " " + value.Type.ToString());
+                    output.Xml.WriteValue(value.Value.ToString() + " " + value.Type.ToString());
                     break;
                 case ModuleAttributeComputationType.Multiplicative:
-                    output.Xml.WriteValue((value.Value.DoubleValue - 1).ToString() + "% " + value.Type.ToString());
+                    output.Xml.WriteValue((value.Value - 1).ToString() + "% " + value.Type.ToString());
                     break;
             }
         }
@@ -46,7 +45,7 @@ namespace Engine.Serialization
                 existingInstance.Type = (TAttribute)Enum.Parse(typeof(TAttribute), match.Groups["class"].Value);
 
                 // Now get the numeric value for the attribute.
-                var value = Fixed.Create(double.Parse(match.Groups["value"].Value));
+                var value = float.Parse(match.Groups["value"].Value);
 
                 // Check if it's a negative value.
                 var type = match.Groups["type"];
@@ -59,7 +58,7 @@ namespace Engine.Serialization
                 var percentual = match.Groups["percentual"];
                 if (percentual.Success)
                 {
-                    value = ((Fixed)1) + value;
+                    value = 1 + value;
                     existingInstance.ComputationType = ModuleAttributeComputationType.Multiplicative;
                 }
                 else
@@ -89,7 +88,7 @@ namespace Engine.Serialization
         {
             output.Write(Enum.GetName(typeof(TAttribute), value.Type));
             output.Write((byte)value.ComputationType);
-            output.Write(value.Value.DoubleValue);
+            output.Write(value.Value);
         }
 
         public override string GetRuntimeType(TargetPlatform targetPlatform)

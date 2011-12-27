@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -82,7 +82,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="query">The point to use as a query point.</param>
         /// <returns>All entities in range.</returns>
-        public List<IEntity> GetNeighbors(FPoint query)
+        public List<IEntity> GetNeighbors(Vector2 query)
         {
             return GetNeighbors(query, 1);
         }
@@ -96,7 +96,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="cellRange">The neighborship rank up to which to
         /// include neighboring cells.</param>
         /// <returns>All entities in range.</returns>
-        public List<IEntity> GetNeighbors(FPoint query, int cellRange)
+        public List<IEntity> GetNeighbors(Vector2 query, int cellRange)
         {
             var result = new List<IEntity>();
 
@@ -213,7 +213,7 @@ namespace Engine.ComponentSystem.Systems
         {
             // Get the position to remove from. This might not be the current
             // translation due to pending updates, so check for that.
-            FPoint position;
+            Vector2 position;
             var index = component.Entity.GetComponent<Index>();
             if (index.PositionChanged)
             {

@@ -1,12 +1,12 @@
-﻿using Engine.Math;
+﻿using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components.Messages
 {
     public struct TranslationChanged
     {
-        public FPoint PreviousPosition;
+        public Vector2 PreviousPosition;
 
-        public static TranslationChanged Create(FPoint previousPosition)
+        public static TranslationChanged Create(Vector2 previousPosition)
         {
             TranslationChanged result;
             result.PreviousPosition = previousPosition;

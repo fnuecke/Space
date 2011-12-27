@@ -1,4 +1,4 @@
-﻿using Engine.Math;
+﻿using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Parameterizations
 {
@@ -17,6 +17,6 @@ namespace Engine.ComponentSystem.Parameterizations
         /// <summary>
         /// The position of the index component's entity before the change.
         /// </summary>
-        public FPoint PreviousPosition { get; set; }
+        public Vector2 PreviousPosition { get; set; }
     }
 }

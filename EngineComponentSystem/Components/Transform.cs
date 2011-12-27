@@ -1,7 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Components.Messages;
-using Engine.Math;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -15,7 +15,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Current position of the object.
         /// </summary>
-        public FPoint Translation
+        public Vector2 Translation
         {
             get
             {
@@ -38,7 +38,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The angle of the current orientation.
         /// </summary>
-        public Fixed Rotation { get; set; }
+        public float Rotation { get; set; }
 
         #endregion
 
@@ -47,7 +47,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Actual value holder for <c>Translation</c> property.
         /// </summary>
-        private FPoint _translation;
+        private Vector2 _translation;
 
         #endregion
 
@@ -57,7 +57,7 @@ namespace Engine.ComponentSystem.Components
         /// Add the given translation to the current translation.
         /// </summary>
         /// <param name="value">The translation to add.</param>
-        public void AddTranslation(FPoint value)
+        public void AddTranslation(Vector2 value)
         {
             Translation += value;
         }
@@ -71,16 +71,16 @@ namespace Engine.ComponentSystem.Components
         /// </para>
         /// </summary>
         /// <param name="value"></param>
-        public void AddRotation(Fixed value)
+        public void AddRotation(float value)
         {
             Rotation += value;
-            if (Rotation < -Fixed.PI)
+            if (Rotation < -System.Math.PI)
             {
-                Rotation += Fixed.PI * 2;
+                Rotation += (float)System.Math.PI * 2;
             }
-            else if (Rotation > Fixed.PI)
+            else if (Rotation > System.Math.PI)
             {
-                Rotation -= Fixed.PI * 2;
+                Rotation -= (float)System.Math.PI * 2;
             }
         }
 
@@ -99,17 +99,17 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
             
-            Translation = packet.ReadFPoint();
-            Rotation = packet.ReadFixed();
+            Translation = packet.ReadVector2();
+            Rotation = packet.ReadSingle();
         }
 
         public override void Hash(Util.Hasher hasher)
         {
             base.Hash(hasher);
             
-            hasher.Put(BitConverter.GetBytes(Translation.X.RawValue));
-            hasher.Put(BitConverter.GetBytes(Translation.Y.RawValue));
-            hasher.Put(BitConverter.GetBytes(Rotation.RawValue));
+            hasher.Put(BitConverter.GetBytes(Translation.X));
+            hasher.Put(BitConverter.GetBytes(Translation.Y));
+            hasher.Put(BitConverter.GetBytes(Rotation));
         }
 
         #endregion

@@ -4,7 +4,6 @@ using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Input;
-using Engine.Math;
 using Engine.Session;
 using Engine.Simulation;
 using Engine.Simulation.Commands;
@@ -31,8 +30,8 @@ namespace Space.Control
 
         private IClientSession _session;
         private ISimulation _simulation;
-        private Fixed _previousTargetRotation;
-        private Fixed _currentTargetRotation;
+        private float _previousTargetRotation;
+        private float _currentTargetRotation;
         private bool _rotationFinished = true;
 
         public InputCommandEmitter(Game game, IClientSession session, ISimulation simulation)
@@ -209,7 +208,7 @@ namespace Space.Control
             // will be our new target rotation.
             int rx = args.X - Game.GraphicsDevice.Viewport.Width / 2;
             int ry = args.Y - Game.GraphicsDevice.Viewport.Height / 2;
-            double mouseAngle = System.Math.Atan2(ry, rx);
+            var mouseAngle = (float)System.Math.Atan2(ry, rx);
             UpdateTargetRotation(mouseAngle);
         }
 
@@ -220,7 +219,7 @@ namespace Space.Control
         /// we're facing.
         /// </summary>
         /// <param name="targetRotation">the new direction to face.</param>
-        private void UpdateTargetRotation(double targetRotation)
+        private void UpdateTargetRotation(float targetRotation)
         {
             IEntity avatar = GetLocalAvatar();
             if (avatar != null)
@@ -232,7 +231,7 @@ namespace Space.Control
                 double shipAngle = (double)transform.Rotation;
 
                 // Remember where we'd like to rotate to (for finalizing).
-                _currentTargetRotation = Fixed.Create(targetRotation);
+                _currentTargetRotation = targetRotation;
 
                 // Get the smaller angle between our current and our target angles.
                 double deltaAngle = Angle.MinAngle(shipAngle, targetRotation);
@@ -246,8 +245,8 @@ namespace Space.Control
                 // a lot of superfluous input commands this way, reducing network
                 // load somewhat (still pretty bad if user moves his mouse slowly,
                 // but meh).
-                if ((deltaAngle > 10e-3 && spin.Value <= Fixed.Zero) ||
-                    (deltaAngle < -10e-3 && spin.Value >= Fixed.Zero))
+                if ((deltaAngle > 10e-3 && spin.Value <= 0) ||
+                    (deltaAngle < -10e-3 && spin.Value >= 0))
                 {
                     OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
                 }

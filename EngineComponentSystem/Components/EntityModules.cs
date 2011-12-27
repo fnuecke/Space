@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Engine.ComponentSystem.Components.Messages;
 using Engine.Data;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -41,7 +40,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Cached computation results for accumulative attribute values.
         /// </summary>
-        private Dictionary<TAttribute, Fixed> _attributeCache = new Dictionary<TAttribute, Fixed>();
+        private Dictionary<TAttribute, float> _attributeCache = new Dictionary<TAttribute, float>();
 
         /// <summary>
         /// Cached lists of components by type.
@@ -69,7 +68,7 @@ namespace Engine.ComponentSystem.Components
         /// overall value.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes tracked by this component.</returns>
-        public Fixed GetValue(TAttribute attributeType)
+        public float GetValue(TAttribute attributeType)
         {
             if (_attributeCache.ContainsKey(attributeType))
             {
@@ -249,7 +248,7 @@ namespace Engine.ComponentSystem.Components
             }
 
             // Copy the caches as well.
-            copy._attributeCache = new Dictionary<TAttribute, Fixed>(_attributeCache);
+            copy._attributeCache = new Dictionary<TAttribute, float>(_attributeCache);
             copy._moduleCache = new Dictionary<Type, object[]>();
 
             // And the id manager.

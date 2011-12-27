@@ -1,8 +1,8 @@
 ﻿using System;
-using Engine.Math;
 using Engine.Physics.Intersection;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -21,7 +21,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The radius of this sphere.
         /// </summary>
-        public Fixed Radius { get; set; }
+        public float Radius { get; set; }
 
         #endregion
 
@@ -37,14 +37,14 @@ namespace Engine.ComponentSystem.Components
             return collidable.Intersects(Radius, _previousPosition, this.Entity.GetComponent<Transform>().Translation);
         }
 
-        internal override bool Intersects(FPoint extents, FPoint previousPosition, FPoint position)
+        internal override bool Intersects(Vector2 extents, Vector2 previousPosition, Vector2 position)
         {
             return SphereAABBSweep.Test(
                 this.Radius, this._previousPosition, this.Entity.GetComponent<Transform>().Translation,
                 extents, previousPosition, position);
         }
 
-        internal override bool Intersects(Fixed radius, FPoint previousPosition, FPoint position)
+        internal override bool Intersects(float radius, Vector2 previousPosition, Vector2 position)
         {
             return SphereSweep.Test(
                 this.Radius, this._previousPosition, this.Entity.GetComponent<Transform>().Translation,
@@ -65,14 +65,14 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Radius = packet.ReadFixed();
+            Radius = packet.ReadSingle();
         }
 
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Radius.RawValue));
+            hasher.Put(BitConverter.GetBytes(Radius));
         }
 
         #endregion

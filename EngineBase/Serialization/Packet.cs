@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Engine.Math;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Serialization
 {
@@ -124,23 +124,11 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// Writes the specified fixed value.
+        /// Writes the specified vector value.
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(Fixed data)
-        {
-            byte[] bytes = BitConverter.GetBytes(data.RawValue);
-            _stream.Write(bytes, 0, bytes.Length);
-            return this;
-        }
-
-        /// <summary>
-        /// Writes the specified fixed point value.
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(FPoint data)
+        public Packet Write(Vector2 data)
         {
             return Write(data.X).Write(data.Y);
         }
@@ -478,33 +466,16 @@ namespace Engine.Serialization
         }
 
         /// <summary>
-        /// Reads a fixed value.
+        /// Reads a vector value.
         /// </summary>
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public Fixed ReadFixed()
+        public Vector2 ReadVector2()
         {
-            if (!HasFixed())
-            {
-                throw new PacketException("Cannot read fixed.");
-            }
-            byte[] bytes = new byte[sizeof(long)];
-            _stream.Read(bytes, 0, bytes.Length);
-            return Fixed.Create(BitConverter.ToInt64(bytes, 0), false);
-        }
-
-        /// <summary>
-        /// Reads a fixed point value.
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public FPoint ReadFPoint()
-        {
-            FPoint result;
-            result.X = ReadFixed();
-            result.Y = ReadFixed();
+            Vector2 result;
+            result.X = ReadSingle();
+            result.Y = ReadSingle();
             return result;
         }
 
@@ -829,14 +800,6 @@ namespace Engine.Serialization
         {
             long position = _stream.Position;
             var result = ReadDouble();
-            _stream.Position = position;
-            return result;
-        }
-
-        public Fixed PeekFixed()
-        {
-            long position = _stream.Position;
-            var result = ReadFixed();
             _stream.Position = position;
             return result;
         }

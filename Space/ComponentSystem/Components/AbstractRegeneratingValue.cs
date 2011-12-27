@@ -1,7 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -11,11 +10,11 @@ namespace Space.ComponentSystem.Components
     {
         #region Properties
 
-        public Fixed Value { get; set; }
+        public float Value { get; set; }
 
-        public Fixed MaxValue { get; set; }
+        public float MaxValue { get; set; }
 
-        public Fixed Regeneration { get; set; }
+        public float Regeneration { get; set; }
 
         #endregion
 
@@ -26,7 +25,7 @@ namespace Space.ComponentSystem.Components
 #if DEBUG
             base.Update(parameterization);
 #endif
-            Value = Fixed.Min(MaxValue, Value + Regeneration);
+            Value = System.Math.Min(MaxValue, Value + Regeneration);
         }
 
         public override bool SupportsParameterization(System.Type parameterizationType)
@@ -50,18 +49,18 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Value = packet.ReadFixed();
-            MaxValue = packet.ReadFixed();
-            Regeneration = packet.ReadFixed();
+            Value = packet.ReadSingle();
+            MaxValue = packet.ReadSingle();
+            Regeneration = packet.ReadSingle();
         }
 
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Value.RawValue));
-            hasher.Put(BitConverter.GetBytes(MaxValue.RawValue));
-            hasher.Put(BitConverter.GetBytes(Regeneration.RawValue));
+            hasher.Put(BitConverter.GetBytes(Value));
+            hasher.Put(BitConverter.GetBytes(MaxValue));
+            hasher.Put(BitConverter.GetBytes(Regeneration));
         }
 
         #endregion

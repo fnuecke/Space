@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Engine.Math;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Parameterizations
 {
@@ -17,12 +17,12 @@ namespace Engine.ComponentSystem.Parameterizations
         /// <summary>
         /// The source position of the sound's source / emitter.
         /// </summary>
-        public FPoint Position { get; set; }
+        public Vector2 Position { get; set; }
 
         /// <summary>
         /// The velocity of the sound's source / emitter.
         /// </summary>
-        public FPoint Velocity { get; set; }
+        public Vector2 Velocity { get; set; }
 
         public SoundParameterization()
         {

@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework.Content;
@@ -16,29 +15,29 @@ namespace Space.Data
         /// <summary>
         /// The collision radius of the projectile.
         /// </summary>
-        public Fixed CollisionRadius;
+        public float CollisionRadius;
 
         /// <summary>
         /// The damage this projectile inflicts.
         /// </summary>
-        public Fixed Damage;
+        public float Damage;
 
         /// <summary>
         /// The initial velocity of the projectile.
         /// </summary>
-        public Fixed InitialVelocity;
+        public float InitialVelocity;
 
         /// <summary>
         /// Acceleration force applied to this projectile.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Fixed AccelerationForce = (Fixed)0;
+        public float AccelerationForce = 0;
 
         /// <summary>
         /// The friction used to slow the projectile down.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Fixed Friction = (Fixed)0;
+        public float Friction = 0;
 
         /// <summary>
         /// The time this projectile will stay alive before disappearing.
@@ -63,20 +62,20 @@ namespace Space.Data
         public void Depacketize(Packet packet)
         {
             Texture = packet.ReadString();
-            Damage = packet.ReadFixed();
-            CollisionRadius = packet.ReadFixed();
-            InitialVelocity = packet.ReadFixed();
-            Friction = packet.ReadFixed();
+            Damage = packet.ReadSingle();
+            CollisionRadius = packet.ReadSingle();
+            InitialVelocity = packet.ReadSingle();
+            Friction = packet.ReadSingle();
             TimeToLive = packet.ReadInt32();
         }
 
         public void Hash(Hasher hasher)
         {
-            hasher.Put(BitConverter.GetBytes(CollisionRadius.RawValue));
-            hasher.Put(BitConverter.GetBytes(Damage.RawValue));
-            hasher.Put(BitConverter.GetBytes(InitialVelocity.RawValue));
-            hasher.Put(BitConverter.GetBytes(AccelerationForce.RawValue));
-            hasher.Put(BitConverter.GetBytes(Friction.RawValue));
+            hasher.Put(BitConverter.GetBytes(CollisionRadius));
+            hasher.Put(BitConverter.GetBytes(Damage));
+            hasher.Put(BitConverter.GetBytes(InitialVelocity));
+            hasher.Put(BitConverter.GetBytes(AccelerationForce));
+            hasher.Put(BitConverter.GetBytes(Friction));
             hasher.Put(BitConverter.GetBytes(TimeToLive));
         }
 

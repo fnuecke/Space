@@ -1,5 +1,4 @@
-﻿using Engine.Math;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Microsoft.Xna.Framework.Content;
 
 namespace Space.Data
@@ -14,7 +13,7 @@ namespace Space.Data
         /// <summary>
         /// The collision radius of the ship.
         /// </summary>
-        public Fixed CollisionRadius;
+        public float CollisionRadius;
 
         /// <summary>
         /// The texture to use for rendering the ship.
@@ -66,7 +65,7 @@ namespace Space.Data
         public void Depacketize(Packet packet)
         {
             Name = packet.ReadString();
-            CollisionRadius = packet.ReadFixed();
+            CollisionRadius = packet.ReadSingle();
             Texture = packet.ReadString();
             Hulls = packet.ReadPacketizables<HullModule>();
             Reactors = packet.ReadPacketizables<ReactorModule>();

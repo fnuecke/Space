@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
@@ -29,7 +28,7 @@ namespace Engine.ComponentSystem.Systems
         /// same cue type are considered equal (avoid multi-play due to late
         /// command altering position or velocity slightly).
         /// </summary>
-        private static readonly Fixed Epsilon = Fixed.Create(4);
+        private static readonly float Epsilon = 4;
 
         #endregion
 
@@ -128,8 +127,8 @@ namespace Engine.ComponentSystem.Systems
                 foreach (var component in currentComponents)
                 {
                     _parameterization.SoundCues.Clear();
-                    _parameterization.Position = FPoint.Zero;
-                    _parameterization.Velocity = FPoint.Zero;
+                    _parameterization.Position = Vector2.Zero;
+                    _parameterization.Velocity = Vector2.Zero;
                     // Get infos for this component.
                     component.Update(_parameterization);
                     foreach (var soundCue in _parameterization.SoundCues)
@@ -145,16 +144,16 @@ namespace Engine.ComponentSystem.Systems
                 // some events from the past, where we were somewhere else, but
                 // using that old position would be just as wrong, so this
                 // wrong is simpler ;)
-                _listener.Position = (Vector3)GetListenerPosition();
-                _listener.Velocity = (Vector3)GetListenerVelocity();
+                _listener.Position = ToV3(GetListenerPosition());
+                _listener.Velocity = ToV3(GetListenerVelocity());
 
                 // Actually play the sounds that should be this update.
                 foreach (var sounds in _soundsToPlay.Values)
                 foreach (var sound in sounds)
                 {
                     // Get position and velocity of emitter.
-                    _emitter.Position = (Vector3)sound.Position;
-                    _emitter.Velocity = (Vector3)sound.Velocity;
+                    _emitter.Position = ToV3(sound.Position);
+                    _emitter.Velocity = ToV3(sound.Velocity);
 
                     // Let there be sound!
                     _soundBank.PlayCue(sound.SoundCue, _listener, _emitter);
@@ -165,22 +164,31 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
+        private static Vector3 ToV3(Vector2 v2)
+        {
+            Vector3 result;
+            result.X = v2.X;
+            result.Y = 0;
+            result.Z = v2.Y;
+            return result;
+        }
+
         /// <summary>
         /// Get the position of the listener (e.g. player avatar).
         /// </summary>
         /// <returns>The position of the listener.</returns>
-        protected virtual FPoint GetListenerPosition()
+        protected virtual Vector2 GetListenerPosition()
         {
-            return FPoint.Zero;
+            return Vector2.Zero;
         }
 
         /// <summary>
         /// Get the velocity of the listener (e.g. player avatar).
         /// </summary>
         /// <returns>The velocity of the listener.</returns>
-        protected virtual FPoint GetListenerVelocity()
+        protected virtual Vector2 GetListenerVelocity()
         {
-            return FPoint.Zero;
+            return Vector2.Zero;
         }
 
         #endregion
@@ -254,9 +262,9 @@ namespace Engine.ComponentSystem.Systems
             {
                 if (item.SoundCue.Equals(e.SoundCue) &&
                     (item.Position == e.Position ||
-                    Fixed.Abs((item.Position - e.Position).Norm) < Epsilon) &&
+                    System.Math.Abs((item.Position - e.Position).LengthSquared()) < Epsilon) &&
                     (item.Velocity == e.Velocity ||
-                    Fixed.Abs((item.Velocity - e.Velocity).Norm) < Epsilon))
+                    System.Math.Abs((item.Velocity - e.Velocity).LengthSquared()) < Epsilon))
                 {
                     return true;
                 }
@@ -271,8 +279,8 @@ namespace Engine.ComponentSystem.Systems
         private class SoundEvent
         {
             public string SoundCue { get; set; }
-            public FPoint Position { get; set; }
-            public FPoint Velocity { get; set; }
+            public Vector2 Position { get; set; }
+            public Vector2 Velocity { get; set; }
             public SoundEvent(string soundCue, SoundParameterization p)
             {
                 this.SoundCue = soundCue;

@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -20,7 +19,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The current rotation speed of the object.
         /// </summary>
-        public Fixed Value { get; set; }
+        public float Value { get; set; }
 
         #endregion
 
@@ -68,14 +67,14 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
             
-            Value = packet.ReadFixed();
+            Value = packet.ReadSingle();
         }
 
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
             
-            hasher.Put(BitConverter.GetBytes(Value.RawValue));
+            hasher.Put(BitConverter.GetBytes(Value));
         }
 
         #endregion

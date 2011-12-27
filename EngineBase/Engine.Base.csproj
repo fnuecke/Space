@@ -125,7 +125,6 @@
     <Compile Include="Serialization\PacketException.cs" />
     <Compile Include="Network\IProtocol.cs" />
     <Compile Include="Serialization\Packet.cs" />
-    <Compile Include="Math\Fixed.cs" />
     <Compile Include="Physics\Intersection\AABBSweep.cs" />
     <Compile Include="Physics\Intersection\SphereAABBSweep.cs" />
     <Compile Include="Physics\Intersection\SphereSweep.cs" />

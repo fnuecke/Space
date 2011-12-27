@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -20,7 +20,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The directed acceleration of the object.
         /// </summary>
-        public FPoint Value { get; set; }
+        public Vector2 Value { get; set; }
 
         #endregion
 
@@ -68,15 +68,15 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Value = packet.ReadFPoint();
+            Value = packet.ReadVector2();
         }
 
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Value.X.RawValue));
-            hasher.Put(BitConverter.GetBytes(Value.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(Value.X));
+            hasher.Put(BitConverter.GetBytes(Value.Y));
         }
 
         #endregion

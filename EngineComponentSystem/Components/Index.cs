@@ -1,9 +1,9 @@
 ﻿using System;
 using Engine.ComponentSystem.Components.Messages;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -23,7 +23,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The position we had before a position change.
         /// </summary>
-        public FPoint PreviousPosition { get; private set; }
+        public Vector2 PreviousPosition { get; private set; }
 
         #endregion
 
@@ -96,7 +96,7 @@ namespace Engine.ComponentSystem.Components
             base.Depacketize(packet);
 
             PositionChanged = packet.ReadBoolean();
-            PreviousPosition = packet.ReadFPoint();
+            PreviousPosition = packet.ReadVector2();
         }
 
         public override void Hash(Hasher hasher)
@@ -104,8 +104,8 @@ namespace Engine.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(BitConverter.GetBytes(PositionChanged));
-            hasher.Put(BitConverter.GetBytes(PreviousPosition.X.RawValue));
-            hasher.Put(BitConverter.GetBytes(PreviousPosition.Y.RawValue));
+            hasher.Put(BitConverter.GetBytes(PreviousPosition.X));
+            hasher.Put(BitConverter.GetBytes(PreviousPosition.Y));
         }
 
         #endregion

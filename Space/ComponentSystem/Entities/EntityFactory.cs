@@ -1,6 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
-using Engine.Math;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
 
@@ -13,12 +13,12 @@ namespace Space.ComponentSystem.Entities
             var entity = new Entity();
 
             var transform = new Transform();
-            transform.Translation = FPoint.Create((Fixed)2000, (Fixed)2000);
+            transform.Translation = new Vector2(2000, 2000);
             entity.AddComponent(transform);
 
             var friction = new Friction();
-            friction.Value = (Fixed)0.01;
-            friction.MinVelocity = (Fixed)0.02;
+            friction.Value = 0.01f;
+            friction.MinVelocity = 0.02f;
             entity.AddComponent(friction);
 
             var collidable = new CollidableSphere();
@@ -88,12 +88,12 @@ namespace Space.ComponentSystem.Entities
 
             // Give it its initial velocity.
             var velocity = new Velocity();
-            if (projectile.InitialVelocity != Fixed.Zero)
+            if (projectile.InitialVelocity != 0)
             {
-                FPoint rotation = FPoint.Create((Fixed)1, (Fixed)0);
+                var rotation = Vector2.UnitX;
                 if (emitterTransform != null)
                 {
-                    rotation = FPoint.Rotate(rotation, transform.Rotation);
+                    rotation = Rotate(rotation, transform.Rotation);
                 }
                 velocity.Value = rotation * projectile.InitialVelocity;
             }
@@ -144,7 +144,17 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture, FPoint position, AstronomicBodyType type)
+        private static Vector2 Rotate(Vector2 f, float angle)
+        {
+            Vector2 result;
+            var cos = (float)System.Math.Cos(angle);
+            var sin = (float)System.Math.Sin(angle);
+            result.X = f.X * cos - f.Y * sin;
+            result.Y = f.X * sin + f.Y * cos;
+            return result;
+        }
+
+        public static IEntity CreateStar(string texture, Vector2 position, AstronomicBodyType type)
         {
             var entity = new Entity();
 
@@ -163,7 +173,7 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateStar(string texture, IEntity center, Fixed majorRadius, Fixed minorRadius, Fixed angle, int period, AstronomicBodyType type)
+        public static IEntity CreateStar(string texture, IEntity center, float majorRadius, float minorRadius, float angle, int period, AstronomicBodyType type)
         {
             var entity = new Entity();
 

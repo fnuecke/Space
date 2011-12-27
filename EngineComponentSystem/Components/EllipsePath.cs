@@ -1,9 +1,9 @@
 ﻿using System;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -25,17 +25,17 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The radius of the ellipse along the major axis.
         /// </summary>
-        public Fixed MajorRadius { get; set; }
+        public float MajorRadius { get; set; }
 
         /// <summary>
         /// The radius of the ellipse along the minor axis.
         /// </summary>
-        public Fixed MinorRadius { get; set; }
+        public float MinorRadius { get; set; }
 
         /// <summary>
         /// The angle of the ellipse's major axis to the global x axis.
         /// </summary>
-        public Fixed Angle
+        public float Angle
         {
             get
             {
@@ -44,8 +44,8 @@ namespace Engine.ComponentSystem.Components
             set
             {
                 _angle = value;
-                _sinPhi = Fixed.Sin(value);
-                _cosPhi = Fixed.Cos(value);
+                _sinPhi = (float)System.Math.Sin(value);
+                _cosPhi = (float)System.Math.Cos(value);
             }
         }
 
@@ -62,17 +62,17 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Actual value of the angle.
         /// </summary>
-        Fixed _angle;
+        float _angle;
 
         /// <summary>
         /// Precomputed sine of the angle.
         /// </summary>
-        Fixed _sinPhi;
+        float _sinPhi;
 
         /// <summary>
         /// Precomputed cosine of the angle.
         /// </summary>
-        Fixed _cosPhi = (Fixed)1;
+        float _cosPhi = 1;
 
         #endregion
 
@@ -95,7 +95,7 @@ namespace Engine.ComponentSystem.Components
                 var args = (DefaultLogicParameterization)parameterization;
 
                 // Try to get the center of the entity we're rotating around.
-                FPoint center = FPoint.Zero;
+                Vector2 center = Vector2.Zero;
                 var centerEntity = Entity.Manager.GetEntity(CenterEntityId);
                 if (centerEntity != null)
                 {
@@ -107,14 +107,14 @@ namespace Engine.ComponentSystem.Components
                 }
 
                 // Get the angle based on the time passed.
-                var t = Fixed.PI * (Fixed)args.Frame / (Fixed)Period;
-                var sinT = Fixed.Sin(t);
-                var cosT = Fixed.Cos(t);
+                var t = System.Math.PI * args.Frame / Period;
+                var sinT = (float)System.Math.Sin(t);
+                var cosT = (float)System.Math.Cos(t);
 
-                var f = Fixed.Sqrt(Fixed.Abs(MinorRadius * MinorRadius - MajorRadius * MajorRadius));
+                var f = (float)System.Math.Sqrt(System.Math.Abs(MinorRadius * MinorRadius - MajorRadius * MajorRadius));
 
                 // Compute the current position and set it.
-                transform.Translation = FPoint.Create(
+                transform.Translation = new Vector2(
                     center.X + f * _cosPhi + MajorRadius * cosT * _cosPhi - MinorRadius * sinT * _sinPhi,
                     center.Y + f * _sinPhi + MajorRadius * cosT * _sinPhi + MinorRadius * sinT * _cosPhi
                 );
@@ -149,9 +149,9 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
             CenterEntityId = packet.ReadInt32();
-            MajorRadius = packet.ReadFixed();
-            MinorRadius = packet.ReadFixed();
-            Angle = packet.ReadFixed();
+            MajorRadius = packet.ReadSingle();
+            MinorRadius = packet.ReadSingle();
+            Angle = packet.ReadSingle();
             Period = packet.ReadInt32();
         }
 
@@ -159,9 +159,9 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
             hasher.Put(BitConverter.GetBytes(CenterEntityId));
-            hasher.Put(BitConverter.GetBytes(MajorRadius.RawValue));
-            hasher.Put(BitConverter.GetBytes(MinorRadius.RawValue));
-            hasher.Put(BitConverter.GetBytes(Angle.RawValue));
+            hasher.Put(BitConverter.GetBytes(MajorRadius));
+            hasher.Put(BitConverter.GetBytes(MinorRadius));
+            hasher.Put(BitConverter.GetBytes(Angle));
             hasher.Put(BitConverter.GetBytes(Period));
         }
 
