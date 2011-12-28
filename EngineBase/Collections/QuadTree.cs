@@ -158,11 +158,14 @@ namespace Engine.Collections
             var insertionNode = FindNode(point, out nodeX, out nodeY, out nodeSize);
 
             // If it's not a leaf node, create the leaf node for the new entry.
+            // Also get the node in the linked list to insert after.
+            LinkedListNode<Entry> insertAfter;
             if (!insertionNode.IsLeaf)
             {
                 var cell = ComputeCell(nodeX, nodeY, nodeSize >> 1, point);
                 insertionNode.Children[cell] = new Node(insertionNode);
                 insertionNode = insertionNode.Children[cell];
+                insertAfter = insertionNode.Parent.HighEntry;
             }
             else
             {
@@ -174,48 +177,35 @@ namespace Engine.Collections
                         throw new ArgumentException("Entry is already in the tree at the specified point.", "value");
                     }
                 }
+                // Not yet in the tree.
+                insertAfter = insertionNode.LowEntry;
             }
-
-            // Check after what entry we need to insert in the list. Either
-            // after the low node of the insertion node, if that's set,
-            // otherwise after the parent's high node, so as to not disturb
-            // already existing child nodes of the parent node.
-            LinkedListNode<Entry> insertAfter = insertionNode.LowEntry ?? insertionNode.Parent.HighEntry;
 
             // Add the data, get the newly created list entry.
             var insertedEntry = _entries.AddAfter(insertAfter, entry);
 
-            // Set high node if the note is uninitialized or only has one
-            // entry. Otherwise we always insert inside the range of the node
-            // to avoid having to update anything else.
-            // (Both null for uninitialized, otherwise equal for size one.)
-            if (insertionNode.LowEntry == insertionNode.HighEntry)
+            var node = insertionNode;
+            while (node != null)
             {
-                insertionNode.HighEntry = insertedEntry;
-            }
-
-            // Set low entry if it hasn't been set yet.
-            insertionNode.LowEntry = insertionNode.LowEntry ?? insertedEntry;
-
-            // Update parents' high nodes if necessary, which is if the entry
-            // was added after the parent's high node.
-            var parent = insertionNode.Parent;
-            while (parent != null)
-            {
-                if (parent.HighEntry.Next == insertedEntry)
+                if (node.LowEntry == node.HighEntry)
                 {
-                    // Yeah, parent's interval expanded, too, so update it and
-                    // check its parent, in turn.
-                    parent.HighEntry = insertedEntry;
-                    parent = parent.Parent;
+                    // Only one node yet, or empty.
+                    node.LowEntry = node.LowEntry ?? insertedEntry;
+                    node.HighEntry = insertedEntry;
+                }
+                else if (node.HighEntry == insertAfter)
+                {
+                    // Inserted after high node, adjust accordingly.
+                    node.HighEntry = insertedEntry;
                 }
                 else
                 {
-                    // Otherwise the node was just "somewhere in between"
-                    // and we don't care. This is transitive, so we don't
-                    // care in other nodes further up, either.
+                    // Somewhere inside the interval.
                     break;
                 }
+
+                // Continue checking in our parent.
+                node = node.Parent;
             }
 
             // We need to split the node.
@@ -231,9 +221,125 @@ namespace Engine.Collections
         /// in the tree, <c>false</c> otherwise.</returns>
         public bool Remove(Vector2 point, T value)
         {
+            // The entry we wish to remove.
+            var removalEntry = new Entry(point, value);
+
+            // Get the node the entry would be in.
             int nodeX, nodeY, nodeSize;
             var removalNode = FindNode(point, out nodeX, out nodeY, out nodeSize);
+
+            // Is the node a leaf node? If not we don't have that entry.
+            if (removalNode.IsLeaf)
+            {
+                // Check if we have that entry.
+                foreach (var nodeEntry in removalNode.Entries)
+                {
+                    if (nodeEntry.Value.Equals(removalEntry))
+                    {
+                        // Found it! If it's our low or high state adjust them
+                        // accordingly.
+                        var node = removalNode;
+                        while (node != null)
+                        {
+                            if (node.LowEntry == node.HighEntry)
+                            {
+                                // Only one left, clear the node.
+                                node.LowEntry = null;
+                                node.HighEntry = null;
+                            }
+                            else if (node.LowEntry == nodeEntry)
+                            {
+                                // It's the low node, adjust accordingly.
+                                node.LowEntry = node.LowEntry.Next;
+                            }
+                            else if (node.HighEntry == nodeEntry)
+                            {
+                                // It's the high node, adjust accordingly.
+                                node.HighEntry = node.HighEntry.Previous;
+                            }
+                            else
+                            {
+                                // Somewhere inside the interval.
+                                break;
+                            }
+
+                            // Continue checking in our parent.
+                            node = node.Parent;
+                        }
+
+                        // Remove the entry from the list of entries.
+                        _entries.Remove(nodeEntry);
+
+                        // See if we can compact the node's parent. This has to
+                        // be done in a post-processing step because the entry
+                        // has to be removed first (to update entry counts).
+                        CleanNode(removalNode);
+
+                        return true;
+                    }
+                }
+            }
+
             return false;
+        }
+
+        /// <summary>
+        /// Perform a range query on this tree. This will return all entries
+        /// in the tree that are in the specified range to the specified point,
+        /// using a euclidean distance.
+        /// </summary>
+        /// <param name="point">The query point near which to get entries.</param>
+        /// <param name="range">The maximum distance an entry may be away
+        /// from the query point to be returned.</param>
+        /// <returns></returns>
+        public List<T> RangeQuery(Vector2 point, float range)
+        {
+            var result = new List<T>();
+
+#if false
+            // Get the node the query point lies in.
+            int nodeX, nodeY, nodeSize;
+            var node = FindNode(point, out nodeX, out nodeY, out nodeSize);
+
+            // Find the first node while walking back to the root that the
+            // query completely fits into.
+            var nodeBounds = new Rectangle(nodeX, nodeY, nodeSize, nodeSize);
+            var queryBounds = new Rectangle((int)(point.X - range), (int)(point.Y - range), (int)(range * 2), (int)(range * 2));
+            while (!nodeBounds.Contains(queryBounds))
+            {
+                if (node.Parent == null)
+                {
+                    break;
+                }
+                node = node.Parent;
+                nodeBounds.X = nodeBounds.X << 1;
+                nodeBounds.Y = nodeBounds.Y << 1;
+                nodeBounds.Width = nodeBounds.Width << 1;
+                nodeBounds.Height = nodeBounds.Height << 1;
+            }
+
+            // Get all points in the node that are in range of the query.
+            var rangeSquared = range * range;
+            foreach (var entry in node.Entries)
+            {
+                if (Vector2.DistanceSquared(entry.Value.Point, point) < rangeSquared)
+                {
+                    result.Add(entry.Value.Value);
+                }
+            }
+#else
+            // Recurse through the tree, starting at the root node, to find
+            // nodes intersecting with the range query.
+            var nodes = new Stack<Node>();
+            nodes.Push(_root);
+            while (nodes.Count > 0)
+            {
+                var node = nodes.Pop();
+                
+            }
+#endif
+
+            return result;
         }
 
         #region Internal functionality
@@ -301,13 +407,15 @@ namespace Engine.Collections
                 return;
             }
 
-            // Get an actual copy of the list of entries in this cell.
-            var entries = new List<LinkedListNode<Entry>>(node.Entries);
-
-            // Now check each entry to which new cell it'll belong.
-            LinkedListNode<Entry> highEntry = null;
+            // Precompute child size, used several times.
             var childSize = size >> 1;
-            foreach (var entry in entries)
+
+            // Used to keep track of the new high entry due to possible
+            // resorting.
+            LinkedListNode<Entry> highEntry = null;
+
+            // Check each entry to which new cell it'll belong.
+            foreach (var entry in new List<LinkedListNode<Entry>>(node.Entries))
             {
                 // In which child node would we insert?
                 int cell = ComputeCell(x, y, childSize, entry.Value.Point);
@@ -319,7 +427,7 @@ namespace Engine.Collections
                     node.Children[cell] = new Node(node);
                     node.Children[cell].LowEntry = entry;
 
-                    // Mark this as the last entry.
+                    // No shuffling, mark this as the last entry.
                     highEntry = entry;
                 }
                 else if (node.Children[cell].HighEntry.Next != entry)
@@ -331,7 +439,7 @@ namespace Engine.Collections
                 }
                 else
                 {
-                    // Mark this as the last entry.
+                    // No shuffling, mark this as the last entry.
                     highEntry = entry;
                 }
 
@@ -340,17 +448,23 @@ namespace Engine.Collections
             }
 
             // Adjust parent high node if it changed due to sorting.
-            var parent = node;
-            while (parent != null)
+            if (node.HighEntry != highEntry)
             {
-                if (parent.HighEntry != highEntry)
+                // Need to adjust parents who had our high entry (including
+                // the node that was split).
+                var oldHighEntry = node.HighEntry;
+                var parent = node;
+                while (parent != null)
                 {
-                    parent.HighEntry = highEntry;
-                    parent = parent.Parent;
-                }
-                else
-                {
-                    break;
+                    if (parent.HighEntry == oldHighEntry)
+                    {
+                        parent.HighEntry = highEntry;
+                        parent = parent.Parent;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -366,6 +480,45 @@ namespace Engine.Collections
                         childSize, node.Children[i]);
                 }
             }
+        }
+
+        /// <summary>
+        /// Try to clean up a node and its parents. This walks the tree towards
+        /// the root, removing child nodes where possible.
+        /// </summary>
+        /// <param name="node">The node to start cleaning at.</param>
+        private void CleanNode(Node node)
+        {
+            // Do nothing for leaf nodes or when passing the root node.
+            if (node == null)
+            {
+                return;
+            }
+
+            // Check if child nodes are unnecessary for this node.
+            if (node.GetCount() <= _maxEntriesPerNode)
+            {
+                // We can prune the child nodes.
+                node.Children[0] = null;
+                node.Children[1] = null;
+                node.Children[2] = null;
+                node.Children[3] = null;
+            }
+            else
+            {
+                // Check if we have empty child nodes.
+                for (int i = 0; i < 4; i++)
+                {
+                    // If so, remove them.
+                    if (node.Children[i] != null && node.Children[i].GetCount() == 0)
+                    {
+                        node.Children[i] = null;
+                    }
+                }
+            }
+
+            // Check parent.
+            CleanNode(node.Parent);
         }
 
         /// <summary>
@@ -487,6 +640,35 @@ namespace Engine.Collections
                 cell |= 2;
             }
             return cell;
+        }
+
+        /// <summary>
+        /// Circle / Rectangle intersection test.
+        /// </summary>
+        /// <param name="center">The center of the circle.</param>
+        /// <param name="radius">The radius of the circle.</param>
+        /// <param name="rect">The rectangle.</param>
+        /// <returns>Whether the two intersect or not.</returns>
+        private static bool Intersect(Vector2 center, float radius, Rectangle rect)
+        {
+            Vector2 closest = center;
+            if (center.X < rect.Left)
+            {
+                closest.X = rect.Left;
+            }
+            else if (center.X > rect.Right)
+            {
+                closest.X = rect.Right;
+            }
+            if (center.Y < rect.Top)
+            {
+                closest.Y = rect.Top;
+            }
+            else if (center.Y > rect.Bottom)
+            {
+                closest.Y = rect.Bottom;
+            }
+            return Vector2.DistanceSquared(closest, center) <= radius * radius;
         }
 
         #endregion
@@ -689,15 +871,17 @@ namespace Engine.Collections
                 return;
             }
 
-            var pen = new System.Drawing.Pen(_colors[size], 1);
+            var pen = new System.Drawing.Pen(_colors.ContainsKey(size) ? _colors[size] : System.Drawing.Color.DarkBlue, 1);
             graphics.DrawRectangle(pen, x, y, size - 1, size - 1);
+            //graphics.DrawString(node.GetCount().ToString(), new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, 10),
+            //    new System.Drawing.SolidBrush(System.Drawing.Color.Red), x + 3 + ((int)System.Math.Log(size, 2) - 6) * 10, y + 3);
 
             if (node.IsLeaf)
             {
                 pen = new System.Drawing.Pen(System.Drawing.Color.Blue, 1);
                 foreach (var entry in node.Entries)
                 {
-                    graphics.DrawEllipse(pen, entry.Value.Point.X + (_bounds.Width >> 1), entry.Value.Point.Y + (_bounds.Height >> 1), 3, 3);
+                    graphics.DrawEllipse(pen, entry.Value.Point.X + (_bounds.Width >> 1) - 2, entry.Value.Point.Y + (_bounds.Height >> 1) - 2, 3, 3);
                     graphics.DrawString(entry.Value.Value.ToString(), new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, 10),
                         new System.Drawing.SolidBrush(System.Drawing.Color.Black), entry.Value.Point.X + (_bounds.Width >> 1), entry.Value.Point.Y + (_bounds.Height >> 1));
                 }
