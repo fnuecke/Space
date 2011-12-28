@@ -83,11 +83,17 @@ namespace Engine.ComponentSystem.Components
                                     var sinPhi = (float)System.Math.Sin(phi);
 
                                     // Precompute.
-                                    var divisor = Mass * otherGravitation.Mass / (delta.X * delta.X + delta.Y * delta.Y);
-
+                                    
+                                    float divisor;
+                                    if(delta.Length()>200)
+                                        divisor = Mass * otherGravitation.Mass / (delta.X * delta.X + delta.Y * delta.Y);
+                                    else
+                                        divisor = delta.Length() * Mass * otherGravitation.Mass / 5000000;
                                     // Adjust velocity.
+                                    
                                     otherVelocity.Value = new Vector2(otherVelocity.Value.X - (cosPhi * divisor),
                                         otherVelocity.Value.Y - (sinPhi * divisor));
+                                   
                                 }
                             }
                         }
