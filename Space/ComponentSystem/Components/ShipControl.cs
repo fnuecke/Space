@@ -17,7 +17,7 @@ namespace Space.ComponentSystem.Components
     public class ShipControl : AbstractComponent
     {
         #region Properties
-        
+
         /// <summary>
         /// Whether to shoot or not.
         /// </summary>
@@ -47,7 +47,7 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Fields
-        
+
         /// <summary>
         /// Whether the target rotation changed since the last update.
         /// </summary>
@@ -88,14 +88,14 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Logic
-        
+
         public override void Update(object parameterization)
         {
 #if DEBUG
             base.Update(parameterization);
 #endif
             var p = (InputParameterization)parameterization;
-            
+
             // Get components we depend upon / modify.
             var transform = Entity.GetComponent<Transform>();
             var spin = Entity.GetComponent<Spin>();
@@ -104,23 +104,33 @@ namespace Space.ComponentSystem.Components
             if (modules != null)
             {
                 var thrusters = modules.GetModules<ThrusterModule>();
+
                 // Get the mass of the ship.
                 var mass = modules.GetValue(EntityAttributeType.Mass);
+
                 // Compute its current acceleration.
-                //accelerating
                 float baseAcceleration = 0;
-                if (AccelerationDirection != 0)
+
+                var energy = Entity.GetComponent<Energy>();
+                if (AccelerationDirection != Directions.None)
                 {
                     foreach (var thruster in thrusters)
                     {
+                        var energyConsumption = modules.GetValue(EntityAttributeType.ThrusterEnergyConsumption, thruster.EnergyConsumption);
 
+                        if (energy.Value >= energyConsumption)
+                        {
+                            energy.Value -= energyConsumption;
+                            baseAcceleration += thruster.AccelerationForce;
+                        }
                     }
                 }
-                var acceleration = modules.GetValue(EntityAttributeType.AccelerationForce,baseAcceleration) / mass;
+                var acceleration = modules.GetValue(EntityAttributeType.AccelerationForce, baseAcceleration) / mass;
+
                 // Compute its rotation speed. Yes, this is actually the rotation acceleration,
                 // but whatever...
                 var rotation = modules.GetValue(EntityAttributeType.RotationForce) / mass;
-                
+
                 // Update acceleration.
                 Entity.GetComponent<Acceleration>().Value = DirectionConversion.
                     DirectionToVector(AccelerationDirection) * acceleration;

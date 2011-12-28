@@ -55,7 +55,7 @@ namespace Engine.ComponentSystem.Components
         #endregion
 
         #region Attributes / Modules
-        
+
         /// <summary>
         /// Get the accumulative value of all attributes in this component.
         /// 
@@ -66,10 +66,9 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="attributeType">The type for which to compute the
         /// overall value.</param>
-        /// <param name="baseValue">The base value to start from.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes tracked by this component.</returns>
-        public float GetValue(TAttribute attributeType, float baseValue = 0)
+        public float GetValue(TAttribute attributeType)
         {
             if (_attributeCache.ContainsKey(attributeType))
             {
@@ -80,9 +79,32 @@ namespace Engine.ComponentSystem.Components
             {
                 attributes.AddRange(module.Attributes);
             }
-            var result = attributes.Accumulate(attributeType, baseValue);
+            var result = attributes.Accumulate(attributeType);
             _attributeCache[attributeType] = result;
             return result;
+        }
+
+        /// <summary>
+        /// Get the accumulative value of all attributes in this component.
+        /// 
+        /// <para>
+        /// This will <em>not</em> cache the result, as the result depends
+        /// on the given base value.
+        /// </para>
+        /// </summary>
+        /// <param name="attributeType">The type for which to compute the
+        /// overall value.</param>
+        /// <param name="baseValue">The base value to start from.</param>
+        /// <returns>The accumulative value of the specified attribute type
+        /// over all attributes tracked by this component.</returns>
+        public float GetValue(TAttribute attributeType, float baseValue = 0)
+        {
+            var attributes = new List<ModuleAttribute<TAttribute>>();
+            foreach (var module in _modules)
+            {
+                attributes.AddRange(module.Attributes);
+            }
+            return attributes.Accumulate(attributeType, baseValue);
         }
 
         /// <summary>
