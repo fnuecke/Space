@@ -32,7 +32,7 @@
         <Item>
           
           <Attributes>
-            <Item>0 AccelerationForce</Item>
+            <Item>1 AccelerationForce</Item>
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
           </Attributes>

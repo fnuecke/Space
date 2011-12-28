@@ -123,14 +123,12 @@ namespace Space.ComponentSystem.Components
                             energie.Value -= Math.Max(0, temp);
                             energieConsumption = Math.Min(0, temp);
                             baseAcceleration += thruster.AccelerationForce;
-                            Console.WriteLine("asd: " + baseAcceleration);
                         }
                     }
                 }
                 var acceleration = modules.GetValue(EntityAttributeType.AccelerationForce,baseAcceleration) / mass;
 
-                Console.WriteLine("asd2: " + acceleration);
-                // Compute its rotation speed. Yes, this is actually the rotation acceleration,
+               // Compute its rotation speed. Yes, this is actually the rotation acceleration,
                 // but whatever...
                 var rotation = modules.GetValue(EntityAttributeType.RotationForce) / mass;
                 
