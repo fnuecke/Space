@@ -275,7 +275,11 @@ namespace Space
                             {
                                 spriteBatch.DrawString(console.Font, "Health: " + health.Value, new Vector2(20, count * 20 + 100), Color.White);
                             }
-
+                            var energie = avatar.GetComponent<Energy>();
+                            if (energie != null)
+                            {
+                                spriteBatch.DrawString(console.Font, "Energie: " + energie.Value, new Vector2(20, count * 20 + 120), Color.White);
+                            }
                             spriteBatch.End();
                         }
                     }

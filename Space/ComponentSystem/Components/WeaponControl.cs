@@ -61,22 +61,26 @@ namespace Space.ComponentSystem.Components
                 var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
                 if (modules != null)
                 {
-                    foreach (var weapon in modules.GetModules<WeaponModule>())
+                    var energie = Entity.GetComponent<Energy>();
+                    if (energie != null)
                     {
-                        // Test if this weapon is on cooldown.
-                        if (_cooldowns[weapon.UID] == 0)
+                        foreach (var weapon in modules.GetModules<WeaponModule>())
                         {
-                            // No, fire it.
-                            _cooldowns[weapon.UID] = weapon.Cooldown;
-
-                            // Generate projectiles.
-                            foreach (var projectile in weapon.Projectiles)
+                            // Test if this weapon is on cooldown. And if there is enough energy
+                            if (_cooldowns[weapon.UID] == 0&&energie.Value>modules.GetValue(EntityAttributeType.EngineEnergyConsumption))
                             {
-                                Entity.Manager.AddEntity(EntityFactory.CreateProjectile(Entity, projectile));
-                            }
+                                // No, fire it.
+                                _cooldowns[weapon.UID] = weapon.Cooldown;
 
-                            // Generate message.
-                            Entity.SendMessage(WeaponFired.Create(weapon));
+                                // Generate projectiles.
+                                foreach (var projectile in weapon.Projectiles)
+                                {
+                                    Entity.Manager.AddEntity(EntityFactory.CreateProjectile(Entity, projectile));
+                                }
+
+                                // Generate message.
+                                Entity.SendMessage(WeaponFired.Create(weapon));
+                            }
                         }
                     }
                 }

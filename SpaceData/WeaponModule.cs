@@ -25,6 +25,9 @@ namespace Space.Data
         /// </summary>
         public int Cooldown;
 
+
+        public float EnergieConsumption;
+
         /// <summary>
         /// The projectiles this weapon fires.
         /// </summary>
@@ -38,6 +41,7 @@ namespace Space.Data
                 .Write(Texture)
                 .Write(Sound)
                 .Write(Cooldown)
+                .Write(EnergieConsumption)
                 .Write(Projectiles);
 
             return packet;
@@ -50,7 +54,9 @@ namespace Space.Data
             Texture = packet.ReadString();
             Sound = packet.ReadString();
             Cooldown = packet.ReadInt32();
+            EnergieConsumption = packet.ReadSingle();
             Projectiles = packet.ReadPacketizables<ProjectileData>();
+
         }
 
         public override void Hash(Hasher hasher)
