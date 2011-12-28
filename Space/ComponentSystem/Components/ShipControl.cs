@@ -109,14 +109,27 @@ namespace Space.ComponentSystem.Components
                 // Compute its current acceleration.
                 //accelerating
                 float baseAcceleration = 0;
+                var energie = Entity.GetComponent<Energy>();
                 if (AccelerationDirection != 0)
                 {
+                    var energieSave = modules.GetValue(EntityAttributeType.EngineEnergyConsumption);
                     foreach (var thruster in thrusters)
                     {
-
+                        var energieConsumption = thruster.EnergieConsumption;
+                        
+                        var temp = energieSave + energieConsumption;
+                        if (energie.Value >= temp)
+                        {
+                            energie.Value -= Math.Max(0, temp);
+                            energieConsumption = Math.Min(0, temp);
+                            baseAcceleration += thruster.AccelerationForce;
+                            Console.WriteLine("asd: " + baseAcceleration);
+                        }
                     }
                 }
                 var acceleration = modules.GetValue(EntityAttributeType.AccelerationForce,baseAcceleration) / mass;
+
+                Console.WriteLine("asd2: " + acceleration);
                 // Compute its rotation speed. Yes, this is actually the rotation acceleration,
                 // but whatever...
                 var rotation = modules.GetValue(EntityAttributeType.RotationForce) / mass;

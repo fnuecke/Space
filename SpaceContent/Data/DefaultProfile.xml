@@ -30,12 +30,12 @@
       <Thrusters>
         <Item>
           <Attributes>
-            <Item>8 AccelerationForce</Item>
+            <Item>0 AccelerationForce</Item>
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
           </Attributes>
           <EnergieConsumption>0.5</EnergieConsumption>
-          <AccelerationForce>2</AccelerationForce>
+          <AccelerationForce>9</AccelerationForce>
         </Item>
       </Thrusters>
 
