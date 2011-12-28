@@ -23,6 +23,17 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public float Radius { get; set; }
 
+        /// <summary>
+        /// The bounds of this collidable.
+        /// </summary>
+        public override Rectangle Bounds
+        {
+            get
+            {
+                return new Rectangle(0, 0, (int)(Radius * 2), (int)(Radius * 2));
+            }
+        }
+
         #endregion
 
         #region Intersection

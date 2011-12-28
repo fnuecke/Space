@@ -267,8 +267,8 @@ namespace Space
                             }
 
                             var index = systemManager.GetSystem<IndexSystem>();
-                            var neighbors = index.GetNeighbors(avatar);
-                            spriteBatch.DrawString(console.Font, "Neighbors: " + neighbors.Count, new Vector2(20, count * 20 + 80), Color.White);
+                            var neighbors = index.GetNeighbors(avatar, 128);
+                            spriteBatch.DrawString(console.Font, "Neighbors (128 range): " + neighbors.Count + ", Index count: " + index.DEBUG_Count, new Vector2(20, count * 20 + 80), Color.White);
 
                             var health = avatar.GetComponent<Health>();
                             if (health != null)

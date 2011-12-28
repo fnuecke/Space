@@ -46,7 +46,12 @@ namespace Engine.ComponentSystem.Systems
                     var index = Manager.GetSystem<IndexSystem>();
                     if (index != null)
                     {
-                        neighbors = new HashSet<IEntity>(index.GetNeighbors(currentCollidable.Entity));
+                        // Use something a little larger than the actual object
+                        // bounds for the range query, to check for objects
+                        // that might have passed through.
+                        var bounds = currentCollidable.Bounds;
+                        var range = System.Math.Max(bounds.Width, bounds.Height) * 3;
+                        neighbors = new HashSet<IEntity>(index.GetNeighbors(currentCollidable.Entity, range));
                     }
 
                     // Loop through all other components. Only do the interval

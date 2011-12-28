@@ -213,6 +213,54 @@ namespace Engine.Collections
         }
 
         /// <summary>
+        /// Update a single entry by changing its position.
+        /// </summary>
+        /// <param name="oldPoint">The old position of the entry.</param>
+        /// <param name="newPoint">The new position of the entry.</param>
+        /// <param name="value">The value of the entry.</param>
+        /// <returns><c>true</c> if the update was successful, <c>false</c>
+        /// if there is no such entry in the tree.</returns>
+        public bool Update(Vector2 oldPoint, Vector2 newPoint, T value)
+        {
+            // The entry we wish to update.
+            var entry = new Entry(oldPoint, value);
+
+            // Get the node the entry would be in.
+            int nodeX, nodeY, nodeSize;
+            var oldNode = FindNode(oldPoint, out nodeX, out nodeY, out nodeSize);
+            
+            // Is the node a leaf node? If not we don't have that entry.
+            if (oldNode.IsLeaf)
+            {
+                // Check if we have that entry.
+                foreach (var nodeEntry in oldNode.Entries)
+                {
+                    if (nodeEntry.Value.Equals(entry))
+                    {
+                        // Found it! See if the new point falls into the same
+                        // node, otherwise re-insert.
+                        var newNode = FindNode(newPoint, out nodeX, out nodeY, out nodeSize);
+                        if (oldNode == newNode)
+                        {
+                            // Same node, just update the entry.
+                            nodeEntry.Value.Point = newPoint;
+                        }
+                        else
+                        {
+                            // Different node, re-insert.
+                            Remove(oldPoint, value);
+                            Add(newPoint, value);
+                        }
+
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Remove the specified value at the specified point from the tree.
         /// </summary>
         /// <param name="point">The position to remove the value at.</param>
@@ -296,48 +344,10 @@ namespace Engine.Collections
         {
             var result = new List<T>();
 
-#if false
-            // Get the node the query point lies in.
-            int nodeX, nodeY, nodeSize;
-            var node = FindNode(point, out nodeX, out nodeY, out nodeSize);
-
-            // Find the first node while walking back to the root that the
-            // query completely fits into.
-            var nodeBounds = new Rectangle(nodeX, nodeY, nodeSize, nodeSize);
-            var queryBounds = new Rectangle((int)(point.X - range), (int)(point.Y - range), (int)(range * 2), (int)(range * 2));
-            while (!nodeBounds.Contains(queryBounds))
-            {
-                if (node.Parent == null)
-                {
-                    break;
-                }
-                node = node.Parent;
-                nodeBounds.X = nodeBounds.X << 1;
-                nodeBounds.Y = nodeBounds.Y << 1;
-                nodeBounds.Width = nodeBounds.Width << 1;
-                nodeBounds.Height = nodeBounds.Height << 1;
-            }
-
-            // Get all points in the node that are in range of the query.
-            var rangeSquared = range * range;
-            foreach (var entry in node.Entries)
-            {
-                if (Vector2.DistanceSquared(entry.Value.Point, point) < rangeSquared)
-                {
-                    result.Add(entry.Value.Value);
-                }
-            }
-#else
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
-            var nodes = new Stack<Node>();
-            nodes.Push(_root);
-            while (nodes.Count > 0)
-            {
-                var node = nodes.Pop();
-                
-            }
-#endif
+            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
+                point, range * range, result);
 
             return result;
         }
@@ -643,32 +653,82 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Circle / Rectangle intersection test.
+        /// Accumulate all entries in range of a circular range query to the
+        /// given list. This recurses the tree down inner nodes that intersect
+        /// the query, until it finds a leaf node. Then adds all entries in the
+        /// leaf that are in range.
+        /// </summary>
+        /// <param name="x">The x position of the current node.</param>
+        /// <param name="y">The y position of the current node.</param>
+        /// <param name="size">The size of the current node.</param>
+        /// <param name="node">The current node.</param>
+        /// <param name="point">The query point.</param>
+        /// <param name="rangeSquared">The squared query range.</param>
+        /// <param name="list">The result list.</param>
+        private void Accumulate(int x, int y, int size, Node node, Vector2 point, float rangeSquared, List<T> list)
+        {
+            if (Intersect(point, rangeSquared, x, y, size))
+            {
+                // Node intersects with the query.
+                if (node.IsLeaf)
+                {
+                    // Add all entries in this node that are in range.
+                    foreach (var entry in node.Entries)
+                    {
+                        if (Vector2.DistanceSquared(point, entry.Value.Point) < rangeSquared)
+                        {
+                            list.Add(entry.Value.Value);
+                        }
+                    }
+                }
+                else
+                {
+                    // Recurse into child nodes.
+                    var childSize = size >> 1;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (node.Children[i] != null)
+                        {
+                            Accumulate(
+                                x + (((i & 1) == 0) ? 0 : childSize),
+                                y + (((i & 2) == 0) ? 0 : childSize),
+                                childSize, node.Children[i],
+                                point, rangeSquared, list);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Circle / Box intersection test.
         /// </summary>
         /// <param name="center">The center of the circle.</param>
-        /// <param name="radius">The radius of the circle.</param>
-        /// <param name="rect">The rectangle.</param>
+        /// <param name="radiusSquared">The squared radius of the circle.</param>
+        /// <param name="x">The x position of the box.</param>
+        /// <param name="y">The y position of the box.</param>
+        /// <param name="size">The size of the box.</param>
         /// <returns>Whether the two intersect or not.</returns>
-        private static bool Intersect(Vector2 center, float radius, Rectangle rect)
+        private static bool Intersect(Vector2 center, float radiusSquared, int x, int y, int size)
         {
             Vector2 closest = center;
-            if (center.X < rect.Left)
+            if (center.X < x)
             {
-                closest.X = rect.Left;
+                closest.X = x;
             }
-            else if (center.X > rect.Right)
+            else if (center.X > x + size)
             {
-                closest.X = rect.Right;
+                closest.X = x + size;
             }
-            if (center.Y < rect.Top)
+            if (center.Y < y)
             {
-                closest.Y = rect.Top;
+                closest.Y = y;
             }
-            else if (center.Y > rect.Bottom)
+            else if (center.Y > y + size)
             {
-                closest.Y = rect.Bottom;
+                closest.Y = y + size;
             }
-            return Vector2.DistanceSquared(closest, center) <= radius * radius;
+            return Vector2.DistanceSquared(closest, center) <= radiusSquared;
         }
 
         #endregion
@@ -789,7 +849,7 @@ namespace Engine.Collections
             /// <summary>
             /// The point at which the entry is stored.
             /// </summary>
-            public readonly Vector2 Point;
+            public Vector2 Point;
 
             /// <summary>
             /// The value stored in this entry.
@@ -801,7 +861,7 @@ namespace Engine.Collections
             #region Constructor
 
             /// <summary>
-            /// Creates a new, immutable entry with the specified parameters.
+            /// Creates a new entry with the specified parameters.
             /// </summary>
             /// <param name="point">The point of the entry.</param>
             /// <param name="value">The value of the entry.</param>
@@ -850,66 +910,5 @@ namespace Engine.Collections
         }
 
         #endregion
-
-        public void Print(string name = "index")
-        {
-            var bitmap = new System.Drawing.Bitmap(_bounds.Width, _bounds.Height);
-
-            var graphics = System.Drawing.Graphics.FromImage(bitmap);
-
-            graphics.Clear(System.Drawing.Color.White);
-
-            DrawNode(0, 0, _root, _bounds.Width, graphics);
-
-            bitmap.Save(name + ".bmp");
-        }
-
-        private void DrawNode(int x, int y, Node node, int size, System.Drawing.Graphics graphics)
-        {
-            if (node == null)
-            {
-                return;
-            }
-
-            var pen = new System.Drawing.Pen(_colors.ContainsKey(size) ? _colors[size] : System.Drawing.Color.DarkBlue, 1);
-            graphics.DrawRectangle(pen, x, y, size - 1, size - 1);
-            //graphics.DrawString(node.GetCount().ToString(), new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, 10),
-            //    new System.Drawing.SolidBrush(System.Drawing.Color.Red), x + 3 + ((int)System.Math.Log(size, 2) - 6) * 10, y + 3);
-
-            if (node.IsLeaf)
-            {
-                pen = new System.Drawing.Pen(System.Drawing.Color.Blue, 1);
-                foreach (var entry in node.Entries)
-                {
-                    graphics.DrawEllipse(pen, entry.Value.Point.X + (_bounds.Width >> 1) - 2, entry.Value.Point.Y + (_bounds.Height >> 1) - 2, 3, 3);
-                    graphics.DrawString(entry.Value.Value.ToString(), new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, 10),
-                        new System.Drawing.SolidBrush(System.Drawing.Color.Black), entry.Value.Point.X + (_bounds.Width >> 1), entry.Value.Point.Y + (_bounds.Height >> 1));
-                }
-            }
-            else
-            {
-                for (int i = 0; i < 4; ++i)
-                {
-                    DrawNode(x + (((i & 1) == 0) ? 0 : (size >> 1)),
-                             y + (((i & 2) == 0) ? 0 : (size >> 1)), node.Children[i], size >> 1, graphics);
-                }
-            }
-        }
-
-        private Dictionary<int, System.Drawing.Color> _colors = new Dictionary<int, System.Drawing.Color>()
-        {
-            { 1 << 0, System.Drawing.Color.Magenta },
-            { 1 << 1, System.Drawing.Color.Tomato },
-            { 1 << 2, System.Drawing.Color.SpringGreen },
-            { 1 << 3, System.Drawing.Color.SkyBlue },
-            { 1 << 4, System.Drawing.Color.Wheat },
-            { 1 << 5, System.Drawing.Color.Violet },
-            { 1 << 6, System.Drawing.Color.Tan },
-            { 1 << 7, System.Drawing.Color.Blue },
-            { 1 << 8, System.Drawing.Color.Orange },
-            { 1 << 9, System.Drawing.Color.Green },
-            { 1 << 10, System.Drawing.Color.Red },
-            { 1 << 11, System.Drawing.Color.Yellow }
-        };
     }
 }

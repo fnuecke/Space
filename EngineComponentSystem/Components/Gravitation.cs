@@ -57,7 +57,7 @@ namespace Engine.ComponentSystem.Components
                 if (myTransform != null)
                 {
                     // Then check all our neighbors.
-                    foreach (var neigbour in Entity.Manager.SystemManager.GetSystem<IndexSystem>().GetNeighbors(Entity, 10))
+                    foreach (var neigbour in Entity.Manager.SystemManager.GetSystem<IndexSystem>().GetNeighbors(Entity, 2 << 13))
                     {
                         // If they have a gravitation component...
                         var otherGravitation = neigbour.GetComponent<Gravitation>();

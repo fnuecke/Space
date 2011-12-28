@@ -23,6 +23,17 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public Vector2 Size { get; set; }
 
+        /// <summary>
+        /// The bounds of this collidable.
+        /// </summary>
+        public override Rectangle Bounds
+        {
+            get
+            {
+                return new Rectangle(0, 0, (int)(Size.X), (int)(Size.Y));
+            }
+        }
+
         #endregion
 
         #region Intersection

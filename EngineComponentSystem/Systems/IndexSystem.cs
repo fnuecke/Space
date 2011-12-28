@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
@@ -18,29 +17,26 @@ namespace Engine.ComponentSystem.Systems
         #region Constants
 
         /// <summary>
-        /// Dictates the size of grid cells, where the actual cell size is 2 to
-        /// the power of this value.
+        /// Maximum entries per node in our index to use.
         /// </summary>
-        public const int GridSizeShiftAmount = 7;
-
-        #endregion
-
-        #region Properties
+        private const int maxEntriesPerNode = 10;
 
         /// <summary>
-        /// The size of a single grid cell in world units (normally: pixels).
+        /// Minimum size of a node in our index.
         /// </summary>
-        public int GridSize { get { return 1 << GridSizeShiftAmount; } }
+        private const int minNodeSize = 32;
 
         #endregion
+
+        public int DEBUG_Count { get { return _tree.Count; } }
 
         #region Fields
 
         /// <summary>
-        /// The actual index we're using, mapping grid cell ids to a list of
-        /// entities currently in that cell.
+        /// The actual index we're using, mapping entity positions to the
+        /// entities, allowing faster range queries.
         /// </summary>
-        private Dictionary<ulong, HashSet<int>> _index = new Dictionary<ulong, HashSet<int>>();
+        private QuadTree<int> _tree = new QuadTree<int>(maxEntriesPerNode, minNodeSize);
 
         /// <summary>
         /// Reusable parameterization.
@@ -50,17 +46,6 @@ namespace Engine.ComponentSystem.Systems
         #endregion
 
         #region Entity lookup
-
-        /// <summary>
-        /// Get all entities in the same cell as the query entity, or in a
-        /// neighboring cell.
-        /// </summary>
-        /// <param name="query">The entity to use as a query point.</param>
-        /// <returns>All entities in range (including the query entity).</returns>
-        public List<IEntity> GetNeighbors(IEntity query)
-        {
-            return GetNeighbors(query.GetComponent<Transform>().Translation, 1);
-        }
 
         /// <summary>
         /// Get all entities in the same cell as the query entity, or in a
@@ -78,48 +63,19 @@ namespace Engine.ComponentSystem.Systems
 
         /// <summary>
         /// Get all entities in the same cell as the query point, or in a
-        /// neighboring cell.
-        /// </summary>
-        /// <param name="query">The point to use as a query point.</param>
-        /// <returns>All entities in range.</returns>
-        public List<IEntity> GetNeighbors(Vector2 query)
-        {
-            return GetNeighbors(query, 1);
-        }
-
-        /// <summary>
-        /// Get all entities in the same cell as the query point, or in a
         /// neighboring cell in the given cell range (0 = only the same cell,
         /// 1 = the neighboring, and so on).
         /// </summary>
         /// <param name="query">The point to use as a query point.</param>
-        /// <param name="cellRange">The neighborship rank up to which to
-        /// include neighboring cells.</param>
+        /// <param name="range">The distance up to which to get neighbors.</param>
         /// <returns>All entities in range.</returns>
-        public List<IEntity> GetNeighbors(Vector2 query, int cellRange)
+        public List<IEntity> GetNeighbors(Vector2 query, float range)
         {
             var result = new List<IEntity>();
 
-            // Get actual grid cell index.
-            int cellX = ((int)query.X) >> GridSizeShiftAmount;
-            int cellY = ((int)query.Y) >> GridSizeShiftAmount;
-
-            // Check all cells in range.
-            for (int y = cellY - cellRange; y <= cellY + cellRange; ++y)
+            foreach (var neighborId in _tree.RangeQuery(query, range))
             {
-                for (int x = cellX - cellRange; x <= cellX + cellRange; ++x)
-                {
-                    // Check if that cell is tracked.
-                    var cellId = CoordinateIds.Combine(x, y);
-                    if (_index.ContainsKey(cellId))
-                    {
-                        // Yes, add all entities in that cell.
-                        foreach (var entityId in _index[cellId])
-                        {
-                            result.Add(Manager.EntityManager.GetEntity(entityId));
-                        }
-                    }
-                }
+                result.Add(Manager.EntityManager.GetEntity(neighborId));
             }
 
             return result;
@@ -156,30 +112,7 @@ namespace Engine.ComponentSystem.Systems
                             continue;
                         }
 
-                        // Get cell ids, new and old.
-                        int newCellX = ((int)transform.Translation.X) >> GridSizeShiftAmount;
-                        int newCellY = ((int)transform.Translation.Y) >> GridSizeShiftAmount;
-                        var newCellId = CoordinateIds.Combine(newCellX, newCellY);
-
-                        int oldCellX = ((int)_parameterization.PreviousPosition.X) >> GridSizeShiftAmount;
-                        int oldCellY = ((int)_parameterization.PreviousPosition.Y) >> GridSizeShiftAmount;
-                        var oldCellId = CoordinateIds.Combine(oldCellX, oldCellY);
-
-                        // Test for change.
-                        if (newCellId != oldCellId)
-                        {
-                            // Cell changed, update index.
-                            _index[oldCellId].Remove(component.Entity.UID);
-                            if (_index[oldCellId].Count == 0)
-                            {
-                                _index.Remove(oldCellId);
-                            }
-                            if (!_index.ContainsKey(newCellId))
-                            {
-                                _index.Add(newCellId, new HashSet<int>());
-                            }
-                            _index[newCellId].Add(component.Entity.UID);
-                        }
+                        _tree.Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
                     }
                 }
             }
@@ -195,14 +128,7 @@ namespace Engine.ComponentSystem.Systems
             // If we have a position, put it into its grid cell.
             if (transform != null)
             {
-                int cellX = ((int)transform.Translation.X) >> GridSizeShiftAmount;
-                int cellY = ((int)transform.Translation.Y) >> GridSizeShiftAmount;
-                var cellId = CoordinateIds.Combine(cellX, cellY);
-                if (!_index.ContainsKey(cellId))
-                {
-                    _index.Add(cellId, new HashSet<int>());
-                }
-                _index[cellId].Add(component.Entity.UID);
+                _tree.Add(transform.Translation, component.Entity.UID);
             }
         }
 
@@ -229,22 +155,7 @@ namespace Engine.ComponentSystem.Systems
                 position = transform.Translation;
             }
 
-            // If we have a position, remove it from its grid cell.
-            int cellX = ((int)position.X) >> GridSizeShiftAmount;
-            int cellY = ((int)position.Y) >> GridSizeShiftAmount;
-            var cellId = CoordinateIds.Combine(cellX, cellY);
-            if (!_index.ContainsKey(cellId) || !_index[cellId].Remove(component.Entity.UID))
-            {
-                throw new ArgumentException("component");
-            }
-            else
-            {
-                // Removed successfully. If the list is now empty, remove.
-                if (_index[cellId].Count == 0)
-                {
-                    _index.Remove(cellId);
-                }
-            }
+            _tree.Remove(position, component.Entity.UID);
         }
 
         #endregion
@@ -256,7 +167,7 @@ namespace Engine.ComponentSystem.Systems
             var copy = (IndexSystem)base.Clone();
 
             // Create own index. Will be filled when re-adding components.
-            copy._index = new Dictionary<ulong, HashSet<int>>();
+            copy._tree = new QuadTree<int>(maxEntriesPerNode, minNodeSize);
 
             return copy;
         }

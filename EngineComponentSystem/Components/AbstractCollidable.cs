@@ -23,6 +23,11 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public int CollisionGroup { get; set; }
 
+        /// <summary>
+        /// The bounds of this collidable.
+        /// </summary>
+        public abstract Rectangle Bounds { get; }
+
         #endregion
 
         #region Fields
