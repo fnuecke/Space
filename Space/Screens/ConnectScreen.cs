@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Space;
 using Space.Control;
 using Space.Data;
-using Space.Simulation;
+using Space.Session;
 
 namespace GameStateManagement
 {
@@ -50,7 +50,7 @@ namespace GameStateManagement
         {
             if (connect.Editable)
             {
-                PlayerInfo info = new PlayerInfo();
+                PlayerData info = new PlayerData();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
                 ((EditableMenueEntry)MenuEntries[0]).locked = true;
                 try

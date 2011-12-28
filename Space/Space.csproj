@@ -133,7 +133,7 @@
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Control\InputCommandEmitter.cs" />
     <Compile Include="Control\ServerController.cs" />
-    <Compile Include="Simulation\PlayerInfo.cs" />
+    <Compile Include="Session\PlayerInfo.cs" />
     <Compile Include="Simulation\Commands\GameCommandType.cs" />
     <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />
     <Compile Include="Control\GameCommandHandler.cs" />

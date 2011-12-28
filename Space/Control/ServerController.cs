@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Systems;
 using Space.Data;
-using Space.Simulation;
+using Space.Session;
 
 namespace Space.Control
 {
@@ -48,7 +48,7 @@ namespace Space.Control
 
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
-            var playerData = (PlayerInfo)args.Player.Data;
+            var playerData = (PlayerData)args.Player.Data;
             var ship = EntityFactory.CreateShip(playerData.Ship, args.Player.Number);
             AddEntity(ship, Simulation.CurrentFrame);
         }

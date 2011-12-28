@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
-using Space.Simulation;
+using Space.Session;
 
 namespace Space.Control
 {
@@ -14,7 +14,7 @@ namespace Space.Control
         public GameServer(Game game)
             : base(game)
         {
-            Session = new HybridServerSession<PlayerInfo>(7777, 8);
+            Session = new HybridServerSession<PlayerData>(7777, 8);
             Controller = new ServerController(game, Session, 10, 0);
 
             Session.GameInfoRequested += HandleGameInfoRequested;

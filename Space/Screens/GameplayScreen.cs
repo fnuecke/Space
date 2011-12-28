@@ -16,7 +16,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Space.Data;
-using Space.Simulation;
+using Space.Session;
 
 #endregion
 
@@ -86,7 +86,7 @@ namespace GameStateManagement
                 "Search for games available on the local subnet.");
             console.AddCommand("connect", args =>
             {
-                PlayerInfo info = new PlayerInfo();
+                PlayerData info = new PlayerData();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
                 ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
             },
@@ -100,7 +100,7 @@ namespace GameStateManagement
             // Just for me, joining default testing server.
             console.AddCommand("joinfn", args =>
             {
-                PlayerInfo info = new PlayerInfo();
+                PlayerData info = new PlayerData();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
                 ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 7777), "player", info);
             },
@@ -108,7 +108,7 @@ namespace GameStateManagement
             // Just for me, joining default testing server.
             console.AddCommand("joinlh", args =>
             {
-                PlayerInfo info = new PlayerInfo();
+                PlayerData info = new PlayerData();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
                 ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777), "player", info);
             },

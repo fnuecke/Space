@@ -10,7 +10,7 @@
 #region Using Statements
 using Space;
 using Space.Data;
-using Space.Simulation;
+using Space.Session;
 
 #endregion
 
@@ -76,7 +76,7 @@ namespace GameStateManagement
             ScreenManager.RestartClient();
 
             // Autojoin self.
-            PlayerInfo info = new PlayerInfo();
+            PlayerData info = new PlayerData();
             info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
             ScreenManager.Client.Controller.Session.Join(ScreenManager.Server.Session, Settings.Instance.PlayerName, info);
 

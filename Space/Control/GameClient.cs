@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Data;
-using Space.Simulation;
+using Space.Session;
 
 namespace Space.Control
 {
@@ -25,7 +25,7 @@ namespace Space.Control
         /// <summary>
         /// The controller used by this game client.
         /// </summary>
-        public SimpleClientController<PlayerInfo> Controller { get; private set; }
+        public SimpleClientController<PlayerData> Controller { get; private set; }
 
         #endregion
 
@@ -45,7 +45,7 @@ namespace Space.Control
             var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
 
             // Create our client controller.
-            Controller = new SimpleClientController<PlayerInfo>(GameCommandHandler.HandleCommand);
+            Controller = new SimpleClientController<PlayerData>(GameCommandHandler.HandleCommand);
 
             // Register for events.
             Controller.Session.PlayerJoined += HandlePlayerJoined;
