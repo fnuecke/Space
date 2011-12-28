@@ -112,16 +112,23 @@ namespace Space.ComponentSystem.Components
                 float baseAcceleration = 0;
 
                 var energy = Entity.GetComponent<Energy>();
-                if (AccelerationDirection != Directions.None)
+                if (energy != null)
                 {
-                    foreach (var thruster in thrusters)
+                    // Check if we're accelerating at all.
+                    if (AccelerationDirection != Directions.None)
                     {
-                        var energyConsumption = modules.GetValue(EntityAttributeType.ThrusterEnergyConsumption, thruster.EnergyConsumption);
-
-                        if (energy.Value >= energyConsumption)
+                        // Yes, try to apply the thrust of each thruster.
+                        foreach (var thruster in thrusters)
                         {
-                            energy.Value -= energyConsumption;
-                            baseAcceleration += thruster.AccelerationForce;
+                            // Get the needed energy.
+                            var energyConsumption = modules.GetValue(EntityAttributeType.ThrusterEnergyConsumption, thruster.EnergyConsumption);
+
+                            // If we have enough energy, add the acceleration.
+                            if (energy.Value >= energyConsumption)
+                            {
+                                energy.Value -= energyConsumption;
+                                baseAcceleration += thruster.AccelerationForce;
+                            }
                         }
                     }
                 }
