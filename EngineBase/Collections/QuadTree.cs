@@ -32,11 +32,6 @@ namespace Engine.Collections
         /// </summary>
         public int Count { get { return _entries.Count; } }
 
-        /// <summary>
-        /// The current overall bounds of the tree.
-        /// </summary>
-        public Rectangle Bounds { get { return new Rectangle(_bounds.X, _bounds.Y, _bounds.Width, _bounds.Height); } }
-
         #endregion
 
         #region Fields
@@ -819,20 +814,6 @@ namespace Engine.Collections
 
             #region Accessors
             
-            /// <summary>
-            /// Compute the number of entries stored in this node.
-            /// </summary>
-            /// <returns>The number of entries stored in this node.</returns>
-            //public int GetCount()
-            //{
-            //    int count = 0;
-            //    foreach (var entry in Entries)
-            //    {
-            //        ++count;
-            //    }
-            //    return count;
-            //}
-
             /// <summary>
             /// Get the number of child nodes this node references.
             /// </summary>

@@ -130,12 +130,13 @@ namespace Engine.Data
         /// <param name="attributeType">The type for which to compute the
         /// overall value.</param>
         /// <param name="attributes">The list of attributes to use.</param>
+        /// <param name="baseValue">The base value to start from.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes in the specified list.</returns>
-        public static float Accumulate<TAttribute>(this ICollection<ModuleAttribute<TAttribute>> attributes, TAttribute attributeType)
+        public static float Accumulate<TAttribute>(this ICollection<ModuleAttribute<TAttribute>> attributes, TAttribute attributeType, float baseValue = 0)
             where TAttribute : struct
         {
-            float result = 0;
+            float result = baseValue;
             foreach (var attribute in attributes)
             {
                 if (attribute.Type.Equals(attributeType) &&

@@ -61,16 +61,18 @@ namespace Space.ComponentSystem.Components
                 var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
                 if (modules != null)
                 {
-                    var energie = Entity.GetComponent<Energy>();
-                    if (energie != null)
+                    foreach (var weapon in modules.GetModules<WeaponModule>())
                     {
-                        foreach (var weapon in modules.GetModules<WeaponModule>())
+                        var energyConsumption = modules.GetValue(EntityAttributeType.WeaponEnergyConsumption, weapon.EnergieConsumption);
+                        var energie = Entity.GetComponent<Energy>();
+                        if (energie != null && energie.Value >= energyConsumption)
                         {
-                            // Test if this weapon is on cooldown. And if there is enough energy
-                            if (_cooldowns[weapon.UID] == 0&&energie.Value>modules.GetValue(EntityAttributeType.EngineEnergyConsumption))
+                            // Test if this weapon is on cooldown.
+                            if (_cooldowns[weapon.UID] == 0)
                             {
+                                energie.Value -= energyConsumption;
                                 // No, fire it.
-                                _cooldowns[weapon.UID] = weapon.Cooldown;
+                                _cooldowns[weapon.UID] = (int)modules.GetValue(EntityAttributeType.WeaponCooldown, weapon.Cooldown);
 
                                 // Generate projectiles.
                                 foreach (var projectile in weapon.Projectiles)

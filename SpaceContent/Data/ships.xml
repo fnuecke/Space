@@ -30,11 +30,14 @@
 
       <Thrusters>
         <Item>
+          
           <Attributes>
             <Item>8 AccelerationForce</Item>
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
           </Attributes>
+          <EnergieConsumption>0.5</EnergieConsumption>
+          <AccelerationForce>2</AccelerationForce>
         </Item>
       </Thrusters>
 
@@ -42,8 +45,8 @@
         <Item>
           <Texture>Textures/ship</Texture>
           <Sound>laser</Sound>
-          <Cooldown>5</Cooldown>
-          <EnergyConsumption>10</EnergyConsumption>
+          <Cooldown>5</Cooldown>  
+          <EnergieConsumption>10</EnergieConsumption>
           <Projectiles>
             <Item>
               <Texture>Textures/ship</Texture>

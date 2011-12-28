@@ -103,14 +103,24 @@ namespace Space.ComponentSystem.Components
 
             if (modules != null)
             {
+                var thrusters = modules.GetModules<ThrusterModule>();
                 // Get the mass of the ship.
                 var mass = modules.GetValue(EntityAttributeType.Mass);
                 // Compute its current acceleration.
-                var acceleration = modules.GetValue(EntityAttributeType.AccelerationForce) / mass;
+                //accelerating
+                float baseAcceleration = 0;
+                if (AccelerationDirection != 0)
+                {
+                    foreach (var thruster in thrusters)
+                    {
+
+                    }
+                }
+                var acceleration = modules.GetValue(EntityAttributeType.AccelerationForce,baseAcceleration) / mass;
                 // Compute its rotation speed. Yes, this is actually the rotation acceleration,
                 // but whatever...
                 var rotation = modules.GetValue(EntityAttributeType.RotationForce) / mass;
-
+                
                 // Update acceleration.
                 Entity.GetComponent<Acceleration>().Value = DirectionConversion.
                     DirectionToVector(AccelerationDirection) * acceleration;

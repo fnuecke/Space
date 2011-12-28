@@ -6,6 +6,10 @@ using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
 {
+    /// <summary>
+    /// Manages a list of entities, and their components (adding them to the
+    /// associated component system manager / removing them).
+    /// </summary>
     public class EntityManager : IEntityManager
     {
         #region Properties
@@ -22,8 +26,6 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of child entities this state drives.
         /// </summary>
-        //private List<IEntity> _entities = new List<IEntity>();
-
         private Dictionary<int, IEntity> _entityMap = new Dictionary<int, IEntity>();
 
         /// <summary>

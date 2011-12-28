@@ -66,9 +66,10 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="attributeType">The type for which to compute the
         /// overall value.</param>
+        /// <param name="baseValue">The base value to start from.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes tracked by this component.</returns>
-        public float GetValue(TAttribute attributeType)
+        public float GetValue(TAttribute attributeType, float baseValue = 0)
         {
             if (_attributeCache.ContainsKey(attributeType))
             {
@@ -79,7 +80,7 @@ namespace Engine.ComponentSystem.Components
             {
                 attributes.AddRange(module.Attributes);
             }
-            var result = attributes.Accumulate(attributeType);
+            var result = attributes.Accumulate(attributeType, baseValue);
             _attributeCache[attributeType] = result;
             return result;
         }
