@@ -63,7 +63,7 @@ namespace Space.ComponentSystem.Components
                 {
                     foreach (var weapon in modules.GetModules<WeaponModule>())
                     {
-                        var energyConsumption = modules.GetValue(EntityAttributeType.WeaponEnergyConsumption, weapon.EnergieConsumption);
+                        var energyConsumption = modules.GetValue(EntityAttributeType.WeaponEnergyConsumption, weapon.EnergyConsumption);
                         var energie = Entity.GetComponent<Energy>();
                         if (energie != null && energie.Value >= energyConsumption)
                         {

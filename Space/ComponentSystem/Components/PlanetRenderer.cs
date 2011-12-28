@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Text;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework;
@@ -66,9 +67,8 @@ namespace Space.ComponentSystem.Components
                     var sunTransform = sun.GetComponent<Transform>();
                     if (sunTransform != null)
                     {
-                        sunDirection = (float)System.Math.Atan2(
-                            sunTransform.Translation.Y - transform.Translation.Y,
-                            sunTransform.Translation.X - transform.Translation.Y);
+                        var toSun = sunTransform.Translation - transform.Translation;
+                        sunDirection = (float)System.Math.Atan2(toSun.Y, toSun.X);
                     }
                 }
 
@@ -90,6 +90,16 @@ namespace Space.ComponentSystem.Components
                     sunDirection,
                     new Vector2(shadowTexture.Width / 2, shadowTexture.Height / 2),
                     SpriteEffects.None, 0);
+
+#if DEBUG
+                StringBuilder sb = new StringBuilder();
+                sb.AppendFormat("Position: {0}\n", transform.Translation);
+                sb.AppendFormat("Rotation: {0}\n", transform.Rotation);
+                sb.AppendFormat("Scale: {0}\n", Scale);
+                sb.AppendFormat("Angle to sun: {0}\n", (int)MathHelper.ToDegrees(-sunDirection));
+
+                p.SpriteBatch.DrawString(p.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, transform.Translation + p.Translation, Color.White);
+#endif
                 p.SpriteBatch.End();
             }
         }

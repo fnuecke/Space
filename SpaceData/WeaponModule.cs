@@ -10,6 +10,8 @@ namespace Space.Data
     /// </summary>
     public class WeaponModule : AbstractEntityModule<EntityAttributeType>
     {
+        #region Fields
+        
         /// <summary>
         /// The texture used to render this weapon.
         /// </summary>
@@ -25,26 +27,38 @@ namespace Space.Data
         /// </summary>
         public int Cooldown;
 
-
-        public float EnergieConsumption;
+        /// <summary>
+        /// The amount of energy this weapon requires for a single shot.
+        /// </summary>
+        public float EnergyConsumption;
 
         /// <summary>
         /// The projectiles this weapon fires.
         /// </summary>
         public ProjectileData[] Projectiles = new ProjectileData[0];
 
+        #endregion
+
+        #region Constructor
+
+        public WeaponModule()
+        {
+            AddAttributeTypeToInvalidate(EntityAttributeType.WeaponCooldown);
+            AddAttributeTypeToInvalidate(EntityAttributeType.WeaponEnergyConsumption);
+        }
+
+        #endregion
+
         #region Serialization / Hashing / Cloning
 
         public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet)
+            return base.Packetize(packet)
                 .Write(Texture)
                 .Write(Sound)
                 .Write(Cooldown)
-                .Write(EnergieConsumption)
+                .Write(EnergyConsumption)
                 .Write(Projectiles);
-
-            return packet;
         }
 
         public override void Depacketize(Packet packet)
@@ -54,9 +68,8 @@ namespace Space.Data
             Texture = packet.ReadString();
             Sound = packet.ReadString();
             Cooldown = packet.ReadInt32();
-            EnergieConsumption = packet.ReadSingle();
+            EnergyConsumption = packet.ReadSingle();
             Projectiles = packet.ReadPacketizables<ProjectileData>();
-
         }
 
         public override void Hash(Hasher hasher)

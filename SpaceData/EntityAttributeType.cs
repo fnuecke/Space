@@ -8,6 +8,11 @@
     public enum EntityAttributeType
     {
         /// <summary>
+        /// Invalid attribute.
+        /// </summary>
+        None,
+
+        /// <summary>
         /// Health of a entity.
         /// </summary>
         Health,
@@ -43,9 +48,9 @@
         RotationForce,
 
         /// <summary>
-        /// Energy consumption of all engines on the entity.
+        /// Energy consumption of all thrusters on the entity.
         /// </summary>
-        EngineEnergyConsumption,
+        ThrusterEnergyConsumption,
 
         /// <summary>
         /// Energy consumption of all active shields on the entity.

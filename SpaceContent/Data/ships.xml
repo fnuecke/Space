@@ -10,34 +10,32 @@
       <Hulls>
         <Item>
           <Attributes>
-            <Item>50 Health</Item>
-            <!--
-            <Item>0.05 HealthRegeneration</Item>
-             -->
             <Item>10 Mass</Item>
           </Attributes>
+          <Health>50</Health>
+          <HealthRegeneration>0.05</HealthRegeneration>
         </Item>
       </Hulls>
 
       <Reactors>
         <Item>
           <Attributes>
-            <Item>100 Energy</Item>
             <Item>5 Mass</Item>
           </Attributes>
+          <Energy>50</Energy>
+          <EnergyRegeneration>0.1</EnergyRegeneration>
         </Item>
       </Reactors>
 
       <Thrusters>
         <Item>
-          
           <Attributes>
             <Item>8 AccelerationForce</Item>
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
           </Attributes>
-          <EnergieConsumption>0.5</EnergieConsumption>
           <AccelerationForce>2</AccelerationForce>
+          <EnergyConsumption>0.5</EnergyConsumption>
         </Item>
       </Thrusters>
 
@@ -46,7 +44,7 @@
           <Texture>Textures/ship</Texture>
           <Sound>laser</Sound>
           <Cooldown>5</Cooldown>  
-          <EnergieConsumption>10</EnergieConsumption>
+          <EnergyConsumption>10</EnergyConsumption>
           <Projectiles>
             <Item>
               <Texture>Textures/ship</Texture>

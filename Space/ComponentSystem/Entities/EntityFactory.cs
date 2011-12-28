@@ -169,6 +169,8 @@ namespace Space.ComponentSystem.Entities
             transform.Translation = position;
             entity.AddComponent(transform);
 
+            entity.AddComponent(new Spin());
+
             var renderer = new TransformedRenderer();
             renderer.TextureName = texture;
             entity.AddComponent(renderer);
@@ -191,6 +193,8 @@ namespace Space.ComponentSystem.Entities
             var transform = new Transform();
             transform.Translation = center.GetComponent<Transform>().Translation;
             entity.AddComponent(transform);
+
+            entity.AddComponent(new Spin());
 
             var ellipse = new EllipsePath();
             ellipse.CenterEntityId = center.UID;

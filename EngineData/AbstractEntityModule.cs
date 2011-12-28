@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework.Content;
@@ -29,6 +30,22 @@ namespace Engine.Data
         [ContentSerializer(Optional = true)]
         public List<ModuleAttribute<TAttribute>> Attributes { get; set; }
 
+        /// <summary>
+        /// A list of all attributes whose cache should be invalidated when
+        /// this module is added or removed.
+        /// </summary>
+        [ContentSerializerIgnore]
+        public ReadOnlyCollection<TAttribute> AttributesToInvalidate { get { return _attributesToInvalidate.AsReadOnly(); } }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// Actual value for property.
+        /// </summary>
+        private readonly List<TAttribute> _attributesToInvalidate = new List<TAttribute>();
+
         #endregion
 
         #region Constructor
@@ -37,6 +54,18 @@ namespace Engine.Data
         {
             this.UID = -1;
             this.Attributes = new List<ModuleAttribute<TAttribute>>();
+        }
+
+        /// <summary>
+        /// Call in subclasses with the attribute types that this instance
+        /// should invalidate. This is used to clear caches for attributes
+        /// that this instance may not have its own attribute for, but to
+        /// which some of its properties correspond.
+        /// </summary>
+        /// <param name="attributeType"></param>
+        protected void AddAttributeTypeToInvalidate(TAttribute attributeType)
+        {
+            _attributesToInvalidate.Add(attributeType);
         }
 
         #endregion

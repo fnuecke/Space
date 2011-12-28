@@ -140,6 +140,10 @@ namespace Engine.ComponentSystem.Components
             {
                 _attributeCache.Remove(attribute.Type);
             }
+            foreach (var attributeType in module.AttributesToInvalidate)
+            {
+                _attributeCache.Remove(attributeType);
+            }
             if (Entity != null)
             {
                 Entity.SendMessage(ModuleAdded<TAttribute>.Create(module));

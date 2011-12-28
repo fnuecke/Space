@@ -6,20 +6,55 @@ using Engine.Util;
 
 namespace Space.ComponentSystem.Components
 {
+    /// <summary>
+    /// Base class for modules that represent regenerating values.
+    /// </summary>
     public abstract class AbstractRegeneratingValue : AbstractComponent
     {
         #region Properties
 
-        public float Value { get; set; }
+        /// <summary>
+        /// The current value.
+        /// </summary>
+        public float Value
+        {
+            get
+            {
+                return _value;
+            }
+            set
+            {
+                _value = System.Math.Max(0, value);
+            }
+        }
 
+        /// <summary>
+        /// The maximum value.
+        /// </summary>
         public float MaxValue { get; set; }
 
+        /// <summary>
+        /// The amount the value is regenerated per tick.
+        /// </summary>
         public float Regeneration { get; set; }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// Actual value for the value property.
+        /// </summary>
+        private float _value;
 
         #endregion
 
         #region Logic
 
+        /// <summary>
+        /// Apply regeneration of our value.
+        /// </summary>
+        /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
 #if DEBUG
@@ -28,6 +63,11 @@ namespace Space.ComponentSystem.Components
             Value = System.Math.Min(MaxValue, Value + Regeneration);
         }
 
+        /// <summary>
+        /// Supports <c>DefaultLogicParameterization</c>.
+        /// </summary>
+        /// <param name="parameterizationType">The parameterization to check.</param>
+        /// <returns>Whether it's supported or not.</returns>
         public override bool SupportsParameterization(System.Type parameterizationType)
         {
             return parameterizationType == typeof(DefaultLogicParameterization);
@@ -40,7 +80,7 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Value)
+                .Write(_value)
                 .Write(MaxValue)
                 .Write(Regeneration);
         }
@@ -49,7 +89,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Value = packet.ReadSingle();
+            _value = packet.ReadSingle();
             MaxValue = packet.ReadSingle();
             Regeneration = packet.ReadSingle();
         }
@@ -58,7 +98,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Value));
+            hasher.Put(BitConverter.GetBytes(_value));
             hasher.Put(BitConverter.GetBytes(MaxValue));
             hasher.Put(BitConverter.GetBytes(Regeneration));
         }
