@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Components
@@ -17,6 +18,16 @@ namespace Engine.ComponentSystem.Components
         /// The name of the texture to use for rendering the physics object.
         /// </summary>
         public string TextureName { get { return _textureName; } set { _textureName = value; texture = null; } }
+
+        /// <summary>
+        /// The color to use for tinting when rendering.
+        /// </summary>
+        public Color Tint { get; set; }
+
+        /// <summary>
+        /// The scale at which to render the texture.
+        /// </summary>
+        public float Scale { get; set; }
 
         #endregion
 
@@ -35,8 +46,18 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        #region Logic
+        #region Constructor
         
+        protected AbstractRenderer()
+        {
+            Tint = Color.White;
+            Scale = 1;
+        }
+
+        #endregion
+
+        #region Logic
+
         /// <summary>
         /// Subclasses should call this in their overridden update method first, as
         /// it takes care of properly setting the <c>texture</c> field.
@@ -78,7 +99,9 @@ namespace Engine.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(TextureName);
+                .Write(TextureName)
+                .Write(Tint.PackedValue)
+                .Write(Scale);
         }
 
         public override void Depacketize(Packet packet)
@@ -86,6 +109,13 @@ namespace Engine.ComponentSystem.Components
             base.Depacketize(packet);
 
             TextureName = packet.ReadString();
+
+            // Properties of value types don't allow changing properties...
+            var color = new Color();
+            color.PackedValue = packet.ReadUInt32();
+            Tint = color;
+
+            Scale = packet.ReadSingle();
         }
 
         #endregion

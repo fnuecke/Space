@@ -6,6 +6,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Systems.Messages;
 using Space.Data;
@@ -157,18 +158,25 @@ namespace Space.ComponentSystem.Systems
             var angle = (float)(random.NextDouble() * Math.PI * 2);
             for (int i = 1; i < random.Next(1, 8); i++)
             {
-                var planet = EntityFactory.CreateStar("Textures/sun", sun,
+                var planet = EntityFactory.CreateStar("Textures/planet_rock", sun,
                    (float)(i * i * _constaints.PlanetOrbitMean / 2 + random.NextDouble() * _constaints.PlanetRadiusStdDev * 2 - _constaints.PlanetRadiusStdDev),
                    (float)(i * i * _constaints.PlanetOrbitMean / 2 + random.NextDouble() * _constaints.PlanetRadiusStdDev * 2 - _constaints.PlanetRadiusStdDev),
                     angle, (int)Math.Sqrt(Math.Pow(i * i * (double)_constaints.PlanetOrbitMean / 2, 3)), AstronomicBodyType.Planet, 1000);
+                var planetRenderer = planet.GetComponent<PlanetRenderer>();
+                planetRenderer.Tint = Color.DarkOliveGreen;
+                planetRenderer.AtmosphereTint = Color.LightSkyBlue;
+                planetRenderer.Scale = 0.5f;
                 list.Add(Manager.EntityManager.AddEntity(planet));
 
                 for (int j = 1; j < random.Next(1, 4); j++)
                 {
-                    var moon = EntityFactory.CreateStar("Textures/sun", planet,
+                    var moon = EntityFactory.CreateStar("Textures/planet_rock", planet,
                    (float)(j * j * _constaints.MoonOrbitMean / 2 + random.NextDouble() * _constaints.MoonOrbitStdDevFraction * 2 - _constaints.MoonOrbitStdDevFraction),
                    (float)(j * j * _constaints.MoonOrbitMean / 2 + random.NextDouble() * _constaints.MoonOrbitStdDevFraction * 2 - _constaints.MoonOrbitStdDevFraction),
                     angle, (int)Math.Sqrt(Math.Pow(j * j * (double)_constaints.MoonOrbitMean / 2, 3)), AstronomicBodyType.Moon, 100);
+                    var moonRenderer = planet.GetComponent<PlanetRenderer>();
+                    moonRenderer.Scale = 0.25f;
+                    moonRenderer.AtmosphereTint = Color.Black;
                     list.Add(Manager.EntityManager.AddEntity(moon));
                 }
             }
@@ -189,11 +197,18 @@ namespace Space.ComponentSystem.Systems
             IEntity entity = EntityFactory.CreateStar("Textures/sun", center, AstronomicBodyType.Sun, 10000);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
-            entity = EntityFactory.CreateStar("Textures/sun", entity, 5000, 4000, 1, 3560, AstronomicBodyType.Planet, 1000);
+            entity = EntityFactory.CreateStar("Textures/planet_rock", entity, 5000, 4000, 1, 3560, AstronomicBodyType.Planet, 1000);
+            var renderer = entity.GetComponent<PlanetRenderer>();
+            renderer.Tint = Color.DarkOliveGreen;
+            renderer.AtmosphereTint = Color.LightSkyBlue;
+            renderer.Scale = 0.5f;
             list.Add(Manager.EntityManager.AddEntity(entity));
 
 
-            entity = EntityFactory.CreateStar("Textures/sun", entity, 200, 180, 100, 300, AstronomicBodyType.Moon, 100);
+            entity = EntityFactory.CreateStar("Textures/planet_rock", entity, 200, 180, 100, 300, AstronomicBodyType.Moon, 100);
+            renderer = entity.GetComponent<PlanetRenderer>();
+            renderer.Scale = 0.25f;
+            renderer.AtmosphereTint = Color.Black;
             list.Add(Manager.EntityManager.AddEntity(entity));
 
             return list;

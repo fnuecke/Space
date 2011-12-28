@@ -11,7 +11,7 @@ namespace Engine.ComponentSystem.Components
     /// Requires: <c>Transform</c>.
     /// </para>
     /// </summary>
-    public sealed class TransformedRenderer : AbstractRenderer
+    public class TransformedRenderer : AbstractRenderer
     {
         #region Logic
 
@@ -21,26 +21,29 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">the parameterization to use.</param>
         public override void Update(object parameterization)
         {
-            // Make sure we have our texture.
-            base.Update(parameterization);
-
-            // Get parameterization in proper type.
-            var p = (RendererParameterization)parameterization;
-
             // The position and orientation we're rendering at and in.
-            var sphysics = Entity.GetComponent<Transform>();
+            var transform = Entity.GetComponent<Transform>();
 
             // Draw the texture based on our physics component.
-            p.SpriteBatch.Begin();
-            p.SpriteBatch.Draw(texture,
-                new Rectangle((int)sphysics.Translation.X + (int)p.Translation.X,
-                              (int)sphysics.Translation.Y + (int)p.Translation.Y,
-                              texture.Width, texture.Height),
-                null, Color.White,
-                (float)sphysics.Rotation,
-                new Vector2(texture.Width / 2, texture.Height / 2),
-                SpriteEffects.None, 0);
-            p.SpriteBatch.End();
+            if (transform != null)
+            {
+                // Make sure we have our texture.
+                base.Update(parameterization);
+
+                // Get parameterization in proper type.
+                var p = (RendererParameterization)parameterization;
+
+                p.SpriteBatch.Begin();
+                p.SpriteBatch.Draw(texture,
+                    new Rectangle((int)transform.Translation.X + (int)p.Translation.X,
+                                  (int)transform.Translation.Y + (int)p.Translation.Y,
+                                  (int)(texture.Width * Scale), (int)(texture.Height * Scale)),
+                    null, Tint,
+                    (float)transform.Rotation,
+                    new Vector2(texture.Width / 2, texture.Height / 2),
+                    SpriteEffects.None, 0);
+                p.SpriteBatch.End();
+            }
         }
 
         #endregion
