@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Util;
@@ -8,11 +7,6 @@ namespace Engine.ComponentSystem.Systems
 {
     public interface IEntityManager : IPacketizable, IHashable, ICloneable
     {
-        /// <summary>
-        /// All entities registered with this manager.
-        /// </summary>
-        ReadOnlyCollection<IEntity> Entities { get; }
-
         /// <summary>
         /// The component system manager used together with this entity manager.
         /// </summary>

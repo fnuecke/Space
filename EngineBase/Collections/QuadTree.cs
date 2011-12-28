@@ -61,7 +61,7 @@ namespace Engine.Collections
         /// <summary>
         /// The root node of the tree.
         /// </summary>
-        private Node _root;
+        private Node _root = new Node(null);
 
         /// <summary>
         /// A list of all entries in the tree. The linked list allows simply
@@ -94,6 +94,9 @@ namespace Engine.Collections
             }
             _maxEntriesPerNode = maxEntriesPerNode;
             _minBucketSize = minBucketSize;
+
+            _bounds.X = _bounds.Y = -_minBucketSize;
+            _bounds.Width = _bounds.Height = _minBucketSize << 1;
         }
 
         #endregion
@@ -112,46 +115,7 @@ namespace Engine.Collections
             var entry = new Entry(point, value);
 
             // Handle dynamic growth.
-            if (!_bounds.Contains((int)point.X, (int)point.Y))
-            {
-                // Point is outside our current tree bounds. Expand it to allow
-                // fitting in the new point.
-                uint neededSizeX = GetNextHighestPowerOfTwo(
-                    (uint)System.Math.Max(0, System.Math.Abs(point.X) - 1));
-                uint neededSizeY = GetNextHighestPowerOfTwo(
-                    (uint)System.Math.Max(0, System.Math.Abs(point.Y) - 1));
-                int neededSize = (int)System.Math.Max(neededSizeX, neededSizeY);
-
-                // Avoid possible issues when adding the first point at (0, 0).
-                if (neededSize == 0)
-                {
-                    neededSize = _minBucketSize;
-                }
-
-                if (_root != null)
-                {
-                    // Already got a root node. Push as many levels above it as
-                    // we need for the new entry. This ensures there will be a
-                    // node at the point we're trying to insert.
-                    while (_bounds.X > -neededSize)
-                    {
-                        InsertLevel();
-                    }
-                }
-                else
-                {
-                    // No root node yet, create it and add entry.
-                    _root = new Node(null);
-                    _root.LowEntry = _root.HighEntry = _entries.AddLast(entry);
-
-                    // Set bounds to the required size.
-                    _bounds.X = _bounds.Y = -neededSize;
-                    _bounds.Width = _bounds.Height = neededSize << 1;
-
-                    // Done! Skip all the rest of this method.
-                    return;
-                }
-            }
+            EnsureCapacity(point);
 
             // Get the node to insert in.
             int nodeX, nodeY, nodeSize;
@@ -182,7 +146,9 @@ namespace Engine.Collections
             }
 
             // Add the data, get the newly created list entry.
-            var insertedEntry = _entries.AddAfter(insertAfter, entry);
+            var insertedEntry = insertAfter != null
+                ? _entries.AddAfter(insertAfter, entry)
+                : _entries.AddFirst(entry);
 
             var node = insertionNode;
             while (node != null)
@@ -198,11 +164,9 @@ namespace Engine.Collections
                     // Inserted after high node, adjust accordingly.
                     node.HighEntry = insertedEntry;
                 }
-                else
-                {
-                    // Somewhere inside the interval.
-                    break;
-                }
+
+                // Remember we have one more entry.
+                ++node.EntryCount;
 
                 // Continue checking in our parent.
                 node = node.Parent;
@@ -210,6 +174,38 @@ namespace Engine.Collections
 
             // We need to split the node.
             SplitNodeIfNecessary(nodeX, nodeY, nodeSize, insertionNode);
+        }
+
+        /// <summary>
+        /// Ensures the tree can contain the given point.
+        /// </summary>
+        /// <param name="point">The point to ensure tree size for.</param>
+        private void EnsureCapacity(Vector2 point)
+        {
+            if (!_bounds.Contains((int)point.X, (int)point.Y))
+            {
+                // Point is outside our current tree bounds. Expand it to allow
+                // fitting in the new point.
+                uint neededSizeX = GetNextHighestPowerOfTwo(
+                    (uint)System.Math.Max(0, System.Math.Abs(point.X) - 1));
+                uint neededSizeY = GetNextHighestPowerOfTwo(
+                    (uint)System.Math.Max(0, System.Math.Abs(point.Y) - 1));
+                int neededSize = (int)System.Math.Max(neededSizeX, neededSizeY);
+
+                // Avoid possible issues when adding the first point at (0, 0).
+                if (neededSize == 0)
+                {
+                    neededSize = _minBucketSize;
+                }
+
+                // Already got a root node. Push as many levels above it as
+                // we need for the new entry. This ensures there will be a
+                // node at the point we're trying to insert.
+                while (_bounds.X > -neededSize)
+                {
+                    InsertLevel();
+                }
+            }
         }
 
         /// <summary>
@@ -305,11 +301,9 @@ namespace Engine.Collections
                                 // It's the high node, adjust accordingly.
                                 node.HighEntry = node.HighEntry.Previous;
                             }
-                            else
-                            {
-                                // Somewhere inside the interval.
-                                break;
-                            }
+
+                            // Adjust entry count.
+                            --node.EntryCount;
 
                             // Continue checking in our parent.
                             node = node.Parent;
@@ -411,7 +405,7 @@ namespace Engine.Collections
         private void SplitNodeIfNecessary(int x, int y, int size, Node node)
         {
             // Should we split?
-            if (!node.IsLeaf || node.GetCount() <= _maxEntriesPerNode || size <= _minBucketSize)
+            if (!node.IsLeaf || node.EntryCount <= _maxEntriesPerNode || size <= _minBucketSize)
             {
                 // No.
                 return;
@@ -452,6 +446,9 @@ namespace Engine.Collections
                     // No shuffling, mark this as the last entry.
                     highEntry = entry;
                 }
+
+                // Either way, one more node.
+                ++node.Children[cell].EntryCount;
 
                 // List is now in order, so we set the highest to this entry.
                 node.Children[cell].HighEntry = entry;
@@ -506,7 +503,7 @@ namespace Engine.Collections
             }
 
             // Check if child nodes are unnecessary for this node.
-            if (node.GetCount() <= _maxEntriesPerNode)
+            if (node.EntryCount <= _maxEntriesPerNode)
             {
                 // We can prune the child nodes.
                 node.Children[0] = null;
@@ -520,7 +517,7 @@ namespace Engine.Collections
                 for (int i = 0; i < 4; i++)
                 {
                     // If so, remove them.
-                    if (node.Children[i] != null && node.Children[i].GetCount() == 0)
+                    if (node.Children[i] != null && node.Children[i].EntryCount == 0)
                     {
                         node.Children[i] = null;
                     }
@@ -543,6 +540,7 @@ namespace Engine.Collections
 
             // Copy list start and end (which will just be the first and last
             // elements in the list of all entries).
+            node.EntryCount = _root.EntryCount;
             node.LowEntry = _root.LowEntry;
             node.HighEntry = _root.HighEntry;
 
@@ -553,6 +551,8 @@ namespace Engine.Collections
                 node.Children[0] = new Node(node);
                 node.Children[0].Children[3] = _root.Children[0];
                 node.Children[0].Children[3].Parent = node.Children[0];
+
+                node.Children[0].EntryCount = _root.Children[0].EntryCount;
                 node.Children[0].LowEntry = _root.Children[0].LowEntry;
                 node.Children[0].HighEntry = _root.Children[0].HighEntry;
             }
@@ -564,6 +564,8 @@ namespace Engine.Collections
                 node.Children[1] = new Node(node);
                 node.Children[1].Children[2] = _root.Children[1];
                 node.Children[1].Children[2].Parent = node.Children[1];
+
+                node.Children[1].EntryCount = _root.Children[1].EntryCount;
                 node.Children[1].LowEntry = _root.Children[1].LowEntry;
                 node.Children[1].HighEntry = _root.Children[1].HighEntry;
             }
@@ -575,6 +577,8 @@ namespace Engine.Collections
                 node.Children[2] = new Node(node);
                 node.Children[2].Children[1] = _root.Children[2];
                 node.Children[2].Children[1].Parent = node.Children[2];
+
+                node.Children[2].EntryCount = _root.Children[2].EntryCount;
                 node.Children[2].LowEntry = _root.Children[2].LowEntry;
                 node.Children[2].HighEntry = _root.Children[2].HighEntry;
             }
@@ -586,6 +590,8 @@ namespace Engine.Collections
                 node.Children[3] = new Node(node);
                 node.Children[3].Children[0] = _root.Children[3];
                 node.Children[3].Children[0].Parent = node.Children[3];
+
+                node.Children[3].EntryCount = _root.Children[3].EntryCount;
                 node.Children[3].LowEntry = _root.Children[3].LowEntry;
                 node.Children[3].HighEntry = _root.Children[3].HighEntry;
             }
@@ -743,7 +749,7 @@ namespace Engine.Collections
         /// reference to more specific child nodes.
         /// </para>
         /// </summary>
-        [DebuggerDisplay("Count = {GetCount()}, Children = {GetChildrenCount()}")]
+        [DebuggerDisplay("Count = {EntryCount}, Children = {GetChildrenCount()}")]
         private class Node
         {
             #region Properties
@@ -787,6 +793,11 @@ namespace Engine.Collections
             public LinkedListNode<Entry> HighEntry;
 
             /// <summary>
+            /// Number of entries in this node.
+            /// </summary>
+            public int EntryCount;
+
+            /// <summary>
             /// The children this node points to.
             /// </summary>
             public readonly Node[] Children = new Node[4];
@@ -812,15 +823,15 @@ namespace Engine.Collections
             /// Compute the number of entries stored in this node.
             /// </summary>
             /// <returns>The number of entries stored in this node.</returns>
-            public int GetCount()
-            {
-                int count = 0;
-                foreach (var entry in Entries)
-                {
-                    ++count;
-                }
-                return count;
-            }
+            //public int GetCount()
+            //{
+            //    int count = 0;
+            //    foreach (var entry in Entries)
+            //    {
+            //        ++count;
+            //    }
+            //    return count;
+            //}
 
             /// <summary>
             /// Get the number of child nodes this node references.

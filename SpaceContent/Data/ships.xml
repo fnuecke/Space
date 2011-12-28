@@ -42,7 +42,7 @@
         <Item>
           <Texture>Textures/ship</Texture>
           <Sound>laser</Sound>
-          <Cooldown>30</Cooldown>
+          <Cooldown>5</Cooldown>
           <Projectiles>
             <Item>
               <Texture>Textures/ship</Texture>

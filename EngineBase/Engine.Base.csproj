@@ -45,10 +45,11 @@
     <DocumentationFile>bin\x86\Release\Engine.Base.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>EngineKey.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
@@ -144,9 +145,6 @@
     <Compile Include="Util\LineWrittenEventArgs.cs" />
     <Compile Include="Util\SimpleCrypto.cs" />
     <Compile Include="Util\SlidingStream.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="EngineKey.snk" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

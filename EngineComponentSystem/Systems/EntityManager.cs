@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Util;
@@ -10,12 +9,6 @@ namespace Engine.ComponentSystem.Systems
     public class EntityManager : IEntityManager
     {
         #region Properties
-
-        /// <summary>
-        /// <summary>
-        /// All entities registered with this manager.
-        /// </summary>
-        public ReadOnlyCollection<IEntity> Entities { get { return _entities.AsReadOnly(); } }
 
         /// <summary>
         /// The component system manager used together with this entity manager.
@@ -29,7 +22,9 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of child entities this state drives.
         /// </summary>
-        private List<IEntity> _entities = new List<IEntity>();
+        //private List<IEntity> _entities = new List<IEntity>();
+
+        private Dictionary<int, IEntity> _entityMap = new Dictionary<int, IEntity>();
 
         /// <summary>
         /// Manager for entity ids.
@@ -97,22 +92,18 @@ namespace Engine.ComponentSystem.Systems
         /// no entity with the specified id.</returns>
         public IEntity RemoveEntity(int entityUid)
         {
-            if (entityUid > 0)
+            var entity = GetEntity(entityUid);
+            if (entity != null)
             {
-                int index = _entities.FindIndex(e => e.UID == entityUid);
-                if (index >= 0)
+                foreach (var component in entity.Components)
                 {
-                    var entity = _entities[index];
-                    foreach (var component in entity.Components)
-                    {
-                        SystemManager.RemoveComponent(component);
-                    }
-                    _entities.RemoveAt(index);
-                    _idManager.ReleaseId(entity.UID);
-                    entity.UID = -1;
-                    entity.Manager = null;
-                    return entity;
+                    SystemManager.RemoveComponent(component);
                 }
+                _entityMap.Remove(entityUid);
+                _idManager.ReleaseId(entity.UID);
+                entity.UID = -1;
+                entity.Manager = null;
+                return entity;
             }
             return null;
         }
@@ -124,9 +115,9 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>The current representation in this manager.</returns>
         public IEntity GetEntity(int entityUid)
         {
-            if (entityUid > 0)
+            if (_entityMap.ContainsKey(entityUid))
             {
-                return _entities.Find(e => e.UID == entityUid);
+                return _entityMap[entityUid];
             }
             return null;
         }
@@ -141,7 +132,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="entity">The entity to add.</param>
         private void AddEntityUnchecked(IEntity entity)
         {
-            _entities.Add(entity);
+            _entityMap.Add(entity.UID, entity);
             entity.Manager = this;
             foreach (var component in entity.Components)
             {
@@ -159,7 +150,7 @@ namespace Engine.ComponentSystem.Systems
             packet.Write(SystemManager);
 
             // Write the list of entities we track.
-            packet.Write(_entities);
+            packet.Write(_entityMap.Values);
 
             // Id manager.
             packet.Write(_idManager);
@@ -175,7 +166,7 @@ namespace Engine.ComponentSystem.Systems
             packet.ReadPacketizableInto(SystemManager);
 
             // And finally the objects. Remove the one we know before that.
-            _entities.Clear();
+            _entityMap.Clear();
             foreach (var entity in packet.ReadPacketizables<Entity>())
             {
                 AddEntityUnchecked(entity);
@@ -187,7 +178,7 @@ namespace Engine.ComponentSystem.Systems
 
         public void Hash(Hasher hasher)
         {
-            foreach (var entity in _entities)
+            foreach (var entity in _entityMap.Values)
             {
                 entity.Hash(hasher);
             }
@@ -202,8 +193,8 @@ namespace Engine.ComponentSystem.Systems
             copy.SystemManager.EntityManager = copy;
 
             // Clone all entities.
-            copy._entities = new List<IEntity>();
-            foreach (var entity in _entities)
+            copy._entityMap = new Dictionary<int, IEntity>();
+            foreach (var entity in _entityMap.Values)
             {
                 copy.AddEntityUnchecked((IEntity)entity.Clone());
             }
