@@ -202,7 +202,7 @@ namespace Space.ComponentSystem.Entities
 
             entity.AddComponent(new Index());
 
-            var renderer = new TransformedRenderer();
+            var renderer = new PlanetRenderer();
             renderer.TextureName = texture;
             entity.AddComponent(renderer);
 
