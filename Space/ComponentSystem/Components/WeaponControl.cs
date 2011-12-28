@@ -67,7 +67,7 @@ namespace Space.ComponentSystem.Components
                         if (_cooldowns[weapon.UID] == 0)
                         {
                             // No, fire it.
-                            _cooldowns[weapon.UID] = weapon.Cooldown;
+                            _cooldowns[weapon.UID] = (int)modules.GetValue(EntityAttributeType.WeaponCooldown, weapon.Cooldown);
 
                             // Generate projectiles.
                             foreach (var projectile in weapon.Projectiles)

@@ -5,6 +5,9 @@ using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
 {
+    /// <summary>
+    /// Interface for classes managing a list of entities.
+    /// </summary>
     public interface IEntityManager : IPacketizable, IHashable, ICloneable
     {
         /// <summary>

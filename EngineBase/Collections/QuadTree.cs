@@ -32,11 +32,6 @@ namespace Engine.Collections
         /// </summary>
         public int Count { get { return _entries.Count; } }
 
-        /// <summary>
-        /// The current overall bounds of the tree.
-        /// </summary>
-        public Rectangle Bounds { get { return new Rectangle(_bounds.X, _bounds.Y, _bounds.Width, _bounds.Height); } }
-
         #endregion
 
         #region Fields
