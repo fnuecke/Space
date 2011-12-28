@@ -820,20 +820,6 @@ namespace Engine.Collections
             #region Accessors
             
             /// <summary>
-            /// Compute the number of entries stored in this node.
-            /// </summary>
-            /// <returns>The number of entries stored in this node.</returns>
-            //public int GetCount()
-            //{
-            //    int count = 0;
-            //    foreach (var entry in Entries)
-            //    {
-            //        ++count;
-            //    }
-            //    return count;
-            //}
-
-            /// <summary>
             /// Get the number of child nodes this node references.
             /// </summary>
             /// <returns>The number of child nodes of this node.</returns>
