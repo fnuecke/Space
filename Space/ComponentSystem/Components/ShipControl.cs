@@ -4,6 +4,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Parameterizations;
 using Space.Data;
+using Space.Data.Modules;
 
 namespace Space.ComponentSystem.Components
 {

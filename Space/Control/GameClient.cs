@@ -62,7 +62,7 @@ namespace Space.Control
                     new CellSystem(),
 
                     new ShipControlSystem(),
-                    new UniversalSystem(game.Content.Load<WorldConstaints>("Data/world")),
+                    new UniversalSystem(game.Content.Load<WorldConstraints>("Data/world")),
 
                     new PlayerCenteredSoundSystem(soundBank, Controller.Session),
                     new PlayerCenteredRenderSystem(spriteBatch, game.Content, Controller.Session)

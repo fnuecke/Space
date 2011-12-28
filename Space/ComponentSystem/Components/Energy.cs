@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
 using Space.Data;
+using Space.Data.Modules;
 
 namespace Space.ComponentSystem.Components
 {

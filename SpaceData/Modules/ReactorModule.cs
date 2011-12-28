@@ -3,7 +3,7 @@ using Engine.Data;
 using Engine.Serialization;
 using Engine.Util;
 
-namespace Space.Data
+namespace Space.Data.Modules
 {
     /// <summary>
     /// Represents a reactor item, which is used to store and produce energy.

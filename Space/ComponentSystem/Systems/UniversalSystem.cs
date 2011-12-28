@@ -26,7 +26,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Fields
 
-        private WorldConstaints _constaints;
+        private WorldConstraints _constaints;
 
         private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
 
@@ -34,7 +34,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Constructor
 
-        public UniversalSystem(WorldConstaints constaits)
+        public UniversalSystem(WorldConstraints constaits)
         {
             _constaints = constaits;
             ShouldSynchronize = true;

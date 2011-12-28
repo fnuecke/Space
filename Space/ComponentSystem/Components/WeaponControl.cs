@@ -8,6 +8,7 @@ using Engine.Util;
 using Space.ComponentSystem.Components.Messages;
 using Space.ComponentSystem.Entities;
 using Space.Data;
+using Space.Data.Modules;
 
 namespace Space.ComponentSystem.Components
 {

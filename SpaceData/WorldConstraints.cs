@@ -1,9 +1,10 @@
-
 namespace Space.Data
 {
-    public class WorldConstaints
+    /// <summary>
+    /// Static parameters for cell population (system generation).
+    /// </summary>
+    public class WorldConstraints
     {
-
         public float SolarSystemMultiSunChance;
         /// <summary>
         /// The number of suns a system may have at max.
@@ -20,7 +21,6 @@ namespace Space.Data
         /// as a fraction of the average planet size.
         /// </summary>
         public float PlanetRadiusStdDev;
-
 
         /// <summary>
         /// The Average Orbit size

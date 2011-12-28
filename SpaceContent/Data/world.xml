@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
-  <Asset Type="Space.Data.WorldConstaints">
+  <Asset Type="Space.Data.WorldConstraints">
     <SolarSystemMultiSunChance>0.01</SolarSystemMultiSunChance>
     <SolarSystemMaxSuns>3</SolarSystemMaxSuns>
     <PlanetRadiusMean>80</PlanetRadiusMean>
