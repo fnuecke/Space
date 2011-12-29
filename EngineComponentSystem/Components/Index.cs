@@ -14,7 +14,12 @@ namespace Engine.ComponentSystem.Components
     public sealed class Index : AbstractComponent
     {
         #region Properties
-        
+
+        /// <summary>
+        /// The index group this component will belong to.
+        /// </summary>
+        public int IndexGroup { get; set; }
+
         /// <summary>
         /// Whether the position of our entity changed since the last update.
         /// </summary>
@@ -42,6 +47,7 @@ namespace Engine.ComponentSystem.Components
 
             if (PositionChanged)
             {
+                args.IndexGroup = IndexGroup;
                 args.PositionChanged = true;
                 args.PreviousPosition = PreviousPosition;
             }
@@ -85,6 +91,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Packetize(packet);
 
+            packet.Write(IndexGroup);
             packet.Write(PositionChanged);
             packet.Write(PreviousPosition);
 
@@ -95,6 +102,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
+            IndexGroup = packet.ReadInt32();
             PositionChanged = packet.ReadBoolean();
             PreviousPosition = packet.ReadVector2();
         }
@@ -103,6 +111,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
+            hasher.Put(BitConverter.GetBytes(IndexGroup));
             hasher.Put(BitConverter.GetBytes(PositionChanged));
             hasher.Put(BitConverter.GetBytes(PreviousPosition.X));
             hasher.Put(BitConverter.GetBytes(PreviousPosition.Y));

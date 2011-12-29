@@ -28,15 +28,13 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        public int DEBUG_Count { get { return _tree.Count; } }
-
         #region Fields
 
         /// <summary>
         /// The actual index we're using, mapping entity positions to the
         /// entities, allowing faster range queries.
         /// </summary>
-        private QuadTree<int> _tree = new QuadTree<int>(maxEntriesPerNode, minNodeSize);
+        private Dictionary<int, QuadTree<int>> _trees = new Dictionary<int, QuadTree<int>>();
 
         /// <summary>
         /// Reusable parameterization.
@@ -53,12 +51,11 @@ namespace Engine.ComponentSystem.Systems
         /// 1 = the neighboring, and so on).
         /// </summary>
         /// <param name="query">The entity to use as a query point.</param>
-        /// <param name="cellRange">The neighborship rank up to which to
-        /// include neighboring cells.</param>
+        /// <param name="range">The distance up to which to get neighbors.</param>
         /// <returns>All entities in range (including the query entity).</returns>
-        public List<IEntity> GetNeighbors(IEntity query, int cellRange)
+        public List<IEntity> GetNeighbors(IEntity query, float range, int index = 0)
         {
-            return GetNeighbors(query.GetComponent<Transform>().Translation, cellRange);
+            return GetNeighbors(query.GetComponent<Transform>().Translation, range, index);
         }
 
         /// <summary>
@@ -69,11 +66,12 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="query">The point to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <returns>All entities in range.</returns>
-        public List<IEntity> GetNeighbors(Vector2 query, float range)
+        public List<IEntity> GetNeighbors(Vector2 query, float range, int index = 0)
         {
             var result = new List<IEntity>();
 
-            foreach (var neighborId in _tree.RangeQuery(query, range))
+            EnsureIndexExists(index);
+            foreach (var neighborId in _trees[index].RangeQuery(query, range))
             {
                 result.Add(Manager.EntityManager.GetEntity(neighborId));
             }
@@ -112,7 +110,7 @@ namespace Engine.ComponentSystem.Systems
                             continue;
                         }
 
-                        _tree.Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
+                        _trees[_parameterization.IndexGroup].Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
                     }
                 }
             }
@@ -128,7 +126,14 @@ namespace Engine.ComponentSystem.Systems
             // If we have a position, put it into its grid cell.
             if (transform != null)
             {
-                _tree.Add(transform.Translation, component.Entity.UID);
+                var index = component.Entity.GetComponent<Index>();
+
+                // Only support Index components for now.
+                if (index != null)
+                {
+                    EnsureIndexExists(index.IndexGroup);
+                    _trees[index.IndexGroup].Add(transform.Translation, component.Entity.UID);
+                }
             }
         }
 
@@ -139,35 +144,54 @@ namespace Engine.ComponentSystem.Systems
         {
             // Get the position to remove from. This might not be the current
             // translation due to pending updates, so check for that.
-            Vector2 position;
             var index = component.Entity.GetComponent<Index>();
-            if (index.PositionChanged)
-            {
-                position = index.PreviousPosition;
-            }
-            else
-            {
-                var transform = component.Entity.GetComponent<Transform>();
-                if (transform == null)
-                {
-                    return;
-                }
-                position = transform.Translation;
-            }
 
-            _tree.Remove(position, component.Entity.UID);
+            // Only support Index components for now.
+            if (index != null)
+            {
+                // Get the position to remove from.
+                Vector2 position;
+                if (index.PositionChanged)
+                {
+                    position = index.PreviousPosition;
+                }
+                else
+                {
+                    // No previous position, get the current transform.
+                    var transform = component.Entity.GetComponent<Transform>();
+                    if (transform == null)
+                    {
+                        return;
+                    }
+                    position = transform.Translation;
+                }
+
+                _trees[index.IndexGroup].Remove(position, component.Entity.UID);
+            }
+        }
+
+        #endregion
+
+        #region Utility methods
+
+        private void EnsureIndexExists(int indexId)
+        {
+            if (!_trees.ContainsKey(indexId))
+            {
+                _trees.Add(indexId, new QuadTree<int>(maxEntriesPerNode, minNodeSize));
+            }
         }
 
         #endregion
 
         #region Serialization / Hashing / Cloning
-        
+
         public override object Clone()
         {
             var copy = (IndexSystem)base.Clone();
 
             // Create own index. Will be filled when re-adding components.
-            copy._tree = new QuadTree<int>(maxEntriesPerNode, minNodeSize);
+            copy._trees = new Dictionary<int, QuadTree<int>>();
 
             return copy;
         }

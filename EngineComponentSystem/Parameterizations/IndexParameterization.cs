@@ -8,6 +8,11 @@ namespace Engine.ComponentSystem.Parameterizations
     public sealed class IndexParameterization
     {
         /// <summary>
+        /// The group the index component belongs to.
+        /// </summary>
+        public int IndexGroup { get; set; }
+
+        /// <summary>
         /// Set in index components to indicate their entities position has
         /// changed since the last update, meaning the index has to be
         /// validated.

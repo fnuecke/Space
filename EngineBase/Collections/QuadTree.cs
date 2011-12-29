@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
@@ -23,7 +24,7 @@ namespace Engine.Collections
     /// </summary>
     /// <typeparam name="T">The type of the values stored in this tree.</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class QuadTree<T>
+    public sealed class QuadTree<T> : IEnumerable<T>
     {
         #region Properties
 
@@ -172,46 +173,14 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Ensures the tree can contain the given point.
-        /// </summary>
-        /// <param name="point">The point to ensure tree size for.</param>
-        private void EnsureCapacity(Vector2 point)
-        {
-            if (!_bounds.Contains((int)point.X, (int)point.Y))
-            {
-                // Point is outside our current tree bounds. Expand it to allow
-                // fitting in the new point.
-                uint neededSizeX = GetNextHighestPowerOfTwo(
-                    (uint)System.Math.Max(0, System.Math.Abs(point.X) - 1));
-                uint neededSizeY = GetNextHighestPowerOfTwo(
-                    (uint)System.Math.Max(0, System.Math.Abs(point.Y) - 1));
-                int neededSize = (int)System.Math.Max(neededSizeX, neededSizeY);
-
-                // Avoid possible issues when adding the first point at (0, 0).
-                if (neededSize == 0)
-                {
-                    neededSize = _minBucketSize;
-                }
-
-                // Already got a root node. Push as many levels above it as
-                // we need for the new entry. This ensures there will be a
-                // node at the point we're trying to insert.
-                while (_bounds.X > -neededSize)
-                {
-                    InsertLevel();
-                }
-            }
-        }
-
-        /// <summary>
         /// Update a single entry by changing its position.
         /// </summary>
         /// <param name="oldPoint">The old position of the entry.</param>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
-        /// <returns><c>true</c> if the update was successful, <c>false</c>
-        /// if there is no such entry in the tree.</returns>
-        public bool Update(Vector2 oldPoint, Vector2 newPoint, T value)
+        /// <exception cref="ArgumentException">If there is no such value in
+        /// the tree at the specified old position.</exception>
+        public void Update(Vector2 oldPoint, Vector2 newPoint, T value)
         {
             // The entry we wish to update.
             var entry = new Entry(oldPoint, value);
@@ -243,12 +212,12 @@ namespace Engine.Collections
                             Add(newPoint, value);
                         }
 
-                        return true;
+                        // Success, don't throw.
+                        return;
                     }
                 }
             }
-
-            return false;
+            throw new ArgumentException("Entry not in the tree at the specified point.", "value");
         }
 
         /// <summary>
@@ -260,9 +229,6 @@ namespace Engine.Collections
         /// in the tree, <c>false</c> otherwise.</returns>
         public bool Remove(Vector2 point, T value)
         {
-            // The entry we wish to remove.
-            var removalEntry = new Entry(point, value);
-
             // Get the node the entry would be in.
             int nodeX, nodeY, nodeSize;
             var removalNode = FindNode(point, out nodeX, out nodeY, out nodeSize);
@@ -270,6 +236,9 @@ namespace Engine.Collections
             // Is the node a leaf node? If not we don't have that entry.
             if (removalNode.IsLeaf)
             {
+                // The entry we wish to remove.
+                var removalEntry = new Entry(point, value);
+
                 // Check if we have that entry.
                 foreach (var nodeEntry in removalNode.Entries)
                 {
@@ -312,6 +281,40 @@ namespace Engine.Collections
                         // has to be removed first (to update entry counts).
                         CleanNode(removalNode);
 
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Test whether this tree contains the specified value at the
+        /// specified point.
+        /// </summary>
+        /// <param name="point">The point at which to look for.</param>
+        /// <param name="value">The value to look for.</param>
+        /// <returns><c>true</c> if the tree contains the value at the
+        /// specified point.</returns>
+        public bool Contains(Vector2 point, T value)
+        {
+            // Get the node the entry would be in.
+            int nodeX, nodeY, nodeSize;
+            var removalNode = FindNode(point, out nodeX, out nodeY, out nodeSize);
+            
+            // Is the node a leaf node? If not we don't have that entry.
+            if (removalNode.IsLeaf)
+            {
+                // The entry we wish to look up.
+                var searchEntry = new Entry(point, value);
+
+                // Check if we have that entry.
+                foreach (var nodeEntry in removalNode.Entries)
+                {
+                    if (nodeEntry.Value.Equals(searchEntry))
+                    {
+                        // Got it :)
                         return true;
                     }
                 }
@@ -389,6 +392,153 @@ namespace Engine.Collections
         }
 
         #region Restructuring
+
+        /// <summary>
+        /// Try to clean up a node and its parents. This walks the tree towards
+        /// the root, removing child nodes where possible.
+        /// </summary>
+        /// <param name="node">The node to start cleaning at.</param>
+        private void CleanNode(Node node)
+        {
+            // Do nothing for leaf nodes or when passing the root node.
+            if (node == null)
+            {
+                return;
+            }
+
+            // Check if child nodes are unnecessary for this node.
+            if (node.EntryCount <= _maxEntriesPerNode)
+            {
+                // We can prune the child nodes.
+                node.Children[0] = null;
+                node.Children[1] = null;
+                node.Children[2] = null;
+                node.Children[3] = null;
+            }
+            else
+            {
+                // Check if we have empty child nodes.
+                for (int i = 0; i < 4; i++)
+                {
+                    // If so, remove them.
+                    if (node.Children[i] != null && node.Children[i].EntryCount == 0)
+                    {
+                        node.Children[i] = null;
+                    }
+                }
+            }
+
+            // Check parent.
+            CleanNode(node.Parent);
+        }
+
+        /// <summary>
+        /// Ensures the tree can contain the given point.
+        /// </summary>
+        /// <param name="point">The point to ensure tree size for.</param>
+        private void EnsureCapacity(Vector2 point)
+        {
+            if (!_bounds.Contains((int)point.X, (int)point.Y))
+            {
+                // Point is outside our current tree bounds. Expand it to allow
+                // fitting in the new point.
+                uint neededSizeX = GetNextHighestPowerOfTwo(
+                    (uint)System.Math.Max(0, System.Math.Abs(point.X) - 1));
+                uint neededSizeY = GetNextHighestPowerOfTwo(
+                    (uint)System.Math.Max(0, System.Math.Abs(point.Y) - 1));
+                int neededSize = (int)System.Math.Max(neededSizeX, neededSizeY);
+
+                // Avoid possible issues when adding the first point at (0, 0).
+                if (neededSize == 0)
+                {
+                    neededSize = _minBucketSize;
+                }
+
+                // Already got a root node. Push as many levels above it as
+                // we need for the new entry. This ensures there will be a
+                // node at the point we're trying to insert.
+                while (_bounds.X > -neededSize)
+                {
+                    InsertLevel();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Inserts a new level on top of the root node, making it the new root
+        /// node. Will reattach all of the root node's child nodes to the
+        /// appropriate child nodes of the new root node.
+        /// </summary>
+        private void InsertLevel()
+        {
+            // Create the new root node.
+            var node = new Node(null);
+
+            // Copy list start and end (which will just be the first and last
+            // elements in the list of all entries).
+            node.EntryCount = _root.EntryCount;
+            node.LowEntry = _root.LowEntry;
+            node.HighEntry = _root.HighEntry;
+
+            // Check top left sector, add it as top left sectors lower right
+            // node, if it is set.
+            if (_root.Children[0] != null)
+            {
+                node.Children[0] = new Node(node);
+                node.Children[0].Children[3] = _root.Children[0];
+                node.Children[0].Children[3].Parent = node.Children[0];
+
+                node.Children[0].EntryCount = _root.Children[0].EntryCount;
+                node.Children[0].LowEntry = _root.Children[0].LowEntry;
+                node.Children[0].HighEntry = _root.Children[0].HighEntry;
+            }
+
+            // Check top right sector, add it as top right sectors lower left
+            // node, if it is set.
+            if (_root.Children[1] != null)
+            {
+                node.Children[1] = new Node(node);
+                node.Children[1].Children[2] = _root.Children[1];
+                node.Children[1].Children[2].Parent = node.Children[1];
+
+                node.Children[1].EntryCount = _root.Children[1].EntryCount;
+                node.Children[1].LowEntry = _root.Children[1].LowEntry;
+                node.Children[1].HighEntry = _root.Children[1].HighEntry;
+            }
+
+            // Check bottom left sector, add it as bottom left sectors top
+            // right node, if it is set.
+            if (_root.Children[2] != null)
+            {
+                node.Children[2] = new Node(node);
+                node.Children[2].Children[1] = _root.Children[2];
+                node.Children[2].Children[1].Parent = node.Children[2];
+
+                node.Children[2].EntryCount = _root.Children[2].EntryCount;
+                node.Children[2].LowEntry = _root.Children[2].LowEntry;
+                node.Children[2].HighEntry = _root.Children[2].HighEntry;
+            }
+
+            // Check bottom right sector, add it as bottom right sectors top
+            // left node, if it is set.
+            if (_root.Children[3] != null)
+            {
+                node.Children[3] = new Node(node);
+                node.Children[3].Children[0] = _root.Children[3];
+                node.Children[3].Children[0].Parent = node.Children[3];
+
+                node.Children[3].EntryCount = _root.Children[3].EntryCount;
+                node.Children[3].LowEntry = _root.Children[3].LowEntry;
+                node.Children[3].HighEntry = _root.Children[3].HighEntry;
+            }
+
+            // Set the new root node, adjust the overall tree bounds.
+            _root = node;
+            _bounds.X = _bounds.X << 1;
+            _bounds.Y = _bounds.Y << 1;
+            _bounds.Width = _bounds.Width << 1;
+            _bounds.Height = _bounds.Height << 1;
+        }
 
         /// <summary>
         /// Check if a node needs to be split, and split it if allowed to.
@@ -482,121 +632,6 @@ namespace Engine.Collections
                         childSize, node.Children[i]);
                 }
             }
-        }
-
-        /// <summary>
-        /// Try to clean up a node and its parents. This walks the tree towards
-        /// the root, removing child nodes where possible.
-        /// </summary>
-        /// <param name="node">The node to start cleaning at.</param>
-        private void CleanNode(Node node)
-        {
-            // Do nothing for leaf nodes or when passing the root node.
-            if (node == null)
-            {
-                return;
-            }
-
-            // Check if child nodes are unnecessary for this node.
-            if (node.EntryCount <= _maxEntriesPerNode)
-            {
-                // We can prune the child nodes.
-                node.Children[0] = null;
-                node.Children[1] = null;
-                node.Children[2] = null;
-                node.Children[3] = null;
-            }
-            else
-            {
-                // Check if we have empty child nodes.
-                for (int i = 0; i < 4; i++)
-                {
-                    // If so, remove them.
-                    if (node.Children[i] != null && node.Children[i].EntryCount == 0)
-                    {
-                        node.Children[i] = null;
-                    }
-                }
-            }
-
-            // Check parent.
-            CleanNode(node.Parent);
-        }
-
-        /// <summary>
-        /// Inserts a new level on top of the root node, making it the new root
-        /// node. Will reattach all of the root node's child nodes to the
-        /// appropriate child nodes of the new root node.
-        /// </summary>
-        private void InsertLevel()
-        {
-            // Create the new root node.
-            var node = new Node(null);
-
-            // Copy list start and end (which will just be the first and last
-            // elements in the list of all entries).
-            node.EntryCount = _root.EntryCount;
-            node.LowEntry = _root.LowEntry;
-            node.HighEntry = _root.HighEntry;
-
-            // Check top left sector, add it as top left sectors lower right
-            // node, if it is set.
-            if (_root.Children[0] != null)
-            {
-                node.Children[0] = new Node(node);
-                node.Children[0].Children[3] = _root.Children[0];
-                node.Children[0].Children[3].Parent = node.Children[0];
-
-                node.Children[0].EntryCount = _root.Children[0].EntryCount;
-                node.Children[0].LowEntry = _root.Children[0].LowEntry;
-                node.Children[0].HighEntry = _root.Children[0].HighEntry;
-            }
-
-            // Check top right sector, add it as top right sectors lower left
-            // node, if it is set.
-            if (_root.Children[1] != null)
-            {
-                node.Children[1] = new Node(node);
-                node.Children[1].Children[2] = _root.Children[1];
-                node.Children[1].Children[2].Parent = node.Children[1];
-
-                node.Children[1].EntryCount = _root.Children[1].EntryCount;
-                node.Children[1].LowEntry = _root.Children[1].LowEntry;
-                node.Children[1].HighEntry = _root.Children[1].HighEntry;
-            }
-
-            // Check bottom left sector, add it as bottom left sectors top
-            // right node, if it is set.
-            if (_root.Children[2] != null)
-            {
-                node.Children[2] = new Node(node);
-                node.Children[2].Children[1] = _root.Children[2];
-                node.Children[2].Children[1].Parent = node.Children[2];
-
-                node.Children[2].EntryCount = _root.Children[2].EntryCount;
-                node.Children[2].LowEntry = _root.Children[2].LowEntry;
-                node.Children[2].HighEntry = _root.Children[2].HighEntry;
-            }
-
-            // Check bottom right sector, add it as bottom right sectors top
-            // left node, if it is set.
-            if (_root.Children[3] != null)
-            {
-                node.Children[3] = new Node(node);
-                node.Children[3].Children[0] = _root.Children[3];
-                node.Children[3].Children[0].Parent = node.Children[3];
-
-                node.Children[3].EntryCount = _root.Children[3].EntryCount;
-                node.Children[3].LowEntry = _root.Children[3].LowEntry;
-                node.Children[3].HighEntry = _root.Children[3].HighEntry;
-            }
-
-            // Set the new root node, adjust the overall tree bounds.
-            _root = node;
-            _bounds.X = _bounds.X << 1;
-            _bounds.Y = _bounds.Y << 1;
-            _bounds.Width = _bounds.Width << 1;
-            _bounds.Height = _bounds.Height << 1;
         }
 
         #endregion
@@ -899,6 +934,23 @@ namespace Engine.Collections
             }
 
             #endregion
+        }
+
+        #endregion
+
+        #region Enumerable
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            foreach (var entry in _entries)
+            {
+                yield return entry.Value;
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         #endregion
