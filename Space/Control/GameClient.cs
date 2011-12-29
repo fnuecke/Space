@@ -57,7 +57,7 @@ namespace Space.Control
                 {
                     new DefaultLogicSystem(),
                     new IndexSystem(),
-                    new CollisionSystem(),
+                    new CollisionSystem(128),
                     new AvatarSystem(),
                     new CellSystem(),
 

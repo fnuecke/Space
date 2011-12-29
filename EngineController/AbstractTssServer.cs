@@ -65,8 +65,8 @@ namespace Engine.Controller
         /// <param name="header">the protocol header.</param>
         protected AbstractTssServer(IServerSession session)
             : base(session, new uint[] {
-                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds),
-                (uint)System.Math.Ceiling(250 / _targetElapsedMilliseconds)
+                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds)
+                //(uint)System.Math.Ceiling(250 / _targetElapsedMilliseconds)
             })
         {
             _lastGameStateSentTime = new DateTime[Session.MaxPlayers];

@@ -51,6 +51,31 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Constructor
+
+        public Transform(Vector2 translation, float rotation)
+        {
+            this.Translation = translation;
+            this.Rotation = rotation;
+        }
+
+        public Transform(Vector2 translation)
+            : this(translation, 0)
+        {
+        }
+
+        public Transform(float rotation)
+            : this(Vector2.Zero, rotation)
+        {
+        }
+
+        public Transform()
+            : this(Vector2.Zero, 0)
+        {
+        }
+
+        #endregion
+
         #region Modifiers
 
         /// <summary>

@@ -23,15 +23,29 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public Vector2 Size { get; set; }
 
-        /// <summary>
-        /// The bounds of this collidable.
-        /// </summary>
-        public override Rectangle Bounds
+        #endregion
+        
+        #region Constructor
+
+        public CollidableBox(Vector2 size, uint groups)
+            : base(groups)
         {
-            get
-            {
-                return new Rectangle(0, 0, (int)(Size.X), (int)(Size.Y));
-            }
+            this.Size = size;
+        }
+
+        public CollidableBox(Vector2 size)
+            : this(size, 0)
+        {
+        }
+
+        public CollidableBox(uint groups)
+            : this(Vector2.Zero, groups)
+        {
+        }
+
+        public CollidableBox()
+            : this(Vector2.Zero, 0)
+        {
         }
 
         #endregion

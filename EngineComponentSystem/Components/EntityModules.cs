@@ -54,6 +54,14 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Constructor
+
+        public EntityModules()
+        {
+        }
+
+        #endregion
+
         #region Attributes / Modules
 
         /// <summary>

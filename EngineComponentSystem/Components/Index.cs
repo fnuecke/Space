@@ -16,7 +16,9 @@ namespace Engine.ComponentSystem.Components
         #region Properties
 
         /// <summary>
-        /// The index group this component will belong to.
+        /// The bit mask of the index group this component will belong to.
+        /// There are a total of 64 separate groups, via the 64 bits in a
+        /// ulong.
         /// </summary>
         public ulong IndexGroups { get; set; }
 

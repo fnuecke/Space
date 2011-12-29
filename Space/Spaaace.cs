@@ -266,6 +266,12 @@ namespace Space
                                 spriteBatch.DrawString(console.Font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
                             }
 
+                            var index = systemManager.GetSystem<IndexSystem>();
+                            if (index != null)
+                            {
+                                spriteBatch.DrawString(console.Font, "Indexes: " + index.DEBUG_NumIndexes + ", Total entries: " + index.DEBUG_Count, new Vector2(20, count * 20 + 80), Color.White);
+                            }
+
                             var health = avatar.GetComponent<Health>();
                             if (health != null)
                             {

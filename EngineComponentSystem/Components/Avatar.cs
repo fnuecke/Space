@@ -19,8 +19,22 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Constructor
+
+        public Avatar(int playerNumber)
+        {
+            this.PlayerNumber = playerNumber;
+        }
+
+        public Avatar()
+            : this(-1)
+        {
+        }
+
+        #endregion
+
         #region Logic
-        
+
         public override bool SupportsParameterization(Type parameterizationType)
         {
             return parameterizationType.Equals(typeof(AvatarParameterization));

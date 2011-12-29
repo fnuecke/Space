@@ -23,15 +23,29 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public float Radius { get; set; }
 
-        /// <summary>
-        /// The bounds of this collidable.
-        /// </summary>
-        public override Rectangle Bounds
+        #endregion
+
+        #region Constructor
+
+        public CollidableSphere(float radius, uint groups)
+            : base(groups)
         {
-            get
-            {
-                return new Rectangle(0, 0, (int)(Radius * 2), (int)(Radius * 2));
-            }
+            this.Radius = radius;
+        }
+
+        public CollidableSphere(float radius)
+            : this(radius, 0)
+        {
+        }
+
+        public CollidableSphere(uint groups)
+            : this(0, groups)
+        {
+        }
+
+        public CollidableSphere()
+            : this(0, 0)
+        {
         }
 
         #endregion

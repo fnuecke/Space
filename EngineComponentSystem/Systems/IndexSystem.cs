@@ -43,6 +43,38 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
+        public int DEBUG_NumIndexes
+        {
+            get
+            {
+                int count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        ++count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public int DEBUG_Count
+        {
+            get
+            {
+                int count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        count += index.Count;
+                    }
+                }
+                return count;
+            }
+        }
+
         #region Entity lookup
 
         /// <summary>
@@ -52,6 +84,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="query">The entity to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
+        /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range (including the query entity).</returns>
         public List<IEntity> GetNeighbors(IEntity query, float range, ulong groups = 1)
         {
@@ -65,6 +98,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="query">The point to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
+        /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
         public List<IEntity> GetNeighbors(Vector2 query, float range, ulong groups = 1)
         {
@@ -175,7 +209,10 @@ namespace Engine.ComponentSystem.Systems
                     position = transform.Translation;
                 }
 
-                _trees[index.IndexGroups].Remove(position, component.Entity.UID);
+                foreach (var tree in TreesForGroups(index.IndexGroups))
+                {
+                    tree.Remove(position, component.Entity.UID);
+                }
             }
         }
 

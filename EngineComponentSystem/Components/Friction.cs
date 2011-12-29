@@ -27,7 +27,27 @@ namespace Engine.ComponentSystem.Components
         /// for very low velocity, due to which objects with damping never
         /// stop, even though they should).
         /// </summary>
-        public float MinVelocity { get; set; }
+        public float StopVelocity { get; set; }
+
+        #endregion
+
+        #region Constructor
+
+        public Friction(float value, float stopVelocity)
+        {
+            this.Value = value;
+            this.StopVelocity = stopVelocity;
+        }
+
+        public Friction(float value)
+            : this(value, 0)
+        {
+        }
+
+        public Friction()
+            : this(0, 0)
+        {
+        }
 
         #endregion
 
@@ -61,8 +81,8 @@ namespace Engine.ComponentSystem.Components
                     // it'd be hard to. We only stop if we were faster than the minimum,
                     // before application of friction. Otherwise we might have problems
                     // getting moving at all, if the acceleration is too low.
-                    if (previousVelocity >= MinVelocity &&
-                        velocity.Value.LengthSquared() < MinVelocity)
+                    if (previousVelocity >= StopVelocity &&
+                        velocity.Value.LengthSquared() < StopVelocity)
                     {
                         velocity.Value = Vector2.Zero;
                     }
@@ -88,7 +108,7 @@ namespace Engine.ComponentSystem.Components
         {
             return base.Packetize(packet)
                 .Write(Value)
-                .Write(MinVelocity);
+                .Write(StopVelocity);
         }
 
         public override void Depacketize(Packet packet)
@@ -96,7 +116,7 @@ namespace Engine.ComponentSystem.Components
             base.Depacketize(packet);
 
             Value = packet.ReadSingle();
-            MinVelocity = packet.ReadSingle();
+            StopVelocity = packet.ReadSingle();
         }
 
         public override void Hash(Hasher hasher)
@@ -104,7 +124,7 @@ namespace Engine.ComponentSystem.Components
             base.Hash(hasher);
             
             hasher.Put(BitConverter.GetBytes(Value));
-            hasher.Put(BitConverter.GetBytes(MinVelocity));
+            hasher.Put(BitConverter.GetBytes(StopVelocity));
         }
 
         #endregion
@@ -113,7 +133,7 @@ namespace Engine.ComponentSystem.Components
 
         public override string ToString()
         {
-            return GetType().Name + ": " + Value.ToString() + ", " + MinVelocity.ToString();
+            return GetType().Name + ": " + Value.ToString() + ", " + StopVelocity.ToString();
         }
 
         #endregion

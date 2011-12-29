@@ -14,12 +14,42 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public class CollisionSystem : AbstractComponentSystem<CollisionParameterization>
     {
+        #region Constants
+
+        /// <summary>
+        /// Start using indexes after the collision index.
+        /// </summary>
+        public const int FirstIndexGroup = Gravitation.IndexGroup << 1;
+
+        /// <summary>
+        /// Last indexes we will possibly be using.
+        /// </summary>
+        public const int LastIndexGroup = FirstIndexGroup << 31;
+
+        #endregion
+
         #region Fields
-        
+
+        /// <summary>
+        /// The maximum radius any object ever used in this system can have.
+        /// </summary>
+        private readonly int _maxCollidableRadius;
+
         /// <summary>
         /// Reusable parameterization.
         /// </summary>
         private CollisionParameterization _parameterization = new CollisionParameterization();
+
+        #endregion
+
+        #region Constructor
+
+        public CollisionSystem(int maxCollidableRadius)
+        {
+            // Use a range a little larger than the max collidable size, to
+            // account for fast moving objects (sweep test).
+            _maxCollidableRadius = maxCollidableRadius * 3;
+        }
 
         #endregion
 
@@ -37,21 +67,21 @@ namespace Engine.ComponentSystem.Systems
             {
                 // Loop through all components.
                 var currentComponents = Components;
+                var index = Manager.GetSystem<IndexSystem>();
+                HashSet<IEntity> neighbors = null;
                 for (int i = 0; i < currentComponents.Count; ++i)
                 {
                     var currentCollidable = (AbstractCollidable)currentComponents[i];
 
                     // Get a list of components actually nearby.
-                    HashSet<IEntity> neighbors = null;
-                    var index = Manager.GetSystem<IndexSystem>();
                     if (index != null)
                     {
-                        // Use something a little larger than the actual object
-                        // bounds for the range query, to check for objects
-                        // that might have passed through.
-                        var bounds = currentCollidable.Bounds;
-                        var range = System.Math.Max(bounds.Width, bounds.Height) * 3;
-                        neighbors = new HashSet<IEntity>(index.GetNeighbors(currentCollidable.Entity, range));
+                        // Use the inverse of the collision group, i.e. get
+                        // entries from all those entries where we're not in
+                        // that group.
+                        neighbors = new HashSet<IEntity>(index.GetNeighbors(
+                            currentCollidable.Entity, _maxCollidableRadius,
+                            (~currentCollidable.CollisionGroups) << FirstIndexGroup));
                     }
 
                     // Loop through all other components. Only do the interval
@@ -61,7 +91,7 @@ namespace Engine.ComponentSystem.Systems
                         var otherCollidable = (AbstractCollidable)currentComponents[j];
 
                         // Only test if its from a different collision group.
-                        if (currentCollidable.CollisionGroup == otherCollidable.CollisionGroup)
+                        if ((currentCollidable.CollisionGroups & otherCollidable.CollisionGroups) != 0)
                         {
                             continue;
                         }

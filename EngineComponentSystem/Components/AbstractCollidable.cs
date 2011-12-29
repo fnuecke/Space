@@ -18,15 +18,11 @@ namespace Engine.ComponentSystem.Components
         #region Properties
 
         /// <summary>
-        /// This components collision group. Components from the same group
-        /// are <em>not</em> tested against each other.
+        /// This bit mask representing the collision groups this component is
+        /// part of. Components sharing at least one group will not be tested
+        /// against each other.
         /// </summary>
-        public int CollisionGroup { get; set; }
-
-        /// <summary>
-        /// The bounds of this collidable.
-        /// </summary>
-        public abstract Rectangle Bounds { get; }
+        public uint CollisionGroups { get; set; }
 
         #endregion
 
@@ -36,6 +32,20 @@ namespace Engine.ComponentSystem.Components
         /// Previous position of the underlying physics component (for sweep tests).
         /// </summary>
         protected Vector2 _previousPosition;
+
+        #endregion
+
+        #region Constructor
+
+        protected AbstractCollidable(uint groups)
+        {
+            this.CollisionGroups = groups;
+        }
+
+        protected AbstractCollidable()
+            : this(0)
+        {
+        }
 
         #endregion
 
@@ -89,7 +99,7 @@ namespace Engine.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(CollisionGroup)
+                .Write(CollisionGroups)
                 .Write(_previousPosition);
         }
 
@@ -97,7 +107,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            CollisionGroup = packet.ReadInt32();
+            CollisionGroups = packet.ReadUInt32();
             _previousPosition = packet.ReadVector2();
         }
 
@@ -105,7 +115,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(CollisionGroup));
+            hasher.Put(BitConverter.GetBytes(CollisionGroups));
             hasher.Put(BitConverter.GetBytes(_previousPosition.X));
             hasher.Put(BitConverter.GetBytes(_previousPosition.Y));
         }

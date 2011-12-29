@@ -8,35 +8,22 @@ namespace Space.ComponentSystem.Entities
 {
     class EntityFactory
     {
-        public static IEntity CreateShip(ShipData shipData, int playerNumber)
+        /// <summary>
+        /// Creates a new ship, player controlled or otherwise, with the
+        /// specified parameters.
+        /// </summary>
+        /// <param name="shipData">The ship info to use.</param>
+        /// <param name="fraction">The faction the ship will belong to.</param>
+        /// <returns></returns>
+        public static IEntity CreateShip(ShipData shipData, Fractions fraction)
         {
             var entity = new Entity();
 
-            var transform = new Transform();
-            transform.Translation = new Vector2(16000, 16000);
-            entity.AddComponent(transform);
-
-            var friction = new Friction();
-            friction.Value = 0.01f;
-            friction.MinVelocity = 0.02f;
-            entity.AddComponent(friction);
-
-            var collidable = new CollidableSphere();
-            collidable.Radius = shipData.CollisionRadius;
-            collidable.CollisionGroup = playerNumber;
-            entity.AddComponent(collidable);
-
-            var modules = new EntityModules<EntityAttributeType>();
-            entity.AddComponent(modules);
-
-            var avatar = new Avatar();
-            avatar.PlayerNumber = playerNumber;
-            entity.AddComponent(avatar);
-
-            var renderer = new TransformedRenderer();
-            renderer.TextureName = shipData.Texture;
-            entity.AddComponent(renderer);
-
+            entity.AddComponent(new Transform(new Vector2(16000, 16000)));
+            entity.AddComponent(new Friction(0.01f, 0.02f));
+            entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, (uint)fraction));
+            entity.AddComponent(new Avatar(fraction.ToPlayerNumber()));
+            entity.AddComponent(new TransformedRenderer(shipData.Texture));
             entity.AddComponent(new Acceleration());
             entity.AddComponent(new Spin());
             entity.AddComponent(new Velocity());
@@ -44,6 +31,9 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new WeaponSound());
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new Index());
+
+            var modules = new EntityModules<EntityAttributeType>();
+            entity.AddComponent(modules);
 
             var gravitation = new Gravitation();
             gravitation.GravitationType = Gravitation.GravitationTypes.Atractee;
@@ -88,6 +78,7 @@ namespace Space.ComponentSystem.Entities
             {
                 var renderer = new TransformedRenderer();
                 renderer.TextureName = projectile.Texture;
+                renderer.Scale = 0.25f;
                 entity.AddComponent(renderer);
             }
 
@@ -115,7 +106,8 @@ namespace Space.ComponentSystem.Entities
             var avatar = emitter.GetComponent<Avatar>();
             if (avatar != null)
             {
-                collidable.CollisionGroup = avatar.PlayerNumber;
+                // Can hit anything but the player who shot.
+                collidable.CollisionGroups = (uint)avatar.PlayerNumber.ToFraction();
             }
             entity.AddComponent(collidable);
 

@@ -75,9 +75,9 @@ namespace Engine.Controller
         /// <param name="header">the protocol header.</param>
         public AbstractTssClient(IClientSession session)
             : base(session, new uint[] {
-                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds),
-                (uint)System.Math.Ceiling(150 / _targetElapsedMilliseconds),
-                (uint)System.Math.Ceiling(300 / _targetElapsedMilliseconds)
+                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds)
+                //(uint)System.Math.Ceiling(150 / _targetElapsedMilliseconds),
+                //(uint)System.Math.Ceiling(300 / _targetElapsedMilliseconds)
             })
         {
             Session.JoinResponse += HandleJoinResponse;

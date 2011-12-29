@@ -47,11 +47,32 @@ namespace Engine.ComponentSystem.Components
         #endregion
 
         #region Constructor
-        
-        protected AbstractRenderer()
+
+        protected AbstractRenderer(string textureName, Color tint, float scale)
         {
-            Tint = Color.White;
-            Scale = 1;
+            this.TextureName = textureName;
+            this.Tint = tint;
+            this.Scale = scale;
+        }
+        
+        protected AbstractRenderer(string textureName, Color tint)
+            : this(textureName, tint, 1)
+        {
+        }
+
+        protected AbstractRenderer(string textureName, float scale)
+            : this(textureName, Color.White, scale)
+        {
+        }
+
+        protected AbstractRenderer(string textureName)
+            : this(textureName, Color.White, 1)
+        {
+        }
+
+        protected AbstractRenderer()
+            : this(string.Empty, Color.White, 1)
+        {
         }
 
         #endregion
