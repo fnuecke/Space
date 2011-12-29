@@ -19,12 +19,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Start using indexes after the collision index.
         /// </summary>
-        public const int FirstIndexGroup = Gravitation.IndexGroup << 1;
+        public const byte FirstIndexGroup = Gravitation.IndexGroup + 1;
 
         /// <summary>
         /// Last indexes we will possibly be using.
         /// </summary>
-        public const int LastIndexGroup = FirstIndexGroup << 31;
+        public const byte LastIndexGroup = FirstIndexGroup + 31;
 
         #endregion
 
@@ -67,9 +67,10 @@ namespace Engine.ComponentSystem.Systems
             {
                 // Loop through all components.
                 var currentComponents = Components;
+                var componentCount = currentComponents.Count;
                 var index = Manager.GetSystem<IndexSystem>();
                 HashSet<IEntity> neighbors = null;
-                for (int i = 0; i < currentComponents.Count; ++i)
+                for (int i = 0; i < componentCount; ++i)
                 {
                     var currentCollidable = (AbstractCollidable)currentComponents[i];
 
@@ -86,7 +87,7 @@ namespace Engine.ComponentSystem.Systems
 
                     // Loop through all other components. Only do the interval
                     // (i, #components) avoid duplicate checks (i vs j == j vs i).
-                    for (int j = i + 1; j < currentComponents.Count; ++j)
+                    for (int j = i + 1; j < componentCount; ++j)
                     {
                         var otherCollidable = (AbstractCollidable)currentComponents[j];
 

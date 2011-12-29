@@ -19,6 +19,20 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Constructor
+
+        public Expiration(int ttl)
+        {
+            this.TimeToLive = ttl;
+        }
+
+        public Expiration()
+            : this(0)
+        {
+        }
+
+        #endregion
+
         #region Logic
 
         /// <summary>

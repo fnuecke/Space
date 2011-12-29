@@ -48,9 +48,29 @@
           <Projectiles>
             <Item>
               <Texture>Textures/ship</Texture>
+              <Scale>0.5</Scale>
               <CollisionRadius>3</CollisionRadius>
               <Damage>5</Damage>
-              <InitialVelocity>10</InitialVelocity>
+              <InitialVelocity>10 0</InitialVelocity>
+            </Item>
+            
+            <Item>
+              <Texture>Textures/ship</Texture>
+              <Scale>0.75</Scale>
+              <CollisionRadius>3</CollisionRadius>
+              <Damage>15</Damage>
+              <InitialVelocity>0 10</InitialVelocity>
+              <AccelerationForce>0.5</AccelerationForce>
+              <Friction>0.05</Friction>
+            </Item>
+            <Item>
+              <Texture>Textures/ship</Texture>
+              <Scale>0.75</Scale>
+              <CollisionRadius>3</CollisionRadius>
+              <Damage>15</Damage>
+              <InitialVelocity>0 -10</InitialVelocity>
+              <AccelerationForce>0.5</AccelerationForce>
+              <Friction>0.05</Friction>
             </Item>
           </Projectiles>
         </Item>

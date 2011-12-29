@@ -39,7 +39,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Index group to use for gravitational computations.
         /// </summary>
-        public const int IndexGroup = 1 << 0;
+        public const byte IndexGroup = IndexSystem.DefaultIndexGroup + 1;
 
         #endregion
 
@@ -111,7 +111,7 @@ namespace Engine.ComponentSystem.Components
                 }
 
                 // Then check all our neighbors.
-                foreach (var neigbour in index.GetNeighbors(Entity, 2 << 13, IndexGroup))
+                foreach (var neigbour in index.GetNeighbors(Entity, 2 << 13, 1 << IndexGroup))
                 {
                     // If they have a gravitation component...
                     var otherGravitation = neigbour.GetComponent<Gravitation>();

@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 
 namespace Space.Data
@@ -10,7 +11,20 @@ namespace Space.Data
         /// <summary>
         /// The texture to use to render the projectile.
         /// </summary>
-        public string Texture;
+        [ContentSerializer(Optional = true)]
+        public string Texture = string.Empty;
+
+        /// <summary>
+        /// Name of the particle effect to use.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public string Effect = string.Empty;
+
+        /// <summary>
+        /// The scale at which to render the texture and effects.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public float Scale = 1;
 
         /// <summary>
         /// The collision radius of the projectile.
@@ -23,9 +37,21 @@ namespace Space.Data
         public float Damage;
 
         /// <summary>
-        /// The initial velocity of the projectile.
+        /// The initial directed velocity of the projectile. This is rotated
+        /// according to the emitters rotation. The set value applies directly
+        /// if the emitter is facing to the right (i.e. is at zero rotation).
         /// </summary>
-        public float InitialVelocity;
+        [ContentSerializer(Optional = true)]
+        public Vector2 InitialVelocity = Vector2.Zero;
+
+        /// <summary>
+        /// Initial orientation of the projectile. As with the initial
+        /// velocity, this is rotated by the emitters rotation, and the
+        /// rotation applies directly if the emitter is facing to the right,
+        /// i.e. its own rotation is zero.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public float InitialRotation = 0;
 
         /// <summary>
         /// Acceleration force applied to this projectile.
@@ -40,6 +66,12 @@ namespace Space.Data
         public float Friction = 0;
 
         /// <summary>
+        /// The spin of the projectile.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public float Spin = 0;
+
+        /// <summary>
         /// The time this projectile will stay alive before disappearing.
         /// </summary>
         [ContentSerializer(Optional = true)]
@@ -50,10 +82,15 @@ namespace Space.Data
         public Packet Packetize(Packet packet)
         {
             packet.Write(Texture)
-                .Write(Damage)
+                .Write(Effect)
+                .Write(Scale)
                 .Write(CollisionRadius)
+                .Write(Damage)
                 .Write(InitialVelocity)
+                .Write(InitialRotation)
+                .Write(AccelerationForce)
                 .Write(Friction)
+                .Write(Spin)
                 .Write(TimeToLive);
 
             return packet;
@@ -62,10 +99,15 @@ namespace Space.Data
         public void Depacketize(Packet packet)
         {
             Texture = packet.ReadString();
-            Damage = packet.ReadSingle();
+            Effect = packet.ReadString();
+            Scale = packet.ReadSingle();
             CollisionRadius = packet.ReadSingle();
-            InitialVelocity = packet.ReadSingle();
+            Damage = packet.ReadSingle();
+            InitialVelocity = packet.ReadVector2();
+            InitialRotation = packet.ReadSingle();
+            AccelerationForce = packet.ReadSingle();
             Friction = packet.ReadSingle();
+            Spin = packet.ReadSingle();
             TimeToLive = packet.ReadInt32();
         }
 
@@ -73,9 +115,12 @@ namespace Space.Data
         {
             hasher.Put(BitConverter.GetBytes(CollisionRadius));
             hasher.Put(BitConverter.GetBytes(Damage));
-            hasher.Put(BitConverter.GetBytes(InitialVelocity));
+            hasher.Put(BitConverter.GetBytes(InitialVelocity.X));
+            hasher.Put(BitConverter.GetBytes(InitialVelocity.Y));
+            hasher.Put(BitConverter.GetBytes(InitialRotation));
             hasher.Put(BitConverter.GetBytes(AccelerationForce));
             hasher.Put(BitConverter.GetBytes(Friction));
+            hasher.Put(BitConverter.GetBytes(Spin));
             hasher.Put(BitConverter.GetBytes(TimeToLive));
         }
 

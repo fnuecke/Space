@@ -51,7 +51,7 @@
               <Texture>Textures/ship</Texture>
               <CollisionRadius>3</CollisionRadius>
               <Damage>5</Damage>
-              <InitialVelocity>10</InitialVelocity>
+              <InitialVelocity>10 0</InitialVelocity>
             </Item>
           </Projectiles>
         </Item>

@@ -200,12 +200,13 @@ namespace Engine.Collections
                         // Found it! See if the new point falls into the same
                         // node, otherwise re-insert.
                         var newNode = FindNode(newPoint, out nodeX, out nodeY, out nodeSize);
-                        if (oldNode == newNode)
-                        {
-                            // Same node, just update the entry.
-                            nodeEntry.Value.Point = newPoint;
-                        }
-                        else
+                        // TODO this can lead to lost updates, apparently (exception below), not sure why
+                        //if (oldNode == newNode)
+                        //{
+                        //    // Same node, just update the entry.
+                        //    nodeEntry.Value.Point = newPoint;
+                        //}
+                        //else
                         {
                             // Different node, re-insert.
                             Remove(oldPoint, value);
@@ -217,6 +218,7 @@ namespace Engine.Collections
                     }
                 }
             }
+            Print("qt_update_dump");
             throw new ArgumentException("Entry not in the tree at the specified point.", "value");
         }
 
@@ -952,6 +954,102 @@ namespace Engine.Collections
         {
             return GetEnumerator();
         }
+
+        #endregion
+
+        #region Drawing (mostly for debugging)
+
+
+        public void Print(string name = "index")
+        {
+            var bitmap = new System.Drawing.Bitmap(8192, 8192);
+
+            var graphics = System.Drawing.Graphics.FromImage(bitmap);
+
+            graphics.Clear(System.Drawing.Color.White);
+            graphics.TranslateTransform(_bounds.Width >> 1, _bounds.Height >> 1);
+            var nodeSize = _bounds.Width;
+            var node = _root;
+            while (node != null && !node.IsLeaf && node.GetChildrenCount() < 2)
+            {
+                nodeSize >>= 1;
+                for (int i = 0; i < 4; ++i)
+                {
+                    if (node.Children[i] != null)
+                    {
+                        node = node.Children[i];
+                        switch (i)
+                        {
+                            case 0:
+                                break;
+                            case 1:
+                                graphics.TranslateTransform(-nodeSize, 0);
+                                break;
+                            case 2:
+                                graphics.TranslateTransform(0, -nodeSize);
+                                break;
+                            case 3:
+                                graphics.TranslateTransform(-nodeSize, -nodeSize);
+                                break;
+                        }
+                        break;
+                    }
+                }
+            }
+            graphics.ScaleTransform(8192 / (float)nodeSize, 8192 / (float)nodeSize);
+
+            DrawNode(0, 0, node, nodeSize, graphics);
+
+            bitmap.Save(name + ".bmp");
+        }
+
+        private void DrawNode(int x, int y, Node node, int size, System.Drawing.Graphics graphics)
+        {
+            if (node == null)
+            {
+                return;
+            }
+
+            var pen = new System.Drawing.Pen(_colors.ContainsKey(size) ? _colors[size] : System.Drawing.Color.DarkBlue, 1);
+            graphics.DrawRectangle(pen, x, y, size - 1, size - 1);
+            //graphics.DrawString(node.GetCount().ToString(), new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, 10),
+            //    new System.Drawing.SolidBrush(System.Drawing.Color.Red), x + 3 + ((int)System.Math.Log(size, 2) - 6) * 10, y + 3);
+
+            if (node.IsLeaf)
+            {
+                pen = new System.Drawing.Pen(System.Drawing.Color.Blue, 1);
+                foreach (var entry in node.Entries)
+                {
+                    graphics.DrawEllipse(pen, entry.Value.Point.X - 2, entry.Value.Point.Y - 2, 3, 3);
+                    graphics.DrawString(entry.Value.Value.ToString(), new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, 10),
+                        new System.Drawing.SolidBrush(System.Drawing.Color.Black), entry.Value.Point.X, entry.Value.Point.Y);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < 4; ++i)
+                {
+                    DrawNode(x + (((i & 1) == 0) ? 0 : (size >> 1)),
+                             y + (((i & 2) == 0) ? 0 : (size >> 1)), node.Children[i], size >> 1, graphics);
+                }
+            }
+        }
+
+        private Dictionary<int, System.Drawing.Color> _colors = new Dictionary<int, System.Drawing.Color>()
+        {
+            { 1 << 0, System.Drawing.Color.Magenta },
+            { 1 << 1, System.Drawing.Color.Tomato },
+            { 1 << 2, System.Drawing.Color.SpringGreen },
+            { 1 << 3, System.Drawing.Color.SkyBlue },
+            { 1 << 4, System.Drawing.Color.Wheat },
+            { 1 << 5, System.Drawing.Color.Violet },
+            { 1 << 6, System.Drawing.Color.Tan },
+            { 1 << 7, System.Drawing.Color.Blue },
+            { 1 << 8, System.Drawing.Color.Orange },
+            { 1 << 9, System.Drawing.Color.Green },
+            { 1 << 10, System.Drawing.Color.Red },
+            { 1 << 11, System.Drawing.Color.Yellow }
+        };
 
         #endregion
     }

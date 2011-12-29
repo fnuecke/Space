@@ -60,25 +60,28 @@ namespace Space.ComponentSystem.Components
             if (IsShooting)
             {
                 var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
-                if (modules != null)
+                var energy = Entity.GetComponent<Energy>();
+                var fraction = Entity.GetComponent<Fraction>();
+
+                if (modules != null && energy != null && fraction != null)
                 {
                     foreach (var weapon in modules.GetModules<WeaponModule>())
                     {
                         var energyConsumption = modules.GetValue(EntityAttributeType.WeaponEnergyConsumption, weapon.EnergyConsumption);
-                        var energie = Entity.GetComponent<Energy>();
-                        if (energie != null && energie.Value >= energyConsumption)
+                        if (energy != null && energy.Value >= energyConsumption)
                         {
                             // Test if this weapon is on cooldown.
                             if (_cooldowns[weapon.UID] == 0)
                             {
-                                energie.Value -= energyConsumption;
+                                energy.Value -= energyConsumption;
                                 // No, fire it.
                                 _cooldowns[weapon.UID] = (int)modules.GetValue(EntityAttributeType.WeaponCooldown, weapon.Cooldown);
 
                                 // Generate projectiles.
-                                foreach (var projectile in weapon.Projectiles)
+                                foreach (var projectileData in weapon.Projectiles)
                                 {
-                                    Entity.Manager.AddEntity(EntityFactory.CreateProjectile(Entity, projectile));
+                                    Entity.Manager.AddEntity(EntityFactory.CreateProjectile(
+                                        projectileData, Entity, fraction.Value));
                                 }
 
                                 // Generate message.

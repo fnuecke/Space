@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -19,33 +20,31 @@ namespace Space.ComponentSystem.Entities
         {
             var entity = new Entity();
 
+            var modules = new EntityModules<EntityAttributeType>();
+            var health = new Health();
+            var energy = new Energy();
+
             entity.AddComponent(new Transform(new Vector2(16000, 16000)));
-            entity.AddComponent(new Friction(0.01f, 0.02f));
-            entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, (uint)fraction));
-            entity.AddComponent(new Avatar(fraction.ToPlayerNumber()));
-            entity.AddComponent(new TransformedRenderer(shipData.Texture));
-            entity.AddComponent(new Acceleration());
-            entity.AddComponent(new Spin());
             entity.AddComponent(new Velocity());
+            entity.AddComponent(new Spin());
+            entity.AddComponent(new Acceleration());
+            entity.AddComponent(new Friction(0.01f, 0.02f));
+            // TODO compute based on equipped components
+            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 1));
+            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup | (ulong)fraction << CollisionSystem.FirstIndexGroup));
+            entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, (uint)fraction));
+            entity.AddComponent(new Fraction(fraction));
+            entity.AddComponent(new Avatar(fraction.ToPlayerNumber()));
+            entity.AddComponent(new ShipControl());
             entity.AddComponent(new WeaponControl());
             entity.AddComponent(new WeaponSound());
-            entity.AddComponent(new ShipControl());
-            entity.AddComponent(new Index());
-
-            var modules = new EntityModules<EntityAttributeType>();
+            entity.AddComponent(new TransformedRenderer(shipData.Texture));
             entity.AddComponent(modules);
-
-            var gravitation = new Gravitation();
-            gravitation.GravitationType = Gravitation.GravitationTypes.Atractee;
-            gravitation.Mass = 1; // TODO compute based on equipped components
-            entity.AddComponent(gravitation);
-
-            // Add before modules to get proper values.
-            var health = new Health();
             entity.AddComponent(health);
-            var energy = new Energy();
             entity.AddComponent(energy);
 
+            // Add after all components are registered to give them the chance
+            // to react to the ModuleAdded messages.
             modules.AddModules(shipData.Hulls);
             modules.AddModules(shipData.Reactors);
             modules.AddModules(shipData.Thrusters);
@@ -59,84 +58,60 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateProjectile(IEntity emitter, ProjectileData projectile)
+        public static IEntity CreateProjectile(ProjectileData projectile, IEntity emitter, Fractions fraction)
         {
             var entity = new Entity();
 
-            // Give the projectile its position.
-            var transform = new Transform();
             var emitterTransform = emitter.GetComponent<Transform>();
-            if (emitterTransform != null)
-            {
-                transform.Translation = emitterTransform.Translation;
-                transform.Rotation = emitterTransform.Rotation;
-            }
+            var emitterVelocity = emitter.GetComponent<Velocity>();
+
+            var transform = new Transform(emitterTransform.Translation, emitterTransform.Rotation + projectile.InitialRotation);
             entity.AddComponent(transform);
 
-            // Make it visible.
-            if (!string.IsNullOrWhiteSpace(projectile.Texture))
-            {
-                var renderer = new TransformedRenderer();
-                renderer.TextureName = projectile.Texture;
-                renderer.Scale = 0.25f;
-                entity.AddComponent(renderer);
-            }
-
-            // Give it its initial velocity.
-            var velocity = new Velocity();
-            if (projectile.InitialVelocity != 0)
-            {
-                var rotation = Vector2.UnitX;
-                if (emitterTransform != null)
-                {
-                    rotation = Rotate(rotation, transform.Rotation);
-                }
-                velocity.Value = rotation * projectile.InitialVelocity;
-            }
-            var emitterVelocity = emitter.GetComponent<Velocity>();
+            var velocity = new Velocity(Rotate(projectile.InitialVelocity, transform.Rotation));
             if (emitterVelocity != null)
             {
                 velocity.Value += emitterVelocity.Value;
             }
             entity.AddComponent(velocity);
-
-            // Make it collidable.
-            var collidable = new CollidableSphere();
-            collidable.Radius = projectile.CollisionRadius;
-            var avatar = emitter.GetComponent<Avatar>();
-            if (avatar != null)
+            if (projectile.AccelerationForce > 0)
             {
-                // Can hit anything but the player who shot.
-                collidable.CollisionGroups = (uint)avatar.PlayerNumber.ToFraction();
+                entity.AddComponent(new Acceleration(projectile.AccelerationForce * Rotate(Vector2.UnitX, transform.Rotation)));
             }
-            entity.AddComponent(collidable);
-
-            // Give it some friction.
             if (projectile.Friction > 0)
             {
-                var friction = new Friction();
-                friction.Value = projectile.Friction;
-                entity.AddComponent(friction);
+                entity.AddComponent(new Friction(projectile.Friction));
             }
-
-            // Make it expire after some time.
+            if (projectile.Spin > 0)
+            {
+                entity.AddComponent(new Spin(projectile.Spin));
+            }
             if (projectile.TimeToLive > 0)
             {
-                var expiration = new Expiration();
-                expiration.TimeToLive = projectile.TimeToLive;
-                entity.AddComponent(expiration);
+                entity.AddComponent(new Expiration(projectile.TimeToLive));
             }
-
-            // The damage it does.
             if (projectile.Damage != 0)
             {
-                var damage = new CollisionDamage();
-                damage.Damage = projectile.Damage;
-                entity.AddComponent(damage);
+                entity.AddComponent(new CollisionDamage(projectile.Damage));
             }
 
-            // Make it indexable.
-            entity.AddComponent(new Index());
+            if (projectile.Damage > 0)
+            {
+                entity.AddComponent(new Index((ulong)fraction << CollisionSystem.FirstIndexGroup));
+            }
+            else if (projectile.Damage < 0)
+            {
+                entity.AddComponent(new Index((ulong)~(uint)fraction << CollisionSystem.FirstIndexGroup));
+            }
+            entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, (uint)fraction));
+            if (!string.IsNullOrWhiteSpace(projectile.Texture))
+            {
+                entity.AddComponent(new TransformedRenderer(projectile.Texture, projectile.Scale));
+            }
+            if (!string.IsNullOrWhiteSpace(projectile.Effect))
+            {
+                // TODO
+            }
 
             return entity;
         }
@@ -155,7 +130,7 @@ namespace Space.ComponentSystem.Entities
         {
             var entity = new Entity();
 
-            entity.AddComponent(new Index());
+            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup));
 
             var transform = new Transform();
             transform.Translation = position;
@@ -196,7 +171,7 @@ namespace Space.ComponentSystem.Entities
             ellipse.Period = period;
             entity.AddComponent(ellipse);
 
-            entity.AddComponent(new Index());
+            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup));
 
             var renderer = new PlanetRenderer();
             renderer.TextureName = texture;

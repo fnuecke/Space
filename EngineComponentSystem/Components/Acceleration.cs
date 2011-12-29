@@ -24,6 +24,20 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Constructor
+
+        public Acceleration(Vector2 acceleration)
+        {
+            this.Value = acceleration;
+        }
+
+        public Acceleration()
+            : this(Vector2.Zero)
+        {
+        }
+
+        #endregion
+
         #region Logic
 
         /// <summary>

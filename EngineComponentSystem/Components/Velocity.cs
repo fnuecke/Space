@@ -24,6 +24,20 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Constructor
+
+        public Velocity(Vector2 velocity)
+        {
+            this.Value = velocity;
+        }
+
+        public Velocity()
+            : this(Vector2.Zero)
+        {
+        }
+
+        #endregion
+
         #region Logic
 
         /// <summary>

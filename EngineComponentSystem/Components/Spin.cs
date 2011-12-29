@@ -23,6 +23,20 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Constructor
+
+        public Spin(float spin)
+        {
+            this.Value = spin;
+        }
+
+        public Spin()
+            : this(0)
+        {
+        }
+
+        #endregion
+
         #region Logic
 
         /// <summary>

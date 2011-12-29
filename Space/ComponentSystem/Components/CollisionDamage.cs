@@ -53,6 +53,26 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
+        #region Constructor
+
+        public CollisionDamage(int cooldown, float damage)
+        {
+            this.Cooldown = cooldown;
+            this.Damage = damage;
+        }
+
+        public CollisionDamage(float damage)
+            : this(0, damage)
+        {
+        }
+
+        public CollisionDamage()
+            : this(0, 0)
+        {
+        }
+
+        #endregion
+
         #region Logic
 
         /// <summary>

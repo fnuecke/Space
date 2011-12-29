@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Components.Messages;
 using Engine.ComponentSystem.Parameterizations;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -36,10 +37,14 @@ namespace Engine.ComponentSystem.Components
 
         #region Constructor
 
-        public Index()
+        public Index(ulong groups)
         {
-            // Belong to the first index group per default.
-            IndexGroups = 1;
+            this.IndexGroups = groups;
+        }
+
+        public Index()
+            : this(IndexSystem.DefaultIndexGroup)
+        {
         }
 
         #endregion
