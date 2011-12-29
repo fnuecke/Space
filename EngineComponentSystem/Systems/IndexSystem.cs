@@ -31,10 +31,10 @@ namespace Engine.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// The actual index we're using, mapping entity positions to the
+        /// The actual indexes we're using, mapping entity positions to the
         /// entities, allowing faster range queries.
         /// </summary>
-        private Dictionary<int, QuadTree<int>> _trees = new Dictionary<int, QuadTree<int>>();
+        private QuadTree<int>[] _trees = new QuadTree<int>[sizeof(ulong) * 8];
 
         /// <summary>
         /// Reusable parameterization.
@@ -53,9 +53,9 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="query">The entity to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <returns>All entities in range (including the query entity).</returns>
-        public List<IEntity> GetNeighbors(IEntity query, float range, int index = 0)
+        public List<IEntity> GetNeighbors(IEntity query, float range, ulong groups = 1)
         {
-            return GetNeighbors(query.GetComponent<Transform>().Translation, range, index);
+            return GetNeighbors(query.GetComponent<Transform>().Translation, range, groups);
         }
 
         /// <summary>
@@ -66,14 +66,16 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="query">The point to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <returns>All entities in range.</returns>
-        public List<IEntity> GetNeighbors(Vector2 query, float range, int index = 0)
+        public List<IEntity> GetNeighbors(Vector2 query, float range, ulong groups = 1)
         {
             var result = new List<IEntity>();
 
-            EnsureIndexExists(index);
-            foreach (var neighborId in _trees[index].RangeQuery(query, range))
+            foreach (var tree in TreesForGroups(groups))
             {
-                result.Add(Manager.EntityManager.GetEntity(neighborId));
+                foreach (var neighborId in tree.RangeQuery(query, range))
+                {
+                    result.Add(Manager.EntityManager.GetEntity(neighborId));
+                }
             }
 
             return result;
@@ -110,7 +112,11 @@ namespace Engine.ComponentSystem.Systems
                             continue;
                         }
 
-                        _trees[_parameterization.IndexGroup].Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
+                        // Update all indexes the component is part of.
+                        foreach (var tree in TreesForGroups(_parameterization.IndexGroups))
+                        {
+                            tree.Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
+                        }
                     }
                 }
             }
@@ -131,8 +137,11 @@ namespace Engine.ComponentSystem.Systems
                 // Only support Index components for now.
                 if (index != null)
                 {
-                    EnsureIndexExists(index.IndexGroup);
-                    _trees[index.IndexGroup].Add(transform.Translation, component.Entity.UID);
+                    EnsureIndexesExist(index.IndexGroups);
+                    foreach (var tree in TreesForGroups(index.IndexGroups))
+                    {
+                        tree.Add(transform.Translation, component.Entity.UID);
+                    }
                 }
             }
         }
@@ -166,7 +175,7 @@ namespace Engine.ComponentSystem.Systems
                     position = transform.Translation;
                 }
 
-                _trees[index.IndexGroup].Remove(position, component.Entity.UID);
+                _trees[index.IndexGroups].Remove(position, component.Entity.UID);
             }
         }
 
@@ -174,11 +183,31 @@ namespace Engine.ComponentSystem.Systems
 
         #region Utility methods
 
-        private void EnsureIndexExists(int indexId)
+        private void EnsureIndexesExist(ulong groups)
         {
-            if (!_trees.ContainsKey(indexId))
+            int index = 0;
+            while (groups > 0)
             {
-                _trees.Add(indexId, new QuadTree<int>(maxEntriesPerNode, minNodeSize));
+                if ((groups & 1) == 1 && _trees[index] == null)
+                {
+                    _trees[index] = new QuadTree<int>(maxEntriesPerNode, minNodeSize);
+                }
+                groups = groups >> 1;
+                ++index;
+            }
+        }
+
+        private IEnumerable<QuadTree<int>> TreesForGroups(ulong groups)
+        {
+            int index = 0;
+            while (groups > 0)
+            {
+                if ((groups & 1) == 1 && _trees[index] != null)
+                {
+                    yield return _trees[index];
+                }
+                groups = groups >> 1;
+                ++index;
             }
         }
 
@@ -191,7 +220,7 @@ namespace Engine.ComponentSystem.Systems
             var copy = (IndexSystem)base.Clone();
 
             // Create own index. Will be filled when re-adding components.
-            copy._trees = new Dictionary<int, QuadTree<int>>();
+            copy._trees = new QuadTree<int>[sizeof(ulong) * 8];
 
             return copy;
         }

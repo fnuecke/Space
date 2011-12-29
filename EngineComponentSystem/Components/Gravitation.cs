@@ -6,6 +6,10 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
+    /// <summary>
+    /// Component that takes care of entities working in a gravitational
+    /// environment.
+    /// </summary>
     public class Gravitation : AbstractComponent
     {
         #region Types
@@ -19,6 +23,15 @@ namespace Engine.ComponentSystem.Components
             Atractor = 1,
             Atractee = 2
         }
+
+        #endregion
+
+        #region Constants
+
+        /// <summary>
+        /// Index group to use for gravitational computations.
+        /// </summary>
+        public const int GravitationIndexGroup = 1;
 
         #endregion
 

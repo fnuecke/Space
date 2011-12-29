@@ -8,9 +8,9 @@ namespace Engine.ComponentSystem.Parameterizations
     public sealed class IndexParameterization
     {
         /// <summary>
-        /// The group the index component belongs to.
+        /// The groups the index component belongs to.
         /// </summary>
-        public int IndexGroup { get; set; }
+        public ulong IndexGroups { get; set; }
 
         /// <summary>
         /// Set in index components to indicate their entities position has

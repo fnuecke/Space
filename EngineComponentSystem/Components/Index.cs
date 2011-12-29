@@ -18,7 +18,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The index group this component will belong to.
         /// </summary>
-        public int IndexGroup { get; set; }
+        public ulong IndexGroups { get; set; }
 
         /// <summary>
         /// Whether the position of our entity changed since the last update.
@@ -29,6 +29,16 @@ namespace Engine.ComponentSystem.Components
         /// The position we had before a position change.
         /// </summary>
         public Vector2 PreviousPosition { get; private set; }
+
+        #endregion
+
+        #region Constructor
+
+        public Index()
+        {
+            // Belong to the first index group per default.
+            IndexGroups = 1;
+        }
 
         #endregion
 
@@ -47,7 +57,7 @@ namespace Engine.ComponentSystem.Components
 
             if (PositionChanged)
             {
-                args.IndexGroup = IndexGroup;
+                args.IndexGroups = IndexGroups;
                 args.PositionChanged = true;
                 args.PreviousPosition = PreviousPosition;
             }
@@ -91,7 +101,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Packetize(packet);
 
-            packet.Write(IndexGroup);
+            packet.Write(IndexGroups);
             packet.Write(PositionChanged);
             packet.Write(PreviousPosition);
 
@@ -102,7 +112,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            IndexGroup = packet.ReadInt32();
+            IndexGroups = packet.ReadUInt64();
             PositionChanged = packet.ReadBoolean();
             PreviousPosition = packet.ReadVector2();
         }
@@ -111,7 +121,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(IndexGroup));
+            hasher.Put(BitConverter.GetBytes(IndexGroups));
             hasher.Put(BitConverter.GetBytes(PositionChanged));
             hasher.Put(BitConverter.GetBytes(PreviousPosition.X));
             hasher.Put(BitConverter.GetBytes(PreviousPosition.Y));
