@@ -27,19 +27,21 @@ namespace Space.ScreenManagement.Screens
             : base("Paused")
         {
             // Create our menu entries.
-            var resumeGameMenuEntry = new MenuEntry("Resume Game");
-            var quitGameMenuEntry = new MenuEntry("Quit Game");
+            var resume = new MenuEntry("Resume Game");
+            var quit = new MenuEntry("Quit Game");
 
             // Hook up menu event handlers.
-            resumeGameMenuEntry.Activated += delegate(object sender, EventArgs e)
+            resume.Activated += delegate(object sender, EventArgs e)
             {
                 ExitScreen();
             };
-            quitGameMenuEntry.Activated += QuitGameMenuEntrySelected;
+            quit.Activated += QuitGameMenuEntrySelected;
 
             // Add entries to the menu.
-            MenuEntries.Add(resumeGameMenuEntry);
-            MenuEntries.Add(quitGameMenuEntry);
+            MenuEntries.Add(resume);
+            MenuEntries.Add(quit);
+
+            SetEscapeEntry(resume);
         }
 
         #endregion

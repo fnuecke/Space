@@ -114,7 +114,10 @@ namespace Space.ScreenManagement.Screens
                 else if (input.KeyCancel)
                 {
                     // Exit out of this menu.
-                    _escapeEntry.Activate();
+                    if (_escapeEntry != null)
+                    {
+                        _escapeEntry.Activate();
+                    }
                     return;
                 }
             }
@@ -235,7 +238,7 @@ namespace Space.ScreenManagement.Screens
 
             spriteBatch.Begin();
 
-            _entriesBounds.Inflate(20, 20);
+            _entriesBounds.Inflate(40, 20);
             spriteBatch.Draw(ScreenManager.PixelTexture, _entriesBounds, new Color(0, 0, 0, 0.5f));
 
             // Draw each menu entry in turn.

@@ -121,6 +121,7 @@ namespace Space.ScreenManagement.Screens.Entries
                 {
                     _input.Clear();
                     _input.Append(_confirmedInput);
+                    _cursor = _input.Length;
                     Focused = true;
                 }
             }
@@ -130,6 +131,7 @@ namespace Space.ScreenManagement.Screens.Entries
                 {
                     _input.Clear();
                     _input.Append(_confirmedInput);
+                    _cursor = _input.Length;
                     Focused = true;
                 }
             }

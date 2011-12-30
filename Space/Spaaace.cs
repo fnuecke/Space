@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using Engine.ComponentSystem.Components;
@@ -60,6 +61,7 @@ namespace Space
         private SpriteBatch _spriteBatch;
         private ScreenManager _screenManager;
         private GameConsole _console;
+        private List<IGameComponent> _componentsToDispose = new List<IGameComponent>();
 
         private AudioEngine _audioEngine;
         private WaveBank _waveBank;
@@ -120,6 +122,11 @@ namespace Space
             // Some window settings.
             Window.Title = "Space. The Game. Seriously.";
             IsMouseVisible = true;
+
+            Components.ComponentRemoved += delegate(object sender, GameComponentCollectionEventArgs e)
+            {
+                _componentsToDispose.Add(e.GameComponent);
+            };
 
             // Add some more utility components.
             Components.Add(new KeyboardInputManager(this));
@@ -211,6 +218,15 @@ namespace Space
             base.Update(gameTime);
 
             _audioEngine.Update();
+
+            foreach (var component in _componentsToDispose)
+            {
+                if (component is IDisposable)
+                {
+                    ((IDisposable)component).Dispose();
+                }
+            }
+            _componentsToDispose.Clear();
         }
 
         #endregion
@@ -252,9 +268,9 @@ namespace Space
         {
             if (Client != null)
             {
-                Client.Dispose();
                 Components.Remove(Client);
             }
+            Client = null;
         }
 
         /// <summary>
@@ -264,9 +280,9 @@ namespace Space
         {
             if (Server != null)
             {
-                Server.Dispose();
                 Components.Remove(Server);
             }
+            Server = null;
         }
 
         /// <summary>
