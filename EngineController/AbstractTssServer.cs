@@ -70,24 +70,6 @@ namespace Engine.Controller
             })
         {
             _lastGameStateSentTime = new DateTime[Session.MaxPlayers];
-
-            Session.JoinRequested += HandleJoinRequested;
-        }
-
-        /// <summary>
-        /// Remove ourselves as listeners.
-        /// </summary>
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (Session != null)
-                {
-                    Session.JoinRequested -= HandleJoinRequested;
-                }
-            }
-
-            base.Dispose(disposing);
         }
 
         #endregion
@@ -120,19 +102,6 @@ namespace Engine.Controller
                 }
             }
         }
-
-        #endregion
-
-        #region Events
-
-        /// <summary>
-        /// A player asked to join our game. He passed the session checks (game full,
-        /// data sent was valid). In this callback it is possible to override this,
-        /// and forbid the joining, or send him some custom data with the response.
-        /// </summary>
-        /// <param name="sender">the underlying session.</param>
-        /// <param name="e">information of the type <c>JoinRequestEventArgs</c>.</param>
-        protected abstract void HandleJoinRequested(object sender, EventArgs e);
 
         #endregion
 

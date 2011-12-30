@@ -73,12 +73,7 @@ namespace GameStateManagement
         void StartServerMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
             ScreenManager.RestartServer();
-            ScreenManager.RestartClient();
-
-            // Autojoin self.
-            PlayerData info = new PlayerData();
-            info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-            ScreenManager.Client.Controller.Session.Join(ScreenManager.Server.Session, Settings.Instance.PlayerName, info);
+            ScreenManager.RestartClient(true);
 
             LoadingScreen.Load(ScreenManager, true, new GameplayScreen());
         }

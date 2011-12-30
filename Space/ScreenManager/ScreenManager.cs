@@ -28,30 +28,40 @@ namespace GameStateManagement
     /// </summary>
     public class ScreenManager : DrawableGameComponent
     {
+        #region Properties
+
+        /// <summary>
+        /// Texture used for rendering the background.
+        /// </summary>
+        public Texture2D PixelTexture { get; private set; }
+
+        public GameServer Server { get; set; }
+
+        public GameClient Client { get; set; }
+
+        #endregion
+
         #region Fields
 
         List<GameScreen> screens = new List<GameScreen>();
+
         List<GameScreen> screensToUpdate = new List<GameScreen>();
 
         InputState input = new InputState();
 
         SpriteBatch spriteBatch;
+
         SpriteFont font;
+
         Texture2D blankTexture;
-        /// <summary>
-        /// Texture used for rendering the background.
-        /// </summary>
-        public Texture2D PixelTexture { get; private set; }
+
         bool isInitialized;
-        public GameServer Server { get; set; }
-        public GameClient Client { get; set; }
         
         bool traceEnabled;
 
         #endregion
 
         #region Properties
-
 
         /// <summary>
         /// A default SpriteBatch shared by all the screens. This saves
@@ -62,8 +72,6 @@ namespace GameStateManagement
             get { return spriteBatch; }
         }
 
-      
-
         /// <summary>
         /// A default font shared by all the screens. This saves
         /// each screen having to bother loading their own local copy.
@@ -72,7 +80,6 @@ namespace GameStateManagement
         {
             get { return font; }
         }
-
 
         /// <summary>
         /// If true, the manager prints out a list of all the screens
@@ -85,11 +92,9 @@ namespace GameStateManagement
             set { traceEnabled = value; }
         }
 
-
         #endregion
 
         #region Initialization
-
 
         /// <summary>
         /// Constructs a new screen manager component.
@@ -102,7 +107,6 @@ namespace GameStateManagement
             //TouchPanel.EnabledGestures = GestureType.None;
         }
 
-
         /// <summary>
         /// Initializes the screen manager component.
         /// </summary>
@@ -114,7 +118,6 @@ namespace GameStateManagement
 
             isInitialized = true;
         }
-
 
         /// <summary>
         /// Load your graphics content.
@@ -135,7 +138,6 @@ namespace GameStateManagement
             }
         }
 
-
         /// <summary>
         /// Unload your graphics content.
         /// </summary>
@@ -148,11 +150,9 @@ namespace GameStateManagement
             }
         }
 
-
         #endregion
 
         #region Update and Draw
-
 
         /// <summary>
         /// Allows each screen to run logic.
@@ -207,7 +207,6 @@ namespace GameStateManagement
                 TraceScreens();
         }
 
-
         /// <summary>
         /// Prints a list of all the screens, for debugging.
         /// </summary>
@@ -221,42 +220,6 @@ namespace GameStateManagement
             Debug.WriteLine(string.Join(", ", screenNames.ToArray()));
         }
 
-        public void DisposeGame()
-        {
-            if (Client != null)
-            {
-                Client.Dispose();
-                Game.Components.Remove(Client);
-                Client = null;
-            }
-            if (Server != null)
-            {
-                Server.Dispose();
-                Game.Components.Remove(Server);
-                Server = null;
-            }
-        }
-        public void RestartServer()
-        {
-            if (Server != null)
-            {
-                Server.Dispose();
-                Game.Components.Remove(Server);
-            }
-            Server = new GameServer(Game);
-            Game.Components.Add(Server);
-        }
-
-        public void RestartClient()
-        {
-            if (Client != null)
-            {
-                Client.Dispose();
-                Game.Components.Remove(Client);
-            }
-            Client = new GameClient(Game);
-            Game.Components.Add(Client);
-        }
         /// <summary>
         /// Tells each screen to draw itself.
         /// </summary>
@@ -271,11 +234,58 @@ namespace GameStateManagement
             }
         }
 
+        #endregion
+
+        #region Server / Client
+
+        public void RestartClient(bool local = false)
+        {
+            DisposeClient();
+            if (local)
+            {
+                Client = new GameClient(Game, Server);
+            }
+            else
+            {
+                Client = new GameClient(Game);
+            }
+            Game.Components.Add(Client);
+        }
+
+        public void RestartServer()
+        {
+            DisposeServer();
+            Server = new GameServer(Game);
+            Game.Components.Add(Server);
+        }
+
+        public void DisposeClient()
+        {
+            if (Client != null)
+            {
+                Client.Dispose();
+                Game.Components.Remove(Client);
+            }
+        }
+
+        public void DisposeServer()
+        {
+            if (Server != null)
+            {
+                Server.Dispose();
+                Game.Components.Remove(Server);
+            }
+        }
+
+        public void DisposeGame()
+        {
+            DisposeClient();
+            DisposeServer();
+        }
 
         #endregion
 
         #region Public Methods
-
 
         /// <summary>
         /// Adds a new screen to the screen manager.
@@ -297,7 +307,6 @@ namespace GameStateManagement
             // update the TouchPanel to respond to gestures this screen is interested in
             //TouchPanel.EnabledGestures = screen.EnabledGestures;
         }
-
 
         /// <summary>
         /// Removes a screen from the screen manager. You should normally
@@ -324,7 +333,6 @@ namespace GameStateManagement
             }
         }
 
-
         /// <summary>
         /// Expose an array holding all the screens. We return a copy rather
         /// than the real master list, because screens should only ever be added
@@ -334,7 +342,6 @@ namespace GameStateManagement
         {
             return screens.ToArray();
         }
-
 
         /// <summary>
         /// Helper draws a translucent black fullscreen sprite, used for fading
@@ -352,7 +359,6 @@ namespace GameStateManagement
 
             spriteBatch.End();
         }
-
 
         #endregion
     }

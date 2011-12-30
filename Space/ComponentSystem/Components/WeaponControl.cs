@@ -61,9 +61,9 @@ namespace Space.ComponentSystem.Components
             {
                 var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
                 var energy = Entity.GetComponent<Energy>();
-                var fraction = Entity.GetComponent<Fraction>();
+                var faction = Entity.GetComponent<Faction>();
 
-                if (modules != null && energy != null && fraction != null)
+                if (modules != null && energy != null && faction != null)
                 {
                     foreach (var weapon in modules.GetModules<WeaponModule>())
                     {
@@ -81,7 +81,7 @@ namespace Space.ComponentSystem.Components
                                 foreach (var projectileData in weapon.Projectiles)
                                 {
                                     Entity.Manager.AddEntity(EntityFactory.CreateProjectile(
-                                        projectileData, Entity, fraction.Value));
+                                        projectileData, Entity, faction.Value));
                                 }
 
                                 // Generate message.

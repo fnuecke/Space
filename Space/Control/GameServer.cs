@@ -1,34 +1,36 @@
 ﻿using System;
 using Engine.ComponentSystem.Systems;
+using Engine.Controller;
 using Engine.Session;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Entities;
+using Space.Data;
 using Space.Session;
 
 namespace Space.Control
 {
     public class GameServer : GameComponent
     {
-        internal IServerSession Session { get; private set; }
-        internal ServerController Controller { get; private set; }
+        public ISimulationController<IServerSession> Controller { get; set; }
 
         public GameServer(Game game)
             : base(game)
         {
-            Session = new HybridServerSession<PlayerData>(7777, 8);
-            Controller = new ServerController(game, Session, 10, 0);
+            Controller = ControllerFactory.CreateServer(game);
 
-            Session.GameInfoRequested += HandleGameInfoRequested;
-            Session.PlayerLeft += HandlePlayerLeft;
+            Controller.Session.GameInfoRequested += HandleGameInfoRequested;
+            Controller.Session.PlayerLeft += HandlePlayerLeft;
+            Controller.Session.JoinRequested += HandleJoinRequested;
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                Session.GameInfoRequested -= HandleGameInfoRequested;
-                Session.PlayerLeft -= HandlePlayerLeft;
+                Controller.Session.GameInfoRequested -= HandleGameInfoRequested;
+                Controller.Session.PlayerLeft -= HandlePlayerLeft;
+                Controller.Session.JoinRequested -= HandleJoinRequested;
 
-                Session.Dispose();
                 Controller.Dispose();
             }
 
@@ -37,21 +39,34 @@ namespace Space.Control
 
         public override void Update(GameTime gameTime)
         {
-            Session.Update();
             Controller.Update(gameTime);
         }
 
         private void HandleGameInfoRequested(object sender, EventArgs e)
         {
             var args = (RequestEventArgs)e;
+
             args.Data.Write("Hello there!");
         }
 
-        protected void HandlePlayerLeft(object sender, EventArgs e)
+        private void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs)e;
+
             // Player left the game, remove his ship.
-            Controller.RemoveEntity(Controller.Simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID, Controller.Simulation.CurrentFrame);
+            Controller.Simulation.EntityManager.RemoveEntity(Controller.Simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(args.Player.Number).UID);
+        }
+
+        private void HandleJoinRequested(object sender, EventArgs e)
+        {
+            // Send current game state to client.
+            var args = (JoinRequestEventArgs)e;
+
+            // Create a ship for the player.
+            // TODO validate ship data (i.e. valid ship with valid equipment etc.)
+            var playerData = (PlayerData)args.Player.Data;
+            var ship = EntityFactory.CreateShip(playerData.Ship, args.Player.Number.ToFraction());
+            Controller.Simulation.EntityManager.AddEntity(ship);
         }
     }
 }

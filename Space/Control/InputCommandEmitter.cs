@@ -5,7 +5,6 @@ using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Input;
 using Engine.Session;
-using Engine.Simulation;
 using Engine.Simulation.Commands;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -14,8 +13,10 @@ using Space.Simulation.Commands;
 
 namespace Space.Control
 {
-    class InputCommandEmitter : GameComponent, ICommandEmitter<IFrameCommand>
+    public sealed class InputCommandEmitter : GameComponent, ICommandEmitter<IFrameCommand>
     {
+        #region Events
+        
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command
         /// will be injected into the simulation at it's current frame.
@@ -26,20 +27,25 @@ namespace Space.Control
         /// </summary>
         public event CommandEmittedEventHandler<IFrameCommand> CommandEmitted;
 
-        public bool IsEnabled { get; set; }
+        #endregion
 
-        private IClientSession _session;
-        private ISimulation _simulation;
+        #region Fields
+
+        private ISimulationController<IClientSession> _controller;
+
         private float _previousTargetRotation;
+
         private float _currentTargetRotation;
+
         private bool _rotationFinished = true;
 
-        public InputCommandEmitter(Game game, IClientSession session, ISimulation simulation)
+        #endregion
+
+        public InputCommandEmitter(Game game, ISimulationController<IClientSession> controller)
             : base(game)
         {
-            this._session = session;
-            this._simulation = simulation;
-            
+            this._controller = controller;
+
             // Register for key presses and releases (movement).
             var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
             if (keyboard != null)
@@ -83,7 +89,7 @@ namespace Space.Control
         // TODO waiting for completion to re-fire causes mini-lags, which feel awkward...
         public override void Update(GameTime gameTime)
         {
-            if (_session.ConnectionState == ClientState.Connected)
+            if (_controller != null && _controller.Session.ConnectionState == ClientState.Connected)
             {
                 // This test is necessary to figure out when player has stopped
                 // moving his mouse, so we can send a finalizing rotation command.
@@ -113,7 +119,7 @@ namespace Space.Control
         /// </summary>
         private void HandleKeyPressed(object sender, EventArgs e)
         {
-            if (_session.ConnectionState != ClientState.Connected)
+            if (_controller == null || _controller.Session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -161,7 +167,7 @@ namespace Space.Control
         /// </summary>
         private void HandleKeyReleased(object sender, EventArgs e)
         {
-            if (_session.ConnectionState != ClientState.Connected)
+            if (_controller == null || _controller.Session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -197,7 +203,7 @@ namespace Space.Control
 
         private void HandleMouseMoved(object sender, EventArgs e)
         {
-            if (_session.ConnectionState != ClientState.Connected)
+            if (_controller == null || _controller.Session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -256,9 +262,9 @@ namespace Space.Control
             }
         }
 
-        void HandleMousePressed(object sender, EventArgs e)
+        private void HandleMousePressed(object sender, EventArgs e)
         {
-            if (_session.ConnectionState != ClientState.Connected)
+            if (_controller == null || _controller.Session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -271,9 +277,9 @@ namespace Space.Control
             }
         }
 
-        void HandleMouseReleased(object sender, EventArgs e)
+        private void HandleMouseReleased(object sender, EventArgs e)
         {
-            if (_session.ConnectionState != ClientState.Connected)
+            if (_controller == null || _controller.Session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
@@ -288,14 +294,14 @@ namespace Space.Control
 
         private IEntity GetLocalAvatar()
         {
-            return _simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
+            return _controller.Simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(_controller.Session.LocalPlayer.Number);
         }
 
         /// <summary>
         /// Use this to dispatch new command events.
         /// </summary>
         /// <param name="e">the command that was generated.</param>
-        protected void OnCommand(GameCommand command)
+        private void OnCommand(GameCommand command)
         {
             if (CommandEmitted != null)
             {

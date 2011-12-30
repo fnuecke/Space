@@ -18,7 +18,7 @@ namespace Engine.Controller
         /// <summary>
         /// Used in abstract TSS server and client implementations.
         /// </summary>
-        protected enum TssControllerMessage
+        internal enum TssControllerMessage
         {
             /// <summary>
             /// Normal game command, handled in base class.

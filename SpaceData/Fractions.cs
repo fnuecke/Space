@@ -4,10 +4,10 @@ using System.Collections.Generic;
 namespace Space.Data
 {
     /// <summary>
-    /// A list of all fractions in the game.
+    /// A list of all factions in the game.
     /// </summary>
     [Flags]
-    public enum Fractions
+    public enum Factions
     {
         /// <summary>
         /// World stuff, e.g. uncontrolled vessels.
@@ -15,8 +15,8 @@ namespace Space.Data
         None = 0,
 
         /// <summary>
-        /// A neutral fraction that will always appear neutral to all other
-        /// fractions.
+        /// A neutral faction that will always appear neutral to all other
+        /// factions.
         /// </summary>
         Neutral = 1 << 0,
 
@@ -98,41 +98,41 @@ namespace Space.Data
 
     #region Conversion utils
 
-    public static class FractionsExtension
+    public static class FactionsExtension
     {
         #region Lookup tables
         
-        private static Dictionary<Fractions, int> _fractionToPlayerNumber = new Dictionary<Fractions, int>()
+        private static Dictionary<Factions, int> _factionToPlayerNumber = new Dictionary<Factions, int>()
         {
-            { Fractions.Player1, 0 },
-            { Fractions.Player2, 1 },
-            { Fractions.Player3, 2 },
-            { Fractions.Player4, 3 },
-            { Fractions.Player5, 4 },
-            { Fractions.Player6, 5 },
-            { Fractions.Player7, 6 },
-            { Fractions.Player8, 7 },
-            { Fractions.Player9, 8 },
-            { Fractions.Player10, 9 },
-            { Fractions.Player11, 10 },
-            { Fractions.Player12, 11 }
+            { Factions.Player1, 0 },
+            { Factions.Player2, 1 },
+            { Factions.Player3, 2 },
+            { Factions.Player4, 3 },
+            { Factions.Player5, 4 },
+            { Factions.Player6, 5 },
+            { Factions.Player7, 6 },
+            { Factions.Player8, 7 },
+            { Factions.Player9, 8 },
+            { Factions.Player10, 9 },
+            { Factions.Player11, 10 },
+            { Factions.Player12, 11 }
 
         };
 
-        private static Fractions[] _playerNumberToFraction = new Fractions[]
+        private static Factions[] _playerNumberToFaction = new Factions[]
         {
-            Fractions.Player1,
-            Fractions.Player2,
-            Fractions.Player3,
-            Fractions.Player4,
-            Fractions.Player5,
-            Fractions.Player6,
-            Fractions.Player7,
-            Fractions.Player8,
-            Fractions.Player9,
-            Fractions.Player10,
-            Fractions.Player11,
-            Fractions.Player12
+            Factions.Player1,
+            Factions.Player2,
+            Factions.Player3,
+            Factions.Player4,
+            Factions.Player5,
+            Factions.Player6,
+            Factions.Player7,
+            Factions.Player8,
+            Factions.Player9,
+            Factions.Player10,
+            Factions.Player11,
+            Factions.Player12
         };
 
         #endregion
@@ -140,44 +140,44 @@ namespace Space.Data
         #region Methods
 
         /// <summary>
-        /// Convert the specified fraction to a player number.
+        /// Convert the specified faction to a player number.
         /// </summary>
-        /// <param name="fraction">The fraction to convert.</param>
-        /// <returns>The player number the fraction represents.</returns>
-        public static int ToPlayerNumber(this Fractions fraction)
+        /// <param name="faction">The faction to convert.</param>
+        /// <returns>The player number the faction represents.</returns>
+        public static int ToPlayerNumber(this Factions faction)
         {
-            if (_fractionToPlayerNumber.ContainsKey(fraction))
+            if (_factionToPlayerNumber.ContainsKey(faction))
             {
-                return _fractionToPlayerNumber[fraction];
+                return _factionToPlayerNumber[faction];
             }
             else
             {
-                throw new ArgumentException("fraction");
+                throw new ArgumentException("faction");
             }
         }
 
         /// <summary>
-        /// Checks if the given fraction represents a player and nothing else.
+        /// Checks if the given faction represents a player and nothing else.
         /// </summary>
-        /// <param name="fractions">The fraction to check.</param>
+        /// <param name="factions">The faction to check.</param>
         /// <returns></returns>
-        public static bool IsPlayerNumber(this Fractions fractions)
+        public static bool IsPlayerNumber(this Factions factions)
         {
-            return (NumberOfSetBits((int)fractions) == 1) &&
-                fractions >= Fractions.Player1 &&
-                fractions <= Fractions.Player12;
+            return (NumberOfSetBits((int)factions) == 1) &&
+                factions >= Factions.Player1 &&
+                factions <= Factions.Player12;
         }
 
         /// <summary>
-        /// Convert the specified player number to the player's fraction.
+        /// Convert the specified player number to the player's faction.
         /// </summary>
         /// <param name="playerNumber">The player number to convert.</param>
-        /// <returns>The fraction representing that player.</returns>
-        public static Fractions ToFraction(this int playerNumber)
+        /// <returns>The faction representing that player.</returns>
+        public static Factions ToFraction(this int playerNumber)
         {
-            if (playerNumber >= 0 && playerNumber < _playerNumberToFraction.Length)
+            if (playerNumber >= 0 && playerNumber < _playerNumberToFaction.Length)
             {
-                return _playerNumberToFraction[playerNumber];
+                return _playerNumberToFaction[playerNumber];
             }
             else
             {

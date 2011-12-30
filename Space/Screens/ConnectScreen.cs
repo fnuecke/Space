@@ -18,12 +18,13 @@ namespace GameStateManagement
         EditableMenueEntry connect;
 
         #endregion
+
         public ConnectScreen(GameClient client)
             : base(Strings.join)
         {
-            
             client.Controller.Session.JoinResponse += LoginSucces;
             client.Controller.Session.Disconnected += LoginFailed;
+
             connect = new EditableMenueEntry(String.Empty);
             MenuEntry back = new MenuEntry(Strings.Back);
             connect.SetActive(true);
@@ -70,18 +71,18 @@ namespace GameStateManagement
             }
             
         }
-        //Called if the login was handeled
+        //Called if the login was handled
         private void LoginSucces(object sender, EventArgs e)
         {
             ((EditableMenueEntry)MenuEntries[0]).locked = false;
             LoadingScreen.Load(ScreenManager, true,
                                 new GameplayScreen());
         }
-        //Called if the login was handeled
+        //Called if the login was handled
         private void LoginFailed(object sender, EventArgs e)
         {
             ErrorText = Strings.ConnectionFailed;
-            //tell that an error occured
+            //tell that an error occurred
             connect.locked = false;
         }
         public override void Draw(GameTime gameTime)

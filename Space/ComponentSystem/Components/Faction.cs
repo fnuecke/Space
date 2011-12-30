@@ -6,28 +6,28 @@ using Space.Data;
 namespace Space.ComponentSystem.Components
 {
     /// <summary>
-    /// Allows assigning entities to fractions.
+    /// Allows assigning entities to factions.
     /// </summary>
-    public class Fraction : AbstractComponent
+    public class Faction : AbstractComponent
     {
         #region Properties
         
         /// <summary>
-        /// The fraction this component's entity belongs to.
+        /// The faction this component's entity belongs to.
         /// </summary>
-        public Fractions Value { get; set; }
+        public Factions Value { get; set; }
 
         #endregion
 
         #region Constructor
 
-        public Fraction(Fractions fraction)
+        public Faction(Factions factions)
         {
-            this.Value = fraction;
+            this.Value = factions;
         }
 
-        public Fraction()
-            : this(Fractions.None)
+        public Faction()
+            : this(Factions.None)
         {
         }
 
@@ -45,7 +45,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Value = (Fractions)packet.ReadByte();
+            Value = (Factions)packet.ReadByte();
         }
 
         public override void Hash(Hasher hasher)

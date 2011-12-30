@@ -14,9 +14,9 @@ namespace Space.ComponentSystem.Entities
         /// specified parameters.
         /// </summary>
         /// <param name="shipData">The ship info to use.</param>
-        /// <param name="fraction">The faction the ship will belong to.</param>
+        /// <param name="faction">The faction the ship will belong to.</param>
         /// <returns></returns>
-        public static IEntity CreateShip(ShipData shipData, Fractions fraction)
+        public static IEntity CreateShip(ShipData shipData, Factions faction)
         {
             var entity = new Entity();
 
@@ -31,10 +31,10 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Friction(0.01f, 0.02f));
             // TODO compute based on equipped components
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 1));
-            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup | (ulong)fraction << CollisionSystem.FirstIndexGroup));
-            entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, (uint)fraction));
-            entity.AddComponent(new Fraction(fraction));
-            entity.AddComponent(new Avatar(fraction.ToPlayerNumber()));
+            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup | (ulong)faction << CollisionSystem.FirstIndexGroup));
+            entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, (uint)faction));
+            entity.AddComponent(new Faction(faction));
+            entity.AddComponent(new Avatar(faction.ToPlayerNumber()));
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new WeaponControl());
             entity.AddComponent(new WeaponSound());
@@ -58,7 +58,7 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateProjectile(ProjectileData projectile, IEntity emitter, Fractions fraction)
+        public static IEntity CreateProjectile(ProjectileData projectile, IEntity emitter, Factions faction)
         {
             var entity = new Entity();
 
@@ -97,13 +97,13 @@ namespace Space.ComponentSystem.Entities
 
             if (projectile.Damage > 0)
             {
-                entity.AddComponent(new Index((ulong)fraction << CollisionSystem.FirstIndexGroup));
+                entity.AddComponent(new Index((ulong)faction << CollisionSystem.FirstIndexGroup));
             }
             else if (projectile.Damage < 0)
             {
-                entity.AddComponent(new Index((ulong)~(uint)fraction << CollisionSystem.FirstIndexGroup));
+                entity.AddComponent(new Index((ulong)~(uint)faction << CollisionSystem.FirstIndexGroup));
             }
-            entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, (uint)fraction));
+            entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, (uint)faction));
             if (!string.IsNullOrWhiteSpace(projectile.Texture))
             {
                 entity.AddComponent(new TransformedRenderer(projectile.Texture, projectile.Scale));

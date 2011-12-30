@@ -1,14 +1,8 @@
 ﻿using System;
-using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
+using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Graphics;
-using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Systems;
-using Space.Data;
-using Space.Session;
 
 namespace Space.Control
 {
@@ -25,70 +19,55 @@ namespace Space.Control
         /// <summary>
         /// The controller used by this game client.
         /// </summary>
-        public SimpleClientController<PlayerData> Controller { get; private set; }
+        public IClientController<IFrameCommand> Controller { get; set; }
 
         #endregion
 
         #region Fields
 
-        /// <summary>
-        ///  Command emitter used to get player input.
-        /// </summary>
         private InputCommandEmitter _emitter;
 
         #endregion
 
+        public GameClient(Game game, GameServer server)
+            : base(game)
+        {
+            Controller = ControllerFactory.CreateLocalClient(Game, server.Controller);
+
+        }
+
         public GameClient(Game game)
             : base(game)
         {
-            var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
-            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
+            Controller = ControllerFactory.CreateRemoteClient(Game);
+        }
 
-            // Create our client controller.
-            Controller = new SimpleClientController<PlayerData>(GameCommandHandler.HandleCommand);
+        public override void Initialize()
+        {
+            // Draw underneath menus etc.
+            DrawOrder = -50;
 
             // Register for events.
+            Controller.Session.GameInfoReceived += HandleGameInfoReceived;
             Controller.Session.PlayerJoined += HandlePlayerJoined;
             Controller.Session.PlayerLeft += HandlePlayerLeft;
-
-            // Add all systems we need in our game.
-            Controller.Simulation.EntityManager.SystemManager.AddSystems(
-                new[]
-                {
-                    new DefaultLogicSystem(),
-                    new IndexSystem(),
-                    new CollisionSystem(128),
-                    new AvatarSystem(),
-                    new CellSystem(),
-
-                    new ShipControlSystem(),
-                    new UniversalSystem(game.Content.Load<WorldConstraints>("Data/world")),
-
-                    new PlayerCenteredSoundSystem(soundBank, Controller.Session),
-                    new PlayerCenteredRenderSystem(spriteBatch, game.Content, Controller.Session)
-                                .AddComponent(new Background("Textures/stars"))
-                });
 
             // Create our input command emitter, which is used to grab user
             // input and convert it into commands that can be injected into our
             // simulation.
-            _emitter = new InputCommandEmitter(game, Controller.Session, Controller.Simulation);
+            _emitter = new InputCommandEmitter(Game, Controller);
             Controller.AddEmitter(_emitter);
-            Game.Components.Add(_emitter);
-
-            // Draw underneath menus etc.
-            DrawOrder = -50;
+            Game.Components.Remove(_emitter);
         }
 
         protected override void Dispose(bool disposing)
         {
+            Controller.Session.GameInfoReceived -= HandleGameInfoReceived;
             Controller.Session.PlayerJoined -= HandlePlayerJoined;
             Controller.Session.PlayerLeft -= HandlePlayerLeft;
 
             Controller.RemoveEmitter(_emitter);
-
             Game.Components.Remove(_emitter);
-
             _emitter.Dispose();
 
             Controller.Dispose();

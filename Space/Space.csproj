@@ -113,13 +113,14 @@
     <Compile Include="ComponentSystem\Components\AstronomicBody.cs" />
     <Compile Include="ComponentSystem\Components\CollisionDamage.cs" />
     <Compile Include="ComponentSystem\Components\Energy.cs" />
-    <Compile Include="ComponentSystem\Components\Fraction.cs" />
+    <Compile Include="ComponentSystem\Components\Faction.cs" />
     <Compile Include="ComponentSystem\Components\Health.cs" />
     <Compile Include="ComponentSystem\Components\PlanetRenderer.cs" />
     <Compile Include="ComponentSystem\Systems\UniversalSystem.cs" />
     <Compile Include="ComponentSystem\Components\WeaponSound.cs" />
     <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
     <Compile Include="ComponentSystem\Systems\Messages\CellStateChanged.cs" />
+    <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="Simulation\Commands\GameCommand.cs" />
     <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
@@ -133,7 +134,6 @@
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Control\InputCommandEmitter.cs" />
-    <Compile Include="Control\ServerController.cs" />
     <Compile Include="Session\PlayerInfo.cs" />
     <Compile Include="Simulation\Commands\GameCommandType.cs" />
     <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />

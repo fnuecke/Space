@@ -2,7 +2,7 @@
 
 namespace Space.Simulation.Commands
 {
-    abstract class GameCommand : FrameCommand
+    public abstract class GameCommand : FrameCommand
     {
         public GameCommand(GameCommandType type)
             : base(type)

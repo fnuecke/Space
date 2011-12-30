@@ -105,6 +105,8 @@
     <Compile Include="ISimulationController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleClientController.cs" />
+    <Compile Include="SimpleServerController.cs" />
+    <Compile Include="ThinClientController.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
