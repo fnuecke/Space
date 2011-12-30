@@ -111,31 +111,7 @@ namespace Engine.Controller
 
         #region Commands
 
-        /// <summary>
-        /// Add this controller as a listener to the given emitter, handling
-        /// whatever commands it produces.
-        /// </summary>
-        /// <param name="emitter">the emitter to attach to.</param>
-        public void AddEmitter(ICommandEmitter<IFrameCommand> emitter)
-        {
-            emitter.CommandEmitted += HandleEmittedCommand;
-        }
-
-        /// <summary>
-        /// Remove this controller as a listener from the given emitter.
-        /// </summary>
-        /// <param name="emitter">the emitter to detach from.</param>
-        public void RemoveEmitter(ICommandEmitter<IFrameCommand> emitter)
-        {
-            emitter.CommandEmitted -= HandleEmittedCommand;
-        }
-
-        /// <summary>
-        /// A command emitter we're attached to has generated a new event.
-        /// Override this to fill in some default values in the command
-        /// before it is passed on to <c>HandleLocalCommand</c>.
-        /// </summary>
-        private void HandleEmittedCommand(IFrameCommand command)
+        public void PushLocalCommand(IFrameCommand command)
         {
             command.PlayerNumber = Session.LocalPlayer.Number;
             command.Frame = _server.Simulation.CurrentFrame + 1;

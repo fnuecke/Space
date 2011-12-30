@@ -8,9 +8,9 @@
 #endregion
 
 using System;
-using Space;
+using Space.ScreenManagement.Screens.Entries;
 
-namespace GameStateManagement
+namespace Space.ScreenManagement.Screens
 {
     /// <summary>
     /// The main menu screen is the first thing displayed when the game starts up.
@@ -26,42 +26,57 @@ namespace GameStateManagement
             : base(MenuStrings.MainMenu)
         {
             // Create our menu entries.
-            MenuEntry playGameMenuEntry = new MenuEntry(MenuStrings.JoinGame);
-            MenuEntry startServerMenuEntry = new MenuEntry(MenuStrings.HostGame);
-            MenuEntry optionsMenuEntry = new MenuEntry(MenuStrings.Options);
-            MenuEntry exitMenuEntry = new MenuEntry(MenuStrings.Exit);
+            var join = new MenuEntry(MenuStrings.JoinGame);
+            var host = new MenuEntry(MenuStrings.HostGame);
+            var options = new MenuEntry(MenuStrings.Options);
+            var exit = new MenuEntry(MenuStrings.Exit);
 
             // Hook up menu event handlers.
-            playGameMenuEntry.Selected += PlayGameMenuEntrySelected;
-            optionsMenuEntry.Selected += OptionsMenuEntrySelected;
-            startServerMenuEntry.Selected += StartServerMenuEntrySelected;
-            exitMenuEntry.Selected += HandleCancel;
+            join.Activated += HandleJoinActivated;
+            options.Activated += HandleOptionsActivated;
+            host.Activated += HandleHostActivated;
+            exit.Activated += delegate(object sender, EventArgs e)
+            {
+                ScreenManager.Game.Exit();
+            };
 
             // Add entries to the menu.
-            MenuEntries.Add(playGameMenuEntry);
-            MenuEntries.Add(startServerMenuEntry);
-            MenuEntries.Add(optionsMenuEntry);
-            MenuEntries.Add(exitMenuEntry);
+            MenuEntries.Add(join);
+            MenuEntries.Add(host);
+            MenuEntries.Add(options);
+            MenuEntries.Add(exit);
+
+            SetEscapeEntry(exit);
         }
 
         #endregion
 
         #region Handle Input
 
+        public override void HandleInput(InputState input)
+        {
+            base.HandleInput(input);
+
+            if (input.KeyCancel)
+            {
+                ScreenManager.Game.Exit();
+            }
+        }
+
         /// <summary>
         /// Event handler for when the Play Game menu entry is selected.
         /// </summary>
-        void PlayGameMenuEntrySelected(object sender, EventArgs e)
+        void HandleJoinActivated(object sender, EventArgs e)
         {
             // Just create the client, allow looking for remote games and
             // joining them after that.
             ((Spaaace)ScreenManager.Game).RestartClient();
 
             // Transition to connect screen.
-            ScreenManager.AddScreen(new ConnectScreen());
+            ScreenManager.AddScreen(new ConnectScreen(ScreenManager.Game));
         }
 
-        void StartServerMenuEntrySelected(object sender, EventArgs e)
+        void HandleHostActivated(object sender, EventArgs e)
         {
             // Create and join.
             ((Spaaace)ScreenManager.Game).RestartServer();
@@ -74,17 +89,9 @@ namespace GameStateManagement
         /// <summary>
         /// Event handler for when the Options menu entry is selected.
         /// </summary>
-        void OptionsMenuEntrySelected(object sender, EventArgs e)
+        void HandleOptionsActivated(object sender, EventArgs e)
         {
-            ScreenManager.AddScreen(new OptionsMenuScreen());
-        }
-
-        /// <summary>
-        /// When the user cancels the main menu, ask if they want to exit the sample.
-        /// </summary>
-        protected override void HandleCancel()
-        {
-            ScreenManager.Game.Exit();
+            ScreenManager.AddScreen(new OptionsMenuScreen(ScreenManager.Game));
         }
 
         #endregion

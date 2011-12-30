@@ -370,7 +370,7 @@ namespace Engine.Util
                     }
 
                     // Draw the cursor.
-                    if (((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (_lastKeyPress != null && new TimeSpan(DateTime.Now.Ticks - _lastKeyPress.Ticks).TotalSeconds < 1))
+                    if (((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (new TimeSpan(DateTime.Now.Ticks - _lastKeyPress.Ticks).TotalSeconds < 1))
                     {
                         int cursorLine;
                         int cursorCounter = _cursor + 2;

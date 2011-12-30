@@ -13,7 +13,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace GameStateManagement
+namespace Space.ScreenManagement
 {
     /// <summary>
     /// The screen manager is a component which manages one or more GameScreen

@@ -145,22 +145,15 @@ namespace Engine.Controller
         #region Modify simulation
 
         /// <summary>
-        /// Add this controller as a listener to the given emitter, handling
-        /// whatever commands it produces.
+        /// A command emitter we're attached to has generated a new event.
+        /// Override this to fill in some default values in the command
+        /// before it is passed on to <c>HandleLocalCommand</c>.
         /// </summary>
-        /// <param name="emitter">the emitter to attach to.</param>
-        public void AddEmitter(ICommandEmitter<IFrameCommand> emitter)
+        public void PushLocalCommand(IFrameCommand command)
         {
-            emitter.CommandEmitted += HandleEmittedCommand;
-        }
-
-        /// <summary>
-        /// Remove this controller as a listener from the given emitter.
-        /// </summary>
-        /// <param name="emitter">the emitter to detach from.</param>
-        public void RemoveEmitter(ICommandEmitter<IFrameCommand> emitter)
-        {
-            emitter.CommandEmitted -= HandleEmittedCommand;
+            command.PlayerNumber = Session.LocalPlayer.Number;
+            command.Frame = _tss.CurrentFrame + 1;
+            Apply(command);
         }
 
         /// <summary>
@@ -208,18 +201,6 @@ namespace Engine.Controller
             // OK, we were allowed to join, invalidate our simulation to request
             // the current state.
             _tss.Invalidate();
-        }
-
-        /// <summary>
-        /// A command emitter we're attached to has generated a new event.
-        /// Override this to fill in some default values in the command
-        /// before it is passed on to <c>HandleLocalCommand</c>.
-        /// </summary>
-        private void HandleEmittedCommand(IFrameCommand command)
-        {
-            command.PlayerNumber = Session.LocalPlayer.Number;
-            command.Frame = _tss.CurrentFrame + 1;
-            Apply(command);
         }
 
         #endregion

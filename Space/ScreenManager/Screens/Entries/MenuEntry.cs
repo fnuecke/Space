@@ -11,7 +11,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace GameStateManagement
+namespace Space.ScreenManagement.Screens.Entries
 {
     /// <summary>
     /// Helper class represents a single entry in a MenuScreen. By default this
@@ -19,24 +19,14 @@ namespace GameStateManagement
     /// entries in different ways. This also provides an event that will be raised
     /// when the menu entry is selected.
     /// </summary>
-    class MenuEntry
+    public class MenuEntry : IDisposable
     {
         #region Events
 
         /// <summary>
         /// Event raised when the menu entry is selected.
         /// </summary>
-        public event EventHandler<EventArgs> Selected;
-
-        /// <summary>
-        /// Event raised when the entry's next option is selected.
-        /// </summary>
-        public event EventHandler<EventArgs> NextOptionSelected;
-
-        /// <summary>
-        /// Event raised when the entry's previous option is selected.
-        /// </summary>
-        public event EventHandler<EventArgs> PreviousOptionSelected;
+        public event EventHandler<EventArgs> Activated;
 
         #endregion
 
@@ -48,7 +38,7 @@ namespace GameStateManagement
         /// <remarks>
         /// The entries transition out of the selection effect when they are deselected.
         /// </remarks>
-        protected float selectionFade;
+        protected float _selectionFade;
 
         #endregion
 
@@ -65,15 +55,10 @@ namespace GameStateManagement
         public Vector2 Position { get; set; }
 
         /// <summary>
-        /// Returns if the entry is selected.
+        /// Returns whether the entry is focused (if any entry is focused, the
+        /// entry selection cannot change).
         /// </summary>
-        public bool Focused { get; private set; }
-
-        /// <summary>
-        /// If the entry is locked the user cannot switch between the options
-        /// this entry offers.
-        /// </summary>
-        public bool Locked { get; set; }
+        public bool Focused { get; set; }
 
         #endregion
 
@@ -87,12 +72,32 @@ namespace GameStateManagement
             this.Text = text;
         }
 
+        public void Dispose()
+        {
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
         #endregion
 
-        public virtual void SetFocused(bool focused)
+        #region Handle Input
+
+        public virtual void HandleInput(MenuScreen screen, InputState input, bool mouseOver)
         {
-            this.Focused = focused;
-        } 
+            if (input.KeySelect || (mouseOver && input.MouseSelect))
+            {
+                // Activate a menu entry.
+                screen.ErrorText = String.Empty;
+                Activate();
+            }
+        }
+
+        #endregion
 
         #region Update and Draw
 
@@ -108,11 +113,11 @@ namespace GameStateManagement
 
             if (isSelected)
             {
-                selectionFade = Math.Min(selectionFade + fadeSpeed, 1);
+                _selectionFade = Math.Min(_selectionFade + fadeSpeed, 1);
             }
             else
             {
-                selectionFade = Math.Max(selectionFade - fadeSpeed, 0);
+                _selectionFade = Math.Max(_selectionFade - fadeSpeed, 0);
             }
         }
 
@@ -129,20 +134,33 @@ namespace GameStateManagement
             
             float pulsate = (float)Math.Sin(time * 6) + 1;
 
-            float scale = 1 + pulsate * 0.05f * selectionFade;
+            float scale = 1 + pulsate * 0.05f * _selectionFade;
 
             // Modify the alpha to fade text out during transitions.
             color *= screen.TransitionAlpha;
 
             // Draw text, centered on the middle of each line.
-            ScreenManager screenManager = screen.ScreenManager;
-            SpriteBatch spriteBatch = screenManager.SpriteBatch;
-            SpriteFont font = screenManager.Font;
+            SpriteBatch spriteBatch = screen.ScreenManager.SpriteBatch;
+            SpriteFont font = screen.ScreenManager.Font;
 
             Vector2 origin = new Vector2(0, font.LineSpacing / 2);
 
-            spriteBatch.DrawString(font, Text, Position, color, 0,
+            var normalWidth = font.MeasureString(GetTextToDraw()).X;
+            var scaledWidth = normalWidth * scale;
+            var widthDelta = scaledWidth - normalWidth;
+            var correctedPosition = Position;
+            correctedPosition.X -= widthDelta / 2;
+            spriteBatch.DrawString(font, GetTextToDraw(), correctedPosition, color, 0,
                                    origin, scale, SpriteEffects.None, 0);
+        }
+
+        /// <summary>
+        /// Queries the actual text string to draw.
+        /// </summary>
+        /// <returns>The actual text to draw.</returns>
+        protected virtual string GetTextToDraw()
+        {
+            return Text;
         }
 
         /// <summary>
@@ -158,7 +176,7 @@ namespace GameStateManagement
         /// </summary>
         public virtual int GetWidth(MenuScreen screen)
         {
-            return (int)screen.ScreenManager.Font.MeasureString(Text).X;
+            return (int)screen.ScreenManager.Font.MeasureString(GetTextToDraw()).X;
         }
 
         #endregion
@@ -166,35 +184,13 @@ namespace GameStateManagement
         #region Event dispatching
 
         /// <summary>
-        /// Method for raising the Selected event.
+        /// Method for raising the activated event.
         /// </summary>
-        protected internal void OnSelectEntry()
+        public void Activate()
         {
-            if (Selected != null)
+            if (Activated != null)
             {
-                Selected(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Method for raising the Selected event.
-        /// </summary>
-        protected internal void OnNextEntrySelected()
-        {
-            if (NextOptionSelected != null)
-            {
-                NextOptionSelected(this, EventArgs.Empty);
-            }
-        }
-
-        /// <summary>
-        /// Method for raising the Selected event.
-        /// </summary>
-        protected internal void OnPreviousEntrySelected()
-        {
-            if (PreviousOptionSelected != null)
-            {
-                PreviousOptionSelected(this, EventArgs.Empty);
+                Activated(this, EventArgs.Empty);
             }
         }
 

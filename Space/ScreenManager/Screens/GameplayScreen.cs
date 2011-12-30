@@ -15,7 +15,7 @@ using Microsoft.Xna.Framework;
 
 #endregion
 
-namespace GameStateManagement
+namespace Space.ScreenManagement.Screens
 {
     /// <summary>
     /// This screen implements the actual game logic. It is just a

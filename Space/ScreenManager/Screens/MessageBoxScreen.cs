@@ -12,7 +12,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace GameStateManagement
+namespace Space.ScreenManagement.Screens
 {
     /// <summary>
     /// A popup message box screen, used to display "are you sure?"
@@ -30,9 +30,9 @@ namespace GameStateManagement
 
         #region Events
 
-        public event EventHandler<PlayerIndexEventArgs> Accepted;
+        public event EventHandler<EventArgs> Accepted;
 
-        public event EventHandler<PlayerIndexEventArgs> Cancelled;
+        public event EventHandler<EventArgs> Cancelled;
 
         #endregion
 
@@ -97,7 +97,7 @@ namespace GameStateManagement
             {
                 // Raise the accepted event, then exit the message box.
                 if (Accepted != null)
-                    Accepted(this, new PlayerIndexEventArgs());
+                    Accepted(this, EventArgs.Empty);
 
                 ExitScreen();
             }
@@ -105,7 +105,7 @@ namespace GameStateManagement
             {
                 // Raise the canceled event, then exit the message box.
                 if (Cancelled != null)
-                    Cancelled(this, new PlayerIndexEventArgs());
+                    Cancelled(this, EventArgs.Empty);
 
                 ExitScreen();
             }

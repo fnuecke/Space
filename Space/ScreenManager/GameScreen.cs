@@ -10,7 +10,7 @@
 using System;
 using Microsoft.Xna.Framework;
 
-namespace GameStateManagement
+namespace Space.ScreenManagement
 {
     /// <summary>
     /// Enum describes the screen transition state.

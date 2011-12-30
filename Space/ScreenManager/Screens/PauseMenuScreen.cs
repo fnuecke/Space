@@ -8,9 +8,9 @@
 #endregion
 
 using System;
-using Space;
+using Space.ScreenManagement.Screens.Entries;
 
-namespace GameStateManagement
+namespace Space.ScreenManagement.Screens
 {
     /// <summary>
     /// The pause menu comes up over the top of the game,
@@ -31,8 +31,11 @@ namespace GameStateManagement
             var quitGameMenuEntry = new MenuEntry("Quit Game");
 
             // Hook up menu event handlers.
-            resumeGameMenuEntry.Selected += HandleCancel;
-            quitGameMenuEntry.Selected += QuitGameMenuEntrySelected;
+            resumeGameMenuEntry.Activated += delegate(object sender, EventArgs e)
+            {
+                ExitScreen();
+            };
+            quitGameMenuEntry.Activated += QuitGameMenuEntrySelected;
 
             // Add entries to the menu.
             MenuEntries.Add(resumeGameMenuEntry);
@@ -62,7 +65,7 @@ namespace GameStateManagement
         /// you want to quit" message box. This uses the loading screen to
         /// transition from the game back to the main menu screen.
         /// </summary>
-        void ConfirmQuitMessageBoxAccepted(object sender, PlayerIndexEventArgs e)
+        void ConfirmQuitMessageBoxAccepted(object sender, EventArgs e)
         {
             ((Spaaace)ScreenManager.Game).DisposeControllers();
 

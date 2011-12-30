@@ -70,6 +70,15 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Connect.
+        /// </summary>
+        internal static string Connect {
+            get {
+                return ResourceManager.GetString("Connect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Connection to server could not be established..
         /// </summary>
         internal static string ConnectionFailed {
@@ -79,20 +88,11 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to German.
-        /// </summary>
-        internal static string de {
-            get {
-                return ResourceManager.GetString("de", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to English.
         /// </summary>
-        internal static string en {
+        internal static string English {
             get {
-                return ResourceManager.GetString("en", resourceCulture);
+                return ResourceManager.GetString("English", resourceCulture);
             }
         }
         
@@ -106,11 +106,20 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fullscreen: .
+        ///   Looks up a localized string similar to Fullscreen.
         /// </summary>
         internal static string Fullscreen {
             get {
                 return ResourceManager.GetString("Fullscreen", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to German.
+        /// </summary>
+        internal static string German {
+            get {
+                return ResourceManager.GetString("German", resourceCulture);
             }
         }
         
@@ -142,7 +151,7 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Language: .
+        ///   Looks up a localized string similar to Language.
         /// </summary>
         internal static string Language {
             get {
@@ -196,7 +205,7 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Player Name: .
+        ///   Looks up a localized string similar to Player Name.
         /// </summary>
         internal static string PlayerName {
             get {
@@ -214,11 +223,20 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Resolution: .
+        ///   Looks up a localized string similar to Resolution.
         /// </summary>
         internal static string ScreenResolution {
             get {
                 return ResourceManager.GetString("ScreenResolution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server address.
+        /// </summary>
+        internal static string ServerAddress {
+            get {
+                return ResourceManager.GetString("ServerAddress", resourceCulture);
             }
         }
     }

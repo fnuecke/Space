@@ -47,6 +47,11 @@ namespace Space
         /// </summary>
         public string PlayerName = "Player";
 
+        /// <summary>
+        /// Address of the last server we tried to connect to.
+        /// </summary>
+        public string LastServerAddress = "127.0.0.1";
+
         #endregion
 
         #region Key bindings

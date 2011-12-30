@@ -11,7 +11,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace GameStateManagement
+namespace Space.ScreenManagement.Screens
 {
     /// <summary>
     /// The background screen sits behind all the other menu screens.

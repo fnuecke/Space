@@ -5,7 +5,6 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Input;
 using Engine.Util;
-using GameStateManagement;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,6 +13,8 @@ using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Data;
+using Space.ScreenManagement;
+using Space.ScreenManagement.Screens;
 using Space.Session;
 using Space.View;
 

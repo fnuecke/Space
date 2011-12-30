@@ -15,7 +15,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 #endregion
 
-namespace GameStateManagement
+namespace Space.ScreenManagement
 {
     /// <summary>
     /// Helper for reading input from keyboard, gamepad, and touch input. This class 
@@ -81,10 +81,6 @@ namespace GameStateManagement
                     KeyPause = true;
                     break;
 
-                case Keys.Back:
-                    KeyCancel = true;
-                    break;
-
                 case Keys.Up:
                 case Keys.PageUp:
                 case Keys.W:
@@ -105,7 +101,7 @@ namespace GameStateManagement
                     break;
 
                 case Keys.Tab:
-                    if (args.Modifier != KeyModifier.Shift)
+                    if (args.Modifier == KeyModifier.Shift)
                     {
                         KeyPrevious = true;
                     }

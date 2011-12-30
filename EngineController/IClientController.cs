@@ -10,16 +10,10 @@ namespace Engine.Controller
         where TCommand : ICommand
     {
         /// <summary>
-        /// Add this controller as a listener to the given emitter, handling
-        /// whatever commands it produces.
+        /// Inject a simulation command that was generated via some external
+        /// source (e.g. player input).
         /// </summary>
-        /// <param name="emitter">the emitter to attach to.</param>
-        void AddEmitter(ICommandEmitter<TCommand> emitter);
-
-        /// <summary>
-        /// Remove this controller as a listener from the given emitter.
-        /// </summary>
-        /// <param name="emitter">the emitter to detach from.</param>
-        void RemoveEmitter(ICommandEmitter<TCommand> emitter);
+        /// <param name="emitter">The command to inject.</param>
+        void PushLocalCommand(TCommand command);
     }
 }
