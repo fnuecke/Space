@@ -9,8 +9,7 @@
 
 #region Using Statements
 using Space;
-using Space.Data;
-using Space.Session;
+
 
 #endregion
 
@@ -21,12 +20,7 @@ namespace GameStateManagement
     /// </summary>
     class MainMenuScreen : MenuScreen
     {
-
-       
-
         #region Initialization
-
-        
 
         /// <summary>
         /// Constructor fills in the menu contents.
@@ -34,7 +28,6 @@ namespace GameStateManagement
         public MainMenuScreen()
             : base(Strings.MainMenu)
         {
-            
             // Create our menu entries.
             MenuEntry playGameMenuEntry = new MenuEntry(Strings.join);
             MenuEntry startServerMenuEntry = new MenuEntry(Strings.host);
@@ -54,11 +47,9 @@ namespace GameStateManagement
             MenuEntries.Add(exitMenuEntry);
         }
 
-
         #endregion
 
         #region Handle Input
-
 
         /// <summary>
         /// Event handler for when the Play Game menu entry is selected.
@@ -72,6 +63,7 @@ namespace GameStateManagement
 
         void StartServerMenuEntrySelected(object sender, PlayerIndexEventArgs e)
         {
+            // Create and join.
             ScreenManager.RestartServer();
             ScreenManager.RestartClient(true);
 
@@ -85,7 +77,6 @@ namespace GameStateManagement
         {
             ScreenManager.AddScreen(new OptionsMenuScreen());
         }
-
 
         /// <summary>
         /// When the user cancels the main menu, ask if they want to exit the sample.
@@ -101,7 +92,6 @@ namespace GameStateManagement
             ScreenManager.AddScreen(confirmExitMessageBox);
         }
 
-
         /// <summary>
         /// Event handler for when the user selects ok on the "are you sure
         /// you want to exit" message box.
@@ -112,12 +102,5 @@ namespace GameStateManagement
         }
 
         #endregion
-
-        #region Utility Methods
-        
-        
-
-        #endregion
     }
-
 }

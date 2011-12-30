@@ -173,7 +173,7 @@ namespace Space.Data
         /// </summary>
         /// <param name="playerNumber">The player number to convert.</param>
         /// <returns>The faction representing that player.</returns>
-        public static Factions ToFraction(this int playerNumber)
+        public static Factions ToFaction(this int playerNumber)
         {
             if (playerNumber >= 0 && playerNumber < _playerNumberToFaction.Length)
             {

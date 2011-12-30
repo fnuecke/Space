@@ -3,12 +3,20 @@ using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using Engine.Util;
 using Space.ComponentSystem.Components;
-using Space.Simulation.Commands;
 
-namespace Space.Control
+namespace Space.Simulation.Commands
 {
+    /// <summary>
+    /// Used to apply commands to simulations.
+    /// </summary>
     static class GameCommandHandler
     {
+        /// <summary>
+        /// Takes a command and applies it to the simulation state
+        /// represented by the given entity manager.
+        /// </summary>
+        /// <param name="command">The command to process.</param>
+        /// <param name="manager">The manager to apply it to.</param>
         public static void HandleCommand(ICommand command, IEntityManager manager)
         {
             switch ((GameCommandType)command.Type)

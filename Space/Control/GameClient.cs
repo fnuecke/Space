@@ -1,19 +1,15 @@
-﻿using System;
-using Engine.Controller;
-using Engine.Session;
+﻿using Engine.Controller;
 using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
+using Space.Simulation.Commands;
 
 namespace Space.Control
 {
+    /// <summary>
+    /// The game server, handling everything client logic related.
+    /// </summary>
     public class GameClient : DrawableGameComponent
     {
-        #region Logger
-        
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-
-        #endregion
-
         #region Properties
         
         /// <summary>
@@ -25,10 +21,21 @@ namespace Space.Control
 
         #region Fields
 
+        /// <summary>
+        /// The command emitter in use, converting player input into simulation
+        /// commands.
+        /// </summary>
         private InputCommandEmitter _emitter;
 
         #endregion
 
+        #region Constructor
+        
+        /// <summary>
+        /// Creates a new local client, which will be coupled to the given server.
+        /// </summary>
+        /// <param name="game">The game to create the client for.</param>
+        /// <param name="server">The server to join.</param>
         public GameClient(Game game, GameServer server)
             : base(game)
         {
@@ -36,38 +43,38 @@ namespace Space.Control
 
         }
 
+        /// <summary>
+        /// Creates a new remote client, which can connect to remote games.
+        /// </summary>
+        /// <param name="game">The game to create the client for.</param>
         public GameClient(Game game)
             : base(game)
         {
             Controller = ControllerFactory.CreateRemoteClient(Game);
         }
 
+        /// <summary>
+        /// Initializes the client, whether it's remote or local.
+        /// </summary>
         public override void Initialize()
         {
             // Draw underneath menus etc.
             DrawOrder = -50;
-
-            // Register for events.
-            Controller.Session.GameInfoReceived += HandleGameInfoReceived;
-            Controller.Session.PlayerJoined += HandlePlayerJoined;
-            Controller.Session.PlayerLeft += HandlePlayerLeft;
 
             // Create our input command emitter, which is used to grab user
             // input and convert it into commands that can be injected into our
             // simulation.
             _emitter = new InputCommandEmitter(Game, Controller);
             Controller.AddEmitter(_emitter);
-            Game.Components.Remove(_emitter);
         }
 
+        /// <summary>
+        /// Kills off the emitter and controller.
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            Controller.Session.GameInfoReceived -= HandleGameInfoReceived;
-            Controller.Session.PlayerJoined -= HandlePlayerJoined;
-            Controller.Session.PlayerLeft -= HandlePlayerLeft;
-
             Controller.RemoveEmitter(_emitter);
-            Game.Components.Remove(_emitter);
             _emitter.Dispose();
 
             Controller.Dispose();
@@ -75,45 +82,29 @@ namespace Space.Control
             base.Dispose(disposing);
         }
 
+        #endregion
+
+        #region Logic
+        
+        /// <summary>
+        /// Updates the controller.
+        /// </summary>
+        /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime)
         {
+            _emitter.Update(gameTime);
             Controller.Update(gameTime);
         }
 
+        /// <summary>
+        /// Renders the game state of the controller.
+        /// </summary>
+        /// <param name="gameTime"></param>
         public override void Draw(GameTime gameTime)
         {
             Controller.Draw();
         }
 
-        /// <summary>
-        /// Got info about an open game.
-        /// </summary>
-        protected void HandleGameInfoReceived(object sender, EventArgs e)
-        {
-            var args = (GameInfoReceivedEventArgs)e;
-
-            var info = args.Data.ReadString();
-            logger.Debug("Found a game: [{0}] {1} ({2}/{3})", args.Host.ToString(), info, args.NumPlayers, args.MaxPlayers);
-        }
-
-        /// <summary>
-        /// Got info that a new player joined the game.
-        /// </summary>
-        protected void HandlePlayerJoined(object sender, EventArgs e)
-        {
-            var args = (PlayerEventArgs)e;
-
-            logger.Debug("{0} joined.", args.Player);
-        }
-
-        /// <summary>
-        /// Got information that a player has left the game.
-        /// </summary>
-        protected void HandlePlayerLeft(object sender, EventArgs e)
-        {
-            var args = (PlayerEventArgs)e;
-
-            logger.Debug("{0} left.", args.Player);
-        }
+        #endregion
     }
 }

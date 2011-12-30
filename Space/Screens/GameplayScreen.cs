@@ -9,14 +9,9 @@
 
 #region Using Statements
 using System;
-using System.Net;
-using Engine.Util;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Space.Data;
-using Space.Session;
+
+
 
 #endregion
 
@@ -31,27 +26,11 @@ namespace GameStateManagement
     {
         #region Fields
 
-        ContentManager content;
-
-        private IGameConsole console;
-        SpriteFont gameFont;
-
-        Vector2 playerPosition = new Vector2(100, 100);
-        Vector2 enemyPosition = new Vector2(100, 100);
-
-        Random random = new Random();
-
-        
-
         float pauseAlpha;
-
-
-        
 
         #endregion
 
         #region Initialization
-
 
         /// <summary>
         /// Constructor.
@@ -60,67 +39,17 @@ namespace GameStateManagement
         {
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
-
-            
-
-           
         }
-        
-
 
         /// <summary>
         /// Load graphics content for the game.
         /// </summary>
         public override void LoadContent()
         {
-            if (content == null)
-                content = new ContentManager(ScreenManager.Game.Services, "data");
-
-            if (console == null)
-                console = (IGameConsole)ScreenManager.Game.Services.GetService(typeof (IGameConsole));
-           
-            console.AddCommand("search", args =>
-            {
-                ScreenManager.Client.Controller.Session.Search();
-            },
-                "Search for games available on the local subnet.");
-            console.AddCommand("connect", args =>
-            {
-                PlayerData info = new PlayerData();
-                info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), ushort.Parse(args[2])), args[3], info);
-            },
-                "Joins a game at the given host.",
-                "connect <host> <port> - join the host with the given hostname or IP.");
-            console.AddCommand("leave", args =>
-            {
-                ScreenManager.Client.Controller.Session.Leave();
-            },
-                "Leave the current game.");
-            // Just for me, joining default testing server.
-            console.AddCommand("joinfn", args =>
-            {
-                PlayerData info = new PlayerData();
-                info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("10.74.254.202"), 7777), "player", info);
-            },
-                "autojoin fn");
-            // Just for me, joining default testing server.
-            console.AddCommand("joinlh", args =>
-            {
-                PlayerData info = new PlayerData();
-                info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777), "player", info);
-            },
-                "autojoin localhost");
-
-            gameFont = content.Load<SpriteFont>("Fonts/gamefont");
-            
-            
-             // A real game would probably have more content than this sample, so
+            // A real game would probably have more content than this sample, so
             // it would take longer to load. We simulate that by delaying for a
             // while, giving you a chance to admire the beautiful loading screen.
-        //    Thread.Sleep(1000);
+            //    Thread.Sleep(1000);
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that
@@ -128,20 +57,9 @@ namespace GameStateManagement
             ScreenManager.Game.ResetElapsedTime();
         }
 
-
-        /// <summary>
-        /// Unload graphics content used by the game.
-        /// </summary>
-        public override void UnloadContent()
-        {
-            content.Unload();
-        }
-
-
         #endregion
 
         #region Update and Draw
-
 
         /// <summary>
         /// Updates the state of the game. This method checks the GameScreen.IsActive
@@ -155,16 +73,14 @@ namespace GameStateManagement
 
             // Gradually fade in or out depending on whether we are covered by the pause screen.
             if (coveredByOtherScreen)
-                pauseAlpha = Math.Min(pauseAlpha + 1f / 32, 1);
-            else
-                pauseAlpha = Math.Max(pauseAlpha - 1f / 32, 0);
-
-            if (IsActive)
             {
-                
+                pauseAlpha = Math.Min(pauseAlpha + 1f / 32, 1);
+            }
+            else
+            {
+                pauseAlpha = Math.Max(pauseAlpha - 1f / 32, 0);
             }
         }
-
 
         /// <summary>
         /// Lets the game respond to player input. Unlike the Update method,
@@ -173,52 +89,21 @@ namespace GameStateManagement
         public override void HandleInput(InputState input)
         {
             if (input == null)
+            {
                 throw new ArgumentNullException("input");
+            }
 
-            // Look up inputs for the active player profile.
-           
-            KeyboardState keyboardState = input.CurrentKeyboardState;
-            GamePadState gamePadState = input.CurrentGamePadState;
-
-            // The game pauses either if the user presses the pause button, or if
-            // they unplug the active gamepad. This requires us to keep track of
-            // whether a gamepad was ever plugged in, because we don't want to pause
-            // on PC if they are playing with a keyboard and have no gamepad at all!
-            bool gamePadDisconnected = !gamePadState.IsConnected &&
-                                       input.GamePadWasConnected;
-
-            if (input.IsPauseGame() || gamePadDisconnected)
+            if (input.IsPauseGame())
             {
                 ScreenManager.AddScreen(new PauseMenuScreen());
             }
-            else
-            {
-                
-            }
         }
-
 
         /// <summary>
         /// Draws the gameplay screen.
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
-            // This game has a blue background. Why? Because!
-            //ScreenManager.GraphicsDevice.Clear(ClearOptions.Target,
-            //                                   Color.CornflowerBlue, 0, 0);
-
-            //// Our player and enemy are both actually just text strings.
-            //SpriteBatch spriteBatch = ScreenManager.SpriteBatch;
-
-            //spriteBatch.Begin();
-
-            // spriteBatch.DrawString(gameFont, "TODO", playerPosition, Color.Green);
-
-            //spriteBatch.DrawString(gameFont, "Insert Gameplay Here",
-            //                       enemyPosition, Color.DarkRed);
-
-            //spriteBatch.End();
-
             // If the game is transitioning on or off, fade it out to black.
             if (TransitionPosition > 0 || pauseAlpha > 0)
             {
@@ -228,10 +113,6 @@ namespace GameStateManagement
             }
         }
 
-
         #endregion
-
-
-       
     }
 }

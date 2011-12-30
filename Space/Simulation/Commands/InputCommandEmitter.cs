@@ -9,9 +9,8 @@ using Engine.Simulation.Commands;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Space.Simulation.Commands;
 
-namespace Space.Control
+namespace Space.Simulation.Commands
 {
     public sealed class InputCommandEmitter : GameComponent, ICommandEmitter<IFrameCommand>
     {

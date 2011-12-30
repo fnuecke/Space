@@ -65,8 +65,8 @@ namespace Engine.Controller
         /// <param name="header">the protocol header.</param>
         protected AbstractTssServer(IServerSession session)
             : base(session, new uint[] {
-                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds)
-                //(uint)System.Math.Ceiling(250 / _targetElapsedMilliseconds)
+                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds), //< Expected case.
+                (uint)System.Math.Ceiling(250 / _targetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
             })
         {
             _lastGameStateSentTime = new DateTime[Session.MaxPlayers];
@@ -91,13 +91,13 @@ namespace Engine.Controller
                 _lastHashTime = DateTime.Now.Ticks;
 
                 Hasher hasher = new Hasher();
-                tss.Hash(hasher);
+                _tss.Hash(hasher);
 
                 using (var packet = new Packet())
                 {
                     Session.Send(packet
                         .Write((byte)TssControllerMessage.HashCheck)
-                        .Write(tss.TrailingFrame)
+                        .Write(_tss.TrailingFrame)
                         .Write(hasher.Value));
                 }
             }
@@ -118,7 +118,7 @@ namespace Engine.Controller
         public void AddEntity(IEntity entity, long frame)
         {
             // Add the entity to the simulation.
-            tss.AddEntity(entity, frame);
+            _tss.AddEntity(entity, frame);
 
             // Notify all players in the game about this.
             using (var packet = new Packet())
@@ -139,7 +139,7 @@ namespace Engine.Controller
         public void RemoveEntity(int entityUid, long frame)
         {
             // Remove the entity from the simulation.
-            tss.RemoveEntity(entityUid, frame);
+            _tss.RemoveEntity(entityUid, frame);
 
             // Notify all players in the game about this.
             using (var packet = new Packet())
@@ -157,7 +157,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         protected override void Apply(IFrameCommand command)
         {
-            if (command.Frame >= tss.TrailingFrame)
+            if (command.Frame >= _tss.TrailingFrame)
             {
                 // All commands we apply are authoritative.
                 command.IsAuthoritative = true;
@@ -168,7 +168,7 @@ namespace Engine.Controller
             }
             else
             {
-                logger.Trace("Client command too old: {0} < {1}. Ignoring.", command.Frame, tss.TrailingFrame);
+                logger.Trace("Client command too old: {0} < {1}. Ignoring.", command.Frame, _tss.TrailingFrame);
             }
         }
 
@@ -203,7 +203,7 @@ namespace Engine.Controller
                             Session.SendTo(args.Player, packet
                                 .Write((byte)TssControllerMessage.Synchronize)
                                 .Write(clientFrame)
-                                .Write(tss.CurrentFrame));
+                                .Write(_tss.CurrentFrame));
                         }
                     }
                     break;
@@ -216,7 +216,7 @@ namespace Engine.Controller
                         {
                             Session.SendTo(args.Player, packet
                                 .Write((byte)TssControllerMessage.GameStateResponse)
-                                .Write(tss));
+                                .Write(_tss));
                         }
                     }
                     break;

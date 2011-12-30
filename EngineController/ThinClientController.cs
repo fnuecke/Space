@@ -7,30 +7,98 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
-    public sealed class ThinClientController<TPlayerData> : AbstractController<IClientSession, IFrameCommand>,
-        IClientController<IFrameCommand>, ISimulationController<IClientSession>
+    /// <summary>
+    /// This is a thin client, in the sense that it does not keep its own game
+    /// state, but uses the one of the server specified in the constructor
+    /// instead. It still sends and receives commands normally, although all
+    /// received commands will simply be ignored.
+    /// 
+    /// <para>
+    /// Like the <c>SimpleClientController</c> it uses a HybridClientSession,
+    /// and sends commands wrapped for a TSS controller, so it is compatible
+    /// only with implementations of the AbstractTssController (e.g.
+    /// SimpleServerController)
+    /// </para>
+    /// </summary>
+    /// <typeparam name="TPlayerData">The type of player data being used.</typeparam>
+    public sealed class ThinClientController<TPlayerData>
+        : AbstractController<IClientSession, IFrameCommand>, IClientController<IFrameCommand>, ISimulationController<IClientSession>
         where TPlayerData : IPacketizable, new()
     {
-
+        #region Properties
+        
+        /// <summary>
+        /// The actual underlying simulations, being that of the server.
+        /// </summary>
         public ISimulation Simulation
         {
             get { return _server.Simulation; }
         }
 
+        #endregion
+
+        #region Fields
+        
+        /// <summary>
+        /// The server this client is coupled to.
+        /// </summary>
         private ISimulationController<IServerSession> _server;
 
-        public ThinClientController(ISimulationController<IServerSession> server, string playerName, TPlayerData playerData)
+        #endregion
+
+        #region Constructor
+        
+        /// <summary>
+        /// Creates a new thin client, instantly joining the specified server.
+        /// </summary>
+        /// <param name="server">The local server to join.</param>
+        /// <param name="playerName">The player name to use.</param>
+        /// <param name="playerData">The player data to use.</param>
+        public ThinClientController(ISimulationController<IServerSession> server,
+            string playerName, TPlayerData playerData)
             : base(new HybridClientSession<TPlayerData>())
         {
             _server = server;
+
             this.Session.Join(_server.Session, playerName, playerData);
         }
 
+        /// <summary>
+        /// Cleans up, sending the server the info that we left.
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (this.Session.ConnectionState != ClientState.Unconnected)
+                {
+                    this.Session.Leave();
+                }
+
+                Session.Dispose();
+            }
+
+            base.Dispose(disposing);
+        }
+
+        #endregion
+
+        #region Logic
+        
+        /// <summary>
+        /// Update the underlying session. Incoming stuff isn't used, but
+        /// avoids clotting of the received message buffer.
+        /// </summary>
+        /// <param name="gameTime">Unused.</param>
         public override void Update(GameTime gameTime)
         {
             Session.Update();
         }
 
+        /// <summary>
+        /// Render the server game state.
+        /// </summary>
         public override void Draw()
         {
             if (Session.ConnectionState == ClientState.Connected)
@@ -38,6 +106,8 @@ namespace Engine.Controller
                 Simulation.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display, Simulation.CurrentFrame);
             }
         }
+
+        #endregion
 
         #region Commands
 
@@ -93,6 +163,7 @@ namespace Engine.Controller
         /// <returns>the given packet, after writing.</returns>
         protected override Packet WrapDataForSend(IFrameCommand command, Packet packet)
         {
+            // Wrap it up like a TSS client would.
             packet.Write((byte)AbstractTssController<IClientSession>.TssControllerMessage.Command);
             return base.WrapDataForSend(command, packet);
         }

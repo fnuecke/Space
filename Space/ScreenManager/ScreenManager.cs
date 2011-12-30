@@ -10,10 +10,15 @@
 #region Using Statements
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Space;
 using Space.Control;
+using Space.Data;
+using Space.Session;
 
 //using Microsoft.Xna.Framework.Input.Touch;
 #endregion
@@ -56,7 +61,7 @@ namespace GameStateManagement
         Texture2D blankTexture;
 
         bool isInitialized;
-        
+
         bool traceEnabled;
 
         #endregion
@@ -102,9 +107,26 @@ namespace GameStateManagement
         public ScreenManager(Game game)
             : base(game)
         {
-            // we must set EnabledGestures before we can query for them, but
-            // we don't assume the game wants to read them.
-            //TouchPanel.EnabledGestures = GestureType.None;
+            var console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
+
+            console.AddCommand("search", args =>
+            {
+                Client.Controller.Session.Search();
+            },
+                "Search for games available on the local subnet.");
+            console.AddCommand("connect", args =>
+            {
+                PlayerData playerData = new PlayerData();
+                playerData.Ship = Game.Content.Load<ShipData[]>("Data/ships")[0];
+                Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, playerData);
+            },
+                "Joins a game at the given host.",
+                "connect <host> - join the host with the given host name or IP.");
+            console.AddCommand("leave", args =>
+            {
+                DisposeClient();
+            },
+                "Leave the current game.");
         }
 
         /// <summary>
@@ -292,7 +314,7 @@ namespace GameStateManagement
         /// </summary>
         public void AddScreen(GameScreen screen)
         {
-            
+
             screen.ScreenManager = this;
             screen.IsExiting = false;
 

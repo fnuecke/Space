@@ -75,7 +75,7 @@ namespace Engine.Controller
         /// <summary>
         /// The underlying simulation controlled by this controller.
         /// </summary>
-        public ISimulation Simulation { get { return tss; } }
+        public ISimulation Simulation { get { return _tss; } }
 
         #endregion
 
@@ -86,7 +86,7 @@ namespace Engine.Controller
         /// discouraged, as it will lead to clients having to resynchronize
         /// themselves by getting a snapshot of the complete simulation.
         /// </summary>
-        protected TSS tss;
+        protected TSS _tss;
 
         /// <summary>
         /// The remainder of time we did not update last frame, which we'll add to the
@@ -107,7 +107,7 @@ namespace Engine.Controller
         public AbstractTssController(TSession session, uint[] delays)
             : base(session)
         {
-            tss = new TSS(delays);
+            _tss = new TSS(delays);
         }
 
         #endregion
@@ -126,7 +126,7 @@ namespace Engine.Controller
         protected void UpdateSimulation(GameTime gameTime, double timeCorrection = 0)
         {
             // Already disposed. Thanks, XNA.
-            if (tss == null)
+            if (_tss == null)
             {
                 return;
             }
@@ -138,7 +138,7 @@ namespace Engine.Controller
                 // If we can't actually run to the next frame, at least update
                 // back to the current frame in case rollbacks were made to
                 // accommodate player commands.
-                tss.RunToFrame(tss.CurrentFrame);
+                _tss.RunToFrame(_tss.CurrentFrame);
             }
             else
             {
@@ -148,7 +148,7 @@ namespace Engine.Controller
                 while (elapsed >= _targetElapsedMilliseconds)
                 {
                     elapsed -= _targetElapsedMilliseconds;
-                    tss.Update();
+                    _tss.Update();
                 }
                 _lastUpdateRemainder = elapsed;
             }
@@ -164,7 +164,7 @@ namespace Engine.Controller
         /// <param name="command">The command to push.</param>
         protected virtual void Apply(IFrameCommand command)
         {
-            tss.PushCommand(command, command.Frame);
+            _tss.PushCommand(command, command.Frame);
         }
 
         #endregion

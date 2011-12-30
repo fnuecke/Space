@@ -10,7 +10,7 @@ namespace Engine.Controller
     /// A simple default implementation of a game client, using a TSS
     /// simulation and a HybridClientSession.
     /// </summary>
-    /// <typeparam name="TPlayerData"></typeparam>
+    /// <typeparam name="TPlayerData">The type of player data being used.</typeparam>
     public sealed class SimpleClientController<TPlayerData> : AbstractTssClient
         where TPlayerData : IPacketizable, new()
     {
@@ -25,13 +25,18 @@ namespace Engine.Controller
         {
             var simulation = new DefaultSimulation();
             simulation.Command += commandHandler;
-            tss.Initialize(simulation);
+            _tss.Initialize(simulation);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
+                if (this.Session.ConnectionState != ClientState.Unconnected)
+                {
+                    this.Session.Leave();
+                }
+
                 Session.Dispose();
             }
 
