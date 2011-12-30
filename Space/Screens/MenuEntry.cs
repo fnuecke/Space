@@ -7,11 +7,9 @@
 //-----------------------------------------------------------------------------
 #endregion
 
-#region Using Statements
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-#endregion
 
 namespace GameStateManagement
 {
@@ -23,20 +21,27 @@ namespace GameStateManagement
     /// </summary>
     class MenuEntry
     {
-        #region Fields
+        #region Events
 
         /// <summary>
-        /// returns if the value is selected
+        /// Event raised when the menu entry is selected.
         /// </summary>
-        public bool Active { get;protected set; }
+        public event EventHandler<EventArgs> Selected;
+
         /// <summary>
-        /// The text rendered for this entry.
+        /// Event raised when the entry's next option is selected.
         /// </summary>
-        string text;
+        public event EventHandler<EventArgs> NextOptionSelected;
+
         /// <summary>
-        /// indicator if the entry is locked and therefore cannot be switched to next entry
+        /// Event raised when the entry's previous option is selected.
         /// </summary>
-        public bool locked { get; set; }
+        public event EventHandler<EventArgs> PreviousOptionSelected;
+
+        #endregion
+
+        #region Fields
+
         /// <summary>
         /// Tracks a fading selection effect on the entry.
         /// </summary>
@@ -45,138 +50,77 @@ namespace GameStateManagement
         /// </remarks>
         protected float selectionFade;
 
-        /// <summary>
-        /// The position at which the entry is drawn. This is set by the MenuScreen
-        /// each frame in Update.
-        /// </summary>
-        Vector2 position;
-
         #endregion
 
         #region Properties
 
-
         /// <summary>
         /// Gets or sets the text of this menu entry.
         /// </summary>
-        public string Text
-        {
-            get { return text; }
-            set { text = value; }
-        }
-
+        public string Text { get; set; }
 
         /// <summary>
         /// Gets or sets the position at which to draw this menu entry.
         /// </summary>
-        public Vector2 Position
-        {
-            get { return position; }
-            set { position = value; }
-        }
-
-
-        #endregion
-
-        #region Events
-
+        public Vector2 Position { get; set; }
 
         /// <summary>
-        /// Event raised when the menu entry is selected.
+        /// Returns if the entry is selected.
         /// </summary>
-        public event EventHandler<PlayerIndexEventArgs> Selected;
+        public bool Focused { get; private set; }
 
         /// <summary>
-        /// Event raised when the next menü entry is choosen.
+        /// If the entry is locked the user cannot switch between the options
+        /// this entry offers.
         /// </summary>
-        public event EventHandler<PlayerIndexEventArgs> next;
-
-        /// <summary>
-        /// Event raised when the prev menu entry is selected.
-        /// </summary>
-        public event EventHandler<PlayerIndexEventArgs> prev;
-        /// <summary>
-        /// Method for raising the Selected event.
-        /// </summary>
-        protected internal virtual void OnSelectEntry()
-        {
-            if (Selected != null)
-                Selected(this, new PlayerIndexEventArgs());
-        }
-        /// <summary>
-        /// Method for raising the Selected event.
-        /// </summary>
-        protected internal virtual void OnNextEntry()
-        {
-            if (next != null)
-                next(this, new PlayerIndexEventArgs());
-        }
-        /// <summary>
-        /// Method for raising the Selected event.
-        /// </summary>
-        protected internal virtual void OnPrevEntry()
-        {
-            if (prev != null)
-                prev(this, new PlayerIndexEventArgs());
-        }
-
+        public bool Locked { get; set; }
 
         #endregion
 
         #region Initialization
-
 
         /// <summary>
         /// Constructs a new menu entry with the specified text.
         /// </summary>
         public MenuEntry(string text)
         {
-            this.text = text;
+            this.Text = text;
         }
 
-        public virtual void SetActive(bool active)
-        {
-            Active = active;
-        } 
         #endregion
 
-        #region Update and Draw
+        public virtual void SetFocused(bool focused)
+        {
+            this.Focused = focused;
+        } 
 
+        #region Update and Draw
 
         /// <summary>
         /// Updates the menu entry.
         /// </summary>
         public virtual void Update(MenuScreen screen, bool isSelected, GameTime gameTime)
         {
-            // there is no such thing as a selected item on Windows Phone, so we always
-            // force isSelected to be false
-#if WINDOWS_PHONE
-            isSelected = false;
-#endif
-
             // When the menu selection changes, entries gradually fade between
             // their selected and deselected appearance, rather than instantly
             // popping to the new state.
             float fadeSpeed = (float)gameTime.ElapsedGameTime.TotalSeconds * 4;
 
             if (isSelected)
+            {
                 selectionFade = Math.Min(selectionFade + fadeSpeed, 1);
+            }
             else
+            {
                 selectionFade = Math.Max(selectionFade - fadeSpeed, 0);
+            }
         }
-
 
         /// <summary>
         /// Draws the menu entry. This can be overridden to customize the appearance.
         /// </summary>
         public virtual void Draw(MenuScreen screen, bool isSelected, GameTime gameTime)
         {
-            // there is no such thing as a selected item on Windows Phone, so we always
-            // force isSelected to be false
-#if WINDOWS_PHONE
-            isSelected = false;
-#endif
-
             // Draw the selected entry in yellow, otherwise white.
             Color color = isSelected ? Color.Yellow : Color.White;
 
@@ -197,10 +141,9 @@ namespace GameStateManagement
 
             Vector2 origin = new Vector2(0, font.LineSpacing / 2);
 
-            spriteBatch.DrawString(font, text, position, color, 0,
+            spriteBatch.DrawString(font, Text, Position, color, 0,
                                    origin, scale, SpriteEffects.None, 0);
         }
-
 
         /// <summary>
         /// Queries how much space this menu entry requires.
@@ -210,16 +153,50 @@ namespace GameStateManagement
             return screen.ScreenManager.Font.LineSpacing;
         }
 
-
         /// <summary>
         /// Queries how wide the entry is, used for centering on the screen.
         /// </summary>
         public virtual int GetWidth(MenuScreen screen)
         {
-            
             return (int)screen.ScreenManager.Font.MeasureString(Text).X;
         }
 
+        #endregion
+
+        #region Event dispatching
+
+        /// <summary>
+        /// Method for raising the Selected event.
+        /// </summary>
+        protected internal void OnSelectEntry()
+        {
+            if (Selected != null)
+            {
+                Selected(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Method for raising the Selected event.
+        /// </summary>
+        protected internal void OnNextEntrySelected()
+        {
+            if (NextOptionSelected != null)
+            {
+                NextOptionSelected(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Method for raising the Selected event.
+        /// </summary>
+        protected internal void OnPreviousEntrySelected()
+        {
+            if (PreviousOptionSelected != null)
+            {
+                PreviousOptionSelected(this, EventArgs.Empty);
+            }
+        }
 
         #endregion
     }

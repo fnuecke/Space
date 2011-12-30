@@ -7,11 +7,9 @@
 //-----------------------------------------------------------------------------
 #endregion
 
-#region Using Statements
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-#endregion
 
 namespace GameStateManagement
 {
@@ -24,7 +22,7 @@ namespace GameStateManagement
     {
         #region Fields
 
-        Texture2D backgroundTexture;
+        private Texture2D _backgroundTexture;
 
         #endregion
 
@@ -48,7 +46,7 @@ namespace GameStateManagement
         /// </summary>
         public override void LoadContent()
         {
-            backgroundTexture = ScreenManager.Game.Content.Load<Texture2D>("Textures/background");
+            _backgroundTexture = ScreenManager.Game.Content.Load<Texture2D>("Textures/background");
         }
 
         #endregion
@@ -76,18 +74,17 @@ namespace GameStateManagement
             SpriteBatch spriteBatch = ScreenManager.SpriteBatch;
             Viewport viewport = ScreenManager.GraphicsDevice.Viewport;
 
-            double heightRatio = viewport.Height / (double)backgroundTexture.Height;
-            double widthRatio = viewport.Width / (double)backgroundTexture.Width;
+            double heightRatio = viewport.Height / (double)_backgroundTexture.Height;
+            double widthRatio = viewport.Width / (double)_backgroundTexture.Width;
             double ratio = System.Math.Max(heightRatio, widthRatio);
 
-            int width = (int)Math.Ceiling(ratio * backgroundTexture.Width);
-            int height = (int)Math.Ceiling(ratio * backgroundTexture.Height);
+            int width = (int)Math.Ceiling(ratio * _backgroundTexture.Width);
+            int height = (int)Math.Ceiling(ratio * _backgroundTexture.Height);
 
             Rectangle fullscreen = new Rectangle((viewport.Width - width) / 2, (viewport.Height - height) / 2, width, height);
 
             spriteBatch.Begin();
-
-            spriteBatch.Draw(backgroundTexture, fullscreen,
+            spriteBatch.Draw(_backgroundTexture, fullscreen,
                              new Color(TransitionAlpha, TransitionAlpha, TransitionAlpha));
 
             spriteBatch.End();

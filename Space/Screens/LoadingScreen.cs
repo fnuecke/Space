@@ -7,11 +7,9 @@
 //-----------------------------------------------------------------------------
 #endregion
 
-#region Using Statements
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-#endregion
 
 namespace GameStateManagement
 {
@@ -80,7 +78,6 @@ namespace GameStateManagement
 
         #region Update and Draw
 
-
         /// <summary>
         /// Updates the loading screen.
         /// </summary>
@@ -109,7 +106,6 @@ namespace GameStateManagement
                 ScreenManager.Game.ResetElapsedTime();
             }
         }
-
 
         /// <summary>
         /// Draws the loading screen.
@@ -154,7 +150,6 @@ namespace GameStateManagement
                 spriteBatch.End();
             }
         }
-
 
         #endregion
     }

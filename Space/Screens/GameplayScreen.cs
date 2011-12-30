@@ -93,7 +93,7 @@ namespace GameStateManagement
                 throw new ArgumentNullException("input");
             }
 
-            if (input.IsPauseGame())
+            if (input.KeyPause)
             {
                 ScreenManager.AddScreen(new PauseMenuScreen());
             }

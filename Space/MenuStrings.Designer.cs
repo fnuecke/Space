@@ -22,14 +22,14 @@ namespace Space {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
+    internal class MenuStrings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Strings() {
+        internal MenuStrings() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Space {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Space.Strings", typeof(Strings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Space.MenuStrings", typeof(MenuStrings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -70,7 +70,7 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Connection could not be established.
+        ///   Looks up a localized string similar to Connection to server could not be established..
         /// </summary>
         internal static string ConnectionFailed {
             get {
@@ -115,56 +115,38 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Off.
-        /// </summary>
-        internal static string Fullscreen_false {
-            get {
-                return ResourceManager.GetString("Fullscreen_false", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to On.
-        /// </summary>
-        internal static string Fullscreen_true {
-            get {
-                return ResourceManager.GetString("Fullscreen_true", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Host a game.
         /// </summary>
-        internal static string host {
+        internal static string HostGame {
             get {
-                return ResourceManager.GetString("host", resourceCulture);
+                return ResourceManager.GetString("HostGame", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Invalid Host or IP Adress.
         /// </summary>
-        internal static string InvalidHost {
+        internal static string InvalidAddress {
             get {
-                return ResourceManager.GetString("InvalidHost", resourceCulture);
+                return ResourceManager.GetString("InvalidAddress", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Join a game.
         /// </summary>
-        internal static string join {
+        internal static string JoinGame {
             get {
-                return ResourceManager.GetString("join", resourceCulture);
+                return ResourceManager.GetString("JoinGame", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Language: .
         /// </summary>
-        internal static string language {
+        internal static string Language {
             get {
-                return ResourceManager.GetString("language", resourceCulture);
+                return ResourceManager.GetString("Language", resourceCulture);
             }
         }
         
@@ -178,11 +160,29 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Name to short!.
+        ///   Looks up a localized string similar to Name too short!.
         /// </summary>
-        internal static string NameToShort {
+        internal static string NameTooShort {
             get {
-                return ResourceManager.GetString("NameToShort", resourceCulture);
+                return ResourceManager.GetString("NameTooShort", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Off.
+        /// </summary>
+        internal static string Off {
+            get {
+                return ResourceManager.GetString("Off", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to On.
+        /// </summary>
+        internal static string On {
+            get {
+                return ResourceManager.GetString("On", resourceCulture);
             }
         }
         
@@ -198,9 +198,9 @@ namespace Space {
         /// <summary>
         ///   Looks up a localized string similar to Player Name: .
         /// </summary>
-        internal static string playerName {
+        internal static string PlayerName {
             get {
-                return ResourceManager.GetString("playerName", resourceCulture);
+                return ResourceManager.GetString("PlayerName", resourceCulture);
             }
         }
         
@@ -216,9 +216,9 @@ namespace Space {
         /// <summary>
         ///   Looks up a localized string similar to Resolution: .
         /// </summary>
-        internal static string Resolution {
+        internal static string ScreenResolution {
             get {
-                return ResourceManager.GetString("Resolution", resourceCulture);
+                return ResourceManager.GetString("ScreenResolution", resourceCulture);
             }
         }
     }

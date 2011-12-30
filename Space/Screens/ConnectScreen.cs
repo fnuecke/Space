@@ -4,13 +4,11 @@ using Engine.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space;
-using Space.Control;
 using Space.Data;
 using Space.Session;
 
 namespace GameStateManagement
 {
-
     class ConnectScreen : MenuScreen
     {
         #region Fields
@@ -19,19 +17,20 @@ namespace GameStateManagement
 
         #endregion
 
-        public ConnectScreen(GameClient client)
-            : base(Strings.join)
+        public ConnectScreen()
+            : base(MenuStrings.JoinGame)
         {
+            var client = ((Spaaace)ScreenManager.Game).Client;
             client.Controller.Session.JoinResponse += LoginSucces;
             client.Controller.Session.Disconnected += LoginFailed;
 
             connect = new EditableMenueEntry(String.Empty);
-            MenuEntry back = new MenuEntry(Strings.Back);
-            connect.SetActive(true);
+            MenuEntry back = new MenuEntry(MenuStrings.Back);
+            connect.SetFocused(true);
 
             connect.Selected += ConnectEntrySelected;
 
-            back.Selected += OnCancel;
+            back.Selected += HandleCancel;
 
             MenuEntries.Add(connect);
             MenuEntries.Add(back);
@@ -47,44 +46,45 @@ namespace GameStateManagement
             }
         }
         //Called if the Connect Entry is selected
-        void ConnectEntrySelected(object sender, PlayerIndexEventArgs e)
+        void ConnectEntrySelected(object sender, EventArgs e)
         {
             if (connect.Editable)
             {
                 PlayerData info = new PlayerData();
                 info.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
-                ((EditableMenueEntry)MenuEntries[0]).locked = true;
+                ((EditableMenueEntry)MenuEntries[0]).Locked = true;
                 try
                 {
-                    ScreenManager.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 7777), Settings.Instance.PlayerName, info);
+                    ((Spaaace)ScreenManager.Game).Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 7777), Settings.Instance.PlayerName, info);
                 }
                 catch (Exception)
                 {
 
-                    ErrorText = Strings.InvalidHost;
+                    ErrorText = MenuStrings.InvalidAddress;
                 }
-                
             }
             else
             {
                 connect.Editable = true;
             }
-            
         }
+
         //Called if the login was handled
         private void LoginSucces(object sender, EventArgs e)
         {
-            ((EditableMenueEntry)MenuEntries[0]).locked = false;
+            ((EditableMenueEntry)MenuEntries[0]).Locked = false;
             LoadingScreen.Load(ScreenManager, true,
                                 new GameplayScreen());
         }
+
         //Called if the login was handled
         private void LoginFailed(object sender, EventArgs e)
         {
-            ErrorText = Strings.ConnectionFailed;
+            ErrorText = MenuStrings.ConnectionFailed;
             //tell that an error occurred
-            connect.locked = false;
+            connect.Locked = false;
         }
+
         public override void Draw(GameTime gameTime)
         {
 

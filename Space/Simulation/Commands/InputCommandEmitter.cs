@@ -36,7 +36,9 @@ namespace Space.Simulation.Commands
 
         private float _currentTargetRotation;
 
-        private bool _rotationFinished = true;
+        private float _shipTargetRotation;
+
+        private bool _mouseStoppedMoving = true;
 
         #endregion
 
@@ -98,13 +100,14 @@ namespace Space.Simulation.Commands
                 // we don't send commands that would only update the target angle,
                 // but not the direction), which saves us quite a few commands,
                 // and thus net traffic.
-                if (!_rotationFinished)
+                if (!_mouseStoppedMoving)
                 {
                     // We stopped moving when last and current position are equal.
                     if (_previousTargetRotation == _currentTargetRotation)
                     {
                         OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
-                        _rotationFinished = true;
+                        _shipTargetRotation = _currentTargetRotation;
+                        _mouseStoppedMoving = true;
                     }
                     _previousTargetRotation = _currentTargetRotation;
                 }
@@ -241,6 +244,9 @@ namespace Space.Simulation.Commands
                 // Get the smaller angle between our current and our target angles.
                 double deltaAngle = Angle.MinAngle(shipAngle, targetRotation);
 
+                // Remaining rotation the ship has to perform.
+                double remainingAngle = Angle.MinAngle(shipAngle, _shipTargetRotation);
+
                 // Now, if the difference to our current rotation is large enough
                 // and we're either rotating in the other direction or not at all,
                 // we send a rotation command.
@@ -251,13 +257,15 @@ namespace Space.Simulation.Commands
                 // load somewhat (still pretty bad if user moves his mouse slowly,
                 // but meh).
                 if ((deltaAngle > 10e-3 && spin.Value <= 0) ||
-                    (deltaAngle < -10e-3 && spin.Value >= 0))
+                    (deltaAngle < -10e-3 && spin.Value >= 0) ||
+                    (Math.Abs(remainingAngle) < spin.Value))
                 {
                     OnCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
+                    _shipTargetRotation = _currentTargetRotation;
                 }
 
                 // Set our flag to remember we might have to finalize the movement.
-                _rotationFinished = false;
+                _mouseStoppedMoving = false;
             }
         }
 

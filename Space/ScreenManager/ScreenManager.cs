@@ -7,21 +7,11 @@
 //-----------------------------------------------------------------------------
 #endregion
 
-#region Using Statements
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Space;
-using Space.Control;
-using Space.Data;
-using Space.Session;
-
-//using Microsoft.Xna.Framework.Input.Touch;
-#endregion
 
 namespace GameStateManagement
 {
@@ -40,29 +30,28 @@ namespace GameStateManagement
         /// </summary>
         public Texture2D PixelTexture { get; private set; }
 
-        public GameServer Server { get; set; }
-
-        public GameClient Client { get; set; }
-
         #endregion
 
         #region Fields
 
-        List<GameScreen> screens = new List<GameScreen>();
+        /// <summary>
+        /// All the screens we track.
+        /// </summary>
+        private readonly List<GameScreen> _screens = new List<GameScreen>();
 
-        List<GameScreen> screensToUpdate = new List<GameScreen>();
+        /// <summary>
+        /// The screens we're currently updating.
+        /// </summary>
+        private readonly List<GameScreen> _screensToUpdate = new List<GameScreen>();
 
-        InputState input = new InputState();
+        /// <summary>
+        /// Input state used for the menu screens.
+        /// </summary>
+        private readonly InputState _input;
 
-        SpriteBatch spriteBatch;
+        private Texture2D _blankTexture;
 
-        SpriteFont font;
-
-        Texture2D blankTexture;
-
-        bool isInitialized;
-
-        bool traceEnabled;
+        private bool _isInitialized;
 
         #endregion
 
@@ -72,30 +61,20 @@ namespace GameStateManagement
         /// A default SpriteBatch shared by all the screens. This saves
         /// each screen having to bother creating their own local instance.
         /// </summary>
-        public SpriteBatch SpriteBatch
-        {
-            get { return spriteBatch; }
-        }
+        public SpriteBatch SpriteBatch { get; private set; }
 
         /// <summary>
         /// A default font shared by all the screens. This saves
         /// each screen having to bother loading their own local copy.
         /// </summary>
-        public SpriteFont Font
-        {
-            get { return font; }
-        }
+        public SpriteFont Font { get; private set; }
 
         /// <summary>
         /// If true, the manager prints out a list of all the screens
         /// each time it is updated. This can be useful for making sure
         /// everything is being added and removed at the right times.
         /// </summary>
-        public bool TraceEnabled
-        {
-            get { return traceEnabled; }
-            set { traceEnabled = value; }
-        }
+        public bool TraceEnabled { get; set; }
 
         #endregion
 
@@ -107,26 +86,7 @@ namespace GameStateManagement
         public ScreenManager(Game game)
             : base(game)
         {
-            var console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
-
-            console.AddCommand("search", args =>
-            {
-                Client.Controller.Session.Search();
-            },
-                "Search for games available on the local subnet.");
-            console.AddCommand("connect", args =>
-            {
-                PlayerData playerData = new PlayerData();
-                playerData.Ship = Game.Content.Load<ShipData[]>("Data/ships")[0];
-                Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, playerData);
-            },
-                "Joins a game at the given host.",
-                "connect <host> - join the host with the given host name or IP.");
-            console.AddCommand("leave", args =>
-            {
-                DisposeClient();
-            },
-                "Leave the current game.");
+            _input = new InputState(game);
         }
 
         /// <summary>
@@ -135,10 +95,11 @@ namespace GameStateManagement
         public override void Initialize()
         {
             base.Initialize();
+
             PixelTexture = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             PixelTexture.SetData(new[] { Color.White });
 
-            isInitialized = true;
+            _isInitialized = true;
         }
 
         /// <summary>
@@ -149,12 +110,12 @@ namespace GameStateManagement
             // Load content belonging to the screen manager.
             ContentManager content = Game.Content;
 
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-            font = content.Load<SpriteFont>("Fonts/menufont");
-            blankTexture = content.Load<Texture2D>("Textures/blank");
+            SpriteBatch = new SpriteBatch(GraphicsDevice);
+            Font = content.Load<SpriteFont>("Fonts/menufont");
+            _blankTexture = content.Load<Texture2D>("Textures/blank");
 
             // Tell each of the screens to load their content.
-            foreach (GameScreen screen in screens)
+            foreach (GameScreen screen in _screens)
             {
                 screen.LoadContent();
             }
@@ -166,7 +127,7 @@ namespace GameStateManagement
         protected override void UnloadContent()
         {
             // Tell each of the screens to unload their content.
-            foreach (GameScreen screen in screens)
+            foreach (GameScreen screen in _screens)
             {
                 screen.UnloadContent();
             }
@@ -181,26 +142,21 @@ namespace GameStateManagement
         /// </summary>
         public override void Update(GameTime gameTime)
         {
-            // Read the keyboard and gamepad.
-            input.Update();
-
             // Make a copy of the master screen list, to avoid confusion if
             // the process of updating one screen adds or removes others.
-            screensToUpdate.Clear();
-
-            foreach (GameScreen screen in screens)
-                screensToUpdate.Add(screen);
+            _screensToUpdate.Clear();
+            _screensToUpdate.AddRange(_screens);
 
             bool otherScreenHasFocus = !Game.IsActive;
             bool coveredByOtherScreen = false;
 
             // Loop as long as there are screens waiting to be updated.
-            while (screensToUpdate.Count > 0)
+            while (_screensToUpdate.Count > 0)
             {
                 // Pop the topmost screen off the waiting list.
-                GameScreen screen = screensToUpdate[screensToUpdate.Count - 1];
+                GameScreen screen = _screensToUpdate[_screensToUpdate.Count - 1];
 
-                screensToUpdate.RemoveAt(screensToUpdate.Count - 1);
+                _screensToUpdate.RemoveAt(_screensToUpdate.Count - 1);
 
                 // Update the screen.
                 screen.Update(gameTime, otherScreenHasFocus, coveredByOtherScreen);
@@ -212,7 +168,8 @@ namespace GameStateManagement
                     // give it a chance to handle input.
                     if (!otherScreenHasFocus)
                     {
-                        screen.HandleInput(input);
+                        screen.HandleInput(_input);
+                        _input.Update();
 
                         otherScreenHasFocus = true;
                     }
@@ -220,13 +177,17 @@ namespace GameStateManagement
                     // If this is an active non-popup, inform any subsequent
                     // screens that they are covered by it.
                     if (!screen.IsPopup)
+                    {
                         coveredByOtherScreen = true;
+                    }
                 }
             }
 
             // Print debug trace?
-            if (traceEnabled)
+            if (TraceEnabled)
+            {
                 TraceScreens();
+            }
         }
 
         /// <summary>
@@ -236,8 +197,10 @@ namespace GameStateManagement
         {
             List<string> screenNames = new List<string>();
 
-            foreach (GameScreen screen in screens)
+            foreach (GameScreen screen in _screens)
+            {
                 screenNames.Add(screen.GetType().Name);
+            }
 
             Debug.WriteLine(string.Join(", ", screenNames.ToArray()));
         }
@@ -247,62 +210,15 @@ namespace GameStateManagement
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
-            foreach (GameScreen screen in screens)
+            foreach (GameScreen screen in _screens)
             {
                 if (screen.ScreenState == ScreenState.Hidden)
+                {
                     continue;
+                }
 
                 screen.Draw(gameTime);
             }
-        }
-
-        #endregion
-
-        #region Server / Client
-
-        public void RestartClient(bool local = false)
-        {
-            DisposeClient();
-            if (local)
-            {
-                Client = new GameClient(Game, Server);
-            }
-            else
-            {
-                Client = new GameClient(Game);
-            }
-            Game.Components.Add(Client);
-        }
-
-        public void RestartServer()
-        {
-            DisposeServer();
-            Server = new GameServer(Game);
-            Game.Components.Add(Server);
-        }
-
-        public void DisposeClient()
-        {
-            if (Client != null)
-            {
-                Client.Dispose();
-                Game.Components.Remove(Client);
-            }
-        }
-
-        public void DisposeServer()
-        {
-            if (Server != null)
-            {
-                Server.Dispose();
-                Game.Components.Remove(Server);
-            }
-        }
-
-        public void DisposeGame()
-        {
-            DisposeClient();
-            DisposeServer();
         }
 
         #endregion
@@ -314,20 +230,16 @@ namespace GameStateManagement
         /// </summary>
         public void AddScreen(GameScreen screen)
         {
-
             screen.ScreenManager = this;
             screen.IsExiting = false;
 
             // If we have a graphics device, tell the screen to load content.
-            if (isInitialized)
+            if (_isInitialized)
             {
                 screen.LoadContent();
             }
 
-            screens.Add(screen);
-
-            // update the TouchPanel to respond to gestures this screen is interested in
-            //TouchPanel.EnabledGestures = screen.EnabledGestures;
+            _screens.Add(screen);
         }
 
         /// <summary>
@@ -339,20 +251,13 @@ namespace GameStateManagement
         public void RemoveScreen(GameScreen screen)
         {
             // If we have a graphics device, tell the screen to unload content.
-            if (isInitialized)
+            if (_isInitialized)
             {
                 screen.UnloadContent();
             }
 
-            screens.Remove(screen);
-            screensToUpdate.Remove(screen);
-
-            // if there is a screen still in the manager, update TouchPanel
-            // to respond to gestures that screen is interested in.
-            if (screens.Count > 0)
-            {
-                //TouchPanel.EnabledGestures = screens[screens.Count - 1].EnabledGestures;
-            }
+            _screens.Remove(screen);
+            _screensToUpdate.Remove(screen);
         }
 
         /// <summary>
@@ -362,7 +267,7 @@ namespace GameStateManagement
         /// </summary>
         public GameScreen[] GetScreens()
         {
-            return screens.ToArray();
+            return _screens.ToArray();
         }
 
         /// <summary>
@@ -373,13 +278,13 @@ namespace GameStateManagement
         {
             Viewport viewport = GraphicsDevice.Viewport;
 
-            spriteBatch.Begin();
+            SpriteBatch.Begin();
 
-            spriteBatch.Draw(blankTexture,
+            SpriteBatch.Draw(_blankTexture,
                              new Rectangle(0, 0, viewport.Width, viewport.Height),
                              Color.Black * alpha);
 
-            spriteBatch.End();
+            SpriteBatch.End();
         }
 
         #endregion

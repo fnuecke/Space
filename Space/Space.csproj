@@ -134,7 +134,7 @@
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Simulation\Commands\InputCommandEmitter.cs" />
-    <Compile Include="Session\PlayerInfo.cs" />
+    <Compile Include="Session\PlayerData.cs" />
     <Compile Include="Simulation\Commands\GameCommandType.cs" />
     <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />
     <Compile Include="Simulation\Commands\GameCommandHandler.cs" />
@@ -157,10 +157,10 @@
     <Compile Include="Screens\PlayerIndexEventArgs.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Spaaace.cs" />
-    <Compile Include="Strings.Designer.cs">
+    <Compile Include="MenuStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Strings.resx</DependentUpon>
+      <DependentUpon>MenuStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="View\NetGraph.cs" />
     <Compile Include="View\SessionInfo.cs" />
@@ -239,10 +239,10 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Strings.de.resx" />
-    <EmbeddedResource Include="Strings.resx">
+    <EmbeddedResource Include="MenuStrings.de.resx" />
+    <EmbeddedResource Include="MenuStrings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Strings.Designer.cs</LastGenOutput>
+      <LastGenOutput>MenuStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

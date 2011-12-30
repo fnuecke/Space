@@ -7,12 +7,8 @@
 //-----------------------------------------------------------------------------
 #endregion
 
-#region Using Statements
 using System;
 using Microsoft.Xna.Framework;
-//using Microsoft.Xna.Framework.Input.Touch;
-using System.IO;
-#endregion
 
 namespace GameStateManagement
 {
@@ -27,7 +23,6 @@ namespace GameStateManagement
         Hidden,
     }
 
-
     /// <summary>
     /// A screen is a single layer that has update and draw logic, and which
     /// can be combined with other layers to build up a complex menu system.
@@ -39,7 +34,6 @@ namespace GameStateManagement
     {
         #region Properties
 
-
         /// <summary>
         /// Normally when one screen is brought up over the top of another,
         /// the first screen will transition off to make room for the new
@@ -47,54 +41,26 @@ namespace GameStateManagement
         /// popup, in which case screens underneath it do not need to bother
         /// transitioning off.
         /// </summary>
-        public bool IsPopup
-        {
-            get { return isPopup; }
-            protected set { isPopup = value; }
-        }
-
-        bool isPopup = false;
-
+        public bool IsPopup { get; protected set; }
 
         /// <summary>
         /// Indicates how long the screen takes to
         /// transition on when it is activated.
         /// </summary>
-        public TimeSpan TransitionOnTime
-        {
-            get { return transitionOnTime; }
-            protected set { transitionOnTime = value; }
-        }
-
-        TimeSpan transitionOnTime = TimeSpan.Zero;
-
+        public TimeSpan TransitionOnTime { get; protected set; }
 
         /// <summary>
         /// Indicates how long the screen takes to
         /// transition off when it is deactivated.
         /// </summary>
-        public TimeSpan TransitionOffTime
-        {
-            get { return transitionOffTime; }
-            protected set { transitionOffTime = value; }
-        }
-
-        TimeSpan transitionOffTime = TimeSpan.Zero;
-
+        public TimeSpan TransitionOffTime { get; protected set; }
 
         /// <summary>
         /// Gets the current position of the screen transition, ranging
         /// from zero (fully active, no transition) to one (transitioned
         /// fully off to nothing).
         /// </summary>
-        public float TransitionPosition
-        {
-            get { return transitionPosition; }
-            protected set { transitionPosition = value; }
-        }
-
-        float transitionPosition = 1;
-
+        public float TransitionPosition { get; protected set; }
 
         /// <summary>
         /// Gets the current alpha of the screen transition, ranging
@@ -106,18 +72,10 @@ namespace GameStateManagement
             get { return 1f - TransitionPosition; }
         }
 
-
         /// <summary>
         /// Gets the current screen transition state.
         /// </summary>
-        public ScreenState ScreenState
-        {
-            get { return screenState; }
-            protected set { screenState = value; }
-        }
-
-        ScreenState screenState = ScreenState.TransitionOn;
-
+        public ScreenState ScreenState { get; protected set; }
 
         /// <summary>
         /// There are two possible reasons why a screen might be transitioning
@@ -127,14 +85,7 @@ namespace GameStateManagement
         /// if set, the screen will automatically remove itself as soon as the
         /// transition finishes.
         /// </summary>
-        public bool IsExiting
-        {
-            get { return isExiting; }
-            protected internal set { isExiting = value; }
-        }
-
-        bool isExiting = false;
-
+        public bool IsExiting { get; protected internal set; }
 
         /// <summary>
         /// Checks whether this screen is active and can respond to user input.
@@ -143,61 +94,35 @@ namespace GameStateManagement
         {
             get
             {
-                return !otherScreenHasFocus &&
-                       (screenState == ScreenState.TransitionOn ||
-                        screenState == ScreenState.Active);
+                return !_otherScreenHasFocus &&
+                       (ScreenState == ScreenState.TransitionOn ||
+                        ScreenState == ScreenState.Active);
             }
         }
-
-        bool otherScreenHasFocus;
-
 
         /// <summary>
         /// Gets the manager that this screen belongs to.
         /// </summary>
-        public ScreenManager ScreenManager
-        {
-            get { return screenManager; }
-            internal set { screenManager = value; }
-        }
+        public ScreenManager ScreenManager {get;set;}
 
-        ScreenManager screenManager;
+        #endregion
 
-
-        
-
+        #region Fields
 
         /// <summary>
-        /// Gets the gestures the screen is interested in. Screens should be as specific
-        /// as possible with gestures to increase the accuracy of the gesture engine.
-        /// For example, most menus only need Tap or perhaps Tap and VerticalDrag to operate.
-        /// These gestures are handled by the ScreenManager when screens change and
-        /// all gestures are placed in the InputState passed to the HandleInput method.
+        /// Keeping track of whether another screen has focus or not, set in
+        /// <c>Update</c>.
         /// </summary>
-        //public GestureType EnabledGestures
-        //{
-        //    get { return enabledGestures; }
-        //    protected set
-        //    {
-        //        enabledGestures = value;
-
-        //        // the screen manager handles this during screen changes, but
-        //        // if this screen is active and the gesture types are changing,
-        //        // we have to update the TouchPanel ourself.
-        //        if (ScreenState == ScreenState.Active)
-        //        {
-        //            TouchPanel.EnabledGestures = value;
-        //        }
-        //    }
-        //}
-
-        //GestureType enabledGestures = GestureType.None;
-
+        private bool _otherScreenHasFocus;
 
         #endregion
 
         #region Initialization
 
+        public GameScreen()
+        {
+            TransitionPosition = 1;
+        }
 
         /// <summary>
         /// Load graphics content for the screen.
@@ -210,11 +135,9 @@ namespace GameStateManagement
         /// </summary>
         public virtual void UnloadContent() { }
 
-
         #endregion
 
         #region Update and Draw
-
 
         /// <summary>
         /// Allows the screen to run logic, such as updating the transition position.
@@ -224,14 +147,14 @@ namespace GameStateManagement
         public virtual void Update(GameTime gameTime, bool otherScreenHasFocus,
                                                       bool coveredByOtherScreen)
         {
-            this.otherScreenHasFocus = otherScreenHasFocus;
+            this._otherScreenHasFocus = otherScreenHasFocus;
 
-            if (isExiting)
+            if (IsExiting)
             {
                 // If the screen is going away to die, it should transition off.
-                screenState = ScreenState.TransitionOff;
+                ScreenState = ScreenState.TransitionOff;
 
-                if (!UpdateTransition(gameTime, transitionOffTime, 1))
+                if (!UpdateTransition(gameTime, TransitionOffTime, 1))
                 {
                     // When the transition finishes, remove the screen.
                     ScreenManager.RemoveScreen(this);
@@ -240,33 +163,32 @@ namespace GameStateManagement
             else if (coveredByOtherScreen)
             {
                 // If the screen is covered by another, it should transition off.
-                if (UpdateTransition(gameTime, transitionOffTime, 1))
+                if (UpdateTransition(gameTime, TransitionOffTime, 1))
                 {
                     // Still busy transitioning.
-                    screenState = ScreenState.TransitionOff;
+                    ScreenState = ScreenState.TransitionOff;
                 }
                 else
                 {
                     // Transition finished!
-                    screenState = ScreenState.Hidden;
+                    ScreenState = ScreenState.Hidden;
                 }
             }
             else
             {
                 // Otherwise the screen should transition on and become active.
-                if (UpdateTransition(gameTime, transitionOnTime, -1))
+                if (UpdateTransition(gameTime, TransitionOnTime, -1))
                 {
                     // Still busy transitioning.
-                    screenState = ScreenState.TransitionOn;
+                    ScreenState = ScreenState.TransitionOn;
                 }
                 else
                 {
                     // Transition finished!
-                    screenState = ScreenState.Active;
+                    ScreenState = ScreenState.Active;
                 }
             }
         }
-
 
         /// <summary>
         /// Helper for updating the screen transition position.
@@ -277,26 +199,29 @@ namespace GameStateManagement
             float transitionDelta;
 
             if (time == TimeSpan.Zero)
+            {
                 transitionDelta = 1;
+            }
             else
+            {
                 transitionDelta = (float)(gameTime.ElapsedGameTime.TotalMilliseconds /
                                           time.TotalMilliseconds);
+            }
 
             // Update the transition position.
-            transitionPosition += transitionDelta * direction;
+            TransitionPosition += transitionDelta * direction;
 
             // Did we reach the end of the transition?
-            if (((direction < 0) && (transitionPosition <= 0)) ||
-                ((direction > 0) && (transitionPosition >= 1)))
+            if (((direction < 0) && (TransitionPosition <= 0)) ||
+                ((direction > 0) && (TransitionPosition >= 1)))
             {
-                transitionPosition = MathHelper.Clamp(transitionPosition, 0, 1);
+                TransitionPosition = MathHelper.Clamp(TransitionPosition, 0, 1);
                 return false;
             }
 
             // Otherwise we are still busy transitioning.
             return true;
         }
-
 
         /// <summary>
         /// Allows the screen to handle user input. Unlike Update, this method
@@ -305,17 +230,14 @@ namespace GameStateManagement
         /// </summary>
         public virtual void HandleInput(InputState input) { }
 
-
         /// <summary>
         /// This is called when the screen should draw itself.
         /// </summary>
         public virtual void Draw(GameTime gameTime) { }
 
-
         #endregion
 
         #region Public Methods
-
 
         /// <summary>
         /// Tells the screen to go away. Unlike ScreenManager.RemoveScreen, which
@@ -332,10 +254,9 @@ namespace GameStateManagement
             else
             {
                 // Otherwise flag that it should transition off and then exit.
-                isExiting = true;
+                IsExiting = true;
             }
         }
-
 
         #endregion
     }

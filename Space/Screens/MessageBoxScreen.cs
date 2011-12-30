@@ -7,12 +7,10 @@
 //-----------------------------------------------------------------------------
 #endregion
 
-#region Using Statements
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-#endregion
 
 namespace GameStateManagement
 {
@@ -25,6 +23,7 @@ namespace GameStateManagement
         #region Fields
 
         string message;
+
         Texture2D gradientTexture;
 
         #endregion
@@ -32,12 +31,12 @@ namespace GameStateManagement
         #region Events
 
         public event EventHandler<PlayerIndexEventArgs> Accepted;
+
         public event EventHandler<PlayerIndexEventArgs> Cancelled;
 
         #endregion
 
         #region Initialization
-
 
         /// <summary>
         /// Constructor automatically includes the standard "A=ok, B=cancel"
@@ -46,7 +45,6 @@ namespace GameStateManagement
         public MessageBoxScreen(string message)
             : this(message, true)
         { }
-
 
         /// <summary>
         /// Constructor lets the caller specify whether to include the standard
@@ -68,7 +66,6 @@ namespace GameStateManagement
             TransitionOffTime = TimeSpan.FromSeconds(0.2);
         }
 
-
         /// <summary>
         /// Loads graphics content for this screen. This uses the shared ContentManager
         /// provided by the Game class, so the content will remain loaded forever.
@@ -82,25 +79,21 @@ namespace GameStateManagement
             gradientTexture = content.Load<Texture2D>("Textures/gradient");
         }
 
-
         #endregion
 
         #region Handle Input
 
-
         /// <summary>
-        /// Responds to user input, accepting or cancelling the message box.
+        /// Responds to user input, accepting or canceling the message box.
         /// </summary>
         public override void HandleInput(InputState input)
         {
-            
-
             // We pass in our ControllingPlayer, which may either be null (to
             // accept input from any player) or a specific index. If we pass a null
             // controlling player, the InputState helper returns to us which player
             // actually provided the input. We pass that through to our Accepted and
             // Cancelled events, so they can tell which player triggered them.
-            if (input.IsMenuSelect())
+            if (input.KeySelect)
             {
                 // Raise the accepted event, then exit the message box.
                 if (Accepted != null)
@@ -108,9 +101,9 @@ namespace GameStateManagement
 
                 ExitScreen();
             }
-            else if (input.IsMenuCancel())
+            else if (input.KeyCancel)
             {
-                // Raise the cancelled event, then exit the message box.
+                // Raise the canceled event, then exit the message box.
                 if (Cancelled != null)
                     Cancelled(this, new PlayerIndexEventArgs());
 
@@ -118,11 +111,9 @@ namespace GameStateManagement
             }
         }
 
-
         #endregion
 
         #region Draw
-
 
         /// <summary>
         /// Draws the message box.
@@ -163,7 +154,6 @@ namespace GameStateManagement
 
             spriteBatch.End();
         }
-
 
         #endregion
     }

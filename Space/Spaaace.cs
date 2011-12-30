@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Net;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Input;
@@ -13,6 +14,7 @@ using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Data;
+using Space.Session;
 using Space.View;
 
 namespace Space
@@ -22,18 +24,50 @@ namespace Space
     /// </summary>
     public class Spaaace : Microsoft.Xna.Framework.Game
     {
+        #region Logger
+        
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
+        #endregion
+
+        #region Constants
+        
+        /// <summary>
+        /// Relative path to the file we store user settings in.
+        /// </summary>
         private const string SettingsFile = "config.xml";
 
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
-        GameConsole console;
+        #endregion
 
-        AudioEngine audioEngine;
-        WaveBank waveBank;
-        SoundBank soundBank;
+        #region Properties
 
+        /// <summary>
+        /// The game server currently running in this program.
+        /// </summary>
+        public GameServer Server { get; set; }
+
+        /// <summary>
+        /// The game client currently running in this program.
+        /// </summary>
+        public GameClient Client { get; set; }
+
+        #endregion
+
+        #region Fields
+        
+        private GraphicsDeviceManager _graphics;
+        private SpriteBatch _spriteBatch;
+        private ScreenManager _screenManager;
+        private GameConsole _console;
+
+        private AudioEngine _audioEngine;
+        private WaveBank _waveBank;
+        private SoundBank _soundBank;
+
+        #endregion
+
+        #region Constructor
+        
         public Spaaace()
         {
             logger.Info("Starting up program...");
@@ -47,23 +81,26 @@ namespace Space
             };
 
             // Set up display.
-            graphics = new GraphicsDeviceManager(this);
-            graphics.PreferredBackBufferWidth = Settings.Instance.ScreenWidth;
-            graphics.PreferredBackBufferHeight = Settings.Instance.ScreenHeight;
-            graphics.IsFullScreen = Settings.Instance.Fullscreen;
+            _graphics = new GraphicsDeviceManager(this);
+            _graphics.PreferredBackBufferWidth = Settings.Instance.ScreenWidth;
+            _graphics.PreferredBackBufferHeight = Settings.Instance.ScreenHeight;
+            _graphics.IsFullScreen = Settings.Instance.Fullscreen;
             
             // We really want to do this, because it keeps the game from running at one billion
             // frames per second -- which sounds fun, but isn't, because game states won't update
             // properly anymore (because elapsed time since last step will always appear to be zero).
-            graphics.SynchronizeWithVerticalRetrace = true;
+            _graphics.SynchronizeWithVerticalRetrace = true;
 
             // XNAs fixed time step implementation doesn't suit us, to be gentle.
             // So we let it be dynamic and adjust for it as necessary, leading
             // to almost no desyncs at all! Yay!
-            this.IsFixedTimeStep = false;
+            IsFixedTimeStep = false;
 
             // Create our own, localized content manager.
             Content = new LocalizedContentManager(Services);
+
+            // Remember to keep this in sync with the content project.
+            Content.RootDirectory = "data";
 
             // Get locale for localized content.
             CultureInfo culture;
@@ -76,11 +113,8 @@ namespace Space
                 culture = CultureInfo.InvariantCulture;
                 Settings.Instance.Language = culture.Name;
             }
-            Strings.Culture = culture;
+            MenuStrings.Culture = culture;
             ((LocalizedContentManager)Content).Culture = culture;
-
-            // Remember to keep this in sync with the content project.
-            Content.RootDirectory = "data";
 
             // Some window settings.
             Window.Title = "Space. The Game. Seriously.";
@@ -90,31 +124,52 @@ namespace Space
             Components.Add(new KeyboardInputManager(this));
             Components.Add(new MouseInputManager(this));
 
-            console = new GameConsole(this);
-            console.Hotkey = Settings.Instance.ConsoleKey;
-            Components.Add(console);
+            _console = new GameConsole(this);
+            Components.Add(_console);
 
             // Create the screen manager component.
-            var screenManager = new ScreenManager(this);
-            Components.Add(screenManager);
+            _screenManager = new ScreenManager(this);
+            Components.Add(_screenManager);
 
             // Activate the first screens.
-            screenManager.AddScreen(new BackgroundScreen());
-            screenManager.AddScreen(new MainMenuScreen());
+            _screenManager.AddScreen(new BackgroundScreen());
+            _screenManager.AddScreen(new MainMenuScreen());
 
             // Add a logging target that'll write to our console.
             new GameConsoleTarget(this, LogLevel.Debug);
 
-            console.AddCommand(new[] { "fullscreen", "fs" }, args =>
+            // More console setup.
+            _console.Hotkey = Settings.Instance.ConsoleKey;
+
+            _console.AddCommand(new[] { "fullscreen", "fs" }, args =>
             {
-                graphics.ToggleFullScreen();
+                _graphics.ToggleFullScreen();
             },
                 "Toggles fullscreen mode.");
+
+            _console.AddCommand("search", args =>
+            {
+                Client.Controller.Session.Search();
+            },
+                "Search for games available on the local subnet.");
+            _console.AddCommand("connect", args =>
+            {
+                PlayerData playerData = new PlayerData();
+                playerData.Ship = Content.Load<ShipData[]>("Data/ships")[0];
+                Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, playerData);
+            },
+                "Joins a game at the given host.",
+                "connect <host> - join the host with the given host name or IP.");
+            _console.AddCommand("leave", args =>
+            {
+                DisposeClient();
+            },
+                "Leave the current game.");
 
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
             // the game has crashed.
-            console.LineWritten += delegate(object sender, EventArgs e)
+            _console.LineWritten += delegate(object sender, EventArgs e)
             {
                 Console.WriteLine(((LineWrittenEventArgs)e).Message);
             };
@@ -127,35 +182,102 @@ namespace Space
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
-            Services.AddService(typeof(SpriteBatch), spriteBatch);
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            Services.AddService(typeof(SpriteBatch), _spriteBatch);
 
-            console.SpriteBatch = spriteBatch;
-            console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
+            _console.SpriteBatch = _spriteBatch;
+            _console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
 
-            console.WriteLine("Game Console. Type 'help' for available commands.");
+            _console.WriteLine("Game Console. Type 'help' for available commands.");
 
             // Set up audio stuff.
 
-            audioEngine = new AudioEngine("data/Audio/SpaceAudio.xgs");
-            waveBank = new WaveBank(audioEngine, "data/Audio/Wave Bank.xwb");
-            soundBank = new SoundBank(audioEngine, "data/Audio/Sound Bank.xsb");
+            _audioEngine = new AudioEngine("data/Audio/SpaceAudio.xgs");
+            _waveBank = new WaveBank(_audioEngine, "data/Audio/Wave Bank.xwb");
+            _soundBank = new SoundBank(_audioEngine, "data/Audio/Sound Bank.xsb");
 
-            audioEngine.Update();
+            _audioEngine.Update();
 
-            Services.AddService(typeof(SoundBank), soundBank);
-
-#if DEBUG
-            arrow = Content.Load<Texture2D>("Textures/arrow");
-#endif
+            Services.AddService(typeof(SoundBank), _soundBank);
         }
+
+        #endregion
+
+        #region Logic
 
         protected override void Update(GameTime gameTime)
         {
-            audioEngine.Update();
-
             base.Update(gameTime);
+
+            _audioEngine.Update();
         }
+
+        #endregion
+
+        #region Server / Client
+
+        /// <summary>
+        /// Starts or restarts the game client.
+        /// </summary>
+        /// <param name="local">Whether to join locally, or not.</param>
+        public void RestartClient(bool local = false)
+        {
+            DisposeClient();
+            if (local)
+            {
+                Client = new GameClient(this, Server);
+            }
+            else
+            {
+                Client = new GameClient(this);
+            }
+            Components.Add(Client);
+        }
+
+        /// <summary>
+        /// Starts or restarts the game server.
+        /// </summary>
+        public void RestartServer()
+        {
+            DisposeServer();
+            Server = new GameServer(this);
+            Components.Add(Server);
+        }
+
+        /// <summary>
+        /// Kills the game client.
+        /// </summary>
+        public void DisposeClient()
+        {
+            if (Client != null)
+            {
+                Client.Dispose();
+                Components.Remove(Client);
+            }
+        }
+
+        /// <summary>
+        /// Kills the game server.
+        /// </summary>
+        public void DisposeServer()
+        {
+            if (Server != null)
+            {
+                Server.Dispose();
+                Components.Remove(Server);
+            }
+        }
+
+        /// <summary>
+        /// Kills the server and the client.
+        /// </summary>
+        public void DisposeControllers()
+        {
+            DisposeClient();
+            DisposeServer();
+        }
+
+        #endregion
 
 #if DEBUG
         private Texture2D arrow;
@@ -168,15 +290,20 @@ namespace Space
         {
             base.Draw(gameTime);
 
-            spriteBatch.Begin();
+            if (arrow == null)
+            {
+                arrow = Content.Load<Texture2D>("Textures/arrow");
+            }
+
+            _spriteBatch.Begin();
 
             string info = String.Format("FPS: {0:f} | Slow: {1}",
                 System.Math.Ceiling(1 / (float)gameTime.ElapsedGameTime.TotalSeconds), gameTime.IsRunningSlowly);
-            var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - console.Font.MeasureString(info).X, 10);
+            var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - _console.Font.MeasureString(info).X, 10);
 
-            spriteBatch.DrawString(console.Font, info, infoPosition, Color.White);
+            _spriteBatch.DrawString(_console.Font, info, infoPosition, Color.White);
 
-            spriteBatch.End();
+            _spriteBatch.End();
 
             foreach (var component in Components)
             {
@@ -192,7 +319,7 @@ namespace Space
                     var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 230, GraphicsDevice.Viewport.Height - 140);
                     var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 360, GraphicsDevice.Viewport.Height - 140);
 
-                    SessionInfo.Draw("Client", session, sessionOffset, console.Font, spriteBatch);
+                    SessionInfo.Draw("Client", session, sessionOffset, _console.Font, _spriteBatch);
                     //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
 
                     // Draw planet arrows and stuff.
@@ -201,7 +328,7 @@ namespace Space
                         var avatar = systemManager.GetSystem<AvatarSystem>().GetAvatar(session.LocalPlayer.Number);
                         if (avatar != null)
                         {
-                            spriteBatch.Begin();
+                            _spriteBatch.Begin();
 
                             var cellX = ((int)avatar.GetComponent<Transform>().Translation.X) >> CellSystem.CellSizeShiftAmount;
                             var cellY = ((int)avatar.GetComponent<Transform>().Translation.Y) >> CellSystem.CellSizeShiftAmount;
@@ -215,7 +342,7 @@ namespace Space
                             {
                                 var list = universe.GetSystemList(id);
 
-                                spriteBatch.DrawString(console.Font, "Cellx: " + cellX + " CellY: " + cellY + "posx: " + x + " PosY" + y, new Vector2(20, 20), Color.White);
+                                _spriteBatch.DrawString(_console.Font, "Cellx: " + cellX + " CellY: " + cellY + "posx: " + x + " PosY" + y, new Vector2(20, 20), Color.White);
                                 var screensize =
                                             Math.Sqrt(Math.Pow(GraphicsDevice.Viewport.Width / 2.0, 2) +
                                                         Math.Pow(GraphicsDevice.Viewport.Height / 2.0, 2));
@@ -254,35 +381,35 @@ namespace Space
                                         //Console.WriteLine(arrowPos);
                                         var size = 40 / distance;
                                         if (distX > GraphicsDevice.Viewport.Width / 2.0 || distY > GraphicsDevice.Viewport.Height / 2.0)
-                                            spriteBatch.Draw(arrow, arrowPos, null, color, (float)phi, new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
+                                            _spriteBatch.Draw(arrow, arrowPos, null, color, (float)phi, new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
                                                             SpriteEffects.None, 1);
-                                        spriteBatch.DrawString(console.Font, "Position: " + position + "phi:" + phi + " Distance: " + distance + "size: " + size, new Vector2(20, count * 20 + 20), Color.White);
+                                        _spriteBatch.DrawString(_console.Font, "Position: " + position + "phi:" + phi + " Distance: " + distance + "size: " + size, new Vector2(20, count * 20 + 20), Color.White);
 
                                         //spriteBatch.Draw(rocketTexture, rocketPosition, null, players[currentPlayer].Color, rocketAngle, new Vector2(42, 240), 0.1f, SpriteEffects.None, 1);
 
                                     }
 
                                 }
-                                spriteBatch.DrawString(console.Font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
+                                _spriteBatch.DrawString(_console.Font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
                             }
 
                             var index = systemManager.GetSystem<IndexSystem>();
                             if (index != null)
                             {
-                                spriteBatch.DrawString(console.Font, "Indexes: " + index.DEBUG_NumIndexes + ", Total entries: " + index.DEBUG_Count, new Vector2(20, count * 20 + 80), Color.White);
+                                _spriteBatch.DrawString(_console.Font, "Indexes: " + index.DEBUG_NumIndexes + ", Total entries: " + index.DEBUG_Count, new Vector2(20, count * 20 + 80), Color.White);
                             }
 
                             var health = avatar.GetComponent<Health>();
                             if (health != null)
                             {
-                                spriteBatch.DrawString(console.Font, "Health: " + health.Value, new Vector2(20, count * 20 + 100), Color.White);
+                                _spriteBatch.DrawString(_console.Font, "Health: " + health.Value, new Vector2(20, count * 20 + 100), Color.White);
                             }
                             var energy = avatar.GetComponent<Energy>();
                             if (energy != null)
                             {
-                                spriteBatch.DrawString(console.Font, "Energy: " + energy.Value, new Vector2(20, count * 20 + 120), Color.White);
+                                _spriteBatch.DrawString(_console.Font, "Energy: " + energy.Value, new Vector2(20, count * 20 + 120), Color.White);
                             }
-                            spriteBatch.End();
+                            _spriteBatch.End();
                         }
                     }
                 }
@@ -295,7 +422,7 @@ namespace Space
                     var ngOffset = new Vector2(150, GraphicsDevice.Viewport.Height - 140);
                     var sessionOffset = new Vector2(10, GraphicsDevice.Viewport.Height - 140);
 
-                    SessionInfo.Draw("Server", session, sessionOffset, console.Font, spriteBatch);
+                    SessionInfo.Draw("Server", session, sessionOffset, _console.Font, _spriteBatch);
                     //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
                 }
             }

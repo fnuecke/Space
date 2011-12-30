@@ -58,6 +58,8 @@ namespace Space.Control
         /// </summary>
         public override void Initialize()
         {
+            base.Initialize();
+
             // Draw underneath menus etc.
             DrawOrder = -50;
 
@@ -92,6 +94,8 @@ namespace Space.Control
         /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
+
             _emitter.Update(gameTime);
             Controller.Update(gameTime);
         }
@@ -102,6 +106,8 @@ namespace Space.Control
         /// <param name="gameTime"></param>
         public override void Draw(GameTime gameTime)
         {
+            base.Draw(gameTime);
+            
             Controller.Draw();
         }
 

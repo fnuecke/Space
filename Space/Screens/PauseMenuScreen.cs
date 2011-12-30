@@ -7,10 +7,8 @@
 //-----------------------------------------------------------------------------
 #endregion
 
-#region Using Statements
-using Microsoft.Xna.Framework;
+using System;
 using Space;
-#endregion
 
 namespace GameStateManagement
 {
@@ -22,7 +20,6 @@ namespace GameStateManagement
     {
         #region Initialization
 
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -32,9 +29,9 @@ namespace GameStateManagement
             // Create our menu entries.
             var resumeGameMenuEntry = new MenuEntry("Resume Game");
             var quitGameMenuEntry = new MenuEntry("Quit Game");
-            
+
             // Hook up menu event handlers.
-            resumeGameMenuEntry.Selected += OnCancel;
+            resumeGameMenuEntry.Selected += HandleCancel;
             quitGameMenuEntry.Selected += QuitGameMenuEntrySelected;
 
             // Add entries to the menu.
@@ -42,18 +39,16 @@ namespace GameStateManagement
             MenuEntries.Add(quitGameMenuEntry);
         }
 
-
         #endregion
 
         #region Handle Input
 
-
         /// <summary>
         /// Event handler for when the Quit Game menu entry is selected.
         /// </summary>
-        void QuitGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        void QuitGameMenuEntrySelected(object sender, EventArgs e)
         {
-            string message = Strings.QuitGameConfirmation;
+            string message = MenuStrings.QuitGameConfirmation;
 
             MessageBoxScreen confirmQuitMessageBox = new MessageBoxScreen(message);
 
@@ -62,7 +57,6 @@ namespace GameStateManagement
             ScreenManager.AddScreen(confirmQuitMessageBox);
         }
 
-
         /// <summary>
         /// Event handler for when the user selects ok on the "are you sure
         /// you want to quit" message box. This uses the loading screen to
@@ -70,12 +64,11 @@ namespace GameStateManagement
         /// </summary>
         void ConfirmQuitMessageBoxAccepted(object sender, PlayerIndexEventArgs e)
         {
-            ScreenManager.DisposeGame();
-                
+            ((Spaaace)ScreenManager.Game).DisposeControllers();
+
             LoadingScreen.Load(ScreenManager, false, null, new BackgroundScreen(),
                                                            new MainMenuScreen());
         }
-
 
         #endregion
     }

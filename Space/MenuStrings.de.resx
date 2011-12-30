@@ -126,19 +126,19 @@
   <data name="MainMenu" xml:space="preserve">
     <value>Hauptmenü</value>
   </data>
-  <data name="join" xml:space="preserve">
+  <data name="JoinGame" xml:space="preserve">
     <value>Spiel beitreten</value>
   </data>
-  <data name="host" xml:space="preserve">
-    <value>Spiel hosten</value>
+  <data name="HostGame" xml:space="preserve">
+    <value>Spiel erstellen</value>
   </data>
-  <data name="playerName" xml:space="preserve">
+  <data name="PlayerName" xml:space="preserve">
     <value>Spieler Name: </value>
   </data>
-  <data name="language" xml:space="preserve">
+  <data name="Language" xml:space="preserve">
     <value>Sprache: </value>
   </data>
-  <data name="NameToShort" xml:space="preserve">
+  <data name="NameTooShort" xml:space="preserve">
     <value>Name zu kurz!</value>
   </data>
   <data name="Options" xml:space="preserve">
@@ -148,24 +148,24 @@
     <value>Zurück</value>
   </data>
   <data name="ConnectionFailed" xml:space="preserve">
-    <value>Verbindung zum Server konnte </value>
+    <value>Verbindung zum Server konnte nicht hergestellt werden.</value>
   </data>
   <data name="Exit" xml:space="preserve">
     <value>Beenden</value>
   </data>
-  <data name="InvalidHost" xml:space="preserve">
+  <data name="InvalidAddress" xml:space="preserve">
     <value>Host oder IP Falsch</value>
   </data>
-  <data name="Resolution" xml:space="preserve">
+  <data name="ScreenResolution" xml:space="preserve">
     <value>Auflösung: </value>
   </data>
   <data name="Fullscreen" xml:space="preserve">
     <value>Vollbild: </value>
   </data>
-  <data name="Fullscreen_false" xml:space="preserve">
+  <data name="Off" xml:space="preserve">
     <value>Aus</value>
   </data>
-  <data name="Fullscreen_true" xml:space="preserve">
+  <data name="On" xml:space="preserve">
     <value>An</value>
   </data>
   <data name="QuitGameConfirmation" xml:space="preserve">

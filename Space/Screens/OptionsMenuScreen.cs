@@ -7,15 +7,11 @@
 //-----------------------------------------------------------------------------
 #endregion
 
-#region Using Statements
-
-using Engine.Input;
-using Microsoft.Xna.Framework;
-using Space;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using Engine.Input;
 using Microsoft.Xna.Framework.Graphics;
-#endregion
+using Space;
 
 namespace GameStateManagement
 {
@@ -28,19 +24,19 @@ namespace GameStateManagement
     {
         #region Fields
 
+        /// <summary>
+        /// Menu entry for changing the language.
+        /// </summary>
         MenuEntry languageMenuEntry;
         MenuEntry resolutionMenuEntry;
         private EditableMenueEntry playerName;
         private MenuEntry fullscreenMenuEntry;
 
-
         private Option<string> language;
         private Option<string> resolution;
         private Option<bool> fullscreen;
-        static Dictionary<string,string> languages= new Dictionary<string,string>();
+        static Dictionary<string, string> languages = new Dictionary<string, string>();
 
-    
-       
         #endregion
 
         #region Initialization
@@ -50,30 +46,30 @@ namespace GameStateManagement
         /// Constructor.
         /// </summary>
         public OptionsMenuScreen()
-            : base(Strings.Options)
+            : base(MenuStrings.Options)
         {
             // Create our menu entries.
-            languages["en"] = Strings.en;
-            languages["de"] = Strings.de;
+            languages["en"] = MenuStrings.en;
+            languages["de"] = MenuStrings.de;
             language = new Option<string>(languages);
             languageMenuEntry = new MenuEntry(string.Empty);
-            playerName = new EditableMenueEntry(Strings.playerName);
+            playerName = new EditableMenueEntry(MenuStrings.PlayerName);
             resolutionMenuEntry = new MenuEntry(Settings.Instance.ScreenWidth + " x " + Settings.Instance.ScreenHeight);
-           
-            
 
-            MenuEntry back = new MenuEntry(Strings.Back);
+
+
+            MenuEntry back = new MenuEntry(MenuStrings.Back);
 
             // Hook up menu event handlers.
             languageMenuEntry.Selected += LanguageMenuEntrySelected;
-            languageMenuEntry.next += LanguageMenuEntryNext;
-            languageMenuEntry.prev += LanguageMenuEntryPrev;
-            back.Selected += OnCancel;
+            languageMenuEntry.NextOptionSelected += LanguageMenuEntryNext;
+            languageMenuEntry.PreviousOptionSelected += LanguageMenuEntryPrev;
+            back.Selected += HandleCancel;
 
             playerName.Selected += PlayerNameSelected;
             //Graphics
-             resolutionMenuEntry.next += ResolutionMenuEntryNext;
-            resolutionMenuEntry.prev += ResolutionMenuEntryPrev;
+            resolutionMenuEntry.NextOptionSelected += ResolutionMenuEntryNext;
+            resolutionMenuEntry.PreviousOptionSelected += ResolutionMenuEntryPrev;
             resolutionMenuEntry.Selected += ResolutionMenuEntrySelected;
 
             var dict = new Dictionary<string, string>();
@@ -99,21 +95,21 @@ namespace GameStateManagement
                             dict.Add(width + "x" + height, width + " x " + height);
                         added = true;
                     }
-                        dict.Add(mode.Width + "x" + mode.Height, mode.Width + " x " + mode.Height);
+                    dict.Add(mode.Width + "x" + mode.Height, mode.Width + " x " + mode.Height);
                 }
-                    
+
             }
             resolution = new Option<string>(dict);
 
             fullscreenMenuEntry = new MenuEntry(string.Empty);
             fullscreenMenuEntry.Selected += FullscreenMenuEntrySelected;
-            fullscreenMenuEntry.next += FullscreenMenuEntryNext;
-            fullscreenMenuEntry.prev += FullscreenMenuEntryPrev;
+            fullscreenMenuEntry.NextOptionSelected += FullscreenMenuEntryNext;
+            fullscreenMenuEntry.PreviousOptionSelected += FullscreenMenuEntryPrev;
 
             var screenDict = new Dictionary<bool, string>
                                  {
-                                     {false, Strings.Fullscreen_false},
-                                     {true, Strings.Fullscreen_true}
+                                     {false, MenuStrings.Off},
+                                     {true, MenuStrings.On}
                                  };
             fullscreen = new Option<bool>(screenDict);
 
@@ -140,33 +136,26 @@ namespace GameStateManagement
         /// </summary>
         void SetMenuEntryText()
         {
-            languageMenuEntry.Text = Strings.language + languages[Settings.Instance.Language];
+            languageMenuEntry.Text = MenuStrings.Language + languages[Settings.Instance.Language];
             language.SetCurrent(Settings.Instance.Language);
-            resolutionMenuEntry.Text = Strings.Resolution + Settings.Instance.ScreenWidth + " x " + Settings.Instance.ScreenHeight;
+            resolutionMenuEntry.Text = MenuStrings.ScreenResolution + Settings.Instance.ScreenWidth + " x " + Settings.Instance.ScreenHeight;
             resolution.SetCurrent(Settings.Instance.ScreenWidth + "x" + Settings.Instance.ScreenHeight);
 
             fullscreen.SetCurrent(Settings.Instance.Fullscreen);
-            fullscreenMenuEntry.Text = Strings.Fullscreen+fullscreen.GetOption();
+            fullscreenMenuEntry.Text = MenuStrings.Fullscreen + fullscreen.GetOption();
 
             playerName.SetInputText(Settings.Instance.PlayerName);
         }
-
 
         #endregion
 
         #region Handle Input
 
-
-       
-
-
         /// <summary>
         /// Event handler for when the Language menu entry is selected.
         /// </summary>
-        void LanguageMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        void LanguageMenuEntrySelected(object sender, EventArgs e)
         {
-
-
             Settings.Instance.Language = language.GetKey();
 
             SetMenuEntryText();
@@ -175,76 +164,54 @@ namespace GameStateManagement
         /// <summary>
         /// Event handler for when the Language menu entry is selected.
         /// </summary>
-        void PlayerNameSelected(object sender, PlayerIndexEventArgs e)
+        void PlayerNameSelected(object sender, EventArgs e)
         {
-
             if (playerName.Editable)
             {
-                
                 if (playerName.GetInputText().Length < 3)
                 {
-                    ErrorText = Strings.NameToShort;
+                    ErrorText = MenuStrings.NameTooShort;
                 }
                 else
                 {
-
-
                     Settings.Instance.PlayerName = playerName.GetInputText();
                     playerName.Editable = false;
-                    playerName.locked = false;
+                    playerName.Locked = false;
                     SetMenuEntryText();
                 }
             }
             else
             {
-                playerName.locked = true;
+                playerName.Locked = true;
                 playerName.Editable = true;
             }
         }
-        void LanguageMenuEntryNext(object sender, PlayerIndexEventArgs e)
+
+        void LanguageMenuEntryNext(object sender, EventArgs e)
         {
-
-            
-
-            languageMenuEntry.Text = Strings.language+ language.GetNextOption();
-
-            
-        }
-        void LanguageMenuEntryPrev(object sender, PlayerIndexEventArgs e)
-        {
-
-
-
-            languageMenuEntry.Text = Strings.language + language.GetPrevOption();
-
-
+            languageMenuEntry.Text = MenuStrings.Language + language.GetNextOption();
         }
 
-        void ResolutionMenuEntryNext(object sender, PlayerIndexEventArgs e)
+        void LanguageMenuEntryPrev(object sender, EventArgs e)
         {
-
-
-
-            resolutionMenuEntry.Text = Strings.Resolution + resolution.GetNextOption();
-
-
+            languageMenuEntry.Text = MenuStrings.Language + language.GetPrevOption();
         }
-        void ResolutionMenuEntryPrev(object sender, PlayerIndexEventArgs e)
+
+        void ResolutionMenuEntryNext(object sender, EventArgs e)
         {
-
-
-
-            resolutionMenuEntry.Text = Strings.Resolution + resolution.GetPrevOption();
-
-
+            resolutionMenuEntry.Text = MenuStrings.ScreenResolution + resolution.GetNextOption();
         }
+
+        void ResolutionMenuEntryPrev(object sender, EventArgs e)
+        {
+            resolutionMenuEntry.Text = MenuStrings.ScreenResolution + resolution.GetPrevOption();
+        }
+
         /// <summary>
         /// Event handler for when the Language menu entry is selected.
         /// </summary>
-        void ResolutionMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        void ResolutionMenuEntrySelected(object sender, EventArgs e)
         {
-
-
             string[] words = resolution.GetKey().Split('x');
             Settings.Instance.ScreenWidth = int.Parse(words[0]);
             Settings.Instance.ScreenHeight = int.Parse(words[1]);
@@ -252,63 +219,55 @@ namespace GameStateManagement
             SetMenuEntryText();
         }
 
-        void FullscreenMenuEntryNext(object sender, PlayerIndexEventArgs e)
+        void FullscreenMenuEntryNext(object sender, EventArgs e)
         {
-
-
-
-            fullscreenMenuEntry.Text = Strings.Fullscreen + fullscreen.GetNextOption();
-
-
+            fullscreenMenuEntry.Text = MenuStrings.Fullscreen + fullscreen.GetNextOption();
         }
-        void FullscreenMenuEntryPrev(object sender, PlayerIndexEventArgs e)
+
+        void FullscreenMenuEntryPrev(object sender, EventArgs e)
         {
-
-
-
-            fullscreenMenuEntry.Text = Strings.Fullscreen + fullscreen.GetPrevOption();
-
-
+            fullscreenMenuEntry.Text = MenuStrings.Fullscreen + fullscreen.GetPrevOption();
         }
+
         /// <summary>
         /// Event handler for when the Language menu entry is selected.
         /// </summary>
-        void FullscreenMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        void FullscreenMenuEntrySelected(object sender, EventArgs e)
         {
-
-
             Settings.Instance.Fullscreen = fullscreen.GetKey();
 
             SetMenuEntryText();
         }
+
         protected override void OnNext()
         {
             SetMenuEntryText();
         }
+
         protected override void OnPrev()
         {
             SetMenuEntryText();
         }
+
         protected override void OnMenuChange()
         {
             SetMenuEntryText();
         }
-       
-
-
-       
-
 
         #endregion
 
         #region Option
+
         public class Option<T>
         {
-
             #region Fields
+
             Dictionary<T, string> options = new Dictionary<T, string>();
+
             List<T> keyList;
+
             int current = 0;
+
             #endregion
 
             #region Initialization
@@ -323,18 +282,16 @@ namespace GameStateManagement
             {
                 current = ++current % keyList.Count;
                 return GetOption();
-                
+
             }
             public string GetPrevOption()
             {
-                current = (--current+keyList.Count) % keyList.Count;
+                current = (--current + keyList.Count) % keyList.Count;
                 return GetOption();
-
             }
             public string GetOption()
             {
                 return options[GetKey()];
-
             }
 
             public T GetKey()
@@ -350,11 +307,13 @@ namespace GameStateManagement
                     if (keyList[i].Equals(key))
                         return;
                 }
-                    //not found use 1;
-                    current = 0;
+                //not found use 1;
+                current = 0;
             }
+
             #endregion
         }
+
         #endregion
     }
 }

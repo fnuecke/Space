@@ -7,11 +7,8 @@
 //-----------------------------------------------------------------------------
 #endregion
 
-#region Using Statements
+using System;
 using Space;
-
-
-#endregion
 
 namespace GameStateManagement
 {
@@ -26,19 +23,19 @@ namespace GameStateManagement
         /// Constructor fills in the menu contents.
         /// </summary>
         public MainMenuScreen()
-            : base(Strings.MainMenu)
+            : base(MenuStrings.MainMenu)
         {
             // Create our menu entries.
-            MenuEntry playGameMenuEntry = new MenuEntry(Strings.join);
-            MenuEntry startServerMenuEntry = new MenuEntry(Strings.host);
-            MenuEntry optionsMenuEntry = new MenuEntry(Strings.Options);
-            MenuEntry exitMenuEntry = new MenuEntry(Strings.Exit);
+            MenuEntry playGameMenuEntry = new MenuEntry(MenuStrings.JoinGame);
+            MenuEntry startServerMenuEntry = new MenuEntry(MenuStrings.HostGame);
+            MenuEntry optionsMenuEntry = new MenuEntry(MenuStrings.Options);
+            MenuEntry exitMenuEntry = new MenuEntry(MenuStrings.Exit);
 
             // Hook up menu event handlers.
             playGameMenuEntry.Selected += PlayGameMenuEntrySelected;
             optionsMenuEntry.Selected += OptionsMenuEntrySelected;
             startServerMenuEntry.Selected += StartServerMenuEntrySelected;
-            exitMenuEntry.Selected += OnCancel;
+            exitMenuEntry.Selected += HandleCancel;
 
             // Add entries to the menu.
             MenuEntries.Add(playGameMenuEntry);
@@ -54,26 +51,30 @@ namespace GameStateManagement
         /// <summary>
         /// Event handler for when the Play Game menu entry is selected.
         /// </summary>
-        void PlayGameMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        void PlayGameMenuEntrySelected(object sender, EventArgs e)
         {
-            ScreenManager.RestartClient();
+            // Just create the client, allow looking for remote games and
+            // joining them after that.
+            ((Spaaace)ScreenManager.Game).RestartClient();
 
-            ScreenManager.AddScreen(new ConnectScreen(ScreenManager.Client));
+            // Transition to connect screen.
+            ScreenManager.AddScreen(new ConnectScreen());
         }
 
-        void StartServerMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        void StartServerMenuEntrySelected(object sender, EventArgs e)
         {
             // Create and join.
-            ScreenManager.RestartServer();
-            ScreenManager.RestartClient(true);
+            ((Spaaace)ScreenManager.Game).RestartServer();
+            ((Spaaace)ScreenManager.Game).RestartClient(true);
 
+            // Directly transition to in-game screen.
             LoadingScreen.Load(ScreenManager, true, new GameplayScreen());
         }
 
         /// <summary>
         /// Event handler for when the Options menu entry is selected.
         /// </summary>
-        void OptionsMenuEntrySelected(object sender, PlayerIndexEventArgs e)
+        void OptionsMenuEntrySelected(object sender, EventArgs e)
         {
             ScreenManager.AddScreen(new OptionsMenuScreen());
         }
@@ -81,22 +82,7 @@ namespace GameStateManagement
         /// <summary>
         /// When the user cancels the main menu, ask if they want to exit the sample.
         /// </summary>
-        protected override void OnCancel()
-        {
-            string message = Strings.QuitGameConfirmation;
-
-            MessageBoxScreen confirmExitMessageBox = new MessageBoxScreen(message);
-
-            confirmExitMessageBox.Accepted += ConfirmExitMessageBoxAccepted;
-
-            ScreenManager.AddScreen(confirmExitMessageBox);
-        }
-
-        /// <summary>
-        /// Event handler for when the user selects ok on the "are you sure
-        /// you want to exit" message box.
-        /// </summary>
-        void ConfirmExitMessageBoxAccepted(object sender, PlayerIndexEventArgs e)
+        protected override void HandleCancel()
         {
             ScreenManager.Game.Exit();
         }

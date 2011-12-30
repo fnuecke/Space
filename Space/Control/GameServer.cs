@@ -71,6 +71,8 @@ namespace Space.Control
         /// <param name="gameTime"></param>
         public override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
+            
             Controller.Update(gameTime);
         }
         

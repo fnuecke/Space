@@ -8,10 +8,11 @@
 #endregion
 
 #region Using Statements
+using System;
+//using Microsoft.Xna.Framework.Input.Touch;
+using Engine.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-//using Microsoft.Xna.Framework.Input.Touch;
-using System.Collections.Generic;
 #endregion
 
 namespace GameStateManagement
@@ -24,201 +25,151 @@ namespace GameStateManagement
     /// </summary>
     public class InputState
     {
-        #region Fields
+        public bool KeySelect { get; private set; }
+        public bool KeyNext { get; private set; }
+        public bool KeyPrevious { get; private set; }
+        public bool KeyCancel { get; private set; }
+        public bool KeyUp { get; private set; }
+        public bool KeyDown { get; private set; }
+        public bool KeyPause { get; private set; }
 
-        public const int MaxInputs = 4;
-
-        public  KeyboardState CurrentKeyboardState;
-        public  GamePadState CurrentGamePadState;
-        public MouseState CurrentMouseState;
-
-
-        public  KeyboardState LastKeyboardState;
-        public  GamePadState LastGamePadState;
-        public MouseState LastMouseState;
-        public  bool GamePadWasConnected;
-
-        //public TouchCollection TouchState;
-
-        //public readonly List<GestureSample> Gestures = new List<GestureSample>();
-
-        #endregion
+        public bool MouseSelect { get; private set; }
+        public Vector2 MousePosition { get; private set; }
 
         #region Initialization
-
 
         /// <summary>
         /// Constructs a new input state.
         /// </summary>
-        public InputState()
+        public InputState(Game game)
         {
+            var keyboard = (IKeyboardInputManager)game.Services.GetService(typeof(IKeyboardInputManager));
+            var mouse = (IMouseInputManager)game.Services.GetService(typeof(IMouseInputManager));
+
+            keyboard.Pressed += HandleKeyPressed;
+            mouse.Pressed += HandleMousePressed;
+            mouse.Scrolled += HandleMouseScrolled;
+            mouse.Moved += HandleMouseMoved;
         }
 
+        void HandleKeyPressed(object sender, EventArgs e)
+        {
+            var args = (KeyboardInputEventArgs)e;
+            switch (args.Key)
+            {
+                case Keys.Enter:
+                case Keys.E:
+                case Keys.Space:
+                case Keys.NumPad5:
+                    KeySelect = true;
+                    break;
+
+                case Keys.Right:
+                case Keys.D:
+                case Keys.NumPad6:
+                    KeyNext = true;
+                    break;
+
+                case Keys.Left:
+                case Keys.A:
+                case Keys.NumPad4:
+                    KeyPrevious = true;
+                    break;
+
+                case Keys.Escape:
+                    KeyCancel = true;
+                    KeyPause = true;
+                    break;
+
+                case Keys.Back:
+                    KeyCancel = true;
+                    break;
+
+                case Keys.Up:
+                case Keys.PageUp:
+                case Keys.W:
+                case Keys.NumPad8:
+                    KeyUp = true;
+                    break;
+
+                case Keys.Down:
+                case Keys.PageDown:
+                case Keys.S:
+                case Keys.NumPad2:
+                    KeyDown = true;
+                    break;
+
+                case Keys.Pause:
+                case Keys.F10:
+                    KeyPause = true;
+                    break;
+
+                case Keys.Tab:
+                    if (args.Modifier != KeyModifier.Shift)
+                    {
+                        KeyPrevious = true;
+                    }
+                    else
+                    {
+                        KeyNext = true;
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        void HandleMousePressed(object sender, EventArgs e)
+        {
+            var args = (MouseInputEventArgs)e;
+            if (args.Button == MouseInputEventArgs.MouseButton.Left)
+            {
+                MouseSelect = true;
+            }
+            else if (args.Button == MouseInputEventArgs.MouseButton.Right)
+            {
+                KeyCancel = true;
+            }
+        }
+
+        void HandleMouseScrolled(object sender, EventArgs e)
+        {
+            var args = (MouseInputEventArgs)e;
+            if (args.ScrollDelta < 0)
+            {
+                KeyNext = true;
+            }
+            else
+            {
+                KeyPrevious = true;
+            }
+        }
+
+        void HandleMouseMoved(object sender, EventArgs e)
+        {
+            var args = (MouseInputEventArgs)e;
+            MousePosition = new Vector2(args.X, args.Y);
+        }
 
         #endregion
 
         #region Public Methods
 
-
         /// <summary>
-        /// Reads the latest state of the keyboard and gamepad.
+        /// Resets states.
         /// </summary>
         public void Update()
         {
-            
-            LastKeyboardState = CurrentKeyboardState;
-            LastGamePadState = CurrentGamePadState;
-            LastMouseState = CurrentMouseState;
-
-            CurrentKeyboardState = Keyboard.GetState();
-            CurrentGamePadState = GamePad.GetState(0);
-            CurrentMouseState = Mouse.GetState();
-                // Keep track of whether a gamepad has ever been
-                // connected, so we can detect if it is unplugged.
-                if (CurrentGamePadState.IsConnected)
-                {
-                    GamePadWasConnected = true;
-                }
-            
-
-            //TouchState = TouchPanel.GetState();
-
-            //Gestures.Clear();
-            //while (TouchPanel.IsGestureAvailable)
-            //{
-            //    Gestures.Add(TouchPanel.ReadGesture());
-            //}
+            KeySelect = false;
+            KeyNext = false;
+            KeyPrevious = false;
+            KeyCancel = false;
+            KeyUp = false;
+            KeyDown = false;
+            KeyPause = false;
+            MouseSelect = false;
         }
-
-        public Keys[] getPressedKey()
-        {
-            return CurrentKeyboardState.GetPressedKeys();
-        }
-        /// <summary>
-        /// Helper for checking if a key was newly pressed during this update. The
-        /// controllingPlayer parameter specifies which player to read input for.
-        /// If this is null, it will accept input from any player. When a keypress
-        /// is detected, the output playerIndex reports which player pressed it.
-        /// </summary>
-        public bool IsNewKeyPress(Keys key)
-        {          
-
-                return (CurrentKeyboardState.IsKeyDown(key) &&
-                        LastKeyboardState.IsKeyUp(key));
-           
-        }
-
-        public bool IsMouseWheelUp()
-        {
-            return (CurrentMouseState.ScrollWheelValue > LastMouseState.ScrollWheelValue);
-        }
-        public bool IsMouseWheelDown()
-        {
-            return (CurrentMouseState.ScrollWheelValue < LastMouseState.ScrollWheelValue);
-        }
-        /// <summary>
-        /// Helper for checking if a button was newly pressed during this update.
-        /// The controllingPlayer parameter specifies which player to read input for.
-        /// If this is null, it will accept input from any player. When a button press
-        /// is detected, the output playerIndex reports which player pressed it.
-        /// </summary>
-        public bool IsNewButtonPress(Buttons button)
-        {
-            
-
-                return (CurrentGamePadState.IsButtonDown(button) &&
-                        LastGamePadState.IsButtonUp(button));
-            
-        }
-
-        public bool IsLeftMouseKeyPress()
-        {
-            return CurrentMouseState.LeftButton == ButtonState.Pressed &&
-                   LastMouseState.LeftButton == ButtonState.Released;
-        }
-
-        /// <summary>
-        /// Checks for a "menu select" input action.
-        /// The controllingPlayer parameter specifies which player to read input for.
-        /// If this is null, it will accept input from any player. When the action
-        /// is detected, the output playerIndex reports which player pressed it.
-        /// </summary>
-        public bool IsMenuSelect()
-        {
-            return IsNewKeyPress(Keys.Enter) ||
-                   IsNewButtonPress(Buttons.A) ||
-                   IsNewButtonPress(Buttons.Start);
-        }
-
-        public bool IsMenuNext()
-        {
-            return IsNewKeyPress(Keys.D) ||
-                  IsNewKeyPress(Keys.Right) ||
-                  IsNewButtonPress(Buttons.LeftThumbstickRight);
-        }
-
-        public bool IsMenuPrev()
-        {
-            return IsNewKeyPress(Keys.A) ||
-                  IsNewKeyPress(Keys.Left) ||
-                  IsNewButtonPress(Buttons.LeftThumbstickLeft);
-        }
-        /// <summary>
-        /// Checks for a "menu cancel" input action.
-        /// The controllingPlayer parameter specifies which player to read input for.
-        /// If this is null, it will accept input from any player. When the action
-        /// is detected, the output playerIndex reports which player pressed it.
-        /// </summary>
-        public bool IsMenuCancel()
-        {
-            return IsNewKeyPress(Keys.Escape) ||
-                   IsNewButtonPress(Buttons.B) ||
-                   IsNewButtonPress(Buttons.Back);
-        }
-
-
-        /// <summary>
-        /// Checks for a "menu up" input action.
-        /// The controllingPlayer parameter specifies which player to read
-        /// input for. If this is null, it will accept input from any player.
-        /// </summary>
-        public bool IsMenuUp()
-        {
-            
-            return IsNewKeyPress(Keys.Up) ||
-                   IsNewButtonPress(Buttons.DPadUp) ||
-                   IsMouseWheelUp() ||
-                   IsNewButtonPress(Buttons.LeftThumbstickUp);
-        }
-
-
-        /// <summary>
-        /// Checks for a "menu down" input action.
-        /// The controllingPlayer parameter specifies which player to read
-        /// input for. If this is null, it will accept input from any player.
-        /// </summary>
-        public bool IsMenuDown()
-        {
-            
-            return IsNewKeyPress(Keys.Down) ||
-                   IsNewButtonPress(Buttons.DPadDown) ||
-                  IsMouseWheelDown() ||
-                   IsNewButtonPress(Buttons.LeftThumbstickDown);
-        }
-
-
-        /// <summary>
-        /// Checks for a "pause the game" input action.
-        /// The controllingPlayer parameter specifies which player to read
-        /// input for. If this is null, it will accept input from any player.
-        /// </summary>
-        public bool IsPauseGame()
-        {
-            return IsNewKeyPress(Keys.Escape ) ||
-                   IsNewButtonPress(Buttons.Back) ||
-                   IsNewButtonPress(Buttons.Start);
-        }
-
 
         #endregion
     }

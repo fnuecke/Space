@@ -6,63 +6,77 @@ using Microsoft.Xna.Framework.Input;
 
 namespace GameStateManagement
 {
-    class EditableMenueEntry:MenuEntry
+    class EditableMenueEntry : MenuEntry
     {
-        #region Fields
-        
+        #region Properties
 
         public bool Editable { get; set; }
+
         public KeyMap KeyMap { get; set; }
-        /// <summary>
-        /// Last time a key was pressed (to suppress blinking for a bit while / after typing).
-        /// </summary>
-        private DateTime lastKeyPress = DateTime.MinValue;
-        /// <summary>
-        /// Input cursor offset.
-        /// </summary>
-        private int Cursor = 0;
+
         /// <summary>
         /// The color of the caret (input position marker).
         /// </summary>
         public Color CaretColor { get; set; }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// Last time a key was pressed (to suppress blinking for a bit while / after typing).
+        /// </summary>
+        private DateTime lastKeyPress = DateTime.MinValue;
+
+        /// <summary>
+        /// Input cursor offset.
+        /// </summary>
+        private int Cursor = 0;
+
         /// <summary>
         /// Overall padding of the console.
         /// </summary>
         private const int Padding = 4;
 
         private string inputText;
+
         private string staticText = "";
+
         #endregion
+
         public EditableMenueEntry(string Text)
             : base(Text)
         {
             inputText = "";
             staticText = Text;
-            
+
             KeyMap = KeyMap.KeyMapByLocale("en-US");
-            locked = false;
+            Locked = false;
             CaretColor = new Color(0.4f, 0.4f, 0.4f, 0.4f);
-            
+
         }
+
         public void SetInputText(string text)
         {
             inputText = text;
             Cursor = text.Length;
             Text = staticText + inputText;
         }
-        public  string  GetInputText()
+
+        public string GetInputText()
         {
             return inputText;
         }
-        override
-        public  void SetActive(bool active)
+
+        public override void SetFocused(bool focused)
         {
-            Active = active;
+            base.SetFocused(focused);
             Editable = false;
-        } 
+        }
+
         public void HandleKeyPressed(object sender, EventArgs e)
         {
-            if (Active&&!locked&&Editable)
+            if (Focused && !Locked && Editable)
             {
                 var args = (KeyboardInputEventArgs)e;
 
@@ -72,12 +86,12 @@ namespace GameStateManagement
                         if (inputText.Length > 0)
                         {
                             inputText = (Cursor > 0 ? inputText.Substring(0, Cursor - 1) : "") + inputText.Substring(Cursor);
-                            if(Cursor>0)
-                            Cursor--;
+                            if (Cursor > 0)
+                                Cursor--;
                         }
-                            break;
+                        break;
                     case Keys.Delete:
-                            inputText = inputText.Substring(0, Cursor)  + (Cursor<inputText.Length?inputText.Substring(Cursor+1):"");
+                        inputText = inputText.Substring(0, Cursor) + (Cursor < inputText.Length ? inputText.Substring(Cursor + 1) : "");
                         break;
                     case Keys.Down:
                         break;
@@ -90,8 +104,8 @@ namespace GameStateManagement
                     case Keys.Home:
                         break;
                     case Keys.Left:
-                        if(Cursor>0)
-                        Cursor--; 
+                        if (Cursor > 0)
+                            Cursor--;
                         break;
                     case Keys.PageDown:
                         break;
@@ -114,7 +128,7 @@ namespace GameStateManagement
                             if (ch != '\0')
                             {
                                 inputText = inputText.Substring(0, Cursor) + ch + inputText.Substring(Cursor);
-                               Cursor++;
+                                Cursor++;
                             }
                         }
                         break;
@@ -125,19 +139,19 @@ namespace GameStateManagement
 
 
 
-         /// <summary>
+        /// <summary>
         /// Draws the menu entry. This can be overridden to customize the appearance.
         /// </summary>
         override
         public void Draw(MenuScreen screen, bool isSelected, GameTime gameTime)
         {
             base.Draw(screen, isSelected, gameTime);
-            
-            if (Active&&Editable&&((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (lastKeyPress != null && new TimeSpan(DateTime.Now.Ticks - lastKeyPress.Ticks).TotalSeconds < 1))
+
+            if (Focused && Editable && ((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (lastKeyPress != null && new TimeSpan(DateTime.Now.Ticks - lastKeyPress.Ticks).TotalSeconds < 1))
             {
                 ScreenManager screenManager = screen.ScreenManager;
                 SpriteBatch SpriteBatch = screenManager.SpriteBatch;
-                
+
                 SpriteFont Font = screenManager.Font;
                 // Pulsate the size of the selected menu entry.
                 double time = gameTime.TotalGameTime.TotalSeconds;
@@ -146,12 +160,12 @@ namespace GameStateManagement
 
                 float scale = 1 + pulsate * 0.05f * selectionFade;
                 int cursorCounter = Cursor;
-                if (inputText.Length > 0&&cursorCounter>0)
+                if (inputText.Length > 0 && cursorCounter > 0)
                     cursorCounter -= 1;
                 int cursorX = (int)Position.X + (int)(Font.MeasureString(inputText.Substring(0, Cursor)).X + Font.MeasureString(staticText).X * scale);
-                int cursorY = (int)(Position.Y -Font.LineSpacing/2 * scale) ;// +Padding + (ComputeNumberOfVisibleLines() - (inputWrapped.Count - cursorLine)) * Font.LineSpacing;
+                int cursorY = (int)(Position.Y - Font.LineSpacing / 2 * scale);// +Padding + (ComputeNumberOfVisibleLines() - (inputWrapped.Count - cursorLine)) * Font.LineSpacing;
                 int cursorWidth;
-                if (inputText.Length > cursorCounter+1)
+                if (inputText.Length > cursorCounter + 1)
                 {
                     cursorWidth = (int)(Font.MeasureString(inputText.Substring(cursorCounter, 1)).X * scale);
                 }
@@ -159,9 +173,9 @@ namespace GameStateManagement
                 {
                     cursorWidth = (int)Font.MeasureString(" ").X;
                 }
-                
+
                 SpriteBatch.Draw(screenManager.PixelTexture, new Rectangle(cursorX, cursorY, cursorWidth, Font.LineSpacing), CaretColor);
-                            
+
             }
         }
     }
