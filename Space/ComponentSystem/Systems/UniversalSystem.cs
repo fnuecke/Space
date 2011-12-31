@@ -177,7 +177,7 @@ namespace Space.ComponentSystem.Systems
                    (float)(j * j * _constaints.MoonOrbitMean / 2 + random.NextDouble() * _constaints.MoonOrbitStdDevFraction * 2 - _constaints.MoonOrbitStdDevFraction),
                    (float)(j * j * _constaints.MoonOrbitMean / 2 + random.NextDouble() * _constaints.MoonOrbitStdDevFraction * 2 - _constaints.MoonOrbitStdDevFraction),
                     angle, (int)Math.Sqrt(Math.Pow(j * j * (double)_constaints.MoonOrbitMean / 2, 3)), AstronomicBodyType.Moon, 100);
-                    renderer = planet.GetComponent<PlanetRenderer>();
+                    renderer = moon.GetComponent<PlanetRenderer>();
                     renderer.Scale = 0.25f;
                     renderer.AtmosphereTint = Color.Black;
                     spin = moon.GetComponent<Spin>();

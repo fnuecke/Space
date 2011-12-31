@@ -14,29 +14,29 @@ namespace Engine.ComponentSystem.Components
     public class TransformedRenderer : AbstractRenderer
     {
         #region Constructor
-        
+
         public TransformedRenderer(string textureName, Color tint, float scale)
             : base(textureName, tint, scale)
         {
         }
 
         public TransformedRenderer(string textureName, Color tint)
-            : this(textureName, tint, 1)
+            : base(textureName, tint)
         {
         }
 
         public TransformedRenderer(string textureName, float scale)
-            : this(textureName, Color.White, scale)
+            : base(textureName, scale)
         {
         }
 
         public TransformedRenderer(string textureName)
-            : this(textureName, Color.White, 1)
+            : base(textureName)
         {
         }
 
         public TransformedRenderer()
-            : this(string.Empty, Color.White, 1)
+            : base()
         {
         }
 

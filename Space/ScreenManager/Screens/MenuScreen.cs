@@ -133,9 +133,12 @@ namespace Space.ScreenManagement.Screens
             for (int i = 0; i < MenuEntries.Count; i++)
             {
                 var entry = MenuEntries[i];
+                var entryWidth = entry.GetWidth(this);
+                var entryHeight = entry.GetHeight(this);
+
                 // Check if mouse is within bounds.
-                if (mouseX > entry.Position.X && mouseX < entry.Position.X + entry.GetWidth(this)
-                    && mouseY > entry.Position.Y && mouseY < entry.Position.Y + entry.GetHeight(this))
+                if (mouseX > entry.Position.X && mouseX < entry.Position.X + entryWidth
+                    && mouseY > entry.Position.Y - entryHeight / 2 && mouseY < entry.Position.Y + entryHeight * 2 / 3)
                 {
                     // Hovering.
                     mouseOver = true;

@@ -38,7 +38,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new WeaponControl());
             entity.AddComponent(new WeaponSound());
-            entity.AddComponent(new TransformedRenderer(shipData.Texture));
+            entity.AddComponent(new TransformedRenderer(shipData.Texture, faction.ToColor()));
             entity.AddComponent(modules);
             entity.AddComponent(health);
             entity.AddComponent(energy);
@@ -106,7 +106,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, (uint)faction));
             if (!string.IsNullOrWhiteSpace(projectile.Texture))
             {
-                entity.AddComponent(new TransformedRenderer(projectile.Texture, projectile.Scale));
+                entity.AddComponent(new TransformedRenderer(projectile.Texture, faction.ToColor(), projectile.Scale));
             }
             if (!string.IsNullOrWhiteSpace(projectile.Effect))
             {

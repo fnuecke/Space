@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 
 namespace Space.Data
 {
@@ -119,6 +120,23 @@ namespace Space.Data
 
         };
 
+        private static Dictionary<Factions, Color> _factionToColor = new Dictionary<Factions, Color>()
+        {
+            { Factions.Player1, Color.Red },
+            { Factions.Player2, Color.Blue },
+            { Factions.Player3, Color.Yellow },
+            { Factions.Player4, Color.Green },
+            { Factions.Player5, Color.Orange },
+            { Factions.Player6, Color.Purple },
+            { Factions.Player7, Color.Turquoise },
+            { Factions.Player8, Color.Pink },
+            { Factions.Player9, Color.LightCyan },
+            { Factions.Player10, Color.Olive },
+            { Factions.Player11, Color.Navy },
+            { Factions.Player12, Color.DarkRed }
+
+        };
+
         private static Factions[] _playerNumberToFaction = new Factions[]
         {
             Factions.Player1,
@@ -149,6 +167,23 @@ namespace Space.Data
             if (_factionToPlayerNumber.ContainsKey(faction))
             {
                 return _factionToPlayerNumber[faction];
+            }
+            else
+            {
+                throw new ArgumentException("faction");
+            }
+        }
+
+        /// <summary>
+        /// Convert the specified faction to a color.
+        /// </summary>
+        /// <param name="faction">The faction to convert.</param>
+        /// <returns>The color for the faction.</returns>
+        public static Color ToColor(this Factions faction)
+        {
+            if (_factionToColor.ContainsKey(faction))
+            {
+                return _factionToColor[faction];
             }
             else
             {

@@ -138,18 +138,7 @@ namespace Engine.ComponentSystem.Components
                             var sinPhi = (float)System.Math.Sin(phi);
 
                             // Precompute.
-                            float divisor;
-                            if (delta.Length() > 200)
-                            {
-                                // Sufficiently far away, attract using normal physics.
-                                divisor = Mass * otherGravitation.Mass / (delta.X * delta.X + delta.Y * delta.Y);
-                            }
-                            else
-                            {
-                                // Close by, don't attract anymore.
-                                divisor = delta.LengthSquared() * Mass * otherGravitation.Mass / 50000;
-                            }
-
+                            float divisor = Mass * otherGravitation.Mass / System.Math.Max(20000, delta.LengthSquared());
                             // Adjust velocity.
                             otherVelocity.Value = new Vector2(
                                 otherVelocity.Value.X - (cosPhi * divisor),

@@ -48,6 +48,10 @@ namespace Engine.ComponentSystem.Components
 
         #region Constructor
 
+        protected AbstractRenderer(string textureName, Color tint, float scale, float depth)
+        {
+        }
+        
         protected AbstractRenderer(string textureName, Color tint, float scale)
         {
             this.TextureName = textureName;
@@ -66,12 +70,12 @@ namespace Engine.ComponentSystem.Components
         }
 
         protected AbstractRenderer(string textureName)
-            : this(textureName, Color.White, 1)
+            : this(textureName, Color.White)
         {
         }
 
         protected AbstractRenderer()
-            : this(string.Empty, Color.White, 1)
+            : this(string.Empty)
         {
         }
 

@@ -10,11 +10,21 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class Background : AbstractRenderer
     {
+        #region Fields
+
+        private Texture2D _textureDarkMatter;
+
+        private Texture2D _textureDebrisSmall;
+
+        private Texture2D _textureDebrisLarge;
+
+        #endregion
+
         #region Constructor
-        
-        public Background(string textureName)
+
+        public Background()
         {
-            this.TextureName = textureName;
+            this.TextureName = "Textures/stars";
         }
 
         #endregion
@@ -29,13 +39,47 @@ namespace Space.ComponentSystem.Components
             // Get parameters in proper type.
             var p = (RendererParameterization)parameterization;
 
+            // Load our texture, if it's not set.
+            if (_textureDarkMatter == null)
+            {
+                _textureDarkMatter = p.Content.Load<Texture2D>("Textures/dark_matter");
+            }
+            if (_textureDebrisSmall == null)
+            {
+                _textureDebrisSmall = p.Content.Load<Texture2D>("Textures/debris_small");
+            }
+            if (_textureDebrisLarge == null)
+            {
+                _textureDebrisLarge = p.Content.Load<Texture2D>("Textures/debris_large");
+            }
+
             // Draw the background, tiled, with the given translation.
-            p.SpriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.Opaque, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
+            p.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
             p.SpriteBatch.Draw(texture, Vector2.Zero,
-                new Rectangle(-(int)p.Translation.X, -(int)p.Translation.Y,
+                new Rectangle(-(int)(p.Translation.X * 0.05f), -(int)(p.Translation.Y * 0.05f),
                     p.SpriteBatch.GraphicsDevice.Viewport.Width,
                     p.SpriteBatch.GraphicsDevice.Viewport.Height),
                     Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+            p.SpriteBatch.End();
+
+            p.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
+            p.SpriteBatch.Draw(_textureDebrisLarge, Vector2.Zero,
+                new Rectangle(-(int)(p.Translation.X * 0.95f), -(int)(p.Translation.Y * 0.95f),
+                    p.SpriteBatch.GraphicsDevice.Viewport.Width,
+                    p.SpriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.SlateGray * 0.25f, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+
+            p.SpriteBatch.Draw(_textureDebrisSmall, Vector2.Zero,
+                new Rectangle(-(int)(p.Translation.X * 0.65f), -(int)(p.Translation.Y * 0.65f),
+                    p.SpriteBatch.GraphicsDevice.Viewport.Width,
+                    p.SpriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.DarkSlateGray * 0.75f, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
+            
+            p.SpriteBatch.Draw(_textureDarkMatter, Vector2.Zero,
+                new Rectangle(-(int)(p.Translation.X * 0.1f), -(int)(p.Translation.Y * 0.1f),
+                    p.SpriteBatch.GraphicsDevice.Viewport.Width,
+                    p.SpriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.White * 0.95f, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
             p.SpriteBatch.End();
         }
 

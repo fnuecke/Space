@@ -93,7 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AstronomicBodyTypes.cs" />
-    <Compile Include="Fractions.cs" />
+    <Compile Include="Factions.cs" />
     <Compile Include="Modules\HullModule.cs" />
     <Compile Include="Profile.cs" />
     <Compile Include="ProjectileData.cs" />

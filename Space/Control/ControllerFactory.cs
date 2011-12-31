@@ -75,7 +75,7 @@ namespace Space.Control
 
                     new PlayerCenteredSoundSystem(soundBank, controller.Session),
                     new PlayerCenteredRenderSystem(spriteBatch, game.Content, controller.Session)
-                                .AddComponent(new Background("Textures/stars"))
+                                .AddComponent(new Background())
                 });
 
             // Done.
@@ -113,7 +113,7 @@ namespace Space.Control
                     new[] {
                         new PlayerCenteredSoundSystem(soundBank, controller.Session),
                         new PlayerCenteredRenderSystem(spriteBatch, game.Content, controller.Session)
-                                    .AddComponent(new Background("Textures/stars"))
+                                    .AddComponent(new Background())
                     });
             }
             
