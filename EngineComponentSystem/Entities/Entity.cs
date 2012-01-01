@@ -100,28 +100,37 @@ namespace Engine.ComponentSystem.Entities
         public T GetComponent<T>() where T : IComponent
         {
             // Get the type object representing the generic type.
-            Type type = typeof(T);
+            return (T)GetComponent(typeof(T));
+        }
 
+        /// <summary>
+        /// Similar to the generic variant of this method, but takes a type
+        /// parameter instead.
+        /// </summary>
+        /// <param name="componentType">The type of the component to get.</param>
+        /// <returns>The component, or <c>null</c> if the entity has none of this type.</returns>
+        public IComponent GetComponent(Type componentType)
+        {
             // See if we have that one cached.
-            if (_mapping.ContainsKey(type))
+            if (_mapping.ContainsKey(componentType))
             {
                 // Yes, return it.
-                return (T)_mapping[type];
+                return _mapping[componentType];
             }
 
             // No, look it up and cache it.
             foreach (var component in _components)
             {
-                if (component.GetType() == type)
+                if (component.GetType() == componentType)
                 {
-                    _mapping[type] = component;
-                    return (T)component;
+                    _mapping[componentType] = component;
+                    return component;
                 }
             }
 
             // Not found at all, cache as null and return.
-            _mapping[type] = null;
-            return default(T);
+            _mapping[componentType] = null;
+            return null;
         }
 
         /// <summary>

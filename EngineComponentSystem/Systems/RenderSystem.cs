@@ -15,7 +15,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The reusable parameterization.
         /// </summary>
-        protected RendererParameterization parameterization;
+        protected RendererParameterization _parameterization;
 
         #endregion
 
@@ -23,7 +23,7 @@ namespace Engine.ComponentSystem.Systems
         
         public RenderSystem(SpriteBatch spriteBatch, ContentManager contentManager)
         {
-            parameterization = new RendererParameterization(spriteBatch, contentManager);
+            _parameterization = new RendererParameterization(spriteBatch, contentManager);
         }
 
         #endregion
@@ -36,12 +36,12 @@ namespace Engine.ComponentSystem.Systems
             {
 
                 // Get translation, which may be overridden.
-                parameterization.Translation = GetTranslation();
+                _parameterization.Translation = GetTranslation();
                 // Then render all components.
                 var currentComponents = Components;
                 foreach (var component in currentComponents)
                 {
-                    component.Update(parameterization);
+                    UpdateComponent(component, _parameterization);
                 }
             }
         }

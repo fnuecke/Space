@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Systems
 
             foreach (var component in Components)
             {
-                component.Update(_parameterization);
+                UpdateComponent(component, _parameterization);
             }
         }
     }

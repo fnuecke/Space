@@ -74,6 +74,12 @@ namespace Engine.ComponentSystem.Systems
                 {
                     var currentCollidable = (AbstractCollidable)currentComponents[i];
 
+                    // Skip disabled components.
+                    if (!currentCollidable.Enabled)
+                    {
+                        continue;
+                    }
+
                     // Get a list of components actually nearby.
                     if (index != null)
                     {
@@ -90,6 +96,12 @@ namespace Engine.ComponentSystem.Systems
                     for (int j = i + 1; j < componentCount; ++j)
                     {
                         var otherCollidable = (AbstractCollidable)currentComponents[j];
+
+                        // Skip disabled components.
+                        if (!otherCollidable.Enabled)
+                        {
+                            continue;
+                        }
 
                         // Only test if its from a different collision group.
                         if ((currentCollidable.CollisionGroups & otherCollidable.CollisionGroups) != 0)
@@ -115,7 +127,7 @@ namespace Engine.ComponentSystem.Systems
                 // Update previous position for all collidables.
                 foreach (var component in currentComponents)
                 {
-                    component.Update(_parameterization);
+                    UpdateComponent(component, _parameterization);
                 }
             }
         }

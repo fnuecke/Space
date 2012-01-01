@@ -24,6 +24,10 @@ namespace Space.ComponentSystem.Components
             }
             set
             {
+                if (value < _value)
+                {
+                    _timeToWait = Timeout;
+                }
                 _value = System.Math.Max(0, value);
             }
         }
@@ -38,6 +42,12 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public float Regeneration { get; set; }
 
+        /// <summary>
+        /// The timeout in ticks to wait after the last reducing change, before
+        /// applying regeneration again.
+        /// </summary>
+        public int Timeout { get; set; }
+
         #endregion
 
         #region Fields
@@ -46,6 +56,24 @@ namespace Space.ComponentSystem.Components
         /// Actual value for the value property.
         /// </summary>
         private float _value;
+
+        /// <summary>
+        /// Time to wait before triggering regeneration again, in ticks.
+        /// </summary>
+        private int _timeToWait;
+
+        #endregion
+
+        #region Constructor
+
+        protected AbstractRegeneratingValue(int timeout)
+        {
+            this.Timeout = timeout;
+        }
+
+        protected AbstractRegeneratingValue()
+        {
+        }
 
         #endregion
 
@@ -60,7 +88,14 @@ namespace Space.ComponentSystem.Components
 #if DEBUG
             base.Update(parameterization);
 #endif
-            Value = System.Math.Min(MaxValue, Value + Regeneration);
+            if (_timeToWait > 0)
+            {
+                --_timeToWait;
+            }
+            else
+            {
+                Value = System.Math.Min(MaxValue, Value + Regeneration);
+            }
         }
 
         /// <summary>
@@ -81,8 +116,10 @@ namespace Space.ComponentSystem.Components
         {
             return base.Packetize(packet)
                 .Write(_value)
+                .Write(_timeToWait)
                 .Write(MaxValue)
-                .Write(Regeneration);
+                .Write(Regeneration)
+                .Write(Timeout);
         }
 
         public override void Depacketize(Packet packet)
@@ -90,8 +127,10 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             _value = packet.ReadSingle();
+            _timeToWait = packet.ReadInt32();
             MaxValue = packet.ReadSingle();
             Regeneration = packet.ReadSingle();
+            Timeout = packet.ReadInt32();
         }
 
         public override void Hash(Hasher hasher)
@@ -99,8 +138,6 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(BitConverter.GetBytes(_value));
-            hasher.Put(BitConverter.GetBytes(MaxValue));
-            hasher.Put(BitConverter.GetBytes(Regeneration));
         }
 
         #endregion

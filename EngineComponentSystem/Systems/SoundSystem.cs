@@ -130,7 +130,7 @@ namespace Engine.ComponentSystem.Systems
                     _parameterization.Position = Vector2.Zero;
                     _parameterization.Velocity = Vector2.Zero;
                     // Get infos for this component.
-                    component.Update(_parameterization);
+                    UpdateComponent(component, _parameterization);
                     foreach (var soundCue in _parameterization.SoundCues)
                     {
                         // Enqueue play a sound.

@@ -35,8 +35,8 @@ namespace Space.ComponentSystem.Systems
             var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
             if (avatar != null)
             {
-                return new Vector2(parameterization.SpriteBatch.GraphicsDevice.Viewport.Width / 2,
-                                   parameterization.SpriteBatch.GraphicsDevice.Viewport.Height / 2)
+                return new Vector2(_parameterization.SpriteBatch.GraphicsDevice.Viewport.Width / 2,
+                                   _parameterization.SpriteBatch.GraphicsDevice.Viewport.Height / 2)
                                    - (Vector2)avatar.GetComponent<Transform>().Translation;
             }
             return Vector2.Zero;

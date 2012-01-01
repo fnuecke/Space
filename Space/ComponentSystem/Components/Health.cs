@@ -11,6 +11,26 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Health : AbstractRegeneratingValue
     {
+        #region Constructor
+
+        /// <summary>
+        /// Creates a new health component.
+        /// </summary>
+        /// <param name="timeout">The number of ticks to wait after taking
+        /// damage before starting to regenerate health again.</param>
+        public Health(int timeout)
+            : base(timeout)
+        {
+        }
+
+        public Health()
+        {
+        }
+
+        #endregion
+
+        #region Logic
+
         /// <summary>
         /// Test for change in equipment.
         /// </summary>
@@ -42,5 +62,7 @@ namespace Space.ComponentSystem.Components
                 }
             }
         }
+
+        #endregion
     }
 }

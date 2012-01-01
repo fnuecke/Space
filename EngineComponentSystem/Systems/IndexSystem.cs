@@ -138,7 +138,7 @@ namespace Engine.ComponentSystem.Systems
                 foreach (var component in currentComponents)
                 {
                     _parameterization.PositionChanged = false;
-                    component.Update(_parameterization);
+                    UpdateComponent(component, _parameterization);
                     if (_parameterization.PositionChanged)
                     {
                         // We need to check if this entities position in the

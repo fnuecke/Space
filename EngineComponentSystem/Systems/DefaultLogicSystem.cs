@@ -33,7 +33,7 @@ namespace Engine.ComponentSystem.Systems
                 var currentComponents = Components;
                 foreach (var component in currentComponents)
                 {
-                    component.Update(_parameterization);
+                    UpdateComponent(component, _parameterization);
                 }
             }
         }

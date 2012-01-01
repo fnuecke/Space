@@ -20,6 +20,12 @@ namespace Engine.ComponentSystem.Components
         IEntity Entity { get; set; }
 
         /// <summary>
+        /// Whether the component is enabled or not. Disabled components will
+        /// not have their <c>Update()</c> method called.
+        /// </summary>
+        bool Enabled { get; set; }
+
+        /// <summary>
         /// Update the component with the specified parameterization.
         /// </summary>
         /// <param name="parameterization">The parameterization to use.</param>

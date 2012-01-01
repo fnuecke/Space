@@ -1,4 +1,6 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
@@ -21,10 +23,10 @@ namespace Space.ComponentSystem.Entities
             var entity = new Entity();
 
             var modules = new EntityModules<EntityAttributeType>();
-            var health = new Health();
+            var health = new Health(120);
             var energy = new Energy();
 
-            entity.AddComponent(new Transform(new Vector2(16000, 16000)));
+            entity.AddComponent(new Transform(new Vector2(15500, 15500)));
             entity.AddComponent(new Velocity());
             entity.AddComponent(new Spin());
             entity.AddComponent(new Acceleration());
@@ -38,6 +40,15 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new WeaponControl());
             entity.AddComponent(new WeaponSound());
+            entity.AddComponent(new Respawn(300, new Vector2(15500, 15500), new List<Type>()
+            {
+                typeof(ShipControl),
+                typeof(WeaponControl),
+                typeof(CollidableSphere),
+                typeof(Acceleration),
+                typeof(Gravitation),
+                typeof(TransformedRenderer)
+            }));
             entity.AddComponent(new TransformedRenderer(shipData.Texture, faction.ToColor()));
             entity.AddComponent(modules);
             entity.AddComponent(health);

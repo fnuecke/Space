@@ -44,9 +44,17 @@ namespace Engine.ComponentSystem.Entities
         /// be relatively fast.
         /// </para>
         /// </summary>
-        /// <typeparam name="T">the type of the component to get.</typeparam>
-        /// <returns>the component, or <c>null</c> if the entity has none of this type.</returns>
+        /// <typeparam name="T">The type of the component to get.</typeparam>
+        /// <returns>The component, or <c>null</c> if the entity has none of this type.</returns>
         T GetComponent<T>() where T : IComponent;
+
+        /// <summary>
+        /// Similar to the generic variant of this method, but takes a type
+        /// parameter instead.
+        /// </summary>
+        /// <param name="componentType">The type of the component to get.</param>
+        /// <returns>The component, or <c>null</c> if the entity has none of this type.</returns>
+        IComponent GetComponent(Type componentType);
 
         /// <summary>
         /// Get a component by its id.

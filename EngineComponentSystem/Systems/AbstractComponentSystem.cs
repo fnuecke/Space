@@ -75,6 +75,20 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
+        /// Call from subclasses to actually update a component, performs some
+        /// additional checks.
+        /// </summary>
+        /// <param name="component">The component to update.</param>
+        /// <param name="parameterization">The parameterization to use.</param>
+        protected void UpdateComponent(IComponent component, object parameterization)
+        {
+            if (component.Enabled)
+            {
+                component.Update(parameterization);
+            }
+        }
+
+        /// <summary>
         /// Add the component to this system, if it's supported.
         /// </summary>
         /// <param name="component">The component to add.</param>

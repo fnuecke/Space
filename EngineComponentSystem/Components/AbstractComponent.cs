@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Util;
+
 namespace Engine.ComponentSystem.Components
 {
     /// <summary>
@@ -29,6 +30,12 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public IEntity Entity { get; set; }
 
+        /// <summary>
+        /// Whether the component is enabled or not. Disabled components will
+        /// not have their <c>Update()</c> method called.
+        /// </summary>
+        public bool Enabled { get; set; }
+
         #endregion
 
         #region Constructor
@@ -38,6 +45,8 @@ namespace Engine.ComponentSystem.Components
             // Avoid accidentally getting components due to uninitialized
             // indexes (default = 0).
             UID = -1;
+            // Enable per default.
+            Enabled = true;
         }
 
         #endregion
@@ -91,7 +100,8 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public virtual Packet Packetize(Packet packet)
         {
-            return packet.Write(UID);
+            return packet.Write(UID)
+                .Write(Enabled);
         }
 
         /// <summary>
@@ -100,6 +110,7 @@ namespace Engine.ComponentSystem.Components
         public virtual void Depacketize(Packet packet)
         {
             UID = packet.ReadInt32();
+            Enabled = packet.ReadBoolean();
         }
 
         /// <summary>
@@ -108,6 +119,7 @@ namespace Engine.ComponentSystem.Components
         public virtual void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(UID));
+            hasher.Put(BitConverter.GetBytes(Enabled));
         }
 
         /// <summary>
