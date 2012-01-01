@@ -36,7 +36,7 @@ namespace Space.ScreenManagement.Screens
                     playerData.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
                     try
                     {
-                        ((Spaaace)ScreenManager.Game).Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(MenuEntries[0].Text), 7777), Settings.Instance.PlayerName, playerData);
+                        ((Spaaace)ScreenManager.Game).Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(_address.InputText), 7777), Settings.Instance.PlayerName, playerData);
                     }
                     catch (Exception)
                     {

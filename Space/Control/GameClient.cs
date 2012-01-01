@@ -50,23 +50,6 @@ namespace Space.Control
             : base(game)
         {
             Controller = ControllerFactory.CreateLocalClient(Game, server.Controller);
-
-            // Register for key presses and releases (movement).
-            var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
-            if (keyboard != null)
-            {
-                keyboard.Pressed += HandleKeyPressed;
-                keyboard.Released += HandleKeyReleased;
-            }
-
-            // Register for mouse movement (orientation) and buttons (shooting).
-            var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
-            if (mouse != null)
-            {
-                mouse.Moved += HandleMouseMoved;
-                mouse.Pressed += HandleMousePressed;
-                mouse.Released += HandleMouseReleased;
-            }
         }
 
         /// <summary>
@@ -85,6 +68,23 @@ namespace Space.Control
         public override void Initialize()
         {
             base.Initialize();
+
+            // Register for key presses and releases (movement).
+            var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
+            if (keyboard != null)
+            {
+                keyboard.Pressed += HandleKeyPressed;
+                keyboard.Released += HandleKeyReleased;
+            }
+
+            // Register for mouse movement (orientation) and buttons (shooting).
+            var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
+            if (mouse != null)
+            {
+                mouse.Moved += HandleMouseMoved;
+                mouse.Pressed += HandleMousePressed;
+                mouse.Released += HandleMouseReleased;
+            }
 
             // Draw underneath menus etc.
             DrawOrder = -50;
