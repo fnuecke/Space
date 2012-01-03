@@ -7,6 +7,10 @@ using Space.ComponentSystem.Parameterizations;
 
 namespace Space.ComponentSystem.Systems
 {
+    /// <summary>
+    /// Controls the particle components in a game, passing them some
+    /// information about how to render themselves.
+    /// </summary>
     public class ParticleSystem : AbstractComponentSystem<ParticleParameterization>
     {
         #region Fields
@@ -43,7 +47,11 @@ namespace Space.ComponentSystem.Systems
                 // Logic update, check if new particles should be triggered.
                 foreach (var component in Components)
                 {
-                    UpdateComponent(component, _parameterization);
+                    // We explicitly don't care about components being
+                    // disabled, because they will disappear by themselves.
+                    // The component will have to take care of not creating new
+                    // particles when disabled, by itself.
+                    component.Update(_parameterization);
                 }
             }
             else if (updateType == ComponentSystemUpdateType.Display)
@@ -52,7 +60,9 @@ namespace Space.ComponentSystem.Systems
                 _parameterization.Matrix.Translation = GetTranslation();
                 foreach (var component in Components)
                 {
-                    UpdateComponent(component, _parameterization);
+                    // We explicitly don't care about components being
+                    // disabled, because they will disappear by themselves.
+                    component.Update(_parameterization);
                 }
             }
         }
@@ -60,7 +70,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Override in subclasses for specific translation of the view.
         /// </summary>
-        /// <returns>the translation of the view to use when rendering.</returns>
+        /// <returns>The translation of the view to use when rendering.</returns>
         protected virtual Vector3 GetTranslation()
         {
             return Vector3.Zero;

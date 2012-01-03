@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="ProjectMercury.ParticleEffect">
+    <Item Type="ProjectMercury.Emitters.CircleEmitter">
+      <Name>Dying Flames</Name>
+      <Budget>500</Budget>
+      <Term>3</Term>
+      <ReleaseQuantity>4</ReleaseQuantity>
+      <Enabled>True</Enabled>
+      <ReleaseSpeed>
+        <Value>16</Value>
+        <Variation>8</Variation>
+      </ReleaseSpeed>
+      <ReleaseColour>
+        <Value>1 0.5019608 0</Value>
+        <Variation>0.3 0 0</Variation>
+      </ReleaseColour>
+      <ReleaseOpacity>
+        <Value>1</Value>
+        <Variation>0</Variation>
+      </ReleaseOpacity>
+      <ReleaseScale>
+        <Value>96</Value>
+        <Variation>64</Variation>
+      </ReleaseScale>
+      <ReleaseRotation>
+        <Value>1</Value>
+        <Variation>0.5</Variation>
+      </ReleaseRotation>
+      <ReleaseImpulse>0 0</ReleaseImpulse>
+      <ParticleTextureAssetName>Textures/Effects/Cloud004</ParticleTextureAssetName>
+      <Modifiers>
+        <Item Type="ProjectMercury.Modifiers.OpacityInterpolatorModifier">
+          <InitialOpacity>0</InitialOpacity>
+          <MiddleOpacity>0.15</MiddleOpacity>
+          <MiddlePosition>0.7</MiddlePosition>
+          <FinalOpacity>0</FinalOpacity>
+        </Item>
+        <Item Type="ProjectMercury.Modifiers.RotationRateModifier">
+          <InitialRate>1</InitialRate>
+          <FinalRate>0</FinalRate>
+        </Item>
+      </Modifiers>
+      <BlendMode>Add</BlendMode>
+      <TriggerOffset>0 0</TriggerOffset>
+      <MinimumTriggerPeriod>0.02</MinimumTriggerPeriod>
+      <Radius>128</Radius>
+      <Ring>true</Ring>
+      <Radiate>true</Radiate>
+    </Item>
+    <Item Type="ProjectMercury.Emitters.CircleEmitter">
+      <Name>Emitter24</Name>
+      <Budget>500</Budget>
+      <Term>1</Term>
+      <ReleaseQuantity>10</ReleaseQuantity>
+      <Enabled>True</Enabled>
+      <ReleaseSpeed>
+        <Value>32</Value>
+        <Variation>16</Variation>
+      </ReleaseSpeed>
+      <ReleaseColour>
+        <Value>1 1 0.5019608</Value>
+        <Variation>0 0 0</Variation>
+      </ReleaseColour>
+      <ReleaseOpacity>
+        <Value>1</Value>
+        <Variation>0</Variation>
+      </ReleaseOpacity>
+      <ReleaseScale>
+        <Value>512</Value>
+        <Variation>64</Variation>
+      </ReleaseScale>
+      <ReleaseRotation>
+        <Value>0</Value>
+        <Variation>0</Variation>
+      </ReleaseRotation>
+      <ReleaseImpulse>0 0</ReleaseImpulse>
+      <ParticleTextureAssetName>Textures/Effects/Cloud001</ParticleTextureAssetName>
+      <Modifiers>
+        <Item Type="ProjectMercury.Modifiers.RotationModifier">
+          <RotationRate>1</RotationRate>
+        </Item>
+        <Item Type="ProjectMercury.Modifiers.OpacityInterpolatorModifier">
+          <InitialOpacity>0</InitialOpacity>
+          <MiddleOpacity>0.2</MiddleOpacity>
+          <MiddlePosition>0.5</MiddlePosition>
+          <FinalOpacity>0</FinalOpacity>
+        </Item>
+      </Modifiers>
+      <BlendMode>Add</BlendMode>
+      <TriggerOffset>0 0</TriggerOffset>
+      <MinimumTriggerPeriod>0.25</MinimumTriggerPeriod>
+      <Radius>1</Radius>
+      <Ring>true</Ring>
+      <Radiate>true</Radiate>
+    </Item>
+    <Name>Basic Fireball</Name>
+    <Author>Matt Davey</Author>
+    <Description>A simple fireball effect. Looks best in motion.</Description>
+  </Asset>
+</XnaContent>

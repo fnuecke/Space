@@ -7,12 +7,21 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Systems
 {
+    /// <summary>
+    /// Makes sure particles are rendered based on the player's position.
+    /// </summary>
     public class PlayerCenteredParticleSystem : ParticleSystem
     {
         #region Fields
 
+        /// <summary>
+        /// The graphics device we use (to get width and height of screen).
+        /// </summary>
         private readonly IGraphicsDeviceService _graphics;
 
+        /// <summary>
+        /// The session we're currently in (to get player position).
+        /// </summary>
         private readonly IClientSession _session;
 
         #endregion
@@ -33,7 +42,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Override in subclasses for specific translation of the view.
         /// </summary>
-        /// <returns>the translation of the view to use when rendering.</returns>
+        /// <returns>The translation of the view to use when rendering.</returns>
         protected override Vector3 GetTranslation()
         {
             var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);

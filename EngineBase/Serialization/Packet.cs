@@ -134,6 +134,16 @@ namespace Engine.Serialization
         }
 
         /// <summary>
+        /// Writes the specified vector value.
+        /// </summary>
+        /// <param name="data">The value to write.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Write(Vector3 data)
+        {
+            return Write(data.X).Write(data.Y).Write(data.Z);
+        }
+
+        /// <summary>
         /// Writes the specified single value.
         /// </summary>
         /// <param name="data">The value to write.</param>
@@ -476,6 +486,21 @@ namespace Engine.Serialization
             Vector2 result;
             result.X = ReadSingle();
             result.Y = ReadSingle();
+            return result;
+        }
+
+        /// <summary>
+        /// Reads a vector value.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        public Vector3 ReadVector3()
+        {
+            Vector3 result;
+            result.X = ReadSingle();
+            result.Y = ReadSingle();
+            result.Z = ReadSingle();
             return result;
         }
 

@@ -162,9 +162,9 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractor, mass));
 
             entity.AddComponent(new AstronomicBody(type));
-
+            
             //entity.AddComponent(new TransformedRenderer(texture));
-            entity.AddComponent(new Particle("Effects/sun"));
+            entity.AddComponent(new Particle("Effects/sun2"));
 
             return entity;
         }
