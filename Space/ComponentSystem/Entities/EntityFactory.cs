@@ -40,6 +40,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new WeaponControl());
             entity.AddComponent(new WeaponSound());
+            entity.AddComponent(new ThrusterEffect("Effects/thruster"));
             entity.AddComponent(new Respawn(300, new List<Type>()
             {
                 typeof(ShipControl),
@@ -164,7 +165,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new AstronomicBody(type));
             
             //entity.AddComponent(new TransformedRenderer(texture));
-            entity.AddComponent(new Particle("Effects/sun2"));
+            entity.AddComponent(new Effect("Effects/sun2"));
 
             return entity;
         }

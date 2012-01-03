@@ -168,6 +168,12 @@ namespace Space.ComponentSystem.Components
                         spin.Value = 0;
                     }
                 }
+
+                var thrusterEffect = Entity.GetComponent<ThrusterEffect>();
+                if (thrusterEffect != null)
+                {
+                    thrusterEffect.Enabled = AccelerationDirection != Directions.None;
+                }
             }
 
             // Check if we're spinning.

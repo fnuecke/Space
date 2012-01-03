@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="ProjectMercury.ParticleEffect">
+    <Item Type="ProjectMercury.Emitters.ConeEmitter">
+      <Name>Smoke 1</Name>
+      <Budget>500</Budget>
+      <Term>1</Term>
+      <ReleaseQuantity>1</ReleaseQuantity>
+      <Enabled>True</Enabled>
+      <ReleaseSpeed>
+        <Value>128</Value>
+        <Variation>32</Variation>
+      </ReleaseSpeed>
+      <ReleaseColour>
+        <Value>0.7529412 0.2509804 0</Value>
+        <Variation>0 0 0</Variation>
+      </ReleaseColour>
+      <ReleaseOpacity>
+        <Value>1</Value>
+        <Variation>0</Variation>
+      </ReleaseOpacity>
+      <ReleaseScale>
+        <Value>8</Value>
+        <Variation>0</Variation>
+      </ReleaseScale>
+      <ReleaseRotation>
+        <Value>0</Value>
+        <Variation>3.14</Variation>
+      </ReleaseRotation>
+      <ReleaseImpulse>0 0</ReleaseImpulse>
+      <ParticleTextureAssetName>Textures/Effects/Cloud001</ParticleTextureAssetName>
+      <Modifiers>
+        <Item Type="ProjectMercury.Modifiers.RotationRateModifier">
+          <InitialRate>1.57079637</InitialRate>
+          <FinalRate>0</FinalRate>
+        </Item>
+        <Item Type="ProjectMercury.Modifiers.OpacityFastFadeModifier" />
+        <Item Type="ProjectMercury.Modifiers.ScaleInterpolatorModifier">
+          <InitialScale>16</InitialScale>
+          <MiddleScale>32</MiddleScale>
+          <MiddlePosition>0.05</MiddlePosition>
+          <FinalScale>0</FinalScale>
+        </Item>
+      </Modifiers>
+      <BlendMode>Alpha</BlendMode>
+      <TriggerOffset>0 0</TriggerOffset>
+      <MinimumTriggerPeriod>0.01</MinimumTriggerPeriod>
+      <Direction>0</Direction>
+      <ConeAngle>0</ConeAngle>
+    </Item>
+    <Item Type="ProjectMercury.Emitters.ConeEmitter">
+      <Name>Smoke 2</Name>
+      <Budget>500</Budget>
+      <Term>1</Term>
+      <ReleaseQuantity>1</ReleaseQuantity>
+      <Enabled>True</Enabled>
+      <ReleaseSpeed>
+        <Value>128</Value>
+        <Variation>32</Variation>
+      </ReleaseSpeed>
+      <ReleaseColour>
+        <Value>1 1 0.5019608</Value>
+        <Variation>0 0 0</Variation>
+      </ReleaseColour>
+      <ReleaseOpacity>
+        <Value>1</Value>
+        <Variation>0</Variation>
+      </ReleaseOpacity>
+      <ReleaseScale>
+        <Value>16</Value>
+        <Variation>0</Variation>
+      </ReleaseScale>
+      <ReleaseRotation>
+        <Value>0</Value>
+        <Variation>3.14</Variation>
+      </ReleaseRotation>
+      <ReleaseImpulse>0 0</ReleaseImpulse>
+      <ParticleTextureAssetName>Textures/Effects/Cloud001</ParticleTextureAssetName>
+      <Modifiers>
+        <Item Type="ProjectMercury.Modifiers.RotationRateModifier">
+          <InitialRate>-1.57079637</InitialRate>
+          <FinalRate>0</FinalRate>
+        </Item>
+        <Item Type="ProjectMercury.Modifiers.OpacityFastFadeModifier" />
+        <Item Type="ProjectMercury.Modifiers.ScaleInterpolatorModifier">
+          <InitialScale>12</InitialScale>
+          <MiddleScale>24</MiddleScale>
+          <MiddlePosition>0.05</MiddlePosition>
+          <FinalScale>0</FinalScale>
+        </Item>
+      </Modifiers>
+      <BlendMode>Add</BlendMode>
+      <TriggerOffset>0 0</TriggerOffset>
+      <MinimumTriggerPeriod>0.01</MinimumTriggerPeriod>
+      <Direction>0</Direction>
+      <ConeAngle>0</ConeAngle>
+    </Item>
+    <Name>Thruster exhaust</Name>
+    <Author>fnuecke</Author>
+    <Description>Effect for ship thrusters.</Description>
+  </Asset>
+</XnaContent>

@@ -14,7 +14,7 @@ namespace Space.ComponentSystem.Components
     /// Requires: <c>Transform</c>.
     /// </para>
     /// </summary>
-    public sealed class Particle : AbstractComponent
+    public class Effect : AbstractComponent
     {
         #region Properties
 
@@ -30,18 +30,18 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The actual instance of the effect we're using.
         /// </summary>
-        private ParticleEffect _effect;
+        protected ParticleEffect _effect;
 
         #endregion
 
         #region Constructor
 
-        public Particle(string effectName)
+        public Effect(string effectName)
         {
             this.EffectName = effectName;
         }
 
-        public Particle()
+        public Effect()
         {
         }
 
@@ -124,7 +124,7 @@ namespace Space.ComponentSystem.Components
 
         public override object Clone()
         {
-            var copy = (Particle)base.Clone();
+            var copy = (Effect)base.Clone();
 
             if (_effect != null)
             {
