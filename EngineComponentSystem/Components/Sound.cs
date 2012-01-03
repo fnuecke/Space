@@ -33,28 +33,25 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
-            var p = (SoundParameterization)parameterization;
+            var args = (SoundParameterization)parameterization;
 
             // Should we play? (Was a message fired for us?)
             if (_soundsToPlay.Count > 0)
             {
                 // Yes, write the cue name.
-                p.SoundCues.AddRange(_soundsToPlay);
+                args.SoundCues.AddRange(_soundsToPlay);
 
                 // Also check if we can fill in position and velocity.
                 var transform = Entity.GetComponent<Transform>();
-                var velocity = Entity.GetComponent<Velocity>();
-
                 if (transform != null)
                 {
-                    p.Position = transform.Translation;
+                    args.Position = transform.Translation;
                 }
+
+                var velocity = Entity.GetComponent<Velocity>();
                 if (velocity != null)
                 {
-                    p.Velocity = velocity.Value;
+                    args.Velocity = velocity.Value;
                 }
             }
 

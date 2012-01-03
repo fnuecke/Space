@@ -9,6 +9,6 @@
         /// <summary>
         /// The frame that the simulation is currently in.
         /// </summary>
-        public long Frame { get; set; }
+        public long Frame;
     }
 }

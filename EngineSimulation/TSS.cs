@@ -744,13 +744,9 @@ namespace Engine.Simulation
             /// <summary>
             /// Only render passes supported, based on leading state.
             /// </summary>
-            public void Update(ComponentSystemUpdateType updateType, long frame)
+            public void Draw(long frame)
             {
-                if (updateType != ComponentSystemUpdateType.Display)
-                {
-                    throw new NotSupportedException();
-                }
-                _tss.LeadingState.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display, frame);
+                _tss.LeadingState.EntityManager.SystemManager.Draw(frame);
             }
 
             #endregion
@@ -775,6 +771,11 @@ namespace Engine.Simulation
                 {
                     throw new NotSupportedException();
                 }
+            }
+
+            public void Update(long frame)
+            {
+                throw new NotSupportedException();
             }
 
             public void RemoveSystem(IComponentSystem system)

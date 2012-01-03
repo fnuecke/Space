@@ -15,6 +15,18 @@ namespace Engine.ComponentSystem.Components
         int UID { get; set; }
 
         /// <summary>
+        /// This determines in which order this component will be updated.
+        /// Components with higher values will be updated later.
+        /// </summary>
+        int UpdateOrder { get; set; }
+
+        /// <summary>
+        /// This determines in which order this component will be drawn.
+        /// Components with higher values will be drawn later.
+        /// </summary>
+        int DrawOrder { get; set; }
+
+        /// <summary>
         /// Gets the entity this component belongs to.
         /// </summary>
         IEntity Entity { get; set; }
@@ -30,6 +42,12 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="parameterization">The parameterization to use.</param>
         void Update(object parameterization);
+
+        /// <summary>
+        /// Draw the component with the specified parameterization.
+        /// </summary>
+        /// <param name="parameterization">The parameterization to use.</param>
+        void Draw(object parameterization);
 
         /// <summary>
         /// Test whether the component supports the specified parameterization type.

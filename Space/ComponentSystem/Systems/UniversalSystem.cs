@@ -14,7 +14,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    public class UniversalSystem : AbstractComponentSystem<NullParameterization>
+    public class UniversalSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
     {
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 

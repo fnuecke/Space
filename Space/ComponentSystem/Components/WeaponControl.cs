@@ -22,7 +22,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Whether ima currently firin mah lazer or not.
         /// </summary>
-        public bool IsShooting { get; set; }
+        public bool Shooting { get; set; }
 
         #endregion
 
@@ -44,9 +44,6 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization">The parameters to use.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
             // Reduce cooldowns.
             foreach (var componentUid in new List<int>(_cooldowns.Keys))
             {
@@ -57,7 +54,7 @@ namespace Space.ComponentSystem.Components
             }
 
             // Check all weapon modules.
-            if (IsShooting)
+            if (Shooting)
             {
                 var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
                 var energy = Entity.GetComponent<Energy>();
@@ -135,7 +132,7 @@ namespace Space.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            packet.Write(IsShooting);
+            packet.Write(Shooting);
 
             packet.Write(_cooldowns.Count);
             foreach (var kv in _cooldowns)
@@ -149,7 +146,7 @@ namespace Space.ComponentSystem.Components
 
         public override void Depacketize(Packet packet)
         {
-            IsShooting = packet.ReadBoolean();
+            Shooting = packet.ReadBoolean();
             _cooldowns.Clear();
             var numCooldowns = packet.ReadInt32();
             for (int i = 0; i < numCooldowns; i++)
@@ -162,7 +159,7 @@ namespace Space.ComponentSystem.Components
 
         public override void Hash(Hasher hasher)
         {
-            hasher.Put(BitConverter.GetBytes(IsShooting));
+            hasher.Put(BitConverter.GetBytes(Shooting));
             foreach (var cooldown in _cooldowns.Values)
             {
                 hasher.Put(BitConverter.GetBytes(cooldown));
@@ -176,6 +173,15 @@ namespace Space.ComponentSystem.Components
             copy._cooldowns = new Dictionary<int, int>(_cooldowns);
 
             return copy;
+        }
+
+        #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            return GetType().Name + ": " + Shooting.ToString();
         }
 
         #endregion

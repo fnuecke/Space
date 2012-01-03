@@ -72,9 +72,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">the parameterization to use.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
+            // Update our previous position.
             var transform = Entity.GetComponent<Transform>();
             if (transform != null)
             {

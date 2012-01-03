@@ -35,9 +35,14 @@ namespace Engine.ComponentSystem.Components
 
         #region Logic
 
+        /// <summary>
+        /// Supports <c>AvatarParameterization</c>.
+        /// </summary>
+        /// <param name="parameterizationType">The parameterization to check.</param>
+        /// <returns>Whether it is supported.</returns>
         public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterizationType.Equals(typeof(AvatarParameterization));
+            return parameterizationType == typeof(AvatarParameterization);
         }
 
         #endregion

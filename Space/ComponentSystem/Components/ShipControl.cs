@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
-using Space.ComponentSystem.Parameterizations;
 using Space.Data;
 using Space.Data.Modules;
 
@@ -22,7 +22,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Whether to shoot or not.
         /// </summary>
-        public bool IsShooting { get; set; }
+        public bool Shooting { get; set; }
 
         /// <summary>
         /// The direction we're currently accelerating into.
@@ -92,11 +92,6 @@ namespace Space.ComponentSystem.Components
 
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
-            var p = (InputParameterization)parameterization;
-
             // Get components we depend upon / modify.
             var transform = Entity.GetComponent<Transform>();
             var spin = Entity.GetComponent<Spin>();
@@ -172,7 +167,7 @@ namespace Space.ComponentSystem.Components
                 var thrusterEffect = Entity.GetComponent<ThrusterEffect>();
                 if (thrusterEffect != null)
                 {
-                    thrusterEffect.Enabled = AccelerationDirection != Directions.None;
+                    thrusterEffect.Emitting = AccelerationDirection != Directions.None;
                 }
             }
 
@@ -193,7 +188,7 @@ namespace Space.ComponentSystem.Components
             var weapons = Entity.GetComponent<WeaponControl>();
             if (weapons != null)
             {
-                weapons.IsShooting = IsShooting;
+                weapons.Shooting = Shooting;
             }
 
             // Remember rotation in this update for the next.
@@ -210,7 +205,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>whether the type's supported or not.</returns>
         public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterizationType.Equals(typeof(InputParameterization));
+            return parameterizationType == typeof(DefaultLogicParameterization);
         }
 
         #endregion
@@ -220,7 +215,7 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return packet
-                .Write(IsShooting)
+                .Write(Shooting)
                 .Write((byte)AccelerationDirection)
                 .Write(_targetRotationChanged)
                 .Write(_targetRotation)
@@ -229,7 +224,7 @@ namespace Space.ComponentSystem.Components
 
         public override void Depacketize(Packet packet)
         {
-            IsShooting = packet.ReadBoolean();
+            Shooting = packet.ReadBoolean();
             AccelerationDirection = (Directions)packet.ReadByte();
             _targetRotationChanged = packet.ReadBoolean();
             _targetRotation = packet.ReadSingle();
@@ -239,7 +234,7 @@ namespace Space.ComponentSystem.Components
         public override void Hash(Hasher hasher)
         {
             hasher.Put((byte)AccelerationDirection);
-            hasher.Put(BitConverter.GetBytes(IsShooting));
+            hasher.Put(BitConverter.GetBytes(Shooting));
             hasher.Put(BitConverter.GetBytes(_targetRotationChanged));
             hasher.Put(BitConverter.GetBytes(_targetRotation));
             hasher.Put(BitConverter.GetBytes(_previousRotation));

@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem.Systems
     /// neighbors and checks their collision groups, keeping the number of
     /// actual collision checks that have to be performed low.
     /// </summary>
-    public class CollisionSystem : AbstractComponentSystem<CollisionParameterization>
+    public class CollisionSystem : AbstractComponentSystem<CollisionParameterization, NullParameterization>
     {
         #region Constants
 
@@ -61,73 +61,73 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="updateType">The type of update to perform. We only do logic updates here.</param>
         /// <param name="frame">The current simulation frame.</param>
-        public override void Update(ComponentSystemUpdateType updateType, long frame)
+        public override void Update(long frame)
         {
-            if (updateType == ComponentSystemUpdateType.Logic)
+            // Loop through all components.
+            var currentComponents = new List<IComponent>(UpdateableComponents);
+            var componentCount = currentComponents.Count;
+            var index = Manager.GetSystem<IndexSystem>();
+            HashSet<IEntity> neighbors = null;
+            for (int i = 0; i < componentCount; ++i)
             {
-                // Loop through all components.
-                var currentComponents = Components;
-                var componentCount = currentComponents.Count;
-                var index = Manager.GetSystem<IndexSystem>();
-                HashSet<IEntity> neighbors = null;
-                for (int i = 0; i < componentCount; ++i)
+                var currentCollidable = (AbstractCollidable)currentComponents[i];
+
+                // Skip disabled components.
+                if (!currentCollidable.Enabled)
                 {
-                    var currentCollidable = (AbstractCollidable)currentComponents[i];
+                    continue;
+                }
+
+                // Get a list of components actually nearby.
+                if (index != null)
+                {
+                    // Use the inverse of the collision group, i.e. get
+                    // entries from all those entries where we're not in
+                    // that group.
+                    neighbors = new HashSet<IEntity>(index.GetNeighbors(
+                        currentCollidable.Entity, _maxCollidableRadius,
+                        (~currentCollidable.CollisionGroups) << FirstIndexGroup));
+                }
+
+                // Loop through all other components. Only do the interval
+                // (i, #components) avoid duplicate checks (i vs j == j vs i).
+                for (int j = i + 1; j < componentCount; ++j)
+                {
+                    var otherCollidable = (AbstractCollidable)currentComponents[j];
 
                     // Skip disabled components.
-                    if (!currentCollidable.Enabled)
+                    if (!otherCollidable.Enabled)
                     {
                         continue;
                     }
 
-                    // Get a list of components actually nearby.
-                    if (index != null)
+                    // Only test if its from a different collision group.
+                    if ((currentCollidable.CollisionGroups & otherCollidable.CollisionGroups) != 0)
                     {
-                        // Use the inverse of the collision group, i.e. get
-                        // entries from all those entries where we're not in
-                        // that group.
-                        neighbors = new HashSet<IEntity>(index.GetNeighbors(
-                            currentCollidable.Entity, _maxCollidableRadius,
-                            (~currentCollidable.CollisionGroups) << FirstIndexGroup));
+                        continue;
                     }
 
-                    // Loop through all other components. Only do the interval
-                    // (i, #components) avoid duplicate checks (i vs j == j vs i).
-                    for (int j = i + 1; j < componentCount; ++j)
+                    // Only test if its in our neighbors list (if we have one).
+                    if (neighbors != null && !neighbors.Contains(otherCollidable.Entity))
                     {
-                        var otherCollidable = (AbstractCollidable)currentComponents[j];
+                        continue;
+                    }
 
-                        // Skip disabled components.
-                        if (!otherCollidable.Enabled)
-                        {
-                            continue;
-                        }
-
-                        // Only test if its from a different collision group.
-                        if ((currentCollidable.CollisionGroups & otherCollidable.CollisionGroups) != 0)
-                        {
-                            continue;
-                        }
-
-                        // Only test if its in our neighbors list (if we have one).
-                        if (neighbors != null && !neighbors.Contains(otherCollidable.Entity))
-                        {
-                            continue;
-                        }
-
-                        // Test for collision, if there is one, let both parties know.
-                        if (currentCollidable.Intersects(otherCollidable))
-                        {
-                            currentCollidable.Entity.SendMessage(Collision.Create(otherCollidable.Entity));
-                            otherCollidable.Entity.SendMessage(Collision.Create(currentCollidable.Entity));
-                        }
+                    // Test for collision, if there is one, let both parties know.
+                    if (currentCollidable.Intersects(otherCollidable))
+                    {
+                        currentCollidable.Entity.SendMessage(Collision.Create(otherCollidable.Entity));
+                        otherCollidable.Entity.SendMessage(Collision.Create(currentCollidable.Entity));
                     }
                 }
+            }
 
-                // Update previous position for all collidables.
-                foreach (var component in currentComponents)
+            // Update previous position for all collidables.
+            foreach (var component in currentComponents)
+            {
+                if (component.Enabled)
                 {
-                    UpdateComponent(component, _parameterization);
+                    component.Update(_parameterization);
                 }
             }
         }

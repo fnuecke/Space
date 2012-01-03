@@ -90,10 +90,6 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization">Logic parameterization.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
-
             var health = Entity.GetComponent<Health>();
             if (health != null)
             {

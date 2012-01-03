@@ -38,7 +38,6 @@ namespace Space.Control
                     new AvatarSystem(),
                     new CellSystem(),
 
-                    new ShipControlSystem(),
                     new UniversalSystem(game.Content.Load<WorldConstraints>("Data/world"))
                 });
 
@@ -70,13 +69,11 @@ namespace Space.Control
                     new AvatarSystem(),
                     new CellSystem(),
 
-                    new ShipControlSystem(),
                     new UniversalSystem(game.Content.Load<WorldConstraints>("Data/world")),
 
                     new PlayerCenteredSoundSystem(soundBank, controller.Session),
-                    new PlayerCenteredRenderSystem(spriteBatch, game.Content, controller.Session)
-                                .AddComponent(new Background()),
-                    new PlayerCenteredParticleSystem(game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
+                    new PlayerCenteredRenderSystem(spriteBatch, game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
+                                .AddComponent(new Background())
                 });
 
             // Done.
@@ -113,9 +110,8 @@ namespace Space.Control
                 server.Simulation.EntityManager.SystemManager.AddSystems(
                     new IComponentSystem[] {
                         new PlayerCenteredSoundSystem(soundBank, controller.Session),
-                        new PlayerCenteredRenderSystem(spriteBatch, game.Content, controller.Session)
-                                    .AddComponent(new Background()),
-                        new PlayerCenteredParticleSystem(game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
+                        new PlayerCenteredRenderSystem(spriteBatch, game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
+                                    .AddComponent(new Background())
                     });
             }
             

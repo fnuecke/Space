@@ -1,25 +1,24 @@
 ﻿using Engine.ComponentSystem.Components;
-using Engine.Serialization;
 using ProjectMercury.Emitters;
 
 namespace Space.ComponentSystem.Components
 {
+    /// <summary>
+    /// Component responsible for rendering a ship's thruster exhaust effects.
+    /// </summary>
     public sealed class ThrusterEffect : Effect
     {
-        #region Properties
-
-        public float Rotation { get; set; }
-
-        #endregion
-
         #region Constructor
 
         public ThrusterEffect(string effectName)
             : base(effectName)
         {
+            // Draw beneath ships but above other stuff.
+            DrawOrder = 40;
         }
 
         public ThrusterEffect()
+            : this(string.Empty)
         {
         }
 
@@ -27,25 +26,39 @@ namespace Space.ComponentSystem.Components
 
         #region Logic
 
+        /// <summary>
+        /// Updates the rotation for all emitters, then delegates to the
+        /// parent for actual particle generation.
+        /// </summary>
+        /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
-            if (Enabled && _effect != null)
+            // Do we have an effect yet?
+            if (_effect != null)
             {
+                // Yes, get transform.
                 var transform = Entity.GetComponent<Transform>();
-                var velocity = Entity.GetComponent<Velocity>();
                 if (transform != null)
                 {
-                    Rotation = transform.Rotation + (float)System.Math.PI;
+                    // Get the current rotation and velocity.
+                    var rotation = transform.Rotation + (float)System.Math.PI;
+                    var velocity = Entity.GetComponent<Velocity>();
                     foreach (var emitter in _effect)
                     {
+                        // Adjust the rotation for all directed emitters.
                         var cone = emitter as ConeEmitter;
                         if (cone != null)
                         {
-                            cone.Direction = Rotation;
+                            cone.Direction = rotation;
                         }
+
+                        // Adjust the release impulse based on our velocity.
                         if (velocity != null)
                         {
+                            // TODO hard-coded updates / sec - 1, do this in a more generic fashion.
                             emitter.ReleaseImpulse = velocity.Value * 59;
+                            // HACK: not sure why we need this, but otherwise
+                            // the actual point of emission "wanders".
                             emitter.TriggerOffset = -velocity.Value;
                         }
                     }
@@ -53,23 +66,6 @@ namespace Space.ComponentSystem.Components
             }
 
             base.Update(parameterization);
-        }
-
-        #endregion
-
-        #region Serialization
-
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(Rotation);
-        }
-
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Rotation = packet.ReadSingle();
         }
 
         #endregion

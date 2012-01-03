@@ -46,12 +46,8 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">The parameterization to use.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
-            var transform = Entity.GetComponent<Transform>();
-
             // Only if a transform is set.
+            var transform = Entity.GetComponent<Transform>();
             if (transform != null)
             {
                 transform.AddTranslation(Value);

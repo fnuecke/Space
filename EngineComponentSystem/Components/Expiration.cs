@@ -41,9 +41,6 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">Not used.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
             if (TimeToLive > 0)
             {
                 --TimeToLive;

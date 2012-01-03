@@ -22,6 +22,8 @@ namespace Space.ComponentSystem.Entities
         {
             var entity = new Entity();
 
+            var renderer = new TransformedRenderer(shipData.Texture, faction.ToColor());
+            renderer.DrawOrder = 50; //< Draw ships above everything else.
             var modules = new EntityModules<EntityAttributeType>();
             var health = new Health(120);
             var energy = new Energy();
@@ -50,10 +52,11 @@ namespace Space.ComponentSystem.Entities
                 typeof(Gravitation),
                 typeof(TransformedRenderer)
             }, new Vector2(15500, 15500)));
-            entity.AddComponent(new TransformedRenderer(shipData.Texture, faction.ToColor()));
+            entity.AddComponent(renderer);
             entity.AddComponent(modules);
             entity.AddComponent(health);
             entity.AddComponent(energy);
+
 
             // Add after all components are registered to give them the chance
             // to react to the ModuleAdded messages.

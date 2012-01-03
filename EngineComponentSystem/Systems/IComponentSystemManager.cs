@@ -25,9 +25,14 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Update all subsystems.
         /// </summary>
-        /// <param name="updateType">The type of update to perform.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        void Update(ComponentSystemUpdateType updateType, long frame);
+        void Update(long frame);
+
+        /// <summary>
+        /// Draw all subsystems.
+        /// </summary>
+        /// <param name="frame">The frame in which the update is applied.</param>
+        void Draw(long frame);
 
         /// <summary>
         /// Add the component to supported subsystems.

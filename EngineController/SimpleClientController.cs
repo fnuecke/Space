@@ -1,5 +1,4 @@
-﻿using Engine.ComponentSystem.Systems;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
 using Microsoft.Xna.Framework;
@@ -61,7 +60,7 @@ namespace Engine.Controller
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                Simulation.EntityManager.SystemManager.Update(ComponentSystemUpdateType.Display, Simulation.CurrentFrame);
+                Simulation.EntityManager.SystemManager.Draw(Simulation.CurrentFrame);
             }
         }
 

@@ -61,7 +61,7 @@ namespace Space.ComponentSystem.Components
 
         #region Logic
 
-        public override void Update(object parameterization)
+        public override void Draw(object parameterization)
         {
             // The position and orientation we're rendering at and in.
             var transform = Entity.GetComponent<Transform>();
@@ -69,19 +69,19 @@ namespace Space.ComponentSystem.Components
             // Draw the texture based on our physics component.
             if (transform != null)
             {
-                base.Update(parameterization);
+                base.Draw(parameterization);
 
                 // Get parameterization in proper type.
-                var p = (RendererParameterization)parameterization;
+                var args = (RendererParameterization)parameterization;
 
                 // Load our atmosphere texture, if it's not set.
                 if (_atmosphereTexture == null)
                 {
-                    _atmosphereTexture = p.Content.Load<Texture2D>("Textures/planet_atmo");
+                    _atmosphereTexture = args.Content.Load<Texture2D>("Textures/planet_atmo");
                 }
                 if (_shadowTexture == null)
                 {
-                    _shadowTexture = p.Content.Load<Texture2D>("Textures/planet_shadow");
+                    _shadowTexture = args.Content.Load<Texture2D>("Textures/planet_shadow");
                 }
 
                 // Get position relative to our sun, to rotate atmosphere and shadow.
@@ -103,19 +103,19 @@ namespace Space.ComponentSystem.Components
                     }
                 }
 
-                p.SpriteBatch.Begin();
-                p.SpriteBatch.Draw(_atmosphereTexture,
-                    new Rectangle((int)transform.Translation.X + (int)p.Translation.X,
-                                  (int)transform.Translation.Y + (int)p.Translation.Y,
+                args.SpriteBatch.Begin();
+                args.SpriteBatch.Draw(_atmosphereTexture,
+                    new Rectangle((int)transform.Translation.X + (int)args.Transform.Translation.X,
+                                  (int)transform.Translation.Y + (int)args.Transform.Translation.Y,
                                   (int)(_atmosphereTexture.Width * Scale), (int)(_atmosphereTexture.Height * Scale)),
                     null, AtmosphereTint,
                     sunDirection,
                     new Vector2(_atmosphereTexture.Width / 2, _atmosphereTexture.Height / 2),
                     SpriteEffects.None, 0);
 
-                p.SpriteBatch.Draw(_shadowTexture,
-                    new Rectangle((int)transform.Translation.X + (int)p.Translation.X,
-                                  (int)transform.Translation.Y + (int)p.Translation.Y,
+                args.SpriteBatch.Draw(_shadowTexture,
+                    new Rectangle((int)transform.Translation.X + (int)args.Transform.Translation.X,
+                                  (int)transform.Translation.Y + (int)args.Transform.Translation.Y,
                                   (int)(_shadowTexture.Width * Scale), (int)(_shadowTexture.Height * Scale)),
                     null, Color.White,
                     sunDirection,
@@ -129,9 +129,9 @@ namespace Space.ComponentSystem.Components
                 sb.AppendFormat("Scale: {0}\n", Scale);
                 sb.AppendFormat("Angle to sun: {0}\n", (int)MathHelper.ToDegrees(-sunDirection));
 
-                p.SpriteBatch.DrawString(p.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, transform.Translation + p.Translation, Color.White);
+                args.SpriteBatch.DrawString(args.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, transform.Translation + new Vector2(args.Transform.Translation.X, args.Transform.Translation.Y), Color.White);
 #endif
-                p.SpriteBatch.End();
+                args.SpriteBatch.End();
             }
         }
 

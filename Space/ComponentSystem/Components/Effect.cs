@@ -1,6 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using ProjectMercury;
 using Space.ComponentSystem.Parameterizations;
@@ -23,6 +23,11 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public string EffectName { get; set; }
 
+        /// <summary>
+        /// Whether we're currently allowed to emit particles or not.
+        /// </summary>
+        public bool Emitting { get; set; }
+
         #endregion
 
         #region Fields
@@ -39,9 +44,11 @@ namespace Space.ComponentSystem.Components
         public Effect(string effectName)
         {
             this.EffectName = effectName;
+            Emitting = true;
         }
 
         public Effect()
+            : this(string.Empty)
         {
         }
 
@@ -56,53 +63,51 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
+            var args = (DefaultLogicParameterization)parameterization;
+
+            // Logic, we need a transform to do the positioning.
+            if (_effect != null)
+            {
+                // Only trigger new particles while we're enabled.
+                if (Emitting)
+                {
+                    var transform = Entity.GetComponent<Transform>();
+                    if (transform != null)
+                    {
+                        _effect.Trigger(transform.Translation);
+                    }
+                }
+
+                // Always update, to allow existing particles to disappear.
+                _effect.Update(1f / 60f);
+            }
+        }
+
+        public override void Draw(object parameterization)
+        {
             var args = (ParticleParameterization)parameterization;
 
-            // What kind of update are we running?
-            if (args.UpdateType == ComponentSystemUpdateType.Logic)
+            // If we have an effect make sure its loaded and trigger it.
+            if (_effect == null && !string.IsNullOrWhiteSpace(EffectName))
             {
-                // Logic, we need a transform to do the positioning.
-                var transform = Entity.GetComponent<Transform>();
-                if (transform != null)
-                {
-                    // If we have an effect make sure its loaded and trigger it.
-                    if (_effect == null && !string.IsNullOrWhiteSpace(EffectName))
-                    {
-                        // Always create a deep copy, because this will always
-                        // return the same instance.
-                        _effect = args.Content.Load<ParticleEffect>(EffectName).DeepCopy();
-                        _effect.Initialise();
-                        _effect.LoadContent(args.Content);
-                    }
-                    if (_effect != null)
-                    {
-                        // Only trigger new particles while we're enabled.
-                        if (Enabled)
-                        {
-                            _effect.Trigger(transform.Translation);
-                        }
-
-                        // Always update, to allow existing particles to disappear.
-                        _effect.Update(1f / 60f);
-                    }
-                }
+                // Always create a deep copy, because this will always
+                // return the same instance.
+                _effect = args.Content.Load<ParticleEffect>(EffectName).DeepCopy();
+                _effect.Initialise();
+                _effect.LoadContent(args.Content);
             }
-            else if (args.UpdateType == ComponentSystemUpdateType.Display)
+
+            // Render if we have our effect.
+            if (_effect != null)
             {
-                // Render if we have our effect.
-                if (_effect != null)
-                {
-                    args.Renderer.RenderEffect(_effect, ref args.Matrix);
-                }
+                args.Renderer.RenderEffect(_effect, ref args.Transform);
             }
         }
 
         public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterizationType == typeof(ParticleParameterization);
+            return parameterizationType == typeof(ParticleParameterization) ||
+                parameterizationType == typeof(DefaultLogicParameterization);
         }
 
         #endregion

@@ -126,7 +126,6 @@
     <Compile Include="ComponentSystem\Components\ThrusterEffect.cs" />
     <Compile Include="ComponentSystem\Parameterizations\ParticleParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\ParticleSystem.cs" />
-    <Compile Include="ComponentSystem\Systems\PlayerCenteredParticleSystem.cs" />
     <Compile Include="ComponentSystem\Systems\UniversalSystem.cs" />
     <Compile Include="ComponentSystem\Components\WeaponSound.cs" />
     <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
@@ -139,10 +138,8 @@
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
     <Compile Include="ComponentSystem\Components\WeaponControl.cs" />
     <Compile Include="ComponentSystem\Entities\EntityFactory.cs" />
-    <Compile Include="ComponentSystem\Parameterizations\InputParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\PlayerCenteredRenderSystem.cs" />
     <Compile Include="ComponentSystem\Systems\PlayerCenteredSoundSystem.cs" />
-    <Compile Include="ComponentSystem\Systems\ShipControlSystem.cs" />
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Session\PlayerData.cs" />

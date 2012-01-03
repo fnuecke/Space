@@ -44,7 +44,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// A list of components registered in this system.
         /// </summary>
-        ReadOnlyCollection<IComponent> Components { get; }
+        ReadOnlyCollection<IComponent> UpdateableComponents { get; }
+
+        /// <summary>
+        /// A list of components registered in this system.
+        /// </summary>
+        ReadOnlyCollection<IComponent> DrawableComponents { get; }
 
         /// <summary>
         /// Tells if this component system should be packetized and sent via
@@ -67,9 +72,14 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Update all components in this system.
         /// </summary>
-        /// <param name="updateType">The type of update to perform.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        void Update(ComponentSystemUpdateType updateType, long frame);
+        void Update(long frame);
+
+        /// <summary>
+        /// Draw all components in this system.
+        /// </summary>
+        /// <param name="frame">The frame in which the update is applied.</param>
+        void Draw(long frame);
 
         /// <summary>
         /// Add the component to this system, if it's supported.

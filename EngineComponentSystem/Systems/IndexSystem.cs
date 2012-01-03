@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem.Systems
     /// queries. It uses a grid structure for indexing, and will return lists
     /// of entities in cells near a query point.
     /// </summary>
-    public sealed class IndexSystem : AbstractComponentSystem<IndexParameterization>
+    public sealed class IndexSystem : AbstractComponentSystem<IndexParameterization, NullParameterization>
     {
         #region Constants
 
@@ -129,33 +129,33 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="updateType">The type of update to perform. We only do logic updates.</param>
         /// <param name="frame">The frame in which this update takes place.</param>
-        public override void Update(ComponentSystemUpdateType updateType, long frame)
+        public override void Update(long frame)
         {
-            if (updateType == ComponentSystemUpdateType.Logic)
+            // Check all components for changes.
+            var currentComponents = new List<IComponent>(UpdateableComponents);
+            foreach (var component in currentComponents)
             {
-                // Check all components for changes.
-                var currentComponents = Components;
-                foreach (var component in currentComponents)
+                _parameterization.PositionChanged = false;
+                if (component.Enabled)
                 {
-                    _parameterization.PositionChanged = false;
-                    UpdateComponent(component, _parameterization);
-                    if (_parameterization.PositionChanged)
+                    component.Update(_parameterization);
+                }
+                if (_parameterization.PositionChanged)
+                {
+                    // We need to check if this entities position in the
+                    // index is still valid. Get new position.
+                    var transform = component.Entity.GetComponent<Transform>();
+
+                    // Cannot track objects that don't have a position.
+                    if (transform == null)
                     {
-                        // We need to check if this entities position in the
-                        // index is still valid. Get new position.
-                        var transform = component.Entity.GetComponent<Transform>();
+                        continue;
+                    }
 
-                        // Cannot track objects that don't have a position.
-                        if (transform == null)
-                        {
-                            continue;
-                        }
-
-                        // Update all indexes the component is part of.
-                        foreach (var tree in TreesForGroups(_parameterization.IndexGroups))
-                        {
-                            tree.Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
-                        }
+                    // Update all indexes the component is part of.
+                    foreach (var tree in TreesForGroups(_parameterization.IndexGroups))
+                    {
+                        tree.Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
                     }
                 }
             }

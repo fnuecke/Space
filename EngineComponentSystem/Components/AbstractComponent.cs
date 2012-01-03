@@ -26,6 +26,18 @@ namespace Engine.ComponentSystem.Components
         public int UID { get; set; }
 
         /// <summary>
+        /// This determines in which order this component will be rendered.
+        /// Components with higher values will be drawn later.
+        /// </summary>
+        public int UpdateOrder { get; set; }
+
+        /// <summary>
+        /// This determines in which order this component will be rendered.
+        /// Components with higher values will be drawn later.
+        /// </summary>
+        public int DrawOrder { get; set; }
+
+        /// <summary>
         /// Gets the entity this component belongs to.
         /// </summary>
         public IEntity Entity { get; set; }
@@ -59,13 +71,14 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">The parameterization to use for this update.</param>
         public virtual void Update(object parameterization)
         {
-#if DEBUG
-            // This is expensive and shouldn't happen, so only do this in debug mode.
-            if (!(SupportsParameterization(parameterization.GetType())))
-            {
-                throw new ArgumentException("parameterization");
-            }
-#endif
+        }
+
+        /// <summary>
+        /// Does nothing on draw. In debug mode, checks if the parameterization is valid.
+        /// </summary>
+        /// <param name="parameterization">The parameterization to use for this update.</param>
+        public virtual void Draw(object parameterization)
+        {
         }
 
         /// <summary>

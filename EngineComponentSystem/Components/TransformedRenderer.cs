@@ -48,30 +48,28 @@ namespace Engine.ComponentSystem.Components
         /// Render a physics object at its location.
         /// </summary>
         /// <param name="parameterization">the parameterization to use.</param>
-        public override void Update(object parameterization)
+        public override void Draw(object parameterization)
         {
-            // The position and orientation we're rendering at and in.
-            var transform = Entity.GetComponent<Transform>();
-
             // Draw the texture based on our physics component.
+            var transform = Entity.GetComponent<Transform>();
             if (transform != null)
             {
                 // Make sure we have our texture.
-                base.Update(parameterization);
+                base.Draw(parameterization);
 
                 // Get parameterization in proper type.
-                var p = (RendererParameterization)parameterization;
+                var args = (RendererParameterization)parameterization;
 
-                p.SpriteBatch.Begin();
-                p.SpriteBatch.Draw(texture,
-                    new Rectangle((int)transform.Translation.X + (int)p.Translation.X,
-                                  (int)transform.Translation.Y + (int)p.Translation.Y,
+                args.SpriteBatch.Begin();
+                args.SpriteBatch.Draw(texture,
+                    new Rectangle((int)transform.Translation.X + (int)args.Transform.Translation.X,
+                                  (int)transform.Translation.Y + (int)args.Transform.Translation.Y,
                                   (int)(texture.Width * Scale), (int)(texture.Height * Scale)),
                     null, Tint,
                     (float)transform.Rotation,
                     new Vector2(texture.Width / 2, texture.Height / 2),
                     SpriteEffects.None, 0);
-                p.SpriteBatch.End();
+                args.SpriteBatch.End();
             }
         }
 

@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.Systems
     /// System that manages sound components, querying them for cue names to play
     /// in a single update.
     /// </summary>
-    public class SoundSystem : AbstractComponentSystem<SoundParameterization>
+    public class SoundSystem : AbstractComponentSystem<SoundParameterization, SoundParameterization>
     {
         #region Constants
 
@@ -91,7 +91,57 @@ namespace Engine.ComponentSystem.Systems
 
         #region Logic
 
-        public override void Update(ComponentSystemUpdateType updateType, long frame)
+        public override void Update(long frame)
+        {
+            if (SetLastFrame(frame)) { return; }
+
+            // Get a list of sounds that should be played this frame.
+            foreach (var component in UpdateableComponents)
+            {
+                _parameterization.SoundCues.Clear();
+                _parameterization.Position = Vector2.Zero;
+                _parameterization.Velocity = Vector2.Zero;
+                // Get infos for this component.
+                if (component.Enabled)
+                {
+                    component.Update(_parameterization);
+                }
+                foreach (var soundCue in _parameterization.SoundCues)
+                {
+                    // Enqueue play a sound.
+                    Enqueue(new SoundEvent(soundCue, _parameterization), frame);
+                }
+            }
+        }
+
+        public override void Draw(long frame)
+        {
+            if (SetLastFrame(frame)) { return; }
+
+            // Get position and velocity of listener. We might be playing
+            // some events from the past, where we were somewhere else, but
+            // using that old position would be just as wrong, so this
+            // wrong is simpler ;)
+            _listener.Position = ToV3(GetListenerPosition());
+            _listener.Velocity = ToV3(GetListenerVelocity());
+
+            // Actually play the sounds that should be this update.
+            foreach (var sounds in _soundsToPlay.Values)
+                foreach (var sound in sounds)
+                {
+                    // Get position and velocity of emitter.
+                    _emitter.Position = ToV3(sound.Position);
+                    _emitter.Velocity = ToV3(sound.Velocity);
+
+                    // Let there be sound!
+                    _soundBank.PlayCue(sound.SoundCue, _listener, _emitter);
+                }
+
+            // Remove all sound from the list, we played them.
+            _soundsToPlay.Clear();
+        }
+
+        private bool SetLastFrame(long frame)
         {
             // Get new current frame.
             _lastFrame[0] = System.Math.Max(frame, _lastFrame[0]);
@@ -114,54 +164,8 @@ namespace Engine.ComponentSystem.Systems
                 }
             }
 
-            if (updateType == ComponentSystemUpdateType.Logic)
-            {
-                // Don't play sounds before our grace period.
-                if (frame < eventHorizon)
-                {
-                    return;
-                }
-
-                // Get a list of sounds that should be played this frame.
-                var currentComponents = Components;
-                foreach (var component in currentComponents)
-                {
-                    _parameterization.SoundCues.Clear();
-                    _parameterization.Position = Vector2.Zero;
-                    _parameterization.Velocity = Vector2.Zero;
-                    // Get infos for this component.
-                    UpdateComponent(component, _parameterization);
-                    foreach (var soundCue in _parameterization.SoundCues)
-                    {
-                        // Enqueue play a sound.
-                        Enqueue(new SoundEvent(soundCue, _parameterization), frame);
-                    }
-                }
-            }
-            else if (updateType == ComponentSystemUpdateType.Display)
-            {
-                // Get position and velocity of listener. We might be playing
-                // some events from the past, where we were somewhere else, but
-                // using that old position would be just as wrong, so this
-                // wrong is simpler ;)
-                _listener.Position = ToV3(GetListenerPosition());
-                _listener.Velocity = ToV3(GetListenerVelocity());
-
-                // Actually play the sounds that should be this update.
-                foreach (var sounds in _soundsToPlay.Values)
-                foreach (var sound in sounds)
-                {
-                    // Get position and velocity of emitter.
-                    _emitter.Position = ToV3(sound.Position);
-                    _emitter.Velocity = ToV3(sound.Velocity);
-
-                    // Let there be sound!
-                    _soundBank.PlayCue(sound.SoundCue, _listener, _emitter);
-                }
-
-                // Remove all sound from the list, we played them.
-                _soundsToPlay.Clear();
-            }
+            // Don't play sounds before our grace period.
+            return frame < eventHorizon;
         }
 
         private static Vector3 ToV3(Vector2 v2)

@@ -46,13 +46,24 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Update all known systems.
         /// </summary>
-        /// <param name="updateType">The type of update to perform.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public void Update(ComponentSystemUpdateType updateType, long frame)
+        public void Update(long frame)
         {
             foreach (var system in _systems)
             {
-                system.Update(updateType, frame);
+                system.Update(frame);
+            }
+        }
+
+        /// <summary>
+        /// Draw all known systems.
+        /// </summary>
+        /// <param name="frame">The frame in which the draw is applied.</param>
+        public void Draw(long frame)
+        {
+            foreach (var system in _systems)
+            {
+                system.Draw(frame);
             }
         }
 

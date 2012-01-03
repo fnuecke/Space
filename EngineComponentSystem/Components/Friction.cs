@@ -59,9 +59,6 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">The parameterization to use.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
             // Apply friction only if set to a positive value.
             if (Value > 0)
             {

@@ -46,12 +46,8 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">The parameterization to use.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
-            var velocity = Entity.GetComponent<Velocity>();
-
             // Apply acceleration if velocity is available.
+            var velocity = Entity.GetComponent<Velocity>();
             if (velocity != null)
             {
                 velocity.Value += Value;

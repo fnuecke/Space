@@ -88,12 +88,9 @@ namespace Engine.ComponentSystem.Components
         /// it takes care of properly setting the <c>texture</c> field.
         /// </summary>
         /// <param name="parameterization"></param>
-        public override void Update(object parameterization)
+        public override void Draw(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
-            var p = (RendererParameterization)parameterization;
+            var args = (RendererParameterization)parameterization;
 
             // Load our texture, if it's not set.
             if (texture == null)
@@ -103,7 +100,7 @@ namespace Engine.ComponentSystem.Components
                 {
                     return;
                 }
-                texture = p.Content.Load<Texture2D>(TextureName);
+                texture = args.Content.Load<Texture2D>(TextureName);
             }
         }
 
@@ -114,7 +111,8 @@ namespace Engine.ComponentSystem.Components
         /// <returns>whether the type's supported or not.</returns>
         public override bool SupportsParameterization(Type parameterizationType)
         {
-            return parameterizationType.Equals(typeof(RendererParameterization));
+            return parameterizationType == typeof(RendererParameterization) ||
+                parameterizationType.IsSubclassOf(typeof(RendererParameterization));
         }
 
         #endregion

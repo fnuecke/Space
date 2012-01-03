@@ -20,7 +20,7 @@ namespace Engine.ComponentSystem.Systems
     /// </para>
     /// </summary>
     /// <typeparam name="TUpdateParameterization">the type of parameterization used in this system</typeparam>
-    public abstract class AbstractComponentSystem<TUpdateParameterization> : IComponentSystem
+    public abstract class AbstractComponentSystem<TUpdateParameterization, TDrawParameterization> : IComponentSystem
     {
         #region Properties
 
@@ -32,7 +32,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// A list of components registered in this system.
         /// </summary>
-        public ReadOnlyCollection<IComponent> Components { get { return new List<IComponent>(_components).AsReadOnly(); } }
+        public ReadOnlyCollection<IComponent> UpdateableComponents { get { return _updateableComponents.AsReadOnly(); } }
+
+        /// <summary>
+        /// A list of components registered in this system.
+        /// </summary>
+        public ReadOnlyCollection<IComponent> DrawableComponents { get { return _drawableComponents.AsReadOnly(); } }
 
         /// <summary>
         /// Tells if this component system should be packetized and sent via
@@ -54,12 +59,23 @@ namespace Engine.ComponentSystem.Systems
         /// Whether the parameterization for the implementing class is the null
         /// parameterization, meaning we will never get any components.
         /// </summary>
-        private readonly bool _isNullParameterized = (typeof(TUpdateParameterization) == typeof(NullParameterization));
+        private readonly bool _isUpdateNullParameterized = (typeof(TUpdateParameterization) == typeof(NullParameterization));
+
+        /// <summary>
+        /// Whether the parameterization for the implementing class is the null
+        /// parameterization, meaning we will never get any components.
+        /// </summary>
+        private readonly bool _isDrawNullParameterized = (typeof(TDrawParameterization) == typeof(NullParameterization));
 
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
-        private HashSet<IComponent> _components = new HashSet<IComponent>();
+        private List<IComponent> _updateableComponents = new List<IComponent>();
+
+        /// <summary>
+        /// List of all currently registered components.
+        /// </summary>
+        private List<IComponent> _drawableComponents = new List<IComponent>();
 
         #endregion
 
@@ -68,24 +84,17 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Default implementation does nothing.
         /// </summary>
-        /// <param name="updateType">The type of update to perform.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public virtual void Update(ComponentSystemUpdateType updateType, long frame)
+        public virtual void Update(long frame)
         {
         }
 
         /// <summary>
-        /// Call from subclasses to actually update a component, performs some
-        /// additional checks.
+        /// Default implementation does nothing.
         /// </summary>
-        /// <param name="component">The component to update.</param>
-        /// <param name="parameterization">The parameterization to use.</param>
-        protected void UpdateComponent(IComponent component, object parameterization)
+        /// <param name="frame">The frame in which the update is applied.</param>
+        public virtual void Draw(long frame)
         {
-            if (component.Enabled)
-            {
-                component.Update(parameterization);
-            }
         }
 
         /// <summary>
@@ -93,15 +102,46 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to add.</param>
         /// <returns>This component system, for chaining.</returns>
-        public IComponentSystem AddComponent(IComponent component)
+        public virtual IComponentSystem AddComponent(IComponent component)
         {
-            if (!_isNullParameterized && !_components.Contains(component))
+            bool wasAdded = false;
+            if (!_isUpdateNullParameterized)
             {
-                if (component.SupportsParameterization(typeof(TUpdateParameterization)))
+                int index = _updateableComponents.BinarySearch(component, UpdateOrderComparer.Default);
+                if (index < 0)
                 {
-                    _components.Add(component);
-                    HandleComponentAdded(component);
+                    if (component.SupportsParameterization(typeof(TUpdateParameterization)))
+                    {
+                        index = ~index;
+                        while ((index < _updateableComponents.Count) && (_updateableComponents[index].UpdateOrder == component.UpdateOrder))
+                        {
+                            index++;
+                        }
+                        _updateableComponents.Insert(index, component);
+                        wasAdded = true;
+                    }
                 }
+            }
+            if (!_isDrawNullParameterized)
+            {
+                int index = _drawableComponents.BinarySearch(component, DrawOrderComparer.Default);
+                if (index < 0)
+                {
+                    if (component.SupportsParameterization(typeof(TDrawParameterization)))
+                    {
+                        index = ~index;
+                        while ((index < _drawableComponents.Count) && (_drawableComponents[index].DrawOrder == component.DrawOrder))
+                        {
+                            index++;
+                        }
+                        _drawableComponents.Insert(index, component);
+                        wasAdded = true;
+                    }
+                }
+            }
+            if (wasAdded)
+            {
+                HandleComponentAdded(component);
             }
             return this;
         }
@@ -112,7 +152,16 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component to remove.</param>
         public void RemoveComponent(IComponent component)
         {
-            if (!_isNullParameterized && _components.Remove(component))
+            bool wasRemoved = false;
+            if (!_isUpdateNullParameterized && _updateableComponents.Remove(component))
+            {
+                wasRemoved = true;
+            }
+            if (!_isDrawNullParameterized && _drawableComponents.Remove(component))
+            {
+                wasRemoved = true;
+            }
+            if (wasRemoved)
             {
                 HandleComponentRemoved(component);
             }
@@ -162,20 +211,36 @@ namespace Engine.ComponentSystem.Systems
         public virtual object Clone()
         {
             // Get something to start with.
-            var copy = (AbstractComponentSystem<TUpdateParameterization>)MemberwiseClone();
+            var copy = (AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>)MemberwiseClone();
 
             // If we're not null parameterized, use a different list. Copy over
             // non-entity components.
-            if (!_isNullParameterized)
+            var toClone = new HashSet<IComponent>();
+            if (!_isUpdateNullParameterized)
             {
-                copy._components = new HashSet<IComponent>();
-                foreach (var component in _components)
+                copy._updateableComponents = new List<IComponent>();
+                foreach (var component in _updateableComponents)
                 {
                     if (component.Entity == null)
                     {
-                        copy._components.Add((IComponent)component.Clone());
+                        toClone.Add(component);
                     }
                 }
+            }
+            if (!_isDrawNullParameterized)
+            {
+                copy._drawableComponents = new List<IComponent>();
+                foreach (var component in _drawableComponents)
+                {
+                    if (component.Entity == null)
+                    {
+                        toClone.Add(component);
+                    }
+                }
+            }
+            foreach (var component in toClone)
+            {
+                copy.AddComponent((IComponent)component.Clone());
             }
             
             // No manager at first. Must be re-set in (e.g. in cloned manager).
@@ -202,6 +267,72 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component that was removed.</param>
         protected virtual void HandleComponentRemoved(IComponent component)
         {
+        }
+
+        #endregion
+
+        #region Comparer
+
+        /// <summary>
+        /// Comparer used for inserting / removal.
+        /// </summary>
+        private sealed class UpdateOrderComparer : IComparer<IComponent>
+        {
+            public static readonly UpdateOrderComparer Default = new UpdateOrderComparer();
+            public int Compare(IComponent x, IComponent y)
+            {
+                if ((x == null) && (y == null))
+                {
+                    return 0;
+                }
+                if (x != null)
+                {
+                    if (y == null)
+                    {
+                        return -1;
+                    }
+                    if (x.Equals(y))
+                    {
+                        return 0;
+                    }
+                    if (x.UpdateOrder < y.UpdateOrder)
+                    {
+                        return -1;
+                    }
+                }
+                return 1;
+            }
+        }
+
+        /// <summary>
+        /// Comparer used for inserting / removal.
+        /// </summary>
+        private sealed class DrawOrderComparer : IComparer<IComponent>
+        {
+            public static readonly DrawOrderComparer Default = new DrawOrderComparer();
+            public int Compare(IComponent x, IComponent y)
+            {
+                if ((x == null) && (y == null))
+                {
+                    return 0;
+                }
+                if (x != null)
+                {
+                    if (y == null)
+                    {
+                        return -1;
+                    }
+                    if (x.Equals(y))
+                    {
+                        return 0;
+                    }
+                    if (x.DrawOrder < y.DrawOrder)
+                    {
+                        return -1;
+                    }
+                }
+                return 1;
+            }
         }
 
         #endregion

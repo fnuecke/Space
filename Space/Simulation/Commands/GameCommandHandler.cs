@@ -68,10 +68,10 @@ namespace Space.Simulation.Commands
 
                                 // Begin/stop shooting.
                                 case PlayerInputCommand.PlayerInput.Shoot:
-                                    input.IsShooting = true;
+                                    input.Shooting = true;
                                     break;
                                 case PlayerInputCommand.PlayerInput.CeaseFire:
-                                    input.IsShooting = false;
+                                    input.Shooting = false;
                                     break;
                             }
                         }

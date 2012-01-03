@@ -1,4 +1,6 @@
-﻿using Engine.ComponentSystem.Parameterizations;
+﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Parameterizations;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -12,7 +14,7 @@ namespace Engine.ComponentSystem.Systems
     /// triggered adding them to the system).
     /// </para>
     /// </summary>
-    public sealed class DefaultLogicSystem : AbstractComponentSystem<DefaultLogicParameterization>
+    public sealed class DefaultLogicSystem : AbstractComponentSystem<DefaultLogicParameterization, NullParameterization>
     {
         /// <summary>
         /// Default parameterization used for every update call.
@@ -25,15 +27,15 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="updateType">The type of update to perform.</param>
         /// <param name="frame">The frame the simulation is currently in.</param>
-        public override void Update(ComponentSystemUpdateType updateType, long frame)
+        public override void Update(long frame)
         {
-            if (updateType == ComponentSystemUpdateType.Logic)
+            _parameterization.Frame = frame;
+            var currentComponents = new List<IComponent>(UpdateableComponents);
+            foreach (var component in currentComponents)
             {
-                _parameterization.Frame = frame;
-                var currentComponents = Components;
-                foreach (var component in currentComponents)
+                if (component.Enabled)
                 {
-                    UpdateComponent(component, _parameterization);
+                    component.Update(_parameterization);
                 }
             }
         }

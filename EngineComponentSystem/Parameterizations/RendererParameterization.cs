@@ -12,36 +12,22 @@ namespace Engine.ComponentSystem.Parameterizations
     /// in their <c>Update</c> call.
     /// </para>
     /// </summary>
-    public sealed class RendererParameterization
+    public class RendererParameterization
     {
-        #region Properties
-        
         /// <summary>
         /// The sprite batch object to use for rendering into.
         /// </summary>
-        public SpriteBatch SpriteBatch { get; private set; }
+        public SpriteBatch SpriteBatch;
 
         /// <summary>
         /// The content manager to retrieve data required to render from.
         /// </summary>
-        public ContentManager Content { get; private set; }
+        public ContentManager Content;
 
         /// <summary>
-        /// The translation to apply when rendering, in addition to any specific
+        /// The transform to apply when rendering, in addition to any specific
         /// translations that might apply.
         /// </summary>
-        public Vector2 Translation { get; set; }
-
-        #endregion
-
-        #region Constructor
-
-        public RendererParameterization(SpriteBatch spriteBatch, ContentManager contentManager)
-        {
-            this.SpriteBatch = spriteBatch;
-            this.Content = contentManager;
-        }
-
-        #endregion
+        public Matrix Transform;
     }
 }

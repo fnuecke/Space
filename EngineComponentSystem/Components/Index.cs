@@ -57,9 +57,6 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">The parameterization to use.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
             var args = (IndexParameterization)parameterization;
 
             if (PositionChanged)
@@ -140,7 +137,7 @@ namespace Engine.ComponentSystem.Components
 
         public override string ToString()
         {
-            return GetType().Name + ": " + PositionChanged.ToString() + ", " + PreviousPosition;
+            return GetType().Name + ": " + IndexGroups.ToString() + ", " + PositionChanged.ToString() + ", " + PreviousPosition.ToString();
         }
 
         #endregion

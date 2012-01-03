@@ -45,12 +45,8 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">The parameterization to use.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
-            var transform = Entity.GetComponent<Transform>();
-
             // Apply rotation if transform is available.
+            var transform = Entity.GetComponent<Transform>();
             if (transform != null)
             {
                 transform.AddRotation(Value);

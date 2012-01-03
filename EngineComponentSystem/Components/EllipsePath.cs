@@ -101,9 +101,6 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">The parameterization to use.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
             var transform = Entity.GetComponent<Transform>();
 
             // Only if a transform is set.
@@ -180,6 +177,15 @@ namespace Engine.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(MinorRadius));
             hasher.Put(BitConverter.GetBytes(Angle));
             hasher.Put(BitConverter.GetBytes(Period));
+        }
+
+        #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            return GetType().Name + ": " + CenterEntityId.ToString() + ", " + MajorRadius.ToString() + ", " + MinorRadius.ToString() + ", " + Angle + ", " + Period;
         }
 
         #endregion

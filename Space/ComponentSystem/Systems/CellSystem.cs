@@ -20,7 +20,7 @@ namespace Space.ComponentSystem.Systems
     /// neighbor search).
     /// </para>
     /// </summary>
-    public class CellSystem : AbstractComponentSystem<AvatarParameterization>
+    public class CellSystem : AbstractComponentSystem<AvatarParameterization, NullParameterization>
     {
         #region Constants
 
@@ -81,44 +81,41 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="updateType">The update type.</param>
         /// <param name="frame">The frame the update applies to.</param>
-        public override void Update(ComponentSystemUpdateType updateType, long frame)
+        public override void Update(long frame)
         {
-            if (updateType == ComponentSystemUpdateType.Logic)
+            // Check the positions of all avatars to check which cells
+            // should live, and which should die / stay dead.
+            var newCells = new HashSet<ulong>();
+            foreach (var avatar in UpdateableComponents)
             {
-                // Check the positions of all avatars to check which cells
-                // should live, and which should die / stay dead.
-                var newCells = new HashSet<ulong>();
-                foreach (var avatar in Components)
+                var transform = avatar.Entity.GetComponent<Transform>();
+                if (transform != null)
                 {
-                    var transform = avatar.Entity.GetComponent<Transform>();
-                    if (transform != null)
-                    {
-                        int x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
-                        int y = ((int)transform.Translation.Y) >> CellSizeShiftAmount;
-                        AddCellAndNeighbors(x, y, newCells);
-                    }
+                    int x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
+                    int y = ((int)transform.Translation.Y) >> CellSizeShiftAmount;
+                    AddCellAndNeighbors(x, y, newCells);
                 }
-
-                // Get the cells that became alive.
-                var bornCells = new HashSet<ulong>(newCells);
-                bornCells.ExceptWith(_livingCells);
-                foreach (var bornCell in bornCells)
-                {
-                    var xy = CoordinateIds.Split(bornCell);
-                    Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true));
-                }
-
-                // Get the cells that died.
-                var deceasedCells = new HashSet<ulong>(_livingCells);
-                deceasedCells.ExceptWith(newCells);
-                foreach (var deceasedCell in deceasedCells)
-                {
-                    var xy = CoordinateIds.Split(deceasedCell);
-                    Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false));
-                }
-
-                _livingCells = newCells;
             }
+
+            // Get the cells that became alive.
+            var bornCells = new HashSet<ulong>(newCells);
+            bornCells.ExceptWith(_livingCells);
+            foreach (var bornCell in bornCells)
+            {
+                var xy = CoordinateIds.Split(bornCell);
+                Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true));
+            }
+
+            // Get the cells that died.
+            var deceasedCells = new HashSet<ulong>(_livingCells);
+            deceasedCells.ExceptWith(newCells);
+            foreach (var deceasedCell in deceasedCells)
+            {
+                var xy = CoordinateIds.Split(deceasedCell);
+                Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false));
+            }
+
+            _livingCells = newCells;
         }
 
         #endregion

@@ -8,7 +8,7 @@ namespace Engine.ComponentSystem.Systems
     /// <summary>
     /// Look-up system which allows fetching avatars for individual players.
     /// </summary>
-    public class AvatarSystem : AbstractComponentSystem<AvatarParameterization>
+    public class AvatarSystem : AbstractComponentSystem<AvatarParameterization, NullParameterization>
     {
         #region Fields
 

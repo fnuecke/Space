@@ -96,9 +96,6 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">The parameterization to use.</param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
             // Only do something if we're attracting stuff.
             if (GravitationType.HasFlag(GravitationTypes.Atractor))
             {
@@ -181,6 +178,15 @@ namespace Engine.ComponentSystem.Components
 
             GravitationType = (GravitationTypes)packet.ReadByte();
             Mass = packet.ReadSingle();
+        }
+
+        #endregion
+
+        #region ToString
+
+        public override string ToString()
+        {
+            return GetType().Name + ": " + GravitationType.ToString() + ", " + Mass.ToString();
         }
 
         #endregion
