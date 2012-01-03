@@ -44,6 +44,11 @@ namespace Space
         #region Properties
 
         /// <summary>
+        /// The graphics device manager used in this game.
+        /// </summary>
+        public GraphicsDeviceManager GraphicsDeviceManager { get; set; }
+
+        /// <summary>
         /// The game server currently running in this program.
         /// </summary>
         public GameServer Server { get; set; }
@@ -56,12 +61,12 @@ namespace Space
         #endregion
 
         #region Fields
-        
-        private GraphicsDeviceManager _graphics;
+
+        private List<IGameComponent> _componentsToDispose = new List<IGameComponent>();
+
         private SpriteBatch _spriteBatch;
         private ScreenManager _screenManager;
         private GameConsole _console;
-        private List<IGameComponent> _componentsToDispose = new List<IGameComponent>();
 
         private AudioEngine _audioEngine;
         private WaveBank _waveBank;
@@ -84,15 +89,15 @@ namespace Space
             };
 
             // Set up display.
-            _graphics = new GraphicsDeviceManager(this);
-            _graphics.PreferredBackBufferWidth = Settings.Instance.ScreenWidth;
-            _graphics.PreferredBackBufferHeight = Settings.Instance.ScreenHeight;
-            _graphics.IsFullScreen = Settings.Instance.Fullscreen;
+            GraphicsDeviceManager = new GraphicsDeviceManager(this);
+            GraphicsDeviceManager.PreferredBackBufferWidth = Settings.Instance.ScreenWidth;
+            GraphicsDeviceManager.PreferredBackBufferHeight = Settings.Instance.ScreenHeight;
+            GraphicsDeviceManager.IsFullScreen = Settings.Instance.Fullscreen;
             
             // We really want to do this, because it keeps the game from running at one billion
             // frames per second -- which sounds fun, but isn't, because game states won't update
             // properly anymore (because elapsed time since last step will always appear to be zero).
-            _graphics.SynchronizeWithVerticalRetrace = true;
+            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = true;
 
             // XNAs fixed time step implementation doesn't suit us, to be gentle.
             // So we let it be dynamic and adjust for it as necessary, leading
@@ -151,7 +156,7 @@ namespace Space
 
             _console.AddCommand(new[] { "fullscreen", "fs" }, args =>
             {
-                _graphics.ToggleFullScreen();
+                GraphicsDeviceManager.ToggleFullScreen();
             },
                 "Toggles fullscreen mode.");
 

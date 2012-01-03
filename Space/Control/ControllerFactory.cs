@@ -75,7 +75,8 @@ namespace Space.Control
 
                     new PlayerCenteredSoundSystem(soundBank, controller.Session),
                     new PlayerCenteredRenderSystem(spriteBatch, game.Content, controller.Session)
-                                .AddComponent(new Background())
+                                .AddComponent(new Background()),
+                    new PlayerCenteredParticleSystem(game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
                 });
 
             // Done.
@@ -110,10 +111,11 @@ namespace Space.Control
                 // Add all systems we need in *addition* to the ones the server
                 // already has.
                 server.Simulation.EntityManager.SystemManager.AddSystems(
-                    new[] {
+                    new IComponentSystem[] {
                         new PlayerCenteredSoundSystem(soundBank, controller.Session),
                         new PlayerCenteredRenderSystem(spriteBatch, game.Content, controller.Session)
-                                    .AddComponent(new Background())
+                                    .AddComponent(new Background()),
+                        new PlayerCenteredParticleSystem(game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
                     });
             }
             

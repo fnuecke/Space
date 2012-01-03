@@ -76,6 +76,23 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Constructor
+
+        public EllipsePath(int centerEntityId, float majorRadius, float minorRadius, float angle, int period)
+        {
+            this.CenterEntityId = centerEntityId;
+            this.MajorRadius = majorRadius;
+            this.MinorRadius = minorRadius;
+            this.Angle = angle;
+            this.Period = period;
+        }
+
+        public EllipsePath()
+        {
+        }
+
+        #endregion
+
         #region Logic
 
         /// <summary>

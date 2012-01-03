@@ -4,11 +4,24 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
-    class AstronomicBody : AbstractComponent
+    public sealed class AstronomicBody : AbstractComponent
     {
-        #region Fields
+        #region Properties
 
-        public AstronomicBodyType Type;
+        public AstronomicBodyType Type { get; set; }
+
+        #endregion
+
+        #region Constructor
+
+        public AstronomicBody(AstronomicBodyType type)
+        {
+            this.Type = type;
+        }
+
+        public AstronomicBody()
+        {
+        }
 
         #endregion
 

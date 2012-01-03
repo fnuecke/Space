@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<XnaContent>
+  <Asset Type="ProjectMercury.ParticleEffect">
+    <Item Type="ProjectMercury.Emitters.CircleEmitter">
+      <Name>Flames</Name>
+      <Budget>300</Budget>
+      <Term>3</Term>
+      <ReleaseQuantity>16</ReleaseQuantity>
+      <Enabled>True</Enabled>
+      <ReleaseSpeed>
+        <Value>32</Value>
+        <Variation>16</Variation>
+      </ReleaseSpeed>
+      <ReleaseColour>
+        <Value>1 0.5019608 0</Value>
+        <Variation>0.3 0 0</Variation>
+      </ReleaseColour>
+      <ReleaseOpacity>
+        <Value>1</Value>
+        <Variation>0</Variation>
+      </ReleaseOpacity>
+      <ReleaseScale>
+        <Value>512</Value>
+        <Variation>128</Variation>
+      </ReleaseScale>
+      <ReleaseRotation>
+        <Value>3.14</Value>
+        <Variation>3.14</Variation>
+      </ReleaseRotation>
+      <ReleaseImpulse>0 0</ReleaseImpulse>
+      <ParticleTextureAssetName>Textures/Effects/Particle004</ParticleTextureAssetName>
+      <Modifiers>
+        <Item Type="ProjectMercury.Modifiers.OpacityModifier">
+          <Initial>0.5</Initial>
+          <Ultimate>0</Ultimate>
+        </Item>
+        <Item Type="ProjectMercury.Modifiers.RotationModifier">
+          <RotationRate>1</RotationRate>
+        </Item>
+        <Item Type="ProjectMercury.Modifiers.DampingModifier">
+          <DampingCoefficient>1</DampingCoefficient>
+        </Item>
+      </Modifiers>
+      <BlendMode>Add</BlendMode>
+      <TriggerOffset>0 0</TriggerOffset>
+      <MinimumTriggerPeriod>0.1</MinimumTriggerPeriod>
+      <Radius>1</Radius>
+      <Ring>true</Ring>
+      <Radiate>true</Radiate>
+    </Item>
+    <Item Type="ProjectMercury.Emitters.CircleEmitter">
+      <Name>Emitter05</Name>
+      <Budget>400</Budget>
+      <Term>3</Term>
+      <ReleaseQuantity>8</ReleaseQuantity>
+      <Enabled>True</Enabled>
+      <ReleaseSpeed>
+        <Value>0</Value>
+        <Variation>25</Variation>
+      </ReleaseSpeed>
+      <ReleaseColour>
+        <Value>1 1 1</Value>
+        <Variation>0 0 0</Variation>
+      </ReleaseColour>
+      <ReleaseOpacity>
+        <Value>1</Value>
+        <Variation>0</Variation>
+      </ReleaseOpacity>
+      <ReleaseScale>
+        <Value>512</Value>
+        <Variation>80</Variation>
+      </ReleaseScale>
+      <ReleaseRotation>
+        <Value>0</Value>
+        <Variation>0</Variation>
+      </ReleaseRotation>
+      <ReleaseImpulse>0 0</ReleaseImpulse>
+      <ParticleTextureAssetName>Textures/Effects/Particle006</ParticleTextureAssetName>
+      <Modifiers>
+        <Item Type="ProjectMercury.Modifiers.RotationModifier">
+          <RotationRate>0.5</RotationRate>
+        </Item>
+        <Item Type="ProjectMercury.Modifiers.OpacityModifier">
+          <Initial>0.25</Initial>
+          <Ultimate>0</Ultimate>
+        </Item>
+      </Modifiers>
+      <BlendMode>Add</BlendMode>
+      <TriggerOffset>0 0</TriggerOffset>
+      <MinimumTriggerPeriod>0.1</MinimumTriggerPeriod>
+      <Radius>3</Radius>
+      <Ring>true</Ring>
+      <Radiate>true</Radiate>
+    </Item>
+    <Name>Basic Explosion</Name>
+    <Author>Matt Davey</Author>
+    <Description>A simple explosion effect.</Description>
+  </Asset>
+</XnaContent>

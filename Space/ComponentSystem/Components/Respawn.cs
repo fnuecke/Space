@@ -7,9 +7,18 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
 {
+    /// <summary>
+    /// Allows a timed death for entities, meaning they will respawn
+    /// automatically after a specified timeout.
+    /// </summary>
     public sealed class Respawn : AbstractComponent
     {
         #region Properties
+
+        /// <summary>
+        /// A list of components which should be disabled while dead.
+        /// </summary>
+        public List<Type> ComponentsToDisable { get; private set; }
 
         /// <summary>
         /// The number of ticks to wait before respawning the entity.
@@ -22,9 +31,16 @@ namespace Space.ComponentSystem.Components
         public Vector2 RespawnPosition { get; set; }
 
         /// <summary>
-        /// A list of components which should be disabled while dead.
+        /// The relative amount of its maximum health the entity should have
+        /// after respawning.
         /// </summary>
-        public List<Type> ComponentsToDisable { get; private set; }
+        public float RelativeHealth { get; set; }
+
+        /// <summary>
+        /// The relative amount of its maximum energy the entity should have
+        /// after respawning.
+        /// </summary>
+        public float RelativeEnergy { get; set; }
 
         #endregion
 
@@ -39,30 +55,27 @@ namespace Space.ComponentSystem.Components
 
         #region Constructor
 
-        public Respawn(int respawnTime, Vector2 respawnPosition, List<Type> disableComponents)
+        public Respawn(int respawnTime, List<Type> disableComponents, Vector2 respawnPosition, float relativeHealth, float relativeEnergy)
         {
             this.RespawnTime = respawnTime;
             this.RespawnPosition = respawnPosition;
             this.ComponentsToDisable = disableComponents;
+            this.RelativeHealth = relativeHealth;
+            this.RelativeEnergy = relativeEnergy;
         }
 
-        public Respawn(int respawnTime, Vector2 respawnPosition)
-            : this(respawnTime, respawnPosition, new List<Type>())
+        public Respawn(int respawnTime, List<Type> disableComponents, Vector2 respawnPosition)
+            : this(respawnTime, disableComponents, respawnPosition, 1, 1)
         {
         }
 
         public Respawn(int respawnTime, List<Type> disableComponents)
-            : this(respawnTime, Vector2.Zero, disableComponents)
-        {
-        }
-
-        public Respawn(int respawnTime)
-            : this(respawnTime, new List<Type>())
+            : this(respawnTime, disableComponents, Vector2.Zero)
         {
         }
 
         public Respawn()
-            : this(0)
+            : this(0, new List<Type>())
         {
         }
 
@@ -82,34 +95,45 @@ namespace Space.ComponentSystem.Components
 #endif
 
             var health = Entity.GetComponent<Health>();
-
-            if (_timeToRespawn > 0)
+            if (health != null)
             {
-                if (--_timeToRespawn == 0)
+                if (_timeToRespawn > 0)
                 {
-                    // Respawn.
+                    if (--_timeToRespawn == 0)
+                    {
+                        // Respawn.
+                        // Try to position.
+                        var transform = Entity.GetComponent<Transform>();
+                        if (transform != null)
+                        {
+                            transform.Translation = RespawnPosition;
+                            transform.Rotation = 0;
+                        }
+
+                        // Fill up health / energy.
+                        health.Value = health.MaxValue * RelativeHealth;
+                        var energy = Entity.GetComponent<Energy>();
+                        if (energy != null)
+                        {
+                            energy.Value = energy.MaxValue * RelativeEnergy;
+                        }
+
+                        // Enable components.
+                        foreach (var componentType in ComponentsToDisable)
+                        {
+                            Entity.GetComponent(componentType).Enabled = true;
+                        }
+                    }
+                }
+                else if (health.Value == 0)
+                {
+                    // Entity died, disable components and wait.
                     foreach (var componentType in ComponentsToDisable)
                     {
-                        Entity.GetComponent(componentType).Enabled = true;
+                        Entity.GetComponent(componentType).Enabled = false;
                     }
-
-                    // Try to position.
-                    var transform = Entity.GetComponent<Transform>();
-                    if (transform != null)
-                    {
-                        transform.Translation = RespawnPosition;
-                        transform.Rotation = 0;
-                    }
+                    _timeToRespawn = RespawnTime;
                 }
-            }
-            else if (health != null && health.Value == 0)
-            {
-                // Entity died, disable components and wait.
-                foreach (var componentType in ComponentsToDisable)
-                {
-                    Entity.GetComponent(componentType).Enabled = false;
-                }
-                _timeToRespawn = RespawnTime;
             }
         }
 

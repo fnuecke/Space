@@ -7,28 +7,59 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Components
 {
-    public class PlanetRenderer : TransformedRenderer
+    /// <summary>
+    /// Special renderer for a planet or moon.
+    /// 
+    /// <para>
+    /// Draws its atmosphere and shadow based on the sun it orbits.
+    /// </para>
+    /// </summary>
+    public sealed class PlanetRenderer : TransformedRenderer
     {
+        #region Properties
+        
+        /// <summary>
+        /// The color tint of this planet's atmosphere.
+        /// </summary>
         public Color AtmosphereTint { get; set; }
+
+        #endregion
 
         #region Fields
 
         /// <summary>
         /// The texture used for the atmosphere.
         /// </summary>
-        protected Texture2D atmosphereTexture;
+        private Texture2D _atmosphereTexture;
 
         /// <summary>
         /// The texture used for the shadow.
         /// </summary>
-        protected Texture2D shadowTexture;
+        private Texture2D _shadowTexture;
 
         #endregion
 
-        public PlanetRenderer()
+        #region Constructor
+        
+        public PlanetRenderer(string textureName, Color atmosphereTint)
+            : base(textureName)
         {
-            AtmosphereTint = Color.PaleTurquoise;
+            AtmosphereTint = atmosphereTint;
         }
+
+        public PlanetRenderer(string textureName)
+            : this(textureName, Color.PaleTurquoise)
+        {
+        }
+
+        public PlanetRenderer()
+            : this(string.Empty)
+        {
+        }
+
+        #endregion
+
+        #region Logic
 
         public override void Update(object parameterization)
         {
@@ -44,13 +75,13 @@ namespace Space.ComponentSystem.Components
                 var p = (RendererParameterization)parameterization;
 
                 // Load our atmosphere texture, if it's not set.
-                if (atmosphereTexture == null)
+                if (_atmosphereTexture == null)
                 {
-                    atmosphereTexture = p.Content.Load<Texture2D>("Textures/planet_atmo");
+                    _atmosphereTexture = p.Content.Load<Texture2D>("Textures/planet_atmo");
                 }
-                if (shadowTexture == null)
+                if (_shadowTexture == null)
                 {
-                    shadowTexture = p.Content.Load<Texture2D>("Textures/planet_shadow");
+                    _shadowTexture = p.Content.Load<Texture2D>("Textures/planet_shadow");
                 }
 
                 // Get position relative to our sun, to rotate atmosphere and shadow.
@@ -73,22 +104,22 @@ namespace Space.ComponentSystem.Components
                 }
 
                 p.SpriteBatch.Begin();
-                p.SpriteBatch.Draw(atmosphereTexture,
+                p.SpriteBatch.Draw(_atmosphereTexture,
                     new Rectangle((int)transform.Translation.X + (int)p.Translation.X,
                                   (int)transform.Translation.Y + (int)p.Translation.Y,
-                                  (int)(atmosphereTexture.Width * Scale), (int)(atmosphereTexture.Height * Scale)),
+                                  (int)(_atmosphereTexture.Width * Scale), (int)(_atmosphereTexture.Height * Scale)),
                     null, AtmosphereTint,
                     sunDirection,
-                    new Vector2(atmosphereTexture.Width / 2, atmosphereTexture.Height / 2),
+                    new Vector2(_atmosphereTexture.Width / 2, _atmosphereTexture.Height / 2),
                     SpriteEffects.None, 0);
 
-                p.SpriteBatch.Draw(shadowTexture,
+                p.SpriteBatch.Draw(_shadowTexture,
                     new Rectangle((int)transform.Translation.X + (int)p.Translation.X,
                                   (int)transform.Translation.Y + (int)p.Translation.Y,
-                                  (int)(shadowTexture.Width * Scale), (int)(shadowTexture.Height * Scale)),
+                                  (int)(_shadowTexture.Width * Scale), (int)(_shadowTexture.Height * Scale)),
                     null, Color.White,
                     sunDirection,
-                    new Vector2(shadowTexture.Width / 2, shadowTexture.Height / 2),
+                    new Vector2(_shadowTexture.Width / 2, _shadowTexture.Height / 2),
                     SpriteEffects.None, 0);
 
 #if DEBUG
@@ -103,5 +134,7 @@ namespace Space.ComponentSystem.Components
                 p.SpriteBatch.End();
             }
         }
+
+        #endregion
     }
 }

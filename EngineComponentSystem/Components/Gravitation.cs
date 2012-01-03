@@ -21,6 +21,11 @@ namespace Engine.ComponentSystem.Components
         public enum GravitationTypes
         {
             /// <summary>
+            /// Does not take part in gravitation computations (default).
+            /// </summary>
+            None = 0,
+
+            /// <summary>
             /// Acts as an attractor, i.e. pulls other entities to its own
             /// center of mass.
             /// </summary>

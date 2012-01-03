@@ -40,7 +40,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new WeaponControl());
             entity.AddComponent(new WeaponSound());
-            entity.AddComponent(new Respawn(300, new Vector2(15500, 15500), new List<Type>()
+            entity.AddComponent(new Respawn(300, new List<Type>()
             {
                 typeof(ShipControl),
                 typeof(WeaponControl),
@@ -48,7 +48,7 @@ namespace Space.ComponentSystem.Entities
                 typeof(Acceleration),
                 typeof(Gravitation),
                 typeof(TransformedRenderer)
-            }));
+            }, new Vector2(15500, 15500)));
             entity.AddComponent(new TransformedRenderer(shipData.Texture, faction.ToColor()));
             entity.AddComponent(modules);
             entity.AddComponent(health);
@@ -69,6 +69,21 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
+        /// <summary>
+        /// Creates a new projectile, which is an entity that does damage on
+        /// impact. Its physical properties are determined by the specified
+        /// data. The emitter is used to determine the starting position and
+        /// velocity, if available.
+        /// </summary>
+        /// <remarks>
+        /// The emitter must have a <c>Transform</c> component. If it has a
+        /// <c>Velocity</c> component, it will be added to the starting
+        /// velocity of the projectile.
+        /// </remarks>
+        /// <param name="projectile"></param>
+        /// <param name="emitter"></param>
+        /// <param name="faction"></param>
+        /// <returns></returns>
         public static IEntity CreateProjectile(ProjectileData projectile, IEntity emitter, Factions faction)
         {
             var entity = new Entity();
@@ -137,67 +152,38 @@ namespace Space.ComponentSystem.Entities
             return result;
         }
 
-        public static IEntity CreateStar(string texture, Vector2 position, AstronomicBodyType type, float mass)
+        public static IEntity CreateAstronomicBody(string texture, Vector2 position, AstronomicBodyType type, float mass)
         {
             var entity = new Entity();
 
-            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup));
-
-            var transform = new Transform();
-            transform.Translation = position;
-            entity.AddComponent(transform);
-
+            entity.AddComponent(new Transform(position));
             entity.AddComponent(new Spin());
+            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup));
+            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractor, mass));
 
-            var renderer = new TransformedRenderer();
-            renderer.TextureName = texture;
-            entity.AddComponent(renderer);
+            entity.AddComponent(new AstronomicBody(type));
 
-            var grav = new Gravitation();
-            grav.GravitationType = Gravitation.GravitationTypes.Atractor;
-            grav.Mass = mass;
-            entity.AddComponent(grav);
+            //entity.AddComponent(new TransformedRenderer(texture));
+            entity.AddComponent(new Particle("Effects/sun"));
 
-            var astronomicBody = new AstronomicBody();
-            astronomicBody.Type = type;
-            entity.AddComponent(astronomicBody);
             return entity;
         }
 
-        public static IEntity CreateStar(string texture, IEntity center, float majorRadius, float minorRadius, float angle, int period, AstronomicBodyType type, float mass)
+        public static IEntity CreateAstronomicBody(string texture, IEntity center, float majorRadius, float minorRadius, float angle, int period, AstronomicBodyType type, float mass)
         {
             var entity = new Entity();
 
-            var transform = new Transform();
-            transform.Translation = center.GetComponent<Transform>().Translation;
-            entity.AddComponent(transform);
-
+            entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
             entity.AddComponent(new Spin());
-
-            var ellipse = new EllipsePath();
-            ellipse.CenterEntityId = center.UID;
-            ellipse.MajorRadius = majorRadius;
-            ellipse.MinorRadius = minorRadius;
-            ellipse.Angle = angle;
-            ellipse.Period = period;
-            entity.AddComponent(ellipse);
-
+            entity.AddComponent(new EllipsePath(center.UID, majorRadius, minorRadius, angle, period));
             entity.AddComponent(new Index(1ul << Gravitation.IndexGroup));
+            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractor, mass));
 
-            var renderer = new PlanetRenderer();
-            renderer.TextureName = texture;
-            entity.AddComponent(renderer);
+            entity.AddComponent(new AstronomicBody(type));
 
-            var grav = new Gravitation();
-            grav.GravitationType = Gravitation.GravitationTypes.Atractor;
-            grav.Mass = mass;
-            entity.AddComponent(grav);
+            entity.AddComponent(new PlanetRenderer(texture));
 
-            var astronomicBody = new AstronomicBody();
-            astronomicBody.Type = type;
-            entity.AddComponent(astronomicBody);
             return entity;
-
         }
     }
 }
