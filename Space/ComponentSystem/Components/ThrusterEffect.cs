@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
+using Microsoft.Xna.Framework;
 using ProjectMercury.Emitters;
 
 namespace Space.ComponentSystem.Components
@@ -33,6 +34,10 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
+            // Enable self if some acceleration is set.
+            var acceleration = Entity.GetComponent<Acceleration>();
+            Emitting = (acceleration != null && acceleration.Value != Vector2.Zero);
+
             // Do we have an effect yet?
             if (_effect != null)
             {
