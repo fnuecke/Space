@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
+using Microsoft.Xna.Framework;
 using ProjectMercury;
 using Space.ComponentSystem.Parameterizations;
 
@@ -100,7 +101,25 @@ namespace Space.ComponentSystem.Components
             // Render if we have our effect.
             if (_effect != null)
             {
-                args.Renderer.RenderEffect(_effect, ref args.Transform);
+                // Only render effects whose emitter is near or inside the
+                // visible bounds (performance), where possible.
+                var transform = Entity.GetComponent<Transform>();
+                if (transform != null)
+                {
+                    var extendedView = args.SpriteBatch.GraphicsDevice.ScissorRectangle;
+                    extendedView.Inflate(1024, 1024);
+                    Point point;
+                    point.X = (int)(transform.Translation.X + args.Transform.Translation.X);
+                    point.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y);
+                    if (extendedView.Contains(point))
+                    {
+                        args.Renderer.RenderEffect(_effect, ref args.Transform);
+                    }
+                }
+                else
+                {
+                    args.Renderer.RenderEffect(_effect, ref args.Transform);
+                }
             }
         }
 

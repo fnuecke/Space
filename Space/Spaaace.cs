@@ -72,6 +72,8 @@ namespace Space
         private WaveBank _waveBank;
         private SoundBank _soundBank;
 
+        private DoubleSampling _fps = new DoubleSampling(30);
+
         #endregion
 
         #region Constructor
@@ -97,7 +99,7 @@ namespace Space
             // We really want to do this, because it keeps the game from running at one billion
             // frames per second -- which sounds fun, but isn't, because game states won't update
             // properly anymore (because elapsed time since last step will always appear to be zero).
-            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = true;
+            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = false;
 
             // XNAs fixed time step implementation doesn't suit us, to be gentle.
             // So we let it be dynamic and adjust for it as necessary, leading
@@ -317,10 +319,11 @@ namespace Space
                 arrow = Content.Load<Texture2D>("Textures/arrow");
             }
 
+            _fps.Put(1 / gameTime.ElapsedGameTime.TotalSeconds);
+
             _spriteBatch.Begin();
 
-            string info = String.Format("FPS: {0:f} | Slow: {1}",
-                System.Math.Ceiling(1 / (float)gameTime.ElapsedGameTime.TotalSeconds), gameTime.IsRunningSlowly);
+            string info = String.Format("FPS: {0:f}", System.Math.Ceiling(_fps.Mean()));
             var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - _console.Font.MeasureString(info).X, 10);
 
             _spriteBatch.DrawString(_console.Font, info, infoPosition, Color.White);
@@ -414,6 +417,8 @@ namespace Space
                                 }
                                 _spriteBatch.DrawString(_console.Font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
                             }
+
+                            _spriteBatch.DrawString(_console.Font, "Game speed: " + client.Controller.CurrentSpeed, new Vector2(20, count * 20 + 60), Color.White);
 
                             var index = systemManager.GetSystem<IndexSystem>();
                             if (index != null)

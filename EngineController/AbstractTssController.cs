@@ -1,7 +1,9 @@
-﻿using Engine.Serialization;
+﻿using System;
+using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
 using Engine.Simulation.Commands;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
@@ -77,6 +79,13 @@ namespace Engine.Controller
         /// </summary>
         public ISimulation Simulation { get { return _tss; } }
 
+        /// <summary>
+        /// The actual current game speed, which may be influenced by clients
+        /// not being able to keep up with the computations needed, but which
+        /// will be at maximum the <c>TargetSpeed</c>.
+        /// </summary>
+        public override double CurrentSpeed { get { return _updateTimes.Mean(); } }
+
         #endregion
 
         #region Fields
@@ -93,6 +102,12 @@ namespace Engine.Controller
         /// elapsed time in the next frame update.
         /// </summary>
         private double _lastUpdateRemainder;
+
+        /// <summary>
+        /// Used to sample how long it takes for us to perform our simulation
+        /// updates. Used to determine the current simulation speed.
+        /// </summary>
+        private DoubleSampling _updateTimes = new DoubleSampling(30);
 
         #endregion
 
@@ -120,37 +135,72 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="gameTime">the game time information for the current
         /// update.</param>
-        /// <param name="timeCorrection">some value to add to the elapsed time as
-        /// a correction factor. Used by clients to better sync to the server's
-        /// game speed.</param>
-        protected void UpdateSimulation(GameTime gameTime, double timeCorrection = 0)
+        protected void UpdateSimulation(GameTime gameTime, double targetSpeed = 1)
         {
-            // Already disposed. Thanks, XNA.
-            if (_tss == null)
-            {
-                return;
-            }
-
             // Compensate for dynamic time step.
-            double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder + timeCorrection;
-            if (elapsed < _targetElapsedMilliseconds)
+            double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder;
+            double targetTime = _targetElapsedMilliseconds * targetSpeed;
+            if (elapsed < targetTime)
             {
                 // If we can't actually run to the next frame, at least update
                 // back to the current frame in case rollbacks were made to
                 // accommodate player commands.
                 _tss.RunToFrame(_tss.CurrentFrame);
+
+                // Carry this to the next frame, for uncapped frame rates.
+                _lastUpdateRemainder = elapsed;
             }
             else
             {
-                // We can run at least one frame, so do the update(s). Due to the
-                // carry there may occur more than one simulation update per XNA
-                // update, but that should be below the threshold of the noticeable.
-                while (elapsed >= _targetElapsedMilliseconds)
+                // We can run at least one frame, so do the update(s).
+                long begin = DateTime.Now.Ticks;
+
+                // This is how much time we have to catch up for. The number
+                // simulation frames this equates to is:
+                //     remainingTime / targetTime.
+                double remainingTime = elapsed;
+
+                // Time we spent updating. We don't want to take longer than
+                // one update should take (i.e. targetTime), to avoid the game
+                // getting slower and slower (because updates take longer and
+                // longer -> more and more to catch up).
+                double timePassed = 0;
+
+                // Do as many updates as we can.
+                while (remainingTime >= targetTime && timePassed < targetTime)
                 {
-                    elapsed -= _targetElapsedMilliseconds;
                     _tss.Update();
+
+                    // One less to do.
+                    remainingTime -= targetTime;
+
+                    // Track how much time we spent in this update.
+                    timePassed = new TimeSpan(DateTime.Now.Ticks - begin).TotalMilliseconds;
                 }
-                _lastUpdateRemainder = elapsed;
+
+                // If we had to skip updates because we're running slowly,
+                // compute the rate at which we're operating and push it to
+                // our sampling.
+                if (remainingTime >= targetTime)
+                {
+                    _updateTimes.Put((elapsed - remainingTime) / elapsed);
+
+                    // Make sure we run at least one update next frame, but
+                    // don't try to "catch up" to additional frames, as this
+                    // a) results in off numbers for our current speed.
+                    // b) will make the simulation run ridiculously fast once
+                    //    we recover and get to a point where we *could* catch
+                    //    up. We don't want that.
+                    _lastUpdateRemainder = targetTime;
+                }
+                else
+                {
+                    // Otherwise we're on time, so we're running at full speed.
+                    _updateTimes.Put(1);
+
+                    // Remember how much we have to catch up next update.
+                    _lastUpdateRemainder = remainingTime;
+                }
             }
         }
 

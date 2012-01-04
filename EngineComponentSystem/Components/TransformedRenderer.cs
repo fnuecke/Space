@@ -60,16 +60,21 @@ namespace Engine.ComponentSystem.Components
                 // Get parameterization in proper type.
                 var args = (RendererParameterization)parameterization;
 
-                args.SpriteBatch.Begin();
-                args.SpriteBatch.Draw(texture,
-                    new Rectangle((int)transform.Translation.X + (int)args.Transform.Translation.X,
-                                  (int)transform.Translation.Y + (int)args.Transform.Translation.Y,
-                                  (int)(texture.Width * Scale), (int)(texture.Height * Scale)),
-                    null, Tint,
-                    (float)transform.Rotation,
-                    new Vector2(texture.Width / 2, texture.Height / 2),
-                    SpriteEffects.None, 0);
-                args.SpriteBatch.End();
+                var destination = new Rectangle(
+                    (int)transform.Translation.X + (int)args.Transform.Translation.X,
+                    (int)transform.Translation.Y + (int)args.Transform.Translation.Y,
+                    (int)(texture.Width * Scale), (int)(texture.Height * Scale));
+
+                // Do we even need to draw? (Checking this saves a lot of performance!)
+                if (destination.Intersects(args.SpriteBatch.GraphicsDevice.ScissorRectangle))
+                {
+                    args.SpriteBatch.Begin();
+                    args.SpriteBatch.Draw(texture, destination, null, Tint,
+                        (float)transform.Rotation,
+                        new Vector2(texture.Width / 2, texture.Height / 2),
+                        SpriteEffects.None, 0);
+                    args.SpriteBatch.End();
+                }
             }
         }
 

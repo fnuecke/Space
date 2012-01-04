@@ -26,6 +26,13 @@ namespace Engine.Controller
         /// </summary>
         public TSession Session { get; private set; }
 
+        /// <summary>
+        /// The actual current game speed, which may be influenced by clients
+        /// not being able to keep up with the computations needed, but which
+        /// will be at maximum the <c>TargetSpeed</c>.
+        /// </summary>
+        public abstract double CurrentSpeed { get; }
+
         #endregion
 
         #region Construction / Destruction

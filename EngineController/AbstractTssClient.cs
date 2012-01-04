@@ -43,13 +43,9 @@ namespace Engine.Controller
         private long _lastSyncTime = 0;
 
         /// <summary>
-        /// Keep track of the average number of frames we had to sync.
-        /// </summary>
-        private DoubleSampling _syncDiff = new DoubleSampling(5);
-
-        /// <summary>
         /// Difference in current frame to server, as determined by the
-        /// last few syncs.
+        /// last few syncs. This is used to ignore outliers (extreme delays,
+        /// caused e.g. by resent TCP packets).
         /// </summary>
         private IntSampling _frameDiff = new IntSampling(5);
 
@@ -111,7 +107,7 @@ namespace Engine.Controller
             if (Session.ConnectionState == ClientState.Connected && !_tss.WaitingForSynchronization)
             {
                 // Drive game logic.
-                UpdateSimulation(gameTime, _syncDiff.Mean());
+                UpdateSimulation(gameTime);
 
                 // Hash test.
                 if (_tss.TrailingFrame == _hashFrame)
@@ -248,9 +244,6 @@ namespace Engine.Controller
                             // Adjust the current frame of the simulation.
                             _tss.RunToFrame(_tss.CurrentFrame + frameDelta);
                         }
-                        // Push our average delay plus the delta! Otherwise we'd loose the
-                        // running ('constant') delta we accumulated.
-                        _syncDiff.Put(frameDelta * _targetElapsedMilliseconds / SyncInterval);
                     }
                     break;
 

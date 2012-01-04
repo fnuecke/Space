@@ -29,10 +29,12 @@ namespace Engine.Controller
         /// <summary>
         /// The actual underlying simulations, being that of the server.
         /// </summary>
-        public ISimulation Simulation
-        {
-            get { return _server.Simulation; }
-        }
+        public ISimulation Simulation { get { return _server.Simulation; } }
+
+        /// <summary>
+        /// The real running speed, being that of the server.
+        /// </summary>
+        public override double CurrentSpeed { get { return _server.CurrentSpeed; } }
 
         #endregion
 

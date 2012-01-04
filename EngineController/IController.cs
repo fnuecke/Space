@@ -16,6 +16,13 @@ namespace Engine.Controller
         TSession Session { get; }
 
         /// <summary>
+        /// The actual current game speed, which may be influenced by clients
+        /// not being able to keep up with the computations needed. This will
+        /// be at maximum 1, meaning real-time.
+        /// </summary>
+        double CurrentSpeed { get; }
+
+        /// <summary>
         /// Called when the controller needs to be updated.
         /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Update.</param>
