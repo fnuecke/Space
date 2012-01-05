@@ -15,7 +15,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of known avatars.
         /// </summary>
-        private Dictionary<int, IEntity> _avatars = new Dictionary<int, IEntity>();
+        private Dictionary<int, Entity> _avatars = new Dictionary<int, Entity>();
 
         #endregion
 
@@ -26,7 +26,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="player">The player to fetch the avatar for.</param>
         /// <returns>The avatar, or <c>null</c> if none is known for this player.</returns>
-        public IEntity GetAvatar(int playerNumber)
+        public Entity GetAvatar(int playerNumber)
         {
             if (_avatars.ContainsKey(playerNumber))
             {
@@ -61,7 +61,7 @@ namespace Engine.ComponentSystem.Systems
             var copy = (AvatarSystem)base.Clone();
 
             // Give it its own lookup table.
-            copy._avatars = new Dictionary<int, IEntity>();
+            copy._avatars = new Dictionary<int, Entity>();
 
             return copy;
         }

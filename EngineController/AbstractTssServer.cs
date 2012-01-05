@@ -119,7 +119,7 @@ namespace Engine.Controller
         /// <param name="entity">the entity to add.</param>
         /// <param name="frame">the frame in which to add the entity.</param>
         /// <returns>the id the entity was assigned.</returns>
-        public void AddEntity(IEntity entity, long frame)
+        public void AddEntity(Entity entity, long frame)
         {
             // Add the entity to the simulation.
             _tss.AddEntity(entity, frame);

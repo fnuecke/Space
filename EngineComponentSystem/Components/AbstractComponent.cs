@@ -40,7 +40,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Gets the entity this component belongs to.
         /// </summary>
-        public IEntity Entity;
+        public Entity Entity;
 
         /// <summary>
         /// Whether the component is enabled or not. Disabled components will
@@ -87,7 +87,7 @@ namespace Engine.ComponentSystem.Components
         /// </para>
         /// </summary>
         /// <param name="message">The sent message.</param>
-        public virtual void HandleMessage(ValueType message)
+        public virtual void HandleMessage<T>(ref T message) where T : struct
         {
         }
 

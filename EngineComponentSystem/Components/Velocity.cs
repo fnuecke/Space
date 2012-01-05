@@ -50,7 +50,7 @@ namespace Engine.ComponentSystem.Components
             var transform = Entity.GetComponent<Transform>();
             if (transform != null)
             {
-                transform.AddTranslation(Value);
+                transform.AddTranslation(ref Value);
             }
         }
 

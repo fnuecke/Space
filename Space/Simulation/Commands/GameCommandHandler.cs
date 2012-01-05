@@ -24,7 +24,7 @@ namespace Space.Simulation.Commands
                 case GameCommandType.PlayerInput:
                     // Player input command, apply it.
                     {
-                        IEntity avatar = manager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+                        Entity avatar = manager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
                         if (avatar != null)
                         {
                             var input = avatar.GetComponent<ShipControl>();

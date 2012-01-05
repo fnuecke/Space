@@ -154,7 +154,7 @@ namespace Space.ComponentSystem.Systems
 
             var center = new Vector2(cellSize * x + (cellSize >> 1), cellSize * y + (cellSize >> 1));
 
-            IEntity sun = EntityFactory.CreateAstronomicBody("Textures/sun", center, AstronomicBodyType.Sun, 10000);
+            Entity sun = EntityFactory.CreateAstronomicBody("Textures/sun", center, AstronomicBodyType.Sun, 10000);
             list.Add(Manager.EntityManager.AddEntity(sun));
             var angle = (float)(random.NextDouble() * Math.PI * 2);
             for (int i = 1; i < random.Next(1, 8); i++)
@@ -199,7 +199,7 @@ namespace Space.ComponentSystem.Systems
 
             var center = new Vector2((cellSize >> 1), (cellSize >> 1));
             Console.WriteLine(center);
-            IEntity entity = EntityFactory.CreateAstronomicBody("Textures/sun", center, AstronomicBodyType.Sun, 10000);
+            Entity entity = EntityFactory.CreateAstronomicBody("Textures/sun", center, AstronomicBodyType.Sun, 10000);
             list.Add(Manager.EntityManager.AddEntity(entity));
 
             entity = EntityFactory.CreateAstronomicBody("Textures/planet_rock", entity, 5000, 4000, 1, 3560, AstronomicBodyType.Planet, 1000);

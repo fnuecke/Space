@@ -81,7 +81,7 @@ namespace Engine.ComponentSystem.Components
 
         #region Message handling
 
-        public override void HandleMessage(ValueType message)
+        public override void HandleMessage<T>(ref T message)
         {
             var sound = GetSoundForMessage(message);
             if (!string.IsNullOrWhiteSpace(sound))

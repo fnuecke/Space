@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
 using Space.Data;
 using Space.Data.Modules;
@@ -35,7 +34,7 @@ namespace Space.ComponentSystem.Components
         /// Test for change in equipment.
         /// </summary>
         /// <param name="message">Handles module added / removed messages.</param>
-        public override void HandleMessage(ValueType message)
+        public override void HandleMessage<T>(ref T message)
         {
             if (message is ModuleAdded<EntityAttributeType> || message is ModuleRemoved<EntityAttributeType>)
             {

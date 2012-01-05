@@ -105,7 +105,6 @@
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
     <Compile Include="Components\Gravitation.cs" />
-    <Compile Include="Components\IComponent.cs" />
     <Compile Include="Components\Index.cs" />
     <Compile Include="Components\Messages\Collision.cs" />
     <Compile Include="Components\Messages\ModuleRemoved.cs" />
@@ -117,7 +116,6 @@
     <Compile Include="Components\TransformedRenderer.cs" />
     <Compile Include="Components\Velocity.cs" />
     <Compile Include="Entities\Entity.cs" />
-    <Compile Include="Entities\IEntity.cs" />
     <Compile Include="Parameterizations\AvatarParameterization.cs" />
     <Compile Include="Parameterizations\CollisionParameterization.cs" />
     <Compile Include="Parameterizations\DefaultLogicParameterization.cs" />

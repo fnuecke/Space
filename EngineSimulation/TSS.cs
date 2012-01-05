@@ -81,7 +81,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<IEntity>> _adds = new Dictionary<long, List<IEntity>>();
+        private Dictionary<long, List<Entity>> _adds = new Dictionary<long, List<Entity>>();
 
         /// <summary>
         /// List of object ids to remove from delayed states when they reach the given frame.
@@ -214,12 +214,12 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="entity">the object to insert.</param>
         /// <param name="frame">the frame to insert it at.</param>
-        public void AddEntity(IEntity entity, long frame)
+        public void AddEntity(Entity entity, long frame)
         {
             // Store it to be inserted in trailing states.
             if (!_adds.ContainsKey(frame))
             {
-                _adds.Add(frame, new List<IEntity>());
+                _adds.Add(frame, new List<Entity>());
             }
             else if (_adds[frame].Contains(entity))
             {
@@ -233,7 +233,7 @@ namespace Engine.Simulation
                 // in the intended order!)
                 throw new InvalidOperationException("Cannot add an object in the same frame as it will be removed.");
             }
-            _adds[frame].Add((IEntity)entity.Clone());
+            _adds[frame].Add((Entity)entity.Clone());
 
             // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
@@ -372,7 +372,7 @@ namespace Engine.Simulation
                 long key = packet.ReadInt64();
                 if (!_adds.ContainsKey(key))
                 {
-                    _adds.Add(key, new List<IEntity>());
+                    _adds.Add(key, new List<Entity>());
                 }
                 _adds[key].AddRange(packet.ReadPacketizables<Entity>());
             }
@@ -474,7 +474,7 @@ namespace Engine.Simulation
                         // Add a copy of it.
                         foreach (var entity in _adds[stateFrame])
                         {
-                            state.EntityManager.AddEntity((IEntity)entity.Clone());
+                            state.EntityManager.AddEntity((Entity)entity.Clone());
                         }
                     }
 
@@ -616,7 +616,7 @@ namespace Engine.Simulation
         {
             #region Properties
             
-            public ReadOnlyCollection<IEntity> Entities { get { throw new NotSupportedException(); } }
+            public ReadOnlyCollection<Entity> Entities { get { throw new NotSupportedException(); } }
 
             public IComponentSystemManager SystemManager { get { return _systemManager; } set { throw new NotSupportedException(); } }
             
@@ -643,26 +643,26 @@ namespace Engine.Simulation
 
             #endregion
 
-            public int AddEntity(IEntity entity)
+            public int AddEntity(Entity entity)
             {
                 _tss.AddEntity(entity, _tss.CurrentFrame);
                 return -1;
             }
 
-            public IEntity RemoveEntity(int entityUid)
+            public Entity RemoveEntity(int entityUid)
             {
                 _tss.RemoveEntity(entityUid, _tss.CurrentFrame);
                 return null;
             }
 
-            public IEntity GetEntity(int entityUid)
+            public Entity GetEntity(int entityUid)
             {
                 return _tss.LeadingState.EntityManager.GetEntity(entityUid);
             }
 
             #region Unsupported
 
-            public void RemoveEntity(IEntity entity)
+            public void RemoveEntity(Entity entity)
             {
                 throw new NotSupportedException();
             }

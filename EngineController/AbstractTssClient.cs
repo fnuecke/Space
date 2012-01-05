@@ -271,7 +271,7 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         long addFrame = args.Data.ReadInt64();
-                        IEntity entity = args.Data.ReadPacketizable<Entity>();
+                        Entity entity = args.Data.ReadPacketizable<Entity>();
                         _tss.AddEntity(entity, addFrame);
                     }
                     break;

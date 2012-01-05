@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Entities
         /// <param name="shipData">The ship info to use.</param>
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <returns></returns>
-        public static IEntity CreateShip(ShipData shipData, Factions faction)
+        public static Entity CreateShip(ShipData shipData, Factions faction)
         {
             var entity = new Entity();
 
@@ -88,7 +88,7 @@ namespace Space.ComponentSystem.Entities
         /// <param name="emitter"></param>
         /// <param name="faction"></param>
         /// <returns></returns>
-        public static IEntity CreateProjectile(ProjectileData projectile, IEntity emitter, Factions faction)
+        public static Entity CreateProjectile(ProjectileData projectile, Entity emitter, Factions faction)
         {
             var entity = new Entity();
 
@@ -156,7 +156,7 @@ namespace Space.ComponentSystem.Entities
             return result;
         }
 
-        public static IEntity CreateAstronomicBody(string texture, Vector2 position, AstronomicBodyType type, float mass)
+        public static Entity CreateAstronomicBody(string texture, Vector2 position, AstronomicBodyType type, float mass)
         {
             var entity = new Entity();
 
@@ -173,7 +173,7 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static IEntity CreateAstronomicBody(string texture, IEntity center, float majorRadius, float minorRadius, float angle, int period, AstronomicBodyType type, float mass)
+        public static Entity CreateAstronomicBody(string texture, Entity center, float majorRadius, float minorRadius, float angle, int period, AstronomicBodyType type, float mass)
         {
             var entity = new Entity();
 

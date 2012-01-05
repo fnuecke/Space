@@ -107,14 +107,14 @@ namespace Space.ComponentSystem.Components
         /// Handles collision messages to apply damage.
         /// </summary>
         /// <param name="message"></param>
-        public override void HandleMessage(ValueType message)
+        public override void HandleMessage<T>(ref T message)
         {
             // Only handle collisions, and only if we weren't removed yet.
             // This can happen if we collide with two things in one frame
             // but are a oneshot.
             if (message is Collision && Entity.Manager != null)
             {
-                var entity = ((Collision)message).OtherEntity;
+                var entity = ((Collision)(ValueType)message).OtherEntity;
 
                 // On cooldown?
                 if (_cooldowns != null && _cooldowns.ContainsKey(entity.UID))

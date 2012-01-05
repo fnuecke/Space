@@ -78,7 +78,9 @@ namespace Space.ComponentSystem.Components
                                 }
 
                                 // Generate message.
-                                Entity.SendMessage(WeaponFired.Create(weapon));
+                                WeaponFired message;
+                                message.Weapon = weapon;
+                                Entity.SendMessage(ref message);
                             }
                         }
                     }
@@ -100,11 +102,11 @@ namespace Space.ComponentSystem.Components
         /// Handles messages to check if a weapon was equipped or unequipped.
         /// </summary>
         /// <param name="message">The message to handle.</param>
-        public override void HandleMessage(ValueType message)
+        public override void HandleMessage<T>(ref T message)
         {
             if (message is ModuleAdded<EntityAttributeType>)
             {
-                var added = (ModuleAdded<EntityAttributeType>)message;
+                var added = (ModuleAdded<EntityAttributeType>)(ValueType)message;
                 if (added.Module is WeaponModule)
                 {
                     // Weapon was equipped, track a cooldown for it.
@@ -113,7 +115,7 @@ namespace Space.ComponentSystem.Components
             }
             else if (message is ModuleRemoved<EntityAttributeType>)
             {
-                var removed = (ModuleRemoved<EntityAttributeType>)message;
+                var removed = (ModuleRemoved<EntityAttributeType>)(ValueType)message;
                 if (removed.Module is WeaponModule)
                 {
                     // Weapon was unequipped, stop tracking.

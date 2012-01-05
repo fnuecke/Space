@@ -10,44 +10,17 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Transform : AbstractComponent
     {
-        #region Properties
-        
+        #region Fields
+
         /// <summary>
         /// Current position of the object.
         /// </summary>
-        public Vector2 Translation
-        {
-            get
-            {
-                return _translation;
-            }
-            set
-            {
-                if (value != _translation)
-                {
-                    var previousPosition = _translation;
-                    _translation = value;
-                    if (Entity != null)
-                    {
-                        Entity.SendMessage(TranslationChanged.Create(previousPosition));
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region Fields
+        public Vector2 Translation;
 
         /// <summary>
         /// The angle of the current orientation.
         /// </summary>
         public float Rotation;
-
-        /// <summary>
-        /// Actual value holder for <c>Translation</c> property.
-        /// </summary>
-        private Vector2 _translation;
 
         #endregion
 
@@ -82,9 +55,38 @@ namespace Engine.ComponentSystem.Components
         /// Add the given translation to the current translation.
         /// </summary>
         /// <param name="value">The translation to add.</param>
-        public void AddTranslation(Vector2 value)
+        public void AddTranslation(ref Vector2 value)
         {
-            Translation += value;
+            if (value.X != 0 || value.Y != 0)
+            {
+                TranslationChanged message;
+                message.PreviousPosition = Translation;
+
+                Translation.X += value.X;
+                Translation.Y += value.Y;
+
+                if (Entity != null)
+                {
+                    Entity.SendMessage(ref message);
+                }
+            }
+        }
+
+        public void SetTranslation(ref Vector2 value)
+        {
+            if (Translation.X != value.X && Translation.Y != value.Y)
+            {
+                TranslationChanged message;
+                message.PreviousPosition = Translation;
+
+                Translation.X = value.X;
+                Translation.Y = value.Y;
+
+                if (Entity != null)
+                {
+                    Entity.SendMessage(ref message);
+                }
+            }
         }
 
         /// <summary>
@@ -98,15 +100,20 @@ namespace Engine.ComponentSystem.Components
         /// <param name="value"></param>
         public void AddRotation(float value)
         {
-            Rotation += value;
-            if (Rotation < -System.Math.PI)
+            SetRotation(Rotation + value);
+        }
+
+        public void SetRotation(float value)
+        {
+            if (value < -System.Math.PI)
             {
-                Rotation += (float)System.Math.PI * 2;
+                value += (float)System.Math.PI * 2;
             }
-            else if (Rotation > System.Math.PI)
+            else if (value > System.Math.PI)
             {
-                Rotation -= (float)System.Math.PI * 2;
+                value -= (float)System.Math.PI * 2;
             }
+            Rotation = value;
         }
 
         #endregion

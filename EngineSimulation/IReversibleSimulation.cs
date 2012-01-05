@@ -43,7 +43,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="entity">the object to insert.</param>
         /// <param name="frame">the frame to insert it at.</param>
-        void AddEntity(IEntity entity, long frame);
+        void AddEntity(Entity entity, long frame);
 
         /// <summary>
         /// Remove an object in a specific time frame. This will roll back, if

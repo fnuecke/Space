@@ -83,7 +83,7 @@ namespace Engine.ComponentSystem.Components
         /// Uses <c>TranslationChanged</c> messages to set our changed flag.
         /// </summary>
         /// <param name="message">The message to handle.</param>
-        public override void HandleMessage(ValueType message)
+        public override void HandleMessage<T>(ref T message)
         {
             if (message is TranslationChanged)
             {
@@ -91,7 +91,7 @@ namespace Engine.ComponentSystem.Components
                 // our previous position.
                 if (!PositionChanged)
                 {
-                    PreviousPosition = ((TranslationChanged)message).PreviousPosition;
+                    PreviousPosition = ((TranslationChanged)(ValueType)message).PreviousPosition;
                 }
                 PositionChanged = true;
             }

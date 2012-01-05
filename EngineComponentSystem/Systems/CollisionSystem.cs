@@ -47,7 +47,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private static readonly HashSet<IEntity> _neighbors = new HashSet<IEntity>();
+        private static readonly HashSet<Entity> _neighbors = new HashSet<Entity>();
 
         #endregion
 
@@ -128,8 +128,11 @@ namespace Engine.ComponentSystem.Systems
                     // Test for collision, if there is one, let both parties know.
                     if (currentCollidable.Intersects(otherCollidable))
                     {
-                        currentCollidable.Entity.SendMessage(Collision.Create(otherCollidable.Entity));
-                        otherCollidable.Entity.SendMessage(Collision.Create(currentCollidable.Entity));
+                        Collision message;
+                        message.OtherEntity = otherCollidable.Entity;
+                        currentCollidable.Entity.SendMessage(ref message);
+                        message.OtherEntity = currentCollidable.Entity;
+                        otherCollidable.Entity.SendMessage(ref message);
                     }
                 }
             }

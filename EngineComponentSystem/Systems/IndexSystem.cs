@@ -95,7 +95,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range (including the query entity).</returns>
-        public List<IEntity> GetNeighbors(IEntity query, float range, ulong groups = 1u << DefaultIndexGroup)
+        public List<Entity> GetNeighbors(Entity query, float range, ulong groups = 1u << DefaultIndexGroup)
         {
             return GetNeighbors(query.GetComponent<Transform>().Translation, range, groups);
         }
@@ -109,9 +109,9 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public List<IEntity> GetNeighbors(Vector2 query, float range, ulong groups = 1u << DefaultIndexGroup)
+        public List<Entity> GetNeighbors(Vector2 query, float range, ulong groups = 1u << DefaultIndexGroup)
         {
-            var result = new List<IEntity>();
+            var result = new List<Entity>();
 
             foreach (var tree in TreesForGroups(groups))
             {

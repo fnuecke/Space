@@ -12,9 +12,9 @@ namespace Engine.ComponentSystem.Components.Messages
         /// The other entity that was involved in the collision, i.e. the one
         /// we collided with.
         /// </summary>
-        public IEntity OtherEntity;
+        public Entity OtherEntity;
 
-        public static Collision Create(IEntity otherEntity)
+        public static Collision Create(Entity otherEntity)
         {
             Collision result;
             result.OtherEntity = otherEntity;

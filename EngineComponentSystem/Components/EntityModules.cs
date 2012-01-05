@@ -176,7 +176,9 @@ namespace Engine.ComponentSystem.Components
             }
             if (Entity != null)
             {
-                Entity.SendMessage(ModuleAdded<TAttribute>.Create(module));
+                ModuleAdded<TAttribute> message;
+                message.Module = module;
+                Entity.SendMessage(ref message);
             }
         }
 
@@ -216,7 +218,9 @@ namespace Engine.ComponentSystem.Components
                 // Notify others *before* resetting the id.
                 if (Entity != null)
                 {
-                    Entity.SendMessage(ModuleRemoved<TAttribute>.Create(module));
+                    ModuleRemoved<TAttribute> message;
+                    message.Module = module;
+                    Entity.SendMessage(ref message);
                 }
                 _idManager.ReleaseId(module.UID);
                 module.UID = -1;

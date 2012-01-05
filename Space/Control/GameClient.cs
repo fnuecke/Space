@@ -352,7 +352,7 @@ namespace Space.Control
         /// <param name="targetRotation">the new direction to face.</param>
         private void UpdateTargetRotation(float targetRotation)
         {
-            IEntity avatar = GetLocalAvatar();
+            Entity avatar = GetLocalAvatar();
             if (avatar != null)
             {
                 var transform = avatar.GetComponent<Transform>();
@@ -422,7 +422,7 @@ namespace Space.Control
             }
         }
 
-        private IEntity GetLocalAvatar()
+        private Entity GetLocalAvatar()
         {
             return Controller.Simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(Controller.Session.LocalPlayer.Number);
         }

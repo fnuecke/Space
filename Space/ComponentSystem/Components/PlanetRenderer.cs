@@ -108,7 +108,7 @@ namespace Space.ComponentSystem.Components
                 {
                     // Get position relative to our sun, to rotate atmosphere and shadow.
                     float sunDirection = 0;
-                    IEntity sun = null;
+                    Entity sun = null;
                     var ellipse = Entity.GetComponent<EllipsePath>();
                     while (ellipse != null)
                     {
@@ -151,7 +151,7 @@ namespace Space.ComponentSystem.Components
 #if DEBUG
                     StringBuilder sb = new StringBuilder();
                     sb.AppendFormat("Position: {0}\n", transform.Translation);
-                    sb.AppendFormat("Rotation: {0}\n", transform.Rotation);
+                    sb.AppendFormat("Rotation: {0}\n", (int)MathHelper.ToDegrees(transform.Rotation));
                     sb.AppendFormat("Scale: {0}\n", Scale);
                     sb.AppendFormat("Angle to sun: {0}\n", (int)MathHelper.ToDegrees(-sunDirection));
 

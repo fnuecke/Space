@@ -26,7 +26,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of child entities this state drives.
         /// </summary>
-        private Dictionary<int, IEntity> _entityMap = new Dictionary<int, IEntity>();
+        private Dictionary<int, Entity> _entityMap = new Dictionary<int, Entity>();
 
         /// <summary>
         /// Manager for entity ids.
@@ -53,7 +53,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="entity">The entity to add.</param>
         /// <returns>The id that was assigned to the entity.</returns>
-        public int AddEntity(IEntity entity)
+        public int AddEntity(Entity entity)
         {
             if (entity.Manager == this)
             {
@@ -76,7 +76,7 @@ namespace Engine.ComponentSystem.Systems
         /// entity's components from the associated component system manager.
         /// </summary>
         /// <param name="updateable">The entity to remove.</param>
-        public void RemoveEntity(IEntity entity)
+        public void RemoveEntity(Entity entity)
         {
             if (entity.Manager != this)
             {
@@ -92,7 +92,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="entityUid">The id of the entity to remove.</param>
         /// <returns>The removed entity, or <c>null</c> if this manager has
         /// no entity with the specified id.</returns>
-        public IEntity RemoveEntity(int entityUid)
+        public Entity RemoveEntity(int entityUid)
         {
             var entity = GetEntity(entityUid);
             if (entity != null)
@@ -115,7 +115,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="entityUid">The id of the entity to look up.</param>
         /// <returns>The current representation in this manager.</returns>
-        public IEntity GetEntity(int entityUid)
+        public Entity GetEntity(int entityUid)
         {
             if (_entityMap.ContainsKey(entityUid))
             {
@@ -132,7 +132,7 @@ namespace Engine.ComponentSystem.Systems
         /// Internal use, does not give the entity a new UID. Used for cloning.
         /// </summary>
         /// <param name="entity">The entity to add.</param>
-        private void AddEntityUnchecked(IEntity entity)
+        private void AddEntityUnchecked(Entity entity)
         {
             _entityMap.Add(entity.UID, entity);
             entity.Manager = this;
@@ -195,10 +195,10 @@ namespace Engine.ComponentSystem.Systems
             copy.SystemManager.EntityManager = copy;
 
             // Clone all entities.
-            copy._entityMap = new Dictionary<int, IEntity>();
+            copy._entityMap = new Dictionary<int, Entity>();
             foreach (var entity in _entityMap.Values)
             {
-                copy.AddEntityUnchecked((IEntity)entity.Clone());
+                copy.AddEntityUnchecked((Entity)entity.Clone());
             }
 
             // Clone the id manager.
