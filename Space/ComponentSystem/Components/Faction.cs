@@ -10,12 +10,12 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class Faction : AbstractComponent
     {
-        #region Properties
+        #region Fields
         
         /// <summary>
         /// The faction this component's entity belongs to.
         /// </summary>
-        public Factions Value { get; set; }
+        public Factions Value;
 
         #endregion
 

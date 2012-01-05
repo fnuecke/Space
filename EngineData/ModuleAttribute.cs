@@ -40,18 +40,18 @@ namespace Engine.Data
         /// The actual type of this attribute, which tells the game how to
         /// handle it.
         /// </summary>
-        public TAttribute Type { get; set; }
+        public TAttribute Type;
 
         /// <summary>
         /// The computation type of this attribute, i.e. how it should be used
         /// in computation.
         /// </summary>
-        public ModuleAttributeComputationType ComputationType { get; set; }
+        public ModuleAttributeComputationType ComputationType;
 
         /// <summary>
         /// The actual value for this specific attribute.
         /// </summary>
-        public float Value { get; set; }
+        public float Value;
 
         #endregion
 

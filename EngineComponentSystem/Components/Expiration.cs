@@ -9,13 +9,13 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Expiration : AbstractComponent
     {
-        #region Properties
+        #region Fields
         
         /// <summary>
         /// The number remaining updates the entity this component belongs to
         /// is allowed to live.
         /// </summary>
-        public int TimeToLive { get; set; }
+        public int TimeToLive;
 
         #endregion
 

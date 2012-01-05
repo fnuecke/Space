@@ -18,33 +18,33 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// A list of components which should be disabled while dead.
         /// </summary>
-        public List<Type> ComponentsToDisable { get; private set; }
+        public readonly List<Type> ComponentsToDisable;
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// The number of ticks to wait before respawning the entity.
         /// </summary>
-        public int RespawnTime { get; set; }
+        public int RespawnTime;
 
         /// <summary>
         /// The position at which to respawn the entity.
         /// </summary>
-        public Vector2 RespawnPosition { get; set; }
+        public Vector2 RespawnPosition;
 
         /// <summary>
         /// The relative amount of its maximum health the entity should have
         /// after respawning.
         /// </summary>
-        public float RelativeHealth { get; set; }
+        public float RelativeHealth;
 
         /// <summary>
         /// The relative amount of its maximum energy the entity should have
         /// after respawning.
         /// </summary>
-        public float RelativeEnergy { get; set; }
-
-        #endregion
-
-        #region Fields
+        public float RelativeEnergy;
 
         /// <summary>
         /// The remaining time in ticks until to respawn the entity.

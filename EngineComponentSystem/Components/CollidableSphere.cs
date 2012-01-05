@@ -16,12 +16,12 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class CollidableSphere : AbstractCollidable
     {
-        #region Properties
+        #region Fields
         
         /// <summary>
         /// The radius of this sphere.
         /// </summary>
-        public float Radius { get; set; }
+        public float Radius;
 
         #endregion
 

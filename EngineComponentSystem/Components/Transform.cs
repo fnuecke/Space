@@ -35,14 +35,14 @@ namespace Engine.ComponentSystem.Components
             }
         }
 
-        /// <summary>
-        /// The angle of the current orientation.
-        /// </summary>
-        public float Rotation { get; set; }
-
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// The angle of the current orientation.
+        /// </summary>
+        public float Rotation;
 
         /// <summary>
         /// Actual value holder for <c>Translation</c> property.

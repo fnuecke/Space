@@ -16,12 +16,12 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public class CollidableBox : AbstractCollidable
     {
-        #region Properties
+        #region Fields
         
         /// <summary>
         /// The bounds of this box.
         /// </summary>
-        public Vector2 Size { get; set; }
+        public Vector2 Size;
 
         #endregion
         

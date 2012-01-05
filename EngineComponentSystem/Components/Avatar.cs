@@ -10,12 +10,12 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Avatar : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The number of player whose avatar this is.
         /// </summary>
-        public int PlayerNumber { get; set; }
+        public int PlayerNumber;
 
         #endregion
 

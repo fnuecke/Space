@@ -14,24 +14,24 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Index : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The bit mask of the index group this component will belong to.
         /// There are a total of 64 separate groups, via the 64 bits in a
         /// ulong.
         /// </summary>
-        public ulong IndexGroups { get; set; }
+        public ulong IndexGroups;
 
         /// <summary>
         /// Whether the position of our entity changed since the last update.
         /// </summary>
-        public bool PositionChanged { get; private set; }
+        public bool PositionChanged;
         
         /// <summary>
         /// The position we had before a position change.
         /// </summary>
-        public Vector2 PreviousPosition { get; private set; }
+        public Vector2 PreviousPosition;
 
         #endregion
 

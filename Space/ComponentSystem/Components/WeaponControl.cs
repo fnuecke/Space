@@ -17,16 +17,12 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class WeaponControl : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// Whether ima currently firin mah lazer or not.
         /// </summary>
-        public bool Shooting { get; set; }
-
-        #endregion
-
-        #region Fields
+        public bool Shooting;
 
         /// <summary>
         /// Cooldowns of known weapon components.

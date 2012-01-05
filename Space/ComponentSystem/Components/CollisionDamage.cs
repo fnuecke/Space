@@ -20,8 +20,8 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class CollisionDamage : AbstractComponent
     {
-        #region Properties
-        
+        #region Fields
+
         /// <summary>
         /// Determines how many frames (updates) to wait between dealing our
         /// damage. This is per other entity we collide with.
@@ -31,16 +31,12 @@ namespace Space.ComponentSystem.Components
         /// then die.
         /// </para>
         /// </summary>
-        public int Cooldown { get; set; }
+        public int Cooldown;
 
         /// <summary>
         /// The amount of damage to deal upon collision.
         /// </summary>
-        public float Damage { get; set; }
-
-        #endregion
-
-        #region Fields
+        public float Damage;
 
         /// <summary>
         /// Cooldown before doing damage to an entity (maps entity id to cd).

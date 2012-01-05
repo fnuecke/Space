@@ -19,19 +19,19 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public string TextureName { get { return _textureName; } set { _textureName = value; texture = null; } }
 
+        #endregion
+
+        #region Fields
+
         /// <summary>
         /// The color to use for tinting when rendering.
         /// </summary>
-        public Color Tint { get; set; }
+        public Color Tint;
 
         /// <summary>
         /// The scale at which to render the texture.
         /// </summary>
-        public float Scale { get; set; }
-
-        #endregion
-
-        #region Fields
+        public float Scale;
 
         /// <summary>
         /// The actual texture with the set name.

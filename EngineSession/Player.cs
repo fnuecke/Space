@@ -10,17 +10,17 @@ namespace Engine.Session
         /// <summary>
         /// The player's number in the game he's in.
         /// </summary>
-        public int Number { get; private set; }
+        public readonly int Number;
 
         /// <summary>
         /// The name of the player.
         /// </summary>
-        public string Name { get; private set; }
+        public readonly string Name;
 
         /// <summary>
         /// Some arbitrary data associated with the player.
         /// </summary>
-        public object Data { get; set; }
+        public object Data;
 
         internal Player(int number, string name, object data)
         {

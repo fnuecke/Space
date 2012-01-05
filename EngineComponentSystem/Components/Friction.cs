@@ -15,19 +15,19 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Friction : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The damping to apply to this objects movement (simulates friction).
         /// </summary>
-        public float Value { get; set; }
+        public float Value;
 
         /// <summary>
         /// Minimum velocity of an object before it is stopped (avoids jitter
         /// for very low velocity, due to which objects with damping never
         /// stop, even though they should).
         /// </summary>
-        public float StopVelocity { get; set; }
+        public float StopVelocity;
 
         #endregion
 

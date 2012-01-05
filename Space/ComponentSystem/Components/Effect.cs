@@ -17,21 +17,17 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class Effect : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The asset name of the particle effect to trigger.
         /// </summary>
-        public string EffectName { get; set; }
+        public string EffectName;
 
         /// <summary>
         /// Whether we're currently allowed to emit particles or not.
         /// </summary>
-        public bool Emitting { get; set; }
-
-        #endregion
-
-        #region Fields
+        public bool Emitting;
 
         /// <summary>
         /// The actual instance of the effect we're using.

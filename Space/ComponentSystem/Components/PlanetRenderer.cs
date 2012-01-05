@@ -16,16 +16,12 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class PlanetRenderer : TransformedRenderer
     {
-        #region Properties
-        
+        #region Fields
+
         /// <summary>
         /// The color tint of this planet's atmosphere.
         /// </summary>
-        public Color AtmosphereTint { get; set; }
-
-        #endregion
-
-        #region Fields
+        public Color AtmosphereTint;
 
         /// <summary>
         /// The texture used for the atmosphere.

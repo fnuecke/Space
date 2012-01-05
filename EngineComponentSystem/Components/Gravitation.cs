@@ -48,18 +48,18 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The way this component interacts in regards to gravitation.
         /// </summary>
-        public GravitationTypes GravitationType { get; set; }
+        public GravitationTypes GravitationType;
 
         /// <summary>
         /// The mass to use when computing this component's part in the
         /// gravitation forces.
         /// </summary>
-        public float Mass { get; set; }
+        public float Mass;
 
         #endregion
 

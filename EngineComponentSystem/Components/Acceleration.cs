@@ -15,12 +15,12 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Acceleration : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The directed acceleration of the object.
         /// </summary>
-        public Vector2 Value { get; set; }
+        public Vector2 Value;
 
         #endregion
 

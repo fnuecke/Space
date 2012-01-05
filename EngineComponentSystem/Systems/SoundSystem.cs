@@ -280,11 +280,11 @@ namespace Engine.ComponentSystem.Systems
 
         #region Utility class
 
-        private class SoundEvent
+        private sealed class SoundEvent
         {
-            public string SoundCue { get; set; }
-            public Vector2 Position { get; set; }
-            public Vector2 Velocity { get; set; }
+            public string SoundCue;
+            public Vector2 Position;
+            public Vector2 Velocity;
             public SoundEvent(string soundCue, SoundParameterization p)
             {
                 this.SoundCue = soundCue;

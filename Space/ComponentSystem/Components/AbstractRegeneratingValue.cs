@@ -32,25 +32,25 @@ namespace Space.ComponentSystem.Components
             }
         }
 
+        #endregion
+
+        #region Fields
+
         /// <summary>
         /// The maximum value.
         /// </summary>
-        public float MaxValue { get; set; }
+        public float MaxValue;
 
         /// <summary>
         /// The amount the value is regenerated per tick.
         /// </summary>
-        public float Regeneration { get; set; }
+        public float Regeneration;
 
         /// <summary>
         /// The timeout in ticks to wait after the last reducing change, before
         /// applying regeneration again.
         /// </summary>
-        public int Timeout { get; set; }
-
-        #endregion
-
-        #region Fields
+        public int Timeout;
 
         /// <summary>
         /// Actual value for the value property.

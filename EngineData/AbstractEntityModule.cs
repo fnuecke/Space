@@ -22,13 +22,13 @@ namespace Engine.Data
         /// Unique id of this component relative to its current entity module.
         /// </summary>
         [ContentSerializerIgnore]
-        public int UID { get; set; }
+        public int UID;
 
         /// <summary>
         /// A list of all known attributes this module brings with it.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public List<ModuleAttribute<TAttribute>> Attributes { get; set; }
+        public List<ModuleAttribute<TAttribute>> Attributes;
 
         /// <summary>
         /// A list of all attributes whose cache should be invalidated when

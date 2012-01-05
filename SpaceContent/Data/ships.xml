@@ -58,7 +58,7 @@
         <Item>
           <Texture>Textures/ship</Texture>
           <Sound>laser</Sound>
-          <Cooldown>2</Cooldown>
+          <Cooldown>1</Cooldown>
           <EnergyConsumption>0.01</EnergyConsumption>
           <Projectiles>
             <Item>

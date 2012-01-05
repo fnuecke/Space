@@ -6,9 +6,9 @@ namespace Space.ComponentSystem.Components
 {
     public sealed class AstronomicBody : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
-        public AstronomicBodyType Type { get; set; }
+        public AstronomicBodyType Type;
 
         #endregion
 

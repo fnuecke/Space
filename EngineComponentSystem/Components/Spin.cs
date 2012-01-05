@@ -14,12 +14,12 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Spin : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The current rotation speed of the object.
         /// </summary>
-        public float Value { get; set; }
+        public float Value;
 
         #endregion
 

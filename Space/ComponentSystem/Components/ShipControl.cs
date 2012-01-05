@@ -20,16 +20,6 @@ namespace Space.ComponentSystem.Components
         #region Properties
 
         /// <summary>
-        /// Whether to shoot or not.
-        /// </summary>
-        public bool Shooting { get; set; }
-
-        /// <summary>
-        /// The direction we're currently accelerating into.
-        /// </summary>
-        public Directions AccelerationDirection { get; set; }
-
-        /// <summary>
         /// The rotation we're targeting at the moment.
         /// </summary>
         public float TargetRotation
@@ -48,6 +38,16 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// Whether to shoot or not.
+        /// </summary>
+        public bool Shooting;
+
+        /// <summary>
+        /// The direction we're currently accelerating into.
+        /// </summary>
+        public Directions AccelerationDirection;
 
         /// <summary>
         /// Whether the target rotation changed since the last update.
