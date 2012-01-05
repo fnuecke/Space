@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Systems;
+﻿using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
 using Engine.Util;
@@ -9,7 +8,7 @@ namespace Engine.Simulation
     /// <summary>
     /// Minimal interface to be implemented by simulation states.
     /// </summary>
-    public interface ISimulation : ICloneable, IPacketizable, IHashable
+    public interface ISimulation : ICopyable<ISimulation>, IPacketizable, IHashable
     {
         /// <summary>
         /// The current frame of the simulation the state represents.

@@ -20,7 +20,7 @@ namespace Space.ComponentSystem.Systems
     /// neighbor search).
     /// </para>
     /// </summary>
-    public class CellSystem : AbstractComponentSystem<AvatarParameterization, NullParameterization>
+    public class CellSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
     {
         #region Constants
 
@@ -92,8 +92,17 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Accept avatar components
+
+        protected override bool SupportsComponentUpdate(AbstractComponent component)
+        {
+            return component.GetType() == typeof(Avatar);
+        }
+
+        #endregion
+
         #region Logic
-        
+
         /// <summary>
         /// Checks all players' positions to determine which cells are active
         /// and which are not. Sends messages if a cell's state changes.
@@ -194,11 +203,19 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override object Clone()
+        public override IComponentSystem DeepCopy(IComponentSystem into)
         {
-            var copy = (CellSystem)base.Clone();
+            var copy = (CellSystem)base.DeepCopy(into);
 
-            copy._livingCells = new HashSet<ulong>(_livingCells);
+            if (copy._livingCells == _livingCells)
+            {
+                copy._livingCells = new HashSet<ulong>(_livingCells);
+            }
+            else
+            {
+                copy._livingCells.Clear();
+                copy._livingCells.UnionWith(_livingCells);
+            }
 
             return copy;
         }

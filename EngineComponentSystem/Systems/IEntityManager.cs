@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Entities;
+﻿using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -8,7 +7,7 @@ namespace Engine.ComponentSystem.Systems
     /// <summary>
     /// Interface for classes managing a list of entities.
     /// </summary>
-    public interface IEntityManager : IPacketizable, IHashable, ICloneable
+    public interface IEntityManager : IPacketizable, IHashable, ICopyable<IEntityManager>
     {
         /// <summary>
         /// The component system manager used together with this entity manager.

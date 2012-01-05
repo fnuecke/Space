@@ -334,6 +334,22 @@ namespace Engine.Collections
         }
 
         /// <summary>
+        /// Removes all entries from this tree.
+        /// </summary>
+        public void Clear()
+        {
+            // Free all tree nodes.
+            FreeBranch(_root);
+
+            // Free all list nodes.
+            for (var node = _entries.First; node != null; node = node.Next)
+            {
+                FreeListNode(node);
+            }
+            _entries.Clear();
+        }
+
+        /// <summary>
         /// Perform a range query on this tree. This will return all entries
         /// in the tree that are in the specified range to the specified point,
         /// using a euclidean distance.
@@ -813,7 +829,7 @@ namespace Engine.Collections
             public List<LinkedListNode<Entry>> GetEntries(List<LinkedListNode<Entry>> list)
             {
                 list.Clear();
-                for (var entry = LowEntry; HighEntry != null && entry != HighEntry.Next; entry = entry.Next)
+                for (var entry = LowEntry; entry != null && entry != HighEntry.Next; entry = entry.Next)
                 {
                     list.Add(entry);
                 }
@@ -991,13 +1007,6 @@ namespace Engine.Collections
             }
             var result = _nodePool[_nodePool.Count - 1];
             _nodePool.RemoveAt(_nodePool.Count - 1);
-            result.Children[0] = null;
-            result.Children[1] = null;
-            result.Children[2] = null;
-            result.Children[3] = null;
-            result.EntryCount = 0;
-            result.HighEntry = null;
-            result.LowEntry = null;
             result.Parent = parent;
             return result;
         }
@@ -1010,7 +1019,37 @@ namespace Engine.Collections
         {
             if (node != null)
             {
+                node.Children[0] = null;
+                node.Children[1] = null;
+                node.Children[2] = null;
+                node.Children[3] = null;
+                node.EntryCount = 0;
+                node.HighEntry = null;
+                node.LowEntry = null;
+                node.Parent = null;
                 _nodePool.Add(node);
+            }
+        }
+
+        /// <summary>
+        /// Releases a node and all its child nodes.
+        /// </summary>
+        /// <param name="node"></param>
+        private static void FreeBranch(Node node)
+        {
+            if (node != null)
+            {
+                // If its an inner node, free all children first.
+                if (!node.IsLeaf)
+                {
+                    foreach (var child in node.Children)
+                    {
+                        FreeBranch(child);
+                    }
+                }
+
+                // Then the node itself.
+                FreeNode(node);
             }
         }
 

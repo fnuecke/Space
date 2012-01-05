@@ -64,7 +64,7 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="parameterizationType">The type to check.</param>
         /// <returns>Whether the type is supported or not.</returns>
-        public override bool SupportsParameterization(Type parameterizationType)
+        public override bool SupportsUpdateParameterization(Type parameterizationType)
         {
             return parameterizationType == typeof(SoundParameterization);
         }

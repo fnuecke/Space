@@ -77,9 +77,6 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
             if (_cooldowns != null)
             {
                 // Decrement, remove if run out.
@@ -98,7 +95,7 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="parameterizationType">The parameterization to check.</param>
         /// <returns>Whether its supported or not.</returns>
-        public override bool SupportsParameterization(Type parameterizationType)
+        public override bool SupportsUpdateParameterization(Type parameterizationType)
         {
             return parameterizationType == typeof(DefaultLogicParameterization);
         }

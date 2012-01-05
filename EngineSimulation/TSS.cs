@@ -424,7 +424,15 @@ namespace Engine.Simulation
         /// <summary>
         /// Not available for TSS.
         /// </summary>
-        public object Clone()
+        public ISimulation DeepCopy()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Not available for TSS.
+        /// </summary>
+        public ISimulation DeepCopy(ISimulation into)
         {
             throw new NotSupportedException();
         }
@@ -556,7 +564,7 @@ namespace Engine.Simulation
         {
             for (int i = start; i >= 0; --i)
             {
-                _states[i] = (IAuthoritativeSimulation)state.Clone();
+                _states[i] = (IAuthoritativeSimulation)state.DeepCopy(_states[i]);
             }
         }
 
@@ -682,7 +690,12 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
-            public object Clone()
+            public IEntityManager DeepCopy()
+            {
+                throw new NotSupportedException();
+            }
+
+            public IEntityManager DeepCopy(IEntityManager into)
             {
                 throw new NotSupportedException();
             }
@@ -723,7 +736,7 @@ namespace Engine.Simulation
                 }
                 foreach (var state in _tss._states)
                 {
-                    state.EntityManager.SystemManager.AddSystem((IComponentSystem)system.Clone());
+                    state.EntityManager.SystemManager.AddSystem(system.DeepCopy());
                 }
                 return this;
             }
@@ -793,6 +806,11 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
+            public void ClearComponents()
+            {
+                throw new NotSupportedException();
+            }
+
             public void SendMessage(ValueType message)
             {
                 throw new NotSupportedException();
@@ -813,7 +831,12 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
-            public object Clone()
+            public IComponentSystemManager DeepCopy()
+            {
+                throw new NotSupportedException();
+            }
+
+            public IComponentSystemManager DeepCopy(IComponentSystemManager into)
             {
                 throw new NotSupportedException();
             }

@@ -85,9 +85,6 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
-#if DEBUG
-            base.Update(parameterization);
-#endif
             if (_timeToWait > 0)
             {
                 --_timeToWait;
@@ -103,7 +100,7 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="parameterizationType">The parameterization to check.</param>
         /// <returns>Whether it's supported or not.</returns>
-        public override bool SupportsParameterization(System.Type parameterizationType)
+        public override bool SupportsUpdateParameterization(Type parameterizationType)
         {
             return parameterizationType == typeof(DefaultLogicParameterization);
         }

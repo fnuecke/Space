@@ -117,6 +117,7 @@
     <Compile Include="Input\MouseInputManager.cs" />
     <Compile Include="Network\AbstractProtocol.cs" />
     <Compile Include="Util\CoordinateIds.cs" />
+    <Compile Include="Util\ICopyable.cs" />
     <Compile Include="Util\IdManager.cs" />
     <Compile Include="Util\LocalizedContentManager.cs" />
     <Compile Include="Util\PacketStream.cs" />

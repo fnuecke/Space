@@ -34,7 +34,7 @@ namespace Engine.ComponentSystem.Systems
     /// copied.
     /// </para>
     /// </summary>
-    public interface IComponentSystem : ICloneable, IPacketizable, IHashable
+    public interface IComponentSystem : ICopyable<IComponentSystem>, IPacketizable, IHashable
     {
         /// <summary>
         /// The component system manager this system is part of.
@@ -93,6 +93,11 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to remove.</param>
         void RemoveComponent(AbstractComponent component);
+
+        /// <summary>
+        /// Removes all components from this system.
+        /// </summary>
+        void Clear();
 
         /// <summary>
         /// Inform a system of a message that was sent by another system.

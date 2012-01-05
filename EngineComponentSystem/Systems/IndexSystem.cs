@@ -50,6 +50,11 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         private static readonly IndexParameterization _parameterization = new IndexParameterization();
 
+        /// <summary>
+        /// Reused for iteration.
+        /// </summary>
+        private static readonly List<QuadTree<int>> _reusableTreeList = new List<QuadTree<int>>();
+
         #endregion
 
         public int DEBUG_NumIndexes
@@ -113,7 +118,7 @@ namespace Engine.ComponentSystem.Systems
         {
             var result = new List<Entity>();
 
-            foreach (var tree in TreesForGroups(groups))
+            foreach (var tree in TreesForGroups(groups, _reusableTreeList))
             {
                 foreach (var neighborId in tree.RangeQuery(query, range))
                 {
@@ -157,11 +162,21 @@ namespace Engine.ComponentSystem.Systems
                     }
 
                     // Update all indexes the component is part of.
-                    foreach (var tree in TreesForGroups(_parameterization.IndexGroups))
+                    foreach (var tree in TreesForGroups(_parameterization.IndexGroups, _reusableTreeList))
                     {
                         tree.Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
                     }
                 }
+            }
+        }
+
+        public override void Clear()
+        {
+            base.Clear();
+
+            foreach (var tree in _trees)
+            {
+                tree.Clear();
             }
         }
 
@@ -181,7 +196,7 @@ namespace Engine.ComponentSystem.Systems
                 if (index != null)
                 {
                     EnsureIndexesExist(index.IndexGroups);
-                    foreach (var tree in TreesForGroups(index.IndexGroups))
+                    foreach (var tree in TreesForGroups(index.IndexGroups, _reusableTreeList))
                     {
                         tree.Add(transform.Translation, component.Entity.UID);
                     }
@@ -218,7 +233,7 @@ namespace Engine.ComponentSystem.Systems
                     position = transform.Translation;
                 }
 
-                foreach (var tree in TreesForGroups(index.IndexGroups))
+                foreach (var tree in TreesForGroups(index.IndexGroups, _reusableTreeList))
                 {
                     tree.Remove(position, component.Entity.UID);
                 }
@@ -243,30 +258,45 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        private IEnumerable<QuadTree<int>> TreesForGroups(ulong groups)
+        private List<QuadTree<int>> TreesForGroups(ulong groups, List<QuadTree<int>> list)
         {
+            list.Clear();
             int index = 0;
             while (groups > 0)
             {
                 if ((groups & 1) == 1 && _trees[index] != null)
                 {
-                    yield return _trees[index];
+                    list.Add(_trees[index]);
                 }
                 groups = groups >> 1;
                 ++index;
             }
+            return list;
         }
 
         #endregion
 
         #region Serialization / Hashing / Cloning
 
-        public override object Clone()
+        public override IComponentSystem DeepCopy(IComponentSystem into)
         {
-            var copy = (IndexSystem)base.Clone();
+            var copy = (IndexSystem)base.DeepCopy(into);
 
             // Create own index. Will be filled when re-adding components.
-            copy._trees = new QuadTree<int>[sizeof(ulong) * 8];
+            if (copy._trees == _trees)
+            {
+                copy._trees = new QuadTree<int>[sizeof(ulong) * 8];
+            }
+            else
+            {
+                foreach (var tree in copy._trees)
+                {
+                    if (tree != null)
+                    {
+                        tree.Clear();
+                    }
+                }
+            }
 
             return copy;
         }

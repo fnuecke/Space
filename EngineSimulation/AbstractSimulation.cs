@@ -157,15 +157,34 @@ namespace Engine.Simulation
         /// Implements deep cloning.
         /// </summary>
         /// <returns>A deep copy of this simulation.</returns>
-        public virtual object Clone()
+        public ISimulation DeepCopy()
         {
-            var copy = (AbstractSimulation)MemberwiseClone();
+            return DeepCopy(null);
+        }
+
+        public virtual ISimulation DeepCopy(ISimulation into)
+        {
+            AbstractSimulation copy = (AbstractSimulation)(into ?? MemberwiseClone());
 
             // Clone system manager.
-            copy.EntityManager = (IEntityManager)EntityManager.Clone();
+            if (copy.EntityManager == EntityManager)
+            {
+                copy.EntityManager = EntityManager.DeepCopy();
+            }
+            else
+            {
+                copy.EntityManager = EntityManager.DeepCopy(copy.EntityManager);
+            }
 
             // Copy commands directly (they are immutable).
-            copy.commands = new List<ICommand>(commands);
+            if (copy.commands == commands)
+            {
+                copy.commands = new List<ICommand>(commands);
+            }
+            else
+            {
+                copy.commands.Clear();
+            }
 
             return copy;
         }

@@ -10,7 +10,7 @@ namespace Engine.ComponentSystem.Systems
     /// Interface to component system managers, which hold multiple systems
     /// which may communicate with each other via the manager.
     /// </summary>
-    public interface IComponentSystemManager : ICloneable, IPacketizable, IHashable
+    public interface IComponentSystemManager : ICopyable<IComponentSystemManager>, IPacketizable, IHashable
     {
         /// <summary>
         /// A list of registered subsystems.
@@ -46,6 +46,11 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to remove.</param>
         void RemoveComponent(AbstractComponent component);
+
+        /// <summary>
+        /// Remove all components from all subsystems.
+        /// </summary>
+        void ClearComponents();
 
         /// <summary>
         /// Add the system to this manager.

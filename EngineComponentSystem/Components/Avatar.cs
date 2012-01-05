@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -29,20 +28,6 @@ namespace Engine.ComponentSystem.Components
         public Avatar()
             : this(-1)
         {
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Supports <c>AvatarParameterization</c>.
-        /// </summary>
-        /// <param name="parameterizationType">The parameterization to check.</param>
-        /// <returns>Whether it is supported.</returns>
-        public override bool SupportsParameterization(Type parameterizationType)
-        {
-            return parameterizationType == typeof(AvatarParameterization);
         }
 
         #endregion

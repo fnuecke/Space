@@ -60,39 +60,46 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
-            var args = (DefaultLogicParameterization)parameterization;
-
-            // Logic, we need a transform to do the positioning.
-            if (_effect != null)
+            if (parameterization.GetType() == typeof(ParticleParameterization))
             {
-                // Only trigger new particles while we're enabled.
-                if (Emitting)
-                {
-                    var transform = Entity.GetComponent<Transform>();
-                    if (transform != null)
-                    {
-                        _effect.Trigger(transform.Translation);
-                    }
-                }
+                var args = (ParticleParameterization)parameterization;
 
-                // Always update, to allow existing particles to disappear.
-                _effect.Update(1f / 60f);
+                // If we have an effect make sure its loaded and trigger it.
+                if (_effect == null && !string.IsNullOrWhiteSpace(EffectName))
+                {
+                    // Always create a deep copy, because this will always
+                    // return the same instance.
+                    _effect = args.Content.Load<ParticleEffect>(EffectName).DeepCopy();
+                    _effect.Initialise();
+                    _effect.LoadContent(args.Content);
+                }
+            }
+            else
+            {
+                var args = (DefaultLogicParameterization)parameterization;
+
+                // Logic, we need a transform to do the positioning.
+                if (_effect != null)
+                {
+                    // Only trigger new particles while we're enabled.
+                    if (Emitting)
+                    {
+                        var transform = Entity.GetComponent<Transform>();
+                        if (transform != null)
+                        {
+                            _effect.Trigger(transform.Translation);
+                        }
+                    }
+
+                    // Always update, to allow existing particles to disappear.
+                    _effect.Update(1f / 60f);
+                }
             }
         }
 
         public override void Draw(object parameterization)
         {
             var args = (ParticleParameterization)parameterization;
-
-            // If we have an effect make sure its loaded and trigger it.
-            if (_effect == null && !string.IsNullOrWhiteSpace(EffectName))
-            {
-                // Always create a deep copy, because this will always
-                // return the same instance.
-                _effect = args.Content.Load<ParticleEffect>(EffectName).DeepCopy();
-                _effect.Initialise();
-                _effect.LoadContent(args.Content);
-            }
 
             // Render if we have our effect.
             if (_effect != null)
@@ -119,10 +126,25 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-        public override bool SupportsParameterization(Type parameterizationType)
+        /// <summary>
+        /// Accepts <c>ParticleParameterization</c> and <c>DefaultLogicParameterization</c>.
+        /// </summary>
+        /// <param name="parameterizationType">the type to check.</param>
+        /// <returns>whether the type's supported or not.</returns>
+        public override bool SupportsUpdateParameterization(Type parameterizationType)
         {
             return parameterizationType == typeof(ParticleParameterization) ||
                 parameterizationType == typeof(DefaultLogicParameterization);
+        }
+
+        /// <summary>
+        /// Accepts <c>ParticleParameterization</c>s.
+        /// </summary>
+        /// <param name="parameterizationType">the type to check.</param>
+        /// <returns>whether the type's supported or not.</returns>
+        public override bool SupportsDrawParameterization(Type parameterizationType)
+        {
+            return parameterizationType == typeof(ParticleParameterization);
         }
 
         #endregion
@@ -149,13 +171,6 @@ namespace Space.ComponentSystem.Components
             if (_effect != null)
             {
                 copy._effect = _effect.DeepCopy();
-//                 for (int i = 0; i < _effect.Count; i++)
-//                 {
-//                     for (int j = 0; j < _effect[i].ActiveParticlesCount; j++)
-//                     {
-//                         copy._effect[i].Particles[j] = _effect[i].Particles[j];
-//                     }
-//                 }
             }
 
             return copy;

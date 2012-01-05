@@ -94,6 +94,17 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
+        /// Remove all components from all subsystems.
+        /// </summary>
+        public void ClearComponents()
+        {
+            foreach (var system in _systems)
+            {
+                system.Clear();
+            }
+        }
+
+        /// <summary>
         /// Add the system to this manager.
         /// </summary>
         /// <param name="system">The system to add.</param>
@@ -230,19 +241,46 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        public object Clone()
+        public IComponentSystemManager DeepCopy()
         {
             // Start with a quick, shallow copy.
-            var copy = (ComponentSystemManager)MemberwiseClone();
+            return DeepCopy((IComponentSystemManager)MemberwiseClone());
+        }
+
+        public IComponentSystemManager DeepCopy(IComponentSystemManager into)
+        {
+            // Start with a quick, shallow copy.
+            var copy = (ComponentSystemManager)into;
 
             // Give it its own lookup table.
-            copy._mapping = new Dictionary<Type, IComponentSystem>();
+            if (copy._mapping == _mapping)
+            {
+                copy._mapping = new Dictionary<Type, IComponentSystem>();
+            }
+            else
+            {
+                copy._mapping.Clear();
+            }
 
             // Create clones of all subsystems.
-            copy._systems = new List<IComponentSystem>();
-            foreach (var system in _systems)
+            if (copy._systems == _systems)
             {
-                copy.AddSystem((IComponentSystem)system.Clone());
+                copy._systems = new List<IComponentSystem>();
+                foreach (var system in _systems)
+                {
+                    copy.AddSystem(system.DeepCopy());
+                }
+            }
+            else
+            {
+                if (_systems.Count != copy._systems.Count)
+                {
+                    throw new ArgumentException("System count mismatch.", "into");
+                }
+                for (int i = 0; i < _systems.Count; i++)
+                {
+                    copy._systems[i] = _systems[i].DeepCopy(copy._systems[i]);
+                }
             }
 
             return copy;

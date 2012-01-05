@@ -102,41 +102,35 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to add.</param>
         /// <returns>This component system, for chaining.</returns>
-        public virtual IComponentSystem AddComponent(AbstractComponent component)
+        public IComponentSystem AddComponent(AbstractComponent component)
         {
             bool wasAdded = false;
-            if (!_isUpdateNullParameterized)
+            if (SupportsComponentUpdate(component))
             {
                 int index = _updateableComponents.BinarySearch(component, UpdateOrderComparer.Default);
                 if (index < 0)
                 {
-                    if (component.SupportsParameterization(typeof(TUpdateParameterization)))
+                    index = ~index;
+                    while ((index < _updateableComponents.Count) && (_updateableComponents[index].UpdateOrder == component.UpdateOrder))
                     {
-                        index = ~index;
-                        while ((index < _updateableComponents.Count) && (_updateableComponents[index].UpdateOrder == component.UpdateOrder))
-                        {
-                            index++;
-                        }
-                        _updateableComponents.Insert(index, component);
-                        wasAdded = true;
+                        index++;
                     }
+                    _updateableComponents.Insert(index, component);
+                    wasAdded = true;
                 }
             }
-            if (!_isDrawNullParameterized)
+            if (SupportsComponentDraw(component))
             {
                 int index = _drawableComponents.BinarySearch(component, DrawOrderComparer.Default);
                 if (index < 0)
                 {
-                    if (component.SupportsParameterization(typeof(TDrawParameterization)))
+                    index = ~index;
+                    while ((index < _drawableComponents.Count) && (_drawableComponents[index].DrawOrder == component.DrawOrder))
                     {
-                        index = ~index;
-                        while ((index < _drawableComponents.Count) && (_drawableComponents[index].DrawOrder == component.DrawOrder))
-                        {
-                            index++;
-                        }
-                        _drawableComponents.Insert(index, component);
-                        wasAdded = true;
+                        index++;
                     }
+                    _drawableComponents.Insert(index, component);
+                    wasAdded = true;
                 }
             }
             if (wasAdded)
@@ -153,11 +147,11 @@ namespace Engine.ComponentSystem.Systems
         public void RemoveComponent(AbstractComponent component)
         {
             bool wasRemoved = false;
-            if (!_isUpdateNullParameterized && _updateableComponents.Remove(component))
+            if (_updateableComponents.Remove(component))
             {
                 wasRemoved = true;
             }
-            if (!_isDrawNullParameterized && _drawableComponents.Remove(component))
+            if (_drawableComponents.Remove(component))
             {
                 wasRemoved = true;
             }
@@ -165,6 +159,47 @@ namespace Engine.ComponentSystem.Systems
             {
                 HandleComponentRemoved(component);
             }
+        }
+
+        /// <summary>
+        /// Removes all components from this system.
+        /// </summary>
+        public virtual void Clear()
+        {
+            _updateableComponents.Clear();
+            _drawableComponents.Clear();
+        }
+
+        /// <summary>
+        /// Allows filtering which components should be added as updateable.
+        /// </summary>
+        /// <remarks>
+        /// Per default this is delegated to the component (asking it if it
+        /// knows our parameterization), given we have one. If we are null
+        /// parameterized (<c>NullParameterization</c>) this will always return
+        /// false per default.
+        /// </remarks>
+        /// <param name="component">The component to check.</param>
+        /// <returns>Whether to allow adding it or not.</returns>
+        protected virtual bool SupportsComponentUpdate(AbstractComponent component)
+        {
+            return !_isUpdateNullParameterized && component.SupportsUpdateParameterization(typeof(TUpdateParameterization));
+        }
+
+        /// <summary>
+        /// Allows filtering which components should be added as drawable.
+        /// </summary>
+        /// <remarks>
+        /// Per default this is delegated to the component (asking it if it
+        /// knows our parameterization), given we have one. If we are null
+        /// parameterized (<c>NullParameterization</c>) this will always return
+        /// false per default.
+        /// </remarks>
+        /// <param name="component">The component to check.</param>
+        /// <returns>Whether to allow adding it or not.</returns>
+        protected virtual bool SupportsComponentDraw(AbstractComponent component)
+        {
+            return !_isDrawNullParameterized && component.SupportsDrawParameterization(typeof(TDrawParameterization));
         }
 
         /// <summary>
@@ -208,41 +243,34 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A deep, with a semi-cleared copy of this system.</returns>
-        public virtual object Clone()
+        public IComponentSystem DeepCopy()
         {
             // Get something to start with.
-            var copy = (AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>)MemberwiseClone();
+            return DeepCopy(null);
+        }
 
-            // If we're not null parameterized, use a different list. Copy over
-            // non-entity components.
-            var toClone = new HashSet<AbstractComponent>();
-            if (!_isUpdateNullParameterized)
+        public virtual IComponentSystem DeepCopy(IComponentSystem into)
+        {
+            var copy = (AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>)(into ?? MemberwiseClone());
+
+            if (copy._updateableComponents == _updateableComponents)
             {
                 copy._updateableComponents = new List<AbstractComponent>();
-                foreach (var component in _updateableComponents)
-                {
-                    if (component.Entity == null)
-                    {
-                        toClone.Add(component);
-                    }
-                }
             }
-            if (!_isDrawNullParameterized)
+            else
+            {
+                copy._updateableComponents.Clear();
+            }
+
+            if (copy._drawableComponents == _drawableComponents)
             {
                 copy._drawableComponents = new List<AbstractComponent>();
-                foreach (var component in _drawableComponents)
-                {
-                    if (component.Entity == null)
-                    {
-                        toClone.Add(component);
-                    }
-                }
             }
-            foreach (var component in toClone)
+            else
             {
-                copy.AddComponent((AbstractComponent)component.Clone());
+                copy._drawableComponents.Clear();
             }
-            
+
             // No manager at first. Must be re-set in (e.g. in cloned manager).
             copy.Manager = null;
 

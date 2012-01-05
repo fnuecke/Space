@@ -73,7 +73,17 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="parameterizationType">The type of parameterization to check.</param>
         /// <returns>Whether the parameterization is supported.</returns>
-        public virtual bool SupportsParameterization(Type parameterizationType)
+        public virtual bool SupportsUpdateParameterization(Type parameterizationType)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Does not support any parameterization per default.
+        /// </summary>
+        /// <param name="parameterizationType">The type of parameterization to check.</param>
+        /// <returns>Whether the parameterization is supported.</returns>
+        public virtual bool SupportsDrawParameterization(Type parameterizationType)
         {
             return false;
         }

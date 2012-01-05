@@ -162,12 +162,11 @@ namespace Engine.ComponentSystem.Systems
 
         public void Depacketize(Packet packet)
         {
-            // Clear component lists. Just do a clone, which preserves the
-            // non-entity bound components for us.
-            SystemManager = (IComponentSystemManager)SystemManager.Clone();
+            // Clear component lists.
+            SystemManager.ClearComponents();
             packet.ReadPacketizableInto(SystemManager);
 
-            // And finally the objects. Remove the one we know before that.
+            // Read back all entities to add.
             _entityMap.Clear();
             foreach (var entity in packet.ReadPacketizables<Entity>())
             {
@@ -186,16 +185,36 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        public object Clone()
+        public IEntityManager DeepCopy()
         {
-            var copy = (EntityManager)MemberwiseClone();
+            return DeepCopy(null);
+        }
+
+        public IEntityManager DeepCopy(IEntityManager into)
+        {
+            var copy = (EntityManager)(into ?? MemberwiseClone());
 
             // Clone system manager.
-            copy.SystemManager = (IComponentSystemManager)SystemManager.Clone();
+            if (copy.SystemManager == SystemManager)
+            {
+                copy.SystemManager = SystemManager.DeepCopy();
+            }
+            else
+            {
+                copy.SystemManager = SystemManager.DeepCopy(copy.SystemManager);
+            }
             copy.SystemManager.EntityManager = copy;
 
             // Clone all entities.
-            copy._entityMap = new Dictionary<int, Entity>();
+            if (copy._entityMap == _entityMap)
+            {
+                copy._entityMap = new Dictionary<int, Entity>();
+            }
+            else
+            {
+                copy._entityMap.Clear();
+            }
+
             foreach (var entity in _entityMap.Values)
             {
                 copy.AddEntityUnchecked((Entity)entity.Clone());

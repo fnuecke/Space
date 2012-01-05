@@ -129,11 +129,19 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override object Clone()
+        public override IComponentSystem DeepCopy(IComponentSystem into)
         {
-            var copy = (UniversalSystem)base.Clone();
+            var copy = (UniversalSystem)base.DeepCopy(into);
 
-            copy._entities = new Dictionary<ulong, List<int>>();
+            if (copy._entities == _entities)
+            {
+                copy._entities = new Dictionary<ulong, List<int>>();
+            }
+            else
+            {
+                copy._entities.Clear();
+            }
+
             foreach (var item in _entities)
             {
                 copy._entities.Add(item.Key, new List<int>(item.Value));
@@ -243,10 +251,12 @@ namespace Space.ComponentSystem.Systems
 
             return list;
         }
+
         public List<int> GetSystemList(ulong id)
         {
             return _entities[id];
         }
+
         #endregion
     }
 }

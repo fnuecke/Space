@@ -133,7 +133,6 @@
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="ScreenManager\Screens\Entries\OptionMenuEntry.cs" />
     <Compile Include="Simulation\Commands\GameCommand.cs" />
-    <Compile Include="ComponentSystem\Components\Background.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
     <Compile Include="ComponentSystem\Components\WeaponControl.cs" />

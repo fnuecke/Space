@@ -8,7 +8,7 @@ namespace Engine.ComponentSystem.Systems
     /// <summary>
     /// Look-up system which allows fetching avatars for individual players.
     /// </summary>
-    public class AvatarSystem : AbstractComponentSystem<AvatarParameterization, NullParameterization>
+    public class AvatarSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
     {
         #region Fields
 
@@ -39,6 +39,17 @@ namespace Engine.ComponentSystem.Systems
 
         #region Avatar entity tracking
 
+        public override void Clear()
+        {
+            base.Clear();
+            _avatars.Clear();
+        }
+
+        protected override bool SupportsComponentUpdate(AbstractComponent component)
+        {
+            return component.GetType() == typeof(Avatar);
+        }
+
         protected override void HandleComponentAdded(AbstractComponent component)
         {
             var avatar = (Avatar)component;
@@ -55,13 +66,20 @@ namespace Engine.ComponentSystem.Systems
 
         #region Cloning
 
-        public override object Clone()
+        public override IComponentSystem DeepCopy(IComponentSystem into)
         {
             // Get the base clone.
-            var copy = (AvatarSystem)base.Clone();
+            var copy = (AvatarSystem)base.DeepCopy(into);
 
             // Give it its own lookup table.
-            copy._avatars = new Dictionary<int, Entity>();
+            if (copy._avatars == _avatars)
+            {
+                copy._avatars = new Dictionary<int, Entity>();
+            }
+            else
+            {
+                copy._avatars.Clear();
+            }
 
             return copy;
         }

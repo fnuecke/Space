@@ -109,7 +109,7 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="parameterizationType">the type to check.</param>
         /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsParameterization(Type parameterizationType)
+        public override bool SupportsDrawParameterization(Type parameterizationType)
         {
             return parameterizationType == typeof(RendererParameterization) ||
                 parameterizationType.IsSubclassOf(typeof(RendererParameterization));

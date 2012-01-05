@@ -10,8 +10,8 @@ namespace Engine.ComponentSystem.Systems
     /// sub-classing with extended rendering configurations (see the particle
     /// render system).
     /// </summary>
-    public class RenderSystem<TRendererParameterization>
-        : AbstractComponentSystem<NullParameterization, TRendererParameterization>
+    public class RenderSystem<TUpdateParameterization, TRendererParameterization>
+        : AbstractComponentSystem<TUpdateParameterization, TRendererParameterization>
         where TRendererParameterization : RendererParameterization, new()
     {
         #region Fields
