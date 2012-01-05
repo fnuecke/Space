@@ -120,7 +120,7 @@ namespace Engine.ComponentSystem.Systems
                     }
 
                     // Only test if its in our neighbors list (if we have one).
-                    if (_neighbors.Count > 0 && _neighbors.Contains(otherCollidable.Entity))
+                    if (_neighbors.Count > 0 && !_neighbors.Contains(otherCollidable.Entity))
                     {
                         continue;
                     }

@@ -149,6 +149,13 @@ namespace Space.ComponentSystem.Components
             if (_effect != null)
             {
                 copy._effect = _effect.DeepCopy();
+//                 for (int i = 0; i < _effect.Count; i++)
+//                 {
+//                     for (int j = 0; j < _effect[i].ActiveParticlesCount; j++)
+//                     {
+//                         copy._effect[i].Particles[j] = _effect[i].Particles[j];
+//                     }
+//                 }
             }
 
             return copy;

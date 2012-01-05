@@ -15,7 +15,7 @@ namespace Engine.Physics.Intersection
         /// <param name="B1">its current position</param>
         /// <returns>true if the boxes (did) collide.</returns>
         /// <see cref="http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=3"/>
-        public static bool Test(Vector2 Ea, Vector2 A0, Vector2 A1, Vector2 Eb, Vector2 B0, Vector2 B1)
+        public static bool Test(ref Vector2 Ea, ref Vector2 A0, ref Vector2 A1, ref Vector2 Eb, ref Vector2 B0, ref Vector2 B1)
         {
             Rectangle A = new Rectangle((int)A0.X, (int)A0.Y, (int)Ea.X, (int)Ea.Y);//previous state of AABB A
             Rectangle B = new Rectangle((int)B0.X, (int)B0.Y, (int)Eb.X, (int)Eb.Y);//previous state of AABB B

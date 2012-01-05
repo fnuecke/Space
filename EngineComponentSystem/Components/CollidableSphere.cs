@@ -59,21 +59,21 @@ namespace Engine.ComponentSystem.Components
         /// <returns>Whether the two collide or not.</returns>
         public override bool Intersects(AbstractCollidable collidable)
         {
-            return collidable.Intersects(Radius, _previousPosition, this.Entity.GetComponent<Transform>().Translation);
+            return collidable.Intersects(Radius, ref _previousPosition, ref this.Entity.GetComponent<Transform>().Translation);
         }
 
-        internal override bool Intersects(Vector2 extents, Vector2 previousPosition, Vector2 position)
+        internal override bool Intersects(ref Vector2 extents, ref Vector2 previousPosition, ref Vector2 position)
         {
             return SphereAABBSweep.Test(
-                this.Radius, this._previousPosition, this.Entity.GetComponent<Transform>().Translation,
-                extents, previousPosition, position);
+                this.Radius, ref this._previousPosition, ref this.Entity.GetComponent<Transform>().Translation,
+                ref extents, ref previousPosition, ref position);
         }
 
-        internal override bool Intersects(float radius, Vector2 previousPosition, Vector2 position)
+        internal override bool Intersects(float radius, ref Vector2 previousPosition, ref Vector2 position)
         {
             return SphereSweep.Test(
-                this.Radius, this._previousPosition, this.Entity.GetComponent<Transform>().Translation,
-                radius, previousPosition, position);
+                this.Radius, ref this._previousPosition, ref this.Entity.GetComponent<Transform>().Translation,
+                radius, ref previousPosition, ref position);
         }
 
         #endregion

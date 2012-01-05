@@ -54,9 +54,9 @@ namespace Engine.ComponentSystem.Components
         /// <returns>Whether the two collide or not.</returns>
         public abstract bool Intersects(AbstractCollidable collidable);
 
-        internal abstract bool Intersects(Vector2 extents, Vector2 previousPosition, Vector2 position);
+        internal abstract bool Intersects(ref Vector2 extents, ref Vector2 previousPosition, ref Vector2 position);
 
-        internal abstract bool Intersects(float radius, Vector2 previousPosition, Vector2 position);
+        internal abstract bool Intersects(float radius, ref Vector2 previousPosition, ref Vector2 position);
 
         #endregion
 

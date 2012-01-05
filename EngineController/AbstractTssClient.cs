@@ -31,7 +31,7 @@ namespace Engine.Controller
         /// server. The lower the value the better the synchronization, but, obviously, also
         /// more network traffic.
         /// </summary>
-        private const int SyncInterval = 1000;
+        private const int SyncInterval = 500;
 
         #endregion
 
