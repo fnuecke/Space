@@ -33,7 +33,7 @@ namespace Space.Control
                 {
                     new DefaultLogicSystem(),
                     new IndexSystem(),
-                    //new CollisionSystem(128),
+                    new CollisionSystem(128),
                     new AvatarSystem(),
                     new CellSystem(),
 
@@ -64,7 +64,7 @@ namespace Space.Control
                 {
                     new DefaultLogicSystem(),
                     new IndexSystem(),
-                    //new CollisionSystem(128),
+                    new CollisionSystem(128),
                     new AvatarSystem(),
                     new CellSystem(),
 

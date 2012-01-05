@@ -44,12 +44,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// A list of components registered in this system.
         /// </summary>
-        ReadOnlyCollection<IComponent> UpdateableComponents { get; }
+        ReadOnlyCollection<AbstractComponent> UpdateableComponents { get; }
 
         /// <summary>
         /// A list of components registered in this system.
         /// </summary>
-        ReadOnlyCollection<IComponent> DrawableComponents { get; }
+        ReadOnlyCollection<AbstractComponent> DrawableComponents { get; }
 
         /// <summary>
         /// Tells if this component system should be packetized and sent via
@@ -86,13 +86,13 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to add.</param>
         /// <returns>This component system, for chaining.</returns>
-        IComponentSystem AddComponent(IComponent component);
+        IComponentSystem AddComponent(AbstractComponent component);
 
         /// <summary>
         /// Removes the component from the system, if it's in it.
         /// </summary>
         /// <param name="component">The component to remove.</param>
-        void RemoveComponent(IComponent component);
+        void RemoveComponent(AbstractComponent component);
 
         /// <summary>
         /// Inform a system of a message that was sent by another system.

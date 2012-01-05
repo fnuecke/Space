@@ -73,7 +73,7 @@ namespace Engine.ComponentSystem.Systems
         public override void Update(long frame)
         {
             // Loop through all components.
-            var currentComponents = new List<IComponent>(UpdateableComponents);
+            var currentComponents = new List<AbstractComponent>(UpdateableComponents);
             var componentCount = currentComponents.Count;
             var index = Manager.GetSystem<IndexSystem>();
             _neighbors.Clear();
@@ -106,19 +106,19 @@ namespace Engine.ComponentSystem.Systems
                 for (int j = i + 1; j < componentCount; ++j)
                 {
                     var otherCollidable = (AbstractCollidable)currentComponents[j];
-
+                    
                     // Skip disabled components.
                     if (!otherCollidable.Enabled)
                     {
                         continue;
                     }
-
+                    
                     // Only test if its from a different collision group.
                     if ((currentCollidable.CollisionGroups & otherCollidable.CollisionGroups) != 0)
                     {
                         continue;
                     }
-
+                    continue;
                     // Only test if its in our neighbors list (if we have one).
                     if (_neighbors.Count > 0 && _neighbors.Contains(otherCollidable.Entity))
                     {

@@ -32,12 +32,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// A list of components registered in this system.
         /// </summary>
-        public ReadOnlyCollection<IComponent> UpdateableComponents { get { return _updateableComponents.AsReadOnly(); } }
+        public ReadOnlyCollection<AbstractComponent> UpdateableComponents { get { return _updateableComponents.AsReadOnly(); } }
 
         /// <summary>
         /// A list of components registered in this system.
         /// </summary>
-        public ReadOnlyCollection<IComponent> DrawableComponents { get { return _drawableComponents.AsReadOnly(); } }
+        public ReadOnlyCollection<AbstractComponent> DrawableComponents { get { return _drawableComponents.AsReadOnly(); } }
 
         /// <summary>
         /// Tells if this component system should be packetized and sent via
@@ -70,12 +70,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
-        private List<IComponent> _updateableComponents = new List<IComponent>();
+        private List<AbstractComponent> _updateableComponents = new List<AbstractComponent>();
 
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
-        private List<IComponent> _drawableComponents = new List<IComponent>();
+        private List<AbstractComponent> _drawableComponents = new List<AbstractComponent>();
 
         #endregion
 
@@ -102,7 +102,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to add.</param>
         /// <returns>This component system, for chaining.</returns>
-        public virtual IComponentSystem AddComponent(IComponent component)
+        public virtual IComponentSystem AddComponent(AbstractComponent component)
         {
             bool wasAdded = false;
             if (!_isUpdateNullParameterized)
@@ -150,7 +150,7 @@ namespace Engine.ComponentSystem.Systems
         /// Removes the component from the system, if it's in it.
         /// </summary>
         /// <param name="component">The component to remove.</param>
-        public void RemoveComponent(IComponent component)
+        public void RemoveComponent(AbstractComponent component)
         {
             bool wasRemoved = false;
             if (!_isUpdateNullParameterized && _updateableComponents.Remove(component))
@@ -215,10 +215,10 @@ namespace Engine.ComponentSystem.Systems
 
             // If we're not null parameterized, use a different list. Copy over
             // non-entity components.
-            var toClone = new HashSet<IComponent>();
+            var toClone = new HashSet<AbstractComponent>();
             if (!_isUpdateNullParameterized)
             {
-                copy._updateableComponents = new List<IComponent>();
+                copy._updateableComponents = new List<AbstractComponent>();
                 foreach (var component in _updateableComponents)
                 {
                     if (component.Entity == null)
@@ -229,7 +229,7 @@ namespace Engine.ComponentSystem.Systems
             }
             if (!_isDrawNullParameterized)
             {
-                copy._drawableComponents = new List<IComponent>();
+                copy._drawableComponents = new List<AbstractComponent>();
                 foreach (var component in _drawableComponents)
                 {
                     if (component.Entity == null)
@@ -240,7 +240,7 @@ namespace Engine.ComponentSystem.Systems
             }
             foreach (var component in toClone)
             {
-                copy.AddComponent((IComponent)component.Clone());
+                copy.AddComponent((AbstractComponent)component.Clone());
             }
             
             // No manager at first. Must be re-set in (e.g. in cloned manager).
@@ -257,7 +257,7 @@ namespace Engine.ComponentSystem.Systems
         /// Perform actions for newly added components.
         /// </summary>
         /// <param name="component">The component that was added.</param>
-        protected virtual void HandleComponentAdded(IComponent component)
+        protected virtual void HandleComponentAdded(AbstractComponent component)
         {
         }
 
@@ -265,7 +265,7 @@ namespace Engine.ComponentSystem.Systems
         /// Perform actions for removed components.
         /// </summary>
         /// <param name="component">The component that was removed.</param>
-        protected virtual void HandleComponentRemoved(IComponent component)
+        protected virtual void HandleComponentRemoved(AbstractComponent component)
         {
         }
 
@@ -276,10 +276,10 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Comparer used for inserting / removal.
         /// </summary>
-        private sealed class UpdateOrderComparer : IComparer<IComponent>
+        private sealed class UpdateOrderComparer : IComparer<AbstractComponent>
         {
             public static readonly UpdateOrderComparer Default = new UpdateOrderComparer();
-            public int Compare(IComponent x, IComponent y)
+            public int Compare(AbstractComponent x, AbstractComponent y)
             {
                 if ((x == null) && (y == null))
                 {
@@ -307,10 +307,10 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Comparer used for inserting / removal.
         /// </summary>
-        private sealed class DrawOrderComparer : IComparer<IComponent>
+        private sealed class DrawOrderComparer : IComparer<AbstractComponent>
         {
             public static readonly DrawOrderComparer Default = new DrawOrderComparer();
-            public int Compare(IComponent x, IComponent y)
+            public int Compare(AbstractComponent x, AbstractComponent y)
             {
                 if ((x == null) && (y == null))
                 {

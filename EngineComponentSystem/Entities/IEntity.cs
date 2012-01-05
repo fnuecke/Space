@@ -22,7 +22,7 @@ namespace Engine.ComponentSystem.Entities
         /// <summary>
         /// A list of all of this entities components.
         /// </summary>
-        ReadOnlyCollection<IComponent> Components { get; }
+        ReadOnlyCollection<AbstractComponent> Components { get; }
 
         /// <summary>
         /// The entity manager this entity is currently in.
@@ -33,7 +33,7 @@ namespace Engine.ComponentSystem.Entities
         /// system, the component will be registered with all applicable component systems.
         /// </summary>
         /// <param name="component">The component to add.</param>
-        void AddComponent(IComponent component);
+        void AddComponent(AbstractComponent component);
 
         /// <summary>
         /// Get a component of the specified type from this entity, if it
@@ -46,7 +46,7 @@ namespace Engine.ComponentSystem.Entities
         /// </summary>
         /// <typeparam name="T">The type of the component to get.</typeparam>
         /// <returns>The component, or <c>null</c> if the entity has none of this type.</returns>
-        T GetComponent<T>() where T : IComponent;
+        T GetComponent<T>() where T : AbstractComponent;
 
         /// <summary>
         /// Similar to the generic variant of this method, but takes a type
@@ -54,7 +54,7 @@ namespace Engine.ComponentSystem.Entities
         /// </summary>
         /// <param name="componentType">The type of the component to get.</param>
         /// <returns>The component, or <c>null</c> if the entity has none of this type.</returns>
-        IComponent GetComponent(Type componentType);
+        AbstractComponent GetComponent(Type componentType);
 
         /// <summary>
         /// Get a component by its id.
@@ -62,7 +62,7 @@ namespace Engine.ComponentSystem.Entities
         /// <param name="componentId">The id of the component to get.</param>
         /// <returns>The component, or <c>null</c> if there is no component
         /// with the specified id.</returns>
-        IComponent GetComponent(int componentId);
+        AbstractComponent GetComponent(int componentId);
 
         /// <summary>
         /// Removes a component from this entity. If the entity is in a managed
@@ -70,7 +70,7 @@ namespace Engine.ComponentSystem.Entities
         /// systems.
         /// </summary>
         /// <param name="component">The component to remove.</param>
-        void RemoveComponent(IComponent component);
+        void RemoveComponent(AbstractComponent component);
         
         /// <summary>
         /// Removes a component by its id from this entity. If the entity is in
@@ -80,7 +80,7 @@ namespace Engine.ComponentSystem.Entities
         /// <param name="componentUid">The id of the component to remove.</param>
         /// <returns>The removed component, or <c>null</c> if this entity has no
         /// component with the specified id.</returns>
-        IComponent RemoveComponent(int componentUid);
+        AbstractComponent RemoveComponent(int componentUid);
 
         /// <summary>
         /// Send a message to all components of this entity.

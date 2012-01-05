@@ -72,7 +72,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to add.</param>
         /// <returns>This component system manager, for chaining.</returns>
-        public IComponentSystemManager AddComponent(IComponent component)
+        public IComponentSystemManager AddComponent(AbstractComponent component)
         {
             foreach (var system in _systems)
             {
@@ -85,7 +85,7 @@ namespace Engine.ComponentSystem.Systems
         /// Removes the component from supported subsystems.
         /// </summary>
         /// <param name="component">The component to remove.</param>
-        public void RemoveComponent(IComponent component)
+        public void RemoveComponent(AbstractComponent component)
         {
             foreach (var system in _systems)
             {

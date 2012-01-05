@@ -783,12 +783,12 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
-            public IComponentSystemManager AddComponent(IComponent component)
+            public IComponentSystemManager AddComponent(AbstractComponent component)
             {
                 throw new NotSupportedException();
             }
 
-            public void RemoveComponent(IComponent component)
+            public void RemoveComponent(AbstractComponent component)
             {
                 throw new NotSupportedException();
             }

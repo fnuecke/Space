@@ -24,12 +24,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Maximum entries per node in our index to use.
         /// </summary>
-        private const int maxEntriesPerNode = 10;
+        private const int _maxEntriesPerNode = 10;
 
         /// <summary>
         /// Minimum size of a node in our index.
         /// </summary>
-        private const int minNodeSize = 32;
+        private const int _minNodeSize = 32;
 
         #endregion
 
@@ -41,10 +41,14 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         private QuadTree<int>[] _trees = new QuadTree<int>[sizeof(ulong) * 8];
 
+        #endregion
+
+        #region Single-Allocation
+
         /// <summary>
         /// Reusable parameterization.
         /// </summary>
-        private IndexParameterization _parameterization = new IndexParameterization();
+        private static readonly IndexParameterization _parameterization = new IndexParameterization();
 
         #endregion
 
@@ -132,7 +136,7 @@ namespace Engine.ComponentSystem.Systems
         public override void Update(long frame)
         {
             // Check all components for changes.
-            var currentComponents = new List<IComponent>(UpdateableComponents);
+            var currentComponents = new List<AbstractComponent>(UpdateableComponents);
             foreach (var component in currentComponents)
             {
                 _parameterization.PositionChanged = false;
@@ -164,7 +168,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Insert entities of added components to our index.
         /// </summary>
-        protected override void HandleComponentAdded(IComponent component)
+        protected override void HandleComponentAdded(AbstractComponent component)
         {
             var transform = component.Entity.GetComponent<Transform>();
 
@@ -188,7 +192,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Remove entities of removed components from our index.
         /// </summary>
-        protected override void HandleComponentRemoved(IComponent component)
+        protected override void HandleComponentRemoved(AbstractComponent component)
         {
             // Get the position to remove from. This might not be the current
             // translation due to pending updates, so check for that.
@@ -232,7 +236,7 @@ namespace Engine.ComponentSystem.Systems
             {
                 if ((groups & 1) == 1 && _trees[index] == null)
                 {
-                    _trees[index] = new QuadTree<int>(maxEntriesPerNode, minNodeSize);
+                    _trees[index] = new QuadTree<int>(_maxEntriesPerNode, _minNodeSize);
                 }
                 groups = groups >> 1;
                 ++index;

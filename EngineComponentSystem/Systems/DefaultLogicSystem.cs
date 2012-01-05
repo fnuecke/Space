@@ -30,7 +30,7 @@ namespace Engine.ComponentSystem.Systems
         public override void Update(long frame)
         {
             _parameterization.Frame = frame;
-            var currentComponents = new List<IComponent>(UpdateableComponents);
+            var currentComponents = new List<AbstractComponent>(UpdateableComponents);
             foreach (var component in currentComponents)
             {
                 if (component.Enabled)

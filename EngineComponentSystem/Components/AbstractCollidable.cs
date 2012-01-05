@@ -15,18 +15,14 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public abstract class AbstractCollidable : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// This bit mask representing the collision groups this component is
         /// part of. Components sharing at least one group will not be tested
         /// against each other.
         /// </summary>
-        public uint CollisionGroups { get; set; }
-
-        #endregion
-
-        #region Fields
+        public uint CollisionGroups;
 
         /// <summary>
         /// Previous position of the underlying physics component (for sweep tests).

@@ -547,6 +547,9 @@ namespace Engine.Collections
                 node.Children[3].HighEntry = _root.Children[3].HighEntry;
             }
 
+            // Kill of the old root.
+            FreeNode(_root);
+
             // Set the new root node, adjust the overall tree bounds.
             _root = node;
             _bounds.X = _bounds.X << 1;
@@ -943,10 +946,19 @@ namespace Engine.Collections
 
         #region Object pooling
 
+        /// <summary>
+        /// List of available nodes.
+        /// </summary>
         private static readonly List<Node> _nodePool = new List<Node>(1024);
 
+        /// <summary>
+        /// List of available linked list nodes (entries).
+        /// </summary>
         private static readonly List<LinkedListNode<Entry>> _listNodePool = new List<LinkedListNode<Entry>>(2048);
 
+        /// <summary>
+        /// Allocate more nodes, if we ran out of them.
+        /// </summary>
         private static void AllocNodes()
         {
             for (int i = _nodePool.Count; i < _nodePool.Capacity; i++)
@@ -955,6 +967,9 @@ namespace Engine.Collections
             }
         }
 
+        /// <summary>
+        /// Allocate more linked list nodes, if we ran out of them.
+        /// </summary>
         private static void AllocListNodes()
         {
             for (int i = _listNodePool.Count; i < _listNodePool.Capacity; i++)
@@ -963,6 +978,11 @@ namespace Engine.Collections
             }
         }
 
+        /// <summary>
+        /// Get a fresh node.
+        /// </summary>
+        /// <param name="parent">For constructor.</param>
+        /// <returns>Initialized node.</returns>
         private static Node GetNode(Node parent)
         {
             if (_nodePool.Count == 0)
@@ -982,6 +1002,10 @@ namespace Engine.Collections
             return result;
         }
 
+        /// <summary>
+        /// Releases a node to be reused.
+        /// </summary>
+        /// <param name="node">The node to free.</param>
         private static void FreeNode(Node node)
         {
             if (node != null)
@@ -990,6 +1014,12 @@ namespace Engine.Collections
             }
         }
 
+        /// <summary>
+        /// Gets a fresh linked list node.
+        /// </summary>
+        /// <param name="position">For constructor of entry.</param>
+        /// <param name="value">For constructor of entry.</param>
+        /// <returns>A linked list node.</returns>
         private static LinkedListNode<Entry> GetListNode(Vector2 position, T value)
         {
             if (_listNodePool.Count == 0)
@@ -1003,6 +1033,10 @@ namespace Engine.Collections
             return result;
         }
 
+        /// <summary>
+        /// Releases a linked list node to be reused.
+        /// </summary>
+        /// <param name="node">The node to free.</param>
         private static void FreeListNode(LinkedListNode<Entry> node)
         {
             if (node != null)

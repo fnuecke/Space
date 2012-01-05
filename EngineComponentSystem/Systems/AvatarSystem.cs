@@ -39,13 +39,13 @@ namespace Engine.ComponentSystem.Systems
 
         #region Avatar entity tracking
 
-        protected override void HandleComponentAdded(IComponent component)
+        protected override void HandleComponentAdded(AbstractComponent component)
         {
             var avatar = (Avatar)component;
             _avatars[avatar.PlayerNumber] = avatar.Entity;
         }
 
-        protected override void HandleComponentRemoved(IComponent component)
+        protected override void HandleComponentRemoved(AbstractComponent component)
         {
             var avatar = (Avatar)component;
             _avatars.Remove(avatar.PlayerNumber);

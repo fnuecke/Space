@@ -14,7 +14,7 @@ namespace Engine.ComponentSystem.Components
     /// must invalidate these references when cloning.
     /// </para>
     /// </summary>
-    public abstract class AbstractComponent : IComponent
+    public abstract class AbstractComponent : ICloneable, IPacketizable, IHashable
     {
         #region Properties
 
@@ -23,43 +23,30 @@ namespace Engine.ComponentSystem.Components
         /// multiple components with the same id, but no two components with
         /// the same id attached to the same entity.
         /// </summary>
-        public int UID { get; set; }
+        public int UID = -1;
 
         /// <summary>
         /// This determines in which order this component will be rendered.
         /// Components with higher values will be drawn later.
         /// </summary>
-        public int UpdateOrder { get; set; }
+        public int UpdateOrder;
 
         /// <summary>
         /// This determines in which order this component will be rendered.
         /// Components with higher values will be drawn later.
         /// </summary>
-        public int DrawOrder { get; set; }
+        public int DrawOrder;
 
         /// <summary>
         /// Gets the entity this component belongs to.
         /// </summary>
-        public IEntity Entity { get; set; }
+        public IEntity Entity;
 
         /// <summary>
         /// Whether the component is enabled or not. Disabled components will
         /// not have their <c>Update()</c> method called.
         /// </summary>
-        public bool Enabled { get; set; }
-
-        #endregion
-
-        #region Constructor
-
-        protected AbstractComponent()
-        {
-            // Avoid accidentally getting components due to uninitialized
-            // indexes (default = 0).
-            UID = -1;
-            // Enable per default.
-            Enabled = true;
-        }
+        public bool Enabled = true;
 
         #endregion
 

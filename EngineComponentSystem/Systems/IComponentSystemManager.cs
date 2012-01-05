@@ -39,13 +39,13 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="component">The component to add.</param>
         /// <returns>This component system manager, for chaining.</returns>
-        IComponentSystemManager AddComponent(IComponent component);
+        IComponentSystemManager AddComponent(AbstractComponent component);
 
         /// <summary>
         /// Removes the component from supported subsystems.
         /// </summary>
         /// <param name="component">The component to remove.</param>
-        void RemoveComponent(IComponent component);
+        void RemoveComponent(AbstractComponent component);
 
         /// <summary>
         /// Add the system to this manager.

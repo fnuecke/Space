@@ -23,7 +23,7 @@ namespace Engine.ComponentSystem.Entities
         /// <summary>
         /// A list of all of components this entity is composed of.
         /// </summary>
-        public ReadOnlyCollection<IComponent> Components { get { return _components.AsReadOnly(); } }
+        public ReadOnlyCollection<AbstractComponent> Components { get { return _components.AsReadOnly(); } }
 
         /// <summary>
         /// The entity manager this entity is currently in.
@@ -37,12 +37,12 @@ namespace Engine.ComponentSystem.Entities
         /// <summary>
         /// List of all this entity's components.
         /// </summary>
-        private List<IComponent> _components = new List<IComponent>();
+        private List<AbstractComponent> _components = new List<AbstractComponent>();
 
         /// <summary>
         /// Cached lookup of other components of the same element.
         /// </summary>
-        private Dictionary<Type, IComponent> _mapping = new Dictionary<Type, IComponent>();
+        private Dictionary<Type, AbstractComponent> _mapping = new Dictionary<Type, AbstractComponent>();
         
         /// <summary>
         /// Running counter to uniquely number components.
@@ -69,7 +69,7 @@ namespace Engine.ComponentSystem.Entities
         /// system, the component will be registered with all applicable component systems.
         /// </summary>
         /// <param name="component">The component to add.</param>
-        public void AddComponent(IComponent component)
+        public void AddComponent(AbstractComponent component)
         {
             if (component.Entity == this)
             {
@@ -97,7 +97,7 @@ namespace Engine.ComponentSystem.Entities
         /// </summary>
         /// <typeparam name="T">the type of the component to get.</typeparam>
         /// <returns>the component, or <c>null</c> if the entity has none of this type.</returns>
-        public T GetComponent<T>() where T : IComponent
+        public T GetComponent<T>() where T : AbstractComponent
         {
             // Get the type object representing the generic type.
             return (T)GetComponent(typeof(T));
@@ -109,7 +109,7 @@ namespace Engine.ComponentSystem.Entities
         /// </summary>
         /// <param name="componentType">The type of the component to get.</param>
         /// <returns>The component, or <c>null</c> if the entity has none of this type.</returns>
-        public IComponent GetComponent(Type componentType)
+        public AbstractComponent GetComponent(Type componentType)
         {
             // See if we have that one cached.
             if (_mapping.ContainsKey(componentType))
@@ -139,7 +139,7 @@ namespace Engine.ComponentSystem.Entities
         /// <param name="componentId">The id of the component to get.</param>
         /// <returns>The component, or <c>null</c> if there is no component
         /// with the specified id.</returns>
-        public IComponent GetComponent(int componentId)
+        public AbstractComponent GetComponent(int componentId)
         {
             if (componentId > 0)
             {
@@ -154,7 +154,7 @@ namespace Engine.ComponentSystem.Entities
         /// systems.
         /// </summary>
         /// <param name="component">The component to remove.</param>
-        public void RemoveComponent(IComponent component)
+        public void RemoveComponent(AbstractComponent component)
         {
             if (component.Entity != this)
             {
@@ -171,7 +171,7 @@ namespace Engine.ComponentSystem.Entities
         /// <param name="componentUid">The id of the component to remove.</param>
         /// <returns>The removed component, or <c>null</c> if this entity has no
         /// component with the specified id.</returns>
-        public IComponent RemoveComponent(int componentUid)
+        public AbstractComponent RemoveComponent(int componentUid)
         {
             if (componentUid > 0)
             {
@@ -197,7 +197,7 @@ namespace Engine.ComponentSystem.Entities
 
         #region Utility methods
 
-        private void AddComponentUnchecked(IComponent component)
+        private void AddComponentUnchecked(AbstractComponent component)
         {
             _components.Add(component);
             component.Entity = this;
@@ -254,7 +254,7 @@ namespace Engine.ComponentSystem.Entities
 
             // All components in this entity.
             _components.Clear();
-            foreach (var component in packet.ReadPacketizablesWithTypeInfo<IComponent>())
+            foreach (var component in packet.ReadPacketizablesWithTypeInfo<AbstractComponent>())
             {
                 AddComponentUnchecked(component);
             }
@@ -295,13 +295,13 @@ namespace Engine.ComponentSystem.Entities
             copy.Manager = null;
 
             // Give it its own mapper.
-            copy._mapping = new Dictionary<Type, IComponent>();
+            copy._mapping = new Dictionary<Type, AbstractComponent>();
 
             // And its own component list, then clone the components.
-            copy._components = new List<IComponent>();
+            copy._components = new List<AbstractComponent>();
             foreach (var component in _components)
             {
-                var componentCopy = (IComponent)component.Clone();
+                var componentCopy = (AbstractComponent)component.Clone();
                 // Assign the copy as the belonging entity.
                 componentCopy.Entity = copy;
                 copy._components.Add(componentCopy);
