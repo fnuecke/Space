@@ -35,14 +35,14 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         private readonly int _maxCollidableRadius;
 
-        /// <summary>
-        /// Reusable parameterization.
-        /// </summary>
-        private CollisionParameterization _parameterization = new CollisionParameterization();
-
         #endregion
 
         #region Single-Allocation
+
+        /// <summary>
+        /// Reusable parameterization.
+        /// </summary>
+        private static CollisionParameterization _parameterization = new CollisionParameterization();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.

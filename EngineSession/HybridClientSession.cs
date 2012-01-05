@@ -306,6 +306,10 @@ namespace Engine.Session
         /// </summary>
         private void HandleConnected(IAsyncResult result)
         {
+            if (_tcp == null)
+            {
+                return;
+            }
             try
             {
                 logger.Debug("Connected to host, sending actual join request.");

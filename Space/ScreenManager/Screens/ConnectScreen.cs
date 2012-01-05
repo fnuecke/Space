@@ -37,6 +37,7 @@ namespace Space.ScreenManagement.Screens
                     try
                     {
                         ((Spaaace)ScreenManager.Game).Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(_address.InputText), 7777), Settings.Instance.PlayerName, playerData);
+                        Settings.Instance.LastServerAddress = _address.InputText;
                     }
                     catch (Exception)
                     {
