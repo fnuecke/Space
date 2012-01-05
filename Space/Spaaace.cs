@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using System.Text;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Input;
@@ -338,7 +339,8 @@ namespace Space
                     var session = client.Controller.Session;
                     var entityManager = client.Controller.Simulation.EntityManager;
                     var systemManager = entityManager.SystemManager;
-                    
+
+                    StringBuilder sb = new StringBuilder();
 
                     // Draw session info and netgraph.
                     var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 230, GraphicsDevice.Viewport.Height - 140);
@@ -355,23 +357,18 @@ namespace Space
                         {
                             _spriteBatch.Begin();
 
-                            var cellX = ((int)avatar.GetComponent<Transform>().Translation.X) >> CellSystem.CellSizeShiftAmount;
-                            var cellY = ((int)avatar.GetComponent<Transform>().Translation.Y) >> CellSystem.CellSizeShiftAmount;
                             var x = avatar.GetComponent<Transform>().Translation.X;
                             var y = avatar.GetComponent<Transform>().Translation.Y;
+                            var cellX = ((int)x) >> CellSystem.CellSizeShiftAmount;
+                            var cellY = ((int)y) >> CellSystem.CellSizeShiftAmount;
+                            sb.AppendFormat("Position: ({0:f}, {1:f}), Cell: ({2}, {3})\n", x, y, cellX, cellY);
+
                             var id = ((ulong)cellX << 32) | (uint)cellY;
 
                             var universe = systemManager.GetSystem<UniversalSystem>();
-                            var count = 0;
                             if (universe != null)
                             {
-                                var list = universe.GetSystemList(id);
-
-                                _spriteBatch.DrawString(_console.Font, "Cellx: " + cellX + " CellY: " + cellY + "posx: " + x + " PosY" + y, new Vector2(20, 20), Color.White);
-                                var screensize =
-                                            Math.Sqrt(Math.Pow(GraphicsDevice.Viewport.Width / 2.0, 2) +
-                                                        Math.Pow(GraphicsDevice.Viewport.Height / 2.0, 2));
-                                foreach (var i in list)
+                                foreach (var i in universe.GetSystemList(id))
                                 {
                                     var entity = entityManager.GetEntity(i);
                                     if (entity != null && entity.GetComponent<Transform>() != null)
@@ -396,7 +393,6 @@ namespace Space
                                         var distY = Math.Abs((double)position.Y - (double)y);
                                         var distance = Math.Sqrt(Math.Pow((double)position.Y - (double)y, 2) +
                                                         Math.Pow((double)position.X - (double)x, 2));
-                                        count++;
                                         var phi = Math.Atan2((double)position.Y - (double)y, (double)position.X - (double)x);
                                         var arrowPos = new Vector2(GraphicsDevice.Viewport.Width / 2.0f,
                                                                     GraphicsDevice.Viewport.Height / 2.0f);
@@ -408,34 +404,28 @@ namespace Space
                                         if (distX > GraphicsDevice.Viewport.Width / 2.0 || distY > GraphicsDevice.Viewport.Height / 2.0)
                                             _spriteBatch.Draw(arrow, arrowPos, null, color, (float)phi, new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
                                                             SpriteEffects.None, 1);
-                                        _spriteBatch.DrawString(_console.Font, "Position: " + position + "phi:" + phi + " Distance: " + distance + "size: " + size, new Vector2(20, count * 20 + 20), Color.White);
-
-                                        //spriteBatch.Draw(rocketTexture, rocketPosition, null, players[currentPlayer].Color, rocketAngle, new Vector2(42, 240), 0.1f, SpriteEffects.None, 1);
-
+                                        sb.AppendFormat("Position: {0:f}, Distance: {1:f}, Phi: {2:f}, Size: {3:f}\n", position, distance, phi, size);
                                     }
-
                                 }
-                                _spriteBatch.DrawString(_console.Font, "Count: " + count, new Vector2(20, count * 20 + 40), Color.White);
                             }
 
-                            _spriteBatch.DrawString(_console.Font, "Game speed: " + client.Controller.CurrentSpeed, new Vector2(20, count * 20 + 60), Color.White);
+                            sb.AppendFormat("Game speed: {0:f}\n", client.Controller.CurrentSpeed);
 
                             var index = systemManager.GetSystem<IndexSystem>();
                             if (index != null)
                             {
-                                _spriteBatch.DrawString(_console.Font, "Indexes: " + index.DEBUG_NumIndexes + ", Total entries: " + index.DEBUG_Count, new Vector2(20, count * 20 + 80), Color.White);
+                                sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
                             }
 
                             var health = avatar.GetComponent<Health>();
-                            if (health != null)
-                            {
-                                _spriteBatch.DrawString(_console.Font, "Health: " + health.Value, new Vector2(20, count * 20 + 100), Color.White);
-                            }
                             var energy = avatar.GetComponent<Energy>();
-                            if (energy != null)
+                            if (health != null && energy != null)
                             {
-                                _spriteBatch.DrawString(_console.Font, "Energy: " + energy.Value, new Vector2(20, count * 20 + 120), Color.White);
+                                sb.AppendFormat("Health: {0:f}, Energy: {1:f}\n", health.Value, energy.Value);
                             }
+
+                            _spriteBatch.DrawString(_console.Font, sb.ToString(), new Vector2(20, 20), Color.White);
+
                             _spriteBatch.End();
                         }
                     }

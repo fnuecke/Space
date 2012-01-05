@@ -60,19 +60,26 @@ namespace Engine.ComponentSystem.Components
                 // Get parameterization in proper type.
                 var args = (RendererParameterization)parameterization;
 
-                var destination = new Rectangle(
-                    (int)transform.Translation.X + (int)args.Transform.Translation.X,
-                    (int)transform.Translation.Y + (int)args.Transform.Translation.Y,
-                    (int)(texture.Width * Scale), (int)(texture.Height * Scale));
+                // Get the rectangle at which we'll draw.
+                Vector2 origin;
+                origin.X = texture.Width / 2f;
+                origin.Y = texture.Height / 2f;
+                Rectangle destination;
+                destination.X = (int)(transform.Translation.X + args.Transform.Translation.X - origin.X * Scale);
+                destination.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y - origin.Y * Scale);
+                destination.Width = (int)(texture.Width * Scale);
+                destination.Height = (int)(texture.Height * Scale);
 
                 // Do we even need to draw? (Checking this saves a lot of performance!)
                 if (destination.Intersects(args.SpriteBatch.GraphicsDevice.ScissorRectangle))
                 {
+                    // Correct the destination rectangle for the offset.
+                    destination.X = (int)(transform.Translation.X + args.Transform.Translation.X);
+                    destination.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y);
+
+                    // Draw.
                     args.SpriteBatch.Begin();
-                    args.SpriteBatch.Draw(texture, destination, null, Tint,
-                        (float)transform.Rotation,
-                        new Vector2(texture.Width / 2, texture.Height / 2),
-                        SpriteEffects.None, 0);
+                    args.SpriteBatch.Draw(texture, destination, null, Tint, transform.Rotation, origin, SpriteEffects.None, 0);
                     args.SpriteBatch.End();
                 }
             }

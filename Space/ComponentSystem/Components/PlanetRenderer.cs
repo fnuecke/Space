@@ -84,19 +84,30 @@ namespace Space.ComponentSystem.Components
                     _shadowTexture = args.Content.Load<Texture2D>("Textures/planet_shadow");
                 }
 
-                var atmosphereDestination = new Rectangle(
-                    (int)transform.Translation.X + (int)args.Transform.Translation.X,
-                    (int)transform.Translation.Y + (int)args.Transform.Translation.Y,
-                    (int)(_atmosphereTexture.Width * Scale), (int)(_atmosphereTexture.Height * Scale));
+                // Get the rectangles at which we'll draw.
+                Vector2 atmosphereOrigin;
+                atmosphereOrigin.X = _atmosphereTexture.Width / 2;
+                atmosphereOrigin.Y = _atmosphereTexture.Height / 2;
+                Rectangle atmosphereDestination;
+                atmosphereDestination.X = (int)(transform.Translation.X + args.Transform.Translation.X - atmosphereOrigin.X * Scale);
+                atmosphereDestination.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y - atmosphereOrigin.Y * Scale);
+                atmosphereDestination.Width = (int)(_atmosphereTexture.Width * Scale);
+                atmosphereDestination.Height = (int)(_atmosphereTexture.Height * Scale);
 
-                var shadowDestination = new Rectangle(
-                    (int)transform.Translation.X + (int)args.Transform.Translation.X,
-                    (int)transform.Translation.Y + (int)args.Transform.Translation.Y,
-                    (int)(_atmosphereTexture.Width * Scale), (int)(_atmosphereTexture.Height * Scale));
+                Vector2 shadowOrigin;
+                shadowOrigin.X = _shadowTexture.Width / 2;
+                shadowOrigin.Y = _shadowTexture.Height / 2;
+                Rectangle shadowDestination;
+                shadowDestination.X = (int)(transform.Translation.X + args.Transform.Translation.X - shadowOrigin.X * Scale);
+                shadowDestination.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y - shadowOrigin.Y * Scale);
+                shadowDestination.Width = (int)(_shadowTexture.Width * Scale);
+                shadowDestination.Height = (int)(_shadowTexture.Height * Scale);
 
+                // Are they within our screen space?
                 var atmosphereVisible = atmosphereDestination.Intersects(args.SpriteBatch.GraphicsDevice.ScissorRectangle);
                 var shadowVisible = atmosphereDestination.Intersects(args.SpriteBatch.GraphicsDevice.ScissorRectangle);
 
+                // If either is, carry on.
                 if (atmosphereVisible || shadowVisible)
                 {
                     // Get position relative to our sun, to rotate atmosphere and shadow.
@@ -118,21 +129,28 @@ namespace Space.ComponentSystem.Components
                         }
                     }
 
+                    // Draw whatever is visible.
                     args.SpriteBatch.Begin();
                     if (atmosphereVisible)
                     {
-                        args.SpriteBatch.Draw(_atmosphereTexture, atmosphereDestination,
-                            null, AtmosphereTint, sunDirection,
-                            new Vector2(_atmosphereTexture.Width / 2, _atmosphereTexture.Height / 2),
-                            SpriteEffects.None, 0);
+                        // Correct the destination rectangle for the offset.
+                        atmosphereDestination.X = (int)(transform.Translation.X + args.Transform.Translation.X);
+                        atmosphereDestination.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y);
+
+                        // Draw.
+                        args.SpriteBatch.Draw(_atmosphereTexture, atmosphereDestination, null, AtmosphereTint,
+                            sunDirection, atmosphereOrigin, SpriteEffects.None, 0);
                     }
 
                     if (shadowVisible)
                     {
-                        args.SpriteBatch.Draw(_shadowTexture, shadowDestination,
-                            null, Color.White, sunDirection,
-                            new Vector2(_shadowTexture.Width / 2, _shadowTexture.Height / 2),
-                            SpriteEffects.None, 0);
+                        // Correct the destination rectangle for the offset.
+                        shadowDestination.X = (int)(transform.Translation.X + args.Transform.Translation.X);
+                        shadowDestination.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y);
+
+                        // Draw.
+                        args.SpriteBatch.Draw(_shadowTexture, shadowDestination, null, Color.White,
+                            sunDirection, shadowOrigin, SpriteEffects.None, 0);
                     }
 
 #if DEBUG
