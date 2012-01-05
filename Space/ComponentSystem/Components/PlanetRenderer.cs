@@ -130,7 +130,6 @@ namespace Space.ComponentSystem.Components
                     }
 
                     // Draw whatever is visible.
-                    args.SpriteBatch.Begin();
                     if (atmosphereVisible)
                     {
                         // Correct the destination rectangle for the offset.
@@ -162,7 +161,6 @@ namespace Space.ComponentSystem.Components
 
                     args.SpriteBatch.DrawString(args.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, transform.Translation + new Vector2(args.Transform.Translation.X, args.Transform.Translation.Y), Color.White);
 #endif
-                    args.SpriteBatch.End();
                 }
             }
         }

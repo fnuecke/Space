@@ -5,7 +5,6 @@ using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Data;
 using Space.Session;
@@ -34,7 +33,7 @@ namespace Space.Control
                 {
                     new DefaultLogicSystem(),
                     new IndexSystem(),
-                    new CollisionSystem(128),
+                    //new CollisionSystem(128),
                     new AvatarSystem(),
                     new CellSystem(),
 
@@ -65,7 +64,7 @@ namespace Space.Control
                 {
                     new DefaultLogicSystem(),
                     new IndexSystem(),
-                    new CollisionSystem(128),
+                    //new CollisionSystem(128),
                     new AvatarSystem(),
                     new CellSystem(),
 
@@ -73,7 +72,6 @@ namespace Space.Control
 
                     new PlayerCenteredSoundSystem(soundBank, controller.Session),
                     new PlayerCenteredRenderSystem(spriteBatch, game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
-                                .AddComponent(new Background())
                 });
 
             // Done.
@@ -111,7 +109,6 @@ namespace Space.Control
                     new IComponentSystem[] {
                         new PlayerCenteredSoundSystem(soundBank, controller.Session),
                         new PlayerCenteredRenderSystem(spriteBatch, game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
-                                    .AddComponent(new Background())
                     });
             }
             

@@ -46,10 +46,10 @@ namespace Engine.Controller
         private long _lastHashTime;
 
         /// <summary>
-        /// The last time we sent a full snapshot of the game state to certain
-        /// player. We use this to avoid utterly overloading the network.
+        /// Keeping track of how fast each client runs, to adjust our own speed
+        /// to that of the slowest.
         /// </summary>
-        private DateTime[] _lastGameStateSentTime;
+        private double[] _clientGameSpeeds;
 
         #endregion
 
@@ -69,7 +69,11 @@ namespace Engine.Controller
                 (uint)System.Math.Ceiling(250 / _targetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
             })
         {
-            _lastGameStateSentTime = new DateTime[Session.MaxPlayers];
+            _clientGameSpeeds = new double[Session.MaxPlayers];
+            for (int i = 0; i < _clientGameSpeeds.Length; i++)
+            {
+                _clientGameSpeeds[i] = 1.0;
+            }
         }
 
         #endregion
@@ -210,14 +214,11 @@ namespace Engine.Controller
 
                 case TssControllerMessage.GameStateRequest:
                     // Client needs game state.
-                    if ((DateTime.Now - _lastGameStateSentTime[args.Player.Number]).TotalMilliseconds > GameStateResendInterval) {
-                        _lastGameStateSentTime[args.Player.Number] = DateTime.Now;
-                        using (var packet = new Packet())
-                        {
-                            Session.SendTo(args.Player, packet
-                                .Write((byte)TssControllerMessage.GameStateResponse)
-                                .Write(_tss));
-                        }
+                    using (var packet = new Packet())
+                    {
+                        Session.SendTo(args.Player, packet
+                            .Write((byte)TssControllerMessage.GameStateResponse)
+                            .Write(_tss));
                     }
                     break;
 

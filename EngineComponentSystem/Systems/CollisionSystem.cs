@@ -42,6 +42,15 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused each update, avoids memory re-allocation.
+        /// </summary>
+        private static readonly HashSet<IEntity> _neighbors = new HashSet<IEntity>();
+
+        #endregion
+
         #region Constructor
 
         public CollisionSystem(int maxCollidableRadius)
@@ -67,7 +76,7 @@ namespace Engine.ComponentSystem.Systems
             var currentComponents = new List<IComponent>(UpdateableComponents);
             var componentCount = currentComponents.Count;
             var index = Manager.GetSystem<IndexSystem>();
-            HashSet<IEntity> neighbors = null;
+            _neighbors.Clear();
             for (int i = 0; i < componentCount; ++i)
             {
                 var currentCollidable = (AbstractCollidable)currentComponents[i];
@@ -84,9 +93,12 @@ namespace Engine.ComponentSystem.Systems
                     // Use the inverse of the collision group, i.e. get
                     // entries from all those entries where we're not in
                     // that group.
-                    neighbors = new HashSet<IEntity>(index.GetNeighbors(
+                    foreach (var neighbor in index.GetNeighbors(
                         currentCollidable.Entity, _maxCollidableRadius,
-                        (~currentCollidable.CollisionGroups) << FirstIndexGroup));
+                        (~currentCollidable.CollisionGroups) << FirstIndexGroup))
+                    {
+                        _neighbors.Add(neighbor);
+                    }
                 }
 
                 // Loop through all other components. Only do the interval
@@ -108,7 +120,7 @@ namespace Engine.ComponentSystem.Systems
                     }
 
                     // Only test if its in our neighbors list (if we have one).
-                    if (neighbors != null && !neighbors.Contains(otherCollidable.Entity))
+                    if (_neighbors.Count > 0 && _neighbors.Contains(otherCollidable.Entity))
                     {
                         continue;
                     }

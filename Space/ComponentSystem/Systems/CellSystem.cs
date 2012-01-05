@@ -64,6 +64,25 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused each update, avoids memory re-allocation.
+        /// </summary>
+        private static readonly HashSet<ulong> _newCells = new HashSet<ulong>();
+
+        /// <summary>
+        /// Reused each update, avoids memory re-allocation.
+        /// </summary>
+        private static readonly HashSet<ulong> _bornCells = new HashSet<ulong>();
+
+        /// <summary>
+        /// Reused each update, avoids memory re-allocation.
+        /// </summary>
+        private static readonly HashSet<ulong> _deceasedCells = new HashSet<ulong>();
+
+        #endregion
+
         #region Constructor
 
         public CellSystem()
@@ -85,7 +104,7 @@ namespace Space.ComponentSystem.Systems
         {
             // Check the positions of all avatars to check which cells
             // should live, and which should die / stay dead.
-            var newCells = new HashSet<ulong>();
+            _newCells.Clear();
             foreach (var avatar in UpdateableComponents)
             {
                 var transform = avatar.Entity.GetComponent<Transform>();
@@ -93,29 +112,31 @@ namespace Space.ComponentSystem.Systems
                 {
                     int x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
                     int y = ((int)transform.Translation.Y) >> CellSizeShiftAmount;
-                    AddCellAndNeighbors(x, y, newCells);
+                    AddCellAndNeighbors(x, y, _newCells);
                 }
             }
 
             // Get the cells that became alive.
-            var bornCells = new HashSet<ulong>(newCells);
-            bornCells.ExceptWith(_livingCells);
-            foreach (var bornCell in bornCells)
+            _bornCells.Clear();
+            _bornCells.UnionWith(_newCells);
+            _bornCells.ExceptWith(_livingCells);
+            foreach (var bornCell in _bornCells)
             {
                 var xy = CoordinateIds.Split(bornCell);
                 Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true));
             }
 
             // Get the cells that died.
-            var deceasedCells = new HashSet<ulong>(_livingCells);
-            deceasedCells.ExceptWith(newCells);
-            foreach (var deceasedCell in deceasedCells)
+            _deceasedCells.Clear();
+            _deceasedCells.UnionWith(_livingCells);
+            _deceasedCells.ExceptWith(_newCells);
+            foreach (var deceasedCell in _deceasedCells)
             {
                 var xy = CoordinateIds.Split(deceasedCell);
                 Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false));
             }
 
-            _livingCells = newCells;
+            _livingCells = _newCells;
         }
 
         #endregion

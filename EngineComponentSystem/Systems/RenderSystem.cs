@@ -42,6 +42,7 @@ namespace Engine.ComponentSystem.Systems
             // Get translation, which may be overridden.
             _parameterization.Transform.Translation = GetTranslation();
             // Then render all components.
+            _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.AnisotropicClamp, DepthStencilState.None, RasterizerState.CullCounterClockwise);
             foreach (var component in DrawableComponents)
             {
                 if (component.Enabled)
@@ -49,6 +50,7 @@ namespace Engine.ComponentSystem.Systems
                     component.Draw(_parameterization);
                 }
             }
+            _parameterization.SpriteBatch.End();
         }
 
         /// <summary>

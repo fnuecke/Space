@@ -97,7 +97,7 @@ namespace Engine.ComponentSystem.Components
         public override void Update(object parameterization)
         {
             // Only do something if we're attracting stuff.
-            if (GravitationType.HasFlag(GravitationTypes.Atractor))
+            if ((GravitationType & GravitationTypes.Atractor) != 0)
             {
                 // Get our position.
                 var myTransform = Entity.GetComponent<Transform>();
@@ -122,7 +122,7 @@ namespace Engine.ComponentSystem.Components
                         continue;
                     }
                     // ... and can be attracted compute our influence on them/
-                    if (otherGravitation.GravitationType.HasFlag(GravitationTypes.Atractee))
+                    if ((otherGravitation.GravitationType & GravitationTypes.Atractee) != 0)
                     {
                         // Get their velocity (which is what we'll change) and position.
                         var otherVelocity = neigbour.GetComponent<Velocity>();

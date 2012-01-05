@@ -78,9 +78,7 @@ namespace Engine.ComponentSystem.Components
                     destination.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y);
 
                     // Draw.
-                    args.SpriteBatch.Begin();
                     args.SpriteBatch.Draw(texture, destination, null, Tint, transform.Rotation, origin, SpriteEffects.None, 0);
-                    args.SpriteBatch.End();
                 }
             }
         }

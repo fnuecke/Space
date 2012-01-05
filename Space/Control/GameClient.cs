@@ -8,6 +8,7 @@ using Engine.Session;
 using Engine.Simulation.Commands;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Space.Simulation.Commands;
 
@@ -37,6 +38,16 @@ namespace Space.Control
 
         private bool _mouseStoppedMoving = true;
 
+        private SpriteBatch _spriteBatch;
+
+        private Texture2D _textureBackground;
+
+        private Texture2D _textureDarkMatter;
+
+        private Texture2D _textureDebrisSmall;
+
+        private Texture2D _textureDebrisLarge;
+
         #endregion
 
         #region Constructor
@@ -49,6 +60,7 @@ namespace Space.Control
         public GameClient(Game game, GameServer server)
             : base(game)
         {
+            _spriteBatch = new SpriteBatch(game.GraphicsDevice);
             Controller = ControllerFactory.CreateLocalClient(Game, server.Controller);
         }
 
@@ -163,7 +175,63 @@ namespace Space.Control
         public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-            
+
+            // Load our textures, if they're not set.
+            if (_textureBackground == null)
+            {
+                _textureBackground = Game.Content.Load<Texture2D>("Textures/stars");
+            }
+            if (_textureDarkMatter == null)
+            {
+                _textureDarkMatter = Game.Content.Load<Texture2D>("Textures/dark_matter");
+            }
+            if (_textureDebrisSmall == null)
+            {
+                _textureDebrisSmall = Game.Content.Load<Texture2D>("Textures/debris_small");
+            }
+            if (_textureDebrisLarge == null)
+            {
+                _textureDebrisLarge = Game.Content.Load<Texture2D>("Textures/debris_large");
+            }
+
+            // Get local player position.
+            Vector2 position = Vector2.Zero;
+            if (Controller.Session.ConnectionState == ClientState.Connected)
+            {
+                var avatar = Controller.Simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(Controller.Session.LocalPlayer.Number);
+                if (avatar != null)
+                {
+                    position = -avatar.GetComponent<Transform>().Translation;
+                }
+            }
+
+            // Draw the background, tiled, with the given translation.
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
+            _spriteBatch.Draw(_textureBackground, Vector2.Zero,
+                new Rectangle(-(int)(position.X * 0.05f), -(int)(position.Y * 0.05f),
+                    _spriteBatch.GraphicsDevice.Viewport.Width,
+                    _spriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+
+            _spriteBatch.Draw(_textureDarkMatter, Vector2.Zero,
+                new Rectangle(-(int)(position.X * 0.1f), -(int)(position.Y * 0.1f),
+                    _spriteBatch.GraphicsDevice.Viewport.Width,
+                    _spriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.White * 0.95f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+
+            _spriteBatch.Draw(_textureDebrisSmall, Vector2.Zero,
+                new Rectangle(-(int)(position.X * 0.65f), -(int)(position.Y * 0.65f),
+                    _spriteBatch.GraphicsDevice.Viewport.Width,
+                    _spriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.DarkSlateGray * 0.75f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+
+            _spriteBatch.Draw(_textureDebrisLarge, Vector2.Zero,
+                new Rectangle(-(int)(position.X * 0.95f), -(int)(position.Y * 0.95f),
+                    _spriteBatch.GraphicsDevice.Viewport.Width,
+                    _spriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.SlateGray * 0.25f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            _spriteBatch.End();
+
             Controller.Draw();
         }
 

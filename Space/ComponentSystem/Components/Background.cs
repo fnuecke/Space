@@ -12,6 +12,8 @@ namespace Space.ComponentSystem.Components
     {
         #region Fields
 
+        private SpriteBatch _spriteBatch;
+
         private Texture2D _textureDarkMatter;
 
         private Texture2D _textureDebrisSmall;
@@ -54,34 +56,37 @@ namespace Space.ComponentSystem.Components
                 _textureDebrisLarge = args.Content.Load<Texture2D>("Textures/debris_large");
             }
 
+            if (_spriteBatch == null)
+            {
+                _spriteBatch = new SpriteBatch(args.SpriteBatch.GraphicsDevice);
+            }
+
             // Draw the background, tiled, with the given translation.
-            args.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
+            _spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
             args.SpriteBatch.Draw(texture, Vector2.Zero,
                 new Rectangle(-(int)(args.Transform.Translation.X * 0.05f), -(int)(args.Transform.Translation.Y * 0.05f),
-                    args.SpriteBatch.GraphicsDevice.Viewport.Width,
-                    args.SpriteBatch.GraphicsDevice.Viewport.Height),
-                    Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            args.SpriteBatch.End();
+                    _spriteBatch.GraphicsDevice.Viewport.Width,
+                    _spriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
 
-            args.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
-            args.SpriteBatch.Draw(_textureDebrisLarge, Vector2.Zero,
-                new Rectangle(-(int)(args.Transform.Translation.X * 0.95f), -(int)(args.Transform.Translation.Y * 0.95f),
-                    args.SpriteBatch.GraphicsDevice.Viewport.Width,
-                    args.SpriteBatch.GraphicsDevice.Viewport.Height),
-                    Color.SlateGray * 0.25f, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-
-            args.SpriteBatch.Draw(_textureDebrisSmall, Vector2.Zero,
-                new Rectangle(-(int)(args.Transform.Translation.X * 0.65f), -(int)(args.Transform.Translation.Y * 0.65f),
-                    args.SpriteBatch.GraphicsDevice.Viewport.Width,
-                    args.SpriteBatch.GraphicsDevice.Viewport.Height),
-                    Color.DarkSlateGray * 0.75f, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            
-            args.SpriteBatch.Draw(_textureDarkMatter, Vector2.Zero,
+            _spriteBatch.Draw(_textureDarkMatter, Vector2.Zero,
                 new Rectangle(-(int)(args.Transform.Translation.X * 0.1f), -(int)(args.Transform.Translation.Y * 0.1f),
-                    args.SpriteBatch.GraphicsDevice.Viewport.Width,
-                    args.SpriteBatch.GraphicsDevice.Viewport.Height),
-                    Color.White * 0.95f, 0, Vector2.Zero, 1, SpriteEffects.None, 1);
-            args.SpriteBatch.End();
+                    _spriteBatch.GraphicsDevice.Viewport.Width,
+                    _spriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.White * 0.95f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+
+            _spriteBatch.Draw(_textureDebrisSmall, Vector2.Zero,
+                new Rectangle(-(int)(args.Transform.Translation.X * 0.65f), -(int)(args.Transform.Translation.Y * 0.65f),
+                    _spriteBatch.GraphicsDevice.Viewport.Width,
+                    _spriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.DarkSlateGray * 0.75f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+
+            _spriteBatch.Draw(_textureDebrisLarge, Vector2.Zero,
+                new Rectangle(-(int)(args.Transform.Translation.X * 0.95f), -(int)(args.Transform.Translation.Y * 0.95f),
+                    _spriteBatch.GraphicsDevice.Viewport.Width,
+                    _spriteBatch.GraphicsDevice.Viewport.Height),
+                    Color.SlateGray * 0.25f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            _spriteBatch.End();
         }
 
         #endregion
