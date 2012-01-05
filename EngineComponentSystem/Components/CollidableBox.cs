@@ -59,11 +59,19 @@ namespace Engine.ComponentSystem.Components
         /// <returns>Whether the two collide or not.</returns>
         public override bool Intersects(AbstractCollidable collidable)
         {
+            if (_previousPosition == Vector2.Zero)
+            {
+                _previousPosition = this.Entity.GetComponent<Transform>().Translation;
+            }
             return collidable.Intersects(ref Size, ref _previousPosition, ref this.Entity.GetComponent<Transform>().Translation);
         }
 
         internal override bool Intersects(ref Vector2 extents, ref Vector2 previousPosition, ref Vector2 position)
         {
+            if (_previousPosition == Vector2.Zero)
+            {
+                _previousPosition = this.Entity.GetComponent<Transform>().Translation;
+            }
             return AABBSweep.Test(
                 ref this.Size, ref this._previousPosition, ref this.Entity.GetComponent<Transform>().Translation,
                 ref extents, ref previousPosition, ref position);
@@ -71,6 +79,10 @@ namespace Engine.ComponentSystem.Components
 
         internal override bool Intersects(float radius, ref Vector2 previousPosition, ref Vector2 position)
         {
+            if (_previousPosition == Vector2.Zero)
+            {
+                _previousPosition = this.Entity.GetComponent<Transform>().Translation;
+            }
             return SphereAABBSweep.Test(
                 radius, ref previousPosition, ref position,
                 ref this.Size, ref this._previousPosition, ref this.Entity.GetComponent<Transform>().Translation);

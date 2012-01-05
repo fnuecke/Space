@@ -100,7 +100,7 @@ namespace Space
             // We really want to do this, because it keeps the game from running at one billion
             // frames per second -- which sounds fun, but isn't, because game states won't update
             // properly anymore (because elapsed time since last step will always appear to be zero).
-            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = false;
+            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = true;
 
             // XNAs fixed time step implementation doesn't suit us, to be gentle.
             // So we let it be dynamic and adjust for it as necessary, leading

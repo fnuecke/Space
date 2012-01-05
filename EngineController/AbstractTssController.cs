@@ -83,7 +83,11 @@ namespace Engine.Controller
         /// The current 'load', i.e. how much of the available time is actually
         /// needed to perform an update.
         /// </summary>
-        public override double CurrentLoad { get { return _updateLoad.Mean(); } }
+        /// <remarks>
+        /// The factor represents a buffer, to start slowing down the
+        /// simulation before it's too late.
+        /// </remarks>
+        public override double CurrentLoad { get { return _updateLoad.Mean() * 1.8; } }
 
         #endregion
 
@@ -136,6 +140,15 @@ namespace Engine.Controller
         /// update.</param>
         protected void UpdateSimulation(GameTime gameTime, double targetSpeed = 1.0)
         {
+            // We can run at least one frame, so do the update(s).
+            long begin = DateTime.Now.Ticks;
+
+            // Time we spent updating. We don't want to take longer than
+            // one update should take (i.e. targetTime), to avoid the game
+            // getting slower and slower (because updates take longer and
+            // longer -> more and more to catch up).
+            double timePassed = 0;
+
             // Compensate for dynamic time step.
             double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder;
             double targetFrequency = _targetElapsedMilliseconds / targetSpeed;
@@ -146,24 +159,18 @@ namespace Engine.Controller
                 // accommodate player commands.
                 _tss.RunToFrame(_tss.CurrentFrame);
 
+                // Track how much time we spent in this update.
+                timePassed = new TimeSpan(DateTime.Now.Ticks - begin).TotalMilliseconds;
+
                 // Carry this to the next frame, for uncapped frame rates.
                 _lastUpdateRemainder = elapsed;
             }
             else
             {
-                // We can run at least one frame, so do the update(s).
-                long begin = DateTime.Now.Ticks;
-
                 // This is how much time we have to catch up for. The number
                 // simulation frames this equates to is:
                 //     remainingTime / targetTime.
                 double remainingTime = elapsed;
-
-                // Time we spent updating. We don't want to take longer than
-                // one update should take (i.e. targetTime), to avoid the game
-                // getting slower and slower (because updates take longer and
-                // longer -> more and more to catch up).
-                double timePassed = 0;
 
                 // Do as many updates as we can.
                 while (remainingTime >= targetFrequency && timePassed < targetFrequency)
@@ -177,13 +184,18 @@ namespace Engine.Controller
                     timePassed = new TimeSpan(DateTime.Now.Ticks - begin).TotalMilliseconds;
                 }
 
-                // Track our load.
-                _updateLoad.Put((timePassed + remainingTime) / _targetElapsedMilliseconds);
-
                 // Keep a carry for the next update. But never try to catch up
                 // on frames while we took too long, as this'll lead to the
                 // simulation running to fast when catching up.
                 _lastUpdateRemainder = System.Math.Min(remainingTime, targetFrequency);
+            }
+
+            // Track our load, but ignore idle rounds (this is for unlocked
+            // frame rates, because we'd need a much larger sampling then,
+            // otherwise).
+            if (timePassed > 1)
+            {
+                _updateLoad.Put(timePassed / _targetElapsedMilliseconds);
             }
         }
 
