@@ -59,6 +59,12 @@ namespace Engine.Controller
         /// </summary>
         private int _hashValue;
 
+        /// <summary>
+        /// The adjusted speed we're currently running at, based on how well
+        /// other clients (and the server) currently fare.
+        /// </summary>
+        private double _adjustedSpeed = 1.0;
+
         #endregion
 
         #region Construction / Destruction
@@ -107,7 +113,7 @@ namespace Engine.Controller
             if (Session.ConnectionState == ClientState.Connected && !_tss.WaitingForSynchronization)
             {
                 // Drive game logic.
-                UpdateSimulation(gameTime);
+                UpdateSimulation(gameTime, _adjustedSpeed);
 
                 // Hash test.
                 if (_tss.TrailingFrame == _hashFrame)
@@ -130,7 +136,8 @@ namespace Engine.Controller
                     {
                         Session.Send(packet
                             .Write((byte)TssControllerMessage.Synchronize)
-                            .Write(_tss.CurrentFrame));
+                            .Write(_tss.CurrentFrame)
+                            .Write((float)CurrentLoad));
                     }
                 }
             }
@@ -229,6 +236,10 @@ namespace Engine.Controller
                         // http://www.mine-control.com/zack/timesync/timesync.html
                         long sentFrame = args.Data.ReadInt64();
                         long serverFrame = args.Data.ReadInt64();
+
+                        // We also adjust the game speed to accommodate slow
+                        // machines. That's the speed we get in this step.
+                        _adjustedSpeed = args.Data.ReadSingle();
 
                         long latency = (_tss.CurrentFrame - sentFrame) / 2;
                         long clientServerDelta = (serverFrame - _tss.CurrentFrame);

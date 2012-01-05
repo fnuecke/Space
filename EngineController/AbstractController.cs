@@ -27,11 +27,10 @@ namespace Engine.Controller
         public TSession Session { get; private set; }
 
         /// <summary>
-        /// The actual current game speed, which may be influenced by clients
-        /// not being able to keep up with the computations needed, but which
-        /// will be at maximum the <c>TargetSpeed</c>.
+        /// The current 'load', i.e. how much of the available time is actually
+        /// needed to perform an update.
         /// </summary>
-        public abstract double CurrentSpeed { get; }
+        public abstract double CurrentLoad { get; }
 
         #endregion
 

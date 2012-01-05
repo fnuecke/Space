@@ -32,9 +32,9 @@ namespace Engine.Controller
         public ISimulation Simulation { get { return _server.Simulation; } }
 
         /// <summary>
-        /// The real running speed, being that of the server.
+        /// The real update load, being that of the server.
         /// </summary>
-        public override double CurrentSpeed { get { return _server.CurrentSpeed; } }
+        public override double CurrentLoad { get { return _server.CurrentLoad; } }
 
         #endregion
 

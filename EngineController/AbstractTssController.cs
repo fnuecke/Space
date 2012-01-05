@@ -80,11 +80,10 @@ namespace Engine.Controller
         public ISimulation Simulation { get { return _tss; } }
 
         /// <summary>
-        /// The actual current game speed, which may be influenced by clients
-        /// not being able to keep up with the computations needed, but which
-        /// will be at maximum the <c>TargetSpeed</c>.
+        /// The current 'load', i.e. how much of the available time is actually
+        /// needed to perform an update.
         /// </summary>
-        public override double CurrentSpeed { get { return _updateTimes.Mean(); } }
+        public override double CurrentLoad { get { return _updateLoad.Mean(); } }
 
         #endregion
 
@@ -105,9 +104,9 @@ namespace Engine.Controller
 
         /// <summary>
         /// Used to sample how long it takes for us to perform our simulation
-        /// updates. Used to determine the current simulation speed.
+        /// updates in relation to the available time.
         /// </summary>
-        private DoubleSampling _updateTimes = new DoubleSampling(30);
+        private DoubleSampling _updateLoad = new DoubleSampling(30);
 
         #endregion
 
@@ -135,12 +134,12 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="gameTime">the game time information for the current
         /// update.</param>
-        protected void UpdateSimulation(GameTime gameTime, double targetSpeed = 1)
+        protected void UpdateSimulation(GameTime gameTime, double targetSpeed = 1.0)
         {
             // Compensate for dynamic time step.
             double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder;
-            double targetTime = _targetElapsedMilliseconds * targetSpeed;
-            if (elapsed < targetTime)
+            double targetFrequency = _targetElapsedMilliseconds / targetSpeed;
+            if (elapsed < targetFrequency)
             {
                 // If we can't actually run to the next frame, at least update
                 // back to the current frame in case rollbacks were made to
@@ -167,40 +166,24 @@ namespace Engine.Controller
                 double timePassed = 0;
 
                 // Do as many updates as we can.
-                while (remainingTime >= targetTime && timePassed < targetTime)
+                while (remainingTime >= targetFrequency && timePassed < targetFrequency)
                 {
                     _tss.Update();
 
                     // One less to do.
-                    remainingTime -= targetTime;
+                    remainingTime -= targetFrequency;
 
                     // Track how much time we spent in this update.
                     timePassed = new TimeSpan(DateTime.Now.Ticks - begin).TotalMilliseconds;
                 }
 
-                // If we had to skip updates because we're running slowly,
-                // compute the rate at which we're operating and push it to
-                // our sampling.
-                if (remainingTime >= targetTime)
-                {
-                    _updateTimes.Put((elapsed - remainingTime) / elapsed);
+                // Track our load.
+                _updateLoad.Put((timePassed + remainingTime) / _targetElapsedMilliseconds);
 
-                    // Make sure we run at least one update next frame, but
-                    // don't try to "catch up" to additional frames, as this
-                    // a) results in off numbers for our current speed.
-                    // b) will make the simulation run ridiculously fast once
-                    //    we recover and get to a point where we *could* catch
-                    //    up. We don't want that.
-                    _lastUpdateRemainder = targetTime;
-                }
-                else
-                {
-                    // Otherwise we're on time, so we're running at full speed.
-                    _updateTimes.Put(1);
-
-                    // Remember how much we have to catch up next update.
-                    _lastUpdateRemainder = remainingTime;
-                }
+                // Keep a carry for the next update. But never try to catch up
+                // on frames while we took too long, as this'll lead to the
+                // simulation running to fast when catching up.
+                _lastUpdateRemainder = System.Math.Min(remainingTime, targetFrequency);
             }
         }
 

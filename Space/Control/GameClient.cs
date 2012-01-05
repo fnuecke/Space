@@ -60,7 +60,6 @@ namespace Space.Control
         public GameClient(Game game, GameServer server)
             : base(game)
         {
-            _spriteBatch = new SpriteBatch(game.GraphicsDevice);
             Controller = ControllerFactory.CreateLocalClient(Game, server.Controller);
         }
 
@@ -130,6 +129,15 @@ namespace Space.Control
             base.Dispose(disposing);
         }
 
+        protected override void LoadContent()
+        {
+            _textureBackground = Game.Content.Load<Texture2D>("Textures/stars");
+            _textureDarkMatter = Game.Content.Load<Texture2D>("Textures/dark_matter");
+            _textureDebrisSmall = Game.Content.Load<Texture2D>("Textures/debris_small");
+            _textureDebrisLarge = Game.Content.Load<Texture2D>("Textures/debris_large");
+            _spriteBatch = new SpriteBatch(Game.GraphicsDevice);
+        }
+
         #endregion
 
         #region Logic
@@ -175,24 +183,6 @@ namespace Space.Control
         public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-
-            // Load our textures, if they're not set.
-            if (_textureBackground == null)
-            {
-                _textureBackground = Game.Content.Load<Texture2D>("Textures/stars");
-            }
-            if (_textureDarkMatter == null)
-            {
-                _textureDarkMatter = Game.Content.Load<Texture2D>("Textures/dark_matter");
-            }
-            if (_textureDebrisSmall == null)
-            {
-                _textureDebrisSmall = Game.Content.Load<Texture2D>("Textures/debris_small");
-            }
-            if (_textureDebrisLarge == null)
-            {
-                _textureDebrisLarge = Game.Content.Load<Texture2D>("Textures/debris_large");
-            }
 
             // Get local player position.
             Vector2 position = Vector2.Zero;

@@ -409,7 +409,7 @@ namespace Space
                                 }
                             }
 
-                            sb.AppendFormat("Game speed: {0:f}\n", client.Controller.CurrentSpeed);
+                            sb.AppendFormat("Update load: {0:f}\n", client.Controller.CurrentLoad);
 
                             var index = systemManager.GetSystem<IndexSystem>();
                             if (index != null)

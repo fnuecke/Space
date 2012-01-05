@@ -46,10 +46,21 @@ namespace Engine.Controller
         private long _lastHashTime;
 
         /// <summary>
-        /// Keeping track of how fast each client runs, to adjust our own speed
-        /// to that of the slowest.
+        /// Keeping track of how stressed each client is. If all have idle time
+        /// and our speed is lowered, speed up again.
         /// </summary>
-        private double[] _clientGameSpeeds;
+        private float[] _clientLoads;
+
+        /// <summary>
+        /// The adjusted speed we're currently running at, based on how well
+        /// our clients currently fare.
+        /// </summary>
+        private double _adjustedSpeed = 1.0;
+
+        /// <summary>
+        /// Keeping track of whether we might be the one slowing the game.
+        /// </summary>
+        private bool _serverIsSlowing;
 
         #endregion
 
@@ -69,11 +80,20 @@ namespace Engine.Controller
                 (uint)System.Math.Ceiling(250 / _targetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
             })
         {
-            _clientGameSpeeds = new double[Session.MaxPlayers];
-            for (int i = 0; i < _clientGameSpeeds.Length; i++)
+            _clientLoads = new float[Session.MaxPlayers];
+
+            // To reset the speed and load info upon player leaves.
+            Session.PlayerLeft += HandlePlayerLeft;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                _clientGameSpeeds[i] = 1.0;
+                Session.PlayerLeft -= HandlePlayerLeft;
             }
+
+            base.Dispose(disposing);
         }
 
         #endregion
@@ -87,7 +107,22 @@ namespace Engine.Controller
         public override void Update(GameTime gameTime)
         {
             // Drive game logic.
-            UpdateSimulation(gameTime);
+            UpdateSimulation(gameTime, _adjustedSpeed);
+
+            // Also take the possibility of the server slowing down the game
+            // into account.
+            double serverSpeed = 1f / CurrentLoad;
+            if (CurrentLoad >= 1f && serverSpeed < _adjustedSpeed)
+            {
+                _adjustedSpeed = serverSpeed;
+                _serverIsSlowing = true;
+            }
+            else if (_serverIsSlowing)
+            {
+                // We're not, but we might have been, so check if we got
+                // faster again.
+                AdjustSpeed();
+            }
 
             // Send hash check every now and then, to check for loss of synchronization.
             if (new TimeSpan(DateTime.Now.Ticks - _lastHashTime).TotalMilliseconds > HashInterval)
@@ -104,6 +139,36 @@ namespace Engine.Controller
                         .Write(_tss.TrailingFrame)
                         .Write(hasher.Value));
                 }
+            }
+        }
+        
+        /// <summary>
+        /// Adjust the game speed by finding the slowest participant (the one
+        /// with the highest load), and adjusting the speed so that he will
+        /// not fall behind.
+        /// </summary>
+        private void AdjustSpeed()
+        {
+            // Find the participant with the worst update load.
+            double worstLoad = CurrentLoad;
+            _serverIsSlowing = (CurrentLoad >= 1f);
+            for (int i = 0; i < _clientLoads.Length; i++)
+            {
+                if (_clientLoads[i] > worstLoad)
+                {
+                    worstLoad = _clientLoads[i];
+                    _serverIsSlowing = false;
+                }
+            }
+
+            // Adjust speed to the worst load.
+            if (worstLoad > 1f)
+            {
+                _adjustedSpeed = 1f / worstLoad;
+            }
+            else
+            {
+                _adjustedSpeed = 1;
             }
         }
 
@@ -178,6 +243,19 @@ namespace Engine.Controller
 
         #endregion
 
+        #region Event handling
+
+        /// <summary>
+        /// Reset speed and load information for a client when he leaves.
+        /// </summary>
+        private void HandlePlayerLeft(object sender, EventArgs e)
+        {
+            var args = (PlayerEventArgs)e;
+            _clientLoads[args.Player.Number] = 0f;
+        }
+
+        #endregion
+
         #region Protocol layer
 
         /// <summary>
@@ -201,13 +279,36 @@ namespace Engine.Controller
                 case TssControllerMessage.Synchronize:
                     // Client re-synchronizing.
                     {
+                        // Get the frame the client's at.
                         long clientFrame = args.Data.ReadInt64();
+
+                        // Get performance information of the client.
+                        int player = args.Player.Number;
+                        _clientLoads[player] = args.Data.ReadSingle();
+
+                        // Adjust our desired game speed to accommodate slowest
+                        // client machine. Is this the slowest client so far?
+                        double clientSpeed = 1.0 / _clientLoads[player];
+                        if (_clientLoads[player] >= 1f && clientSpeed < _adjustedSpeed)
+                        {
+                            _adjustedSpeed = clientSpeed;
+                            _serverIsSlowing = false;
+                        }
+                        else
+                        {
+                            // We potentially got faster as a collective,
+                            // re-evaluate at what speed we want to run.
+                            AdjustSpeed();
+                        }
+
+                        // Send our reply.
                         using (var packet = new Packet())
                         {
                             Session.SendTo(args.Player, packet
                                 .Write((byte)TssControllerMessage.Synchronize)
                                 .Write(clientFrame)
-                                .Write(_tss.CurrentFrame));
+                                .Write(_tss.CurrentFrame)
+                                .Write((float)_adjustedSpeed));
                         }
                     }
                     break;

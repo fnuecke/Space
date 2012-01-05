@@ -259,7 +259,10 @@ namespace Engine.Session
             {
                 throw new InvalidOperationException("Not in a session.");
             }
-            Send(SessionMessage.Leave);
+            if (ConnectionState == ClientState.Connected)
+            {
+                Send(SessionMessage.Leave);
+            }
             Reset();
         }
 
