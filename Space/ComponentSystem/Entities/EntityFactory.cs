@@ -42,6 +42,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new WeaponControl());
             entity.AddComponent(new WeaponSound());
+            entity.AddComponent(new Radar());
             entity.AddComponent(new ThrusterEffect("Effects/thruster"));
             entity.AddComponent(new Respawn(300, new List<Type>()
             {
@@ -65,6 +66,7 @@ namespace Space.ComponentSystem.Entities
             modules.AddModules(shipData.Thrusters);
             modules.AddModules(shipData.Shields);
             modules.AddModules(shipData.Weapons);
+            modules.AddModules(shipData.Sensors);
 
             // Set value to max after equipping.
             health.Value = health.MaxValue;

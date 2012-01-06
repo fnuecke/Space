@@ -95,6 +95,7 @@
     <Compile Include="AstronomicBodyType.cs" />
     <Compile Include="Factions.cs" />
     <Compile Include="Modules\HullModule.cs" />
+    <Compile Include="Modules\SensorModule.cs" />
     <Compile Include="Profile.cs" />
     <Compile Include="ProjectileData.cs" />
     <Compile Include="Modules\ThrusterModule.cs" />

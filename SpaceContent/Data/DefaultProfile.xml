@@ -56,6 +56,12 @@
           </Projectiles>
         </Item>
       </Weapons>
+
+      <Sensors>
+        <Item>
+          <Range>2000</Range>
+        </Item>
+      </Sensors>
     </Ship>
   </Asset>
 </XnaContent>
