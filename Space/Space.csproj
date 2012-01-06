@@ -117,6 +117,7 @@
     <Compile Include="ComponentSystem\Components\AstronomicBody.cs" />
     <Compile Include="ComponentSystem\Components\CollisionDamage.cs" />
     <Compile Include="ComponentSystem\Components\Death.cs" />
+    <Compile Include="ComponentSystem\Components\Detectable.cs" />
     <Compile Include="ComponentSystem\Components\Energy.cs" />
     <Compile Include="ComponentSystem\Components\Faction.cs" />
     <Compile Include="ComponentSystem\Components\Health.cs" />
