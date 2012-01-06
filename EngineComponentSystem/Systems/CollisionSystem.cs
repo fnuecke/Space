@@ -77,6 +77,9 @@ namespace Engine.ComponentSystem.Systems
             var index = Manager.GetSystem<IndexSystem>();
             while (_reusableComponentList.Count > 0)
             {
+                // Get last element from the list as our current object, then
+                // remove it from the list (avoids double checks, i.e. we won't
+                // do test(x,y) *and* test(y,x), only the first one.
                 var currentCollidable = (AbstractCollidable)_reusableComponentList[_reusableComponentList.Count - 1];
                 _reusableComponentList.RemoveAt(_reusableComponentList.Count - 1);
 
