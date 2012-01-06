@@ -20,14 +20,16 @@ namespace Space.ComponentSystem.Components
         
         #endregion
 
-        #region Construktor
+        #region Constructor
+
         public Radar()
         {
             DrawOrder = 20;
         }
-        #endregion
-        #region Logic
 
+        #endregion
+
+        #region Logic
 
         /// <summary>
         /// Draws the 
@@ -66,7 +68,7 @@ namespace Space.ComponentSystem.Components
             //calculate distance
             range = modules.GetValue(EntityAttributeType.SensorRange, range);
 
-            foreach (var neigbour in index.GetNeighbors(Entity, range, 1 << Detectable.IndexGroup))
+            foreach (var neigbour in index.GetNeighbors(Entity, range, Detectable.IndexGroup))
             {
                 if (neigbour == null || neigbour.GetComponent<Transform>() == null || neigbour.GetComponent<AstronomicBody>() == null) continue;
                 //get color of faction
@@ -123,6 +125,5 @@ namespace Space.ComponentSystem.Components
                 parameterizationType.IsSubclassOf(typeof(RendererParameterization));
         }
         #endregion
-
     }
 }

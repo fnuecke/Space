@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework.Graphics;
@@ -21,10 +17,11 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Fields
+
         /// <summary>
         /// Index group to use for gravitational computations.
         /// </summary>
-        public const byte IndexGroup = IndexSystem.DefaultIndexGroup + 2;
+        public static readonly ulong IndexGroup = 1ul << IndexSystem.GetGroup();
 
         /// <summary>
         /// The actual texture with the set name.
@@ -36,6 +33,7 @@ namespace Space.ComponentSystem.Components
         /// so we need to store this ourselves.
         /// </summary>
         private string _textureName;
+
         #endregion
 
         public  Detectable(string textureName)
@@ -56,8 +54,6 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             TextureName = packet.ReadString();
-
-          
         }
 
         #endregion

@@ -34,7 +34,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Friction(0.01f, 0.02f));
             // TODO compute based on equipped components
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 1));
-            entity.AddComponent(new Index(Gravitation.IndexGroup | Detectabke.IndexGroup, faction.ToCollisionIndexGroup()));
+            entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup | faction.ToCollisionIndexGroup()));
             entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, faction.ToCollisionGroup()));
             entity.AddComponent(new Faction(faction));
             entity.AddComponent(new Avatar(faction.ToPlayerNumber()));
@@ -168,6 +168,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup));
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
+            entity.AddComponent(new Detectable("Textures/sun"));
             entity.AddComponent(new AstronomicBody(type));
             
             //entity.AddComponent(new TransformedRenderer(texture));
