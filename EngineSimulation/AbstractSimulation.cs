@@ -164,7 +164,16 @@ namespace Engine.Simulation
 
         public virtual ISimulation DeepCopy(ISimulation into)
         {
-            AbstractSimulation copy = (AbstractSimulation)(into ?? MemberwiseClone());
+            AbstractSimulation copy;
+            if (into != null)
+            {
+                copy = (AbstractSimulation)into;
+                CopyFields(copy);
+            }
+            else
+            {
+                copy = (AbstractSimulation)MemberwiseClone();
+            }
 
             // Clone system manager.
             if (copy.EntityManager == EntityManager)
@@ -187,6 +196,11 @@ namespace Engine.Simulation
             }
 
             return copy;
+        }
+
+        protected virtual void CopyFields(AbstractSimulation into)
+        {
+            into.CurrentFrame = CurrentFrame;
         }
 
         #endregion

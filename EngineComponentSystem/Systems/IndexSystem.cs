@@ -176,7 +176,10 @@ namespace Engine.ComponentSystem.Systems
 
             foreach (var tree in _trees)
             {
-                tree.Clear();
+                if (tree != null)
+                {
+                    tree.Clear();
+                }
             }
         }
 

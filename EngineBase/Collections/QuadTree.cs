@@ -340,6 +340,7 @@ namespace Engine.Collections
         {
             // Free all tree nodes.
             FreeBranch(_root);
+            _root = GetNode(null);
 
             // Free all list nodes.
             for (var node = _entries.First; node != null; node = node.Next)
@@ -517,7 +518,7 @@ namespace Engine.Collections
             {
                 node.Children[0] = GetNode(node);
                 node.Children[0].Children[3] = _root.Children[0];
-                node.Children[0].Children[3].Parent = node.Children[0];
+                _root.Children[0].Parent = node.Children[0];
 
                 node.Children[0].EntryCount = _root.Children[0].EntryCount;
                 node.Children[0].LowEntry = _root.Children[0].LowEntry;
@@ -530,7 +531,7 @@ namespace Engine.Collections
             {
                 node.Children[1] = GetNode(node);
                 node.Children[1].Children[2] = _root.Children[1];
-                node.Children[1].Children[2].Parent = node.Children[1];
+                _root.Children[1].Parent = node.Children[1];
 
                 node.Children[1].EntryCount = _root.Children[1].EntryCount;
                 node.Children[1].LowEntry = _root.Children[1].LowEntry;
@@ -543,7 +544,7 @@ namespace Engine.Collections
             {
                 node.Children[2] = GetNode(node);
                 node.Children[2].Children[1] = _root.Children[2];
-                node.Children[2].Children[1].Parent = node.Children[2];
+                _root.Children[2].Parent = node.Children[2];
 
                 node.Children[2].EntryCount = _root.Children[2].EntryCount;
                 node.Children[2].LowEntry = _root.Children[2].LowEntry;
@@ -556,7 +557,7 @@ namespace Engine.Collections
             {
                 node.Children[3] = GetNode(node);
                 node.Children[3].Children[0] = _root.Children[3];
-                node.Children[3].Children[0].Parent = node.Children[3];
+                _root.Children[3].Parent = node.Children[3];
 
                 node.Children[3].EntryCount = _root.Children[3].EntryCount;
                 node.Children[3].LowEntry = _root.Children[3].LowEntry;
@@ -1007,6 +1008,13 @@ namespace Engine.Collections
             }
             var result = _nodePool[_nodePool.Count - 1];
             _nodePool.RemoveAt(_nodePool.Count - 1);
+            result.Children[0] = null;
+            result.Children[1] = null;
+            result.Children[2] = null;
+            result.Children[3] = null;
+            result.EntryCount = 0;
+            result.HighEntry = null;
+            result.LowEntry = null;
             result.Parent = parent;
             return result;
         }
@@ -1019,14 +1027,6 @@ namespace Engine.Collections
         {
             if (node != null)
             {
-                node.Children[0] = null;
-                node.Children[1] = null;
-                node.Children[2] = null;
-                node.Children[3] = null;
-                node.EntryCount = 0;
-                node.HighEntry = null;
-                node.LowEntry = null;
-                node.Parent = null;
                 _nodePool.Add(node);
             }
         }

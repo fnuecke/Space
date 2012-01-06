@@ -59,13 +59,13 @@ namespace Engine.ComponentSystem.Systems
         /// Whether the parameterization for the implementing class is the null
         /// parameterization, meaning we will never get any components.
         /// </summary>
-        private readonly bool _isUpdateNullParameterized = (typeof(TUpdateParameterization) == typeof(NullParameterization));
+        private bool _isUpdateNullParameterized = (typeof(TUpdateParameterization) == typeof(NullParameterization));
 
         /// <summary>
         /// Whether the parameterization for the implementing class is the null
         /// parameterization, meaning we will never get any components.
         /// </summary>
-        private readonly bool _isDrawNullParameterized = (typeof(TDrawParameterization) == typeof(NullParameterization));
+        private bool _isDrawNullParameterized = (typeof(TDrawParameterization) == typeof(NullParameterization));
 
         /// <summary>
         /// List of all currently registered components.
@@ -245,13 +245,22 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>A deep, with a semi-cleared copy of this system.</returns>
         public IComponentSystem DeepCopy()
         {
-            // Get something to start with.
             return DeepCopy(null);
         }
 
         public virtual IComponentSystem DeepCopy(IComponentSystem into)
         {
-            var copy = (AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>)(into ?? MemberwiseClone());
+            // Get something to start with.
+            AbstractComponentSystem<TUpdateParameterization, TDrawParameterization> copy;
+            if (into != null)
+            {
+                copy = (AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>)into;
+                CopyFields(copy);
+            }
+            else
+            {
+                copy = (AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>)MemberwiseClone();
+            }
 
             if (copy._updateableComponents == _updateableComponents)
             {
@@ -271,10 +280,17 @@ namespace Engine.ComponentSystem.Systems
                 copy._drawableComponents.Clear();
             }
 
-            // No manager at first. Must be re-set in (e.g. in cloned manager).
+            // No manager at first. Must be re-set (e.g. in cloned manager).
             copy.Manager = null;
 
             return copy;
+        }
+
+        protected virtual void CopyFields(AbstractComponentSystem<TUpdateParameterization, TDrawParameterization> into)
+        {
+            into.ShouldSynchronize = ShouldSynchronize;
+            into._isUpdateNullParameterized = _isUpdateNullParameterized;
+            into._isDrawNullParameterized = _isDrawNullParameterized;
         }
 
         #endregion

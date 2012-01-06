@@ -243,14 +243,12 @@ namespace Engine.ComponentSystem.Systems
 
         public IComponentSystemManager DeepCopy()
         {
-            // Start with a quick, shallow copy.
-            return DeepCopy((IComponentSystemManager)MemberwiseClone());
+            return DeepCopy(null);
         }
 
         public IComponentSystemManager DeepCopy(IComponentSystemManager into)
         {
-            // Start with a quick, shallow copy.
-            var copy = (ComponentSystemManager)into;
+            var copy = (ComponentSystemManager)(into ?? MemberwiseClone());
 
             // Give it its own lookup table.
             if (copy._mapping == _mapping)
@@ -280,8 +278,12 @@ namespace Engine.ComponentSystem.Systems
                 for (int i = 0; i < _systems.Count; i++)
                 {
                     copy._systems[i] = _systems[i].DeepCopy(copy._systems[i]);
+                    copy._systems[i].Manager = copy;
                 }
             }
+
+            // No entity manager, has to be re-set.
+            copy.EntityManager = null;
 
             return copy;
         }

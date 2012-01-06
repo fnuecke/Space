@@ -194,6 +194,9 @@ namespace Engine.ComponentSystem.Systems
         {
             var copy = (EntityManager)(into ?? MemberwiseClone());
 
+            // Clone the id manager.
+            copy._idManager = (IdManager)_idManager.Clone();
+
             // Clone system manager.
             if (copy.SystemManager == SystemManager)
             {
@@ -219,9 +222,6 @@ namespace Engine.ComponentSystem.Systems
             {
                 copy.AddEntityUnchecked((Entity)entity.Clone());
             }
-
-            // Clone the id manager.
-            copy._idManager = (IdManager)_idManager.Clone();
 
             return copy;
         }

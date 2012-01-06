@@ -150,6 +150,13 @@ namespace Space.ComponentSystem.Systems
             return copy;
         }
 
+        protected override void CopyFields(AbstractComponentSystem<NullParameterization, NullParameterization> into)
+        {
+            base.CopyFields(into);
+
+            ((UniversalSystem)into).WorldSeed = WorldSeed;
+        }
+
         #endregion
 
         #region Utility methods

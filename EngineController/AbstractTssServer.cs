@@ -251,7 +251,12 @@ namespace Engine.Controller
         private void HandlePlayerLeft(object sender, EventArgs e)
         {
             var args = (PlayerEventArgs)e;
+
+            // Set that load to zero, to not affect calculations.
             _clientLoads[args.Player.Number] = 0f;
+
+            // Player might have been the one slowing us down.
+            AdjustSpeed();
         }
 
         #endregion
