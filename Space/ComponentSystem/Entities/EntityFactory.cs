@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
-using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -35,8 +34,8 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Friction(0.01f, 0.02f));
             // TODO compute based on equipped components
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 1));
-            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup | (ulong)faction << CollisionSystem.FirstIndexGroup));
-            entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, (uint)faction));
+            entity.AddComponent(new Index(Gravitation.IndexGroup | faction.ToCollisionIndexGroup()));
+            entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, faction.ToCollisionGroup()));
             entity.AddComponent(new Faction(faction));
             entity.AddComponent(new Avatar(faction.ToPlayerNumber()));
             entity.AddComponent(new ShipControl());
@@ -127,15 +126,16 @@ namespace Space.ComponentSystem.Entities
                 entity.AddComponent(new CollisionDamage(projectile.Damage));
             }
 
-            if (projectile.Damage > 0)
+            if (projectile.Damage >= 0)
             {
-                entity.AddComponent(new Index((ulong)faction << CollisionSystem.FirstIndexGroup));
+                entity.AddComponent(new Index(faction.ToCollisionIndexGroup()));
             }
             else if (projectile.Damage < 0)
             {
-                entity.AddComponent(new Index((ulong)~(uint)faction << CollisionSystem.FirstIndexGroup));
+                // Negative damage = healing -> collide will all our allies.
+                entity.AddComponent(new Index(faction.Inverse().ToCollisionIndexGroup()));
             }
-            entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, (uint)faction));
+            entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, faction.ToCollisionGroup()));
             if (!string.IsNullOrWhiteSpace(projectile.Texture))
             {
                 entity.AddComponent(new TransformedRenderer(projectile.Texture, faction.ToColor(), projectile.Scale));
@@ -164,8 +164,8 @@ namespace Space.ComponentSystem.Entities
 
             entity.AddComponent(new Transform(position));
             entity.AddComponent(new Spin());
-            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup));
-            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractor, mass));
+            entity.AddComponent(new Index(Gravitation.IndexGroup));
+            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
             entity.AddComponent(new AstronomicBody(type));
             
@@ -182,8 +182,8 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
             entity.AddComponent(new Spin());
             entity.AddComponent(new EllipsePath(center.UID, majorRadius, minorRadius, angle, period));
-            entity.AddComponent(new Index(1ul << Gravitation.IndexGroup));
-            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractor, mass));
+            entity.AddComponent(new Index(Gravitation.IndexGroup));
+            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
             entity.AddComponent(new AstronomicBody(type));
 

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -29,7 +31,7 @@ namespace Engine.ComponentSystem.Components
             /// Acts as an attractor, i.e. pulls other entities to its own
             /// center of mass.
             /// </summary>
-            Atractor = 1 << 0,
+            Attractor = 1 << 0,
 
             /// <summary>
             /// Acts as an attractee, i.e. can be pulled towards attractors.
@@ -44,7 +46,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Index group to use for gravitational computations.
         /// </summary>
-        public const byte IndexGroup = IndexSystem.DefaultIndexGroup + 1;
+        public static readonly ulong IndexGroup = 1ul << IndexSystem.GetGroup();
 
         #endregion
 
@@ -60,6 +62,15 @@ namespace Engine.ComponentSystem.Components
         /// gravitation forces.
         /// </summary>
         public float Mass;
+
+        #endregion
+
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused for iterating components.
+        /// </summary>
+        private static readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
 
         #endregion
 
@@ -97,7 +108,7 @@ namespace Engine.ComponentSystem.Components
         public override void Update(object parameterization)
         {
             // Only do something if we're attracting stuff.
-            if ((GravitationType & GravitationTypes.Atractor) != 0)
+            if ((GravitationType & GravitationTypes.Attractor) != 0)
             {
                 // Get our position.
                 var myTransform = Entity.GetComponent<Transform>();
@@ -113,7 +124,8 @@ namespace Engine.ComponentSystem.Components
                 }
 
                 // Then check all our neighbors.
-                foreach (var neigbour in index.GetNeighbors(Entity, 2 << 13, 1 << IndexGroup))
+                foreach (var neigbour in index.
+                    GetNeighbors(Entity, 2 << 13, IndexGroup, _reusableNeighborList))
                 {
                     // If they have a gravitation component...
                     var otherGravitation = neigbour.GetComponent<Gravitation>();
@@ -148,6 +160,10 @@ namespace Engine.ComponentSystem.Components
                         }
                     }
                 }
+
+                // Clear the list for the next iteration (and after the
+                // iteration so we don't keep references to stuff).
+                _reusableNeighborList.Clear();
             }
         }
 

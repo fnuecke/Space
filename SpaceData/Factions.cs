@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 
 namespace Space.Data
@@ -94,7 +95,13 @@ namespace Space.Data
         /// <summary>
         /// Player twelve.
         /// </summary>
-        Player12 = 1 << 15
+        Player12 = 1 << 15,
+
+        /// <summary>
+        /// Always represents the last entry, for masking when inverting.
+        /// </summary>
+        /// <remarks>Make sure to update this when adding or removing entries.</remarks>
+        End = Player12
     }
 
     #region Conversion utils
@@ -158,6 +165,17 @@ namespace Space.Data
         #region Methods
 
         /// <summary>
+        /// Gets the inverse of a list of factions, i.e. all factions
+        /// <em>not</em> present in the list.
+        /// </summary>
+        /// <param name="factions">The factions for which to get the inverse.</param>
+        /// <returns>The list of factions not in the given group.</returns>
+        public static Factions Inverse(this Factions factions)
+        {
+            return (Factions)(~(uint)factions & (uint)Factions.End);
+        }
+
+        /// <summary>
         /// Convert the specified faction to a player number.
         /// </summary>
         /// <param name="faction">The faction to convert.</param>
@@ -189,6 +207,28 @@ namespace Space.Data
             {
                 throw new ArgumentException("faction");
             }
+        }
+
+        /// <summary>
+        /// Converts one or multiple factions to the collision group they
+        /// belong to (won't be checked against each other).
+        /// </summary>
+        /// <param name="factions">The factions to convert.</param>
+        /// <returns>The collision group.</returns>
+        public static uint ToCollisionGroup(this Factions factions)
+        {
+            return (uint)factions;
+        }
+
+        /// <summary>
+        /// Converts one or multiple factions to the collision group
+        /// <em>index</em> they belong to (index groups they belong to).
+        /// </summary>
+        /// <param name="factions">The factions to convert.</param>
+        /// <returns>The collision index group.</returns>
+        public static ulong ToCollisionIndexGroup(this Factions factions)
+        {
+            return (ulong)factions << CollisionSystem.FirstIndexGroup;
         }
 
         /// <summary>

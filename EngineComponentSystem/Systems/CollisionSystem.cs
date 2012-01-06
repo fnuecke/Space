@@ -19,12 +19,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Start using indexes after the collision index.
         /// </summary>
-        public const byte FirstIndexGroup = Gravitation.IndexGroup + 1;
-
-        /// <summary>
-        /// Last indexes we will possibly be using.
-        /// </summary>
-        public const byte LastIndexGroup = FirstIndexGroup + 31;
+        public static readonly byte FirstIndexGroup = IndexSystem.GetGroups(32);
 
         #endregion
 
@@ -45,10 +40,15 @@ namespace Engine.ComponentSystem.Systems
         private static CollisionParameterization _parameterization = new CollisionParameterization();
 
         /// <summary>
-        /// Reused each update, avoids memory re-allocation.
+        /// Reused for iterating components.
         /// </summary>
-        private static readonly HashSet<Entity> _neighbors = new HashSet<Entity>();
+        private static readonly List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(2048);
 
+        /// <summary>
+        /// Reused for iterating components.
+        /// </summary>
+        private static readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
+        
         #endregion
 
         #region Constructor
@@ -63,7 +63,7 @@ namespace Engine.ComponentSystem.Systems
         #endregion
 
         #region Logic
-        
+
         /// <summary>
         /// Tests for collisions and lets participating components know if
         /// there is one.
@@ -73,13 +73,12 @@ namespace Engine.ComponentSystem.Systems
         public override void Update(long frame)
         {
             // Loop through all components.
-            var currentComponents = new List<AbstractComponent>(UpdateableComponents);
-            var componentCount = currentComponents.Count;
+            _reusableComponentList.AddRange(UpdateableComponents);
             var index = Manager.GetSystem<IndexSystem>();
-            _neighbors.Clear();
-            for (int i = 0; i < componentCount; ++i)
+            while (_reusableComponentList.Count > 0)
             {
-                var currentCollidable = (AbstractCollidable)currentComponents[i];
+                var currentCollidable = (AbstractCollidable)_reusableComponentList[_reusableComponentList.Count - 1];
+                _reusableComponentList.RemoveAt(_reusableComponentList.Count - 1);
 
                 // Skip disabled components.
                 if (!currentCollidable.Enabled)
@@ -95,55 +94,66 @@ namespace Engine.ComponentSystem.Systems
                     // that group.
                     foreach (var neighbor in index.GetNeighbors(
                         currentCollidable.Entity, _maxCollidableRadius,
-                        (~currentCollidable.CollisionGroups) << FirstIndexGroup))
+                        (ulong)(~currentCollidable.CollisionGroups) << FirstIndexGroup,
+                        _reusableNeighborList))
                     {
-                        _neighbors.Add(neighbor);
+                        // See if it's among the list of components we still
+                        // need to check.
+                        var otherComponent = _reusableComponentList.
+                            Find(c => c.Entity.UID == neighbor.UID);
+                        if (otherComponent != null)
+                        {
+                            TestCollision(currentCollidable, (AbstractCollidable)otherComponent);
+                        }
                     }
+
+                    // Clear the list for the next iteration (and after the
+                    // iteration so we don't keep references to stuff).
+                    _reusableNeighborList.Clear();
                 }
-
-                // Loop through all other components. Only do the interval
-                // (i, #components) avoid duplicate checks (i vs j == j vs i).
-                for (int j = i + 1; j < componentCount; ++j)
+                else
                 {
-                    var otherCollidable = (AbstractCollidable)currentComponents[j];
-                    
-                    // Skip disabled components.
-                    if (!otherCollidable.Enabled)
+                    // Bruteforce. Loop through all other components.
+                    foreach (var otherComponent in _reusableComponentList)
                     {
-                        continue;
-                    }
-                    
-                    // Only test if its from a different collision group.
-                    if ((currentCollidable.CollisionGroups & otherCollidable.CollisionGroups) != 0)
-                    {
-                        continue;
-                    }
-
-                    // Only test if its in our neighbors list (if we have one).
-                    if (_neighbors.Count > 0 && !_neighbors.Contains(otherCollidable.Entity))
-                    {
-                        continue;
-                    }
-
-                    // Test for collision, if there is one, let both parties know.
-                    if (currentCollidable.Intersects(otherCollidable))
-                    {
-                        Collision message;
-                        message.OtherEntity = otherCollidable.Entity;
-                        currentCollidable.Entity.SendMessage(ref message);
-                        message.OtherEntity = currentCollidable.Entity;
-                        otherCollidable.Entity.SendMessage(ref message);
+                        TestCollision(currentCollidable, (AbstractCollidable)otherComponent);
                     }
                 }
             }
 
+            // _reusableComponentList.Clear() unnecessary because empty per definition of the above loop.
+
             // Update previous position for all collidables.
-            foreach (var component in currentComponents)
+            foreach (var component in UpdateableComponents)
             {
                 if (component.Enabled)
                 {
                     component.Update(_parameterization);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Performs a collision check between the two given collidable
+        /// components.
+        /// </summary>
+        /// <param name="currentCollidable">The first object.</param>
+        /// <param name="otherCollidable">The second object.</param>
+        private void TestCollision(AbstractCollidable currentCollidable, AbstractCollidable otherCollidable)
+        {
+            if (
+            // Skip disabled components.
+            otherCollidable.Enabled &&
+            // Only test if its from a different collision group.
+            (currentCollidable.CollisionGroups & otherCollidable.CollisionGroups) == 0 &&
+            // Test for collision, if there is one, let both parties know.
+            currentCollidable.Intersects(otherCollidable))
+            {
+                Collision message;
+                message.OtherEntity = otherCollidable.Entity;
+                currentCollidable.Entity.SendMessage(ref message);
+                message.OtherEntity = currentCollidable.Entity;
+                otherCollidable.Entity.SendMessage(ref message);
             }
         }
 

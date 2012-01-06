@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
@@ -22,14 +23,53 @@ namespace Engine.ComponentSystem.Systems
         public const byte DefaultIndexGroup = 0;
 
         /// <summary>
+        /// The default group used if none is specified.
+        /// </summary>
+        public const ulong DefaultIndexGroupMask = 1ul;
+
+        /// <summary>
         /// Maximum entries per node in our index to use.
         /// </summary>
-        private const int _maxEntriesPerNode = 10;
+        private const int _maxEntriesPerNode = 16;
 
         /// <summary>
         /// Minimum size of a node in our index.
         /// </summary>
         private const int _minNodeSize = 32;
+
+        #endregion
+
+        #region Group number distribution
+
+        /// <summary>
+        /// Next group index dealt out.
+        /// </summary>
+        private static byte _nextGroup = 1;
+
+        /// <summary>
+        /// Reserves a group number for use.
+        /// </summary>
+        /// <returns>The reserved group number.</returns>
+        public static byte GetGroup()
+        {
+            return GetGroups(1);
+        }
+
+        /// <summary>
+        /// Reserves multiple group numbers for use.
+        /// </summary>
+        /// <param name="range">The number of group numbers to reserve.</param>
+        /// <returns>The start of the range of reserved group numbers.</returns>
+        public static byte GetGroups(byte range)
+        {
+            if ((int)range + (int)_nextGroup > 0xFF)
+            {
+                throw new InvalidOperationException("No more index groups available.");
+            }
+            var result = _nextGroup;
+            _nextGroup += range;
+            return result;
+        }
 
         #endregion
 
@@ -99,8 +139,10 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="query">The entity to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
+        /// <param name="list">The list to use for storing the results.</param>
         /// <returns>All entities in range (including the query entity).</returns>
-        public List<Entity> GetNeighbors(Entity query, float range, ulong groups = 1u << DefaultIndexGroup)
+        public ICollection<Entity> GetNeighbors(Entity query, float range,
+            ulong groups = DefaultIndexGroupMask, ICollection<Entity> list = null)
         {
             return GetNeighbors(query.GetComponent<Transform>().Translation, range, groups);
         }
@@ -113,20 +155,22 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="query">The point to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
+        /// <param name="list">The list to use for storing the results.</param>
         /// <returns>All entities in range.</returns>
-        public List<Entity> GetNeighbors(Vector2 query, float range, ulong groups = 1u << DefaultIndexGroup)
+        public ICollection<Entity> GetNeighbors(Vector2 query, float range,
+            ulong groups = DefaultIndexGroupMask, ICollection<Entity> list = null)
         {
-            var result = new List<Entity>();
+            list = list ?? new List<Entity>();
 
             foreach (var tree in TreesForGroups(groups, _reusableTreeList))
             {
                 foreach (var neighborId in tree.RangeQuery(query, range))
                 {
-                    result.Add(Manager.EntityManager.GetEntity(neighborId));
+                    list.Add(Manager.EntityManager.GetEntity(neighborId));
                 }
             }
 
-            return result;
+            return list;
         }
 
         #endregion
@@ -264,7 +308,7 @@ namespace Engine.ComponentSystem.Systems
         private List<QuadTree<int>> TreesForGroups(ulong groups, List<QuadTree<int>> list)
         {
             list.Clear();
-            int index = 0;
+            byte index = 0;
             while (groups > 0)
             {
                 if ((groups & 1) == 1 && _trees[index] != null)

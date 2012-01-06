@@ -59,7 +59,7 @@ namespace Space.ComponentSystem.Components
             //calculate distance
             range = modules.GetValue(EntityAttributeType.SensorRange, range);
 
-            foreach (var neigbour in index.GetNeighbors(Entity, range, 1 << Gravitation.IndexGroup))
+            foreach (var neigbour in index.GetNeighbors(Entity, range, Gravitation.IndexGroup))
             {
                 if (neigbour == null || neigbour.GetComponent<Transform>() == null || neigbour.GetComponent<AstronomicBody>() == null) continue;
                 var color = Color.Teal;
