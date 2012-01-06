@@ -17,10 +17,17 @@ namespace Space.ComponentSystem.Components
         private Texture2D arrow;
 
         private SpriteFont font;
-
+        
         #endregion
 
+        #region Construktor
+        public Radar()
+        {
+            DrawOrder = 20;
+        }
+        #endregion
         #region Logic
+
 
         /// <summary>
         /// Draws the 
@@ -35,7 +42,7 @@ namespace Space.ComponentSystem.Components
                 arrow = args.Content.Load<Texture2D>("Textures/arrow");
                 font = args.Content.Load<SpriteFont>("Fonts/ConsoleFont");
             }
-            args.SpriteBatch.DrawString(font, "das ist ein test", new Vector2(200, 200), Color.Blue);
+            
             var transform = Entity.GetComponent<Transform>();
             if (transform == null) return;
             var x = transform.Translation.X;
@@ -59,43 +66,48 @@ namespace Space.ComponentSystem.Components
             //calculate distance
             range = modules.GetValue(EntityAttributeType.SensorRange, range);
 
-            foreach (var neigbour in index.GetNeighbors(Entity, range, 1 << Gravitation.IndexGroup))
+            foreach (var neigbour in index.GetNeighbors(Entity, range, 1 << Detectable.IndexGroup))
             {
                 if (neigbour == null || neigbour.GetComponent<Transform>() == null || neigbour.GetComponent<AstronomicBody>() == null) continue;
-                var color = Color.Teal;
-                switch (neigbour.GetComponent<AstronomicBody>().Type)
-                {
-                    case AstronomicBodyType.Sun:
-                        color = Color.Yellow;
-                        break;
-                    case AstronomicBodyType.Planet:
-                        color = Color.Blue;
-                        break;
-                    case AstronomicBodyType.Moon:
-                        color = Color.Gray;
-                        break;
-                }
-                var position = neigbour.GetComponent<Transform>().Translation;
+                //get color of faction
+                var color = Color.White;
+                var faction = neigbour.GetComponent<Faction>();
+                if (faction != null)
+                    color = faction.Value.ToColor();
 
+                args.SpriteBatch.DrawString(font, "das ist ein test"+color, new Vector2(200, 200), color);
+                
+                var position = neigbour.GetComponent<Transform>().Translation;
+                var detectable = neigbour.GetComponent<Detectable>();
+                if (detectable == null) continue;
+                
+                if (detectable.Texture == null)
+                {
+                    // But only if we have a name, set, else return.
+                    if (string.IsNullOrWhiteSpace(detectable.TextureName))
+                    {
+                        continue;
+                    }
+                    detectable.Texture = args.Content.Load<Texture2D>(detectable.TextureName);
+                }
                 var distX = Math.Abs((double)position.X - (double)x);
                 var distY = Math.Abs((double)position.Y - (double)y);
                 var distance = Math.Sqrt(Math.Pow((double)position.Y - (double)y, 2) +
                                          Math.Pow((double)position.X - (double)x, 2));
 
                 var phi = Math.Atan2((double)position.Y - (double)y, (double)position.X - (double)x);
-                var arrowPos = new Vector2(args.SpriteBatch.GraphicsDevice.Viewport.Width / 2.0f,
+                var texturePos = new Vector2(args.SpriteBatch.GraphicsDevice.Viewport.Width / 2.0f,
                                            args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0f);
-                arrowPos.X += args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Cos(phi);
+                texturePos.X += args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Cos(phi);
 
-                arrowPos.Y += args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Sin(phi);
+                texturePos.Y += args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Sin(phi);
                 //Console.WriteLine(arrowPos);
                 var size = 40 / distance;
                 if (distX > args.SpriteBatch.GraphicsDevice.Viewport.Width / 2.0 || distY > args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0)
-                    args.SpriteBatch.Draw(arrow, arrowPos, null, color, (float)phi,
+                    args.SpriteBatch.Draw(detectable.Texture, texturePos, null, color, (float)phi,
                                           new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f), (float)size,
                                           SpriteEffects.None, 1);
-
-                args.SpriteBatch.DrawString(font, "das ist ein test", position, Color.Blue);
+                args.SpriteBatch.DrawString(font,"oloasdasdsadasdasdsadsadasdsadsadasdsadsadasiödujabspdijabsdiphsjabdiösadbsabds"+color,position,color);
                 //spriteBatch.Draw(rocketTexture, rocketPosition, null, players[currentPlayer].Color, rocketAngle, new Vector2(42, 240), 0.1f, SpriteEffects.None, 1);
             }
         }

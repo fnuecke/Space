@@ -59,7 +59,7 @@
 
       <Sensors>
         <Item>
-          <Range>2000</Range>
+          <Range>20000</Range>
         </Item>
       </Sensors>
     </Ship>
