@@ -70,6 +70,11 @@
         /// <summary>
         /// Weapon cooldown modifier for an entity.
         /// </summary>
-        WeaponCooldown
+        WeaponCooldown,
+
+        /// <summary>
+        /// Radar Distance for an entity.
+        /// </summary>
+        RadarDistance
     }
 }

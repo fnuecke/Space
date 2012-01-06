@@ -42,6 +42,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new WeaponControl());
             entity.AddComponent(new WeaponSound());
+            entity.AddComponent(new Radar());
             entity.AddComponent(new ThrusterEffect("Effects/thruster"));
             entity.AddComponent(new Respawn(300, new List<Type>()
             {

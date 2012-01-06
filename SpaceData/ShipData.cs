@@ -48,6 +48,12 @@ namespace Space.Data
         [ContentSerializer(Optional = true)]
         public WeaponModule[] Weapons = new WeaponModule[0];
 
+
+        /// <summary>
+        /// Slot, occupied or not, of hulls for this ship.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public RadarModule[] Radar = new RadarModule[0];
         #region Serialization
         
         public Packet Packetize(Packet packet)
@@ -60,7 +66,8 @@ namespace Space.Data
                 .Write(Reactors)
                 .Write(Thrusters)
                 .Write(Shields)
-                .Write(Weapons);
+                .Write(Weapons)
+                .Write(Radar);
         }
 
         public void Depacketize(Packet packet)
@@ -73,6 +80,7 @@ namespace Space.Data
             Thrusters = packet.ReadPacketizables<ThrusterModule>();
             Shields = packet.ReadPacketizables<ShieldModule>();
             Weapons = packet.ReadPacketizables<WeaponModule>();
+            Radar = packet.ReadPacketizables<RadarModule>();
         }
 
         #endregion

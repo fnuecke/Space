@@ -56,6 +56,13 @@
           </Projectiles>
         </Item>
       </Weapons>
+      <Radar>
+        <Item>
+          <RadarDistance>2000</RadarDistance>
+          
+
+        </Item>
+      </Radar>
     </Ship>
   </Asset>
 </XnaContent>
