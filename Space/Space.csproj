@@ -133,8 +133,9 @@
     <Compile Include="ComponentSystem\Systems\Messages\CellStateChanged.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="ScreenManagement\Screens\Entries\OptionMenuEntry.cs" />
-    <Compile Include="ScreenManagement\Screens\Renderers\Background.cs" />
-    <Compile Include="ScreenManagement\Screens\Renderers\Radar.cs" />
+    <Compile Include="ScreenManagement\Screens\Gameplay\Background.cs" />
+    <Compile Include="ScreenManagement\Screens\Gameplay\InputHandler.cs" />
+    <Compile Include="ScreenManagement\Screens\Gameplay\Radar.cs" />
     <Compile Include="Simulation\Commands\GameCommand.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />

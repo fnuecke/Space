@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Xna.Framework;
 using Space.Control;
-using Space.ScreenManagement.Screens.Renderers;
+using Space.ScreenManagement.Screens.Gameplay;
 
 namespace Space.ScreenManagement.Screens
 {
@@ -19,8 +19,19 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         private GameClient _client;
 
+        /// <summary>
+        /// Grab player input when this screen is active.
+        /// </summary>
+        private InputHandler _input;
+
+        /// <summary>
+        /// Renderer for overall background.
+        /// </summary>
         Background _background;
 
+        /// <summary>
+        /// Renderer for radar system.
+        /// </summary>
         Radar _radar;
 
         #endregion
@@ -37,6 +48,7 @@ namespace Space.ScreenManagement.Screens
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
 
+            _input = new InputHandler(client);
             _background = new Background(client);
             _radar = new Radar(client);
         }
@@ -48,6 +60,8 @@ namespace Space.ScreenManagement.Screens
         {
             _background.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
             _radar.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
+
+            // TODO preload any other ingame content we may need? (ship, planet etc textures)
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that
@@ -68,6 +82,21 @@ namespace Space.ScreenManagement.Screens
                                                        bool coveredByOtherScreen)
         {
             base.Update(gameTime, otherScreenHasFocus, false);
+
+            // Enable or disable our game input depending on whether we're the
+            // active screen or not, and whether the game is running or not.
+            if (_client.IsRunning())
+            {
+                _input.SetEnabled(!otherScreenHasFocus);
+                if (!otherScreenHasFocus)
+                {
+                    _input.Update();
+                }
+            }
+            else
+            {
+                _input.SetEnabled(false);
+            }
 
             // Gradually fade in or out depending on whether we are covered by the pause screen.
             if (coveredByOtherScreen)

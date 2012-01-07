@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
 
-namespace Space.ScreenManagement.Screens.Renderers
+namespace Space.ScreenManagement.Screens.Gameplay
 {
     /// <summary>
     /// Renderer class responsible for drawing the overall in-game background,
