@@ -6,20 +6,44 @@ using Space.Control;
 
 namespace Space.ScreenManagement.Screens.Renderers
 {
+    /// <summary>
+    /// Renderer class responsible for drawing the overall in-game background,
+    /// i.e. the stars an debris behind ships and planets and stuff.
+    /// </summary>
     public sealed class Background
     {
         #region Fields
 
+        /// <summary>
+        /// The local client, used to fetch player's position, to compute our
+        /// translation.
+        /// </summary>
         private readonly GameClient _client;
 
+        /// <summary>
+        /// Sprite batch used for rendering.
+        /// </summary>
         private SpriteBatch _spriteBatch;
 
+        /// <summary>
+        /// The overall background image (stars).
+        /// </summary>
         private Texture2D _background;
 
+        /// <summary>
+        /// Layer to blot out some of the stars.
+        /// </summary>
         private Texture2D _backgroundDarkMatter;
 
+        /// <summary>
+        /// Smaller debris, rendered in the background.
+        /// </summary>
         private Texture2D _backgroundDebrisSmall;
 
+        /// <summary>
+        /// Larger debris, rendered nearly at the foreground (i.e. the layer
+        /// game objects are on, including players' ships).
+        /// </summary>
         private Texture2D _backgroundDebrisLarge;
 
         #endregion

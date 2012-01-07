@@ -14,12 +14,23 @@ using Space.Data.Modules;
 
 namespace Space.ScreenManagement.Screens.Renderers
 {
+    /// <summary>
+    /// Renderer class that's responsible for drawing a player's radar, i.e.
+    /// the overlay that displays icons for nearby but out-of-screen objects
+    /// of interest (ones with a <c>Detectable</c> component).
+    /// </summary>
     public sealed class Radar
     {
         #region Fields
 
+        /// <summary>
+        /// The local client, used to fetch player's position and radar range.
+        /// </summary>
         private readonly GameClient _client;
 
+        /// <summary>
+        /// Sprite batch used for rendering.
+        /// </summary>
         private SpriteBatch _spriteBatch;
 
         /// <summary>

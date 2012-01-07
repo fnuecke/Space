@@ -8,7 +8,6 @@ using Engine.Session;
 using Engine.Simulation.Commands;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Space.Simulation.Commands;
 
@@ -37,8 +36,6 @@ namespace Space.Control
         private float _shipTargetRotation;
 
         private bool _mouseStoppedMoving = true;
-
-        private SpriteBatch _spriteBatch;
 
         #endregion
 
