@@ -14,22 +14,25 @@ namespace Space.ComponentSystem.Components
     {
         #region Fields
 
-        private Texture2D arrow;
+        /// <summary>
+        /// Background image for radar icons.
+        /// </summary>
+        private Texture2D _background;
 
-        private SpriteFont font;
-        
         #endregion
 
         #region Constructor
 
         public Radar()
         {
-            DrawOrder = 2;
+            DrawOrder = 100;
         }
 
         #endregion
 
         #region Logic
+
+        private static readonly float _sqrt2 = (float)System.Math.Sqrt(2);
 
         /// <summary>
         /// Draws the 
@@ -39,87 +42,154 @@ namespace Space.ComponentSystem.Components
         {
             // Get parameterization in proper type.
             var args = (RendererParameterization)parameterization;
-            if (arrow == null)
+
+            if (_background == null)
             {
-                arrow = args.Content.Load<Texture2D>("Textures/arrow");
-                font = args.Content.Load<SpriteFont>("Fonts/ConsoleFont");
+                _background = args.Content.Load<Texture2D>("Textures/radar_background");
             }
-            
+
+            // Fetch all the components we need.
             var transform = Entity.GetComponent<Transform>();
-            if (transform == null) return;
-            var x = transform.Translation.X;
-            var y = transform.Translation.Y;
-            //get Index System
             var index = Entity.Manager.SystemManager.GetSystem<IndexSystem>();
-            if (index == null)
+            var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
+
+            // Bail if we're missing something.
+            if (transform == null && index == null && modules == null)
             {
                 return;
             }
-            var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
 
-            if (modules == null) return;
-            //get radar modules
-            var radar = modules.GetModules<SensorModule>();
-            float range = 0;
-            if (radar != null)
-            {   //get sum of radars todo check if we need multiple
-                range += radar.Sum(radarModule => radarModule.Range);
-            }
-            //calculate distance
-            range = modules.GetValue(EntityAttributeType.SensorRange, range);
-            var count = 0;
-            foreach (var neigbour in index.GetNeighbors(Entity, range, Detectable.IndexGroup))
+            // Figure out the overall range of our radar system.
+            float radarRange = 0;
+
+            // Get equipped sensor modules.
+            var sensors = modules.GetModules<SensorModule>();
+            if (sensors != null)
             {
-                count++;
-                if (neigbour == null || neigbour.GetComponent<Transform>() == null || neigbour.GetComponent<AstronomicBody>() == null) continue;
-                //get color of faction
-                var color = Color.White;
-                var faction = neigbour.GetComponent<Faction>();
-                if (faction != null)
-                    color = faction.Value.ToColor();
+                // TODO in case we're adding sensor types (anti-cloaking, ...) check this one's actually a radar.
+                radarRange += sensors.Sum(module => module.Range);
+            }
 
-                args.SpriteBatch.DrawString(font, "das ist ein test"+color, new Vector2(200, 200), color);
-                
-                var position = neigbour.GetComponent<Transform>().Translation;
-                var detectable = neigbour.GetComponent<Detectable>();
-                if (detectable == null) continue;
-                
-                if (detectable.Texture == null)
+            // Apply any modifiers from equipment.
+            radarRange = modules.GetValue(EntityAttributeType.SensorRange, radarRange);
+            
+            // Get our viewport. Needed to compute the overall positioning of
+            // our icons on the screen.
+            var viewport = args.SpriteBatch.GraphicsDevice.Viewport;
+
+            // Get the screen's center, used for diverse computations, and as
+            // a center for relative computations (because the player's always
+            // rendered in the center of the screen).
+            Vector2 center;
+            center.X = viewport.Width / 2f;
+            center.Y = viewport.Height / 2f;
+
+            // Get the texture origin (middle of the texture).
+            Vector2 backgroundOrigin;
+            backgroundOrigin.X = _background.Width / 2.0f;
+            backgroundOrigin.Y = _background.Height / 2.0f;
+
+            // Now this is the tricky part: we take the minimal bounding sphere
+            // (or rather, circle) that fits our screen space. For each
+            // detectable entity we then pick the point on this circle that's
+            // in the direction of that entity.
+            // Because the only four points where this'll actually be in screen
+            // space will be the four corners, we'll map them down to the edges
+            // again. See below for that.
+            float radius = (float)System.Math.Sqrt(center.X * center.X + center.Y * center.Y);
+
+            // Loop through all our neighbors.
+            foreach (var neighbor in index.GetNeighbors(Entity, radarRange, Detectable.IndexGroup))
+            {
+                // Get the components we need.
+                var neighborTransform = neighbor.GetComponent<Transform>();
+                var neighborDetectable = neighbor.GetComponent<Detectable>();
+                var faction = neighbor.GetComponent<Faction>();
+
+                // Bail if we're missing something.
+                if (neighborTransform == null || neighborDetectable.Texture == null)
                 {
-                    // But only if we have a name, set, else return.
-                    if (string.IsNullOrWhiteSpace(detectable.TextureName))
-                    {
-                        continue;
-                    }
-                    detectable.Texture = args.Content.Load<Texture2D>(detectable.TextureName);
+                    continue;
                 }
-                var vba = (position - transform.Translation);
-                vba.Normalize();
-                var distX = Math.Abs((double)position.X - (double)x);
-                var distY = Math.Abs((double)position.Y - (double)y);
-                var viewWidth = args.SpriteBatch.GraphicsDevice.Viewport.Width/2f;
-                var viewHeight = args.SpriteBatch.GraphicsDevice.Viewport.Height / 2f;
-                var distance = Math.Sqrt(Math.Pow((double)position.Y - (double)y, 2) +
-                                         Math.Pow((double)position.X - (double)x, 2));
 
-                var phi = Math.Atan2((double)position.Y - (double)y, (double)position.X - (double)x);
-                var texturePos = new Vector2(args.SpriteBatch.GraphicsDevice.Viewport.Width / 2.0f,
-                                           args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0f);
-                //object is outside x bounds
-                
-                texturePos.X += viewWidth*vba.X;
-                texturePos.Y += viewHeight*vba.Y;
-                //texturePos.X += args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Cos(phi);
+                // We don't show the icons for anything that's inside our
+                // viewport. Get the position of the detectable inside our
+                // viewport. This will also serve as our direction vector.
+                var direction = neighborTransform.Translation - transform.Translation;
 
-                //texturePos.Y += args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0f * (float)Math.Sin(phi);
-                //Console.WriteLine(arrowPos);
-                
-                if (distX > args.SpriteBatch.GraphicsDevice.Viewport.Width / 2.0 || distY > args.SpriteBatch.GraphicsDevice.Viewport.Height / 2.0)
-                    args.SpriteBatch.Draw(detectable.Texture, texturePos, null, color, (float)phi,
-                                          new Vector2(arrow.Width / 2.0f, arrow.Height / 2.0f),1f,
-                                          SpriteEffects.None, 1);
-                args.SpriteBatch.DrawString(font," texturePos "+texturePos+ ", width: " + viewWidth + " height: " + viewHeight, new Vector2(200, 200+count*20), color);
-                //spriteBatch.Draw(rocketTexture, rocketPosition, null, players[currentPlayer].Color, rocketAngle, new Vector2(42, 240), 0.1f, SpriteEffects.None, 1);
+                // Get bounds in which to display the icon.
+                Rectangle screenBounds = viewport.Bounds;
+
+                // Check if the object's inside. If so, skip it.
+                if (screenBounds.Contains((int)(direction.X + center.X), (int)(direction.Y + center.Y)))
+                {
+                    continue;
+                }
+
+                // Get the color of the faction faction the detectable belongs
+                // to (it any).
+                var color = Color.White;
+                if (faction != null)
+                {
+                    color = faction.Value.ToColor();
+                }
+
+                // Get the direction to the detectable and normalize it.
+                direction.Normalize();
+
+                // Figure out where we want to position our icon. As described
+                // above, we first get the point on the surrounding circle,
+                // by multiplying our normalized direction vector with that
+                // circle's radius.
+                Vector2 iconPosition;
+                iconPosition.X = radius * direction.X;
+                iconPosition.Y = radius * direction.Y;
+
+                // But now it's almost certainly outside our screen. So let's
+                // see in which sector we are (we can treat left/right and
+                // up/down identically).
+                if (iconPosition.X > center.X || iconPosition.X < -center.X)
+                {
+                    // Out of screen on the X axis. Guaranteed to be in bound
+                    // for Y axis, though. Scale down.
+                    var scale = center.X / System.Math.Abs(iconPosition.X);
+                    iconPosition.X *= scale;
+                    iconPosition.Y *= scale;
+                }
+                else if (iconPosition.Y > center.Y || iconPosition.Y < -center.Y)
+                {
+                    // Out of screen on the Y axis. Guaranteed to be in bound
+                    // for X axis, though. Scale down.
+                    var scale = center.Y / System.Math.Abs(iconPosition.Y);
+                    iconPosition.X *= scale;
+                    iconPosition.Y *= scale;
+                }
+
+                // Adjust to the center.
+                iconPosition += center;
+
+                // Finally, clamp the point to be far enough inside our
+                // viewport for the complete texture of our icon to be
+                // displayed, which is the original viewport minus half the
+                // size of the icon, so deflate it by that.
+                screenBounds.Inflate(-(int)backgroundOrigin.X, -(int)backgroundOrigin.Y);
+
+                // Clamp our coordinates.
+                iconPosition.X = MathHelper.Clamp(iconPosition.X, screenBounds.Left, screenBounds.Right);
+                iconPosition.Y = MathHelper.Clamp(iconPosition.Y, screenBounds.Top, screenBounds.Bottom);
+
+                // And, finally, draw it. First the background.
+                args.SpriteBatch.Draw(_background, iconPosition, null, color, 0,
+                    backgroundOrigin, 1, SpriteEffects.None, 0);
+
+                // Get the texture origin (middle of the texture).
+                Vector2 origin;
+                origin.X = neighborDetectable.Texture.Width / 2.0f;
+                origin.Y = neighborDetectable.Texture.Height / 2.0f;
+
+                // And draw that, too.
+                args.SpriteBatch.Draw(neighborDetectable.Texture, iconPosition, null, color, 0,
+                    origin, 1, SpriteEffects.None, 0);
             }
         }
 

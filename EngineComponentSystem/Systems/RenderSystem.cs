@@ -39,14 +39,34 @@ namespace Engine.ComponentSystem.Systems
 
         public override void Draw(long frame)
         {
+            if (DrawableComponents.Count == 0)
+            {
+                return;
+            }
+
             // Get translation, which may be overridden.
             _parameterization.Transform.Translation = GetTranslation();
+
             // Then render all components.
             _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+
+            // Keep track of the layer we're currently rendering. Although
+            // it's less efficient, we re-begin a batch for each layer,
+            // which is mostly a workaround for stuff being rendered by
+            // other sprite batches to appear at the correct layer (and not
+            // have them over-painted by the one fat end after the loop).
+            int layer = DrawableComponents[0].DrawOrder;
+
             foreach (var component in DrawableComponents)
             {
                 if (component.Enabled)
                 {
+                    if (component.DrawOrder > layer)
+                    {
+                        layer = component.DrawOrder;
+                        _parameterization.SpriteBatch.End();
+                        _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+                    }
                     component.Draw(_parameterization);
                 }
             }

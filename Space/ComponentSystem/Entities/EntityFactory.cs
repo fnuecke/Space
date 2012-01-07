@@ -168,7 +168,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup));
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
-            entity.AddComponent(new Detectable("Textures/sun"));
+            entity.AddComponent(new Detectable("Textures/radar_sun"));
             entity.AddComponent(new AstronomicBody(type));
             
             //entity.AddComponent(new TransformedRenderer(texture));
@@ -188,7 +188,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
             entity.AddComponent(new AstronomicBody(type));
-            entity.AddComponent(new Detectable("Textures/sun"));
+            entity.AddComponent(new Detectable("Textures/radar_planet"));
             entity.AddComponent(new PlanetRenderer(texture));
 
             return entity;

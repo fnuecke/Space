@@ -48,10 +48,6 @@ namespace Engine.ComponentSystem.Components
 
         #region Constructor
 
-        protected AbstractRenderer(string textureName, Color tint, float scale, float depth)
-        {
-        }
-        
         protected AbstractRenderer(string textureName, Color tint, float scale)
         {
             this.TextureName = textureName;

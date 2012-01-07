@@ -314,8 +314,6 @@ namespace Space
         {
             base.Draw(gameTime);
 
-
-
             _fps.Put(1 / gameTime.ElapsedGameTime.TotalSeconds);
 
             _spriteBatch.Begin();
