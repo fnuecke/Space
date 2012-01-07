@@ -128,7 +128,7 @@ namespace Engine.ComponentSystem.Components
                 var f = (float)System.Math.Sqrt(System.Math.Abs(MinorRadius * MinorRadius - MajorRadius * MajorRadius));
 
                 // Compute the current position and set it.
-                transform.Translation = new Vector2(
+                transform.SetTranslation(
                     center.X + f * _cosPhi + MajorRadius * cosT * _cosPhi - MinorRadius * sinT * _sinPhi,
                     center.Y + f * _sinPhi + MajorRadius * cosT * _sinPhi + MinorRadius * sinT * _cosPhi
                 );

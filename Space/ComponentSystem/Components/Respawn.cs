@@ -102,7 +102,7 @@ namespace Space.ComponentSystem.Components
                         var transform = Entity.GetComponent<Transform>();
                         if (transform != null)
                         {
-                            transform.Translation = RespawnPosition;
+                            transform.SetTranslation(ref RespawnPosition);
                             transform.Rotation = 0;
                         }
 

@@ -72,21 +72,26 @@ namespace Engine.ComponentSystem.Components
             }
         }
 
-        public void SetTranslation(ref Vector2 value)
+        public void SetTranslation(float x, float y)
         {
-            if (Translation.X != value.X && Translation.Y != value.Y)
+            if (Translation.X != x && Translation.Y != y)
             {
                 TranslationChanged message;
                 message.PreviousPosition = Translation;
 
-                Translation.X = value.X;
-                Translation.Y = value.Y;
+                Translation.X = x;
+                Translation.Y = y;
 
                 if (Entity != null)
                 {
                     Entity.SendMessage(ref message);
                 }
             }
+        }
+
+        public void SetTranslation(ref Vector2 value)
+        {
+            SetTranslation(value.X, value.Y);
         }
 
         /// <summary>

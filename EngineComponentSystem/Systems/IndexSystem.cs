@@ -170,6 +170,8 @@ namespace Engine.ComponentSystem.Systems
                 }
             }
 
+            _reusableTreeList.Clear();
+
             return list;
         }
 
@@ -210,6 +212,8 @@ namespace Engine.ComponentSystem.Systems
                     {
                         tree.Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
                     }
+
+                    _reusableTreeList.Clear();
                 }
             }
         }
@@ -247,6 +251,8 @@ namespace Engine.ComponentSystem.Systems
                     {
                         tree.Add(transform.Translation, component.Entity.UID);
                     }
+
+                    _reusableTreeList.Clear();
                 }
             }
         }
@@ -284,6 +290,8 @@ namespace Engine.ComponentSystem.Systems
                 {
                     tree.Remove(position, component.Entity.UID);
                 }
+
+                _reusableTreeList.Clear();
             }
         }
 
@@ -307,7 +315,6 @@ namespace Engine.ComponentSystem.Systems
 
         private List<QuadTree<int>> TreesForGroups(ulong groups, List<QuadTree<int>> list)
         {
-            list.Clear();
             byte index = 0;
             while (groups > 0)
             {

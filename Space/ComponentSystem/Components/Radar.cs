@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
@@ -18,6 +20,15 @@ namespace Space.ComponentSystem.Components
         /// Background image for radar icons.
         /// </summary>
         private Texture2D _background;
+
+        #endregion
+
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused for iterating components.
+        /// </summary>
+        private static readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
 
         #endregion
 
@@ -98,8 +109,12 @@ namespace Space.ComponentSystem.Components
             // again. See below for that.
             float radius = (float)System.Math.Sqrt(center.X * center.X + center.Y * center.Y);
 
+            // Precomputed for the loop.
+            float squaredRadarRange = radarRange * radarRange;
+
             // Loop through all our neighbors.
-            foreach (var neighbor in index.GetNeighbors(Entity, radarRange, Detectable.IndexGroup))
+            foreach (var neighbor in index.
+                GetNeighbors(transform.Translation, radarRange, Detectable.IndexGroup, _reusableNeighborList))
             {
                 // Get the components we need.
                 var neighborTransform = neighbor.GetComponent<Transform>();
@@ -116,7 +131,10 @@ namespace Space.ComponentSystem.Components
                 // viewport. Get the position of the detectable inside our
                 // viewport. This will also serve as our direction vector.
                 var direction = neighborTransform.Translation - transform.Translation;
-
+                if (direction.Length() > radarRange || direction.LengthSquared() > squaredRadarRange)
+                {
+                    throw new InvalidOperationException("wtf");
+                }
                 // Get bounds in which to display the icon.
                 Rectangle screenBounds = viewport.Bounds;
 
@@ -125,7 +143,7 @@ namespace Space.ComponentSystem.Components
                 {
                     continue;
                 }
-
+                
                 // Get the color of the faction faction the detectable belongs
                 // to (it any).
                 var color = Color.White;
@@ -133,6 +151,14 @@ namespace Space.ComponentSystem.Components
                 {
                     color = faction.Value.ToColor();
                 }
+
+                // Make stuff far away a little less opaque. First get the
+                // linear relative distance.
+                var ld = direction.LengthSquared() / squaredRadarRange;
+                // Then apply a exponential fall-off, and make it cap a little
+                // early to get the 100% alpha when nearby, not only when
+                // exactly on top of the object ;)
+                color *= System.Math.Min(1, (1 - ld * ld * ld) * 1.1f);
 
                 // Get the direction to the detectable and normalize it.
                 direction.Normalize();
@@ -191,6 +217,9 @@ namespace Space.ComponentSystem.Components
                 args.SpriteBatch.Draw(neighborDetectable.Texture, iconPosition, null, color, 0,
                     origin, 1, SpriteEffects.None, 0);
             }
+
+            // Clear the list for the next run.
+            _reusableNeighborList.Clear();
         }
 
         /// <summary>
