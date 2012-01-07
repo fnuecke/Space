@@ -17,7 +17,7 @@ namespace Space.Control
     /// <summary>
     /// The game server, handling everything client logic related.
     /// </summary>
-    public class GameClient : DrawableGameComponent
+    public class GameClient : GameComponent
     {
         #region Properties
         
@@ -39,14 +39,6 @@ namespace Space.Control
         private bool _mouseStoppedMoving = true;
 
         private SpriteBatch _spriteBatch;
-
-        private Texture2D _textureBackground;
-
-        private Texture2D _textureDarkMatter;
-
-        private Texture2D _textureDebrisSmall;
-
-        private Texture2D _textureDebrisLarge;
 
         #endregion
 
@@ -96,9 +88,6 @@ namespace Space.Control
                 mouse.Pressed += HandleMousePressed;
                 mouse.Released += HandleMouseReleased;
             }
-
-            // Draw underneath menus etc.
-            DrawOrder = -50;
         }
 
         /// <summary>
@@ -129,19 +118,49 @@ namespace Space.Control
             base.Dispose(disposing);
         }
 
-        protected override void LoadContent()
+        #endregion
+
+        #region Utility methods
+
+        /// <summary>
+        /// Get the local player's avatar in the game, if possible.
+        /// </summary>
+        /// <returns>The local player's avatar.</returns>
+        public Entity GetAvatar()
         {
-            _textureBackground = Game.Content.Load<Texture2D>("Textures/stars");
-            _textureDarkMatter = Game.Content.Load<Texture2D>("Textures/dark_matter");
-            _textureDebrisSmall = Game.Content.Load<Texture2D>("Textures/debris_small");
-            _textureDebrisLarge = Game.Content.Load<Texture2D>("Textures/debris_large");
-            _spriteBatch = new SpriteBatch(Game.GraphicsDevice);
+            var avatarSystem = GetSystem<AvatarSystem>();
+            if (avatarSystem != null)
+            {
+                return avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Get the most current representation of a component system of the
+        /// specified type.
+        /// </summary>
+        /// <typeparam name="T">The type of the component system to get.</typeparam>
+        /// <returns>The component system of that type, or <c>null</c></returns>
+        public T GetSystem<T>() where T : IComponentSystem
+        {
+            if (Controller.Session.ConnectionState == ClientState.Connected)
+            {
+                return Controller.Simulation.EntityManager.SystemManager.GetSystem<T>();
+            }
+            else
+            {
+                return default(T);
+            }
         }
 
         #endregion
 
         #region Logic
-        
+
         /// <summary>
         /// Updates the controller.
         /// </summary>
@@ -174,55 +193,6 @@ namespace Space.Control
             }
 
             Controller.Update(gameTime);
-        }
-
-        /// <summary>
-        /// Renders the game state of the controller.
-        /// </summary>
-        /// <param name="gameTime"></param>
-        public override void Draw(GameTime gameTime)
-        {
-            base.Draw(gameTime);
-
-            // Get local player position.
-            Vector2 position = Vector2.Zero;
-            if (Controller.Session.ConnectionState == ClientState.Connected)
-            {
-                var avatar = Controller.Simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(Controller.Session.LocalPlayer.Number);
-                if (avatar != null)
-                {
-                    position = -avatar.GetComponent<Transform>().Translation;
-                }
-            }
-
-            // Draw the background, tiled, with the given translation.
-            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
-            _spriteBatch.Draw(_textureBackground, Vector2.Zero,
-                new Rectangle(-(int)(position.X * 0.05f), -(int)(position.Y * 0.05f),
-                    _spriteBatch.GraphicsDevice.Viewport.Width,
-                    _spriteBatch.GraphicsDevice.Viewport.Height),
-                    Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-
-            _spriteBatch.Draw(_textureDarkMatter, Vector2.Zero,
-                new Rectangle(-(int)(position.X * 0.1f), -(int)(position.Y * 0.1f),
-                    _spriteBatch.GraphicsDevice.Viewport.Width,
-                    _spriteBatch.GraphicsDevice.Viewport.Height),
-                    Color.White * 0.95f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-
-            _spriteBatch.Draw(_textureDebrisSmall, Vector2.Zero,
-                new Rectangle(-(int)(position.X * 0.65f), -(int)(position.Y * 0.65f),
-                    _spriteBatch.GraphicsDevice.Viewport.Width,
-                    _spriteBatch.GraphicsDevice.Viewport.Height),
-                    Color.DarkSlateGray * 0.75f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-
-            _spriteBatch.Draw(_textureDebrisLarge, Vector2.Zero,
-                new Rectangle(-(int)(position.X * 0.95f), -(int)(position.Y * 0.95f),
-                    _spriteBatch.GraphicsDevice.Viewport.Width,
-                    _spriteBatch.GraphicsDevice.Viewport.Height),
-                    Color.SlateGray * 0.25f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-            _spriteBatch.End();
-
-            Controller.Draw();
         }
 
         #endregion

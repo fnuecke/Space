@@ -83,7 +83,7 @@ namespace Space.ScreenManagement.Screens
             ((Spaaace)ScreenManager.Game).RestartClient(true);
 
             // Directly transition to in-game screen.
-            LoadingScreen.Load(ScreenManager, true, new GameplayScreen());
+            LoadingScreen.Load(ScreenManager, true, new GameplayScreen(((Spaaace)ScreenManager.Game).Client));
         }
 
         /// <summary>

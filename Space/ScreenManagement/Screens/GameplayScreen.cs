@@ -1,32 +1,27 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// GameplayScreen.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using Statements
 using System;
 using Microsoft.Xna.Framework;
-
-
-
-#endregion
+using Space.Control;
+using Space.ScreenManagement.Screens.Renderers;
 
 namespace Space.ScreenManagement.Screens
 {
     /// <summary>
-    /// This screen implements the actual game logic. It is just a
-    /// placeholder to get the idea across: you'll probably want to
-    /// put some more interesting gameplay in here!
+    /// This screen implements the game's GUI.
     /// </summary>
     class GameplayScreen : GameScreen
     {
         #region Fields
 
-        float pauseAlpha;
+        private float _pauseAlpha;
+
+        /// <summary>
+        /// The game client that's active for this game.
+        /// </summary>
+        private GameClient _client;
+
+        Background _background;
+
+        Radar _radar;
 
         #endregion
 
@@ -35,10 +30,15 @@ namespace Space.ScreenManagement.Screens
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GameplayScreen()
+        public GameplayScreen(GameClient client)
         {
+            _client = client;
+
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
+
+            _background = new Background(client);
+            _radar = new Radar(client);
         }
 
         /// <summary>
@@ -46,10 +46,8 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void LoadContent()
         {
-            // A real game would probably have more content than this sample, so
-            // it would take longer to load. We simulate that by delaying for a
-            // while, giving you a chance to admire the beautiful loading screen.
-            //    Thread.Sleep(1000);
+            _background.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
+            _radar.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that
@@ -74,11 +72,11 @@ namespace Space.ScreenManagement.Screens
             // Gradually fade in or out depending on whether we are covered by the pause screen.
             if (coveredByOtherScreen)
             {
-                pauseAlpha = Math.Min(pauseAlpha + 1f / 32, 1);
+                _pauseAlpha = Math.Min(_pauseAlpha + 1f / 32, 1);
             }
             else
             {
-                pauseAlpha = Math.Max(pauseAlpha - 1f / 32, 0);
+                _pauseAlpha = Math.Max(_pauseAlpha - 1f / 32, 0);
             }
         }
 
@@ -88,11 +86,6 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void HandleInput(InputState input)
         {
-            if (input == null)
-            {
-                throw new ArgumentNullException("input");
-            }
-
             if (input.KeyPause)
             {
                 ScreenManager.AddScreen(new PauseMenuScreen());
@@ -104,10 +97,21 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
+            // Draw overall background (stars).
+            _background.Draw();
+
+            // Draw world elements.
+            _client.Controller.Draw();
+
+            // Render the radar.
+            _radar.Draw();
+
+            // TODO Draw actual GUI elements.
+
             // If the game is transitioning on or off, fade it out to black.
-            if (TransitionPosition > 0 || pauseAlpha > 0)
+            if (TransitionPosition > 0 || _pauseAlpha > 0)
             {
-                float alpha = MathHelper.Lerp(1f - TransitionAlpha, 1f, pauseAlpha / 2);
+                float alpha = MathHelper.Lerp(1f - TransitionAlpha, 1f, _pauseAlpha / 2);
 
                 ScreenManager.FadeBackBufferToBlack(alpha);
             }
