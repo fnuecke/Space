@@ -70,6 +70,17 @@ namespace Space.ComponentSystem.Components
                 return;
             }
 
+            // Get our viewport. Needed to compute the overall positioning of
+            // our icons on the screen.
+            var viewport = args.SpriteBatch.GraphicsDevice.Viewport;
+
+            // TODO this check isn't really ideal... but as a workaround :P
+            if (-transform.Translation.X + viewport.Width / 2 != args.Transform.Translation.X ||
+                -transform.Translation.Y + viewport.Height / 2 != args.Transform.Translation.Y)
+            {
+                return;
+            }
+
             // Figure out the overall range of our radar system.
             float radarRange = 0;
 
@@ -84,10 +95,6 @@ namespace Space.ComponentSystem.Components
             // Apply any modifiers from equipment.
             radarRange = modules.GetValue(EntityAttributeType.SensorRange, radarRange);
             
-            // Get our viewport. Needed to compute the overall positioning of
-            // our icons on the screen.
-            var viewport = args.SpriteBatch.GraphicsDevice.Viewport;
-
             // Get the screen's center, used for diverse computations, and as
             // a center for relative computations (because the player's always
             // rendered in the center of the screen).

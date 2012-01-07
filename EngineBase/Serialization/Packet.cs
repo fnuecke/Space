@@ -14,6 +14,12 @@ namespace Engine.Serialization
     /// </summary>
     public sealed class Packet : IDisposable
     {
+        #region
+
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -729,7 +735,8 @@ namespace Engine.Serialization
         public T ReadPacketizableWithTypeInfo<T>()
             where T : IPacketizable
         {
-            return ReadPacketizableInto((T)Activator.CreateInstance(Type.GetType(ReadString())));
+            string type = ReadString();
+            return ReadPacketizableInto((T)Activator.CreateInstance(Type.GetType(type)));
         }
 
         /// <summary>

@@ -40,9 +40,14 @@ namespace Space.ComponentSystem.Components
 
         #region Constructor
 
-        public  Detectable(string textureName)
+        public Detectable(string textureName)
         {
             TextureName = textureName;
+        }
+
+        public Detectable()
+            : this(string.Empty)
+        {
         }
 
         #endregion
