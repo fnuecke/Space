@@ -188,7 +188,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // Then apply a exponential fall-off, and make it cap a little
                 // early to get the 100% alpha when nearby, not only when
                 // exactly on top of the object ;)
-                color *= System.Math.Min(1, (1 - ld * ld * ld) * 1.1f);
+                color *= System.Math.Min(1, (1.1f - ld * ld * ld) * 1.1f);
 
                 // Get the direction to the detectable and normalize it.
                 direction.Normalize();
