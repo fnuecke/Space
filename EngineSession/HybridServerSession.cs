@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using Engine.IO;
 using Engine.Network;
 using Engine.Serialization;
-using Engine.Util;
 
 namespace Engine.Session
 {
@@ -149,7 +149,7 @@ namespace Engine.Session
                 else
                 {
                     // Not yet here, give him a slot, wait for join information.
-                    _pending.Add(new PendingLogin(client, new NetworkPacketStream(client.GetStream())));
+                    _pending.Add(new PendingLogin(client, new EncryptedPacketStream(new CompressedPacketStream(new NetworkPacketStream(client.GetStream())))));
                 }
             }
 
@@ -194,13 +194,15 @@ namespace Engine.Session
                     {
                         // Connection failed, disconnect.
                         logger.TraceException("Socket connection died during login.", ex);
-                        Remove(i);
+                        stream.Dispose();
+                        _pending.RemoveAt(i);
                     }
                     catch (PacketException ex)
                     {
                         // Received invalid packet from server.
                         logger.WarnException("Invalid packet received from client during login.", ex);
-                        Remove(i);
+                        stream.Dispose();
+                        _pending.RemoveAt(i);
                     }
                 }
             }

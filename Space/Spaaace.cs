@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using System.Text;
 using Engine.Input;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -13,6 +14,7 @@ using Space.Data;
 using Space.ScreenManagement;
 using Space.ScreenManagement.Screens;
 using Space.Session;
+using Space.View;
 
 namespace Space
 {
@@ -329,7 +331,7 @@ namespace Space
                     var entityManager = client.Controller.Simulation.EntityManager;
                     var systemManager = entityManager.SystemManager;
 
-                    StringBuilder sb = new StringBuilder();
+                    StringBuilder sb = new System.Text.StringBuilder();
 
                     // Draw session info and netgraph.
                     var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 230, GraphicsDevice.Viewport.Height - 140);
@@ -342,20 +344,20 @@ namespace Space
                     // Draw planet arrows and stuff.
                     if (session.ConnectionState == Engine.Session.ClientState.Connected)
                     {
-                        var avatar = systemManager.GetSystem<AvatarSystem>().GetAvatar(session.LocalPlayer.Number);
+                        var avatar = systemManager.GetSystem<Engine.ComponentSystem.Systems.AvatarSystem>().GetAvatar(session.LocalPlayer.Number);
                         if (avatar != null)
                         {
                             _spriteBatch.Begin();
 
-                            var x = avatar.GetComponent<Transform>().Translation.X;
-                            var y = avatar.GetComponent<Transform>().Translation.Y;
-                            var cellX = ((int)x) >> CellSystem.CellSizeShiftAmount;
-                            var cellY = ((int)y) >> CellSystem.CellSizeShiftAmount;
+                            var x = avatar.GetComponent<Engine.ComponentSystem.Components.Transform>().Translation.X;
+                            var y = avatar.GetComponent<Engine.ComponentSystem.Components.Transform>().Translation.Y;
+                            var cellX = ((int)x) >> Space.ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
+                            var cellY = ((int)y) >> Space.ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
                             sb.AppendFormat("Position: ({0:f}, {1:f}), Cell: ({2}, {3})\n", x, y, cellX, cellY);
 
                             var id = CoordinateIds.Combine(cellX, cellY);
 
-                            var universe = systemManager.GetSystem<UniversalSystem>();
+                            var universe = systemManager.GetSystem<Space.ComponentSystem.Systems.UniversalSystem>();
                             if (universe != null)
                             {
                                 sb.AppendFormat("Objects in system: {0}\n", universe.GetSystemList(id).Count);
@@ -363,14 +365,14 @@ namespace Space
 
                             sb.AppendFormat("Update load: {0:f}\n", client.Controller.CurrentLoad);
 
-                            var index = systemManager.GetSystem<IndexSystem>();
+                            var index = systemManager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
                             if (index != null)
                             {
                                 sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
                             }
 
-                            var health = avatar.GetComponent<Health>();
-                            var energy = avatar.GetComponent<Energy>();
+                            var health = avatar.GetComponent<Space.ComponentSystem.Components.Health>();
+                            var energy = avatar.GetComponent<Space.ComponentSystem.Components.Energy>();
                             if (health != null && energy != null)
                             {
                                 sb.AppendFormat("Health: {0:f}, Energy: {1:f}\n", health.Value, energy.Value);

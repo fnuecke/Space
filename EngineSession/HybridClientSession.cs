@@ -2,9 +2,9 @@
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using Engine.IO;
 using Engine.Network;
 using Engine.Serialization;
-using Engine.Util;
 
 namespace Engine.Session
 {
@@ -314,7 +314,7 @@ namespace Engine.Session
             {
                 logger.Debug("Connected to host, sending actual join request.");
                 _tcp.EndConnect(result);
-                _stream = new NetworkPacketStream(_tcp.GetStream());
+                _stream = new EncryptedPacketStream(new CompressedPacketStream(new NetworkPacketStream(_tcp.GetStream())));
                 using (var packet = new Packet())
                 using (var packetInner = new Packet())
                 {

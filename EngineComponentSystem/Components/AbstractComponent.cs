@@ -16,7 +16,7 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public abstract class AbstractComponent : ICloneable, IPacketizable, IHashable
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// Unique ID in the context of its entity. This means there can be
@@ -111,6 +111,8 @@ namespace Engine.ComponentSystem.Components
         public virtual Packet Packetize(Packet packet)
         {
             return packet.Write(UID)
+                .Write(UpdateOrder)
+                .Write(DrawOrder)
                 .Write(Enabled);
         }
 
@@ -120,6 +122,8 @@ namespace Engine.ComponentSystem.Components
         public virtual void Depacketize(Packet packet)
         {
             UID = packet.ReadInt32();
+            UpdateOrder = packet.ReadInt32();
+            DrawOrder = packet.ReadInt32();
             Enabled = packet.ReadBoolean();
         }
 
@@ -129,6 +133,7 @@ namespace Engine.ComponentSystem.Components
         public virtual void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(UID));
+            hasher.Put(BitConverter.GetBytes(UpdateOrder));
             hasher.Put(BitConverter.GetBytes(Enabled));
         }
 

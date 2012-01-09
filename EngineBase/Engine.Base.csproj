@@ -116,6 +116,9 @@
     <Compile Include="Input\KeyModifier.cs" />
     <Compile Include="Input\MouseInputEventArgs.cs" />
     <Compile Include="Input\MouseInputManager.cs" />
+    <Compile Include="IO\CompressedPacketStream.cs" />
+    <Compile Include="IO\EncryptedPacketStream.cs" />
+    <Compile Include="IO\IPacketStream.cs" />
     <Compile Include="Network\AbstractProtocol.cs" />
     <Compile Include="Util\CoordinateIds.cs" />
     <Compile Include="Util\ICopyable.cs" />
@@ -123,7 +126,7 @@
     <Compile Include="Util\IGaussianRandom.cs" />
     <Compile Include="Util\IUniformRandom.cs" />
     <Compile Include="Util\LocalizedContentManager.cs" />
-    <Compile Include="Util\PacketStream.cs" />
+    <Compile Include="IO\PacketStream.cs" />
     <Compile Include="Network\UdpProtocol.cs" />
     <Compile Include="Network\EventArgs.cs" />
     <Compile Include="Network\IProtocolInfo.cs" />
@@ -149,7 +152,7 @@
     <Compile Include="Util\IGameConsole.cs" />
     <Compile Include="Util\LineWrittenEventArgs.cs" />
     <Compile Include="Util\SimpleCrypto.cs" />
-    <Compile Include="Util\SlidingStream.cs" />
+    <Compile Include="IO\SlidingStream.cs" />
     <Compile Include="Util\Ziggurat.cs" />
   </ItemGroup>
   <ItemGroup>

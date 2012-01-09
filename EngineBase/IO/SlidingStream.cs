@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Engine.Util
+namespace Engine.IO
 {
     /// <summary>
     /// Simple FIFO queue like stream. This implementation is NOT thread-safe!

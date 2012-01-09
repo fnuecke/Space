@@ -3,25 +3,47 @@ using System.IO;
 using System.Net.Sockets;
 using Engine.Serialization;
 
-namespace Engine.Util
+namespace Engine.IO
 {
-    public interface IPacketStream : IDisposable
+    /// <summary>
+    /// Implements a packet stream based on a <c>NetworkStream</c>.
+    /// </summary>
+    public sealed class NetworkPacketStream : AbstractPacketStream<NetworkStream>
     {
         /// <summary>
-        /// Tries reading a single packet from this stream. To read multiple available
-        /// packets, repeatedly call this method until it returns <c>null</c>.
+        /// Creates a new packet stream around a network stream.
         /// </summary>
-        /// <returns>A read packet, if one was available.</returns>
-        /// <exception cref="IOException">If the underlying stream fails.</exception>
-        Packet Read();
+        /// <param name="stream">The network stream to wrap around.</param>
+        public NetworkPacketStream(NetworkStream stream)
+            : base(stream, stream)
+        {
+        }
 
+        protected override bool IsDataAvailable(NetworkStream stream)
+        {
+            return stream.DataAvailable;
+        }
+    }
+
+    /// <summary>
+    /// Implements a packet stream based on a <c>SlidingStream</c>.
+    /// </summary>
+    public sealed class SlidingPacketStream : AbstractPacketStream<SlidingStream>
+    {
         /// <summary>
-        /// Writes the specified packet to the underlying stream. It can then be read
-        /// byte a <c>PacketStream</c> on the other end of the stream.
+        /// Creates a new packet stream around a sliding stream.
         /// </summary>
-        /// <param name="packet">The packet to write.</param>
-        /// <exception cref="IOException">If the underlying stream fails.</exception>
-        void Write(Packet packet);
+        /// <param name="source">The source stream (read from).</param>
+        /// <param name="sink">The sink stream (write to).</param>
+        public SlidingPacketStream(SlidingStream source, SlidingStream sink)
+            : base(source, sink)
+        {
+        }
+
+        protected override bool IsDataAvailable(SlidingStream stream)
+        {
+            return stream.DataAvailable;
+        }
     }
 
     /// <summary>
@@ -30,32 +52,6 @@ namespace Engine.Util
     public abstract class AbstractPacketStream<T> : IPacketStream
         where T : Stream
     {
-        #region Constants
-
-        /// <summary>
-        /// We'll just use the same key engine globally, as this isn't meant
-        /// as a waterproof security anyways. Just make it easier to stay
-        /// honest, so to say ;)
-        /// </summary>
-        private static readonly byte[] key = new byte[] { 58, 202, 84, 179, 32, 50, 8, 252, 238, 91, 233, 209, 25, 203, 183, 237, 33, 159, 103, 243, 93, 46, 67, 2, 169, 100, 96, 33, 196, 195, 244, 113 };
-
-        /// <summary>
-        /// Globally used initial vector.
-        /// </summary>
-        private static readonly byte[] vector = new byte[] { 112, 155, 187, 151, 110, 190, 166, 5, 137, 147, 104, 79, 199, 129, 24, 187 };
-
-        /// <summary>
-        /// Cryptography instance we'll use for mangling our packets.
-        /// </summary>
-        private static readonly SimpleCrypto crypto = new SimpleCrypto(key, vector);
-
-        /// <summary>
-        /// Bit set to mark a message as compressed.
-        /// </summary>
-        private const uint CompressedMask = 1u << 31;
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -106,11 +102,6 @@ namespace Engine.Util
         /// </summary>
         private int _messageLength;
 
-        /// <summary>
-        /// Remember if the message we're currently reading is compressed or not.
-        /// </summary>
-        private bool _isCompressed;
-
         #endregion
 
         #region Constructor / Cleanup
@@ -139,7 +130,7 @@ namespace Engine.Util
         /// packets, repeatedly call this method until it returns <c>null</c>.
         /// </summary>
         /// <returns>A read packet, if one was available.</returns>
-        /// <exception cref="IOException">If the underlying stream fails.</exception>
+        /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
         public Packet Read()
         {
             // Read until we either find a complete packet, or cannot read any more data.
@@ -178,39 +169,18 @@ namespace Engine.Util
         /// byte a <c>PacketStream</c> on the other end of the stream.
         /// </summary>
         /// <param name="packet">The packet to write.</param>
-        /// <exception cref="IOException">If the underlying stream fails.</exception>
-        public void Write(Packet packet)
+        /// <returns>The number of bytesa actually written. This can differ
+        /// from the length of the specified packet due to transforms from
+        /// wrapper streams (encryption, compression, ...)</returns>
+        /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
+        public int Write(Packet packet)
         {
             if (packet.Length > 0)
             {
-                byte[] data = packet.GetBuffer();
-
-                // If packets are large, try compressing them, see if it helps.
-                // Only start after a certain size. General overhead for gzip
-                // seems to be around 130byte, so make sure we're well beyond that.
-                bool flag = false;
-                if (data.Length > 200)
-                {
-                    byte[] compressed = SimpleCompression.Compress(data);
-                    if (compressed.Length < data.Length)
-                    {
-                        // OK, worth it, it's smaller than before.
-                        flag = true;
-                        data = compressed;
-                    }
-                }
-
-                // Encrypt the message.
-                data = crypto.Encrypt(data);
-
-                if ((data.Length & CompressedMask) > 0)
-                {
-                    throw new ArgumentException("Packet too long.", "packet");
-                }
-
-                _sink.Write(BitConverter.GetBytes((uint)data.Length | (flag ? CompressedMask : 0u)), 0, sizeof(uint));
-                _sink.Write(data, 0, data.Length);
+                _sink.Write(BitConverter.GetBytes(packet.Length), 0, sizeof(int));
+                _sink.Write(packet.GetBuffer(), 0, packet.Length);
             }
+            return sizeof(int) + packet.Length;
         }
 
         #endregion
@@ -235,15 +205,14 @@ namespace Engine.Util
                 if (_messageStream.Position == sizeof(int))
                 {
                     // Yes. Get the message length, compressed flag and read the remainder.
-                    uint info = BitConverter.ToUInt32(_messageStream.GetBuffer(), 0);
-                    _messageLength = (int)(info & ~CompressedMask);
-                    _isCompressed = (info & CompressedMask) > 0;
+                    _messageLength = BitConverter.ToInt32(_messageStream.GetBuffer(), 0);
 
                     if (_messageLength < 0)
                     {
                         // Invalid data, consider this connection broken.
                         throw new IOException();
                     }
+
                     // Reset so the rest is just the data.
                     _messageStream.SetLength(0);
                     _messageStream.Position = 0;
@@ -264,20 +233,14 @@ namespace Engine.Util
                 // We done yet?
                 if (_messageStream.Position == _messageLength)
                 {
-                    // Yep. Decrypt, decompress as necessary.
-                    byte[] data = crypto.Decrypt(_messageStream.ToArray());
-                    if (_isCompressed)
-                    {
-                        data = SimpleCompression.Decompress(data);
-                    }
-
-                    // Wrap up a packet, reset and return it.
-                    Packet packet = new Packet(data);
+                    // Yes. Wrap up a packet, reset and return it.
+                    Packet packet = new Packet(_messageStream.ToArray());
 
                     // Reset for the next message.
                     _messageStream.SetLength(0);
                     _messageStream.Position = 0;
                     _messageLength = 0;
+
                     return packet;
                 }
             }
@@ -292,37 +255,5 @@ namespace Engine.Util
         protected abstract bool IsDataAvailable(T stream);
 
         #endregion
-    }
-
-    /// <summary>
-    /// Implements a packet stream based on a <c>NetworkStream</c>.
-    /// </summary>
-    public sealed class NetworkPacketStream : AbstractPacketStream<NetworkStream>
-    {
-        public NetworkPacketStream(NetworkStream stream)
-            : base(stream, stream)
-        {
-        }
-
-        protected override bool IsDataAvailable(NetworkStream stream)
-        {
-            return stream.DataAvailable;
-        }
-    }
-
-    /// <summary>
-    /// Implements a packet stream based on a <c>SlidingStream</c>.
-    /// </summary>
-    public sealed class SlidingPacketStream : AbstractPacketStream<SlidingStream>
-    {
-        public SlidingPacketStream(SlidingStream source, SlidingStream sink)
-            : base(source, sink)
-        {
-        }
-
-        protected override bool IsDataAvailable(SlidingStream stream)
-        {
-            return stream.DataAvailable;
-        }
     }
 }
