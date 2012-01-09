@@ -162,13 +162,13 @@ namespace Engine.Controller
         /// <c>UnwrapDataForReceive()</c> methods.
         /// </para>
         /// </summary>
-        private void HandlePlayerData(object sender, EventArgs e)
+        private void HandlePlayerData(object sender, SessionDataEventArgs e)
         {
             try
             {
                 // Delegate unwrapping of the message, and if this yields a command object
                 // try to handle it.
-                TCommand command = UnwrapDataForReceive((SessionDataEventArgs)e);
+                TCommand command = UnwrapDataForReceive(e);
                 if (command != null)
                 {
                     HandleRemoteCommand(command);

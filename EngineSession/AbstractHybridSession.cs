@@ -80,17 +80,17 @@ namespace Engine.Session
         /// <summary>
         /// Called when a new player joins the session.
         /// </summary>
-        public event EventHandler<EventArgs> PlayerJoined;
+        public event EventHandler<PlayerEventArgs> PlayerJoined;
 
         /// <summary>
         /// Called when a player left the session.
         /// </summary>
-        public event EventHandler<EventArgs> PlayerLeft;
+        public event EventHandler<PlayerEventArgs> PlayerLeft;
 
         /// <summary>
-        /// Called when a player sent data.
+        /// Called when the server sent data.
         /// </summary>
-        public event EventHandler<EventArgs> Data;
+        public event EventHandler<SessionDataEventArgs> Data;
 
         #endregion
 
@@ -222,7 +222,7 @@ namespace Engine.Session
         /// <summary>
         /// Received some data from a client, let's see what we got.
         /// </summary>
-        protected abstract void HandleUdpData(object sender, EventArgs e);
+        protected abstract void HandleUdpData(object sender, ProtocolDataEventArgs e);
 
         #endregion
 
@@ -257,7 +257,7 @@ namespace Engine.Session
 
         #region Event Dispatching
 
-        protected void OnPlayerJoined(EventArgs e)
+        protected void OnPlayerJoined(PlayerEventArgs e)
         {
             if (PlayerJoined != null)
             {
@@ -265,7 +265,7 @@ namespace Engine.Session
             }
         }
 
-        protected void OnPlayerLeft(EventArgs e)
+        protected void OnPlayerLeft(PlayerEventArgs e)
         {
             if (PlayerLeft != null)
             {
@@ -273,7 +273,7 @@ namespace Engine.Session
             }
         }
 
-        protected void OnData(EventArgs e)
+        protected void OnData(SessionDataEventArgs e)
         {
             if (Data != null)
             {

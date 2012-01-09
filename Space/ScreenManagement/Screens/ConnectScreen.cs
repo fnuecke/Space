@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Engine.Input;
+using Engine.Session;
 using Microsoft.Xna.Framework;
 using Space.Control;
 using Space.Data;
@@ -77,7 +78,7 @@ namespace Space.ScreenManagement.Screens
         }
 
         //Called if the login was handled
-        private void HandleLoginSuccess(object sender, EventArgs e)
+        private void HandleLoginSuccess(object sender, JoinResponseEventArgs e)
         {
             LoadingScreen.Load(ScreenManager, true, new GameplayScreen(_client));
         }

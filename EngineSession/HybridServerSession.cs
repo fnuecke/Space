@@ -25,13 +25,13 @@ namespace Engine.Session
         /// <summary>
         /// Called when an unconnected client requests game info.
         /// </summary>
-        public event EventHandler<EventArgs> GameInfoRequested;
+        public event EventHandler<RequestEventArgs> GameInfoRequested;
 
         /// <summary>
         /// A player is joining the game. Fill in any arbitrary data to send
         /// back to the joining client here.
         /// </summary>
-        public event EventHandler<EventArgs> JoinRequested;
+        public event EventHandler<JoinRequestEventArgs> JoinRequested;
 
         #endregion
 
@@ -355,20 +355,18 @@ namespace Engine.Session
         /// <summary>
         /// Received some data from a client, let's see what we got.
         /// </summary>
-        protected override void HandleUdpData(object sender, EventArgs e)
+        protected override void HandleUdpData(object sender, ProtocolDataEventArgs e)
         {
-            var args = (ProtocolDataEventArgs)e;
-
             // Get the message type.
-            if (!args.Data.HasByte())
+            if (!e.Data.HasByte())
             {
                 logger.Warn("Received invalid packet, no SessionMessage type.");
                 return;
             }
-            SessionMessage type = (SessionMessage)args.Data.ReadByte();
+            SessionMessage type = (SessionMessage)e.Data.ReadByte();
 
             // Get additional data.
-            using (var data = args.Data.HasPacket() ? args.Data.ReadPacket() : null)
+            using (var data = e.Data.HasPacket() ? e.Data.ReadPacket() : null)
             {
                 switch (type)
                 {
@@ -387,7 +385,7 @@ namespace Engine.Session
                                             .Write(MaxPlayers)
                                             .Write(NumPlayers)
                                             .Write(requestArgs.Data)),
-                                        args.RemoteEndPoint);
+                                        e.RemoteEndPoint);
                                 }
                             }
                         }
@@ -541,7 +539,7 @@ namespace Engine.Session
 
                 case SessionMessage.Data:
                     // Custom data, just forward it.
-                    OnData(new ServerDataEventArgs(GetPlayer(playerNumber), packet));
+                    OnData(new ServerDataEventArgs(packet, GetPlayer(playerNumber)));
                     break;
 
                 // Ignore the rest.

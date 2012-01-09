@@ -24,41 +24,45 @@ namespace Engine.Session
     /// <summary>
     /// Sued for <see cref="Engine.Session.ISession#Data"/>.
     /// </summary>
-    public interface SessionDataEventArgs
+    public abstract class SessionDataEventArgs : EventArgs
     {
         /// <summary>
         /// The data received.
         /// </summary>
-        Packet Data { get; }
-    }
-
-    /// <summary>
-    /// Used for a server's <c>Data</c> event.
-    /// </summary>
-    public class ServerDataEventArgs : PlayerEventArgs, SessionDataEventArgs
-    {
-        /// <summary>
-        /// The data received from the player.
-        /// </summary>
         public Packet Data { get; private set; }
 
-        public ServerDataEventArgs(Player player, Packet data)
-            : base(player)
+        /// <summary>
+        /// Initializes this data event with the specified packet.
+        /// </summary>
+        /// <param name="data"></param>
+        protected SessionDataEventArgs(Packet data)
         {
             this.Data = data;
         }
     }
 
     /// <summary>
-    /// Used for a client's <c>Data</c> event.
+    /// Used for a server's <c>Data</c> event.
     /// </summary>
-    public class ClientDataEventArgs : EventArgs, SessionDataEventArgs
+    public class ServerDataEventArgs : SessionDataEventArgs
     {
         /// <summary>
-        /// The data received from the player.
+        /// The player the event applies to.
         /// </summary>
-        public Packet Data { get; private set; }
+        public Player Player { get; private set; }
 
+        public ServerDataEventArgs(Packet data, Player player)
+            : base(data)
+        {
+            this.Player = player;
+        }
+    }
+
+    /// <summary>
+    /// Used for a client's <c>Data</c> event.
+    /// </summary>
+    public class ClientDataEventArgs : SessionDataEventArgs
+    {
         /// <summary>
         /// Whether this is an authoritative message (came from the server)
         /// or not.
@@ -66,8 +70,8 @@ namespace Engine.Session
         public bool IsAuthoritative { get; private set; }
 
         public ClientDataEventArgs(Packet data, bool isAuthoritative)
+            : base(data)
         {
-            this.Data = data;
             this.IsAuthoritative = isAuthoritative;
         }
     }

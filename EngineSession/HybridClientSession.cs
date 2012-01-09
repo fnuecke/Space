@@ -23,13 +23,13 @@ namespace Engine.Session
         /// Called when we receive information about an open game.
         /// Only possibly called after Search() was called.
         /// </summary>
-        public event EventHandler<EventArgs> GameInfoReceived;
+        public event EventHandler<GameInfoReceivedEventArgs> GameInfoReceived;
 
         /// <summary>
         /// Called when we got a response to our <c>Join</c> call, either
         /// successfully or not.
         /// </summary>
-        public event EventHandler<EventArgs> JoinResponse;
+        public event EventHandler<JoinResponseEventArgs> JoinResponse;
 
         /// <summary>
         /// Connection to the server was lost.
@@ -336,20 +336,18 @@ namespace Engine.Session
         /// <summary>
         /// Received some data from a client, let's see what we got.
         /// </summary>
-        protected override void HandleUdpData(object sender, EventArgs e)
+        protected override void HandleUdpData(object sender, ProtocolDataEventArgs e)
         {
-            var args = (ProtocolDataEventArgs)e;
-
             // Get the message type.
-            if (!args.Data.HasByte())
+            if (!e.Data.HasByte())
             {
                 logger.Warn("Received invalid packet, no SessionMessage type.");
                 return;
             }
-            SessionMessage type = (SessionMessage)args.Data.ReadByte();
+            SessionMessage type = (SessionMessage)e.Data.ReadByte();
 
             // Get additional data.
-            using (var packet = args.Data.HasPacket() ? args.Data.ReadPacket() : null)
+            using (var packet = e.Data.HasPacket() ? e.Data.ReadPacket() : null)
             {
                 switch (type)
                 {
@@ -369,10 +367,10 @@ namespace Engine.Session
                                 using (var customData = packet.ReadPacket())
                                 {
                                     logger.Trace("Got game info from host '{0}': {1}/{2} players, data of length {3}.",
-                                        args.RemoteEndPoint, numPlayers, maxPlayers, customData.Length);
+                                        e.RemoteEndPoint, numPlayers, maxPlayers, customData.Length);
 
                                     // Propagate to local program.
-                                    OnGameInfoReceived(new GameInfoReceivedEventArgs(args.RemoteEndPoint, numPlayers, maxPlayers, customData));
+                                    OnGameInfoReceived(new GameInfoReceivedEventArgs(e.RemoteEndPoint, numPlayers, maxPlayers, customData));
                                 }
                             }
                             catch (PacketException ex)
@@ -389,7 +387,7 @@ namespace Engine.Session
                         {
                             try
                             {
-                                OnData(new ClientDataEventArgs(packet, _tcp != null && args.RemoteEndPoint == _tcp.Client.RemoteEndPoint));
+                                OnData(new ClientDataEventArgs(packet, _tcp != null && e.RemoteEndPoint == _tcp.Client.RemoteEndPoint));
                             }
                             catch (PacketException ex)
                             {

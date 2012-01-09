@@ -199,7 +199,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="sender">the underlying session.</param>
         /// <param name="e">information of the type <c>JoinResponseEventArgs</c>.</param>
-        protected virtual void HandleJoinResponse(object sender, EventArgs e)
+        protected virtual void HandleJoinResponse(object sender, JoinResponseEventArgs e)
         {
             // OK, we were allowed to join, invalidate our simulation to request
             // the current state.

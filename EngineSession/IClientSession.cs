@@ -23,13 +23,13 @@ namespace Engine.Session
         /// Called when we receive information about an open game.
         /// Only possibly called after Search() was called.
         /// </summary>
-        event EventHandler<EventArgs> GameInfoReceived;
+        event EventHandler<GameInfoReceivedEventArgs> GameInfoReceived;
 
         /// <summary>
         /// Called when we successfully joined a server (i.e. Join() was
         /// called and the server accepted us).
         /// </summary>
-        event EventHandler<EventArgs> JoinResponse;
+        event EventHandler<JoinResponseEventArgs> JoinResponse;
 
         /// <summary>
         /// Connection to the server was lost.

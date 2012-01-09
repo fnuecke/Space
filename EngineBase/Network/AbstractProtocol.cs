@@ -15,7 +15,7 @@ namespace Engine.Network
         /// <summary>
         /// Register here to be notified of incoming data packets.
         /// </summary>
-        public event EventHandler<EventArgs> Data;
+        public event EventHandler<ProtocolDataEventArgs> Data;
 
         #endregion
 

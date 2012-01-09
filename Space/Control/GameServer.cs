@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Systems;
+﻿using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Microsoft.Xna.Framework;
@@ -80,11 +79,9 @@ namespace Space.Control
 
         #region Events
 
-        private void HandleGameInfoRequested(object sender, EventArgs e)
+        private void HandleGameInfoRequested(object sender, RequestEventArgs e)
         {
-            var args = (RequestEventArgs)e;
-
-            args.Data.Write("Hello there!");
+            e.Data.Write("Hello there!");
         }
 
         /// <summary>
@@ -92,13 +89,11 @@ namespace Space.Control
         /// </summary>
         /// <param name="sender">Unused.</param>
         /// <param name="e">Used to figure out which player left.</param>
-        private void HandlePlayerLeft(object sender, EventArgs e)
+        private void HandlePlayerLeft(object sender, PlayerEventArgs e)
         {
-            var args = (PlayerEventArgs)e;
-
             // Player left the game, remove his ship.
             var avatarSystem = Controller.Simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>();
-            var ship = avatarSystem.GetAvatar(args.Player.Number);
+            var ship = avatarSystem.GetAvatar(e.Player.Number);
             Controller.Simulation.EntityManager.RemoveEntity(ship.UID);
         }
         
@@ -107,15 +102,12 @@ namespace Space.Control
         /// </summary>
         /// <param name="sender">Unused.</param>
         /// <param name="e">Used to figure out which player joined.</param>
-        private void HandleJoinRequested(object sender, EventArgs e)
+        private void HandleJoinRequested(object sender, JoinRequestEventArgs e)
         {
-            // Send current game state to client.
-            var args = (JoinRequestEventArgs)e;
-
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
-            var playerData = (PlayerData)args.Player.Data;
-            var ship = EntityFactory.CreateShip(playerData.Ship, args.Player.Number.ToFaction());
+            var playerData = (PlayerData)e.Player.Data;
+            var ship = EntityFactory.CreateShip(playerData.Ship, e.Player.Number.ToFaction());
             Controller.Simulation.EntityManager.AddEntity(ship);
         }
 
