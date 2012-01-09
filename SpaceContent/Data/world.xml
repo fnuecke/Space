@@ -3,13 +3,36 @@
   <Asset Type="Space.Data.WorldConstraints">
     <SolarSystemMultiSunChance>0.01</SolarSystemMultiSunChance>
     <SolarSystemMaxSuns>3</SolarSystemMaxSuns>
-    <PlanetRadiusMean>80</PlanetRadiusMean>
-    <PlanetRadiusStdDev>0.25</PlanetRadiusStdDev>
-    <PlanetOrbitMean>2000</PlanetOrbitMean>
-    <PlanetOrbitStdDev>100</PlanetOrbitStdDev>
-    <MoonRadiusMean>0.2</MoonRadiusMean>
-    <MoonRadiusStdDevFraction>0.2</MoonRadiusStdDevFraction>
-    <MoonOrbitMean>200</MoonOrbitMean>
-    <MoonOrbitStdDevFraction>20</MoonOrbitStdDevFraction>
+
+    <SunMassMean>125000</SunMassMean>
+    <SunMassStdDev>25000</SunMassStdDev>
+
+    <MassPerVolume>0.0000125</MassPerVolume>
+
+    <PlanetsMean>4</PlanetsMean>
+    <PlanetsStdDev>3</PlanetsStdDev>
+
+    <PlanetRadiusMean>384</PlanetRadiusMean>
+    <PlanetRadiusStdDev>128</PlanetRadiusStdDev>
+
+    <PlanetOrbitMean>3072</PlanetOrbitMean>
+    <PlanetOrbitStdDev>512</PlanetOrbitStdDev>
+    <PlanetOrbitEccentricityMean>0.4</PlanetOrbitEccentricityMean>
+    <PlanetOrbitEccentricityStdDev>0.15</PlanetOrbitEccentricityStdDev>
+    <PlanetOrbitAngleDeviationMean>10</PlanetOrbitAngleDeviationMean>
+    <PlanetOrbitAngleDeviationStdDev>5</PlanetOrbitAngleDeviationStdDev>
+
+    <MoonsMean>2</MoonsMean>
+    <MoonsStdDev>2</MoonsStdDev>
+    <MoonRadiusMean>48</MoonRadiusMean>
+    <MoonRadiusStdDev>16</MoonRadiusStdDev>
+    
+    <MoonOrbitMean>160</MoonOrbitMean>
+    <MoonOrbitStdDev>32</MoonOrbitStdDev>
+    
+    <MoonOrbitEccentricityMean>0.3</MoonOrbitEccentricityMean>
+    <MoonOrbitEccentricityStdDev>0.1</MoonOrbitEccentricityStdDev>
+    <MoonOrbitAngleDeviationMean>15</MoonOrbitAngleDeviationMean>
+    <MoonOrbitAngleDeviationStdDev>5</MoonOrbitAngleDeviationStdDev>
   </Asset>
 </XnaContent>

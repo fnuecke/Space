@@ -120,6 +120,8 @@
     <Compile Include="Util\CoordinateIds.cs" />
     <Compile Include="Util\ICopyable.cs" />
     <Compile Include="Util\IdManager.cs" />
+    <Compile Include="Util\IGaussianRandom.cs" />
+    <Compile Include="Util\IUniformRandom.cs" />
     <Compile Include="Util\LocalizedContentManager.cs" />
     <Compile Include="Util\PacketStream.cs" />
     <Compile Include="Network\UdpProtocol.cs" />
@@ -148,6 +150,7 @@
     <Compile Include="Util\LineWrittenEventArgs.cs" />
     <Compile Include="Util\SimpleCrypto.cs" />
     <Compile Include="Util\SlidingStream.cs" />
+    <Compile Include="Util\Ziggurat.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine.Content\Engine.Content.contentproj">

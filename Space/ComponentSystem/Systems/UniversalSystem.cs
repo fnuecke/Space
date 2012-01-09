@@ -52,14 +52,28 @@ namespace Space.ComponentSystem.Systems
 
                 if (info.State)
                 {
+                    // Get random generator based on world seed and cell location.
+                    var random = new MersenneTwister(info.Id ^ WorldSeed);
+
+                    // List to accumulate entities we created for this system in.
+                    List<int> list = new List<int>();
+
+                    // Get center of our cell.
+                    var cellSize = Manager.GetSystem<CellSystem>().CellSize;
+                    var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
+
                     if (info.X == 0 && info.Y == 0)
                     {
-                        _entities.Add(info.Id, CreateStartSystem());
+                        CreateSystem(random, ref center, list, 7, new[] {
+                            0, 0, 1, 2, 4, 2, 1
+                        });
                     }
                     else
                     {
-                        _entities.Add(info.Id, CreateSunSystem(info.X, info.Y, new MersenneTwister(info.Id ^ WorldSeed)));
+                        CreateSystem(random, ref center, list);
                     }
+
+                    _entities.Add(info.Id, list);
                 }
                 else
                 {
@@ -161,81 +175,151 @@ namespace Space.ComponentSystem.Systems
 
         #region Utility methods
 
-        private List<int> CreateSunSystem(int x, int y, MersenneTwister random)
+        private void CreateSystem(
+            IUniformRandom random,
+            ref Vector2 center,
+            List<int> list,
+            int numPlanets = -1,
+            int[] numsMoons = null)
         {
-            List<int> list = new List<int>();
+            // Get our gaussian distributed randomizer.
+            var gaussian = new Ziggurat(random);
 
-            var cellSize = Manager.GetSystem<CellSystem>().CellSize;
-
-            var center = new Vector2(cellSize * x + (cellSize >> 1), cellSize * y + (cellSize >> 1));
-
-            Entity sun = EntityFactory.CreateAstronomicBody("Textures/sun", center, AstronomicBodyType.Sun, 10000);
+            // Create our sun.
+            float sunMass = _constaints.SampleSunMass(gaussian);
+            Entity sun = EntityFactory.CreateFixedAstronomicalObject(
+                texture: "Textures/sun",
+                position: center,
+                type: AstronomicBodyType.Sun,
+                mass: sunMass);
             list.Add(Manager.EntityManager.AddEntity(sun));
-            var angle = (float)(random.NextDouble() * Math.PI * 2);
-            for (int i = 1; i < random.Next(1, 8); i++)
+
+            // Get a dominant angle for orbits in our system. This is to avoid
+            // planets' orbits to intersect, because we don't want to handle
+            // planet collisions ;)
+            float dominantPlanetOrbitAngle = (float)(2 * System.Math.PI * random.NextDouble());
+
+            // Keep track of the last orbit major radius, to incrementally
+            // increase the radii.
+            float previousPlanetOrbit = _constaints.PlanetOrbitMean - _constaints.PlanetOrbitStdDev;
+
+            // Generate as many as we sample.
+            if (numPlanets == -1)
             {
-                var planet = EntityFactory.CreateAstronomicBody("Textures/planet_rock", sun,
-                   (float)(i * i * _constaints.PlanetOrbitMean / 2 + random.NextDouble() * _constaints.PlanetRadiusStdDev * 2 - _constaints.PlanetRadiusStdDev),
-                   (float)(i * i * _constaints.PlanetOrbitMean / 2 + random.NextDouble() * _constaints.PlanetRadiusStdDev * 2 - _constaints.PlanetRadiusStdDev),
-                    angle, (int)Math.Sqrt(Math.Pow(i * i * (double)_constaints.PlanetOrbitMean / 2, 3)), AstronomicBodyType.Planet, 1000);
-                var renderer = planet.GetComponent<PlanetRenderer>();
-                renderer.Tint = Color.DarkOliveGreen;
-                renderer.AtmosphereTint = Color.LightSkyBlue;
-                renderer.Scale = 0.5f;
-                var spin = planet.GetComponent<Spin>();
-                spin.Value = (float)random.NextDouble() * 0.003f - 0.0015f;
-                list.Add(Manager.EntityManager.AddEntity(planet));
-
-                for (int j = 1; j < random.Next(1, 4); j++)
-                {
-                    var moon = EntityFactory.CreateAstronomicBody("Textures/planet_rock", planet,
-                   (float)(j * j * _constaints.MoonOrbitMean / 2 + random.NextDouble() * _constaints.MoonOrbitStdDevFraction * 2 - _constaints.MoonOrbitStdDevFraction),
-                   (float)(j * j * _constaints.MoonOrbitMean / 2 + random.NextDouble() * _constaints.MoonOrbitStdDevFraction * 2 - _constaints.MoonOrbitStdDevFraction),
-                    angle, (int)Math.Sqrt(Math.Pow(j * j * (double)_constaints.MoonOrbitMean / 2, 3)), AstronomicBodyType.Moon, 100);
-                    renderer = moon.GetComponent<PlanetRenderer>();
-                    renderer.Scale = 0.25f;
-                    renderer.AtmosphereTint = Color.Black;
-                    spin = moon.GetComponent<Spin>();
-                    spin.Value = (float)random.NextDouble() * 0.002f - 0.001f;
-                    list.Add(Manager.EntityManager.AddEntity(moon));
-                }
+                numPlanets = _constaints.SamplePlanets(gaussian);
             }
-
-            return list;
+            for (int i = 0; i < numPlanets; i++)
+            {
+                int numMoons;
+                if (numsMoons != null && numsMoons.Length > i)
+                {
+                    numMoons = numsMoons[i];
+                }
+                else
+                {
+                    numMoons = _constaints.SampleMoons(gaussian);
+                }
+                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list);
+            }
         }
 
-        private List<int> CreateStartSystem()
+        private float CreatePlanet(
+            IUniformRandom random,
+            IGaussianRandom gaussian,
+            Entity sun,
+            float sunMass,
+            float previousOrbitRadius,
+            float dominantOrbitAngle,
+            int numMoons,
+            List<int> list)
         {
-            var random = new MersenneTwister(WorldSeed);
+            // Sample planet properties.
+            float planetRadius = _constaints.SamplePlanetRadius(gaussian);
+            float planetOrbitMajorRadius = previousOrbitRadius + _constaints.SamplePlanetOrbit(gaussian);
+            Console.WriteLine(planetOrbitMajorRadius);
+            float planetOrbitEccentricity = _constaints.SamplePlanetOrbitEccentricity(gaussian);
+            float planetOrbitMinorRadius = (float)System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * (1 - planetOrbitEccentricity * planetOrbitEccentricity));
+            float planetOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SamplePlanetOrbitAngleDeviation(gaussian));
+            float planetPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * planetOrbitMajorRadius * 2 /*< artificially slow planets down a bit */ / sunMass));
+            float planetMass = _constaints.MassPerVolume * 4f / 3f * (float)System.Math.PI * planetRadius * planetRadius * planetRadius;
 
-            List<int> list = new List<int>();
+            var planet = EntityFactory.CreateOrbitingAstronomicalObject(
+                texture: "Textures/planet_rock",
+                center: sun,
+                majorRadius: planetOrbitMajorRadius,
+                minorRadius: planetOrbitMinorRadius,
+                angle: planetOrbitAngle,
+                period: planetPeriod,
+                periodOffset: (float)(2 * System.Math.PI * random.NextDouble()),
+                type: AstronomicBodyType.Planet,
+                mass: planetMass);
 
-            var cellSize = Manager.GetSystem<CellSystem>().CellSize;
-
-            var center = new Vector2((cellSize >> 1), (cellSize >> 1));
-            Console.WriteLine(center);
-            Entity entity = EntityFactory.CreateAstronomicBody("Textures/sun", center, AstronomicBodyType.Sun, 10000);
-            list.Add(Manager.EntityManager.AddEntity(entity));
-
-            entity = EntityFactory.CreateAstronomicBody("Textures/planet_rock", entity, 5000, 4000, 1, 3560, AstronomicBodyType.Planet, 1000);
-            var renderer = entity.GetComponent<PlanetRenderer>();
+            var renderer = planet.GetComponent<PlanetRenderer>();
             renderer.Tint = Color.DarkOliveGreen;
             renderer.AtmosphereTint = Color.LightSkyBlue;
-            renderer.Scale = 0.5f;
-            var spin = entity.GetComponent<Spin>();
+            renderer.Scale = planetRadius / 470f;
+
+            var spin = planet.GetComponent<Spin>();
             spin.Value = (float)random.NextDouble() * 0.003f - 0.0015f;
-            list.Add(Manager.EntityManager.AddEntity(entity));
 
+            list.Add(Manager.EntityManager.AddEntity(planet));
 
-            entity = EntityFactory.CreateAstronomicBody("Textures/planet_rock", entity, 200, 180, 100, 300, AstronomicBodyType.Moon, 100);
-            renderer = entity.GetComponent<PlanetRenderer>();
-            renderer.Scale = 0.25f;
-            renderer.AtmosphereTint = Color.Black;
-            spin = entity.GetComponent<Spin>();
+            // Create some moons, so our planet doesn't feel so ronery.
+
+            // Again, fetch a dominant angle.
+            float dominantMoonOrbitAngle = (float)(random.NextDouble() * Math.PI * 2);
+
+            // And track the radii. Start outside our planet.
+            float previousMoonOrbit = planetRadius;
+
+            // The create as many as we sample.
+            for (int j = 0; j < numMoons; j++)
+            {
+                previousMoonOrbit = CreateMoon(random, gaussian, planet, planetMass, previousMoonOrbit, dominantMoonOrbitAngle, list);
+            }
+
+            return planetOrbitMajorRadius;
+        }
+
+        private float CreateMoon(
+            IUniformRandom random,
+            IGaussianRandom gaussian,
+            Entity planet,
+            float planetMass,
+            float previousOrbitRadius,
+            float dominantOrbitAngle,
+            List<int> list)
+        {
+            // Sample moon properties.
+            float moonRadius = _constaints.SampleMoonRadius(gaussian);
+            float moonOrbitMajorRadius = previousOrbitRadius + _constaints.SampleMoonOrbit(gaussian);
+            float moonOrbitEccentricity = _constaints.SampleMoonOrbitEccentricity(gaussian);
+            float moonOrbitMinorRadius = (float)System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * (1 - moonOrbitEccentricity * moonOrbitEccentricity));
+            float moonOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SampleMoonOrbitAngleDeviation(gaussian));
+            float moonPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * moonOrbitMajorRadius / planetMass));
+            float moonMass = _constaints.MassPerVolume * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
+
+            var moon = EntityFactory.CreateOrbitingAstronomicalObject(
+                texture: "Textures/planet_rock",
+                center: planet,
+                majorRadius: moonOrbitMajorRadius,
+                minorRadius: moonOrbitMinorRadius,
+                angle: moonOrbitAngle,
+                period: moonPeriod,
+                periodOffset: (float)(2 * System.Math.PI * random.NextDouble()),
+                type: AstronomicBodyType.Moon,
+                mass: moonMass);
+
+            var renderer = moon.GetComponent<PlanetRenderer>();
+            renderer.Scale = moonRadius / 470f;
+            renderer.AtmosphereTint = Color.White;
+
+            var spin = moon.GetComponent<Spin>();
             spin.Value = (float)random.NextDouble() * 0.002f - 0.001f;
-            list.Add(Manager.EntityManager.AddEntity(entity));
 
-            return list;
+            list.Add(Manager.EntityManager.AddEntity(moon));
+
+            return moonOrbitMajorRadius;
         }
 
         private List<int> CreateAsteroidBelt()

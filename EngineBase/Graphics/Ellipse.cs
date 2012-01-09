@@ -79,11 +79,6 @@ namespace Engine.Graphics
         /// </summary>
         private float _thickness;
 
-        /// <summary>
-        /// The current color of the ellipse.
-        /// </summary>
-        private Color _color;
-
         #endregion
 
         #region Constructor

@@ -100,7 +100,7 @@ namespace Space
             // We really want to do this, because it keeps the game from running at one billion
             // frames per second -- which sounds fun, but isn't, because game states won't update
             // properly anymore (because elapsed time since last step will always appear to be zero).
-            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = false;
+            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = true;
 
             // XNAs fixed time step implementation doesn't suit us, to be gentle.
             // So we let it be dynamic and adjust for it as necessary, leading
@@ -359,7 +359,7 @@ namespace Space
                             var cellY = ((int)y) >> CellSystem.CellSizeShiftAmount;
                             sb.AppendFormat("Position: ({0:f}, {1:f}), Cell: ({2}, {3})\n", x, y, cellX, cellY);
 
-                            var id = ((ulong)cellX << 32) | (uint)cellY;
+                            var id = CoordinateIds.Combine(cellX, cellY);
 
                             var universe = systemManager.GetSystem<UniversalSystem>();
                             if (universe != null)

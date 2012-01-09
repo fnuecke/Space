@@ -14,7 +14,7 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class EllipsePath : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The id of the entity the entity this component belongs to
@@ -35,50 +35,40 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The angle of the ellipse's major axis to the global x axis.
         /// </summary>
-        public float Angle
-        {
-            get
-            {
-                return _angle;
-            }
-            set
-            {
-                _angle = value;
-                _sinPhi = (float)System.Math.Sin(value);
-                _cosPhi = (float)System.Math.Cos(value);
-            }
-        }
+        public float Angle;
 
         /// <summary>
         /// The time in frames it takes for the component to perform a full
         /// rotation around its center.
         /// </summary>
-        public int Period { get; set; }
+        public float Period;
 
-        #endregion
-
-        #region Fields
+        /// <summary>
+        /// Starting offset of our period (otherwise all objects with the same
+        /// period will always be at the same angle...)
+        /// </summary>
+        public float PeriodOffset;
 
         /// <summary>
         /// Actual value of the angle.
         /// </summary>
-        float _angle;
+        private float _angle;
 
         /// <summary>
         /// Precomputed sine of the angle.
         /// </summary>
-        float _sinPhi;
+        private float _sinPhi;
 
         /// <summary>
         /// Precomputed cosine of the angle.
         /// </summary>
-        float _cosPhi = 1;
+        private float _cosPhi = 1;
 
         #endregion
 
         #region Constructor
 
-        public EllipsePath(int centerEntityId, float majorRadius, float minorRadius, float angle, int period)
+        public EllipsePath(int centerEntityId, float majorRadius, float minorRadius, float angle, float period, float periodOffset)
         {
             this.CenterEntityId = centerEntityId;
             if (majorRadius < minorRadius)
@@ -93,6 +83,7 @@ namespace Engine.ComponentSystem.Components
             }
             this.Angle = angle;
             this.Period = period;
+            this.PeriodOffset = periodOffset;
         }
 
         public EllipsePath()
@@ -129,11 +120,19 @@ namespace Engine.ComponentSystem.Components
                 }
 
                 // Get the angle based on the time passed.
-                var t = System.Math.PI * args.Frame / Period;
-                var sinT = (float)System.Math.Sin(t);
-                var cosT = (float)System.Math.Cos(t);
+                double t = PeriodOffset + System.Math.PI * args.Frame / Period;
+                float sinT = (float)System.Math.Sin(t);
+                float cosT = (float)System.Math.Cos(t);
 
                 var f = (float)System.Math.Sqrt(System.Math.Abs(MinorRadius * MinorRadius - MajorRadius * MajorRadius));
+
+                // If our angle changed, recompute our sine and cosine.
+                if (_angle != Angle)
+                {
+                    _angle = Angle;
+                    _sinPhi = (float)System.Math.Sin(_angle);
+                    _cosPhi = (float)System.Math.Cos(_angle);
+                }
 
                 // Compute the current position and set it.
                 transform.SetTranslation(
@@ -164,7 +163,8 @@ namespace Engine.ComponentSystem.Components
                 .Write(MajorRadius)
                 .Write(MinorRadius)
                 .Write(Angle)
-                .Write(Period);
+                .Write(Period)
+                .Write(PeriodOffset);
         }
 
         public override void Depacketize(Packet packet)
@@ -174,7 +174,8 @@ namespace Engine.ComponentSystem.Components
             MajorRadius = packet.ReadSingle();
             MinorRadius = packet.ReadSingle();
             Angle = packet.ReadSingle();
-            Period = packet.ReadInt32();
+            Period = packet.ReadSingle();
+            PeriodOffset = packet.ReadSingle();
         }
 
         public override void Hash(Hasher hasher)
@@ -185,6 +186,7 @@ namespace Engine.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(MinorRadius));
             hasher.Put(BitConverter.GetBytes(Angle));
             hasher.Put(BitConverter.GetBytes(Period));
+            hasher.Put(BitConverter.GetBytes(PeriodOffset));
         }
 
         #endregion
@@ -193,7 +195,7 @@ namespace Engine.ComponentSystem.Components
 
         public override string ToString()
         {
-            return GetType().Name + ": " + CenterEntityId.ToString() + ", " + MajorRadius.ToString() + ", " + MinorRadius.ToString() + ", " + Angle + ", " + Period;
+            return GetType().Name + ": " + CenterEntityId + ", " + MajorRadius + ", " + MinorRadius + ", " + Angle + ", " + Period + ", " + PeriodOffset;
         }
 
         #endregion

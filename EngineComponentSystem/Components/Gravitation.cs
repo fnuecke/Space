@@ -152,11 +152,35 @@ namespace Engine.ComponentSystem.Components
                             var sinPhi = (float)System.Math.Sin(phi);
 
                             // Precompute.
-                            float divisor = Mass * otherGravitation.Mass / System.Math.Max(20000, delta.LengthSquared());
-                            // Adjust velocity.
-                            otherVelocity.Value = new Vector2(
-                                otherVelocity.Value.X - (cosPhi * divisor),
-                                otherVelocity.Value.Y - (sinPhi * divisor));
+                            float divisor = Mass * otherGravitation.Mass / System.Math.Max(65536, delta.LengthSquared());
+
+                            // If we're near the core and the other object
+                            // isn't currently accelerating, add some more
+                            // friction to converge faster.
+                            if (delta.LengthSquared() < 512)
+                            {
+                                var accleration = neigbour.GetComponent<Acceleration>();
+                                if (accleration == null || accleration.Value == Vector2.Zero)
+                                {
+                                    if (otherVelocity.Value.LengthSquared() < 16 && delta.LengthSquared() < 4)
+                                    {
+                                        otherTransform.Translation = myTransform.Translation;
+                                        otherVelocity.Value = Vector2.Zero;
+                                    }
+                                    else
+                                    {
+                                        otherVelocity.Value.X -= (cosPhi * divisor);
+                                        otherVelocity.Value.Y -= (sinPhi * divisor);
+                                        otherVelocity.Value *= 0.9f;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                // Adjust velocity.
+                                otherVelocity.Value.X -= (cosPhi * divisor);
+                                otherVelocity.Value.Y -= (sinPhi * divisor);
+                            }
                         }
                     }
                 }

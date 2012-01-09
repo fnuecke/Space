@@ -27,13 +27,13 @@ namespace Space.ComponentSystem.Entities
             var health = new Health(120);
             var energy = new Energy();
 
-            entity.AddComponent(new Transform(new Vector2(18000, 23000)));
+            entity.AddComponent(new Transform(new Vector2(36000, 38000)));
             entity.AddComponent(new Velocity());
             entity.AddComponent(new Spin());
             entity.AddComponent(new Acceleration());
             entity.AddComponent(new Friction(0.01f, 0.02f));
             // TODO compute based on equipped components
-            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 1));
+            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 10));
             entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup | faction.ToCollisionIndexGroup()));
             entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, faction.ToCollisionGroup()));
             entity.AddComponent(new Faction(faction));
@@ -158,14 +158,21 @@ namespace Space.ComponentSystem.Entities
             return result;
         }
 
-        public static Entity CreateAstronomicBody(string texture, Vector2 position, AstronomicBodyType type, float mass)
+        public static Entity CreateFixedAstronomicalObject(
+            string texture, 
+            Vector2 position,
+            AstronomicBodyType type,
+            float mass)
         {
             var entity = new Entity();
 
             entity.AddComponent(new Transform(position));
             entity.AddComponent(new Spin());
-            entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup));
+            entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup | Factions.None.ToCollisionIndexGroup()));
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
+
+            entity.AddComponent(new CollidableSphere(256, Factions.None.ToCollisionGroup()));
+            entity.AddComponent(new CollisionDamage(1, float.MaxValue));
 
             entity.AddComponent(new Detectable("Textures/radar_sun"));
             entity.AddComponent(new AstronomicBody(type));
@@ -176,13 +183,26 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
-        public static Entity CreateAstronomicBody(string texture, Entity center, float majorRadius, float minorRadius, float angle, int period, AstronomicBodyType type, float mass)
+        public static Entity CreateOrbitingAstronomicalObject(
+            string texture,
+            Entity center,
+            float majorRadius,
+            float minorRadius,
+            float angle,
+            float period,
+            float periodOffset,
+            AstronomicBodyType type,
+            float mass)
         {
+            if (period < 1)
+            {
+                throw new ArgumentException("Period must be greater than zero.", "period");
+            }
             var entity = new Entity();
 
             entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
             entity.AddComponent(new Spin());
-            entity.AddComponent(new EllipsePath(center.UID, majorRadius, minorRadius, angle, period));
+            entity.AddComponent(new EllipsePath(center.UID, majorRadius, minorRadius, angle, period, periodOffset));
             entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup));
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 

@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Systems
         /// Dictates the size of cells, where the actual cell size is 2 to the
         /// power of this value.
         /// </summary>
-        public const int CellSizeShiftAmount = 15;
+        public const int CellSizeShiftAmount = 16;
 
         #endregion
 

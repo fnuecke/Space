@@ -18,7 +18,7 @@ QuadVertex ShadeVertex(QuadVertex input)
 // simple pixel shader to render the texture
 float4 ShadePixel(QuadVertex input) : COLOR0
 {
-	float a = (input.Tex0.x * input.Tex0.x + input.Tex0.y * input.Tex0.y - 1) / Thickness + 1;
+    float a = (input.Tex0.x * input.Tex0.x + input.Tex0.y * input.Tex0.y - 1) / Thickness + 1;
     return Color * (1 - a * a);
 }
 

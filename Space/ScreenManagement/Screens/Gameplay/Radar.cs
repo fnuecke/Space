@@ -20,6 +20,15 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// </summary>
     public sealed class Radar
     {
+        #region Constants
+
+        /// <summary>
+        /// Thickness of the rendered orbit ellipses.
+        /// </summary>
+        private const int _orbitThickness = 6;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -59,7 +68,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _client = client;
             _ellipse = new Ellipse(client.Game);
-            _ellipse.SetThickness(6);
+            _ellipse.SetThickness(_orbitThickness);
         }
 
         /// <summary>
@@ -179,6 +188,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // viewport. This will also serve as our direction vector.
                 var direction = neighborTransform.Translation - transform.Translation;
 
+                // We'll make stuff far away a little less opaque. First get
+                // the linear relative distance.
+                float ld = direction.LengthSquared() / radarRangeSquared;
+                // Then apply a exponential fall-off, and make it cap a little
+                // early to get the 100% alpha when nearby, not only when
+                // exactly on top of the object ;)
+                ld = System.Math.Min(1, (1.1f - ld * ld * ld) * 1.1f);
+
                 // If it's an astronomical object, check if its orbit is
                 // potentially in our screen space, if so draw it.
                 var ellipse = neighbor.GetComponent<EllipsePath>();
@@ -200,17 +217,36 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     Vector2.Transform(ref ellipseCenter, ref rotation, out ellipseCenter);
                     ellipseCenter += focusTransform;
 
-                    var distanceToCenter = (ellipseCenter - transform.Translation).LengthSquared();
+                    // Far clipping, i.e. don't render if we're outside and
+                    // not seeing the ellipse.
+                    var distanceToCenterSquared = (ellipseCenter - transform.Translation).LengthSquared();
+                    var farClipDistance = ellipse.MajorRadius + radius;
+                    farClipDistance *= farClipDistance;
 
-                    // Check if we're cutting the orbit ellipse.
-                    //if (direction.LengthSquared() + squaredRadarRange < distanceToCenter)
+                    // Near clipping, i.e. don't render if we're inside the
+                    // ellipse, but not seeing its border.
+                    float nearClipDistance = System.Math.Max(0, ellipse.MinorRadius - radius);
+                    nearClipDistance *= nearClipDistance;
+
+                    // Check if we're cutting (potentially seeing) the orbit
+                    // ellipse of the neighbor.
+                    if (farClipDistance > distanceToCenterSquared &&
+                        nearClipDistance < distanceToCenterSquared)
                     {
-                        //_spriteBatch.Draw(_orbitCircle, ellipseCenter - transform.Translation + center, null, Color.White, ellipse.Angle, new Vector2(_orbitCircle.Width / 2, _orbitCircle.Height / 2), new Vector2(ellipse.MajorRadius * 2 / 500f, ellipse.MinorRadius * 2 / 500f), SpriteEffects.None, 0);
+                        // Yes, set the properties for our ellipse renderer.
                         _ellipse.SetCenter(ellipseCenter - transform.Translation + center);
-                        _ellipse.SetMajorRadius(ellipse.MajorRadius);
-                        _ellipse.SetMinorRadius(ellipse.MinorRadius);
+                        _ellipse.SetMajorRadius(ellipse.MajorRadius + _orbitThickness);
+                        _ellipse.SetMinorRadius(ellipse.MinorRadius + _orbitThickness);
                         _ellipse.SetRotation(ellipse.Angle);
-                        _ellipse.SetColor(Color.Turquoise * MathHelper.Clamp(MathHelper.Lerp(0.4f, 0.1f, direction.LengthSquared() / (2 * ellipse.MajorRadius * ellipse.MajorRadius)), 0.1f, 0.4f));
+
+                        // Scale the opacity based on our distance to the
+                        // actual object. Apply a exponential fall-off, and
+                        // make it cap a little early to get the 100% alpha
+                        // when nearby, not only when exactly on top of the
+                        // object ;)
+                        _ellipse.SetColor(Color.Turquoise * ld * 0.3f);
+
+                        // And draw it!
                         _ellipse.Draw();
                     }
                 }
@@ -229,13 +265,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     color = faction.Value.ToColor();
                 }
 
-                // Make stuff far away a little less opaque. First get the
-                // linear relative distance.
-                var ld = direction.LengthSquared() / radarRangeSquared;
-                // Then apply a exponential fall-off, and make it cap a little
-                // early to get the 100% alpha when nearby, not only when
-                // exactly on top of the object ;)
-                color *= System.Math.Min(1, (1.1f - ld * ld * ld) * 1.1f);
+                // Make stuff far away a little less opaque.
+                color *= ld;
 
                 // Get the direction to the detectable and normalize it.
                 direction.Normalize();

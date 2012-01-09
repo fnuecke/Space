@@ -43,7 +43,7 @@ namespace Engine.Util
     /// <summary>
     /// Pseudo-Random number using the Mersenne-Twister algorithm (MT19937 variant).
     /// </summary>
-    public sealed class MersenneTwister : IPacketizable, ICloneable
+    public sealed class MersenneTwister : IUniformRandom, IPacketizable, ICloneable
     {
         #region Constants: period parameters
 
@@ -84,7 +84,7 @@ namespace Engine.Util
         /// <summary>
         /// 
         /// </summary>
-        private int mti;
+        private int _index;
 
         #endregion
 
@@ -108,14 +108,14 @@ namespace Engine.Util
         public MersenneTwister(ulong seed)
         {
             mt[0] = seed & 0xffffffffUL;
-            for (mti = 1; mti < N; mti++)
+            for (_index = 1; _index < N; _index++)
             {
-                mt[mti] = (1812433253UL * (mt[mti - 1] ^ (mt[mti - 1] >> 30)) + (ulong)mti);
+                mt[_index] = (1812433253UL * (mt[_index - 1] ^ (mt[_index - 1] >> 30)) + (ulong)_index);
                 /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
                 /* In the previous versions, MSBs of the seed affect   */
                 /* only MSBs of the array mt[].                        */
                 /* 2002/01/09 modified by Makoto Matsumoto             */
-                mt[mti] &= 0xffffffffUL;
+                mt[_index] &= 0xffffffffUL;
                 /* for >32 bit machines */
             }
         }
@@ -138,10 +138,10 @@ namespace Engine.Util
         /// Returns a nonnegative random number.
         /// </summary>
         /// <returns>A 32-bit signed integer greater than or equal to zero and
-        /// less than <see cref="MaxValue"/>.</returns>
-        public int Next()
+        /// less than <see cref="int.MaxValue"/>.</returns>
+        public int NextInt32()
         {
-            return Next(int.MaxValue);
+            return NextInt32(int.MaxValue);
         }
 
         /// <summary>
@@ -156,13 +156,13 @@ namespace Engine.Util
         /// maxValue is returned.</returns>
         /// <exception cref="ArgumentOutOfRangeException"><em>maxValue</em> is
         /// less than zero. </exception>
-        public int Next(int maxValue)
+        public int NextInt32(int maxValue)
         {
             if (maxValue < 0)
             {
                 throw new ArgumentOutOfRangeException("maxValue");
             }
-            return (int)(Sample() * (maxValue / 4294967296.0));
+            return (int)NextUInt32((uint)maxValue);
         }
 
         /// <summary>
@@ -178,13 +178,62 @@ namespace Engine.Util
         /// range of return values includes <em>minValue</em> but not
         /// <em>maxValue</em>. If <em>minValue</em> equals <em>maxValue</em>,
         /// <em>minValue</em> is returned.</returns>
-        public int Next(int minValue, int maxValue)
+        public int NextInt32(int minValue, int maxValue)
         {
             if (minValue > maxValue)
             {
                 throw new ArgumentOutOfRangeException("minValue");
             }
-            return minValue + Next(maxValue - minValue);
+            return minValue + NextInt32(maxValue - minValue);
+        }
+
+        /// <summary>
+        /// Returns a nonnegative random number.
+        /// </summary>
+        /// <returns>A 32-bit signed integer greater than or equal to zero and
+        /// less than <see cref="uint.MaxValue"/>.</returns>
+        public uint NextUInt32()
+        {
+            return Sample();
+        }
+
+        /// <summary>
+        /// Returns a nonnegative random number less than the specified maximum.
+        /// </summary>
+        /// <param name="maxValue">The exclusive upper bound of the random
+        /// number to be generated. maxValue must be greater than or equal to
+        /// zero.</param>
+        /// <returns>A 32-bit signed integer greater than or equal to zero, and
+        /// less than maxValue; that is, the range of return values ordinarily
+        /// includes zero but not maxValue. However, if maxValue equals zero,
+        /// maxValue is returned.</returns>
+        /// <exception cref="ArgumentOutOfRangeException"><em>maxValue</em> is
+        /// less than zero. </exception>
+        public uint NextUInt32(uint maxValue)
+        {
+            return (uint)(NextUInt32() * (maxValue / 4294967296.0));
+        }
+
+        /// <summary>
+        /// Returns a random number within a specified range.
+        /// </summary>
+        /// <param name="minValue">The inclusive lower bound of the random
+        /// number returned.</param>
+        /// <param name="maxValue">The exclusive upper bound of the random
+        /// number returned. <em>maxValue</em> must be greater than or equal
+        /// to <em>minValue</em>.</param>
+        /// <returns>A 32-bit signed integer greater than or equal to
+        /// <em>minValue</em> and less than <em>maxValue</em>; that is, the
+        /// range of return values includes <em>minValue</em> but not
+        /// <em>maxValue</em>. If <em>minValue</em> equals <em>maxValue</em>,
+        /// <em>minValue</em> is returned.</returns>
+        public uint NextUInt32(uint minValue, uint maxValue)
+        {
+            if (minValue > maxValue)
+            {
+                throw new ArgumentOutOfRangeException("minValue");
+            }
+            return minValue + NextUInt32(maxValue - minValue);
         }
 
         #endregion
@@ -195,13 +244,12 @@ namespace Engine.Util
         /// Generates a random number on [0,0xffffffff]-interval.
         /// </summary>
         /// <returns></returns>
-        private ulong Sample()
+        private uint Sample()
         {
-            ulong[] mag01 = new ulong[] { 0x0UL, MATRIX_A };
-            ulong y = 0;
-            // mag01[x] = x * MATRIX_A  for x=0,1
-            if (mti == N)
+            ulong y;
+            if (_index == N)
             {
+                ulong[] mag01 = new ulong[] { 0x0UL, MATRIX_A };
                 // generate N words at one time
                 int kk;
                 for (kk = 0; kk < N - M; kk++)
@@ -216,15 +264,15 @@ namespace Engine.Util
                 }
                 y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
                 mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
-                mti = 0;
+                _index = 0;
             }
-            y = mt[mti++];
+            y = mt[_index++];
             // Tempering
             y ^= (y >> 11);
             y ^= (y << 7) & 0x9d2c5680UL;
             y ^= (y << 15) & 0xefc60000UL;
             y ^= (y >> 18);
-            return y;
+            return (uint)y;
         }
 
         #endregion
@@ -237,7 +285,7 @@ namespace Engine.Util
             {
                 packet.Write(mt[i]);
             }
-            return packet.Write(mti);
+            return packet.Write(_index);
         }
 
         public void Depacketize(Packet packet)
@@ -246,7 +294,7 @@ namespace Engine.Util
             {
                 mt[i] = packet.ReadUInt64();
             }
-            mti = packet.ReadInt32();
+            _index = packet.ReadInt32();
         }
 
         public object Clone()

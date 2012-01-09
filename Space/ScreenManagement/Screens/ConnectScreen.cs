@@ -24,7 +24,7 @@ namespace Space.ScreenManagement.Screens
         public ConnectScreen(Game game)
             : base(MenuStrings.JoinGame)
         {
-            _client = ((Spaaace)ScreenManager.Game).Client;
+            _client = ((Spaaace)game).Client;
 
             var keyboard = (IKeyboardInputManager)game.Services.GetService(typeof(IKeyboardInputManager));
 
@@ -38,7 +38,7 @@ namespace Space.ScreenManagement.Screens
                 {
                     _connecting = true;
                     var playerData = new PlayerData();
-                    playerData.Ship = this.ScreenManager.Game.Content.Load<ShipData[]>("Data/ships")[0];
+                    playerData.Ship = game.Content.Load<ShipData[]>("Data/ships")[0];
                     try
                     {
                         _client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(_address.InputText), 7777), Settings.Instance.PlayerName, playerData);

@@ -34,8 +34,8 @@
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
           </Attributes>
-          <AccelerationForce>8</AccelerationForce>
-          <EnergyConsumption>0.2</EnergyConsumption>
+          <AccelerationForce>32</AccelerationForce>
+          <EnergyConsumption>0.1</EnergyConsumption>
         </Item>
       </Thrusters>
 
@@ -85,7 +85,7 @@
 
       <Sensors>
         <Item>
-          <Range>20000</Range>
+          <Range>40000</Range>
         </Item>
       </Sensors>
     </Item>
