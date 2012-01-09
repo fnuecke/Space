@@ -111,6 +111,11 @@ namespace Engine.Session
         /// </summary>
         public int MaxPlayers { get; protected set; }
 
+        /// <summary>
+        /// Protocol information for this session (TCP only).
+        /// </summary>
+        public IProtocolInfo Information { get { return _information; } }
+
         #endregion
 
         #region Fields
@@ -119,6 +124,11 @@ namespace Engine.Session
         /// The connection to the server, used to (unreliably) send data.
         /// </summary>
         protected UdpProtocol _udp;
+
+        /// <summary>
+        /// Information on data we send and receive via tcp.
+        /// </summary>
+        protected ProtocolInfo _information;
 
         /// <summary>
         /// List of all players known to be in this session.
@@ -143,6 +153,8 @@ namespace Engine.Session
         {
             _udp = udp;
             _udp.Data += HandleUdpData;
+
+            _information = new ProtocolInfo(60);
         }
 
         public void Dispose()

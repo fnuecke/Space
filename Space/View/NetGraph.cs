@@ -20,7 +20,7 @@ namespace Space.View
             }
 
             // Settings.
-            const int graphWidth = 180, graphHeight = 40;
+            const int graphWidth = 180, graphHeight = 30;
 
             // Precompute stuff.
             int minIncoming = int.MaxValue, maxIncoming = 0, avgIncoming = 0,
@@ -114,10 +114,10 @@ namespace Space.View
                                            info.OutgoingPacketSizes.Mean(), info.OutgoingPacketCompression.Mean());
             var netInfoMeasure = font.MeasureString(netInfo);
             var netInfoPosition = offset;
-            var graphPosition = new Vector2(offset.X, offset.Y + netInfoMeasure.Y + 5);
+            var graphPosition = new Vector2(offset.X, offset.Y + netInfoMeasure.Y + 15);
 
             float graphNormX = graphWidth / (float)System.Math.Max(info.IncomingTraffic.Count, info.OutgoingTraffic.Count);
-            float graphNormY = graphHeight / (float)System.Math.Max(maxTotal, 1);
+            float graphNormY = graphHeight / (float)System.Math.Max(System.Math.Sqrt(maxTotal), 1);
 
             // Draw it.
             spriteBatch.Begin();
@@ -133,7 +133,7 @@ namespace Space.View
                 {
                     if (segment.Item1 > 0)
                     {
-                        int top = (int)(bottom - segment.Item1 * graphNormY);
+                        int top = (int)(bottom - System.Math.Sqrt(segment.Item1) * graphNormY);
                         var line = new Rectangle(barX, top, (int)graphNormX, (int)(bottom - top));
                         spriteBatch.Draw(pixelTextures[spriteBatch], line, segment.Item2);
                         bottom = top;

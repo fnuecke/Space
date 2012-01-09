@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.Network;
 using Engine.Serialization;
 
 namespace Engine.Session
@@ -39,6 +40,11 @@ namespace Engine.Session
         /// Maximum number of player possible in this game.
         /// </summary>
         int MaxPlayers { get; }
+
+        /// <summary>
+        /// Protocol information about this session.
+        /// </summary>
+        IProtocolInfo Information { get; }
 
         /// <summary>
         /// Get info on the player with the given number.

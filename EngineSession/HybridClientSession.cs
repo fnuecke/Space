@@ -136,6 +136,14 @@ namespace Engine.Session
                             else
                             {
                                 SessionMessage type = (SessionMessage)packet.ReadByte();
+
+                                // Statistics.
+                                _information.PutIncomingTraffic(packet.Length,
+                                    type == SessionMessage.Data
+                                    ? TrafficTypes.Data
+                                    : TrafficTypes.Protocol);
+                                _information.PutIncomingPacketSize(packet.Length);
+
                                 using (var data = packet.ReadPacket())
                                 {
                                     HandleTcpData(type, data);
@@ -231,11 +239,17 @@ namespace Engine.Session
             using (var packet = new Packet())
             using (var packetInner = new Packet())
             {
-                _stream.Write(packet.
+                packet.
                     Write((byte)SessionMessage.JoinRequest).
                     Write(packetInner.
                         Write(_playerName).
-                        Write(_playerData)));
+                        Write(_playerData));
+                int written = _stream.Write(packet);
+
+                // Statistics.
+                _information.PutOutgoingTraffic(written, TrafficTypes.Protocol);
+                _information.PutOutgoingPacketSize(written);
+                _information.PutOutgoingPacketCompression(((float)packet.Length / (float)written) - 1f);
             }
             try
             {
@@ -285,9 +299,16 @@ namespace Engine.Session
             {
                 using (var wrapper = new Packet())
                 {
-                    _stream.Write(wrapper.
-                        Write((byte)type).
-                        Write(packet));
+                    wrapper.Write((byte)type).Write(packet);
+                    int written = _stream.Write(wrapper);
+
+                    // Statistics.
+                    _information.PutOutgoingTraffic(written,
+                        type == SessionMessage.Data
+                        ? TrafficTypes.Data
+                        : TrafficTypes.Protocol);
+                    _information.PutOutgoingPacketSize(written);
+                    _information.PutOutgoingPacketCompression(((float)packet.Length / (float)written) - 1f);
                 }
             }
             catch (IOException ex)
@@ -318,11 +339,17 @@ namespace Engine.Session
                 using (var packet = new Packet())
                 using (var packetInner = new Packet())
                 {
-                    _stream.Write(packet.
+                    packet.
                         Write((byte)SessionMessage.JoinRequest).
                         Write(packetInner.
                             Write(_playerName).
-                            Write(_playerData)));
+                            Write(_playerData));
+                    int written = _stream.Write(packet);
+
+                    // Statistics.
+                    _information.PutOutgoingTraffic(written, TrafficTypes.Protocol);
+                    _information.PutOutgoingPacketSize(written);
+                    _information.PutOutgoingPacketCompression(((float)packet.Length / (float)written) - 1f);
                 }
             }
             catch (SocketException ex)

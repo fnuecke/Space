@@ -230,6 +230,14 @@ namespace Engine.Session
                                 {
                                     // Get the type and have it handled.
                                     SessionMessage type = (SessionMessage)packet.ReadByte();
+
+                                    // Statistics.
+                                    _information.PutIncomingTraffic(packet.Length,
+                                        type == SessionMessage.Data
+                                        ? TrafficTypes.Data
+                                        : TrafficTypes.Protocol);
+                                    _information.PutIncomingPacketSize(packet.Length);
+
                                     using (var data = packet.ReadPacket())
                                     {
                                         HandleTcpData(i, type, data);
@@ -337,9 +345,16 @@ namespace Engine.Session
             {
                 using (var wrapper = new Packet())
                 {
-                    _streams[player.Number].Write(wrapper.
-                        Write((byte)type).
-                        Write(packet));
+                    wrapper.Write((byte)type).Write(packet);
+                    int written = _streams[player.Number].Write(wrapper);
+
+                    // Statistics.
+                    _information.PutOutgoingTraffic(written,
+                        type == SessionMessage.Data
+                        ? TrafficTypes.Data
+                        : TrafficTypes.Protocol);
+                    _information.PutOutgoingPacketSize(written);
+                    _information.PutOutgoingPacketCompression(((float)packet.Length / (float)written) - 1f);
                 }
             }
             catch (IOException ex)

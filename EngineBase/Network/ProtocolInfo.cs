@@ -7,7 +7,7 @@ namespace Engine.Network
     /// <summary>
     /// Represents some statistics for a protocol.
     /// </summary>
-    internal sealed class ProtocolInfo : IProtocolInfo
+    public sealed class ProtocolInfo : IProtocolInfo
     {
         #region Properties
 
@@ -121,7 +121,7 @@ namespace Engine.Network
         /// </summary>
         /// <param name="bytes">the number of bytes of traffic.</param>
         /// <param name="type">the type of traffic.</param>
-        internal void PutIncomingTraffic(int bytes, TrafficTypes type)
+        public void PutIncomingTraffic(int bytes, TrafficTypes type)
         {
             UpdateLists();
             switch (type)
@@ -146,7 +146,7 @@ namespace Engine.Network
         /// </summary>
         /// <param name="bytes">the number of bytes of traffic.</param>
         /// <param name="type">the type of traffic.</param>
-        internal void PutOutgoingTraffic(int bytes, TrafficTypes type)
+        public void PutOutgoingTraffic(int bytes, TrafficTypes type)
         {
             UpdateLists();
             switch (type)
@@ -163,22 +163,22 @@ namespace Engine.Network
             outTraffic.First.Value[TrafficTypes.Any] += bytes;
         }
 
-        internal void PutIncomingPacketSize(int size)
+        public void PutIncomingPacketSize(int size)
         {
             inPacketSizes.Put(size);
         }
 
-        internal void PutOutgoingPacketSize(int size)
+        public void PutOutgoingPacketSize(int size)
         {
             outPacketSizes.Put(size);
         }
 
-        internal void PutIncomingPacketCompression(double ratio)
+        public void PutIncomingPacketCompression(double ratio)
         {
             inPacketCompression.Put(ratio);
         }
 
-        internal void PutOutgoingPacketCompression(double ratio)
+        public void PutOutgoingPacketCompression(double ratio)
         {
             outPacketCompression.Put(ratio);
         }

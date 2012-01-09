@@ -339,7 +339,7 @@ namespace Space
                                                     GraphicsDevice.Viewport.Height - 140);
 
                     SessionInfo.Draw("Client", session, sessionOffset, _console.Font, _spriteBatch);
-                    //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
+                    NetGraph.Draw(session.Information, ngOffset, _console.Font, _spriteBatch);
 
                     // Draw planet arrows and stuff.
                     if (session.ConnectionState == Engine.Session.ClientState.Connected)
@@ -394,7 +394,7 @@ namespace Space
                     var sessionOffset = new Vector2(10, GraphicsDevice.Viewport.Height - 140);
 
                     SessionInfo.Draw("Server", session, sessionOffset, _console.Font, _spriteBatch);
-                    //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
+                    NetGraph.Draw(session.Information, ngOffset, _console.Font, _spriteBatch);
                 }
             }
         }
