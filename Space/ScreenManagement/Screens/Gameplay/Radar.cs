@@ -235,8 +235,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     {
                         // Yes, set the properties for our ellipse renderer.
                         _ellipse.SetCenter(ellipseCenter - transform.Translation + center);
-                        _ellipse.SetMajorRadius(ellipse.MajorRadius + _orbitThickness);
-                        _ellipse.SetMinorRadius(ellipse.MinorRadius + _orbitThickness);
+                        _ellipse.SetMajorRadius(ellipse.MajorRadius);
+                        _ellipse.SetMinorRadius(ellipse.MinorRadius);
                         _ellipse.SetRotation(ellipse.Angle);
 
                         // Scale the opacity based on our distance to the

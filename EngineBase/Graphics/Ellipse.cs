@@ -240,20 +240,20 @@ namespace Engine.Graphics
             // Reset corner positions.
 
             // Top left.
-            _vertices[0].Position.X = -_majorRadius;
-            _vertices[0].Position.Y = _minorRadius;
+            _vertices[0].Position.X = -_majorRadius - _thickness / 2;
+            _vertices[0].Position.Y = _minorRadius + _thickness / 2;
             _vertices[0].Position.Z = 0;
             // Top right.
-            _vertices[1].Position.X = _majorRadius;
-            _vertices[1].Position.Y = _minorRadius;
+            _vertices[1].Position.X = _majorRadius + _thickness / 2;
+            _vertices[1].Position.Y = _minorRadius + _thickness / 2;
             _vertices[1].Position.Z = 0;
             // Bottom left.
-            _vertices[2].Position.X = -_majorRadius;
-            _vertices[2].Position.Y = -_minorRadius;
+            _vertices[2].Position.X = -_majorRadius - _thickness / 2;
+            _vertices[2].Position.Y = -_minorRadius - _thickness / 2;
             _vertices[2].Position.Z = 0;
             // Bottom right.
-            _vertices[3].Position.X = _majorRadius;
-            _vertices[3].Position.Y = -_minorRadius;
+            _vertices[3].Position.X = _majorRadius + _thickness / 2;
+            _vertices[3].Position.Y = -_minorRadius - _thickness / 2;
             _vertices[3].Position.Z = 0;
 
             // Build transforms.
