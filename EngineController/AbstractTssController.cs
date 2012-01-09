@@ -193,7 +193,7 @@ namespace Engine.Controller
             // Track our load, but ignore idle rounds (this is for unlocked
             // frame rates, because we'd need a much larger sampling then,
             // otherwise).
-            if (timePassed > 1)
+            if (timePassed > 1 && timePassed < _updateLoad.Median() + _updateLoad.StandardDeviation() * 2)
             {
                 _updateLoad.Put(timePassed / _targetElapsedMilliseconds);
             }

@@ -154,9 +154,8 @@ namespace Engine.ComponentSystem.Components
                             // Precompute.
                             float divisor = Mass * otherGravitation.Mass / System.Math.Max(65536, delta.LengthSquared());
 
-                            // If we're near the core and the other object
-                            // isn't currently accelerating, add some more
-                            // friction to converge faster.
+                            // If we're near the core only pull if  the other
+                            // object isn't currently accelerating.
                             if (delta.LengthSquared() < 512)
                             {
                                 var accleration = neigbour.GetComponent<Acceleration>();
@@ -171,7 +170,6 @@ namespace Engine.ComponentSystem.Components
                                     {
                                         otherVelocity.Value.X -= (cosPhi * divisor);
                                         otherVelocity.Value.Y -= (sinPhi * divisor);
-                                        otherVelocity.Value *= 0.9f;
                                     }
                                 }
                             }
