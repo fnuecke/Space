@@ -200,11 +200,24 @@ namespace Engine.Util
 
         #region Utility Methods
 
+        /// <summary>
+        /// Computes average of two integers.
+        /// </summary>
+        /// <param name="a">The first value.</param>
+        /// <param name="b">The first value.</param>
+        /// <returns>The average of the two.</returns>
         protected override int MedianEvenImpl(int a, int b)
         {
             return (a + b) / 2;
         }
 
+        /// <summary>
+        /// Computes part of the sum for the standard deviation.
+        /// </summary>
+        /// <param name="acc">The accumulator.</param>
+        /// <param name="value">The value to add.</param>
+        /// <param name="mean">The mean.</param>
+        /// <returns>The accumulator with the added value.</returns>
         protected override double StandardDeviationSumImpl(double acc, int value, double mean)
         {
             double diff = (value - mean);
@@ -278,11 +291,24 @@ namespace Engine.Util
 
         #region Utility Methods
 
+        /// <summary>
+        /// Computes average of two doubles.
+        /// </summary>
+        /// <param name="a">The first value.</param>
+        /// <param name="b">The first value.</param>
+        /// <returns>The average of the two.</returns>
         protected override double MedianEvenImpl(double a, double b)
         {
             return (a + b) / 2;
         }
 
+        /// <summary>
+        /// Computes part of the sum for the standard deviation.
+        /// </summary>
+        /// <param name="acc">The accumulator.</param>
+        /// <param name="value">The value to add.</param>
+        /// <param name="mean">The mean.</param>
+        /// <returns>The accumulator with the added value.</returns>
         protected override double StandardDeviationSumImpl(double acc, double value, double mean)
         {
             double diff = (value - mean);

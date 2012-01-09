@@ -8,12 +8,17 @@ namespace Engine.Serialization
     [Serializable]
     public class PacketException : Exception
     {
-        public PacketException() { }
+        /// <summary>
+        /// Creates a new packet exception.
+        /// </summary>
+        /// <param name="message">The message associated with the exception.</param>
         public PacketException(string message) : base(message) { }
+
+        /// <summary>
+        /// Creates a new packet exception.
+        /// </summary>
+        /// <param name="message">The message associated with the exception.</param>
+        /// <param name="inner">The inner exception, that triggered this one.</param>
         public PacketException(string message, Exception inner) : base(message, inner) { }
-        protected PacketException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context)
-            : base(info, context) { }
     }
 }

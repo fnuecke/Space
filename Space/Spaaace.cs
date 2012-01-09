@@ -2,23 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-using System.Text;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
 using Engine.Input;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
-using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Data;
 using Space.ScreenManagement;
 using Space.ScreenManagement.Screens;
 using Space.Session;
-using Space.View;
 
 namespace Space
 {
@@ -401,8 +395,8 @@ namespace Space
                     //NetGraph.Draw(protocol.Information, ngOffset, font, spriteBatch);
                 }
             }
+        }
 
 #endif
-        }
     }
 }

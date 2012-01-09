@@ -5,6 +5,9 @@ using Engine.Util;
 
 namespace Engine.Network
 {
+    /// <summary>
+    /// Base class for network protocols.
+    /// </summary>
     public abstract class AbstractProtocol : IDisposable
     {
         #region Events

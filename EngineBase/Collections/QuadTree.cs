@@ -1013,6 +1013,10 @@ namespace Engine.Collections
 
         #region Enumerable
 
+        /// <summary>
+        /// Get an enumerator over the values in this tree.
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator<T> GetEnumerator()
         {
             foreach (var entry in _entries)
@@ -1021,6 +1025,10 @@ namespace Engine.Collections
             }
         }
 
+        /// <summary>
+        /// Get a non-generic enumerator over the values in this tree.
+        /// </summary>
+        /// <returns></returns>
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();

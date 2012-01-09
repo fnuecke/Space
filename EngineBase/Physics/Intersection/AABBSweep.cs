@@ -2,6 +2,9 @@
 
 namespace Engine.Physics.Intersection
 {
+    /// <summary>
+    /// Performs a sweep test between two AABBs.
+    /// </summary>
     public static class AABBSweep
     {
         /// <summary>

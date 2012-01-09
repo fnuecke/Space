@@ -2,19 +2,24 @@
 
 namespace Engine.Physics.Intersection
 {
+    /// <summary>
+    /// Performs a sweep test for a sphere and an AABB.
+    /// </summary>
     public static class SphereAABBSweep
     {
         /// <summary>
         /// Test for collision between moving box and sphere.
         /// </summary>
+        /// <remarks>
+        /// See http://www.geometrictools.com/LibMathematics/Intersection/Wm5IntrBox2Circle2.cpp"
+        /// </remarks>
         /// <param name="ra">radius of sphere</param>
         /// <param name="A0">previous position of sphere</param>
         /// <param name="A1">current position of sphere</param>
-        /// <param name="rb">extents of AABB</param>
+        /// <param name="eb">extents of AABB</param>
         /// <param name="B0">previous position of AABB</param>
         /// <param name="B1">current position of AABB</param>
         /// <returns>true if the objects (did) collide.</returns>
-        /// <see cref="http://www.geometrictools.com/LibMathematics/Intersection/Wm5IntrBox2Circle2.cpp"/> 
         public static bool Test(float ra, ref Vector2 A0, ref Vector2 A1, ref Vector2 eb, ref Vector2 B0, ref Vector2 B1)
         {
             // Convert circle center to box coordinates.

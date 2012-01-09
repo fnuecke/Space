@@ -15,6 +15,10 @@ namespace Engine.Network
         /// </summary>
         public IPEndPoint RemoteEndPoint { get; private set; }
 
+        /// <summary>
+        /// Creates a new protocol event argument wrapper.
+        /// </summary>
+        /// <param name="endPoint">The endpoint that triggered the event.</param>
         public ProtocolEventArgs(IPEndPoint endPoint)
         {
             this.RemoteEndPoint = endPoint;
@@ -31,6 +35,11 @@ namespace Engine.Network
         /// </summary>
         public Packet Data { get; private set; }
 
+        /// <summary>
+        /// Creates a new protocol data event argument wrapper.
+        /// </summary>
+        /// <param name="endPoint">The endpoint that triggered the event.</param>
+        /// <param name="data">The data associated with the event.</param>
         public ProtocolDataEventArgs(IPEndPoint endPoint, Packet data)
             : base(endPoint)
         {
@@ -53,13 +62,23 @@ namespace Engine.Network
         /// </summary>
         public SocketException Exception { get; private set; }
 
+        /// <summary>
+        /// Creates a new connection event argument wrapper.
+        /// </summary>
+        /// <param name="success">Whether the connection was established
+        /// successfully or not.</param>
         public TcpProtocolConnectEventArgs(bool success)
         {
             this.Success = success;
         }
 
-        public TcpProtocolConnectEventArgs(bool success, SocketException exception)
-            : this(success)
+        /// <summary>
+        /// Creates a new connection event argument wrapper for a failed
+        /// connection attempt.
+        /// </summary>
+        /// <param name="exception">The exception that occurred.</param>
+        public TcpProtocolConnectEventArgs(SocketException exception)
+            : this(false)
         {
             this.Exception = exception;
         }

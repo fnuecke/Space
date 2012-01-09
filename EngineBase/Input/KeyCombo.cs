@@ -4,6 +4,13 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Engine.Input
 {
+    /// <summary>
+    /// Represents a combination of keys that:
+    /// <list type="ul">
+    /// <item>when pressed together will fire a pressed event.</item>
+    /// <item>when all pressed and one key is released will fire a released event.</item>
+    /// </list>
+    /// </summary>
     public sealed class KeyCombo
     {
         #region Events

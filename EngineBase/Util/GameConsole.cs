@@ -281,6 +281,9 @@ namespace Engine.Util
 
         #region Init / Update / Cleanup
 
+        /// <summary>
+        /// Initializes the console, attaching event listeners.
+        /// </summary>
         public override void Initialize()
         {
             var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
@@ -299,6 +302,9 @@ namespace Engine.Util
             base.Initialize();
         }
 
+        /// <summary>
+        /// Loads content for this console, generating the pixel texture.
+        /// </summary>
         protected override void LoadContent()
         {
             _pixelTexture = new Texture2D(GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
@@ -307,26 +313,37 @@ namespace Engine.Util
             base.LoadContent();
         }
 
+        /// <summary>
+        /// Free any resources we hold and clean up event listeners.
+        /// </summary>
+        /// <param name="disposing">Whether we're currently disposing.</param>
         protected override void Dispose(bool disposing)
         {
-            var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
-            if (keyboard != null)
+            if (disposing)
             {
-                keyboard.Pressed -= HandleKeyPressed;
-            }
-            var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
-            if (mouse != null)
-            {
-                mouse.Scrolled -= HandleMouseScrolled;
-            }
-            if (_pixelTexture != null)
-            {
-                _pixelTexture.Dispose();
+                var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
+                if (keyboard != null)
+                {
+                    keyboard.Pressed -= HandleKeyPressed;
+                }
+                var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
+                if (mouse != null)
+                {
+                    mouse.Scrolled -= HandleMouseScrolled;
+                }
+                if (_pixelTexture != null)
+                {
+                    _pixelTexture.Dispose();
+                }
             }
 
             base.Dispose(disposing);
         }
 
+        /// <summary>
+        /// Draws the console to the screen.
+        /// </summary>
+        /// <param name="gameTime">Unused.</param>
         public override void Draw(GameTime gameTime)
         {
             if (IsOpen && BackgroundColor != null && SpriteBatch != null && Font != null)

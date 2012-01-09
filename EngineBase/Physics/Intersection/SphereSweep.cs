@@ -2,6 +2,9 @@
 
 namespace Engine.Physics.Intersection
 {
+    /// <summary>
+    /// Performs a sweep test for two spheres.
+    /// </summary>
     public static class SphereSweep
     {
         /// <summary>

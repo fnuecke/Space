@@ -51,12 +51,24 @@ namespace Engine.Network
         /// </summary>
         LinkedList<Dictionary<TrafficTypes, int>> OutgoingTraffic { get; }
 
+        /// <summary>
+        /// A sampling over the size of incoming packets.
+        /// </summary>
         ISampling<int> IncomingPacketSizes { get; }
 
+        /// <summary>
+        /// A sampling over the size of outgoing packets.
+        /// </summary>
         ISampling<int> OutgoingPacketSizes { get; }
 
+        /// <summary>
+        /// A sampling over the compression rate of incoming packets.
+        /// </summary>
         ISampling<double> IncomingPacketCompression { get; }
 
+        /// <summary>
+        /// A sampling over the compression rate of outgoing packets.
+        /// </summary>
         ISampling<double> OutgoingPacketCompression { get; }
     }
 }
