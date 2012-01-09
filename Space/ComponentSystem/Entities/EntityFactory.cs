@@ -50,7 +50,8 @@ namespace Space.ComponentSystem.Entities
                 typeof(CollidableSphere),
                 typeof(Acceleration),
                 typeof(Gravitation),
-                typeof(TransformedRenderer)
+                typeof(TransformedRenderer),
+                typeof(ThrusterEffect)
             }, new Vector2(15500, 15500)));
             entity.AddComponent(renderer);
             entity.AddComponent(modules);
