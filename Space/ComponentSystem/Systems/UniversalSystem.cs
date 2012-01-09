@@ -236,7 +236,6 @@ namespace Space.ComponentSystem.Systems
             // Sample planet properties.
             float planetRadius = _constaints.SamplePlanetRadius(gaussian);
             float planetOrbitMajorRadius = previousOrbitRadius + _constaints.SamplePlanetOrbit(gaussian);
-            Console.WriteLine(planetOrbitMajorRadius);
             float planetOrbitEccentricity = _constaints.SamplePlanetOrbitEccentricity(gaussian);
             float planetOrbitMinorRadius = (float)System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * (1 - planetOrbitEccentricity * planetOrbitEccentricity));
             float planetOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SamplePlanetOrbitAngleDeviation(gaussian));

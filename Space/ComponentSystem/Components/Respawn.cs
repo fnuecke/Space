@@ -106,6 +106,13 @@ namespace Space.ComponentSystem.Components
                             transform.Rotation = 0;
                         }
 
+                        // Kill of remainder velocity.
+                        var velocity = Entity.GetComponent<Velocity>();
+                        if (velocity != null)
+                        {
+                            velocity.Value = Vector2.Zero;
+                        }
+
                         // Fill up health / energy.
                         health.Value = health.MaxValue * RelativeHealth;
                         var energy = Entity.GetComponent<Energy>();

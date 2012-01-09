@@ -113,7 +113,6 @@ namespace Space.ComponentSystem.Systems
         {
             // Check the positions of all avatars to check which cells
             // should live, and which should die / stay dead.
-            _newCells.Clear();
             foreach (var avatar in UpdateableComponents)
             {
                 var transform = avatar.Entity.GetComponent<Transform>();
@@ -126,7 +125,6 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get the cells that became alive.
-            _bornCells.Clear();
             _bornCells.UnionWith(_newCells);
             _bornCells.ExceptWith(_livingCells);
             foreach (var bornCell in _bornCells)
@@ -134,9 +132,9 @@ namespace Space.ComponentSystem.Systems
                 var xy = CoordinateIds.Split(bornCell);
                 Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true));
             }
+            _bornCells.Clear();
 
             // Get the cells that died.
-            _deceasedCells.Clear();
             _deceasedCells.UnionWith(_livingCells);
             _deceasedCells.ExceptWith(_newCells);
             foreach (var deceasedCell in _deceasedCells)
@@ -144,8 +142,12 @@ namespace Space.ComponentSystem.Systems
                 var xy = CoordinateIds.Split(deceasedCell);
                 Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false));
             }
+            _deceasedCells.Clear();
 
-            _livingCells = _newCells;
+            _livingCells.Clear();
+            _livingCells.UnionWith(_newCells);
+
+            _newCells.Clear();
         }
 
         #endregion

@@ -77,7 +77,7 @@ namespace Space.ComponentSystem.Components
                 }
                 if (_shadowTexture == null)
                 {
-                    _shadowTexture = args.Content.Load<Texture2D>("Textures/planet_shadow");
+                    _shadowTexture = args.Content.Load<Texture2D>("Textures/planet_shadow2");
                 }
 
                 // Get the rectangles at which we'll draw.
@@ -91,7 +91,7 @@ namespace Space.ComponentSystem.Components
                 atmosphereDestination.Height = (int)(_atmosphereTexture.Height * Scale);
 
                 Vector2 shadowOrigin;
-                shadowOrigin.X = _shadowTexture.Width / 2;
+                shadowOrigin.X = _shadowTexture.Width * 3 / 4;
                 shadowOrigin.Y = _shadowTexture.Height / 2;
                 Rectangle shadowDestination;
                 shadowDestination.X = (int)(transform.Translation.X + args.Transform.Translation.X - shadowOrigin.X * Scale);
@@ -99,9 +99,13 @@ namespace Space.ComponentSystem.Components
                 shadowDestination.Width = (int)(_shadowTexture.Width * Scale);
                 shadowDestination.Height = (int)(_shadowTexture.Height * Scale);
 
-                // Are they within our screen space?
-                var atmosphereVisible = atmosphereDestination.Intersects(args.SpriteBatch.GraphicsDevice.ScissorRectangle);
-                var shadowVisible = atmosphereDestination.Intersects(args.SpriteBatch.GraphicsDevice.ScissorRectangle);
+                // Are they within our screen space? Use a somewhat loosened
+                // up clipping rectangle, to account for rotated and non-
+                // rectangular textures.
+                Rectangle looseClipRectangle = args.SpriteBatch.GraphicsDevice.Viewport.Bounds;
+                looseClipRectangle.Inflate(512, 512);
+                var atmosphereVisible = atmosphereDestination.Intersects(looseClipRectangle);
+                var shadowVisible = shadowDestination.Intersects(looseClipRectangle);
 
                 // If either is, carry on.
                 if (atmosphereVisible || shadowVisible)

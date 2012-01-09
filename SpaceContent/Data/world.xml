@@ -10,9 +10,9 @@
     <MassPerVolume>0.0000125</MassPerVolume>
 
     <PlanetsMean>4</PlanetsMean>
-    <PlanetsStdDev>3</PlanetsStdDev>
+    <PlanetsStdDev>4</PlanetsStdDev>
 
-    <PlanetRadiusMean>384</PlanetRadiusMean>
+    <PlanetRadiusMean>320</PlanetRadiusMean>
     <PlanetRadiusStdDev>128</PlanetRadiusStdDev>
 
     <PlanetOrbitMean>3072</PlanetOrbitMean>

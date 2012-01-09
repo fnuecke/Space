@@ -127,9 +127,9 @@ namespace Engine.ComponentSystem.Components
                 foreach (var neigbour in index.
                     GetNeighbors(Entity, 2 << 13, IndexGroup, _reusableNeighborList))
                 {
-                    // If they have a gravitation component...
+                    // If they have an enabled gravitation component...
                     var otherGravitation = neigbour.GetComponent<Gravitation>();
-                    if (otherGravitation == null)
+                    if (otherGravitation == null || !otherGravitation.Enabled)
                     {
                         continue;
                     }
@@ -164,7 +164,7 @@ namespace Engine.ComponentSystem.Components
                                 {
                                     if (otherVelocity.Value.LengthSquared() < 16 && delta.LengthSquared() < 4)
                                     {
-                                        otherTransform.Translation = myTransform.Translation;
+                                        otherTransform.SetTranslation(ref myTransform.Translation);
                                         otherVelocity.Value = Vector2.Zero;
                                     }
                                     else

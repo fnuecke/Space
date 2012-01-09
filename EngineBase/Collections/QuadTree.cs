@@ -113,24 +113,24 @@ namespace Engine.Collections
         /// <param name="value">The value associated with the point.</param>
         /// <exception cref="ArgumentException">This pair of point and value
         /// are already stored in the tree.</exception>
-        public void Add(Vector2 point, T value)
+        public void Add(ref Vector2 point, T value)
         {
             // Create the entry to add.
             var entry = GetListNode(point, value);
 
             // Handle dynamic growth.
-            EnsureCapacity(point);
+            EnsureCapacity(ref point);
 
             // Get the node to insert in.
             int nodeX, nodeY, nodeSize;
-            var insertionNode = FindNode(point, out nodeX, out nodeY, out nodeSize);
+            var insertionNode = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
 
             // If it's not a leaf node, create the leaf node for the new entry.
             // Also get the node in the linked list to insert after.
             LinkedListNode<Entry> insertAfter;
             if (!insertionNode.IsLeaf)
             {
-                var cell = ComputeCell(nodeX, nodeY, nodeSize >> 1, point);
+                var cell = ComputeCell(nodeX, nodeY, nodeSize >> 1, ref point);
                 insertionNode.Children[cell] = GetNode(insertionNode);
                 insertionNode = insertionNode.Children[cell];
                 insertAfter = insertionNode.Parent.HighEntry;
@@ -184,6 +184,19 @@ namespace Engine.Collections
             // We need to split the node.
             SplitNodeIfNecessary(nodeX, nodeY, nodeSize, insertionNode);
         }
+        
+        /// <summary>
+        /// Add a new entry to the tree, at the specified position, with the
+        /// specified associated value.
+        /// </summary>
+        /// <param name="point">The point at which to store the entry.</param>
+        /// <param name="value">The value associated with the point.</param>
+        /// <exception cref="ArgumentException">This pair of point and value
+        /// are already stored in the tree.</exception>
+        public void Add(Vector2 point, T value)
+        {
+            Add(ref point, value);
+        }
 
         /// <summary>
         /// Update a single entry by changing its position.
@@ -193,14 +206,14 @@ namespace Engine.Collections
         /// <param name="value">The value of the entry.</param>
         /// <exception cref="ArgumentException">If there is no such value in
         /// the tree at the specified old position.</exception>
-        public void Update(Vector2 oldPoint, Vector2 newPoint, T value)
+        public void Update(ref Vector2 oldPoint, ref Vector2 newPoint, T value)
         {
             // Handle dynamic growth.
-            EnsureCapacity(newPoint);
+            EnsureCapacity(ref newPoint);
 
             // Get the node the entry would be in.
             int nodeX, nodeY, nodeSize;
-            var oldNode = FindNode(oldPoint, out nodeX, out nodeY, out nodeSize);
+            var oldNode = FindNode(ref oldPoint, out nodeX, out nodeY, out nodeSize);
             
             // Is the node a leaf node? If not we don't have that entry.
             if (oldNode.IsLeaf)
@@ -213,7 +226,7 @@ namespace Engine.Collections
                     {
                         // Found it! See if the new point falls into the same
                         // node, otherwise re-insert.
-                        var newNode = FindNode(newPoint, out nodeX, out nodeY, out nodeSize);
+                        var newNode = FindNode(ref newPoint, out nodeX, out nodeY, out nodeSize);
                         if (oldNode == newNode)
                         {
                             // Same node, just update the entry.
@@ -222,8 +235,8 @@ namespace Engine.Collections
                         else
                         {
                             // Different node, re-insert.
-                            Remove(oldPoint, value);
-                            Add(newPoint, value);
+                            Remove(ref oldPoint, value);
+                            Add(ref newPoint, value);
                         }
 
                         // Success, don't throw.
@@ -233,6 +246,19 @@ namespace Engine.Collections
             }
             throw new ArgumentException("Entry not in the tree at the specified point.", "value");
         }
+        
+        /// <summary>
+        /// Update a single entry by changing its position.
+        /// </summary>
+        /// <param name="oldPoint">The old position of the entry.</param>
+        /// <param name="newPoint">The new position of the entry.</param>
+        /// <param name="value">The value of the entry.</param>
+        /// <exception cref="ArgumentException">If there is no such value in
+        /// the tree at the specified old position.</exception>
+        public void Update(Vector2 oldPoint, Vector2 newPoint, T value)
+        {
+            Update(ref oldPoint, ref newPoint, value);
+        }
 
         /// <summary>
         /// Remove the specified value at the specified point from the tree.
@@ -241,11 +267,11 @@ namespace Engine.Collections
         /// <param name="value">The value to remove.</param>
         /// <returns><c>true</c> if the specified pair of point and value was
         /// in the tree, <c>false</c> otherwise.</returns>
-        public bool Remove(Vector2 point, T value)
+        public bool Remove(ref Vector2 point, T value)
         {
             // Get the node the entry would be in.
             int nodeX, nodeY, nodeSize;
-            var removalNode = FindNode(point, out nodeX, out nodeY, out nodeSize);
+            var removalNode = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
 
             // Is the node a leaf node? If not we don't have that entry.
             if (removalNode.IsLeaf)
@@ -300,6 +326,18 @@ namespace Engine.Collections
             }
             return false;
         }
+        
+        /// <summary>
+        /// Remove the specified value at the specified point from the tree.
+        /// </summary>
+        /// <param name="point">The position to remove the value at.</param>
+        /// <param name="value">The value to remove.</param>
+        /// <returns><c>true</c> if the specified pair of point and value was
+        /// in the tree, <c>false</c> otherwise.</returns>
+        public bool Remove(Vector2 point, T value)
+        {
+            return Remove(ref point, value);
+        }
 
         /// <summary>
         /// Test whether this tree contains the specified value at the
@@ -309,11 +347,11 @@ namespace Engine.Collections
         /// <param name="value">The value to look for.</param>
         /// <returns><c>true</c> if the tree contains the value at the
         /// specified point.</returns>
-        public bool Contains(Vector2 point, T value)
+        public bool Contains(ref Vector2 point, T value)
         {
             // Get the node the entry would be in.
             int nodeX, nodeY, nodeSize;
-            var removalNode = FindNode(point, out nodeX, out nodeY, out nodeSize);
+            var removalNode = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
             
             // Is the node a leaf node? If not we don't have that entry.
             if (removalNode.IsLeaf)
@@ -331,6 +369,19 @@ namespace Engine.Collections
             }
 
             return false;
+        }
+        
+        /// <summary>
+        /// Test whether this tree contains the specified value at the
+        /// specified point.
+        /// </summary>
+        /// <param name="point">The point at which to look for.</param>
+        /// <param name="value">The value to look for.</param>
+        /// <returns><c>true</c> if the tree contains the value at the
+        /// specified point.</returns>
+        public bool Contains(Vector2 point, T value)
+        {
+            return Contains(ref point, value);
         }
 
         /// <summary>
@@ -358,17 +409,33 @@ namespace Engine.Collections
         /// <param name="point">The query point near which to get entries.</param>
         /// <param name="range">The maximum distance an entry may be away
         /// from the query point to be returned.</param>
-        /// <returns></returns>
-        public List<T> RangeQuery(Vector2 point, float range)
+        /// <param name="list">The list to put the results into, or null in
+        /// which case a new list will be created and returned.</param>
+        /// <returns>All objects in the neighborhood of the query point.</returns>
+        public List<T> RangeQuery(ref Vector2 point, float range, List<T> list = null)
         {
-            var result = new List<T>();
+            var result = list ?? new List<T>();
 
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
             Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
-                point, range * range, result);
+                ref point, range * range, result);
 
             return result;
+        }
+        
+        /// <summary>
+        /// Perform a range query on this tree. This will return all entries
+        /// in the tree that are in the specified range to the specified point,
+        /// using a euclidean distance.
+        /// </summary>
+        /// <param name="point">The query point near which to get entries.</param>
+        /// <param name="range">The maximum distance an entry may be away
+        /// from the query point to be returned.</param>
+        /// <returns></returns>
+        public List<T> RangeQuery(Vector2 point, float range)
+        {
+            return RangeQuery(ref point, range);
         }
 
         #region Internal functionality
@@ -384,7 +451,7 @@ namespace Engine.Collections
         /// <param name="nodeY">Will be the y position of the node.</param>
         /// <param name="nodeSize">Will be the size of the node.</param>
         /// <returns>The node for the specified query point.</returns>
-        private Node FindNode(Vector2 point, out int nodeX, out int nodeY, out int nodeSize)
+        private Node FindNode(ref Vector2 point, out int nodeX, out int nodeY, out int nodeSize)
         {
             var node = _root;
             nodeX = _bounds.X;
@@ -397,7 +464,7 @@ namespace Engine.Collections
                 var childSize = nodeSize >> 1;
 
                 // Into which child node would we descend?
-                var cell = ComputeCell(nodeX, nodeY, childSize, point);
+                var cell = ComputeCell(nodeX, nodeY, childSize, ref point);
 
                 // Do we have to create that child?
                 if (node.Children[cell] != null)
@@ -468,7 +535,7 @@ namespace Engine.Collections
         /// Ensures the tree can contain the given point.
         /// </summary>
         /// <param name="point">The point to ensure tree size for.</param>
-        private void EnsureCapacity(Vector2 point)
+        private void EnsureCapacity(ref Vector2 point)
         {
             if (!_bounds.Contains((int)point.X, (int)point.Y))
             {
@@ -602,7 +669,7 @@ namespace Engine.Collections
             foreach (var entry in node.GetEntries(_reusableEntryList))
             {
                 // In which child node would we insert?
-                int cell = ComputeCell(x, y, childSize, entry.Value.Point);
+                int cell = ComputeCell(x, y, childSize, ref entry.Value.Point);
 
                 // Do we have to create that child?
                 if (node.Children[cell] == null)
@@ -707,7 +774,7 @@ namespace Engine.Collections
         /// <param name="childSize">The size of the nodes child nodes.</param>
         /// <param name="point">The point to check for.</param>
         /// <returns>The cell number the point falls into.</returns>
-        private static int ComputeCell(int x, int y, int childSize, Vector2 point)
+        private static int ComputeCell(int x, int y, int childSize, ref Vector2 point)
         {
             var cell = 0;
             if ((int)point.X > x + childSize)
@@ -736,9 +803,9 @@ namespace Engine.Collections
         /// <param name="point">The query point.</param>
         /// <param name="rangeSquared">The squared query range.</param>
         /// <param name="list">The result list.</param>
-        private void Accumulate(int x, int y, int size, Node node, Vector2 point, float rangeSquared, List<T> list)
+        private void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float rangeSquared, List<T> list)
         {
-            if (Intersect(point, rangeSquared, x, y, size))
+            if (Intersect(ref point, rangeSquared, x, y, size))
             {
                 // Node intersects with the query.
                 if (node.IsLeaf)
@@ -764,7 +831,7 @@ namespace Engine.Collections
                                 x + (((i & 1) == 0) ? 0 : childSize),
                                 y + (((i & 2) == 0) ? 0 : childSize),
                                 childSize, node.Children[i],
-                                point, rangeSquared, list);
+                                ref point, rangeSquared, list);
                         }
                     }
                 }
@@ -780,7 +847,7 @@ namespace Engine.Collections
         /// <param name="y">The y position of the box.</param>
         /// <param name="size">The size of the box.</param>
         /// <returns>Whether the two intersect or not.</returns>
-        private static bool Intersect(Vector2 center, float radiusSquared, int x, int y, int size)
+        private static bool Intersect(ref Vector2 center, float radiusSquared, int x, int y, int size)
         {
             Vector2 closest = center;
             if (center.X < x)

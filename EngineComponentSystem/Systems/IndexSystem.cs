@@ -95,6 +95,11 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         private static readonly List<QuadTree<int>> _reusableTreeList = new List<QuadTree<int>>();
 
+        /// <summary>
+        /// Reused for iteration.
+        /// </summary>
+        private static readonly List<int> _reusableEntityIdList = new List<int>();
+
         #endregion
 
         public int DEBUG_NumIndexes
@@ -144,7 +149,7 @@ namespace Engine.ComponentSystem.Systems
         public ICollection<Entity> GetNeighbors(Entity query, float range,
             ulong groups = DefaultIndexGroupMask, ICollection<Entity> list = null)
         {
-            return GetNeighbors(query.GetComponent<Transform>().Translation, range, groups);
+            return GetNeighbors(ref query.GetComponent<Transform>().Translation, range, groups);
         }
 
         /// <summary>
@@ -157,17 +162,19 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <param name="list">The list to use for storing the results.</param>
         /// <returns>All entities in range.</returns>
-        public ICollection<Entity> GetNeighbors(Vector2 query, float range,
+        public ICollection<Entity> GetNeighbors(ref Vector2 query, float range,
             ulong groups = DefaultIndexGroupMask, ICollection<Entity> list = null)
         {
             list = list ?? new List<Entity>();
 
             foreach (var tree in TreesForGroups(groups, _reusableTreeList))
             {
-                foreach (var neighborId in tree.RangeQuery(query, range))
+                foreach (var neighborId in tree.RangeQuery(ref query, range, _reusableEntityIdList))
                 {
                     list.Add(Manager.EntityManager.GetEntity(neighborId));
                 }
+
+                _reusableEntityIdList.Clear();
             }
 
             _reusableTreeList.Clear();
@@ -210,7 +217,7 @@ namespace Engine.ComponentSystem.Systems
                     // Update all indexes the component is part of.
                     foreach (var tree in TreesForGroups(_parameterization.IndexGroups, _reusableTreeList))
                     {
-                        tree.Update(_parameterization.PreviousPosition, transform.Translation, component.Entity.UID);
+                        tree.Update(ref _parameterization.PreviousPosition, ref transform.Translation, component.Entity.UID);
                     }
 
                     _reusableTreeList.Clear();
@@ -249,7 +256,7 @@ namespace Engine.ComponentSystem.Systems
                     EnsureIndexesExist(index.IndexGroups);
                     foreach (var tree in TreesForGroups(index.IndexGroups, _reusableTreeList))
                     {
-                        tree.Add(transform.Translation, component.Entity.UID);
+                        tree.Add(ref transform.Translation, component.Entity.UID);
                     }
 
                     _reusableTreeList.Clear();
@@ -288,7 +295,7 @@ namespace Engine.ComponentSystem.Systems
 
                 foreach (var tree in TreesForGroups(index.IndexGroups, _reusableTreeList))
                 {
-                    tree.Remove(position, component.Entity.UID);
+                    tree.Remove(ref position, component.Entity.UID);
                 }
 
                 _reusableTreeList.Clear();
