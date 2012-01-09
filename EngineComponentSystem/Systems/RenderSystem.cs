@@ -48,7 +48,7 @@ namespace Engine.ComponentSystem.Systems
             _parameterization.Transform.Translation = GetTranslation();
 
             // Then render all components.
-            _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+            _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, _parameterization.Transform);
 
             // Keep track of the layer we're currently rendering. Although
             // it's less efficient, we re-begin a batch for each layer,
@@ -65,7 +65,7 @@ namespace Engine.ComponentSystem.Systems
                     {
                         layer = component.DrawOrder;
                         _parameterization.SpriteBatch.End();
-                        _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+                        _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, _parameterization.Transform);
                     }
                     component.Draw(_parameterization);
                 }

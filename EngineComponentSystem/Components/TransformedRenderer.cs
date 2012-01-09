@@ -65,8 +65,8 @@ namespace Engine.ComponentSystem.Components
                 origin.X = texture.Width / 2f;
                 origin.Y = texture.Height / 2f;
                 Rectangle destination;
-                destination.X = (int)(transform.Translation.X + args.Transform.Translation.X);
-                destination.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y);
+                destination.X = (int)(transform.Translation.X);
+                destination.Y = (int)(transform.Translation.Y);
                 destination.Width = (int)(texture.Width * Scale);
                 destination.Height = (int)(texture.Height * Scale);
 
