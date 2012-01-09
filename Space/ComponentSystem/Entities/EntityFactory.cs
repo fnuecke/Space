@@ -27,7 +27,7 @@ namespace Space.ComponentSystem.Entities
             var health = new Health(120);
             var energy = new Energy();
 
-            entity.AddComponent(new Transform(new Vector2(15500, 15500)));
+            entity.AddComponent(new Transform(new Vector2(18000, 23000)));
             entity.AddComponent(new Velocity());
             entity.AddComponent(new Spin());
             entity.AddComponent(new Acceleration());

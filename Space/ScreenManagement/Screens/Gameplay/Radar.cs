@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
+using Engine.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -38,6 +37,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private Texture2D _radarBackground;
 
+        /// <summary>
+        /// Used to draw orbits.
+        /// </summary>
+        private Ellipse _ellipse;
+
         #endregion
 
         #region Single-Allocation
@@ -54,6 +58,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public Radar(GameClient client)
         {
             _client = client;
+            _ellipse = new Ellipse(client.Game);
+            _ellipse.SetThickness(6);
         }
 
         /// <summary>
@@ -104,7 +110,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
             if (sensors != null)
             {
                 // TODO in case we're adding sensor types (anti-cloaking, ...) check this one's actually a radar.
-                radarRange += sensors.Sum(module => module.Range);
+                foreach (var sensor in sensors)
+                {
+                    radarRange += sensor.Range;
+                }
             }
 
             // Apply any modifiers from equipment.
@@ -125,6 +134,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
             backgroundOrigin.X = _radarBackground.Width / 2.0f;
             backgroundOrigin.Y = _radarBackground.Height / 2.0f;
 
+            // Get bounds in which to display the icon.
+            Rectangle screenBounds = viewport.Bounds;
+
+            // Get the inner bounds in which to display the icon, i.e. minus
+            // half the size of the icon, so deflate by that.
+            Rectangle innerBounds = screenBounds;
+            innerBounds.Inflate(-(int)backgroundOrigin.X, -(int)backgroundOrigin.Y);
+
             // Now this is the tricky part: we take the minimal bounding sphere
             // (or rather, circle) that fits our screen space. For each
             // detectable entity we then pick the point on this circle that's
@@ -137,7 +154,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             float radius = (float)System.Math.Sqrt(a * a + b * b);
 
             // Precomputed for the loop.
-            float squaredRadarRange = radarRange * radarRange;
+            float radarRangeSquared = radarRange * radarRange;
 
             // Begin drawing.
             _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
@@ -161,12 +178,42 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // viewport. Get the position of the detectable inside our
                 // viewport. This will also serve as our direction vector.
                 var direction = neighborTransform.Translation - transform.Translation;
-                if (direction.Length() > radarRange || direction.LengthSquared() > squaredRadarRange)
+
+                // If it's an astronomical object, check if its orbit is
+                // potentially in our screen space, if so draw it.
+                var ellipse = neighbor.GetComponent<EllipsePath>();
+                if (ellipse != null)
                 {
-                    throw new InvalidOperationException("wtf");
+                    // The entity we're orbiting around is at one of the two
+                    // foci of the ellipse. We want the center, though.
+
+                    // Get the current position of the entity we're orbiting.
+                    var focusTransform = _client.Controller.Simulation.EntityManager.GetEntity(ellipse.CenterEntityId).GetComponent<Transform>().Translation;
+
+                    // Compute the distance of the ellipse's foci to the center
+                    // of the ellipse.
+                    float ellipseFocusDistance = (float)System.Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
+                    Vector2 ellipseCenter;
+                    ellipseCenter.X = ellipseFocusDistance;
+                    ellipseCenter.Y = 0;
+                    Matrix rotation = Matrix.CreateRotationZ(ellipse.Angle);
+                    Vector2.Transform(ref ellipseCenter, ref rotation, out ellipseCenter);
+                    ellipseCenter += focusTransform;
+
+                    var distanceToCenter = (ellipseCenter - transform.Translation).LengthSquared();
+
+                    // Check if we're cutting the orbit ellipse.
+                    //if (direction.LengthSquared() + squaredRadarRange < distanceToCenter)
+                    {
+                        //_spriteBatch.Draw(_orbitCircle, ellipseCenter - transform.Translation + center, null, Color.White, ellipse.Angle, new Vector2(_orbitCircle.Width / 2, _orbitCircle.Height / 2), new Vector2(ellipse.MajorRadius * 2 / 500f, ellipse.MinorRadius * 2 / 500f), SpriteEffects.None, 0);
+                        _ellipse.SetCenter(ellipseCenter - transform.Translation + center);
+                        _ellipse.SetMajorRadius(ellipse.MajorRadius);
+                        _ellipse.SetMinorRadius(ellipse.MinorRadius);
+                        _ellipse.SetRotation(ellipse.Angle);
+                        _ellipse.SetColor(Color.Turquoise * MathHelper.Clamp(MathHelper.Lerp(0.4f, 0.1f, direction.LengthSquared() / (2 * ellipse.MajorRadius * ellipse.MajorRadius)), 0.1f, 0.4f));
+                        _ellipse.Draw();
+                    }
                 }
-                // Get bounds in which to display the icon.
-                Rectangle screenBounds = viewport.Bounds;
 
                 // Check if the object's inside. If so, skip it.
                 if (screenBounds.Contains((int)(direction.X + center.X), (int)(direction.Y + center.Y)))
@@ -184,7 +231,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
                 // Make stuff far away a little less opaque. First get the
                 // linear relative distance.
-                var ld = direction.LengthSquared() / squaredRadarRange;
+                var ld = direction.LengthSquared() / radarRangeSquared;
                 // Then apply a exponential fall-off, and make it cap a little
                 // early to get the 100% alpha when nearby, not only when
                 // exactly on top of the object ;)
@@ -227,12 +274,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // Finally, clamp the point to be far enough inside our
                 // viewport for the complete texture of our icon to be
                 // displayed, which is the original viewport minus half the
-                // size of the icon, so deflate it by that.
-                screenBounds.Inflate(-(int)backgroundOrigin.X, -(int)backgroundOrigin.Y);
+                // size of the icon.
 
                 // Clamp our coordinates.
-                iconPosition.X = MathHelper.Clamp(iconPosition.X, screenBounds.Left, screenBounds.Right);
-                iconPosition.Y = MathHelper.Clamp(iconPosition.Y, screenBounds.Top, screenBounds.Bottom);
+                iconPosition.X = MathHelper.Clamp(iconPosition.X, innerBounds.Left, innerBounds.Right);
+                iconPosition.Y = MathHelper.Clamp(iconPosition.Y, innerBounds.Top, innerBounds.Bottom);
 
                 // And, finally, draw it. First the background.
                 _spriteBatch.Draw(_radarBackground, iconPosition, null, color, 0,

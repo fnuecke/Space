@@ -20,17 +20,17 @@ namespace Engine.ComponentSystem.Components
         /// The id of the entity the entity this component belongs to
         /// rotates around.
         /// </summary>
-        public int CenterEntityId { get; set; }
+        public int CenterEntityId;
 
         /// <summary>
         /// The radius of the ellipse along the major axis.
         /// </summary>
-        public float MajorRadius { get; set; }
+        public float MajorRadius;
 
         /// <summary>
         /// The radius of the ellipse along the minor axis.
         /// </summary>
-        public float MinorRadius { get; set; }
+        public float MinorRadius;
 
         /// <summary>
         /// The angle of the ellipse's major axis to the global x axis.
@@ -81,8 +81,16 @@ namespace Engine.ComponentSystem.Components
         public EllipsePath(int centerEntityId, float majorRadius, float minorRadius, float angle, int period)
         {
             this.CenterEntityId = centerEntityId;
-            this.MajorRadius = majorRadius;
-            this.MinorRadius = minorRadius;
+            if (majorRadius < minorRadius)
+            {
+                this.MajorRadius = minorRadius;
+                this.MinorRadius = majorRadius;
+            }
+            else
+            {
+                this.MajorRadius = majorRadius;
+                this.MinorRadius = minorRadius;
+            }
             this.Angle = angle;
             this.Period = period;
         }
