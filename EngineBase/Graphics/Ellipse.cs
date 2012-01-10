@@ -91,7 +91,7 @@ namespace Engine.Graphics
         {
             if (_effect == null)
             {
-                _effect = game.Content.Load<Effect>("Shaders/Circle");
+                _effect = game.Content.Load<Effect>("Effects/Circle");
             }
             _device = game.GraphicsDevice;
 

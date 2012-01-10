@@ -51,7 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Shaders\Circle.fx">
+    <Compile Include="Effects\Circle.fx">
       <Name>Circle</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>

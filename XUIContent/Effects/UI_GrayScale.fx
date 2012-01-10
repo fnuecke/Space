@@ -48,7 +48,7 @@ technique Technique0
 {
 	pass Pass0
 	{
-		VertexShader = compile vs_3_0 VS();
-		PixelShader  = compile ps_3_0 PS();
+		VertexShader = compile vs_2_0 VS();
+		PixelShader  = compile ps_2_0 PS();
 	}
 }
