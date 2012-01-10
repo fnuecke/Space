@@ -53,7 +53,7 @@ namespace Space.ComponentSystem.Systems
                 if (info.State)
                 {
                     // Get random generator based on world seed and cell location.
-                    var random = new MersenneTwister(info.Id ^ WorldSeed);
+                    var random = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
 
                     // List to accumulate entities we created for this system in.
                     List<int> list = new List<int>();
