@@ -136,6 +136,14 @@ namespace Space.ComponentSystem.Components
                         Entity.GetComponent(componentType).Enabled = false;
                     }
                     _timeToRespawn = RespawnTime;
+
+                    // Stop the entity, to avoid zooming off to nowhere when
+                    // killed by a sun, e.g.
+                    var velocity = Entity.GetComponent<Velocity>();
+                    if (velocity != null)
+                    {
+                        velocity.Value = Vector2.Zero;
+                    }
                 }
             }
         }
