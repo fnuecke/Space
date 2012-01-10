@@ -110,11 +110,11 @@ public class ScreenManager
 
 		if ( d_ShowScreens )
 		{
-			SpriteColors c = Color.DarkOrange;
+			SpriteColors c = Microsoft.Xna.Framework.Color.DarkOrange;
 
 			for ( int i = 0; i < ScreenControls.Count; ++i )
 			{
-				Vector3 p = new Vector3( _UI.SXM, _UI.SYB - ( 20.0f * i ), 0.0f );
+				var p = new Microsoft.Xna.Framework.Vector3( _UI.SXM, _UI.SYB - ( 20.0f * i ), 0.0f );
 
 				StringUI.Clear();
 				StringUI.Add( i );

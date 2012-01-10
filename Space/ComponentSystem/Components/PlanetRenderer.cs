@@ -148,7 +148,7 @@ namespace Space.ComponentSystem.Components
                     }
 
 #if DEBUG
-                    StringBuilder sb = new StringBuilder();
+                    var sb = new System.Text.StringBuilder();
                     sb.AppendFormat("Position: {0}\n", transform.Translation);
                     sb.AppendFormat("Rotation: {0}\n", (int)MathHelper.ToDegrees(transform.Rotation));
                     sb.AppendFormat("Scale: {0}\n", Scale);
