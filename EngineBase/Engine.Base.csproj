@@ -157,7 +157,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Engine.Content\Engine.Content.contentproj">
       <Project>{79AD66DC-9105-4998-9DF9-F53EF5C99A87}</Project>
-      <Name>Engine.Content</Name>
+      <Name>Engine.Content %28data%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>

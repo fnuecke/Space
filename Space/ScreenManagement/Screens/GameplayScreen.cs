@@ -2,6 +2,7 @@ using System;
 using Microsoft.Xna.Framework;
 using Space.Control;
 using Space.ScreenManagement.Screens.Gameplay;
+using XUI;
 
 namespace Space.ScreenManagement.Screens
 {
@@ -13,6 +14,11 @@ namespace Space.ScreenManagement.Screens
         #region Fields
 
         private float _pauseAlpha;
+
+        /// <summary>
+        /// Input layer for XUI.
+        /// </summary>
+        private GameInput _gameInput;
 
         /// <summary>
         /// The game client that's active for this game.
@@ -67,6 +73,19 @@ namespace Space.ScreenManagement.Screens
             // timing mechanism that we have just finished a very long frame, and that
             // it should not try to catch up.
             ScreenManager.Game.ResetElapsedTime();
+            
+            // Create the GameInput - UI depends on this.
+            _gameInput = new GameInput((int)E_UiButton.Count, (int)E_UiAxis.Count);
+            // Setup the UI's input mappings.
+            _UI.SetupControls(_gameInput);
+            // Setup the UI with default settings.
+            _UI.Startup(ScreenManager.Game, _gameInput);
+        }
+
+        public override void UnloadContent()
+        {
+            // Clean up GUI stuff.
+            _UI.Shutdown();
         }
 
         #endregion

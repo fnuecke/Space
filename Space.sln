@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Session", "EngineSes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Content", "Engine.Content\Engine.Content.contentproj", "{79AD66DC-9105-4998-9DF9-F53EF5C99A87}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUI.Content", "XUIContent\XUI.Content.contentproj", "{D78EAE4D-281B-4EBA-91A2-37B0C2D34967}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +133,10 @@ Global
 		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Release|x86.ActiveCfg = Debug|Any CPU
+		{D78EAE4D-281B-4EBA-91A2-37B0C2D34967}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D78EAE4D-281B-4EBA-91A2-37B0C2D34967}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D78EAE4D-281B-4EBA-91A2-37B0C2D34967}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{D78EAE4D-281B-4EBA-91A2-37B0C2D34967}.Release|x86.ActiveCfg = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -13,7 +13,7 @@
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <XnaPlatform>Windows</XnaPlatform>
-    <XnaProfile>Reach</XnaProfile>
+    <XnaProfile>HiDef</XnaProfile>
     <XnaCrossPlatformGroupID>654dec75-e334-45f0-9c18-9d03dfc13185</XnaCrossPlatformGroupID>
     <XnaOutputType>Game</XnaOutputType>
     <ApplicationIcon>Game.ico</ApplicationIcon>
@@ -124,6 +124,9 @@
     <Reference Include="System.Net">
       <Private>False</Private>
     </Reference>
+    <Reference Include="XUI">
+      <HintPath>..\Libraries\XUI.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ComponentSystem\Components\AbstractRegeneratingValue.cs" />
@@ -229,6 +232,11 @@
       <Name>Space.Content %28data%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
       <Project>{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\XUIContent\XUI.Content.contentproj">
+      <Project>{D78EAE4D-281B-4EBA-91A2-37B0C2D34967}</Project>
+      <Name>XUI.Content %28Content%29</Name>
+      <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
