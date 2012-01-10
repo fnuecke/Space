@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework;
@@ -136,24 +135,16 @@ namespace Space.ComponentSystem.Components
                     // Draw whatever is visible.
                     if (atmosphereVisible)
                     {
-                        // Correct the destination rectangle for the offset.
-                        atmosphereDestination.X = (int)(transform.Translation.X);
-                        atmosphereDestination.Y = (int)(transform.Translation.Y);
-
                         // Draw.
-                        args.SpriteBatch.Draw(_atmosphereTexture, atmosphereDestination, null, AtmosphereTint,
-                            sunDirection, atmosphereOrigin, SpriteEffects.None, 0);
+                        args.SpriteBatch.Draw(_atmosphereTexture, transform.Translation, null, AtmosphereTint,
+                            sunDirection, atmosphereOrigin, Scale, SpriteEffects.None, 0);
                     }
 
                     if (shadowVisible)
                     {
-                        // Correct the destination rectangle for the offset.
-                        shadowDestination.X = (int)(transform.Translation.X);
-                        shadowDestination.Y = (int)(transform.Translation.Y);
-
                         // Draw.
-                        args.SpriteBatch.Draw(_shadowTexture, shadowDestination, null, Color.White,
-                            sunDirection, shadowOrigin, SpriteEffects.None, 0);
+                        args.SpriteBatch.Draw(_shadowTexture, transform.Translation, null, Color.White,
+                            sunDirection, shadowOrigin, Scale, SpriteEffects.None, 0);
                     }
 
 #if DEBUG

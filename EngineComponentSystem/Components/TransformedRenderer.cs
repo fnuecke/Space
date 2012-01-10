@@ -64,14 +64,9 @@ namespace Engine.ComponentSystem.Components
                 Vector2 origin;
                 origin.X = texture.Width / 2f;
                 origin.Y = texture.Height / 2f;
-                Rectangle destination;
-                destination.X = (int)(transform.Translation.X);
-                destination.Y = (int)(transform.Translation.Y);
-                destination.Width = (int)(texture.Width * Scale);
-                destination.Height = (int)(texture.Height * Scale);
 
                 // Draw.
-                args.SpriteBatch.Draw(texture, destination, null, Tint, transform.Rotation, origin, SpriteEffects.None, 0);
+                args.SpriteBatch.Draw(texture, transform.Translation, null, Tint, transform.Rotation, origin, Scale, SpriteEffects.None, 0);
             }
         }
 
