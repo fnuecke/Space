@@ -15,12 +15,12 @@ namespace XUI.UI
 public class CameraSettings3D
 {
 #if !RELEASE
-	public  static Debug.BoolD			d_Camera3dDebug			= new Debug.BoolD( "UI.Camera.3dDebug", false );
-	private static Debug.FloatD			d_Camera3dOffsetSpeed	= new Debug.FloatD( "UI.Camera.3dOffsetSpeed", 75.0f, 0.0f, 1000.0f );
-	private static Debug.FloatD			d_Camera3dRotateSpeed	= new Debug.FloatD( "UI.Camera.3dRotateSpeed", 120.0f, 0.0f, 10.0f );
-	private static Debug.FloatD			d_Camera3dSpeedSlow		= new Debug.FloatD( "UI.Camera.3dSpeedSlow", 0.25f, 0.0f, 10.0f );
-	private static Debug.FloatD			d_Camera3dSpeedFast		= new Debug.FloatD( "UI.Camera.3dSpeedFast", 2.0f, 0.0f, 10.0f );
-	private static Debug.FunctionD		d_Camera3dReset			= new Debug.FunctionD( "UI.Camera.3dReset", CameraReset );
+	public  static Diagnostics.BoolD			d_Camera3dDebug			= new Diagnostics.BoolD( "UI.Camera.3dDebug", false );
+	private static Diagnostics.FloatD			d_Camera3dOffsetSpeed	= new Diagnostics.FloatD( "UI.Camera.3dOffsetSpeed", 75.0f, 0.0f, 1000.0f );
+	private static Diagnostics.FloatD			d_Camera3dRotateSpeed	= new Diagnostics.FloatD( "UI.Camera.3dRotateSpeed", 120.0f, 0.0f, 10.0f );
+	private static Diagnostics.FloatD			d_Camera3dSpeedSlow		= new Diagnostics.FloatD( "UI.Camera.3dSpeedSlow", 0.25f, 0.0f, 10.0f );
+	private static Diagnostics.FloatD			d_Camera3dSpeedFast		= new Diagnostics.FloatD( "UI.Camera.3dSpeedFast", 2.0f, 0.0f, 10.0f );
+	private static Diagnostics.FunctionD		d_Camera3dReset			= new Diagnostics.FunctionD( "UI.Camera.3dReset", CameraReset );
 
 	public static void CameraReset()	{ _UI.Camera3D.Reset(); }
 #endif
@@ -117,10 +117,10 @@ public class CameraSettings3D
 public class CameraSettings2D
 {
 #if !RELEASE
-	public  static Debug.BoolD			d_Camera2dDebug			= new Debug.BoolD( "UI.Camera.2dDebug", false );
-	private static Debug.FloatD			d_Camera2dOffsetSpeed	= new Debug.FloatD( "UI.Camera.2dOffsetSpeed", 300.0f, 0.0f, 1000.0f );
-	private static Debug.FloatD			d_Camera2dScaleSpeed	= new Debug.FloatD( "UI.Camera.2dScaleSpeed", 2.5f, 0.0f, 10.0f );
-	private static Debug.FunctionD		d_Camera2dReset			= new Debug.FunctionD( "UI.Camera.2dReset", CameraReset );
+	public  static Diagnostics.BoolD			d_Camera2dDebug			= new Diagnostics.BoolD( "UI.Camera.2dDebug", false );
+	private static Diagnostics.FloatD			d_Camera2dOffsetSpeed	= new Diagnostics.FloatD( "UI.Camera.2dOffsetSpeed", 300.0f, 0.0f, 1000.0f );
+	private static Diagnostics.FloatD			d_Camera2dScaleSpeed	= new Diagnostics.FloatD( "UI.Camera.2dScaleSpeed", 2.5f, 0.0f, 10.0f );
+	private static Diagnostics.FunctionD		d_Camera2dReset			= new Diagnostics.FunctionD( "UI.Camera.2dReset", CameraReset );
 
 	public static void CameraReset()	{ _UI.Camera2D.Reset(); }
 #endif

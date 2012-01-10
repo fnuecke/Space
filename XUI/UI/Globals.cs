@@ -197,8 +197,8 @@ namespace XUI
             if (spriteBatch == null)
                 spriteBatch = new SpriteBatch(Game.GraphicsDevice);
 
-            Texture2D texture = Content.Load<Texture2D>("Debug\\Debug_Menu");
-            SpriteFont font = Content.Load<SpriteFont>("Debug\\Debug_Font");
+            Texture2D texture = Content.Load<Texture2D>("Textures\\Debug_Menu");
+            SpriteFont font = Content.Load<SpriteFont>("Textures\\Debug_Font");
 
             DebugMenu = new DebugMenu(spriteBatch, texture, font);
         }

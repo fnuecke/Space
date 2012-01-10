@@ -105,7 +105,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Debug\Debug_Font.spritefont">
+    <Compile Include="Textures\Debug_Font.spritefont">
       <Name>Debug_Font</Name>
       <Importer>FontDescriptionImporter</Importer>
       <Processor>FontDescriptionProcessor</Processor>
@@ -143,7 +143,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Debug\Debug_Menu.tga">
+    <Compile Include="Textures\Debug_Menu.tga">
       <Name>Debug_Menu</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>

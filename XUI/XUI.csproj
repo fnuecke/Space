@@ -109,9 +109,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Debug\DebugMenu.cs" />
-    <Compile Include="Debug\Menu.cs" />
-    <Compile Include="Debug\Variables.cs" />
+    <Compile Include="Diagnostics\DebugMenu.cs" />
+    <Compile Include="Diagnostics\Menu.cs" />
+    <Compile Include="Diagnostics\Variables.cs" />
     <Compile Include="Framework\Layer.cs" />
     <Compile Include="Input\Controller.cs" />
     <Compile Include="Input\Device.cs" />
