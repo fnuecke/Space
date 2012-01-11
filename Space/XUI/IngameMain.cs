@@ -9,6 +9,8 @@ namespace Space.XUI
         public IngameMain()
             : base()
         {
+            LoadTextures(_UI.Texture.CreateBundle());
+
             // Create a graphic in the center of the screen that is the size of
             // the safe area.
             WidgetGraphic g = new WidgetGraphic();
@@ -20,6 +22,17 @@ namespace Space.XUI
 
             // Add the graphic to the screen.
             Add(g);
+        }
+
+        /// <summary>
+        /// Load all textures used anywhere in the GUI here.
+        /// </summary>
+        /// <param name="bundleIndex">The bundle index to store textures in.</param>
+        private void LoadTextures(int bundleIndex)
+        {
+            // Load *all* textures used in the GUI here.
+            // e.g.: _UI.Texture.Add(bundleIndex, "Textures\\UI_Box", "box");
+
         }
     }
 }
