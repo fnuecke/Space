@@ -18,7 +18,7 @@ namespace Space.XUI
             g.Size = new Vector3(20, 40, 0.0f);
             g.ColorBase = Color.Red;
             g.Align = E_Align.MiddleCentre;
-            g.AddTexture("null", 0.0f, 0.0f, 1.0f, 1.0f);
+            g.AddTexture("ship", 0.0f, 0.0f, 1.0f, 1.0f);
 
             // Add the graphic to the screen.
             Add(g);
@@ -33,6 +33,7 @@ namespace Space.XUI
             // Load *all* textures used in the GUI here.
             // e.g.: _UI.Texture.Add(bundleIndex, "Textures\\UI_Box", "box");
 
+            _UI.Texture.Add(bundleIndex, "Textures/ship", "ship");
         }
     }
 }
