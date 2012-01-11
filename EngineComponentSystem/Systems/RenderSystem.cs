@@ -45,10 +45,7 @@ namespace Engine.ComponentSystem.Systems
             }
 
             // Get translation, which may be overridden.
-            var translation = GetTranslation();
-            //translation.X = (int)translation.X;
-            //translation.Y = (int)translation.Y;
-            _parameterization.Transform.Translation = translation;
+            _parameterization.Transform.Translation = GetTranslation();
 
             // Then render all components.
             _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, _parameterization.Transform);
