@@ -17,7 +17,7 @@ public class TextureBundle
 	// TextureBundle
 	public TextureBundle()
 	{
-		Content = new ContentManager( _UI.Game.Services, "Content" );
+		Content = _UI.Game.Content;
 		Textures = new List< Texture2D >();
 		TextureNameMap = new Dictionary< string, int >();
 	}

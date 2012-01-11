@@ -70,7 +70,7 @@ namespace XUI
             _UI.Settings = settings;
 
             _UI.Game = game;
-            _UI.Content = new ContentManager(game.Services, "Content");
+            _UI.Content = game.Content;
 
             _UI.PrimaryPad = -1;
 
