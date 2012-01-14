@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems.Messages;
 
 namespace Space.ComponentSystem.Systems
@@ -154,6 +155,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Utility methods
         
+         
         /// <summary>
         /// Adds the combined coordinates for all neighboring cells and the
         /// specified cell itself to the specified set of cells.
@@ -171,7 +173,20 @@ namespace Space.ComponentSystem.Systems
                 }
             }   
         }
-
+        public ulong GetCellIdFromCoordinates(int xc, int yc)
+        {
+        
+            return CoordinateIds.Combine(xc >>CellSizeShiftAmount,yc >> CellSizeShiftAmount);
+        }
+        public ulong GetCellIdFromCoordinates(Vector2 pos)
+        {
+        
+            return CoordinateIds.Combine((int)pos.X >>CellSizeShiftAmount,(int)pos.Y >> CellSizeShiftAmount);
+        }
+        public Tuple<int,int> GetCellFromCoordinates(Vector2 pos)
+        {
+            return Tuple.Create((int)pos.X >>CellSizeShiftAmount, (int)pos.Y >> CellSizeShiftAmount);
+        }
         #endregion
 
         #region Serialization / Hashing / Cloning

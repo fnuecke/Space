@@ -5,6 +5,7 @@
         /// <summary>
         /// Player sends input command / server authorizes player command.
         /// </summary>
-        PlayerInput
+        PlayerInput,
+        AIInput
     }
 }

@@ -67,6 +67,8 @@ namespace Space.ComponentSystem.Systems
                         CreateSystem(random, ref center, list, 7, new[] {
                             0, 0, 1, 2, 4, 2, 1
                         });
+
+                      //  
                     }
                     else
                     {

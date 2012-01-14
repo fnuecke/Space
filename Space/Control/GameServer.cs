@@ -33,7 +33,7 @@ namespace Space.Control
         {
             // Get the controller.
             Controller = ControllerFactory.CreateServer(game);
-
+            
             // Add listeners.
             Controller.Session.GameInfoRequested += HandleGameInfoRequested;
             Controller.Session.PlayerLeft += HandlePlayerLeft;

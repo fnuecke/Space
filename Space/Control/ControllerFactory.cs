@@ -30,13 +30,13 @@ namespace Space.Control
             // Add all systems we need in our game as a server.
             controller.Simulation.EntityManager.SystemManager.AddSystems(
                 new IComponentSystem[]
-                {
-                    new DefaultLogicSystem(),
-                    new IndexSystem(),
-                    new CollisionSystem(128),
-                    new AvatarSystem(),
-                    new CellSystem(),
-
+                    {
+                        new DefaultLogicSystem(),
+                        new IndexSystem(),
+                        new CollisionSystem(128),
+                        new AvatarSystem(),
+                        new CellSystem(),
+                        new ShipsSpawnSystem(game.Content),
                     new UniversalSystem(game.Content.Load<WorldConstraints>("Data/world"))
                 });
 
@@ -67,7 +67,7 @@ namespace Space.Control
                     new CollisionSystem(128),
                     new AvatarSystem(),
                     new CellSystem(),
-
+                    new ShipsSpawnSystem(game.Content),
                     new UniversalSystem(game.Content.Load<WorldConstraints>("Data/world")),
 
                     new PlayerCenteredSoundSystem(soundBank, controller.Session),

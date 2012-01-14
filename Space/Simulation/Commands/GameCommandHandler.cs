@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Entities;
+﻿using System;
+using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using Engine.Util;
@@ -19,6 +20,7 @@ namespace Space.Simulation.Commands
         /// <param name="manager">The manager to apply it to.</param>
         public static void HandleCommand(ICommand command, IEntityManager manager)
         {
+            
             switch ((GameCommandType)command.Type)
             {
                 case GameCommandType.PlayerInput:
@@ -78,6 +80,7 @@ namespace Space.Simulation.Commands
                     }
                     break;
                 default:
+                    
                     break;
             }
         }

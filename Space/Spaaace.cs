@@ -209,7 +209,6 @@ namespace Space
             _soundBank = new SoundBank(_audioEngine, "data/Audio/Sound Bank.xsb");
 
             _audioEngine.Update();
-
             Services.AddService(typeof(SoundBank), _soundBank);
         }
 
