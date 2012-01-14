@@ -275,25 +275,58 @@ namespace Engine.ComponentSystem.Components
             }
         }
 
-        public override object Clone()
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
         {
-            var copy = (EntityModules<TAttribute>)base.Clone();
+            return instance is EntityModules<TAttribute>;
+        }
 
-            // Create a new list and copy all modules.
-            copy._modules = new List<AbstractEntityModule<TAttribute>>();
-            foreach (var module in _modules)
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+            var copy = (EntityModules<TAttribute>)into;
+
+            if (isShallowCopy)
             {
-                copy._modules.Add((AbstractEntityModule<TAttribute>)module.Clone());
+                // Create a new list and copy all modules.
+                copy._modules = new List<AbstractEntityModule<TAttribute>>();
+                foreach (var module in _modules)
+                {
+                    copy._modules.Add(module.DeepCopy());
+                }
+
+                // Copy the caches as well.
+                copy._attributeCache = new Dictionary<TAttribute, float>(_attributeCache);
+                copy._moduleCache = new Dictionary<Type, object[]>();
+
+                // And the id manager.
+                copy._idManager = _idManager.DeepCopy();
             }
+            else
+            {
+                if (copy._modules.Count > _modules.Count)
+                {
+                    copy._modules.RemoveRange(_modules.Count, copy._modules.Count - _modules.Count);
+                }
 
-            // Copy the caches as well.
-            copy._attributeCache = new Dictionary<TAttribute, float>(_attributeCache);
-            copy._moduleCache = new Dictionary<Type, object[]>();
+                int i = 0;
+                for (; i < copy._modules.Count; ++i)
+                {
+                    copy._modules[i] = _modules[i].DeepCopy(copy._modules[i]);
+                }
+                for (; i < _modules.Count; ++i)
+                {
+                    copy._modules.Add(_modules[i].DeepCopy());
+                }
 
-            // And the id manager.
-            copy._idManager = (IdManager)_idManager.Clone();
+                copy._attributeCache.Clear();
+                copy._moduleCache.Clear();
 
-            return copy;
+                copy._idManager = _idManager.DeepCopy(copy._idManager);
+            }
         }
 
         #endregion

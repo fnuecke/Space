@@ -87,6 +87,27 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is Expiration;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (Expiration)into;
+
+                copy.TimeToLive = TimeToLive;
+            }
+        }
+
+        #endregion
+
         #region ToString
 
         public override string ToString()

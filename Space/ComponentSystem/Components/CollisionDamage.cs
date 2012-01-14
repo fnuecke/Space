@@ -146,7 +146,7 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Serialization / Cloning
+        #region Serialization / Hashing
 
         public override Packet Packetize(Packet packet)
         {
@@ -210,16 +210,44 @@ namespace Space.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(Damage));
         }
 
-        public override object Clone()
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
         {
-            var copy = (CollisionDamage)base.Clone();
+            return instance is CollisionDamage;
+        }
 
-            if (_cooldowns != null)
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+            var copy = (CollisionDamage)into;
+
+            if (isShallowCopy)
             {
-                copy._cooldowns = new Dictionary<int, int>(_cooldowns);
+                if (_cooldowns != null)
+                {
+                    copy._cooldowns = new Dictionary<int, int>(_cooldowns);
+                }
             }
-
-            return copy;
+            else
+            {
+                copy.Cooldown = Cooldown;
+                copy.Damage = Damage;
+                if (_cooldowns != null)
+                {
+                    copy._cooldowns.Clear();
+                    foreach (var item in _cooldowns)
+                    {
+                        copy._cooldowns.Add(item.Key, item.Value);
+                    }
+                }
+                else
+                {
+                    copy._cooldowns = null;
+                }
+            }
         }
 
         #endregion

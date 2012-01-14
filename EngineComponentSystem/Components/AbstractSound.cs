@@ -92,15 +92,22 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
-        #region Cloning
+        #region Copying
 
-        public override object Clone()
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
         {
-            var copy = (AbstractSound)base.Clone();
+            base.CopyFields(into, isShallowCopy);
+            var copy = (AbstractSound)into;
 
-            copy._soundsToPlay = new List<string>(_soundsToPlay);
-
-            return copy;
+            if (isShallowCopy)
+            {
+                copy._soundsToPlay = new List<string>(_soundsToPlay);
+            }
+            else
+            {
+                copy._soundsToPlay.Clear();
+                copy._soundsToPlay.AddRange(_soundsToPlay);
+            }
         }
 
         #endregion

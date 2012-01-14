@@ -151,6 +151,28 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is Transform;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (Transform)into;
+
+                copy.Translation = Translation;
+                copy.Rotation = Rotation;
+            }
+        }
+
+        #endregion
+
         #region ToString
 
         public override string ToString()

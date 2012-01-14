@@ -9,6 +9,15 @@ namespace Space.ComponentSystem.Components
 {
     public class Detectable : AbstractComponent
     {
+        #region Constants
+
+        /// <summary>
+        /// Index group to use for gravitational computations.
+        /// </summary>
+        public static readonly ulong IndexGroup = 1ul << IndexSystem.GetGroup();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -21,14 +30,9 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>
-        /// Index group to use for gravitational computations.
-        /// </summary>
-        public static readonly ulong IndexGroup = 1ul << IndexSystem.GetGroup();
-
-        /// <summary>
         /// The actual texture with the set name.
         /// </summary>
-        public Texture2D Texture { get; set; }
+        public Texture2D Texture;
 
         /// <summary>
         /// Actual texture name. Setter is used to invalidate the actual texture reference,
@@ -96,6 +100,28 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             TextureName = packet.ReadString();
+        }
+
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is Detectable;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (Detectable)into;
+
+                copy.Texture = Texture;
+                copy._textureName = _textureName;
+            }
         }
 
         #endregion

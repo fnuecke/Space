@@ -34,7 +34,7 @@ namespace Space.Data.Modules
 
         #endregion
 
-        #region Serialization / Hashing / Cloning
+        #region Serialization / Hashing
 
         public override Packet Packetize(Packet packet)
         {
@@ -59,6 +59,24 @@ namespace Space.Data.Modules
 
             hasher.Put(BitConverter.GetBytes(Energy));
             hasher.Put(BitConverter.GetBytes(EnergyRegeneration));
+        }
+
+        #endregion
+
+        #region Copying
+
+        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        {
+            var copy = (ReactorModule)base.DeepCopy(into is ReactorModule ? into : null);
+
+            if (copy == into)
+            {
+                // Copied into other instance, copy fields.
+                copy.Energy = Energy;
+                copy.EnergyRegeneration = EnergyRegeneration;
+            }
+
+            return copy;
         }
 
         #endregion

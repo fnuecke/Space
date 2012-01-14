@@ -11,28 +11,28 @@ namespace Engine.ComponentSystem.Entities
     /// <summary>
     /// Base class for entities, implementing logic for distributing unique ids.
     /// </summary>
-    public sealed class Entity : IPacketizable, ICloneable, IHashable
+    public sealed class Entity : IPacketizable, ICopyable<Entity>, IHashable
     {
         #region Properties
-
-        /// <summary>
-        /// A globally unique id for this object.
-        /// </summary>
-        public int UID { get; set; }
 
         /// <summary>
         /// A list of all of components this entity is composed of.
         /// </summary>
         public ReadOnlyCollection<AbstractComponent> Components { get { return _components.AsReadOnly(); } }
 
-        /// <summary>
-        /// The entity manager this entity is currently in.
-        /// </summary>
-        public IEntityManager Manager { get; set; }
-
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// A globally unique id for this object.
+        /// </summary>
+        public int UID;
+
+        /// <summary>
+        /// The entity manager this entity is currently in.
+        /// </summary>
+        public IEntityManager Manager;
 
         /// <summary>
         /// List of all this entity's components.
@@ -279,36 +279,79 @@ namespace Engine.ComponentSystem.Entities
 
         /// <summary>
         /// Create a deep copy of the object, duplicating all its components.
-        /// 
-        /// <para>
-        /// Subclasses must take care of duplicating reference properties / fields
-        /// they introduce.
-        /// </para>
         /// </summary>
         /// <returns>A deep copy of this entity.</returns>
-        public object Clone()
+        public Entity DeepCopy()
+        {
+            return DeepCopy(null);
+        }
+
+        /// <summary>
+        /// Create a deep copy of the object, duplicating all its components.
+        /// </summary>
+        /// <returns>A deep copy of this entity.</returns>
+        public Entity DeepCopy(Entity into)
         {
             // Start with a quick, shallow copy.
-            var copy = (Entity)MemberwiseClone();
+            var copy = into ?? (Entity)MemberwiseClone();
 
             // Not belonging to a manager for now, has to be re-set.
             copy.Manager = null;
 
-            // Give it its own mapper.
-            copy._mapping = new Dictionary<Type, AbstractComponent>();
-
-            // And its own component list, then clone the components.
-            copy._components = new List<AbstractComponent>();
-            foreach (var component in _components)
+            if (copy == into)
             {
-                var componentCopy = (AbstractComponent)component.Clone();
-                // Assign the copy as the belonging entity.
-                componentCopy.Entity = copy;
-                copy._components.Add(componentCopy);
+                copy.UID = UID;
+
+                // Clear the cache.
+                copy._mapping.Clear();
+
+                // Trim list of components.
+                copy._components = copy._components ?? new List<AbstractComponent>();
+
+                if (copy._components.Count > _components.Count)
+                {
+                    // Remove from the back, let's assume that in general
+                    // changes in components are more prominent "in the back".
+                    copy._components.RemoveRange(_components.Count, copy._components.Count - _components.Count);
+                }
+
+                // Deep-copy as many components as we can (in linear order).
+                int i = 0;
+                for (; i < _components.Count; ++i)
+                {
+                    copy._components[i] = _components[i].DeepCopy(copy._components[i]);
+                }
+
+                // Copy remaining components by creating a new instance.
+                for (; i < _components.Count; ++i)
+                {
+                    copy._components.Add(_components[i].DeepCopy());
+                }
+
+                // Copy id manager.
+                copy._idManager = _idManager.DeepCopy(copy._idManager);
+            }
+            else
+            {
+                // Give it its own mapper.
+                copy._mapping = new Dictionary<Type, AbstractComponent>();
+
+                // And its own component list, then clone the components.
+                copy._components = new List<AbstractComponent>();
+                foreach (var component in _components)
+                {
+                    copy._components.Add(component.DeepCopy());
+                }
+
+                // Copy id manager.
+                copy._idManager = _idManager.DeepCopy();
             }
 
-            // Clone id manager.
-            copy._idManager = (IdManager)_idManager.Clone();
+            // Adjust entity.
+            foreach (var component in copy._components)
+            {
+                component.Entity = copy;
+            }
 
             return copy;
         }

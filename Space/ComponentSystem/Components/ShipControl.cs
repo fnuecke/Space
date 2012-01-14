@@ -18,27 +18,12 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class ShipControl : AbstractComponent
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The rotation we're targeting at the moment.
         /// </summary>
-        public float TargetRotation
-        {
-            get
-            {
-                return _targetRotation;
-            }
-            set
-            {
-                _targetRotation = value;
-                _targetRotationChanged = true;
-            }
-        }
-
-        #endregion
-
-        #region Fields
+        public float TargetRotation;
 
         /// <summary>
         /// Whether to shoot or not.
@@ -51,12 +36,8 @@ namespace Space.ComponentSystem.Components
         public Directions AccelerationDirection;
 
         /// <summary>
-        /// Whether the target rotation changed since the last update.
-        /// </summary>
-        private bool _targetRotationChanged;
-
-        /// <summary>
-        /// The current target rotation (setting invalidation flag so we need to store this ourselves).
+        /// The current target rotation (used to check if the public one
+        /// changed since the last update).
         /// </summary>
         private float _targetRotation;
 
@@ -173,7 +154,8 @@ namespace Space.ComponentSystem.Components
                             * rotation;
 
                 // If the target rotation changed and we're either not spinning, or spinning the wrong way.
-                if (spin != null && _targetRotationChanged && System.Math.Sign(spin.Value) != System.Math.Sign(requiredSpin))
+                if (spin != null && (_targetRotation != TargetRotation) &&
+                    System.Math.Sign(spin.Value) != System.Math.Sign(requiredSpin))
                 {
                     // Is it worth starting to spin, or should we just jump to the position?
                     // If the distance we need to spin is lower than what we spin in one tick,
@@ -216,7 +198,7 @@ namespace Space.ComponentSystem.Components
             _previousRotation = transform.Rotation;
 
             // We handled this change, if there was one.
-            _targetRotationChanged = false;
+            _targetRotation = TargetRotation;
         }
 
         /// <summary>
@@ -236,29 +218,54 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return packet
+                .Write(TargetRotation)
                 .Write(Shooting)
                 .Write((byte)AccelerationDirection)
-                .Write(_targetRotationChanged)
                 .Write(_targetRotation)
                 .Write(_previousRotation);
         }
 
         public override void Depacketize(Packet packet)
         {
+            TargetRotation = packet.ReadSingle();
             Shooting = packet.ReadBoolean();
             AccelerationDirection = (Directions)packet.ReadByte();
-            _targetRotationChanged = packet.ReadBoolean();
             _targetRotation = packet.ReadSingle();
             _previousRotation = packet.ReadSingle();
         }
 
         public override void Hash(Hasher hasher)
         {
+            hasher.Put(BitConverter.GetBytes(TargetRotation));
             hasher.Put((byte)AccelerationDirection);
             hasher.Put(BitConverter.GetBytes(Shooting));
-            hasher.Put(BitConverter.GetBytes(_targetRotationChanged));
             hasher.Put(BitConverter.GetBytes(_targetRotation));
             hasher.Put(BitConverter.GetBytes(_previousRotation));
+        }
+
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is ShipControl;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (ShipControl)into;
+
+                copy.TargetRotation = TargetRotation;
+                copy.Shooting = Shooting;
+                copy.AccelerationDirection = AccelerationDirection;
+                copy._targetRotation = _targetRotation;
+                copy._previousRotation = _previousRotation;
+            }
         }
 
         #endregion

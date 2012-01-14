@@ -25,7 +25,7 @@ namespace Space.Data.Modules
 
         #endregion
 
-        #region Serialization / Hashing / Cloning
+        #region Serialization / Hashing
 
         public override Packet Packetize(Packet packet)
         {
@@ -47,6 +47,23 @@ namespace Space.Data.Modules
             base.Hash(hasher);
 
             hasher.Put(BitConverter.GetBytes(Range));
+        }
+
+        #endregion
+
+        #region Copying
+
+        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        {
+            var copy = (SensorModule)base.DeepCopy(into is SensorModule ? into : null);
+
+            if (copy == into)
+            {
+                // Copied into other instance, copy fields.
+                copy.Range = Range;
+            }
+
+            return copy;
         }
 
         #endregion

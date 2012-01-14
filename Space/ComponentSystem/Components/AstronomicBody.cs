@@ -41,5 +41,26 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is AstronomicBody;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (AstronomicBody)into;
+
+                copy.Type = Type;
+            }
+        }
+
+        #endregion
     }
 }

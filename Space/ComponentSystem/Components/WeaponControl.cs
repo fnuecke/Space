@@ -164,13 +164,33 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-        public override object Clone()
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
         {
-            var copy = (WeaponControl)base.Clone();
+            return instance is WeaponControl;
+        }
 
-            copy._cooldowns = new Dictionary<int, int>(_cooldowns);
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+            var copy = (WeaponControl)into;
 
-            return copy;
+            if (isShallowCopy)
+            {
+                copy._cooldowns = new Dictionary<int, int>(_cooldowns);
+            }
+            else
+            {
+                copy.Shooting = Shooting;
+                copy._cooldowns.Clear();
+                foreach (var item in _cooldowns)
+                {
+                    copy._cooldowns.Add(item.Key, item.Value);
+                }
+            }
         }
 
         #endregion

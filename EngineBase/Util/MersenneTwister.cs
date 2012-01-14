@@ -43,7 +43,7 @@ namespace Engine.Util
     /// <summary>
     /// Pseudo-Random number using the Mersenne-Twister algorithm (MT19937 variant).
     /// </summary>
-    public sealed class MersenneTwister : IUniformRandom, IPacketizable, ICloneable
+    public sealed class MersenneTwister : IUniformRandom, IPacketizable, ICopyable<MersenneTwister>
     {
         #region Constants: period parameters
 
@@ -79,7 +79,7 @@ namespace Engine.Util
         /// <summary>
         /// The array for the state vector.
         /// </summary>
-        private ulong[] mt = new ulong[N];
+        private ulong[] _mt = new ulong[N];
 
         /// <summary>
         /// 
@@ -107,15 +107,15 @@ namespace Engine.Util
         /// the pseudo-random number sequence.</param>
         public MersenneTwister(ulong seed)
         {
-            mt[0] = seed & 0xffffffffUL;
+            _mt[0] = seed & 0xffffffffUL;
             for (_index = 1; _index < N; _index++)
             {
-                mt[_index] = (1812433253UL * (mt[_index - 1] ^ (mt[_index - 1] >> 30)) + (ulong)_index);
+                _mt[_index] = (1812433253UL * (_mt[_index - 1] ^ (_mt[_index - 1] >> 30)) + (ulong)_index);
                 /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
                 /* In the previous versions, MSBs of the seed affect   */
                 /* only MSBs of the array mt[].                        */
                 /* 2002/01/09 modified by Makoto Matsumoto             */
-                mt[_index] &= 0xffffffffUL;
+                _mt[_index] &= 0xffffffffUL;
                 /* for >32 bit machines */
             }
         }
@@ -254,19 +254,19 @@ namespace Engine.Util
                 int kk;
                 for (kk = 0; kk < N - M; kk++)
                 {
-                    y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-                    mt[kk] = mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
+                    y = (_mt[kk] & UPPER_MASK) | (_mt[kk + 1] & LOWER_MASK);
+                    _mt[kk] = _mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
                 }
                 for (; kk < N - 1; kk++)
                 {
-                    y = (mt[kk] & UPPER_MASK) | (mt[kk + 1] & LOWER_MASK);
-                    mt[kk] = mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
+                    y = (_mt[kk] & UPPER_MASK) | (_mt[kk + 1] & LOWER_MASK);
+                    _mt[kk] = _mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
                 }
-                y = (mt[N - 1] & UPPER_MASK) | (mt[0] & LOWER_MASK);
-                mt[N - 1] = mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
+                y = (_mt[N - 1] & UPPER_MASK) | (_mt[0] & LOWER_MASK);
+                _mt[N - 1] = _mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
                 _index = 0;
             }
-            y = mt[_index++];
+            y = _mt[_index++];
             // Tempering
             y ^= (y >> 11);
             y ^= (y << 7) & 0x9d2c5680UL;
@@ -283,7 +283,7 @@ namespace Engine.Util
         {
             for (int i = 0; i < N; i++)
             {
-                packet.Write(mt[i]);
+                packet.Write(_mt[i]);
             }
             return packet.Write(_index);
         }
@@ -292,16 +292,30 @@ namespace Engine.Util
         {
             for (int i = 0; i < N; i++)
             {
-                mt[i] = packet.ReadUInt64();
+                _mt[i] = packet.ReadUInt64();
             }
             _index = packet.ReadInt32();
         }
 
-        public object Clone()
+        public MersenneTwister DeepCopy()
         {
-            var copy = (MersenneTwister)MemberwiseClone();
-            copy.mt = new ulong[N];
-            mt.CopyTo(copy.mt, 0);
+            return DeepCopy(null);
+        }
+
+        public MersenneTwister DeepCopy(MersenneTwister into)
+        {
+            var copy = into ?? (MersenneTwister)MemberwiseClone();
+
+            if (copy == into)
+            {
+                copy._index = _index;
+            }
+            else
+            {
+                copy._mt = new ulong[N];
+            }
+            _mt.CopyTo(copy._mt, 0);
+
             return copy;
         }
 

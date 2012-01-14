@@ -165,13 +165,27 @@ namespace Space.ComponentSystem.Components
             EffectName = packet.ReadString();
         }
 
-        public override object Clone()
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
         {
-            var copy = (Effect)base.Clone();
+            return instance is Effect;
+        }
 
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+            var copy = (Effect)into;
+
+            if (!isShallowCopy)
+            {
+                copy.EffectName = EffectName;
+                copy.Emitting = Emitting;
+                copy._effect = _effect;
+            }
             copy._isDrawingInstance = false;
-
-            return copy;
         }
 
         #endregion

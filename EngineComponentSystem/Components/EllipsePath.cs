@@ -191,6 +191,36 @@ namespace Engine.ComponentSystem.Components
 
         #endregion
 
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is EllipsePath;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (EllipsePath)into;
+
+                copy.CenterEntityId = CenterEntityId;
+                copy.MajorRadius = MajorRadius;
+                copy.MinorRadius = MinorRadius;
+                copy.Angle = Angle;
+                copy.Period = Period;
+                copy.PeriodOffset = PeriodOffset;
+
+                copy._angle = _angle;
+                copy._sinPhi = _sinPhi;
+                copy._cosPhi = _cosPhi;
+            }
+        }
+
+        #endregion
+
         #region ToString
 
         public override string ToString()

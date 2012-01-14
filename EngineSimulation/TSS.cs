@@ -233,7 +233,7 @@ namespace Engine.Simulation
                 // in the intended order!)
                 throw new InvalidOperationException("Cannot add an object in the same frame as it will be removed.");
             }
-            _adds[frame].Add((Entity)entity.Clone());
+            _adds[frame].Add(entity.DeepCopy());
 
             // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
@@ -482,7 +482,7 @@ namespace Engine.Simulation
                         // Add a copy of it.
                         foreach (var entity in _adds[stateFrame])
                         {
-                            state.EntityManager.AddEntity((Entity)entity.Clone());
+                            state.EntityManager.AddEntity(entity.DeepCopy());
                         }
                     }
 

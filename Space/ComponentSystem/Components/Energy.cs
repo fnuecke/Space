@@ -10,6 +10,26 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Energy : AbstractRegeneratingValue
     {
+        #region Constructor
+
+        /// <summary>
+        /// Creates a new energy component.
+        /// </summary>
+        /// <param name="timeout">The number of ticks to wait after using
+        /// energy before starting to regenerate energy again.</param>
+        public Energy(int timeout)
+            : base(timeout)
+        {
+        }
+
+        public Energy()
+        {
+        }
+
+        #endregion
+
+        #region Logic
+
         /// <summary>
         /// Test for change in equipment.
         /// </summary>
@@ -41,5 +61,16 @@ namespace Space.ComponentSystem.Components
                 }
             }
         }
+
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is Energy;
+        }
+
+        #endregion
     }
 }

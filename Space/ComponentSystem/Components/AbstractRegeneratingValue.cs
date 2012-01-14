@@ -135,6 +135,30 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(BitConverter.GetBytes(_value));
+            hasher.Put(BitConverter.GetBytes(_timeToWait));
+            hasher.Put(BitConverter.GetBytes(MaxValue));
+            hasher.Put(BitConverter.GetBytes(Regeneration));
+            hasher.Put(BitConverter.GetBytes(Timeout));
+        }
+
+        #endregion
+
+        #region Copying
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (AbstractRegeneratingValue)into;
+
+                copy.MaxValue = MaxValue;
+                copy.Regeneration = Regeneration;
+                copy.Timeout = Timeout;
+                copy._value = _value;
+                copy._timeToWait = _timeToWait;
+            }
         }
 
         #endregion

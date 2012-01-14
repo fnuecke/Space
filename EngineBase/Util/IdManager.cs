@@ -8,7 +8,7 @@ namespace Engine.Util
     /// Class that handles giving out unique ids, and releasing old ones so
     /// they may be reused.
     /// </summary>
-    public class IdManager : IPacketizable, ICloneable
+    public class IdManager : IPacketizable, ICopyable<IdManager>
     {
         #region Fields
         
@@ -118,10 +118,28 @@ namespace Engine.Util
             }
         }
 
-        public object Clone()
+        public IdManager DeepCopy()
         {
-            var copy = (IdManager)MemberwiseClone();
-            copy._reusableIds = new SortedSet<int>(_reusableIds);
+            return DeepCopy(null);
+        }
+
+        public IdManager DeepCopy(IdManager into)
+        {
+            var copy = into ?? (IdManager)MemberwiseClone();
+
+            if (copy == into)
+            {
+                // Other instance.
+                copy._reusableIds.Clear();
+                copy._reusableIds.UnionWith(_reusableIds);
+                copy._nextId = _nextId;
+            }
+            else
+            {
+                // Shallow copy.
+                copy._reusableIds = new SortedSet<int>(_reusableIds);
+            }
+
             return copy;
         }
 

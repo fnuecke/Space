@@ -17,7 +17,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The name of the texture to use for rendering the physics object.
         /// </summary>
-        public string TextureName { get { return _textureName; } set { _textureName = value; texture = null; } }
+        public string TextureName { get { return _textureName; } set { _textureName = value; _texture = null; } }
 
         #endregion
 
@@ -36,7 +36,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
-        protected Texture2D texture;
+        protected Texture2D _texture;
 
         /// <summary>
         /// Actual texture name. Setter is used to invalidate the actual texture reference,
@@ -89,14 +89,14 @@ namespace Engine.ComponentSystem.Components
             var args = (RendererParameterization)parameterization;
 
             // Load our texture, if it's not set.
-            if (texture == null)
+            if (_texture == null)
             {
                 // But only if we have a name, set, else return.
                 if (string.IsNullOrWhiteSpace(TextureName))
                 {
                     return;
                 }
-                texture = args.Content.Load<Texture2D>(TextureName);
+                _texture = args.Content.Load<Texture2D>(TextureName);
             }
         }
 
@@ -135,6 +135,25 @@ namespace Engine.ComponentSystem.Components
             Tint = color;
 
             Scale = packet.ReadSingle();
+        }
+
+        #endregion
+
+        #region Copying
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (AbstractRenderer)into;
+
+                copy.Tint = Tint;
+                copy.Scale = Scale;
+                copy._texture = _texture;
+                copy._textureName = _textureName;
+            }
         }
 
         #endregion

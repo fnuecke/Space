@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// A list of components which should be disabled while dead.
         /// </summary>
-        public readonly List<Type> ComponentsToDisable;
+        public HashSet<Type> ComponentsToDisable;
 
         #endregion
 
@@ -55,7 +55,7 @@ namespace Space.ComponentSystem.Components
 
         #region Constructor
 
-        public Respawn(int respawnTime, List<Type> disableComponents, Vector2 respawnPosition, float relativeHealth, float relativeEnergy)
+        public Respawn(int respawnTime, HashSet<Type> disableComponents, Vector2 respawnPosition, float relativeHealth, float relativeEnergy)
         {
             this.RespawnTime = respawnTime;
             this.RespawnPosition = respawnPosition;
@@ -64,18 +64,18 @@ namespace Space.ComponentSystem.Components
             this.RelativeEnergy = relativeEnergy;
         }
 
-        public Respawn(int respawnTime, List<Type> disableComponents, Vector2 respawnPosition)
+        public Respawn(int respawnTime, HashSet<Type> disableComponents, Vector2 respawnPosition)
             : this(respawnTime, disableComponents, respawnPosition, 1, 1)
         {
         }
 
-        public Respawn(int respawnTime, List<Type> disableComponents)
+        public Respawn(int respawnTime, HashSet<Type> disableComponents)
             : this(respawnTime, disableComponents, Vector2.Zero)
         {
         }
 
         public Respawn()
-            : this(0, new List<Type>())
+            : this(0, new HashSet<Type>())
         {
         }
 
@@ -160,7 +160,7 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Serialization / Cloning
+        #region Serialization / Hashing
 
         public override Packet Packetize(Packet packet)
         {
@@ -200,9 +200,34 @@ namespace Space.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(_timeToRespawn));
         }
 
-        public override object Clone()
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
         {
-            return base.Clone();
+            return instance is Respawn;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+            var copy = (Respawn)into;
+
+            if (isShallowCopy)
+            {
+                copy.ComponentsToDisable = new HashSet<Type>(ComponentsToDisable);
+            }
+            else
+            {
+                copy.ComponentsToDisable.Clear();
+                copy.ComponentsToDisable.UnionWith(ComponentsToDisable);
+                copy.RespawnTime = RespawnTime;
+                copy.RespawnPosition = RespawnPosition;
+                copy.RelativeHealth = RelativeHealth;
+                copy.RelativeEnergy = RelativeEnergy;
+                copy._timeToRespawn = _timeToRespawn;
+            }
         }
 
         #endregion

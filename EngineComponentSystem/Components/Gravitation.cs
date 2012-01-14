@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
@@ -216,6 +217,36 @@ namespace Engine.ComponentSystem.Components
 
             GravitationType = (GravitationTypes)packet.ReadByte();
             Mass = packet.ReadSingle();
+        }
+
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put((byte)GravitationType);
+            hasher.Put(BitConverter.GetBytes(Mass));
+        }
+
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is Gravitation;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (Gravitation)into;
+
+                copy.GravitationType = GravitationType;
+                copy.Mass = Mass;
+            }
         }
 
         #endregion

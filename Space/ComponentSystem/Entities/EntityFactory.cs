@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
+using Engine.Data;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -21,7 +22,7 @@ namespace Space.ComponentSystem.Entities
         {
             var entity = new Entity();
 
-            var renderer = new TransformedRenderer(shipData.Texture, faction.ToColor());
+            var renderer = new TransformedRenderer(shipData.Texture, Color.Lerp(Color.White, faction.ToColor(), 0.2f));
             renderer.DrawOrder = 50; //< Draw ships above everything else.
             var modules = new EntityModules<EntityAttributeType>();
             var health = new Health(120);
@@ -43,7 +44,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new WeaponSound());
             entity.AddComponent(new Detectable("Textures/ship"));
             entity.AddComponent(new ThrusterEffect("Effects/thruster"));
-            entity.AddComponent(new Respawn(300, new List<Type>()
+            entity.AddComponent(new Respawn(300, new HashSet<Type>()
             {
                 typeof(ShipControl),
                 typeof(WeaponControl),
@@ -61,18 +62,33 @@ namespace Space.ComponentSystem.Entities
 
             // Add after all components are registered to give them the chance
             // to react to the ModuleAdded messages.
-            modules.AddModules(shipData.Hulls);
-            modules.AddModules(shipData.Reactors);
-            modules.AddModules(shipData.Thrusters);
-            modules.AddModules(shipData.Shields);
-            modules.AddModules(shipData.Weapons);
-            modules.AddModules(shipData.Sensors);
+            modules.AddModules(ModuleArrayCopy(shipData.Hulls));
+            modules.AddModules(ModuleArrayCopy(shipData.Reactors));
+            modules.AddModules(ModuleArrayCopy(shipData.Thrusters));
+            modules.AddModules(ModuleArrayCopy(shipData.Shields));
+            modules.AddModules(ModuleArrayCopy(shipData.Weapons));
+            modules.AddModules(ModuleArrayCopy(shipData.Sensors));
 
             // Set value to max after equipping.
             health.Value = health.MaxValue;
             energy.Value = energy.MaxValue;
 
             return entity;
+        }
+
+        private static T[] ModuleArrayCopy<T>(T[] array) where T : AbstractEntityModule<EntityAttributeType>
+        {
+            if (array == null)
+            {
+                return null;
+            }
+
+            var copy = new T[array.Length];
+            for (int i = 0; i < copy.Length; i++)
+            {
+                copy[i] = (T)array[i].DeepCopy();
+            }
+            return copy;
         }
 
         /// <summary>

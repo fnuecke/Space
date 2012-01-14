@@ -194,34 +194,60 @@ namespace Engine.ComponentSystem.Systems
         {
             var copy = (EntityManager)(into ?? MemberwiseClone());
 
-            // Clone the id manager.
-            copy._idManager = (IdManager)_idManager.Clone();
+            if (copy == into)
+            {
+                // Not a shallow copy, also copy fields.
 
-            // Clone system manager.
-            if (copy.SystemManager == SystemManager)
-            {
-                copy.SystemManager = SystemManager.DeepCopy();
-            }
-            else
-            {
+                // Clone the id manager.
+                copy._idManager = _idManager.DeepCopy(copy._idManager);
+
+                // Clone system manager.
                 copy.SystemManager = SystemManager.DeepCopy(copy.SystemManager);
-            }
-            copy.SystemManager.EntityManager = copy;
 
-            // Clone all entities.
-            if (copy._entityMap == _entityMap)
-            {
-                copy._entityMap = new Dictionary<int, Entity>();
+                // Clone all entities.
+                copy._entityMap.Clear();
+
+                // Get a list of entities for re-use.
+                var copyValues = new Stack<Entity>(copy._entityMap.Values);
+                copy._entityMap.Clear();
+
+                // Copy actual entities over.
+                foreach (var entity in _entityMap.Values)
+                {
+                    Entity entityCopy;
+                    if (copyValues.Count > 0)
+                    {
+                        entityCopy = copyValues.Pop();
+                    }
+                    else
+                    {
+                        entityCopy = new Entity();
+                    }
+                    entityCopy = entity.DeepCopy(entityCopy);
+                    copy._entityMap.Add(entityCopy.UID, entityCopy);
+                }
             }
             else
             {
-                copy._entityMap.Clear();
+                // Copy of this instance, create new instances for reference
+                // types.
+
+                // Clone the id manager.
+                copy._idManager = _idManager.DeepCopy();
+
+                // Clone system manager.
+                copy.SystemManager = SystemManager.DeepCopy();
+
+                // Clone all entities.
+                copy._entityMap = new Dictionary<int, Entity>();
+                foreach (var entity in _entityMap.Values)
+                {
+                    copy.AddEntityUnchecked((Entity)entity.DeepCopy());
+                }
             }
 
-            foreach (var entity in _entityMap.Values)
-            {
-                copy.AddEntityUnchecked((Entity)entity.Clone());
-            }
+            // Set the entity manager for the clone's system manager.
+            copy.SystemManager.EntityManager = copy;
 
             return copy;
         }

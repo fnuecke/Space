@@ -31,10 +31,10 @@ namespace Engine.Data
     /// </summary>
     /// <typeparam name="TAttribute">The enum that holds the possible types of
     /// attributes.</typeparam>
-    public sealed class ModuleAttribute<TAttribute> : ICloneable, IPacketizable, IHashable
+    public sealed class ModuleAttribute<TAttribute> : ICopyable<ModuleAttribute<TAttribute>>, IPacketizable, IHashable
         where TAttribute : struct
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The actual type of this attribute, which tells the game how to
@@ -79,9 +79,24 @@ namespace Engine.Data
             hasher.Put(BitConverter.GetBytes(Value));
         }
 
-        public object Clone()
+        public ModuleAttribute<TAttribute> DeepCopy()
         {
-            return MemberwiseClone();
+            return DeepCopy(null);
+        }
+
+        public ModuleAttribute<TAttribute> DeepCopy(ModuleAttribute<TAttribute> into)
+        {
+            if (into == null)
+            {
+                return (ModuleAttribute<TAttribute>)MemberwiseClone();
+            }
+            else
+            {
+                into.Type = Type;
+                into.ComputationType = ComputationType;
+                into.Value = Value;
+                return into;
+            }
         }
 
         #endregion

@@ -63,5 +63,14 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is Health;
+        }
+
+        #endregion
     }
 }

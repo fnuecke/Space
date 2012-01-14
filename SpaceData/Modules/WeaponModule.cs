@@ -83,11 +83,31 @@ namespace Space.Data.Modules
             }
         }
 
-        public override object Clone()
-        {
-            var copy = (WeaponModule)base.Clone();
+        #endregion
 
-            copy.Projectiles = new ProjectileData[Projectiles.Length];
+        #region Copying
+
+        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        {
+            var copy = (WeaponModule)base.DeepCopy(into is WeaponModule ? into : null);
+
+            if (copy == into)
+            {
+                // Copying into other instance.
+                copy.Texture = Texture;
+                copy.Sound = Sound;
+                copy.Cooldown = Cooldown;
+                copy.EnergyConsumption = EnergyConsumption;
+                if (copy.Projectiles.Length != Projectiles.Length)
+                {
+                    copy.Projectiles = new ProjectileData[Projectiles.Length];
+                }
+            }
+            else
+            {
+                // Shallow copy, new instance for reference types.
+                copy.Projectiles = new ProjectileData[Projectiles.Length];
+            }
             Projectiles.CopyTo(copy.Projectiles, 0);
 
             return copy;

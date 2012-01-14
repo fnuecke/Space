@@ -115,5 +115,22 @@ namespace Engine.ComponentSystem.Components
         }
 
         #endregion
+
+        #region Copying
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (AbstractCollidable)into;
+
+                copy.CollisionGroups = CollisionGroups;
+                copy._previousPosition = _previousPosition;
+            }
+        }
+
+        #endregion
     }
 }

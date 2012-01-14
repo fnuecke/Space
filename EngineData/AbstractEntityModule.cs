@@ -13,7 +13,7 @@ namespace Engine.Data
     /// </summary>
     /// <typeparam name="TAttribute">The enum that holds the possible types of
     /// attributes.</typeparam>
-    public abstract class AbstractEntityModule<TAttribute> : ICloneable, IPacketizable, IHashable
+    public abstract class AbstractEntityModule<TAttribute> : ICopyable<AbstractEntityModule<TAttribute>>, IPacketizable, IHashable
         where TAttribute : struct
     {
         #region Properties
@@ -95,15 +95,49 @@ namespace Engine.Data
             }
         }
 
-        public virtual object Clone()
+        public AbstractEntityModule<TAttribute> DeepCopy()
         {
-            var copy = (AbstractEntityModule<TAttribute>)MemberwiseClone();
+            return DeepCopy(null);
+        }
 
-            // Create copies of the attributes.
-            copy.Attributes = new List<ModuleAttribute<TAttribute>>();
-            foreach (var attribute in Attributes)
+        public virtual AbstractEntityModule<TAttribute> DeepCopy(AbstractEntityModule<TAttribute> into)
+        {
+            var copy = into ?? (AbstractEntityModule<TAttribute>)MemberwiseClone();
+
+            if (copy == into)
             {
-                copy.Attributes.Add((ModuleAttribute<TAttribute>)attribute.Clone());
+                // Other instance, copy fields.
+                copy.UID = UID;
+
+                // Adjust list length.
+                if (copy.Attributes.Count > Attributes.Count)
+                {
+                    copy.Attributes.RemoveRange(Attributes.Count, copy.Attributes.Count - Attributes.Count);
+                }
+                // Copy as many as we can re-using existing entires.
+                int i = 0;
+                for (; i < copy.Attributes.Count; ++i)
+                {
+                    copy.Attributes[i] = Attributes[i].DeepCopy(copy.Attributes[i]);
+                }
+                // Create the rest creating new instances.
+                for (; i < Attributes.Count; ++i)
+                {
+                    copy.Attributes.Add((ModuleAttribute<TAttribute>)Attributes[i].DeepCopy());
+                }
+            }
+            else
+            {
+                // Shallow copy, new instances for reference types.
+
+                // Create copies of the attributes.
+                copy.Attributes = new List<ModuleAttribute<TAttribute>>();
+                foreach (var attribute in Attributes)
+                {
+                    copy.Attributes.Add((ModuleAttribute<TAttribute>)attribute.DeepCopy());
+                }
+
+                // Attributes to invalidate can be reused because it's read-only.
             }
 
             return copy;

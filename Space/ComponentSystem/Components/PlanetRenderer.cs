@@ -162,5 +162,28 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is PlanetRenderer;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (PlanetRenderer)into;
+
+                copy.AtmosphereTint = AtmosphereTint;
+                copy._atmosphereTexture = _atmosphereTexture;
+                copy._shadowTexture = _shadowTexture;
+            }
+        }
+
+        #endregion
     }
 }

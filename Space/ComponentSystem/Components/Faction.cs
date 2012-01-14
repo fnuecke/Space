@@ -33,7 +33,7 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Serialization
+        #region Serialization / Hashing
 
         public override Packet Packetize(Packet packet)
         {
@@ -53,6 +53,27 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put((byte)Value);
+        }
+
+        #endregion
+
+        #region Copying
+
+        protected override bool ValidateType(AbstractComponent instance)
+        {
+            return instance is Faction;
+        }
+
+        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        {
+            base.CopyFields(into, isShallowCopy);
+
+            if (!isShallowCopy)
+            {
+                var copy = (Faction)into;
+
+                copy.Value = Value;
+            }
         }
 
         #endregion

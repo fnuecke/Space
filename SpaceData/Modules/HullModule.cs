@@ -35,7 +35,7 @@ namespace Space.Data.Modules
 
         #endregion
 
-        #region Serialization / Hashing / Cloning
+        #region Serialization / Hashing
 
         public override Packet Packetize(Packet packet)
         {
@@ -60,6 +60,24 @@ namespace Space.Data.Modules
 
             hasher.Put(BitConverter.GetBytes(Health));
             hasher.Put(BitConverter.GetBytes(HealthRegeneration));
+        }
+
+        #endregion
+
+        #region Copying
+
+        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        {
+            var copy = (HullModule)base.DeepCopy(into is HullModule ? into : null);
+
+            if (copy == into)
+            {
+                // Copied into other instance, copy fields.
+                copy.Health = Health;
+                copy.HealthRegeneration = HealthRegeneration;
+            }
+
+            return copy;
         }
 
         #endregion
