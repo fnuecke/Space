@@ -142,9 +142,7 @@ namespace Engine.ComponentSystem.Components
         #region Copying
 
         /// <summary>
-        /// Creates a member-wise clone of this instance. Subclasses may
-        /// override this method to perform further adjustments to the
-        /// cloned instance, such as overwriting reference values.
+        /// Creates a deep copy of this instance.
         /// </summary>
         /// <returns>An independent (deep) clone of this instance.</returns>
         public AbstractComponent DeepCopy()
@@ -153,41 +151,28 @@ namespace Engine.ComponentSystem.Components
         }
 
         /// <summary>
-        /// Creates a member-wise clone of this instance. Subclasses may
-        /// override this method to perform further adjustments to the
-        /// cloned instance, such as overwriting reference values.
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
         /// </summary>
         /// <returns>An independent (deep) clone of this instance.</returns>
-        public AbstractComponent DeepCopy(AbstractComponent into)
+        public virtual AbstractComponent DeepCopy(AbstractComponent into)
         {
-            var copy = ValidateType(into) ? into : (AbstractComponent)MemberwiseClone();
-            CopyFields(copy, copy != into);
+            var copy = (into != null && into.GetType() == this.GetType())
+                ? into
+                : (AbstractComponent)MemberwiseClone();
+
+            if (copy == into)
+            {
+                // Other instance.
+                copy.UID = UID;
+                copy.UpdateOrder = UpdateOrder;
+                copy.DrawOrder = DrawOrder;
+                copy.Enabled = Enabled;
+            }
+
+            copy.Entity = null;
+
             return copy;
-        }
-
-        /// <summary>
-        /// Used for <c>DeepCopy(AbstractComponent)</c> and must be implemented
-        /// in subclasses like this:
-        /// <code>
-        /// return instance is MyClass;
-        /// </code>
-        /// </summary>
-        /// <param name="instance">The instance to check.</param>
-        /// <returns>Whether it's the same type as the implementing type.</returns>
-        protected abstract bool ValidateType(AbstractComponent instance);
-
-        /// <summary>
-        /// This is how subclasses should implement deep copying. Implement
-        /// all copying of fields etc. in this method. This includes value
-        /// fields!
-        /// </summary>
-        /// <param name="into">The instance to copy into.</param>
-        /// <param name="isShallowCopy">Whether it is a shallow copy of this
-        /// instance, meaning that reference fields have to be deep copied
-        /// completely, or may be tried to be deep copied into.</param>
-        protected virtual void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            into.Entity = null;
         }
 
         #endregion

@@ -117,21 +117,16 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is CollidableBox;
-        }
+            var copy = (CollidableBox)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (CollidableBox)into;
-
                 copy.Size = Size;
             }
+
+            return copy;
         }
 
         #endregion

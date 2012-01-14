@@ -106,22 +106,17 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is Detectable;
-        }
+            var copy = (Detectable)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (Detectable)into;
-
                 copy.Texture = Texture;
                 copy._textureName = _textureName;
             }
+
+            return copy;
         }
 
         #endregion

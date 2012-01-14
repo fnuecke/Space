@@ -231,22 +231,17 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is Gravitation;
-        }
+            var copy = (Gravitation)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (Gravitation)into;
-
                 copy.GravitationType = GravitationType;
                 copy.Mass = Mass;
             }
+
+            return copy;
         }
 
         #endregion

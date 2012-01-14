@@ -225,7 +225,7 @@ namespace Engine.ComponentSystem.Entities
 
         #endregion
 
-        #region Interfaces
+        #region Serialization / Hashing
 
         /// <summary>
         /// Write the object's state to the given packet.
@@ -277,6 +277,10 @@ namespace Engine.ComponentSystem.Entities
             }
         }
 
+        #endregion
+
+        #region Copying
+
         /// <summary>
         /// Create a deep copy of the object, duplicating all its components.
         /// </summary>
@@ -317,7 +321,7 @@ namespace Engine.ComponentSystem.Entities
 
                 // Deep-copy as many components as we can (in linear order).
                 int i = 0;
-                for (; i < _components.Count; ++i)
+                for (; i < copy._components.Count; ++i)
                 {
                     copy._components[i] = _components[i].DeepCopy(copy._components[i]);
                 }

@@ -102,7 +102,9 @@ namespace Engine.Data
 
         public virtual AbstractEntityModule<TAttribute> DeepCopy(AbstractEntityModule<TAttribute> into)
         {
-            var copy = into ?? (AbstractEntityModule<TAttribute>)MemberwiseClone();
+            var copy = (into != null && into.GetType() == this.GetType())
+                ? into
+                : (AbstractEntityModule<TAttribute>)MemberwiseClone();
 
             if (copy == into)
             {

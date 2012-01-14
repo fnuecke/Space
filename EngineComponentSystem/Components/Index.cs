@@ -135,23 +135,18 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is Index;
-        }
+            var copy = (Index)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (Index)into;
-
                 copy.IndexGroups = IndexGroups;
                 copy.PositionChanged = PositionChanged;
                 copy.PreviousPosition = PreviousPosition;
             }
+
+            return copy;
         }
 
         #endregion

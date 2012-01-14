@@ -89,21 +89,16 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is Expiration;
-        }
+            var copy = (Expiration)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (Expiration)into;
-
                 copy.TimeToLive = TimeToLive;
             }
+
+            return copy;
         }
 
         #endregion

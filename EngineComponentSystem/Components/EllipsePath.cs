@@ -193,19 +193,12 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is EllipsePath;
-        }
+            var copy = (EllipsePath)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (EllipsePath)into;
-
                 copy.CenterEntityId = CenterEntityId;
                 copy.MajorRadius = MajorRadius;
                 copy.MinorRadius = MinorRadius;
@@ -217,6 +210,8 @@ namespace Engine.ComponentSystem.Components
                 copy._sinPhi = _sinPhi;
                 copy._cosPhi = _cosPhi;
             }
+
+            return copy;
         }
 
         #endregion

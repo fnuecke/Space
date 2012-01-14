@@ -8,7 +8,7 @@ namespace Space.Data.Modules
 
         public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
         {
-            var copy = (ShieldModule)base.DeepCopy(into is ShieldModule ? into : null);
+            var copy = (ShieldModule)base.DeepCopy(into);
 
             if (copy == into)
             {

@@ -141,19 +141,19 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            base.CopyFields(into, isShallowCopy);
+            var copy = (AbstractRenderer)base.DeepCopy(into);
 
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (AbstractRenderer)into;
-
                 copy.Tint = Tint;
                 copy.Scale = Scale;
                 copy._texture = _texture;
                 copy._textureName = _textureName;
             }
+
+            return copy;
         }
 
         #endregion

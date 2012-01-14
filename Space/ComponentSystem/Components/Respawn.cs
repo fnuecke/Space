@@ -204,21 +204,11 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is Respawn;
-        }
+            var copy = (Respawn)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-            var copy = (Respawn)into;
-
-            if (isShallowCopy)
-            {
-                copy.ComponentsToDisable = new HashSet<Type>(ComponentsToDisable);
-            }
-            else
+            if (copy == into)
             {
                 copy.ComponentsToDisable.Clear();
                 copy.ComponentsToDisable.UnionWith(ComponentsToDisable);
@@ -228,6 +218,12 @@ namespace Space.ComponentSystem.Components
                 copy.RelativeEnergy = RelativeEnergy;
                 copy._timeToRespawn = _timeToRespawn;
             }
+            else
+            {
+                copy.ComponentsToDisable = new HashSet<Type>(ComponentsToDisable);
+            }
+
+            return copy;
         }
 
         #endregion

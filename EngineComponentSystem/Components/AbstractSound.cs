@@ -94,20 +94,21 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            base.CopyFields(into, isShallowCopy);
-            var copy = (AbstractSound)into;
+            var copy = (AbstractSound)base.DeepCopy(into);
 
-            if (isShallowCopy)
-            {
-                copy._soundsToPlay = new List<string>(_soundsToPlay);
-            }
-            else
+            if (copy == into)
             {
                 copy._soundsToPlay.Clear();
                 copy._soundsToPlay.AddRange(_soundsToPlay);
             }
+            else
+            {
+                copy._soundsToPlay = new List<string>(_soundsToPlay);
+            }
+
+            return copy;
         }
 
         #endregion

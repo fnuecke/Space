@@ -118,17 +118,17 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            base.CopyFields(into, isShallowCopy);
+            var copy = (AbstractCollidable)base.DeepCopy(into);
 
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (AbstractCollidable)into;
-
                 copy.CollisionGroups = CollisionGroups;
                 copy._previousPosition = _previousPosition;
             }
+
+            return copy;
         }
 
         #endregion

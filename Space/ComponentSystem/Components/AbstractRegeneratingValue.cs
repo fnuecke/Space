@@ -145,20 +145,20 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            base.CopyFields(into, isShallowCopy);
+            var copy = (AbstractRegeneratingValue)base.DeepCopy(into);
 
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (AbstractRegeneratingValue)into;
-
                 copy.MaxValue = MaxValue;
                 copy.Regeneration = Regeneration;
                 copy.Timeout = Timeout;
                 copy._value = _value;
                 copy._timeToWait = _timeToWait;
             }
+
+            return copy;
         }
 
         #endregion

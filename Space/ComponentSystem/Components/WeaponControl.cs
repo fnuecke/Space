@@ -168,21 +168,11 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is WeaponControl;
-        }
+            var copy = (WeaponControl)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-            var copy = (WeaponControl)into;
-
-            if (isShallowCopy)
-            {
-                copy._cooldowns = new Dictionary<int, int>(_cooldowns);
-            }
-            else
+            if (copy == into)
             {
                 copy.Shooting = Shooting;
                 copy._cooldowns.Clear();
@@ -191,6 +181,12 @@ namespace Space.ComponentSystem.Components
                     copy._cooldowns.Add(item.Key, item.Value);
                 }
             }
+            else
+            {
+                copy._cooldowns = new Dictionary<int, int>(_cooldowns);
+            }
+
+            return copy;
         }
 
         #endregion

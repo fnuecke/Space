@@ -153,22 +153,17 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is Transform;
-        }
+            var copy = (Transform)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (Transform)into;
-
                 copy.Translation = Translation;
                 copy.Rotation = Rotation;
             }
+
+            return copy;
         }
 
         #endregion

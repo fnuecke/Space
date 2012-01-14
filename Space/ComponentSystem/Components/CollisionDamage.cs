@@ -214,24 +214,11 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is CollisionDamage;
-        }
+            var copy = (CollisionDamage)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-            var copy = (CollisionDamage)into;
-
-            if (isShallowCopy)
-            {
-                if (_cooldowns != null)
-                {
-                    copy._cooldowns = new Dictionary<int, int>(_cooldowns);
-                }
-            }
-            else
+            if (copy == into)
             {
                 copy.Cooldown = Cooldown;
                 copy.Damage = Damage;
@@ -248,6 +235,15 @@ namespace Space.ComponentSystem.Components
                     copy._cooldowns = null;
                 }
             }
+            else
+            {
+                if (_cooldowns != null)
+                {
+                    copy._cooldowns = new Dictionary<int, int>(_cooldowns);
+                }
+            }
+
+            return copy;
         }
 
         #endregion

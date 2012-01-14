@@ -71,14 +71,5 @@ namespace Engine.ComponentSystem.Components
         }
 
         #endregion
-
-        #region Copying
-
-        protected override bool ValidateType(AbstractComponent instance)
-        {
-            return instance is TransformedRenderer;
-        }
-
-        #endregion
     }
 }

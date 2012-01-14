@@ -55,7 +55,7 @@ namespace Space.Data.Modules
 
         public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
         {
-            var copy = (SensorModule)base.DeepCopy(into is SensorModule ? into : null);
+            var copy = (SensorModule)base.DeepCopy(into);
 
             if (copy == into)
             {

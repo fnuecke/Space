@@ -278,34 +278,12 @@ namespace Engine.ComponentSystem.Components
         #endregion
 
         #region Copying
-
-        protected override bool ValidateType(AbstractComponent instance)
+        
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is EntityModules<TAttribute>;
-        }
+            var copy = (EntityModules<TAttribute>)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-            var copy = (EntityModules<TAttribute>)into;
-
-            if (isShallowCopy)
-            {
-                // Create a new list and copy all modules.
-                copy._modules = new List<AbstractEntityModule<TAttribute>>();
-                foreach (var module in _modules)
-                {
-                    copy._modules.Add(module.DeepCopy());
-                }
-
-                // Copy the caches as well.
-                copy._attributeCache = new Dictionary<TAttribute, float>(_attributeCache);
-                copy._moduleCache = new Dictionary<Type, object[]>();
-
-                // And the id manager.
-                copy._idManager = _idManager.DeepCopy();
-            }
-            else
+            if (copy == into)
             {
                 if (copy._modules.Count > _modules.Count)
                 {
@@ -327,6 +305,24 @@ namespace Engine.ComponentSystem.Components
 
                 copy._idManager = _idManager.DeepCopy(copy._idManager);
             }
+            else
+            {
+                // Create a new list and copy all modules.
+                copy._modules = new List<AbstractEntityModule<TAttribute>>();
+                foreach (var module in _modules)
+                {
+                    copy._modules.Add(module.DeepCopy());
+                }
+
+                // Copy the caches as well.
+                copy._attributeCache = new Dictionary<TAttribute, float>(_attributeCache);
+                copy._moduleCache = new Dictionary<Type, object[]>();
+
+                // And the id manager.
+                copy._idManager = _idManager.DeepCopy();
+            }
+
+            return copy;
         }
 
         #endregion

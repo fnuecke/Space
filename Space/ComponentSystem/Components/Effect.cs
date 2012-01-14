@@ -169,23 +169,19 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is Effect;
-        }
+            var copy = (Effect)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-            var copy = (Effect)into;
-
-            if (!isShallowCopy)
+            if (copy == into)
             {
                 copy.EffectName = EffectName;
                 copy.Emitting = Emitting;
                 copy._effect = _effect;
             }
             copy._isDrawingInstance = false;
+
+            return copy;
         }
 
         #endregion

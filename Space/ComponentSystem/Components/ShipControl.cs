@@ -247,25 +247,20 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
-        protected override bool ValidateType(AbstractComponent instance)
+        public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            return instance is ShipControl;
-        }
+            var copy = (ShipControl)base.DeepCopy(into);
 
-        protected override void CopyFields(AbstractComponent into, bool isShallowCopy)
-        {
-            base.CopyFields(into, isShallowCopy);
-
-            if (!isShallowCopy)
+            if (copy == into)
             {
-                var copy = (ShipControl)into;
-
                 copy.TargetRotation = TargetRotation;
                 copy.Shooting = Shooting;
                 copy.AccelerationDirection = AccelerationDirection;
                 copy._targetRotation = _targetRotation;
                 copy._previousRotation = _previousRotation;
             }
+
+            return copy;
         }
 
         #endregion
