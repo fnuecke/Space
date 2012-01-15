@@ -145,7 +145,7 @@
     <Compile Include="ComponentSystem\Parameterizations\ParticleParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\ParticleSystem.cs" />
     <Compile Include="ComponentSystem\Systems\ShipsSpawnSystem.cs" />
-    <Compile Include="ComponentSystem\Systems\UniversalSystem.cs" />
+    <Compile Include="ComponentSystem\Systems\UniverseSystem.cs" />
     <Compile Include="ComponentSystem\Components\WeaponSound.cs" />
     <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
     <Compile Include="ComponentSystem\Systems\Messages\CellStateChanged.cs" />

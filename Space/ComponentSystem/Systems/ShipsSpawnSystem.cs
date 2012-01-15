@@ -57,13 +57,13 @@ namespace Space.ComponentSystem.Systems
 
         public override void HandleMessage(ValueType message)
         {
-            if (!(message is CellStateChanged)) return;
-            var info = (CellStateChanged)message;
-
-            if (!info.State) return;
-            if (info.X == 0 && info.Y == 0)
+            if (message is CellStateChanged)
             {
-                _entities.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[0], Factions.Player5)));
+                var info = (CellStateChanged)message;
+                if (info.State && info.X == 0 && info.Y == 0)
+                {
+                    _entities.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[0], Factions.Player5)));
+                }
             }
         }
 

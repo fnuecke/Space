@@ -357,7 +357,7 @@ namespace Space
 
                             var id = CoordinateIds.Combine(cellX, cellY);
 
-                            var universe = systemManager.GetSystem<Space.ComponentSystem.Systems.UniversalSystem>();
+                            var universe = systemManager.GetSystem<Space.ComponentSystem.Systems.UniverseSystem>();
                             if (universe != null)
                             {
                                 sb.AppendFormat("Objects in system: {0}\n", universe.GetSystemList(id).Count);

@@ -12,41 +12,16 @@ namespace Space.ComponentSystem.Entities
     class EntityFactory
     {
         /// <summary>
-        /// Creates a new ship, player controlled or otherwise, with the
-        /// specified parameters.
+        /// Creates a new, player controlled ship.
         /// </summary>
         /// <param name="shipData">The ship info to use.</param>
-        /// <param name="faction">The faction the ship will belong to.</param>
-        /// <returns></returns>
-        public static Entity CreateShip(ShipData shipData, Factions faction)
+        /// <param name="playerNumber">The player for whom to create the ship.</param>
+        /// <returns>The new ship.</returns>
+        public static Entity CreatePlayerShip(ShipData shipData, int playerNumber)
         {
-            var entity = new Entity();
+            Entity entity = CreateShip(shipData, playerNumber.ToFaction());
 
-            var renderer = new TransformedRenderer(shipData.Texture, Color.Lerp(Color.White, faction.ToColor(), 0.2f));
-            renderer.DrawOrder = 50; //< Draw ships above everything else.
-            var modules = new EntityModules<EntityAttributeType>();
-            var health = new Health(120);
-            var energy = new Energy();
-
-            //for testing only
-            entity.AddComponent(new AIComponent());
-            //
-            entity.AddComponent(new Transform(new Vector2(36000, 38000)));
-            entity.AddComponent(new Velocity());
-            entity.AddComponent(new Spin());
-            entity.AddComponent(new Acceleration());
-            entity.AddComponent(new Friction(0.01f, 0.02f));
-            // TODO compute based on equipped components
-            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 10));
-            entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup | faction.ToCollisionIndexGroup()));
-            entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, faction.ToCollisionGroup()));
-            entity.AddComponent(new Faction(faction));
-            entity.AddComponent(new Avatar(faction.ToPlayerNumber()));
-            entity.AddComponent(new ShipControl());
-            entity.AddComponent(new WeaponControl());
-            entity.AddComponent(new WeaponSound());
-            entity.AddComponent(new Detectable("Textures/ship"));
-            entity.AddComponent(new ThrusterEffect("Effects/thruster"));
+            entity.AddComponent(new Avatar(playerNumber));
             entity.AddComponent(new Respawn(300, new HashSet<Type>()
             {
                 typeof(ShipControl),
@@ -57,11 +32,61 @@ namespace Space.ComponentSystem.Entities
                 typeof(TransformedRenderer),
                 typeof(ThrusterEffect)
             }, new Vector2(15500, 15500)));
+
+            return entity;
+        }
+
+        /// <summary>
+        /// Creates a new, AI controlled ship.
+        /// </summary>
+        /// <param name="shipData">The ship info to use.</param>
+        /// <param name="faction">The faction the ship will belong to.</param>
+        /// <returns>The new ship.</returns>
+        public static Entity CreateAIShip(ShipData shipData, Factions faction)
+        {
+            Entity entity = CreateShip(shipData, faction);
+
+            entity.AddComponent(new AIComponent());
+            entity.AddComponent(new Death());
+            
+            return entity;
+        }
+
+        /// <summary>
+        /// Creates a new ship with the specified parameters.
+        /// </summary>
+        /// <param name="shipData">The ship info to use.</param>
+        /// <param name="faction">The faction the ship will belong to.</param>
+        /// <returns>The new ship.</returns>
+        private static Entity CreateShip(ShipData shipData, Factions faction)
+        {
+            var entity = new Entity();
+
+            var renderer = new TransformedRenderer(shipData.Texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
+            renderer.DrawOrder = 50; //< Draw ships above everything else.
+            var modules = new EntityModules<EntityAttributeType>();
+            var health = new Health(120);
+            var energy = new Energy();
+
+            entity.AddComponent(new Transform(new Vector2(36000, 38000)));
+            entity.AddComponent(new Velocity());
+            entity.AddComponent(new Spin());
+            entity.AddComponent(new Acceleration());
+            entity.AddComponent(new Friction(0.01f, 0.02f));
+            // TODO compute based on equipped components
+            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 10));
+            entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup | faction.ToCollisionIndexGroup()));
+            entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, faction.ToCollisionGroup()));
+            entity.AddComponent(new Faction(faction));
+            entity.AddComponent(new ShipControl());
+            entity.AddComponent(new WeaponControl());
+            entity.AddComponent(new WeaponSound());
+            entity.AddComponent(new Detectable("Textures/ship"));
+            entity.AddComponent(new ThrusterEffect("Effects/thruster"));
             entity.AddComponent(renderer);
             entity.AddComponent(modules);
             entity.AddComponent(health);
             entity.AddComponent(energy);
-
 
             // Add after all components are registered to give them the chance
             // to react to the ModuleAdded messages.
@@ -79,6 +104,12 @@ namespace Space.ComponentSystem.Entities
             return entity;
         }
 
+        /// <summary>
+        /// Copies modules from module array of a ShipData instance.
+        /// </summary>
+        /// <typeparam name="T">The type of modules to copy.</typeparam>
+        /// <param name="array">The array to copy.</param>
+        /// <returns>A copy of the array.</returns>
         private static T[] ModuleArrayCopy<T>(T[] array) where T : AbstractEntityModule<EntityAttributeType>
         {
             if (array == null)
@@ -92,13 +123,6 @@ namespace Space.ComponentSystem.Entities
                 copy[i] = (T)array[i].DeepCopy();
             }
             return copy;
-        }
-
-        public static Entity CreateAIShip(ShipData shipData, Factions faction)
-        {
-            Entity entity = CreateShip(shipData, faction);
-
-            return entity;
         }
 
         /// <summary>
