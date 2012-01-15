@@ -16,7 +16,7 @@ namespace Engine.Controller
     /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
     /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
     public abstract class AbstractTssClient
-        : AbstractTssController<IClientSession>, IClientController<IFrameCommand>
+        : AbstractTssController<IClientSession>, IClientController<FrameCommand>
     {
         #region Logger
 
@@ -152,7 +152,7 @@ namespace Engine.Controller
         /// Override this to fill in some default values in the command
         /// before it is passed on to <c>HandleLocalCommand</c>.
         /// </summary>
-        public void PushLocalCommand(IFrameCommand command)
+        public void PushLocalCommand(FrameCommand command)
         {
             command.PlayerNumber = Session.LocalPlayer.Number;
             command.Frame = _tss.CurrentFrame + 1;
@@ -164,7 +164,7 @@ namespace Engine.Controller
         /// server. Otherwise we'll simply try to push it to the simulation.
         /// </summary>
         /// <param name="command">The command to apply.</param>
-        protected override void Apply(IFrameCommand command)
+        protected override void Apply(FrameCommand command)
         {
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
@@ -213,7 +213,7 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of client side TSS synchronization logic.
         /// </summary>
-        protected override IFrameCommand UnwrapDataForReceive(SessionDataEventArgs e)
+        protected override FrameCommand UnwrapDataForReceive(SessionDataEventArgs e)
         {
             var args = (ClientDataEventArgs)e;
             var type = (TssControllerMessage)args.Data.ReadByte();

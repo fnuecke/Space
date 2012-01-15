@@ -60,6 +60,6 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="command">the command to push.</param>
         /// <param name="frame">the frame in which to execute the command.</param>
-        void PushCommand(ICommand command, long frame);
+        void PushCommand(Command command, long frame);
     }
 }

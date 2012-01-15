@@ -6,14 +6,14 @@ namespace Engine.Simulation.Commands
     /// <summary>
     /// Base class for commands that can be injected into running simulations.
     /// </summary>
-    public abstract class FrameCommand : Command, IFrameCommand
+    public abstract class FrameCommand : Command
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// The frame this command applies to.
         /// </summary>
-        public long Frame { get; set; }
+        public long Frame;
 
         #endregion
         
@@ -28,12 +28,23 @@ namespace Engine.Simulation.Commands
         
         #region Serialization
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
                 .Write(Frame);
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
@@ -45,10 +56,10 @@ namespace Engine.Simulation.Commands
 
         #region Equality
 
-        public override bool Equals(ICommand other)
+        public override bool Equals(Command other)
         {
-            return other is IFrameCommand && base.Equals(other) &&
-                ((IFrameCommand)other).Frame == this.Frame;
+            return other is FrameCommand && base.Equals(other) &&
+                ((FrameCommand)other).Frame == this.Frame;
         }
 
         #endregion

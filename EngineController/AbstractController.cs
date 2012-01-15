@@ -11,7 +11,7 @@ namespace Engine.Controller
     /// </summary>
     public abstract class AbstractController<TSession, TCommand> : IController<TSession>
         where TSession : ISession
-        where TCommand : ICommand
+        where TCommand : Command
     {
         #region Logger
 

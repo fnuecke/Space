@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using Engine.Input;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -14,6 +15,7 @@ using Space.Data;
 using Space.ScreenManagement;
 using Space.ScreenManagement.Screens;
 using Space.Session;
+using Space.Simulation.Commands;
 using Space.View;
 
 namespace Space
@@ -177,6 +179,48 @@ namespace Space
                 DisposeClient();
             },
                 "Leave the current game.");
+
+            #region Debug commands
+            
+            _console.AddCommand("d_goto", args =>
+            {
+                Vector2 position;
+                position.X = float.Parse(args[1]);
+                position.Y = float.Parse(args[2]);
+                using (var packet = new Packet())
+                {
+                    packet.Write(position);
+                    Client.Controller.PushLocalCommand(new DebugCommand(DebugCommand.DebugCommandType.GotoPosition, packet));
+                }
+            },
+                "Jump to the specified coordinates.",
+                "d_goto <x> <y> - jump to the specified (X, Y) coordinate.");
+
+            _console.AddCommand("d_thrusteraf", args =>
+            {
+                float accelerationForce = float.Parse(args[1]);
+                using (var packet = new Packet())
+                {
+                    packet.Write(accelerationForce);
+                    Client.Controller.PushLocalCommand(new DebugCommand(DebugCommand.DebugCommandType.SetThrusterAccelerationForce, packet));
+                }
+            },
+                "Sets the specified acceleration force for all equipped thrusters.",
+                "d_thrusteraf <force> - set the specified acceleration force.");
+
+            _console.AddCommand("d_thrusterec", args =>
+            {
+                float energyConsumption = float.Parse(args[1]);
+                using (var packet = new Packet())
+                {
+                    packet.Write(energyConsumption);
+                    Client.Controller.PushLocalCommand(new DebugCommand(DebugCommand.DebugCommandType.SetThrusterEnergyConsumption, packet));
+                }
+            },
+                "Sets the specified energy consumption for all equipped thrusters.",
+                "d_thrusterec <consumption> - set the specified energy consumption.");
+
+            #endregion
 
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after

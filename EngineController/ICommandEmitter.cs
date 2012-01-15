@@ -7,14 +7,14 @@ namespace Engine.Controller
     /// </summary>
     /// <param name="command">the command that was emitted.</param>
     public delegate void CommandEmittedEventHandler<TCommand>(TCommand command)
-        where TCommand : ICommand;
+        where TCommand : Command;
 
     /// <summary>
     /// Interface for "command emitters", i.e. objects that generate commands
     /// in some fashion (e.g. user input commands via key presses).
     /// </summary>
     public interface ICommandEmitter<TCommand>
-        where TCommand : ICommand
+        where TCommand : Command
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command

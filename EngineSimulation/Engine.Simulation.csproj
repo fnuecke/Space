@@ -96,8 +96,6 @@
     <Compile Include="AbstractSimulation.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\FrameCommand.cs" />
-    <Compile Include="Commands\ICommand.cs" />
-    <Compile Include="Commands\IFrameCommand.cs" />
     <Compile Include="DefaultSimulation.cs" />
     <Compile Include="IAuthoritativeSimulation.cs" />
     <Compile Include="IReversibleSimulation.cs" />

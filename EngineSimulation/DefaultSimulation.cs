@@ -13,7 +13,7 @@ namespace Engine.Simulation
     /// </summary>
     /// <param name="command">The command to process.</param>
     /// <param name="systemManager">The relevant entity manager.</param>
-    public delegate void CommandHandler(ICommand command, IEntityManager manager);
+    public delegate void CommandHandler(Command command, IEntityManager manager);
 
     /// <summary>
     /// A delegate-based implementation of a simulation that supports pruning non-authoritative
@@ -36,7 +36,7 @@ namespace Engine.Simulation
         /// Implemented by delegating commands to registered command handlers.
         /// </summary>
         /// <param name="command">The command to handle.</param>
-        protected override void HandleCommand(ICommand command)
+        protected override void HandleCommand(Command command)
         {
             OnCommand(command);
         }
@@ -68,7 +68,7 @@ namespace Engine.Simulation
 
         #region Event dispatching
 
-        private void OnCommand(ICommand command)
+        private void OnCommand(Command command)
         {
             if (Command != null)
             {

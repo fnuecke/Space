@@ -21,7 +21,7 @@ namespace Engine.Controller
     /// </summary>
     /// <typeparam name="TPlayerData">The type of player data being used.</typeparam>
     public sealed class ThinClientController<TPlayerData>
-        : AbstractController<IClientSession, IFrameCommand>, IClientController<IFrameCommand>, ISimulationController<IClientSession>
+        : AbstractController<IClientSession, FrameCommand>, IClientController<FrameCommand>, ISimulationController<IClientSession>
         where TPlayerData : IPacketizable, new()
     {
         #region Properties
@@ -112,7 +112,7 @@ namespace Engine.Controller
 
         #region Commands
 
-        public void PushLocalCommand(IFrameCommand command)
+        public void PushLocalCommand(FrameCommand command)
         {
             command.PlayerNumber = Session.LocalPlayer.Number;
             command.Frame = _server.Simulation.CurrentFrame + 1;
@@ -127,7 +127,7 @@ namespace Engine.Controller
         /// Got command data from another client or the server.
         /// </summary>
         /// <param name="command">the received command.</param>
-        protected override void HandleRemoteCommand(IFrameCommand command)
+        protected override void HandleRemoteCommand(FrameCommand command)
         {
             // Ignore, we use the server's simulation for rendering.
         }
@@ -138,7 +138,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         /// <param name="packet">the final packet to send.</param>
         /// <returns>the given packet, after writing.</returns>
-        protected override Packet WrapDataForSend(IFrameCommand command, Packet packet)
+        protected override Packet WrapDataForSend(FrameCommand command, Packet packet)
         {
             // Wrap it up like a TSS client would.
             packet.Write((byte)AbstractTssController<IClientSession>.TssControllerMessage.Command);
@@ -148,7 +148,7 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of client side TSS synchronization logic.
         /// </summary>
-        protected override IFrameCommand UnwrapDataForReceive(SessionDataEventArgs e)
+        protected override FrameCommand UnwrapDataForReceive(SessionDataEventArgs e)
         {
             // Ignore, we use the server's simulation for rendering.
             return null;

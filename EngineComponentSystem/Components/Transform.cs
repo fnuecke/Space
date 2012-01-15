@@ -15,6 +15,10 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Current position of the object.
         /// </summary>
+        /// <remarks>
+        /// Do <em>not</em> set this field directly, use the modifier methods
+        /// instead, as these will trigger the necessary messages.
+        /// </remarks>
         public Vector2 Translation;
 
         /// <summary>
@@ -79,6 +83,11 @@ namespace Engine.ComponentSystem.Components
             }
         }
 
+        /// <summary>
+        /// Set the translation to the specified values.
+        /// </summary>
+        /// <param name="x">The new x coordinate.</param>
+        /// <param name="y">The new y coordinate.</param>
         public void SetTranslation(float x, float y)
         {
 #if DEBUG
@@ -103,9 +112,22 @@ namespace Engine.ComponentSystem.Components
             }
         }
 
+        /// <summary>
+        /// Set the translation to the specified value.
+        /// </summary>
+        /// <param name="value">The new translation.</param>
         public void SetTranslation(ref Vector2 value)
         {
             SetTranslation(value.X, value.Y);
+        }
+
+        /// <summary>
+        /// Set the translation to the specified value.
+        /// </summary>
+        /// <param name="value">The new translation.</param>
+        public void SetTranslation(Vector2 value)
+        {
+            SetTranslation(ref value);
         }
 
         /// <summary>

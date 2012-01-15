@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Xna.Framework;
 
@@ -12,7 +13,7 @@ namespace Engine.Serialization
     /// program structure, i.e. the caller must know what the next thing to
     /// read should be.
     /// </summary>
-    public sealed class Packet : IDisposable
+    public sealed class Packet : IDisposable, IEquatable<Packet>
     {
         #region
 
@@ -88,6 +89,14 @@ namespace Engine.Serialization
         public byte[] GetBuffer()
         {
             return _stream.ToArray();
+        }
+
+        /// <summary>
+        /// Reset set the read position, to read from the beginning once more.
+        /// </summary>
+        public void Reset()
+        {
+            _stream.Position = 0;
         }
 
         #endregion
@@ -1033,6 +1042,32 @@ namespace Engine.Serialization
             {
                 return new Packet(value);
             }
+        }
+
+        #endregion
+
+        #region Equality
+
+        /// <summary>
+        /// Compares two byte arrays.
+        /// </summary>
+        /// <param name="b1">The first array.</param>
+        /// <param name="b2">The second array.</param>
+        /// <param name="count">The number of bytes to check.</param>
+        /// <returns>Zero if the two are equal.</returns>
+        [DllImport("msvcrt.dll")]
+        private static extern int memcmp(byte[] b1, byte[] b2, long count);
+
+        /// <summary>
+        /// Tests for equality with the specified object.
+        /// </summary>
+        /// <param name="other">The object to test for equality with.</param>
+        /// <returns>Whether this and the specified object are equal.</returns>
+        public bool Equals(Packet other)
+        {
+            return other != null &&
+                other._stream.Length == _stream.Length &&
+                memcmp(other._stream.GetBuffer(), _stream.GetBuffer(), _stream.Length) == 0;
         }
 
         #endregion

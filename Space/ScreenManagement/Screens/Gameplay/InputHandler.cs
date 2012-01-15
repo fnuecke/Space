@@ -75,7 +75,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // We stopped moving when last and current position are equal.
                 if (_previousTargetRotation == _currentTargetRotation)
                 {
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, _currentTargetRotation));
                     _shipTargetRotation = _currentTargetRotation;
                     _mouseStoppedMoving = true;
                 }
@@ -150,22 +150,22 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 case Keys.Down:
                 case Keys.S:
                     // Accelerate downwards.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.AccelerateDown);
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.AccelerateDown);
                     break;
                 case Keys.Left:
                 case Keys.A:
                     // Accelerate left.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.AccelerateLeft);
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.AccelerateLeft);
                     break;
                 case Keys.Right:
                 case Keys.D:
                     // Accelerate right.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.AccelerateRight);
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.AccelerateRight);
                     break;
                 case Keys.Up:
                 case Keys.W:
                     // Accelerate upwards.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.AccelerateUp);
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.AccelerateUp);
                     break;
 
                 default:
@@ -187,19 +187,19 @@ namespace Space.ScreenManagement.Screens.Gameplay
             {
                 case Keys.Down:
                 case Keys.S:
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.StopDown);
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopDown);
                     break;
                 case Keys.Left:
                 case Keys.A:
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.StopLeft);
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopLeft);
                     break;
                 case Keys.Right:
                 case Keys.D:
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.StopRight);
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopRight);
                     break;
                 case Keys.Up:
                 case Keys.W:
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInput.StopUp);
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopUp);
                     break;
 
                 default:
@@ -261,7 +261,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     (deltaAngle < -10e-3 && spin >= 0) ||
                     (Math.Abs(remainingAngle) < spin))
                 {
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, _currentTargetRotation));
                     _shipTargetRotation = _currentTargetRotation;
                 }
 
@@ -276,7 +276,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             if (args.Button == MouseInputEventArgs.MouseButton.Left)
             {
-                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Shoot));
+                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Shoot));
             }
         }
 
@@ -286,7 +286,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             if (args.Button == MouseInputEventArgs.MouseButton.Left)
             {
-                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.CeaseFire));
+                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.CeaseFire));
             }
         }
 

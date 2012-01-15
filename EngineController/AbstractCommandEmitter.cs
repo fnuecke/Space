@@ -7,7 +7,7 @@ namespace Engine.Controller
     /// </summary>
     public abstract class AbstractCommandEmitter<TCommand>
         : ICommandEmitter<TCommand>
-        where TCommand : ICommand
+        where TCommand : Command
     {
         /// <summary>
         /// Event dispatched whenever a new command was generated. This command

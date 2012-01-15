@@ -156,7 +156,7 @@
     <Compile Include="ScreenManagement\Screens\Gameplay\Background.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\InputHandler.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Radar.cs" />
-    <Compile Include="Simulation\Commands\GameCommand.cs" />
+    <Compile Include="Simulation\Commands\DebugCommand.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
     <Compile Include="ComponentSystem\Components\WeaponControl.cs" />
@@ -166,9 +166,9 @@
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Session\PlayerData.cs" />
-    <Compile Include="Simulation\Commands\GameCommandType.cs" />
+    <Compile Include="Simulation\Commands\SpaceCommandType.cs" />
     <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />
-    <Compile Include="Simulation\Commands\GameCommandHandler.cs" />
+    <Compile Include="Simulation\Commands\SpaceCommandHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="ScreenManagement\GameScreen.cs" />

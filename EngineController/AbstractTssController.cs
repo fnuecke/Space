@@ -12,7 +12,7 @@ namespace Engine.Controller
     /// Base class for clients and servers using the UDP protocol and a TSS state.
     /// </summary>
     public abstract class AbstractTssController<TSession>
-        : AbstractController<TSession, IFrameCommand>, ISimulationController<TSession>
+        : AbstractController<TSession, FrameCommand>, ISimulationController<TSession>
         where TSession : ISession
     {
         #region Types
@@ -207,7 +207,7 @@ namespace Engine.Controller
         /// Apply a command. This will apply the command to the frame it was issued in.
         /// </summary>
         /// <param name="command">The command to push.</param>
-        protected virtual void Apply(IFrameCommand command)
+        protected virtual void Apply(FrameCommand command)
         {
             _tss.PushCommand(command, command.Frame);
         }
@@ -220,7 +220,7 @@ namespace Engine.Controller
         /// Got command data from another client or the server.
         /// </summary>
         /// <param name="command">the received command.</param>
-        protected override void HandleRemoteCommand(IFrameCommand command)
+        protected override void HandleRemoteCommand(FrameCommand command)
         {
             Apply(command);
         }
@@ -231,7 +231,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         /// <param name="packet">the final packet to send.</param>
         /// <returns>the given packet, after writing.</returns>
-        protected override Packet WrapDataForSend(IFrameCommand command, Packet packet)
+        protected override Packet WrapDataForSend(FrameCommand command, Packet packet)
         {
             packet.Write((byte)TssControllerMessage.Command);
             return base.WrapDataForSend(command, packet);

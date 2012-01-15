@@ -61,10 +61,7 @@ namespace Space.ComponentSystem.Components
                         if (velocity != null)
                         {
                             // TODO hard-coded updates / sec - 1, do this in a more generic fashion.
-                            emitter.ReleaseImpulse = velocity.Value * 59;
-                            // HACK: not sure why we need this, but otherwise
-                            // the actual point of emission "wanders".
-                            emitter.TriggerOffset = -velocity.Value;
+                            emitter.ReleaseImpulse = velocity.Value * 60;
                         }
                     }
                 }

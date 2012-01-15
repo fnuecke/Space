@@ -25,7 +25,7 @@ namespace Space.Control
         public static ISimulationController<IServerSession> CreateServer(Game game)
         {
             // Create actual controller.
-            var controller = new SimpleServerController<PlayerData>(7777, 12, GameCommandHandler.HandleCommand);
+            var controller = new SimpleServerController<PlayerData>(7777, 12, SpaceCommandHandler.HandleCommand);
 
             // Add all systems we need in our game as a server.
             controller.Simulation.EntityManager.SystemManager.AddSystems(
@@ -50,10 +50,10 @@ namespace Space.Control
         /// </summary>
         /// <param name="game">The game to create the client for.</param>
         /// <returns>A new client.</returns>
-        public static IClientController<IFrameCommand> CreateRemoteClient(Game game)
+        public static IClientController<FrameCommand> CreateRemoteClient(Game game)
         {
             // Create actual controller.
-            var controller = new SimpleClientController<PlayerData>(GameCommandHandler.HandleCommand);
+            var controller = new SimpleClientController<PlayerData>(SpaceCommandHandler.HandleCommand);
 
             // Needed by some systems.
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
@@ -87,7 +87,7 @@ namespace Space.Control
         /// <param name="game">The game to create the client for.</param>
         /// <param name="server">The server to couple the client with.</param>
         /// <returns>A new client.</returns>
-        public static IClientController<IFrameCommand> CreateLocalClient(Game game, ISimulationController<IServerSession> server)
+        public static IClientController<FrameCommand> CreateLocalClient(Game game, ISimulationController<IServerSession> server)
         {
             // The join data.
             string playerName = Settings.Instance.PlayerName;

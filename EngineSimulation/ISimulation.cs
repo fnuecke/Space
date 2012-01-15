@@ -29,6 +29,6 @@ namespace Engine.Simulation
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        void PushCommand(ICommand command);
+        void PushCommand(Command command);
     }
 }

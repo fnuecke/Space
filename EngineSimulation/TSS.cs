@@ -91,7 +91,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of commands to execute in delayed states when they reach the given frame.
         /// </summary>
-        private Dictionary<long, List<ICommand>> _commands = new Dictionary<long, List<ICommand>>();
+        private Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
 
         #endregion
 
@@ -154,7 +154,7 @@ namespace Engine.Simulation
         /// the next Step().
         /// </summary>
         /// <param name="command">the command to push.</param>
-        public void PushCommand(ICommand command)
+        public void PushCommand(Command command)
         {
             PushCommand(command, CurrentFrame);
         }
@@ -166,7 +166,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="command">the command to push.</param>
         /// <param name="frame">the frame in which to execute the command.</param>
-        public void PushCommand(ICommand command, long frame)
+        public void PushCommand(Command command, long frame)
         {
             // Check if we can possibly apply this command.
             if (frame >= TrailingFrame)
@@ -175,7 +175,7 @@ namespace Engine.Simulation
                 if (!_commands.ContainsKey(frame))
                 {
                     // No such command yet, push it.
-                    _commands.Add(frame, new List<ICommand>());
+                    _commands.Add(frame, new List<Command>());
                 }
                 // We don't need to check for duplicate / replacing authoritative here,
                 // because the sub-state will do that itself.
@@ -400,9 +400,9 @@ namespace Engine.Simulation
                 long key = packet.ReadInt64();
                 if (!_commands.ContainsKey(key))
                 {
-                    _commands.Add(key, new List<ICommand>());
+                    _commands.Add(key, new List<Command>());
                 }
-                foreach (var command in packet.ReadPacketizablesWithTypeInfo<ICommand>())
+                foreach (var command in packet.ReadPacketizablesWithTypeInfo<Command>())
                 {
                     _commands[key].Add(command);
                 }

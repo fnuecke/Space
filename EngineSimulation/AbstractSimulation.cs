@@ -38,7 +38,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of queued commands to execute in the next step.
         /// </summary>
-        protected List<ICommand> commands = new List<ICommand>();
+        protected List<Command> commands = new List<Command>();
 
         #endregion
 
@@ -57,7 +57,7 @@ namespace Engine.Simulation
         /// Apply a given command to the simulation state.
         /// </summary>
         /// <param name="command">the command to apply.</param>
-        public virtual void PushCommand(ICommand command)
+        public virtual void PushCommand(Command command)
         {
             // There's a chance we have that command in a tentative version. Let's check.
             int index = commands.FindIndex(x => x.Equals(command));
@@ -107,7 +107,7 @@ namespace Engine.Simulation
         /// commands. I.e. the order of the command execution must not make a difference.
         /// </summary>
         /// <param name="command">the command to handle.</param>
-        protected abstract void HandleCommand(ICommand command);
+        protected abstract void HandleCommand(Command command);
 
         #endregion
 
@@ -137,7 +137,7 @@ namespace Engine.Simulation
 
             // Continue with reading the list of commands.
             commands.Clear();
-            foreach (var command in packet.ReadPacketizablesWithTypeInfo<ICommand>())
+            foreach (var command in packet.ReadPacketizablesWithTypeInfo<Command>())
             {
                 PushCommand(command);
             }
@@ -188,7 +188,7 @@ namespace Engine.Simulation
             // Copy commands directly (they are immutable).
             if (copy.commands == commands)
             {
-                copy.commands = new List<ICommand>(commands);
+                copy.commands = new List<Command>(commands);
             }
             else
             {

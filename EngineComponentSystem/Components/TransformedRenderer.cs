@@ -65,8 +65,12 @@ namespace Engine.ComponentSystem.Components
                 origin.X = _texture.Width / 2f;
                 origin.Y = _texture.Height / 2f;
 
+                Vector2 position;
+                position.X = transform.Translation.X + args.Transform.Translation.X;
+                position.Y = transform.Translation.Y + args.Transform.Translation.Y;
+
                 // Draw.
-                args.SpriteBatch.Draw(_texture, transform.Translation, null, Tint, transform.Rotation, origin, Scale, SpriteEffects.None, 0);
+                args.SpriteBatch.Draw(_texture, position, null, Tint, transform.Rotation, origin, Scale, SpriteEffects.None, 0);
             }
         }
 

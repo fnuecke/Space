@@ -132,18 +132,22 @@ namespace Space.ComponentSystem.Components
                         }
                     }
 
+                    var position = transform.Translation;
+                    position.X += args.Transform.Translation.X;
+                    position.Y += args.Transform.Translation.Y;
+
                     // Draw whatever is visible.
                     if (atmosphereVisible)
                     {
                         // Draw.
-                        args.SpriteBatch.Draw(_atmosphereTexture, transform.Translation, null, AtmosphereTint,
+                        args.SpriteBatch.Draw(_atmosphereTexture, position, null, AtmosphereTint,
                             sunDirection, atmosphereOrigin, Scale, SpriteEffects.None, 0);
                     }
 
                     if (shadowVisible)
                     {
                         // Draw.
-                        args.SpriteBatch.Draw(_shadowTexture, transform.Translation, null, Color.White,
+                        args.SpriteBatch.Draw(_shadowTexture, position, null, Color.White,
                             sunDirection, shadowOrigin, Scale, SpriteEffects.None, 0);
                     }
 

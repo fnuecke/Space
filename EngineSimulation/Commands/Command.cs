@@ -6,25 +6,25 @@ namespace Engine.Simulation.Commands
     /// <summary>
     /// Base class for commands.
     /// </summary>
-    public abstract class Command : ICommand
+    public abstract class Command : IPacketizable, IEquatable<Command>
     {
-        #region Properties
+        #region Fields
 
         /// <summary>
         /// Whether the command is signed (e.g. by a server) (<c>true</c>)
         /// or came from an untrustworthy source (e.g. another client) (<c>false</c>).
         /// </summary>
-        public bool IsAuthoritative { get; set; }
+        public bool IsAuthoritative;
 
         /// <summary>
         /// The number of the player that issued the command.
         /// </summary>
-        public int PlayerNumber { get; set; }
+        public int PlayerNumber;
 
         /// <summary>
         /// The type of the command.
         /// </summary>
-        public Enum Type { get; private set; }
+        public readonly Enum Type;
 
         #endregion
 
@@ -39,11 +39,22 @@ namespace Engine.Simulation.Commands
 
         #region Serialization
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public virtual Packet Packetize(Packet packet)
         {
             return packet.Write(PlayerNumber);
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public virtual void Depacketize(Packet packet)
         {
             PlayerNumber = packet.ReadInt32();
@@ -53,7 +64,7 @@ namespace Engine.Simulation.Commands
 
         #region Equality
 
-        public virtual bool Equals(ICommand other)
+        public virtual bool Equals(Command other)
         {
             return other != null && other.Type.Equals(this.Type) &&
                 other.PlayerNumber == this.PlayerNumber;

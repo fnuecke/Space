@@ -224,7 +224,7 @@ namespace Engine.Controller
         /// Apply a command.
         /// </summary>
         /// <param name="command">the command to send.</param>
-        protected override void Apply(IFrameCommand command)
+        protected override void Apply(FrameCommand command)
         {
             if (command.Frame >= _tss.TrailingFrame)
             {
@@ -266,7 +266,7 @@ namespace Engine.Controller
         /// <summary>
         /// Takes care of server side TSS synchronization logic.
         /// </summary>
-        protected override IFrameCommand UnwrapDataForReceive(SessionDataEventArgs e)
+        protected override FrameCommand UnwrapDataForReceive(SessionDataEventArgs e)
         {
             var args = (ServerDataEventArgs)e;
             var type = (TssControllerMessage)args.Data.ReadByte();
