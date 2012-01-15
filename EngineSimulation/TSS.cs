@@ -670,6 +670,10 @@ namespace Engine.Simulation
 
             #region Unsupported
 
+            public event EventHandler<EntityEventArgs> Added;
+
+            public event EventHandler<EntityEventArgs> Removed;
+
             public void RemoveEntity(Entity entity)
             {
                 throw new NotSupportedException();

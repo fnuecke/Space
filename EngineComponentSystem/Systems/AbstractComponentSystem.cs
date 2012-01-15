@@ -27,7 +27,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The component system manager this system is part of.
         /// </summary>
-        public IComponentSystemManager Manager { get; set; }
+        public virtual IComponentSystemManager Manager { get; set; }
 
         /// <summary>
         /// A list of components registered in this system.

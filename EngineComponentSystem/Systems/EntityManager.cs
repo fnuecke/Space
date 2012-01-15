@@ -12,6 +12,20 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public class EntityManager : IEntityManager
     {
+        #region Events
+
+        /// <summary>
+        /// Triggered when an entity was added to this manager.
+        /// </summary>
+        public event EventHandler<EntityEventArgs> Added;
+
+        /// <summary>
+        /// Triggered when an entity was removed from this manager.
+        /// </summary>
+        public event EventHandler<EntityEventArgs> Removed;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -103,8 +117,9 @@ namespace Engine.ComponentSystem.Systems
                 }
                 _entityMap.Remove(entityUid);
                 _idManager.ReleaseId(entity.UID);
-                entity.UID = -1;
                 entity.Manager = null;
+                entity.UID = -1;
+                OnRemoved(new EntityEventArgs(entity, entityUid));
                 return entity;
             }
             return null;
@@ -139,6 +154,27 @@ namespace Engine.ComponentSystem.Systems
             foreach (var component in entity.Components)
             {
                 SystemManager.AddComponent(component);
+            }
+            OnAdded(new EntityEventArgs(entity, -1));
+        }
+
+        #endregion
+
+        #region Event dispatching
+
+        private void OnAdded(EntityEventArgs e)
+        {
+            if (Added != null)
+            {
+                Added(this, e);
+            }
+        }
+
+        private void OnRemoved(EntityEventArgs e)
+        {
+            if (Removed != null)
+            {
+                Removed(this, e);
             }
         }
 

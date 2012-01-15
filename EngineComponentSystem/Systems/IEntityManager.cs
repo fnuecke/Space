@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Entities;
+﻿using System;
+using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -9,11 +10,31 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public interface IEntityManager : IPacketizable, IHashable, ICopyable<IEntityManager>
     {
+        #region Events
+
+        /// <summary>
+        /// Triggered when an entity was added to this manager.
+        /// </summary>
+        event EventHandler<EntityEventArgs> Added;
+
+        /// <summary>
+        /// Triggered when an entity was removed from this manager.
+        /// </summary>
+        event EventHandler<EntityEventArgs> Removed;
+
+        #endregion
+
+        #region Properties
+        
         /// <summary>
         /// The component system manager used together with this entity manager.
         /// </summary>
         IComponentSystemManager SystemManager { get; set; }
 
+        #endregion
+
+        #region Accessors
+        
         /// <summary>
         /// Add an entity object to this manager. This will add all the
         /// entity's components to the associated component system manager.
@@ -57,5 +78,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="entityUid">The id of the entity to look up.</param>
         /// <returns>The current representation in this manager.</returns>
         Entity GetEntity(int entityUid);
+
+        #endregion
     }
 }

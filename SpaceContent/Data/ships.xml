@@ -34,7 +34,7 @@
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
           </Attributes>
-          <AccelerationForce>2</AccelerationForce>
+          <AccelerationForce>3</AccelerationForce>
           <EnergyConsumption>0.1</EnergyConsumption>
         </Item>
       </Thrusters>

@@ -128,6 +128,7 @@
     <Compile Include="Systems\CollisionSystem.cs" />
     <Compile Include="Systems\ComponentSystemManager.cs" />
     <Compile Include="Systems\DefaultLogicSystem.cs" />
+    <Compile Include="Systems\EntityEventArgs.cs" />
     <Compile Include="Systems\EntityManager.cs" />
     <Compile Include="Systems\IComponentSystem.cs" />
     <Compile Include="Systems\IComponentSystemManager.cs" />
