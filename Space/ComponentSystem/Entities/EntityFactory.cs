@@ -24,13 +24,20 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Avatar(playerNumber));
             entity.AddComponent(new Respawn(300, new HashSet<Type>()
             {
+                // Make ship uncontrollable.
                 typeof(ShipControl),
                 typeof(WeaponControl),
+                // Disable collisions.
                 typeof(CollidableSphere),
+                // And movement.
                 typeof(Acceleration),
                 typeof(Gravitation),
+                // Hide it.
                 typeof(TransformedRenderer),
-                typeof(ThrusterEffect)
+                typeof(ThrusterEffect),
+                // And don't regenerate.
+                typeof(Health),
+                typeof(Energy)
             }, new Vector2(15500, 15500)));
 
             return entity;
@@ -68,15 +75,40 @@ namespace Space.ComponentSystem.Entities
             var health = new Health(120);
             var energy = new Energy();
 
+            // These components have to be updated in a specific order to
+            // function as intended.
+            // Ship control must come first, but after stuff like gravitation,
+            // to be able to compute the stabilizer acceleration.
+            var shipControl = new ShipControl();
+            shipControl.UpdateOrder = 10;
+
+            // Friction has to be updated before acceleration is, to allow
+            // maximum speed to be reached.
+            var friction = new Friction(0.01f, 0.02f);
+            friction.UpdateOrder = 11;
+
+            // Acceleration must come after ship control, due to it setting
+            // its value.
+            var acceleration = new Acceleration();
+            acceleration.UpdateOrder = 12;
+
+            // Velocity must come after acceleration, so that all other forces
+            // already have been applied (gravitation).
+            var velocity = new Velocity();
+            velocity.UpdateOrder = 13;
+
+            // Energy should be update after it was used, to give it a chance
+            // to regenerate (e.g. if we're using less than we produce this
+            // avoids always displaying slightly less than max).
+            energy.UpdateOrder = 14;
+
             // Physics related components.
             entity.AddComponent(new Transform(new Vector2(36000, 38000)));
-            entity.AddComponent(new Velocity());
+            entity.AddComponent(velocity);
             entity.AddComponent(new Spin());
-            // Apply friction before acceleration to allow reaching actual
-            // maximum speed.
-            entity.AddComponent(new Friction(0.01f, 0.02f));
-            // TODO compute based on equipped components
-            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 10));
+            entity.AddComponent(acceleration);
+            entity.AddComponent(friction);
+            entity.AddComponent(new ShipGravitation());
 
             // Index component, to register with indexes used for other
             // components.
@@ -90,12 +122,9 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Faction(faction));
 
             // Controllers for maneuvering and shooting.
-            entity.AddComponent(new ShipControl());
+            entity.AddComponent(shipControl);
             entity.AddComponent(new WeaponControl());
             entity.AddComponent(new ShipInfo());
-
-            // Apply acceleration after ship control had a say, for stabilizer.
-            entity.AddComponent(new Acceleration());
 
             // Audio and display components.
             entity.AddComponent(new WeaponSound());

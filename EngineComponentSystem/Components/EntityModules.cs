@@ -82,12 +82,7 @@ namespace Engine.ComponentSystem.Components
             {
                 return _attributeCache[attributeType];
             }
-            var attributes = new List<ModuleAttribute<TAttribute>>();
-            foreach (var module in _modules)
-            {
-                attributes.AddRange(module.Attributes);
-            }
-            var result = attributes.Accumulate(attributeType);
+            var result = GetValue(attributeType, 0);
             _attributeCache[attributeType] = result;
             return result;
         }
@@ -105,7 +100,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="baseValue">The base value to start from.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes tracked by this component.</returns>
-        public float GetValue(TAttribute attributeType, float baseValue = 0)
+        public float GetValue(TAttribute attributeType, float baseValue)
         {
             var attributes = new List<ModuleAttribute<TAttribute>>();
             foreach (var module in _modules)

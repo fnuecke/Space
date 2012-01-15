@@ -374,6 +374,7 @@ namespace Space
 
                         sb.AppendFormat("Health: {0:f}/{1:f}, Energy: {2:f}/{3:f}\n", info.Health, info.MaxHealth, info.Energy, info.MaxEnergy);
                         sb.AppendFormat("Speed: {0:f}/{1:f}\n", info.Speed, info.MaxSpeed);
+                        sb.AppendFormat("Mass: {0:f}", info.Mass);
 
                         _spriteBatch.DrawString(_console.Font, sb.ToString(), new Vector2(20, 20), Color.White);
 

@@ -148,37 +148,34 @@ namespace Engine.ComponentSystem.Components
                             var delta = otherTransform.Translation - myTransform.Translation;
 
                             // Compute the angle between us and the other entity.
-                            var phi = System.Math.Atan2(delta.Y, delta.X);
-                            var cosPhi = (float)System.Math.Cos(phi);
-                            var sinPhi = (float)System.Math.Sin(phi);
-
-                            // Precompute.
-                            float divisor = Mass * otherGravitation.Mass / System.Math.Max(65536, delta.LengthSquared());
+                            float distanceSquared = delta.LengthSquared();
 
                             // If we're near the core only pull if  the other
                             // object isn't currently accelerating.
-                            if (delta.LengthSquared() < 512)
+                            if (distanceSquared < 512)
                             {
                                 var accleration = neigbour.GetComponent<Acceleration>();
                                 if (accleration == null || accleration.Value == Vector2.Zero)
                                 {
-                                    if (otherVelocity.Value.LengthSquared() < 16 && delta.LengthSquared() < 4)
+                                    if (otherVelocity.Value.LengthSquared() < 16 && distanceSquared < 4)
                                     {
+                                        // Dock.
                                         otherTransform.SetTranslation(ref myTransform.Translation);
                                         otherVelocity.Value = Vector2.Zero;
                                     }
                                     else
                                     {
-                                        otherVelocity.Value.X -= (cosPhi * divisor);
-                                        otherVelocity.Value.Y -= (sinPhi * divisor);
+                                        // Adjust velocity.
+                                        delta.Normalize();
+                                        otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(65536, distanceSquared));
                                     }
                                 }
                             }
                             else
                             {
                                 // Adjust velocity.
-                                otherVelocity.Value.X -= (cosPhi * divisor);
-                                otherVelocity.Value.Y -= (sinPhi * divisor);
+                                delta.Normalize();
+                                otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(65536, distanceSquared));
                             }
                         }
                     }

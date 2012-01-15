@@ -92,7 +92,7 @@ namespace Space.ComponentSystem.Components
                     // If we aren't accelerating but somethings active we're
                     // stabilizing.
                     directedAcceleration = -Entity.GetComponent<Velocity>().Value;
-                    desiredAcceleration = directedAcceleration.Length() * mass;
+                    desiredAcceleration = directedAcceleration.Length();
                     // If it's zero, normalize will make it {NaN, NaN}. Avoid that.
                     if (directedAcceleration != Vector2.Zero)
                     {
@@ -105,20 +105,20 @@ namespace Space.ComponentSystem.Components
                 {
                     // Yes, accumulate the needed energy and thruster power.
                     float energyConsumption = 0;
-                    float maxAcceleration = 0;
+                    float accelerationForce = 0;
                     foreach (var thruster in modules.GetModules<ThrusterModule>())
                     {
                         // Get the needed energy and thruster power.
                         energyConsumption += modules.GetValue(EntityAttributeType.ThrusterEnergyConsumption, thruster.EnergyConsumption);
-                        maxAcceleration += thruster.AccelerationForce;
+                        accelerationForce += thruster.AccelerationForce;
                     }
 
                     // Get the percentage of the overall thrusters' power we
                     // still need to fulfill our quota.
-                    float load = System.Math.Min(1, desiredAcceleration / maxAcceleration);
+                    float load = System.Math.Min(1, desiredAcceleration * mass / accelerationForce);
                     // And apply it to our energy and power values.
                     energyConsumption *= load;
-                    maxAcceleration *= load;
+                    accelerationForce *= load;
 
                     // If we have energy, make sure we have enough.
                     var energy = Entity.GetComponent<Energy>();
@@ -127,7 +127,7 @@ namespace Space.ComponentSystem.Components
                         if (energy.Value < energyConsumption)
                         {
                             // Not enough energy, adjust our output.
-                            maxAcceleration *= energy.Value / energyConsumption;
+                            accelerationForce *= energy.Value / energyConsumption;
                             energyConsumption = energy.Value;
                         }
 
@@ -136,11 +136,11 @@ namespace Space.ComponentSystem.Components
                     }
 
                     // Apply modifiers.
-                    float actualAcceleration = modules.GetValue(EntityAttributeType.AccelerationForce, maxAcceleration) / mass;
+                    float acceleration = modules.GetValue(EntityAttributeType.AccelerationForce, accelerationForce) / mass;
 
                     // Apply our acceleration. Use the min to our desired
                     // acceleration so we don't exceed our target.
-                    Entity.GetComponent<Acceleration>().Value = directedAcceleration * System.Math.Min(desiredAcceleration, actualAcceleration);
+                    Entity.GetComponent<Acceleration>().Value = directedAcceleration * System.Math.Min(desiredAcceleration, acceleration);
                 }
                 else
                 {

@@ -121,7 +121,8 @@ namespace Engine.ComponentSystem.Entities
             // No, look it up and cache it.
             foreach (var component in _components)
             {
-                if (component.GetType() == componentType)
+                if (component.GetType() == componentType ||
+                    component.GetType().IsSubclassOf(componentType))
                 {
                     _mapping[componentType] = component;
                     return component;

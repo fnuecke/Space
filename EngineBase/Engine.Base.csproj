@@ -105,6 +105,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\QuadTree.cs" />
+    <Compile Include="Graphics\AbstractEllipse.cs" />
+    <Compile Include="Graphics\FilledEllipse.cs" />
     <Compile Include="Graphics\Ellipse.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />

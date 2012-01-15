@@ -35,7 +35,7 @@
             <Item>5 Mass</Item>
           </Attributes>
           <AccelerationForce>4</AccelerationForce>
-          <EnergyConsumption>0.25</EnergyConsumption>
+          <EnergyConsumption>0.15</EnergyConsumption>
         </Item>
       </Thrusters>
 
