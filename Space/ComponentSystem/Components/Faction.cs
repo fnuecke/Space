@@ -38,14 +38,14 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write((byte)Value);
+                .Write((uint)Value);
         }
 
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
 
-            Value = (Factions)packet.ReadByte();
+            Value = (Factions)packet.ReadUInt32();
         }
 
         public override void Hash(Hasher hasher)

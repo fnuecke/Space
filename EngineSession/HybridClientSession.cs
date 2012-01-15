@@ -308,7 +308,10 @@ namespace Engine.Session
                         ? TrafficTypes.Data
                         : TrafficTypes.Protocol);
                     _information.PutOutgoingPacketSize(written);
-                    _information.PutOutgoingPacketCompression(((float)packet.Length / (float)written) - 1f);
+                    if (packet != null)
+                    {
+                        _information.PutOutgoingPacketCompression(((float)packet.Length / (float)written) - 1f);
+                    }
                 }
             }
             catch (IOException ex)

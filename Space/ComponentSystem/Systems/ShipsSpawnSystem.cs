@@ -106,8 +106,6 @@ namespace Space.ComponentSystem.Systems
 
         public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet);
-
             packet.Write(_entities.Count);
             foreach (var entityUid in _entities)
             {
@@ -119,8 +117,6 @@ namespace Space.ComponentSystem.Systems
 
         public override void Depacketize(Packet packet)
         {
-            base.Depacketize(packet);
-
             _entities.Clear();
             int numEntities = packet.ReadInt32();
             for (int i = 0; i < numEntities; ++i)
