@@ -144,7 +144,7 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Hashing / Cloning / Serialization
+        #region Serialization / Hashing
 
         public Packet Packetize(Packet packet)
         {
@@ -185,6 +185,10 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
+        #endregion
+
+        #region Copying
+
         public IEntityManager DeepCopy()
         {
             return DeepCopy(null);
@@ -223,8 +227,7 @@ namespace Engine.ComponentSystem.Systems
                     {
                         entityCopy = new Entity();
                     }
-                    entityCopy = entity.DeepCopy(entityCopy);
-                    copy._entityMap.Add(entityCopy.UID, entityCopy);
+                    copy.AddEntityUnchecked(entity.DeepCopy(entityCopy));
                 }
             }
             else
@@ -242,7 +245,7 @@ namespace Engine.ComponentSystem.Systems
                 copy._entityMap = new Dictionary<int, Entity>();
                 foreach (var entity in _entityMap.Values)
                 {
-                    copy.AddEntityUnchecked((Entity)entity.DeepCopy());
+                    copy.AddEntityUnchecked(entity.DeepCopy());
                 }
             }
 

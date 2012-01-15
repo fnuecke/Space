@@ -304,14 +304,13 @@ namespace Engine.ComponentSystem.Entities
 
             if (copy == into)
             {
+                // Other instance, copy fields.
                 copy.UID = UID;
 
                 // Clear the cache.
                 copy._mapping.Clear();
 
                 // Trim list of components.
-                copy._components = copy._components ?? new List<AbstractComponent>();
-
                 if (copy._components.Count > _components.Count)
                 {
                     // Remove from the back, let's assume that in general

@@ -93,33 +93,56 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // Get our viewport.
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
 
+            Vector2 backgroundPosition;
+            Rectangle source;
+            source.Width = viewport.Width + 1;
+            source.Height = viewport.Height + 1;
+
             // Draw the background, tiled, with the given translation.
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
 
             // First the overall background (the stars).
-            _spriteBatch.Draw(_background, Vector2.Zero,
-                new Rectangle(-(int)(position.X * 0.05f), -(int)(position.Y * 0.05f), viewport.Width, viewport.Height),
-                    Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            backgroundPosition.X = position.X * 0.05f;
+            backgroundPosition.Y = position.Y * 0.05f;
+            source.X = -(int)(backgroundPosition.X);
+            source.Y = -(int)(backgroundPosition.Y);
+            backgroundPosition.X += source.X;
+            backgroundPosition.Y += source.Y;
+
+            _spriteBatch.Draw(_background, backgroundPosition, source, Color.White);
 
             // Then the layer of "dark matter" (blot out some areas of the
             // stars, to give a better feeling of depth).
-            _spriteBatch.Draw(_backgroundDarkMatter, Vector2.Zero,
-                new Rectangle(-(int)(position.X * 0.1f), -(int)(position.Y * 0.1f), viewport.Width, viewport.Height),
-                    Color.White * 0.95f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            backgroundPosition.X = position.X * 0.1f;
+            backgroundPosition.Y = position.Y * 0.1f;
+            source.X = -(int)(backgroundPosition.X);
+            source.Y = -(int)(backgroundPosition.Y);
+            backgroundPosition.X += source.X;
+            backgroundPosition.Y += source.Y;
+
+            _spriteBatch.Draw(_backgroundDarkMatter, backgroundPosition, source, Color.White * 0.95f);
 
             // Next up some small debris, appearing to be further back.
-            _spriteBatch.Draw(_backgroundDebrisSmall, Vector2.Zero,
-                new Rectangle(-(int)(position.X * 0.65f), -(int)(position.Y * 0.65f),
-                    viewport.Width,
-                    viewport.Height),
-                    Color.DarkSlateGray * 0.75f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            backgroundPosition.X = position.X * 0.65f;
+            backgroundPosition.Y = position.Y * 0.65f;
+            source.X = -(int)(backgroundPosition.X);
+            source.Y = -(int)(backgroundPosition.Y);
+            backgroundPosition.X += source.X;
+            backgroundPosition.Y += source.Y;
+
+            _spriteBatch.Draw(_backgroundDebrisSmall, backgroundPosition, source, Color.DarkSlateGray * 0.75f);
 
             // And then a layer with larger debris, almost on the actual layer
             // of the player, to give a near to correct feeling of speed when
             // there's nothing else around.
-            _spriteBatch.Draw(_backgroundDebrisLarge, Vector2.Zero,
-                new Rectangle(-(int)(position.X * 0.95f), -(int)(position.Y * 0.95f), viewport.Width, viewport.Height),
-                    Color.SlateGray * 0.25f, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+            backgroundPosition.X = position.X * 0.95f;
+            backgroundPosition.Y = position.Y * 0.95f;
+            source.X = -(int)(backgroundPosition.X);
+            source.Y = -(int)(backgroundPosition.Y);
+            backgroundPosition.X += source.X;
+            backgroundPosition.Y += source.Y;
+
+            _spriteBatch.Draw(_backgroundDebrisLarge, backgroundPosition, source, Color.SlateGray * 0.25f);
 
             _spriteBatch.End();
         }
