@@ -80,9 +80,19 @@ namespace Space.ComponentSystem.Components
             var args = (DefaultLogicParameterization)parameterization;
 
             // Logic, we need a transform to do the positioning.
-            if (_effect[0] != null && _isDrawingInstance && args.Frame > _lastKnownFrame[0])
+            if (_effect[0] != null && _isDrawingInstance)
             {
-                _lastKnownFrame[0] = args.Frame;
+                lock (_lastKnownFrame)
+                {
+                    if (args.Frame > _lastKnownFrame[0])
+                    {
+                        _lastKnownFrame[0] = args.Frame;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
 
                 // Only trigger new particles while we're enabled.
                 if (Emitting)

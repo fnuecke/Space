@@ -61,17 +61,17 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private readonly HashSet<ulong> _newCells = new HashSet<ulong>();
+        private HashSet<ulong> _newCells = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private readonly HashSet<ulong> _bornCells = new HashSet<ulong>();
+        private HashSet<ulong> _bornCells = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private readonly HashSet<ulong> _deceasedCells = new HashSet<ulong>();
+        private HashSet<ulong> _deceasedCells = new HashSet<ulong>();
 
         #endregion
 
@@ -232,14 +232,17 @@ namespace Space.ComponentSystem.Systems
         {
             var copy = (CellSystem)base.DeepCopy(into);
 
-            if (copy._livingCells == _livingCells)
-            {
-                copy._livingCells = new HashSet<ulong>(_livingCells);
-            }
-            else
+            if (copy == into)
             {
                 copy._livingCells.Clear();
                 copy._livingCells.UnionWith(_livingCells);
+            }
+            else
+            {
+                copy._livingCells = new HashSet<ulong>(_livingCells);
+                copy._newCells = new HashSet<ulong>();
+                copy._bornCells = new HashSet<ulong>();
+                copy._deceasedCells = new HashSet<ulong>();
             }
 
             return copy;

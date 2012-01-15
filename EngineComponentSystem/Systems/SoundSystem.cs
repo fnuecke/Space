@@ -106,10 +106,16 @@ namespace Engine.ComponentSystem.Systems
                 {
                     component.Update(_parameterization);
                 }
-                foreach (var soundCue in _parameterization.SoundCues)
+                if (_parameterization.SoundCues.Count > 0)
                 {
-                    // Enqueue play a sound.
-                    Enqueue(new SoundEvent(soundCue, _parameterization), frame);
+                    lock (_recentlyPlayed)
+                    {
+                        foreach (var soundCue in _parameterization.SoundCues)
+                        {
+                            // Enqueue play a sound.
+                            Enqueue(new SoundEvent(soundCue, _parameterization), frame);
+                        }
+                    }
                 }
             }
         }
@@ -143,24 +149,28 @@ namespace Engine.ComponentSystem.Systems
 
         private bool SetLastFrame(long frame)
         {
+            long eventHorizon;
             // Get new current frame.
-            _lastFrame[0] = System.Math.Max(frame, _lastFrame[0]);
+            lock (_recentlyPlayed)
+            {
+                _lastFrame[0] = System.Math.Max(frame, _lastFrame[0]);
 
-            // Remove sound events that are too old, and clean out the
-            // "recently played" list.
-            var eventHorizon = _lastFrame[0] - GracePeriod;
-            foreach (var key in new List<long>(_soundsToPlay.Keys))
-            {
-                if (key < eventHorizon)
+                // Remove sound events that are too old, and clean out the
+                // "recently played" list.
+                eventHorizon = _lastFrame[0] - GracePeriod;
+                foreach (var key in new List<long>(_soundsToPlay.Keys))
                 {
-                    _soundsToPlay.Remove(key);
+                    if (key < eventHorizon)
+                    {
+                        _soundsToPlay.Remove(key);
+                    }
                 }
-            }
-            foreach (var key in new List<long>(_recentlyPlayed.Keys))
-            {
-                if (key < eventHorizon)
+                foreach (var key in new List<long>(_recentlyPlayed.Keys))
                 {
-                    _recentlyPlayed.Remove(key);
+                    if (key < eventHorizon)
+                    {
+                        _recentlyPlayed.Remove(key);
+                    }
                 }
             }
 
@@ -213,7 +223,8 @@ namespace Engine.ComponentSystem.Systems
                 // Yes, skip it.
                 return;
             }
-            else if (!_recentlyPlayed.ContainsKey(frame))
+
+            if (!_recentlyPlayed.ContainsKey(frame))
             {
                 // No entries for that frame yet, allocate for this one.
                 _recentlyPlayed.Add(frame, new List<SoundEvent>());
@@ -260,7 +271,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="list">The list to look in.</param>
         /// <param name="e">The parameterization with the event info.</param>
         /// <returns>Whether such an event was already played.</returns>
-        private bool ContainsWithPosition(ICollection<SoundEvent> list, SoundEvent e)
+        private static bool ContainsWithPosition(ICollection<SoundEvent> list, SoundEvent e)
         {
             foreach (var item in list)
             {
@@ -291,6 +302,22 @@ namespace Engine.ComponentSystem.Systems
                 this.Position = p.Position;
                 this.Velocity = p.Velocity;
             }
+        }
+
+        #endregion
+
+        #region Copying
+
+        public override IComponentSystem DeepCopy(IComponentSystem into)
+        {
+            var copy = (SoundSystem)base.DeepCopy(into);
+
+            if (copy != into)
+            {
+                copy._parameterization = new SoundParameterization();
+            }
+
+            return copy;
         }
 
         #endregion

@@ -251,46 +251,29 @@ namespace Engine.ComponentSystem.Systems
         public virtual IComponentSystem DeepCopy(IComponentSystem into)
         {
             // Get something to start with.
-            AbstractComponentSystem<TUpdateParameterization, TDrawParameterization> copy;
-            if (into != null)
+            var copy = (AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>)
+                ((into != null && into.GetType() == this.GetType())
+                ? into
+                : MemberwiseClone());
+
+            if (copy == into)
             {
-                copy = (AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>)into;
-                CopyFields(copy);
+                copy.ShouldSynchronize = ShouldSynchronize;
+                copy._isUpdateNullParameterized = _isUpdateNullParameterized;
+                copy._isDrawNullParameterized = _isDrawNullParameterized;
+                copy._updateableComponents.Clear();
+                copy._drawableComponents.Clear();
             }
             else
-            {
-                copy = (AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>)MemberwiseClone();
-            }
-
-            if (copy._updateableComponents == _updateableComponents)
             {
                 copy._updateableComponents = new List<AbstractComponent>();
-            }
-            else
-            {
-                copy._updateableComponents.Clear();
-            }
-
-            if (copy._drawableComponents == _drawableComponents)
-            {
                 copy._drawableComponents = new List<AbstractComponent>();
-            }
-            else
-            {
-                copy._drawableComponents.Clear();
             }
 
             // No manager at first. Must be re-set (e.g. in cloned manager).
             copy.Manager = null;
 
             return copy;
-        }
-
-        protected virtual void CopyFields(AbstractComponentSystem<TUpdateParameterization, TDrawParameterization> into)
-        {
-            into.ShouldSynchronize = ShouldSynchronize;
-            into._isUpdateNullParameterized = _isUpdateNullParameterized;
-            into._isDrawNullParameterized = _isDrawNullParameterized;
         }
 
         #endregion

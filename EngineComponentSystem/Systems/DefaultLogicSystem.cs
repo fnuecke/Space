@@ -16,11 +16,17 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public sealed class DefaultLogicSystem : AbstractComponentSystem<DefaultLogicParameterization, NullParameterization>
     {
+        #region Fields
+        
         /// <summary>
         /// Default parameterization used for every update call.
         /// </summary>
-        private readonly DefaultLogicParameterization _parameterization = new DefaultLogicParameterization();
+        private DefaultLogicParameterization _parameterization = new DefaultLogicParameterization();
 
+        #endregion
+
+        #region Logic
+        
         /// <summary>
         /// Triggers the update for all components which do a default logic
         /// update. Only does something for logic updates.
@@ -39,5 +45,23 @@ namespace Engine.ComponentSystem.Systems
                 }
             }
         }
+
+        #endregion
+
+        #region Copying
+
+        public override IComponentSystem DeepCopy(IComponentSystem into)
+        {
+            var copy = (DefaultLogicSystem)base.DeepCopy(into);
+
+            if (copy != into)
+            {
+                copy._parameterization = new DefaultLogicParameterization();
+            }
+
+            return copy;
+        }
+
+        #endregion
     }
 }

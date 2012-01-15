@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
@@ -16,7 +17,11 @@ namespace Engine.Simulation
     /// <see cref="http://warriors.eecs.umich.edu/games/papers/netgames02-tss.pdf"/>
     public sealed class TSS : IReversibleSimulation
     {
+        #region Logger
+        
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
 
         #region Events
 
@@ -41,7 +46,7 @@ namespace Engine.Simulation
         /// The frame number of the trailing state, i.e. the point we cannot roll
         /// back past.
         /// </summary>
-        public long TrailingFrame { get { return _states[_states.Length - 1].CurrentFrame; } }
+        public long TrailingFrame { get { return _simulations[_simulations.Length - 1].CurrentFrame; } }
 
         /// <summary>
         /// The component system manager in use in this simulation.
@@ -56,12 +61,12 @@ namespace Engine.Simulation
         /// <summary>
         /// Get the trailing state.
         /// </summary>
-        private IAuthoritativeSimulation TrailingState { get { return _states[_states.Length - 1]; } }
+        private IAuthoritativeSimulation TrailingState { get { return _simulations[_simulations.Length - 1]; } }
 
         /// <summary>
         /// Get the leading state.
         /// </summary>
-        private IAuthoritativeSimulation LeadingState { get { return _states[0]; } }
+        private IAuthoritativeSimulation LeadingState { get { return _simulations[0]; } }
 
         #endregion
 
@@ -73,10 +78,15 @@ namespace Engine.Simulation
         private uint[] _delays;
 
         /// <summary>
+        /// The parameterization for the different threads.
+        /// </summary>
+        private ThreadData[] _threadData;
+
+        /// <summary>
         /// The list of running states. They are ordered in in increasing delay, i.e.
         /// the state at slot 0 is the leading one, 1 is the next newest, and so on.
         /// </summary>
-        private IAuthoritativeSimulation[] _states;
+        private IAuthoritativeSimulation[] _simulations;
 
         /// <summary>
         /// List of objects to add to delayed states when they reach the given frame.
@@ -103,12 +113,17 @@ namespace Engine.Simulation
         /// <param name="delays">The delays to use for trailing states, with the delays in frames.</param>
         public TSS(uint[] delays)
         {
-            this._delays = new uint[delays.Length + 1];
-            delays.CopyTo(this._delays, 1);
-            Array.Sort(this._delays);
+            _delays = new uint[delays.Length + 1];
+            delays.CopyTo(_delays, 1);
+            Array.Sort(_delays);
+
+            // Initialize thread data. The trailing state will always be
+            // updated by the main thread, to check if a rollback is required,
+            // so we need one less than we have states.
+            _threadData = new ThreadData[_delays.Length - 1];
 
             // Generate initial states.
-            _states = new IAuthoritativeSimulation[this._delays.Length];
+            _simulations = new IAuthoritativeSimulation[_delays.Length];
 
             // Our pass-through component manager, which allows adding and
             // removing only in the first frame (i.e. before the first update).
@@ -129,7 +144,7 @@ namespace Engine.Simulation
         /// <param name="state">the state to initialize this TSS to.</param>
         public void Initialize(IAuthoritativeSimulation state)
         {
-            MirrorState(state, _states.Length - 1);
+            MirrorState(state, _simulations.Length - 1);
             WaitingForSynchronization = false;
         }
 
@@ -319,7 +334,7 @@ namespace Engine.Simulation
         public Packet Packetize(Packet packet)
         {
             packet.Write(CurrentFrame)
-                .Write(_states[_states.Length - 1])
+                .Write(_simulations[_simulations.Length - 1])
 
                 .Write(_adds.Count);
             foreach (var add in _adds)
@@ -359,8 +374,8 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Unwrap the trailing state and mirror it to all the newer ones.
-            packet.ReadPacketizableInto(_states[_states.Length - 1]);
-            MirrorState(_states[_states.Length - 1], _states.Length - 2);
+            packet.ReadPacketizableInto(_simulations[_simulations.Length - 1]);
+            MirrorState(_simulations[_simulations.Length - 1], _simulations.Length - 2);
 
             // Find adds / removes / commands that our out of date now, but keep newer ones.
             PrunePastEvents();
@@ -459,75 +474,117 @@ namespace Engine.Simulation
         /// <param name="frame">the frame up to which to run.</param>
         private void FastForward(long frame)
         {
-            // Update states. Run back to front, to allow rewinding future states
-            // (if the trailing state must skip tentative commands) all in one go.
-            for (int i = _states.Length - 1; i >= 0; --i)
+            // Start threads for the non-trailing frames.
+            var tasks = new Task[_threadData.Length];
+            for (int i = 0; i < _threadData.Length; i++)
             {
-                // Check if we need to rewind because the trailing state was left
-                // with a tentative command.
-                bool needsRewind = false;
+                _threadData[i].simulation = _simulations[i];
+                _threadData[i].frame = frame - _delays[i];
+                tasks[i] = TaskStarter(_threadData[i]);
+            }
 
-                // The state we're now updating.
-                var state = _states[i];
+            // Process the trailing state, see if we need a roll-back.
+            bool needsRewind = false;
+            while (TrailingState.CurrentFrame + _delays[_simulations.Length - 1] < frame)
+            {
+                // It needs running, so prepare it for that.
+                PrepareForUpdate(TrailingState);
 
-                // Update while we're still delaying.
-                while (state.CurrentFrame + _delays[i] < frame)
+                // Then check if any of the commands were tentative.
+                if (TrailingState.SkipTentativeCommands())
                 {
-                    // The frame the state is now in, and that will be executed.
-                    long stateFrame = state.CurrentFrame;
-
-                    // Check if we need to add objects.
-                    if (_adds.ContainsKey(stateFrame))
-                    {
-                        // Add a copy of it.
-                        foreach (var entity in _adds[stateFrame])
-                        {
-                            state.EntityManager.AddEntity(entity.DeepCopy());
-                        }
-                    }
-
-                    // Check if we need to remove objects.
-                    if (_removes.ContainsKey(stateFrame))
-                    {
-                        // Add a copy of it.
-                        foreach (var entityUid in _removes[stateFrame])
-                        {
-                            state.EntityManager.RemoveEntity(entityUid);
-                        }
-                    }
-
-                    // Check if we have commands to execute in that frame.
-                    if (_commands.ContainsKey(stateFrame))
-                    {
-                        foreach (var command in _commands[stateFrame])
-                        {
-                            state.PushCommand(command);
-                        }
-                    }
-
-                    // If this is the trailing state, don't bring in tentative
-                    // commands. Prune them instead. If there were any, rewind
-                    // to apply that removal retroactively. Do this after the
-                    // loop, though, to avoid unnecessary work.
-                    if (i == _states.Length - 1 && state.SkipTentativeCommands())
-                    {
-                        needsRewind = true;
-                    }
-
-                    // Do the actual stepping for the state.
-                    state.Update();
+                    needsRewind = true;
                 }
 
-                // Check if we had trailing tentative commands.
-                if (needsRewind)
+                // Do the actual stepping for the state.
+                TrailingState.Update();
+            }
+
+            // Wait for our worker threads to finish.
+            Task.WaitAll(tasks);
+
+            // Check if we had trailing tentative commands.
+            if (needsRewind)
+            {
+                logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
+                MirrorState(TrailingState, _simulations.Length - 2);
+
+                // Update the other states once more.
+                FastForward(frame);
+            }
+            else
+            {
+                // Clean up stuff that's too old to keep.
+                PrunePastEvents();
+            }
+        }
+
+        /// <summary>
+        /// Prepares a simulation for its next update, by pushing commands for
+        /// that frame, as well as adding and removing entities.
+        /// </summary>
+        /// <param name="simulation">The simulation to prepare.</param>
+        private void PrepareForUpdate(IAuthoritativeSimulation simulation)
+        {
+            // The frame the state is now in, and that will be executed.
+            long frame = simulation.CurrentFrame;
+
+            // Check if we need to add objects.
+            if (_adds.ContainsKey(frame))
+            {
+                // Add a copy of it.
+                foreach (var entity in _adds[frame])
                 {
-                    logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
-                    MirrorState(state, _states.Length - 2);
+                    simulation.EntityManager.AddEntity(entity.DeepCopy());
                 }
             }
 
-            // Clean up stuff that's too old to keep.
-            PrunePastEvents();
+            // Check if we need to remove objects.
+            if (_removes.ContainsKey(frame))
+            {
+                // Add a copy of it.
+                foreach (var entityUid in _removes[frame])
+                {
+                    simulation.EntityManager.RemoveEntity(entityUid);
+                }
+            }
+
+            // Check if we have commands to execute in that frame.
+            if (_commands.ContainsKey(frame))
+            {
+                foreach (var command in _commands[frame])
+                {
+                    simulation.PushCommand(command);
+                }
+            }
+        }
+
+        private Task TaskStarter(ThreadData data)
+        {
+            return Task.Factory.StartNew(() => ThreadedUpdate(data));
+        }
+
+        /// <summary>
+        /// Perform a threaded update of a simulation.
+        /// </summary>
+        /// <param name="data"></param>
+        private void ThreadedUpdate(object data)
+        {
+            var info = (ThreadData)data;
+
+            try
+            {
+                while (info.simulation.CurrentFrame < info.frame)
+                {
+                    PrepareForUpdate(info.simulation);
+                    info.simulation.Update();
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.WarnException("Error in threaded update.", ex);
+                throw;
+            }
         }
 
         /// <summary>
@@ -541,12 +598,12 @@ namespace Engine.Simulation
         private void Rewind(long frame)
         {
             // Find first state that's not past the frame.
-            for (int i = 0; i < _states.Length; ++i)
+            for (int i = 0; i < _simulations.Length; ++i)
             {
-                if (_states[i].CurrentFrame <= frame)
+                if (_simulations[i].CurrentFrame <= frame)
                 {
                     // Success, mirror the state to all newer ones.
-                    MirrorState(_states[i], i - 1);
+                    MirrorState(_simulations[i], i - 1);
                     return; // Then return, so we don't trigger resync ;)
                 }
             }
@@ -564,7 +621,7 @@ namespace Engine.Simulation
         {
             for (int i = start; i >= 0; --i)
             {
-                _states[i] = (IAuthoritativeSimulation)state.DeepCopy(_states[i]);
+                _simulations[i] = (IAuthoritativeSimulation)state.DeepCopy(_simulations[i]);
             }
         }
 
@@ -615,6 +672,26 @@ namespace Engine.Simulation
                 _commands.Remove(key);
             }
         }
+
+        #region Thread parameter wrapper
+
+        /// <summary>
+        /// Wrapper for parameters passed to a updater thread.
+        /// </summary>
+        private struct ThreadData
+        {
+            /// <summary>
+            /// The simulation to update.
+            /// </summary>
+            public IAuthoritativeSimulation simulation;
+
+            /// <summary>
+            /// The frame to run to.
+            /// </summary>
+            public long frame;
+        }
+
+        #endregion
 
         #endregion
 
@@ -738,7 +815,7 @@ namespace Engine.Simulation
                 {
                     throw new InvalidOperationException("Cannot add systems after simulation has started.");
                 }
-                foreach (var state in _tss._states)
+                foreach (var state in _tss._simulations)
                 {
                     state.EntityManager.SystemManager.AddSystem(system.DeepCopy());
                 }

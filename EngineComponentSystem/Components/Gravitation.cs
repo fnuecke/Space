@@ -37,7 +37,7 @@ namespace Engine.ComponentSystem.Components
             /// <summary>
             /// Acts as an attractee, i.e. can be pulled towards attractors.
             /// </summary>
-            Atractee = 1 << 1
+            Attractee = 1 << 1
         }
 
         #endregion
@@ -71,7 +71,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
+        private List<Entity> _reusableNeighborList = new List<Entity>(64);
 
         #endregion
 
@@ -89,12 +89,12 @@ namespace Engine.ComponentSystem.Components
         }
 
         public Gravitation(float mass)
-            : this(GravitationTypes.Atractee, mass)
+            : this(GravitationTypes.Attractee, mass)
         {
         }
 
         public Gravitation()
-            : this(GravitationTypes.Atractee, 1)
+            : this(GravitationTypes.Attractee, 1)
         {
         }
 
@@ -135,7 +135,7 @@ namespace Engine.ComponentSystem.Components
                         continue;
                     }
                     // ... and can be attracted compute our influence on them/
-                    if ((otherGravitation.GravitationType & GravitationTypes.Atractee) != 0)
+                    if ((otherGravitation.GravitationType & GravitationTypes.Attractee) != 0)
                     {
                         // Get their velocity (which is what we'll change) and position.
                         var otherVelocity = neigbour.GetComponent<Velocity>();
@@ -236,6 +236,10 @@ namespace Engine.ComponentSystem.Components
             {
                 copy.GravitationType = GravitationType;
                 copy.Mass = Mass;
+            }
+            else
+            {
+                copy._reusableNeighborList = new List<Entity>(64);
             }
 
             return copy;

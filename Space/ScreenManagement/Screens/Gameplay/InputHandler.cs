@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Input;
-using Engine.Util;
 using Microsoft.Xna.Framework.Input;
 using Space.Control;
 using Space.Simulation.Commands;
@@ -12,6 +11,16 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// </summary>
     public sealed class InputHandler
     {
+        #region Constants
+
+        /// <summary>
+        /// The interval in milliseconds in which to check for new rotation
+        /// based on mouse movement.
+        /// </summary>
+        private const int _mousePollInterval = 50;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -36,13 +45,20 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private bool _enabled;
 
-        private float _previousTargetRotation;
+        /// <summary>
+        /// The time at which we last check whether the mouse had moved.
+        /// </summary>
+        private DateTime _lastUpdate;
 
-        private float _currentTargetRotation;
+        /// <summary>
+        /// The last registered time that the mouse has moved.
+        /// </summary>
+        private DateTime _rotationChanged;
 
-        private float _shipTargetRotation;
-
-        private bool _mouseStoppedMoving = true;
+        /// <summary>
+        /// The target rotation based on the current mouse position.
+        /// </summary>
+        private float _targetRotation;
 
         #endregion
 
@@ -62,24 +78,17 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
         public void Update()
         {
-            // This test is necessary to figure out when player has stopped
-            // moving his mouse, so we can send a finalizing rotation command.
-            // Otherwise the ship might stop midway in our turn, not reaching
-            // the actual target we currently want. This is because we only
-            // send rotation commands when we really have to (specifically:
-            // we don't send commands that would only update the target angle,
-            // but not the direction), which saves us quite a few commands,
-            // and thus net traffic.
-            if (!_mouseStoppedMoving)
+            // Only check every so often, as slight delays here will not be as
+            // noticeable, due to the ship's slow turn speed.
+            if ((DateTime.Now - _lastUpdate).TotalMilliseconds > _mousePollInterval)
             {
-                // We stopped moving when last and current position are equal.
-                if (_previousTargetRotation == _currentTargetRotation)
+                // Has the mouse moved since the last update?
+                if (_rotationChanged > _lastUpdate)
                 {
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, _currentTargetRotation));
-                    _shipTargetRotation = _currentTargetRotation;
-                    _mouseStoppedMoving = true;
+                    // Yes, push command.
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, _targetRotation));
                 }
-                _previousTargetRotation = _currentTargetRotation;
+                _lastUpdate = DateTime.Now;
             }
         }
 
@@ -218,57 +227,12 @@ namespace Space.ScreenManagement.Screens.Gameplay
             int rx = args.X - _client.Game.GraphicsDevice.Viewport.Width / 2;
             int ry = args.Y - _client.Game.GraphicsDevice.Viewport.Height / 2;
             var mouseAngle = (float)System.Math.Atan2(ry, rx);
-            UpdateTargetRotation(mouseAngle);
+
+            _targetRotation = mouseAngle;
+            _rotationChanged = DateTime.Now;
         }
 
         // TODO private void HandleGamePadStickMoved(object sender, EventArgs e) { update rotation }
-
-        /// <summary>
-        /// This is the part of the base functionality for updating the direction
-        /// we're facing.
-        /// </summary>
-        /// <param name="targetRotation">the new direction to face.</param>
-        private void UpdateTargetRotation(float targetRotation)
-        {
-            var info = _client.GetPlayerShipInfo();
-            if (info != null)
-            {
-                var transform = info.Position;
-                var spin = info.RotationSpeed;
-
-                // Get ships current orientation.
-                double shipAngle =info.Rotation;
-
-                // Remember where we'd like to rotate to (for finalizing).
-                _currentTargetRotation = targetRotation;
-
-                // Get the smaller angle between our current and our target angles.
-                double deltaAngle = Angle.MinAngle(shipAngle, targetRotation);
-
-                // Remaining rotation the ship has to perform.
-                double remainingAngle = Angle.MinAngle(shipAngle, _shipTargetRotation);
-
-                // Now, if the difference to our current rotation is large enough
-                // and we're either rotating in the other direction or not at all,
-                // we send a rotation command.
-                // If we're rotating in that direction already, we DON'T! This is
-                // the exact reason for why we need to finalize our rotations by
-                // checking when the mouse stops moving. But we can save ourselves
-                // a lot of superfluous input commands this way, reducing network
-                // load somewhat (still pretty bad if user moves his mouse slowly,
-                // but meh).
-                if ((deltaAngle > 10e-3 && spin <= 0) ||
-                    (deltaAngle < -10e-3 && spin >= 0) ||
-                    (Math.Abs(remainingAngle) < spin))
-                {
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, _currentTargetRotation));
-                    _shipTargetRotation = _currentTargetRotation;
-                }
-
-                // Set our flag to remember we might have to finalize the movement.
-                _mouseStoppedMoving = false;
-            }
-        }
 
         private void HandleMousePressed(object sender, EventArgs e)
         {

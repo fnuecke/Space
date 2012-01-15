@@ -71,14 +71,14 @@ namespace Engine.ComponentSystem.Systems
             // Get the base clone.
             var copy = (AvatarSystem)base.DeepCopy(into);
 
-            // Give it its own lookup table.
-            if (copy._avatars == _avatars)
+            if (copy == into)
             {
-                copy._avatars = new Dictionary<int, Entity>();
+                copy._avatars.Clear();
             }
             else
             {
-                copy._avatars.Clear();
+                // Give it its own lookup table.
+                copy._avatars = new Dictionary<int, Entity>();
             }
 
             return copy;

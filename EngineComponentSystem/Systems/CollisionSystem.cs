@@ -37,17 +37,17 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Reusable parameterization.
         /// </summary>
-        private readonly CollisionParameterization _parameterization = new CollisionParameterization();
+        private CollisionParameterization _parameterization = new CollisionParameterization();
 
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private readonly List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(1024);
+        private List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(1024);
 
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
+        private List<Entity> _reusableNeighborList = new List<Entity>(64);
         
         #endregion
 
@@ -158,6 +158,24 @@ namespace Engine.ComponentSystem.Systems
                 message.OtherEntity = currentCollidable.Entity;
                 otherCollidable.Entity.SendMessage(ref message);
             }
+        }
+
+        #endregion
+
+        #region Copying
+
+        public override IComponentSystem DeepCopy(IComponentSystem into)
+        {
+            var copy = (CollisionSystem)base.DeepCopy(into);
+
+            if (copy != into)
+            {
+                copy._parameterization = new CollisionParameterization();
+                copy._reusableComponentList = new List<AbstractComponent>(1024);
+                copy._reusableNeighborList = new List<Entity>(64);
+            }
+
+            return copy;
         }
 
         #endregion

@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Components
         #region Constructor
 
         public ShipGravitation()
-            : base(Gravitation.GravitationTypes.Atractee)
+            : base(Gravitation.GravitationTypes.Attractee)
         {
         }
 

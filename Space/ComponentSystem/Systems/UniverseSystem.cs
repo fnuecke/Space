@@ -147,13 +147,14 @@ namespace Space.ComponentSystem.Systems
         {
             var copy = (UniverseSystem)base.DeepCopy(into);
 
-            if (copy._entities == _entities)
+            if (copy == into)
             {
-                copy._entities = new Dictionary<ulong, List<int>>();
+                copy.WorldSeed = WorldSeed;
+                copy._entities.Clear();
             }
             else
             {
-                copy._entities.Clear();
+                copy._entities = new Dictionary<ulong, List<int>>();
             }
 
             foreach (var item in _entities)
@@ -162,13 +163,6 @@ namespace Space.ComponentSystem.Systems
             }
 
             return copy;
-        }
-
-        protected override void CopyFields(AbstractComponentSystem<NullParameterization, NullParameterization> into)
-        {
-            base.CopyFields(into);
-
-            ((UniverseSystem)into).WorldSeed = WorldSeed;
         }
 
         #endregion

@@ -94,17 +94,17 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Reusable parameterization.
         /// </summary>
-        private readonly IndexParameterization _parameterization = new IndexParameterization();
+        private IndexParameterization _parameterization = new IndexParameterization();
 
         /// <summary>
         /// Reused for iteration.
         /// </summary>
-        private readonly List<QuadTree<int>> _reusableTreeList = new List<QuadTree<int>>(8);
+        private List<QuadTree<int>> _reusableTreeList = new List<QuadTree<int>>(8);
 
         /// <summary>
         /// Reused for iteration.
         /// </summary>
-        private readonly List<int> _reusableEntityIdList = new List<int>(64);
+        private List<int> _reusableEntityIdList = new List<int>(64);
 
         #endregion
 
@@ -249,24 +249,35 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         protected override void HandleComponentAdded(AbstractComponent component)
         {
-            var transform = component.Entity.GetComponent<Transform>();
+            var index = component.Entity.GetComponent<Index>();
 
-            // If we have a position, put it into its grid cell.
-            if (transform != null)
+            // Only support Index components for now.
+            if (index != null)
             {
-                var index = component.Entity.GetComponent<Index>();
-
-                // Only support Index components for now.
-                if (index != null)
+                // Get the position to remove from.
+                Vector2 position;
+                if (index.PositionChanged)
                 {
-                    EnsureIndexesExist(index.IndexGroups);
-                    foreach (var tree in TreesForGroups(index.IndexGroups, _reusableTreeList))
-                    {
-                        tree.Add(ref transform.Translation, component.Entity.UID);
-                    }
-
-                    _reusableTreeList.Clear();
+                    position = index.PreviousPosition;
                 }
+                else
+                {
+                    // No previous position, get the current transform.
+                    var transform = component.Entity.GetComponent<Transform>();
+                    if (transform == null)
+                    {
+                        return;
+                    }
+                    position = transform.Translation;
+                }
+
+                EnsureIndexesExist(index.IndexGroups);
+                foreach (var tree in TreesForGroups(index.IndexGroups, _reusableTreeList))
+                {
+                    tree.Add(ref position, component.Entity.UID);
+                }
+
+                _reusableTreeList.Clear();
             }
         }
 
@@ -350,11 +361,7 @@ namespace Engine.ComponentSystem.Systems
             var copy = (IndexSystem)base.DeepCopy(into);
 
             // Create own index. Will be filled when re-adding components.
-            if (copy._trees == _trees)
-            {
-                copy._trees = new QuadTree<int>[sizeof(ulong) * 8];
-            }
-            else
+            if (copy == into)
             {
                 foreach (var tree in copy._trees)
                 {
@@ -363,6 +370,13 @@ namespace Engine.ComponentSystem.Systems
                         tree.Clear();
                     }
                 }
+            }
+            else
+            {
+                copy._trees = new QuadTree<int>[sizeof(ulong) * 8];
+                copy._reusableEntityIdList = new List<int>();
+                copy._reusableTreeList = new List<QuadTree<int>>();
+                copy._parameterization = new IndexParameterization();
             }
 
             return copy;

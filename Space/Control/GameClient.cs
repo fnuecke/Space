@@ -13,7 +13,7 @@ namespace Space.Control
     public class GameClient : GameComponent
     {
         #region Properties
-        
+
         /// <summary>
         /// The controller used by this game client.
         /// </summary>
@@ -22,7 +22,7 @@ namespace Space.Control
         #endregion
 
         #region Constructor
-        
+
         /// <summary>
         /// Creates a new local client, which will be coupled to the given server.
         /// </summary>
@@ -78,12 +78,13 @@ namespace Space.Control
             var avatarSystem = GetSystem<AvatarSystem>();
             if (avatarSystem != null)
             {
-                return avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number).GetComponent<ShipInfo>();
+                var avatar = avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
+                if (avatar != null)
+                {
+                    return avatar.GetComponent<ShipInfo>();
+                }
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         /// <summary>

@@ -131,6 +131,13 @@ namespace Engine.ComponentSystem.Components
 
         #region Serialization / Hashing
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public override Packet Packetize(Packet packet)
         {
             base.Packetize(packet);
@@ -138,10 +145,16 @@ namespace Engine.ComponentSystem.Components
             packet.Write(IndexGroups);
             packet.Write(PositionChanged);
             packet.Write(PreviousPosition);
+            packet.Write(_cellIdChanged);
+            packet.Write(_previousCellId);
 
             return packet;
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
@@ -149,8 +162,15 @@ namespace Engine.ComponentSystem.Components
             IndexGroups = packet.ReadUInt64();
             PositionChanged = packet.ReadBoolean();
             PreviousPosition = packet.ReadVector2();
+            _cellIdChanged = packet.ReadBoolean();
+            _previousCellId = packet.ReadUInt64();
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
@@ -165,6 +185,14 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
+        /// <summary>
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
+        /// </summary>
+        /// <param name="into"></param>
+        /// <returns>
+        /// An independent (deep) clone of this instance.
+        /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
             var copy = (Index)base.DeepCopy(into);
@@ -174,6 +202,8 @@ namespace Engine.ComponentSystem.Components
                 copy.IndexGroups = IndexGroups;
                 copy.PositionChanged = PositionChanged;
                 copy.PreviousPosition = PreviousPosition;
+                copy._cellIdChanged = _cellIdChanged;
+                copy._previousCellId = _previousCellId;
             }
 
             return copy;
@@ -183,6 +213,12 @@ namespace Engine.ComponentSystem.Components
 
         #region ToString
 
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
             return GetType().Name + ": " + IndexGroups.ToString() + ", " + PositionChanged.ToString() + ", " + PreviousPosition.ToString();
