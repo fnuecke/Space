@@ -46,6 +46,13 @@ namespace Engine.ComponentSystem.Components
         /// <param name="parameterization">The parameterization to use.</param>
         public override void Update(object parameterization)
         {
+#if DEBUG
+            if (float.IsNaN(Value.X) || float.IsNaN(Value.Y))
+            {
+                throw new InvalidOperationException("Invalid value.");
+            }
+#endif
+
             // Only if a transform is set.
             var transform = Entity.GetComponent<Transform>();
             if (transform != null)

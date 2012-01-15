@@ -57,6 +57,13 @@ namespace Engine.ComponentSystem.Components
         /// <param name="value">The translation to add.</param>
         public void AddTranslation(ref Vector2 value)
         {
+#if DEBUG
+            if (float.IsNaN(value.X) || float.IsNaN(value.Y))
+            {
+                throw new ArgumentException("value");
+            }
+#endif
+
             if (value.X != 0 || value.Y != 0)
             {
                 TranslationChanged message;
@@ -74,6 +81,13 @@ namespace Engine.ComponentSystem.Components
 
         public void SetTranslation(float x, float y)
         {
+#if DEBUG
+            if (float.IsNaN(x) || float.IsNaN(y))
+            {
+                throw new ArgumentException(float.IsNaN(x) ? "x" : "y");
+            }
+#endif
+
             if (Translation.X != x && Translation.Y != y)
             {
                 TranslationChanged message;
@@ -105,11 +119,25 @@ namespace Engine.ComponentSystem.Components
         /// <param name="value"></param>
         public void AddRotation(float value)
         {
+#if DEBUG
+            if (float.IsNaN(value))
+            {
+                throw new ArgumentException("value");
+            }
+#endif
+
             SetRotation(Rotation + value);
         }
 
         public void SetRotation(float value)
         {
+#if DEBUG
+            if (float.IsNaN(value))
+            {
+                throw new ArgumentException("value");
+            }
+#endif
+
             if (value < -System.Math.PI)
             {
                 value += (float)System.Math.PI * 2;

@@ -91,18 +91,22 @@ namespace Space.ComponentSystem.Components
 
                 // Get the direction we want to accelerate into.
                 var directedAcceleration = DirectionConversion.DirectionToVector(AccelerationDirection);
-                float desiredAcceleration = float.MaxValue;
+                float acceleration = float.MaxValue;
                 if (directedAcceleration == Vector2.Zero && AccelerationDirection != Directions.None)
                 {
                     // If we aren't accelerating but somethings active we're
                     // stabilizing.
                     directedAcceleration = -Entity.GetComponent<Velocity>().Value;
-                    desiredAcceleration = directedAcceleration.Length();
-                    directedAcceleration.Normalize();
+                    acceleration = directedAcceleration.Length();
+                    // If it's zero, normalize will make it {NaN, NaN}. Avoid that.
+                    if (directedAcceleration != Vector2.Zero)
+                    {
+                        directedAcceleration.Normalize();
+                    }
                 }
 
                 // Check if we're accelerating at all.
-                if (directedAcceleration != Vector2.Zero && desiredAcceleration != 0)
+                if (directedAcceleration != Vector2.Zero && acceleration != 0)
                 {
                     var energy = Entity.GetComponent<Energy>();
                     if (energy != null)
@@ -112,7 +116,7 @@ namespace Space.ComponentSystem.Components
                         {
                             // Get the percentage of this thrusters power we
                             // still need to fulfill our quota.
-                            float load = System.Math.Min(1, desiredAcceleration / thruster.AccelerationForce);
+                            float load = System.Math.Min(1, acceleration / thruster.AccelerationForce);
 
                             // Get the needed energy and thruster power.
                             float energyConsumption = load * modules.GetValue(EntityAttributeType.ThrusterEnergyConsumption, thruster.EnergyConsumption);
@@ -124,8 +128,8 @@ namespace Space.ComponentSystem.Components
                                 energy.Value -= energyConsumption;
                                 baseAcceleration += thrusterPower;
 
-                                desiredAcceleration -= thrusterPower;
-                                if (desiredAcceleration <= 0)
+                                acceleration -= thrusterPower;
+                                if (acceleration <= 0)
                                 {
                                     // Done, we have what we needed.
                                     break;
@@ -133,18 +137,18 @@ namespace Space.ComponentSystem.Components
                             }
                         }
                     }
+
+                    // Apply modifiers. Use the min to our desired acceleration so
+                    // we don't overshoot our target.
+                    acceleration = System.Math.Min(baseAcceleration, modules.GetValue(EntityAttributeType.AccelerationForce, baseAcceleration) / mass);
                 }
 
-                // Apply modifiers. Use the min to our desired acceleration so
-                // we don't overshoot our target.
-                var acceleration = System.Math.Min(baseAcceleration, modules.GetValue(EntityAttributeType.AccelerationForce, baseAcceleration) / mass);
+                // Update acceleration.
+                Entity.GetComponent<Acceleration>().Value = directedAcceleration * acceleration;
 
                 // Compute its rotation speed. Yes, this is actually the rotation acceleration,
                 // but whatever...
                 var rotation = modules.GetValue(EntityAttributeType.RotationForce) / mass;
-
-                // Update acceleration.
-                Entity.GetComponent<Acceleration>().Value = directedAcceleration * acceleration;
 
                 // Update rotation / spin.
                 var currentDelta = Angle.MinAngle(transform.Rotation, TargetRotation);
