@@ -30,15 +30,25 @@ namespace Space.ComponentSystem.Components
         public bool Emitting;
 
         /// <summary>
-        /// The actual instance of the effect we're using.
+        /// The actual instance of the effect we're using. As a "pointer", so
+        /// we can set it from any related copy of this effect.
         /// </summary>
-        protected ParticleEffect _effect;
+        protected ParticleEffect[] _effect = new ParticleEffect[1];
 
         /// <summary>
         /// Checks if we're the instance that's used to draw. If so, we will
         /// do updates, otherwise we won't.
         /// </summary>
         private bool _isDrawingInstance;
+
+        /// <summary>
+        /// The latest known frame in our simulation. Don't do updates before
+        /// this one, to avoid stuttering (TSS rollbacks causing double updates
+        /// or the like). As with the effect, as a pointer because only the
+        /// leading (drawing) instance should change this, but all instances
+        /// that are copies of the same need to know the leading value.
+        /// </summary>
+        private long[] _lastKnownFrame = new long[1];
 
         #endregion
 
@@ -48,6 +58,7 @@ namespace Space.ComponentSystem.Components
         {
             this.EffectName = effectName;
             Emitting = true;
+            
         }
 
         public Effect()
@@ -69,20 +80,22 @@ namespace Space.ComponentSystem.Components
             var args = (DefaultLogicParameterization)parameterization;
 
             // Logic, we need a transform to do the positioning.
-            if (_effect != null && _isDrawingInstance)
+            if (_effect[0] != null && _isDrawingInstance && args.Frame > _lastKnownFrame[0])
             {
+                _lastKnownFrame[0] = args.Frame;
+
                 // Only trigger new particles while we're enabled.
                 if (Emitting)
                 {
                     var transform = Entity.GetComponent<Transform>();
                     if (transform != null)
                     {
-                        _effect.Trigger(transform.Translation);
+                        _effect[0].Trigger(transform.Translation);
                     }
                 }
 
                 // Always update, to allow existing particles to disappear.
-                _effect.Update(1f / 60f);
+                _effect[0].Update(1f / 60f);
             }
         }
 
@@ -91,17 +104,17 @@ namespace Space.ComponentSystem.Components
             var args = (ParticleParameterization)parameterization;
 
             // If we have an effect make sure its loaded and trigger it.
-            if (_effect == null && !string.IsNullOrWhiteSpace(EffectName))
+            if (_effect[0] == null && !string.IsNullOrWhiteSpace(EffectName))
             {
                 // Always create a deep copy, because this will always
                 // return the same instance.
-                _effect = args.Content.Load<ParticleEffect>(EffectName).DeepCopy();
-                _effect.Initialise();
-                _effect.LoadContent(args.Content);
+                _effect[0] = args.Content.Load<ParticleEffect>(EffectName).DeepCopy();
+                _effect[0].Initialise();
+                _effect[0].LoadContent(args.Content);
             }
 
             // Render if we have our effect.
-            if (_effect != null)
+            if (_effect[0] != null)
             {
                 // Only render effects whose emitter is near or inside the
                 // visible bounds (performance), where possible.
@@ -115,12 +128,12 @@ namespace Space.ComponentSystem.Components
                     point.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y);
                     if (extendedView.Contains(point))
                     {
-                        args.Renderer.RenderEffect(_effect, ref args.Transform);
+                        args.Renderer.RenderEffect(_effect[0], ref args.Transform);
                     }
                 }
                 else
                 {
-                    args.Renderer.RenderEffect(_effect, ref args.Transform);
+                    args.Renderer.RenderEffect(_effect[0], ref args.Transform);
                 }
             }
 
@@ -163,6 +176,8 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             EffectName = packet.ReadString();
+            _effect[0] = null;
+            _isDrawingInstance = false;
         }
 
         #endregion
@@ -178,6 +193,7 @@ namespace Space.ComponentSystem.Components
                 copy.EffectName = EffectName;
                 copy.Emitting = Emitting;
                 copy._effect = _effect;
+                copy._lastKnownFrame = _lastKnownFrame;
             }
             copy._isDrawingInstance = false;
 

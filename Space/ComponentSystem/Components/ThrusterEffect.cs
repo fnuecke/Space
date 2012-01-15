@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Components
             Emitting = (acceleration != null && acceleration.Value != Vector2.Zero);
 
             // Do we have an effect yet?
-            if (_effect != null)
+            if (_effect[0] != null)
             {
                 // Yes, get transform.
                 var transform = Entity.GetComponent<Transform>();
@@ -48,7 +48,7 @@ namespace Space.ComponentSystem.Components
                     // Get the current rotation and velocity.
                     var rotation = transform.Rotation + (float)System.Math.PI;
                     var velocity = Entity.GetComponent<Velocity>();
-                    foreach (var emitter in _effect)
+                    foreach (var emitter in _effect[0])
                     {
                         // Adjust the rotation for all directed emitters.
                         var cone = emitter as ConeEmitter;
