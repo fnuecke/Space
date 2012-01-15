@@ -71,7 +71,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private static readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
+        private readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
 
         #endregion
 

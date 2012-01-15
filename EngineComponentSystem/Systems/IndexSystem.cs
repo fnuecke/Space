@@ -28,14 +28,20 @@ namespace Engine.ComponentSystem.Systems
         public const ulong DefaultIndexGroupMask = 1ul;
 
         /// <summary>
-        /// Maximum entries per node in our index to use.
+        /// Minimum size of a node in our index as the required bit shift, i.e.
+        /// the actual minimum node size is <c>1 &lt;&lt; MinimumNodeSizeShift</c>.
         /// </summary>
-        private const int _maxEntriesPerNode = 16;
+        public const int MinimumNodeSizeShift = 5;
 
         /// <summary>
         /// Minimum size of a node in our index.
         /// </summary>
-        private const int _minNodeSize = 32;
+        public const int MinimumNodeSize = 1 << MinimumNodeSizeShift;
+
+        /// <summary>
+        /// Maximum entries per node in our index to use.
+        /// </summary>
+        private const int _maxEntriesPerNode = 16;
 
         #endregion
 
@@ -88,17 +94,17 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Reusable parameterization.
         /// </summary>
-        private static readonly IndexParameterization _parameterization = new IndexParameterization();
+        private readonly IndexParameterization _parameterization = new IndexParameterization();
 
         /// <summary>
         /// Reused for iteration.
         /// </summary>
-        private static readonly List<QuadTree<int>> _reusableTreeList = new List<QuadTree<int>>();
+        private readonly List<QuadTree<int>> _reusableTreeList = new List<QuadTree<int>>(8);
 
         /// <summary>
         /// Reused for iteration.
         /// </summary>
-        private static readonly List<int> _reusableEntityIdList = new List<int>();
+        private readonly List<int> _reusableEntityIdList = new List<int>(64);
 
         #endregion
 
@@ -313,7 +319,7 @@ namespace Engine.ComponentSystem.Systems
             {
                 if ((groups & 1) == 1 && _trees[index] == null)
                 {
-                    _trees[index] = new QuadTree<int>(_maxEntriesPerNode, _minNodeSize);
+                    _trees[index] = new QuadTree<int>(_maxEntriesPerNode, MinimumNodeSize);
                 }
                 groups = groups >> 1;
                 ++index;

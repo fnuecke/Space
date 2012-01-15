@@ -79,7 +79,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private static readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
+        private readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
 
         #endregion
 

@@ -19,7 +19,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Default parameterization used for every update call.
         /// </summary>
-        private static readonly DefaultLogicParameterization _parameterization = new DefaultLogicParameterization();
+        private readonly DefaultLogicParameterization _parameterization = new DefaultLogicParameterization();
 
         /// <summary>
         /// Triggers the update for all components which do a default logic

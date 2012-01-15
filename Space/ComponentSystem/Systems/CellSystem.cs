@@ -61,17 +61,17 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private static readonly HashSet<ulong> _newCells = new HashSet<ulong>();
+        private readonly HashSet<ulong> _newCells = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private static readonly HashSet<ulong> _bornCells = new HashSet<ulong>();
+        private readonly HashSet<ulong> _bornCells = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private static readonly HashSet<ulong> _deceasedCells = new HashSet<ulong>();
+        private readonly HashSet<ulong> _deceasedCells = new HashSet<ulong>();
 
         #endregion
 

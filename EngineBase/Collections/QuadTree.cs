@@ -57,7 +57,7 @@ namespace Engine.Collections
         /// <summary>
         /// The root node of the tree.
         /// </summary>
-        private Node _root = GetNode(null);
+        private Node _root;
 
         /// <summary>
         /// A list of all entries in the tree. The linked list allows simply
@@ -100,6 +100,8 @@ namespace Engine.Collections
             _bounds.X = _bounds.Y = -_minBucketSize;
             _bounds.Width = _bounds.Height = _minBucketSize << 1;
 
+            _root = GetNode(null);
+
             _reusableEntryList = new List<LinkedListNode<Entry>>(_maxEntriesPerNode + 1);
         }
 
@@ -138,7 +140,7 @@ namespace Engine.Collections
             else
             {
                 // Got a leaf, check if we already have that point.
-                foreach (var existingEntry in insertionNode.GetEntries(_reusableEntryList))
+                for (var existingEntry = insertionNode.LowEntry; existingEntry != null && existingEntry != insertionNode.HighEntry.Next; existingEntry = existingEntry.Next)
                 {
                     if (entry.Equals(existingEntry))
                     {
@@ -219,10 +221,10 @@ namespace Engine.Collections
             if (oldNode.IsLeaf)
             {
                 // Check if we have that entry.
-                foreach (var nodeEntry in oldNode.GetEntries(_reusableEntryList))
+                for (var entry = oldNode.LowEntry; entry != null && entry != oldNode.HighEntry.Next; entry = entry.Next)
                 {
-                    if (nodeEntry.Value.Point.Equals(oldPoint) &&
-                        nodeEntry.Value.Value.Equals(value))
+                    if (entry.Value.Point.Equals(oldPoint) &&
+                        entry.Value.Value.Equals(value))
                     {
                         // Found it! See if the new point falls into the same
                         // node, otherwise re-insert.
@@ -230,7 +232,7 @@ namespace Engine.Collections
                         if (oldNode == newNode)
                         {
                             // Same node, just update the entry.
-                            nodeEntry.Value.Point = newPoint;
+                            entry.Value.Point = newPoint;
                         }
                         else
                         {
@@ -277,10 +279,10 @@ namespace Engine.Collections
             if (removalNode.IsLeaf)
             {
                 // Check if we have that entry.
-                foreach (var nodeEntry in removalNode.GetEntries(_reusableEntryList))
+                for (var entry = removalNode.LowEntry; entry != null && entry != removalNode.HighEntry.Next; entry = entry.Next)
                 {
-                    if (nodeEntry.Value.Point.Equals(point) &&
-                        nodeEntry.Value.Value.Equals(value))
+                    if (entry.Value.Point.Equals(point) &&
+                        entry.Value.Value.Equals(value))
                     {
                         // Found it! If it's our low or high state adjust them
                         // accordingly.
@@ -293,12 +295,12 @@ namespace Engine.Collections
                                 node.LowEntry = null;
                                 node.HighEntry = null;
                             }
-                            else if (node.LowEntry == nodeEntry)
+                            else if (node.LowEntry == entry)
                             {
                                 // It's the low node, adjust accordingly.
                                 node.LowEntry = node.LowEntry.Next;
                             }
-                            else if (node.HighEntry == nodeEntry)
+                            else if (node.HighEntry == entry)
                             {
                                 // It's the high node, adjust accordingly.
                                 node.HighEntry = node.HighEntry.Previous;
@@ -312,8 +314,8 @@ namespace Engine.Collections
                         }
 
                         // Remove the entry from the list of entries.
-                        _entries.Remove(nodeEntry);
-                        FreeListNode(nodeEntry);
+                        _entries.Remove(entry);
+                        FreeListNode(entry);
 
                         // See if we can compact the node's parent. This has to
                         // be done in a post-processing step because the entry
@@ -351,16 +353,16 @@ namespace Engine.Collections
         {
             // Get the node the entry would be in.
             int nodeX, nodeY, nodeSize;
-            var removalNode = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
+            var node = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
             
             // Is the node a leaf node? If not we don't have that entry.
-            if (removalNode.IsLeaf)
+            if (node.IsLeaf)
             {
                 // Check if we have that entry.
-                foreach (var nodeEntry in removalNode.GetEntries(_reusableEntryList))
+                for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
                 {
-                    if (nodeEntry.Value.Point.Equals(point) &&
-                        nodeEntry.Value.Value.Equals(value))
+                    if (entry.Value.Point.Equals(point) &&
+                        entry.Value.Value.Equals(value))
                     {
                         // Got it :)
                         return true;
@@ -666,7 +668,11 @@ namespace Engine.Collections
             LinkedListNode<Entry> highEntry = null;
 
             // Check each entry to which new cell it'll belong.
-            foreach (var entry in node.GetEntries(_reusableEntryList))
+            for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
+            {
+                _reusableEntryList.Add(entry);
+            }
+            foreach (var entry in _reusableEntryList)
             {
                 // In which child node would we insert?
                 int cell = ComputeCell(x, y, childSize, ref entry.Value.Point);
@@ -700,6 +706,7 @@ namespace Engine.Collections
                 // List is now in order, so we set the highest to this entry.
                 node.Children[cell].HighEntry = entry;
             }
+            _reusableEntryList.Clear();
 
             // Adjust parent high node if it changed due to sorting.
             if (node.HighEntry != highEntry)
@@ -803,7 +810,7 @@ namespace Engine.Collections
         /// <param name="point">The query point.</param>
         /// <param name="rangeSquared">The squared query range.</param>
         /// <param name="list">The result list.</param>
-        private void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float rangeSquared, List<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float rangeSquared, List<T> list)
         {
             if (Intersect(ref point, rangeSquared, x, y, size))
             {
@@ -811,9 +818,11 @@ namespace Engine.Collections
                 if (node.IsLeaf)
                 {
                     // Add all entries in this node that are in range.
-                    foreach (var entry in node.GetEntries(_reusableEntryList))
+                    for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
                     {
-                        if (Vector2.DistanceSquared(point, entry.Value.Point) < rangeSquared)
+                        float distanceX = point.X - entry.Value.Point.X;
+                        float distanceY = point.Y - entry.Value.Point.Y;
+                        if ((distanceX * distanceX + distanceY * distanceY) < rangeSquared)
                         {
                             list.Add(entry.Value.Value);
                         }
@@ -866,7 +875,9 @@ namespace Engine.Collections
             {
                 closest.Y = y + size;
             }
-            return Vector2.DistanceSquared(closest, center) <= radiusSquared;
+            float distanceX = closest.X - center.X;
+            float distanceY = closest.Y - center.Y;
+            return (distanceX * distanceX + distanceY * distanceY) <= radiusSquared;
         }
 
         #endregion
@@ -890,19 +901,6 @@ namespace Engine.Collections
             /// Whether this node is a leaf node.
             /// </summary>
             public bool IsLeaf { get { return GetChildrenCount() == 0; } }
-
-            /// <summary>
-            /// Returns an iterator for the entries stored in this node.
-            /// </summary>
-            public List<LinkedListNode<Entry>> GetEntries(List<LinkedListNode<Entry>> list)
-            {
-                list.Clear();
-                for (var entry = LowEntry; entry != null && entry != HighEntry.Next; entry = entry.Next)
-                {
-                    list.Add(entry);
-                }
-                return list;
-            }
 
             #endregion
 
@@ -1041,17 +1039,17 @@ namespace Engine.Collections
         /// <summary>
         /// List of available nodes.
         /// </summary>
-        private static readonly List<Node> _nodePool = new List<Node>(1024);
+        private readonly List<Node> _nodePool = new List<Node>(512);
 
         /// <summary>
         /// List of available linked list nodes (entries).
         /// </summary>
-        private static readonly List<LinkedListNode<Entry>> _listNodePool = new List<LinkedListNode<Entry>>(2048);
+        private readonly List<LinkedListNode<Entry>> _listNodePool = new List<LinkedListNode<Entry>>(1024);
 
         /// <summary>
         /// Allocate more nodes, if we ran out of them.
         /// </summary>
-        private static void AllocNodes()
+        private void AllocNodes()
         {
             for (int i = _nodePool.Count; i < _nodePool.Capacity; i++)
             {
@@ -1062,7 +1060,7 @@ namespace Engine.Collections
         /// <summary>
         /// Allocate more linked list nodes, if we ran out of them.
         /// </summary>
-        private static void AllocListNodes()
+        private void AllocListNodes()
         {
             for (int i = _listNodePool.Count; i < _listNodePool.Capacity; i++)
             {
@@ -1075,7 +1073,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="parent">For constructor.</param>
         /// <returns>Initialized node.</returns>
-        private static Node GetNode(Node parent)
+        private Node GetNode(Node parent)
         {
             if (_nodePool.Count == 0)
             {
@@ -1098,7 +1096,7 @@ namespace Engine.Collections
         /// Releases a node to be reused.
         /// </summary>
         /// <param name="node">The node to free.</param>
-        private static void FreeNode(Node node)
+        private void FreeNode(Node node)
         {
             if (node != null)
             {
@@ -1110,7 +1108,7 @@ namespace Engine.Collections
         /// Releases a node and all its child nodes.
         /// </summary>
         /// <param name="node"></param>
-        private static void FreeBranch(Node node)
+        private void FreeBranch(Node node)
         {
             if (node != null)
             {
@@ -1134,7 +1132,7 @@ namespace Engine.Collections
         /// <param name="position">For constructor of entry.</param>
         /// <param name="value">For constructor of entry.</param>
         /// <returns>A linked list node.</returns>
-        private static LinkedListNode<Entry> GetListNode(Vector2 position, T value)
+        private LinkedListNode<Entry> GetListNode(Vector2 position, T value)
         {
             if (_listNodePool.Count == 0)
             {
@@ -1151,7 +1149,7 @@ namespace Engine.Collections
         /// Releases a linked list node to be reused.
         /// </summary>
         /// <param name="node">The node to free.</param>
-        private static void FreeListNode(LinkedListNode<Entry> node)
+        private void FreeListNode(LinkedListNode<Entry> node)
         {
             if (node != null)
             {

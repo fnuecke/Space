@@ -37,17 +37,17 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Reusable parameterization.
         /// </summary>
-        private static CollisionParameterization _parameterization = new CollisionParameterization();
+        private readonly CollisionParameterization _parameterization = new CollisionParameterization();
 
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private static readonly List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(2048);
+        private readonly List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(1024);
 
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private static readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
+        private readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
         
         #endregion
 

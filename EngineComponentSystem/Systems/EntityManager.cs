@@ -132,11 +132,11 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>The current representation in this manager.</returns>
         public Entity GetEntity(int entityUid)
         {
-            if (_entityMap.ContainsKey(entityUid))
-            {
+            //if (_entityMap.ContainsKey(entityUid))
+            //{
                 return _entityMap[entityUid];
-            }
-            return null;
+            //}
+            //return null;
         }
 
         #endregion

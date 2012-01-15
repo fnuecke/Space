@@ -29,9 +29,21 @@ namespace Engine.ComponentSystem.Components
         public bool PositionChanged;
         
         /// <summary>
-        /// The position we had before a position change.
+        /// The position we had before a position change. This corresponds to
+        /// the position at which this entity is stored at in the index.
         /// </summary>
         public Vector2 PreviousPosition;
+
+        /// <summary>
+        /// The cell id we were in at our previous position.
+        /// </summary>
+        private ulong _previousCellId;
+
+        /// <summary>
+        /// Whether the actual index cell we're in has changed since the last
+        /// update.
+        /// </summary>
+        private bool _cellIdChanged;
 
         #endregion
 
@@ -59,14 +71,21 @@ namespace Engine.ComponentSystem.Components
         {
             var args = (IndexParameterization)parameterization;
 
-            if (PositionChanged)
+            if (_cellIdChanged)
             {
                 args.IndexGroups = IndexGroups;
                 args.PositionChanged = true;
                 args.PreviousPosition = PreviousPosition;
-            }
 
-            PositionChanged = false;
+                PositionChanged = false;
+                _cellIdChanged = false;
+
+                // Remember the finest index cell we might now be in.
+                var position = Entity.GetComponent<Transform>().Translation;
+                _previousCellId = CoordinateIds.Combine(
+                    (int)position.X >> IndexSystem.MinimumNodeSizeShift,
+                    (int)position.Y >> IndexSystem.MinimumNodeSizeShift);
+            }
         }
 
         /// <summary>
@@ -94,6 +113,17 @@ namespace Engine.ComponentSystem.Components
                     PreviousPosition = ((TranslationChanged)(ValueType)message).PreviousPosition;
                 }
                 PositionChanged = true;
+
+                // Check if the actual index cell we're in might have changed.
+                var position = Entity.GetComponent<Transform>().Translation;
+                var cellId = CoordinateIds.Combine(
+                    (int)position.X >> IndexSystem.MinimumNodeSizeShift,
+                    (int)position.Y >> IndexSystem.MinimumNodeSizeShift);
+                if (cellId != _previousCellId)
+                {
+                    // Actual cell we might be in in the index has changed.
+                    _cellIdChanged = true;
+                }
             }
         }
 
