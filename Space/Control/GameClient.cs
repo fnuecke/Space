@@ -1,9 +1,9 @@
-﻿using Engine.ComponentSystem.Entities;
-using Engine.ComponentSystem.Systems;
+﻿using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Components;
 
 namespace Space.Control
 {
@@ -69,15 +69,16 @@ namespace Space.Control
         }
 
         /// <summary>
-        /// Get the local player's avatar in the game, if possible.
+        /// Get the information facade for the local player's ship in the
+        /// game, if possible.
         /// </summary>
-        /// <returns>The local player's avatar.</returns>
-        public Entity GetAvatar()
+        /// <returns>The local player's ship information facade.</returns>
+        public ShipInfo GetPlayerShipInfo()
         {
             var avatarSystem = GetSystem<AvatarSystem>();
             if (avatarSystem != null)
             {
-                return avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
+                return avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number).GetComponent<ShipInfo>();
             }
             else
             {

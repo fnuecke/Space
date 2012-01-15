@@ -45,7 +45,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Cached lists of components by type.
         /// </summary>
-        private Dictionary<Type, object[]> _moduleCache = new Dictionary<Type, object[]>();
+        private Dictionary<Type, List<AbstractEntityModule<TAttribute>>> _moduleCache = new Dictionary<Type, List<AbstractEntityModule<TAttribute>>>();
 
         /// <summary>
         /// Manager for component ids.
@@ -121,13 +121,13 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <typeparam name="T">The type of the component to get.</typeparam>
         /// <returns></returns>
-        public T[] GetModules<T>()
+        public IEnumerable<T> GetModules<T>()
             where T : AbstractEntityModule<TAttribute>
         {
             Type type = typeof(T);
             if (_moduleCache.ContainsKey(type))
             {
-                return (T[])_moduleCache[type];
+                return _moduleCache[type].Cast<T>();
             }
             var modules = new List<AbstractEntityModule<TAttribute>>();
             foreach (var module in _modules)
@@ -137,8 +137,8 @@ namespace Engine.ComponentSystem.Components
                     modules.Add(module);
                 }
             }
-            _moduleCache[type] = modules.Cast<T>().ToArray();
-            return (T[])_moduleCache[type];
+            _moduleCache[type] = modules;
+            return modules.Cast<T>();
         }
 
         /// <summary>
@@ -242,6 +242,13 @@ namespace Engine.ComponentSystem.Components
 
         #region Serialization / Hashing
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
@@ -249,6 +256,10 @@ namespace Engine.ComponentSystem.Components
                 .Write(_idManager);
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
@@ -265,6 +276,11 @@ namespace Engine.ComponentSystem.Components
             _attributeCache.Clear();
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
@@ -278,7 +294,15 @@ namespace Engine.ComponentSystem.Components
         #endregion
 
         #region Copying
-        
+
+        /// <summary>
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
+        /// </summary>
+        /// <param name="into"></param>
+        /// <returns>
+        /// An independent (deep) clone of this instance.
+        /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
             var copy = (EntityModules<TAttribute>)base.DeepCopy(into);
@@ -316,7 +340,7 @@ namespace Engine.ComponentSystem.Components
 
                 // Copy the caches as well.
                 copy._attributeCache = new Dictionary<TAttribute, float>(_attributeCache);
-                copy._moduleCache = new Dictionary<Type, object[]>();
+                copy._moduleCache = new Dictionary<Type, List<AbstractEntityModule<TAttribute>>>();
 
                 // And the id manager.
                 copy._idManager = _idManager.DeepCopy();

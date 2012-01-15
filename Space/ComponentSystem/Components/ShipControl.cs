@@ -81,23 +81,18 @@ namespace Space.ComponentSystem.Components
 
             if (modules != null)
             {
-                var thrusters = modules.GetModules<ThrusterModule>();
-
                 // Get the mass of the ship.
                 float mass = modules.GetValue(EntityAttributeType.Mass);
 
-                // Compute its current acceleration.
-                float baseAcceleration = 0;
-
                 // Get the direction we want to accelerate into.
                 var directedAcceleration = DirectionConversion.DirectionToVector(AccelerationDirection);
-                float acceleration = float.MaxValue;
+                float desiredAcceleration = float.MaxValue;
                 if (directedAcceleration == Vector2.Zero && AccelerationDirection != Directions.None)
                 {
                     // If we aren't accelerating but somethings active we're
                     // stabilizing.
                     directedAcceleration = -Entity.GetComponent<Velocity>().Value;
-                    acceleration = directedAcceleration.Length();
+                    desiredAcceleration = directedAcceleration.Length() * mass;
                     // If it's zero, normalize will make it {NaN, NaN}. Avoid that.
                     if (directedAcceleration != Vector2.Zero)
                     {
@@ -106,45 +101,52 @@ namespace Space.ComponentSystem.Components
                 }
 
                 // Check if we're accelerating at all.
-                if (directedAcceleration != Vector2.Zero && acceleration != 0)
+                if (directedAcceleration != Vector2.Zero && desiredAcceleration != 0)
                 {
+                    // Yes, accumulate the needed energy and thruster power.
+                    float energyConsumption = 0;
+                    float maxAcceleration = 0;
+                    foreach (var thruster in modules.GetModules<ThrusterModule>())
+                    {
+                        // Get the needed energy and thruster power.
+                        energyConsumption += modules.GetValue(EntityAttributeType.ThrusterEnergyConsumption, thruster.EnergyConsumption);
+                        maxAcceleration += thruster.AccelerationForce;
+                    }
+
+                    // Get the percentage of the overall thrusters' power we
+                    // still need to fulfill our quota.
+                    float load = System.Math.Min(1, desiredAcceleration / maxAcceleration);
+                    // And apply it to our energy and power values.
+                    energyConsumption *= load;
+                    maxAcceleration *= load;
+
+                    // If we have energy, make sure we have enough.
                     var energy = Entity.GetComponent<Energy>();
                     if (energy != null)
                     {
-                        // Yes, try to apply the thrust of each thruster.
-                        foreach (var thruster in thrusters)
+                        if (energy.Value < energyConsumption)
                         {
-                            // Get the percentage of this thrusters power we
-                            // still need to fulfill our quota.
-                            float load = System.Math.Min(1, acceleration / thruster.AccelerationForce);
-
-                            // Get the needed energy and thruster power.
-                            float energyConsumption = load * modules.GetValue(EntityAttributeType.ThrusterEnergyConsumption, thruster.EnergyConsumption);
-                            float thrusterPower = load * thruster.AccelerationForce;
-
-                            // If we have enough energy, add the acceleration.
-                            if (energy.Value >= energyConsumption)
-                            {
-                                energy.Value -= energyConsumption;
-                                baseAcceleration += thrusterPower;
-
-                                acceleration -= thrusterPower;
-                                if (acceleration <= 0)
-                                {
-                                    // Done, we have what we needed.
-                                    break;
-                                }
-                            }
+                            // Not enough energy, adjust our output.
+                            maxAcceleration *= energy.Value / energyConsumption;
+                            energyConsumption = energy.Value;
                         }
+
+                        // Consume it.
+                        energy.Value -= energyConsumption;
                     }
 
-                    // Apply modifiers. Use the min to our desired acceleration so
-                    // we don't overshoot our target.
-                    acceleration = System.Math.Min(baseAcceleration, modules.GetValue(EntityAttributeType.AccelerationForce, baseAcceleration) / mass);
-                }
+                    // Apply modifiers.
+                    float actualAcceleration = modules.GetValue(EntityAttributeType.AccelerationForce, maxAcceleration) / mass;
 
-                // Update acceleration.
-                Entity.GetComponent<Acceleration>().Value = directedAcceleration * acceleration;
+                    // Apply our acceleration. Use the min to our desired
+                    // acceleration so we don't exceed our target.
+                    Entity.GetComponent<Acceleration>().Value = directedAcceleration * System.Math.Min(desiredAcceleration, actualAcceleration);
+                }
+                else
+                {
+                    // Update acceleration.
+                    Entity.GetComponent<Acceleration>().Value = Vector2.Zero;
+                }
 
                 // Compute its rotation speed. Yes, this is actually the rotation acceleration,
                 // but whatever...

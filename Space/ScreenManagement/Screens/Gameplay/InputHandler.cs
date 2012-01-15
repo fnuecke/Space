@@ -1,6 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
 using Engine.Input;
 using Engine.Util;
 using Microsoft.Xna.Framework.Input;
@@ -232,14 +230,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <param name="targetRotation">the new direction to face.</param>
         private void UpdateTargetRotation(float targetRotation)
         {
-            Entity avatar = _client.GetAvatar();
-            if (avatar != null)
+            var info = _client.GetPlayerShipInfo();
+            if (info != null)
             {
-                var transform = avatar.GetComponent<Transform>();
-                var spin = avatar.GetComponent<Spin>();
+                var transform = info.Position;
+                var spin = info.RotationSpeed;
 
                 // Get ships current orientation.
-                double shipAngle = (double)transform.Rotation;
+                double shipAngle =info.Rotation;
 
                 // Remember where we'd like to rotate to (for finalizing).
                 _currentTargetRotation = targetRotation;
@@ -259,9 +257,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // a lot of superfluous input commands this way, reducing network
                 // load somewhat (still pretty bad if user moves his mouse slowly,
                 // but meh).
-                if ((deltaAngle > 10e-3 && spin.Value <= 0) ||
-                    (deltaAngle < -10e-3 && spin.Value >= 0) ||
-                    (Math.Abs(remainingAngle) < spin.Value))
+                if ((deltaAngle > 10e-3 && spin <= 0) ||
+                    (deltaAngle < -10e-3 && spin >= 0) ||
+                    (Math.Abs(remainingAngle) < spin))
                 {
                     _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInput.Rotate, _currentTargetRotation));
                     _shipTargetRotation = _currentTargetRotation;

@@ -20,6 +20,13 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public HashSet<Type> ComponentsToDisable;
 
+        /// <summary>
+        /// Returns whether the component is currently in respawn mode, i.e.
+        /// the entity is to be considered dead, and we're waiting to respawn
+        /// it.
+        /// </summary>
+        public bool IsRespawning { get { return _timeToRespawn > 0; } }
+
         #endregion
 
         #region Fields

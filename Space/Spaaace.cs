@@ -314,10 +314,10 @@ namespace Space
 
             _spriteBatch.Begin();
 
-            string info = String.Format("FPS: {0:f}", System.Math.Ceiling(_fps.Mean()));
-            var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - _console.Font.MeasureString(info).X, 10);
+            string fps = String.Format("FPS: {0:f}", System.Math.Ceiling(_fps.Mean()));
+            var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - _console.Font.MeasureString(fps).X, 10);
 
-            _spriteBatch.DrawString(_console.Font, info, infoPosition, Color.White);
+            _spriteBatch.DrawString(_console.Font, fps, infoPosition, Color.White);
 
             _spriteBatch.End();
 
@@ -326,6 +326,11 @@ namespace Space
                 if (component is GameClient)
                 {
                     var client = (GameClient)component;
+                    var info = client.GetPlayerShipInfo();
+                    if (info == null)
+                    {
+                        continue;
+                    }
 
                     var session = client.Controller.Session;
                     var entityManager = client.Controller.Simulation.EntityManager;
@@ -344,44 +349,35 @@ namespace Space
                     // Draw planet arrows and stuff.
                     if (session.ConnectionState == Engine.Session.ClientState.Connected)
                     {
-                        var avatar = systemManager.GetSystem<Engine.ComponentSystem.Systems.AvatarSystem>().GetAvatar(session.LocalPlayer.Number);
-                        if (avatar != null)
+                        _spriteBatch.Begin();
+
+                        var position = info.Position;
+                        var cellX = ((int)position.X) >> Space.ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
+                        var cellY = ((int)position.Y) >> Space.ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
+                        sb.AppendFormat("Position: ({0:f}, {1:f}), Cell: ({2}, {3})\n", position.X, position.Y, cellX, cellY);
+
+                        var cellId = CoordinateIds.Combine(cellX, cellY);
+
+                        var universe = systemManager.GetSystem<Space.ComponentSystem.Systems.UniverseSystem>();
+                        if (universe != null)
                         {
-                            _spriteBatch.Begin();
-
-                            var x = avatar.GetComponent<Engine.ComponentSystem.Components.Transform>().Translation.X;
-                            var y = avatar.GetComponent<Engine.ComponentSystem.Components.Transform>().Translation.Y;
-                            var cellX = ((int)x) >> Space.ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
-                            var cellY = ((int)y) >> Space.ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
-                            sb.AppendFormat("Position: ({0:f}, {1:f}), Cell: ({2}, {3})\n", x, y, cellX, cellY);
-
-                            var id = CoordinateIds.Combine(cellX, cellY);
-
-                            var universe = systemManager.GetSystem<Space.ComponentSystem.Systems.UniverseSystem>();
-                            if (universe != null)
-                            {
-                                sb.AppendFormat("Objects in system: {0}\n", universe.GetSystemList(id).Count);
-                            }
-
-                            sb.AppendFormat("Update load: {0:f}\n", client.Controller.CurrentLoad);
-
-                            var index = systemManager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
-                            if (index != null)
-                            {
-                                sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
-                            }
-
-                            var health = avatar.GetComponent<Space.ComponentSystem.Components.Health>();
-                            var energy = avatar.GetComponent<Space.ComponentSystem.Components.Energy>();
-                            if (health != null && energy != null)
-                            {
-                                sb.AppendFormat("Health: {0:f}, Energy: {1:f}\n", health.Value, energy.Value);
-                            }
-
-                            _spriteBatch.DrawString(_console.Font, sb.ToString(), new Vector2(20, 20), Color.White);
-
-                            _spriteBatch.End();
+                            sb.AppendFormat("Objects in system: {0}\n", universe.GetSystemList(cellId).Count);
                         }
+
+                        sb.AppendFormat("Update load: {0:f}\n", client.Controller.CurrentLoad);
+
+                        var index = systemManager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
+                        if (index != null)
+                        {
+                            sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
+                        }
+
+                        sb.AppendFormat("Health: {0:f}/{1:f}, Energy: {2:f}/{3:f}\n", info.Health, info.MaxHealth, info.Energy, info.MaxEnergy);
+                        sb.AppendFormat("Speed: {0:f}/{1:f}\n", info.Speed, info.MaxSpeed);
+
+                        _spriteBatch.DrawString(_console.Font, sb.ToString(), new Vector2(20, 20), Color.White);
+
+                        _spriteBatch.End();
                     }
                 }
                 else if (component is GameServer)

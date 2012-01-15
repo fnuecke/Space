@@ -106,8 +106,12 @@ namespace Engine.ComponentSystem.Components
         #region Serialization / Hashing
 
         /// <summary>
-        /// To be implemented by subclasses.
+        /// Write the object's state to the given packet.
         /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public virtual Packet Packetize(Packet packet)
         {
             return packet.Write(UID)
@@ -117,8 +121,9 @@ namespace Engine.ComponentSystem.Components
         }
 
         /// <summary>
-        /// To be implemented by subclasses.
+        /// Bring the object to the state in the given packet.
         /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public virtual void Depacketize(Packet packet)
         {
             UID = packet.ReadInt32();
@@ -128,8 +133,10 @@ namespace Engine.ComponentSystem.Components
         }
 
         /// <summary>
-        /// To be implemented by subclasses.
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
         /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public virtual void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(UID));

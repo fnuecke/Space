@@ -68,22 +68,42 @@ namespace Space.ComponentSystem.Entities
             var health = new Health(120);
             var energy = new Energy();
 
+            // Physics related components.
             entity.AddComponent(new Transform(new Vector2(36000, 38000)));
             entity.AddComponent(new Velocity());
             entity.AddComponent(new Spin());
-            entity.AddComponent(new Acceleration());
+            // Apply friction before acceleration to allow reaching actual
+            // maximum speed.
             entity.AddComponent(new Friction(0.01f, 0.02f));
             // TODO compute based on equipped components
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Atractee, 10));
+
+            // Index component, to register with indexes used for other
+            // components.
             entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup | faction.ToCollisionIndexGroup()));
+
+            // Collision component, to allow colliding with other entities.
             entity.AddComponent(new CollidableSphere(shipData.CollisionRadius, faction.ToCollisionGroup()));
+
+            // Faction component, which allows checking which group the ship
+            // belongs to.
             entity.AddComponent(new Faction(faction));
+
+            // Controllers for maneuvering and shooting.
             entity.AddComponent(new ShipControl());
             entity.AddComponent(new WeaponControl());
+            entity.AddComponent(new ShipInfo());
+
+            // Apply acceleration after ship control had a say, for stabilizer.
+            entity.AddComponent(new Acceleration());
+
+            // Audio and display components.
             entity.AddComponent(new WeaponSound());
             entity.AddComponent(new Detectable("Textures/ship"));
             entity.AddComponent(new ThrusterEffect("Effects/thruster"));
             entity.AddComponent(renderer);
+
+            // Other game logic related components.
             entity.AddComponent(modules);
             entity.AddComponent(health);
             entity.AddComponent(energy);

@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Control;
 using Space.Data;
-using Space.Data.Modules;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -92,41 +91,26 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public void Draw()
         {
             // Get local player's avatar.
-            var avatar = _client.GetAvatar();
+            var info = _client.GetPlayerShipInfo();
 
             // Can't do anything without an avatar.
-            if (avatar == null)
+            if (info == null)
             {
                 return;
             }
 
             // Fetch all the components we need.
-            var transform = avatar.GetComponent<Transform>();
-            var modules = avatar.GetComponent<EntityModules<EntityAttributeType>>();
+            var position = info.Position;
             var index = _client.GetSystem<IndexSystem>();
 
             // Bail if we're missing something.
-            if (transform == null || index == null || modules == null)
+            if (index == null)
             {
                 return;
             }
 
             // Figure out the overall range of our radar system.
-            float radarRange = 0;
-
-            // Get equipped sensor modules.
-            var sensors = modules.GetModules<SensorModule>();
-            if (sensors != null)
-            {
-                // TODO in case we're adding sensor types (anti-cloaking, ...) check this one's actually a radar.
-                foreach (var sensor in sensors)
-                {
-                    radarRange += sensor.Range;
-                }
-            }
-
-            // Apply any modifiers from equipment.
-            radarRange = modules.GetValue(EntityAttributeType.SensorRange, radarRange);
+            float radarRange = info.RadarRange;
 
             // Get our viewport.
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
@@ -170,7 +154,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             // Loop through all our neighbors.
             foreach (var neighbor in index.
-                GetNeighbors(ref transform.Translation, radarRange, Detectable.IndexGroup, _reusableNeighborList))
+                GetNeighbors(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
             {
                 // Get the components we need.
                 var neighborTransform = neighbor.GetComponent<Transform>();
@@ -186,7 +170,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // We don't show the icons for anything that's inside our
                 // viewport. Get the position of the detectable inside our
                 // viewport. This will also serve as our direction vector.
-                var direction = neighborTransform.Translation - transform.Translation;
+                var direction = neighborTransform.Translation - position;
 
                 // We'll make stuff far away a little less opaque. First get
                 // the linear relative distance.
@@ -219,7 +203,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
                     // Far clipping, i.e. don't render if we're outside and
                     // not seeing the ellipse.
-                    var distanceToCenterSquared = (ellipseCenter - transform.Translation).LengthSquared();
+                    var distanceToCenterSquared = (ellipseCenter - position).LengthSquared();
                     var farClipDistance = ellipse.MajorRadius + radius;
                     farClipDistance *= farClipDistance;
 
@@ -234,7 +218,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                         nearClipDistance < distanceToCenterSquared)
                     {
                         // Yes, set the properties for our ellipse renderer.
-                        _ellipse.SetCenter(ellipseCenter - transform.Translation + center);
+                        _ellipse.SetCenter(ellipseCenter - position + center);
                         _ellipse.SetMajorRadius(ellipse.MajorRadius);
                         _ellipse.SetMinorRadius(ellipse.MinorRadius);
                         _ellipse.SetRotation(ellipse.Angle);

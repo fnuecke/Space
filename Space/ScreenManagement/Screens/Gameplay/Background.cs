@@ -1,5 +1,4 @@
-﻿using Engine.ComponentSystem.Components;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
@@ -84,10 +83,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             // Get local player position.
             Vector2 position = Vector2.Zero;
-            var avatar = _client.GetAvatar();
-            if (avatar != null)
+            var info = _client.GetPlayerShipInfo();
+            if (info != null)
             {
-                position = -avatar.GetComponent<Transform>().Translation;
+                position = -info.Position;
             }
 
             // Get our viewport.

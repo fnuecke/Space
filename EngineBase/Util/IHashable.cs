@@ -9,7 +9,7 @@
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>
-        /// <param name="hasher">the hasher to push data to.</param>
+        /// <param name="hasher">The hasher to push data to.</param>
         void Hash(Hasher hasher);
     }
 }
