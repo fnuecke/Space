@@ -59,7 +59,7 @@ namespace Space.ComponentSystem.Systems
                     List<int> list = new List<int>();
 
                     // Get center of our cell.
-                    var cellSize = Manager.GetSystem<CellSystem>().CellSize;
+                    var cellSize = CellSystem.CellSize;
                     var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
 
                     if (info.X == 0 && info.Y == 0)

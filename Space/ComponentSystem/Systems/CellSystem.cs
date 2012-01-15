@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems.Messages;
 
 namespace Space.ComponentSystem.Systems
@@ -30,33 +31,24 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         public const int CellSizeShiftAmount = 16;
 
+        /// <summary>
+        /// The size of a single cell in world units (normally: pixels).
+        /// </summary>
+        public const int CellSize = 1 << CellSizeShiftAmount;
+
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// A list of all cells that are currently active.
+        /// A list of the IDs of all cells that are currently active.
         /// </summary>
-        public IEnumerable<Tuple<int, int>> ActiveSystems
-        {
-            get
-            {
-                foreach (var cellId in _livingCells)
-                {
-                    yield return CoordinateIds.Split(cellId);
-                }
-            }
-        }
-
-        /// <summary>
-        /// The size of a single cell in world units (normally: pixels).
-        /// </summary>
-        public int CellSize { get { return 1 << CellSizeShiftAmount; } }
+        public IEnumerator<ulong> ActiveCells { get { return _livingCells.GetEnumerator(); } }
 
         #endregion
 
         #region Fields
-        
+
         /// <summary>
         /// List of cells that are currently marked as alive.
         /// </summary>
@@ -153,7 +145,38 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Utility methods
-        
+
+        /// <summary>
+        /// Tests if the specified cell is currently active.
+        /// </summary>
+        /// <param name="cellId">The id of the cell to check/</param>
+        /// <returns>Whether the cell is active or not.</returns>
+        public bool IsCellActive(ulong cellId)
+        {
+            return _livingCells.Contains(cellId);
+        }
+
+        /// <summary>
+        /// Gets the cell id for a given coordinate pair.
+        /// </summary>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        /// <returns>The id of the cell containing that coordinate pair.</returns>
+        public static ulong GetCellIdFromCoordinates(int x, int y)
+        {
+            return CoordinateIds.Combine(x >> CellSizeShiftAmount, y >> CellSizeShiftAmount);
+        }
+
+        /// <summary>
+        /// Gets the cell id for a given position.
+        /// </summary>
+        /// <param name="position">The position.</param>
+        /// <returns>The id of the cell containing that position.</returns>
+        public static ulong GetCellIdFromCoordinates(ref Vector2 position)
+        {
+            return GetCellIdFromCoordinates((int)position.X, (int)position.Y);
+        }
+
         /// <summary>
         /// Adds the combined coordinates for all neighboring cells and the
         /// specified cell itself to the specified set of cells.
@@ -169,7 +192,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     cells.Add(CoordinateIds.Combine(nx, ny));
                 }
-            }   
+            }
         }
 
         #endregion

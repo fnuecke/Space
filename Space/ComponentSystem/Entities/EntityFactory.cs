@@ -28,6 +28,9 @@ namespace Space.ComponentSystem.Entities
             var health = new Health(120);
             var energy = new Energy();
 
+            //for testing only
+            entity.AddComponent(new AIComponent());
+            //
             entity.AddComponent(new Transform(new Vector2(36000, 38000)));
             entity.AddComponent(new Velocity());
             entity.AddComponent(new Spin());
@@ -89,6 +92,13 @@ namespace Space.ComponentSystem.Entities
                 copy[i] = (T)array[i].DeepCopy();
             }
             return copy;
+        }
+
+        public static Entity CreateAIShip(ShipData shipData, Factions faction)
+        {
+            Entity entity = CreateShip(shipData, faction);
+
+            return entity;
         }
 
         /// <summary>
