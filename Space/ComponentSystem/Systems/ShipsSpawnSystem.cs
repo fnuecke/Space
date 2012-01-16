@@ -45,9 +45,11 @@ namespace Space.ComponentSystem.Systems
 
         #region Fields
 
+        private ContentManager _content;
+
         private HashSet<int> _entities = new HashSet<int>();
 
-        private ContentManager _content;
+        private List<int> _reusableEntityList = new List<int>();
 
         #endregion
 
@@ -70,17 +72,20 @@ namespace Space.ComponentSystem.Systems
         public override void Update(long frame)
         {
             var cellSystem = Manager.GetSystem<CellSystem>();
-            var activeCells = cellSystem.ActiveCells;
-            foreach (var i in _entities)
+
+            _reusableEntityList.AddRange(_entities);
+            foreach (var entityId in _reusableEntityList)
             {
-                var entity = Manager.EntityManager.GetEntity(i);
+                var entity = Manager.EntityManager.GetEntity(entityId);
                 var transform = entity.GetComponent<Transform>();
+
                 if (!cellSystem.IsCellActive(CellSystem.GetCellIdFromCoordinates(ref transform.Translation)))
                 {
-                    _entities.Remove(i);
-                    Manager.EntityManager.RemoveEntity(i);
+                    _entities.Remove(entityId);
+                    Manager.EntityManager.RemoveEntity(entityId);
                 }
             }
+            _reusableEntityList.Clear();
         }
 
         public override void HandleMessage(ValueType message)
@@ -139,12 +144,14 @@ namespace Space.ComponentSystem.Systems
 
             if (copy == into)
             {
+                copy._content = _content;
                 copy._entities.Clear();
                 copy._entities.UnionWith(_entities);
             }
             else
             {
                 copy._entities = new HashSet<int>(_entities);
+                copy._reusableEntityList = new List<int>();
             }
 
             return copy;

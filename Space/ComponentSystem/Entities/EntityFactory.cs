@@ -269,7 +269,7 @@ namespace Space.ComponentSystem.Entities
 
             entity.AddComponent(new Transform(position));
             entity.AddComponent(new Spin());
-            entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup | Factions.None.ToCollisionIndexGroup()));
+            entity.AddComponent(new Index(Detectable.IndexGroup | Factions.None.ToCollisionIndexGroup()));
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
             entity.AddComponent(new CollidableSphere(radius, Factions.None.ToCollisionGroup()));
@@ -307,7 +307,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
             entity.AddComponent(new Spin());
             entity.AddComponent(new EllipsePath(center.UID, majorRadius, minorRadius, angle, period, periodOffset));
-            entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup));
+            entity.AddComponent(new Index(Detectable.IndexGroup));
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
             entity.AddComponent(new AstronomicBody(type));
