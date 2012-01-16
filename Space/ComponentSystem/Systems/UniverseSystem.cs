@@ -7,7 +7,6 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Systems.Messages;
 using Space.Data;
@@ -183,6 +182,7 @@ namespace Space.ComponentSystem.Systems
             float sunMass = _constaints.SampleSunMass(gaussian);
             Entity sun = EntityFactory.CreateFixedAstronomicalObject(
                 texture: "Textures/sun",
+                radius: 256,
                 position: center,
                 type: AstronomicBodyType.Sun,
                 mass: sunMass);
@@ -233,11 +233,14 @@ namespace Space.ComponentSystem.Systems
             float planetOrbitEccentricity = _constaints.SamplePlanetOrbitEccentricity(gaussian);
             float planetOrbitMinorRadius = (float)System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * (1 - planetOrbitEccentricity * planetOrbitEccentricity));
             float planetOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SamplePlanetOrbitAngleDeviation(gaussian));
-            float planetPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * planetOrbitMajorRadius * 2 /*< artificially slow planets down a bit */ / sunMass));
+            float planetPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * planetOrbitMajorRadius * 3 /* < slowing factor */ / sunMass));
             float planetMass = _constaints.MassPerVolume * 4f / 3f * (float)System.Math.PI * planetRadius * planetRadius * planetRadius;
 
             var planet = EntityFactory.CreateOrbitingAstronomicalObject(
-                texture: "Textures/planet_rock",
+                texture: "Textures/rock_07",
+                planetTint: Color.Lerp(Color.DarkOliveGreen, Color.White, 0.5f),
+                atmosphereTint: Color.LightSkyBlue,
+                radius: planetRadius,
                 center: sun,
                 majorRadius: planetOrbitMajorRadius,
                 minorRadius: planetOrbitMinorRadius,
@@ -247,13 +250,8 @@ namespace Space.ComponentSystem.Systems
                 type: AstronomicBodyType.Planet,
                 mass: planetMass);
 
-            var renderer = planet.GetComponent<PlanetRenderer>();
-            renderer.Tint = Color.DarkOliveGreen;
-            renderer.AtmosphereTint = Color.LightSkyBlue;
-            renderer.Scale = planetRadius * 2 / 470f;
-
             var spin = planet.GetComponent<Spin>();
-            spin.Value = (float)random.NextDouble() * 0.003f - 0.0015f;
+            spin.Value = 0.001f + (float)random.NextDouble() * 0.0005f;
 
             list.Add(Manager.EntityManager.AddEntity(planet));
 
@@ -293,7 +291,10 @@ namespace Space.ComponentSystem.Systems
             float moonMass = _constaints.MassPerVolume * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
 
             var moon = EntityFactory.CreateOrbitingAstronomicalObject(
-                texture: "Textures/planet_rock",
+                texture: "Textures/rock_02",
+                planetTint: Color.White,
+                atmosphereTint: Color.Transparent,
+                radius: moonRadius,
                 center: planet,
                 majorRadius: moonOrbitMajorRadius,
                 minorRadius: moonOrbitMinorRadius,
@@ -303,12 +304,8 @@ namespace Space.ComponentSystem.Systems
                 type: AstronomicBodyType.Moon,
                 mass: moonMass);
 
-            var renderer = moon.GetComponent<PlanetRenderer>();
-            renderer.Scale = moonRadius * 2 / 470f;
-            renderer.AtmosphereTint = Color.White;
-
             var spin = moon.GetComponent<Spin>();
-            spin.Value = (float)random.NextDouble() * 0.002f - 0.001f;
+            spin.Value = 0.001f + (float)random.NextDouble() * 0.0005f;
 
             list.Add(Manager.EntityManager.AddEntity(moon));
 

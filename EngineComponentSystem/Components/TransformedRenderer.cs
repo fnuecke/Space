@@ -70,7 +70,9 @@ namespace Engine.ComponentSystem.Components
                 position.Y = transform.Translation.Y + args.Transform.Translation.Y;
 
                 // Draw.
+                args.SpriteBatch.Begin();
                 args.SpriteBatch.Draw(_texture, position, null, Tint, transform.Rotation, origin, Scale, SpriteEffects.None, 0);
+                args.SpriteBatch.End();
             }
         }
 

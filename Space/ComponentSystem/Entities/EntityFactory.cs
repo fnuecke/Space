@@ -259,7 +259,8 @@ namespace Space.ComponentSystem.Entities
         }
 
         public static Entity CreateFixedAstronomicalObject(
-            string texture, 
+            string texture,
+            float radius,
             Vector2 position,
             AstronomicBodyType type,
             float mass)
@@ -271,7 +272,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Index(Gravitation.IndexGroup | Detectable.IndexGroup | Factions.None.ToCollisionIndexGroup()));
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
-            entity.AddComponent(new CollidableSphere(256, Factions.None.ToCollisionGroup()));
+            entity.AddComponent(new CollidableSphere(radius, Factions.None.ToCollisionGroup()));
             entity.AddComponent(new CollisionDamage(1, float.MaxValue));
 
             entity.AddComponent(new Detectable("Textures/radar_sun"));
@@ -285,6 +286,9 @@ namespace Space.ComponentSystem.Entities
 
         public static Entity CreateOrbitingAstronomicalObject(
             string texture,
+            Color planetTint,
+            Color atmosphereTint,
+            float radius,
             Entity center,
             float majorRadius,
             float minorRadius,
@@ -308,7 +312,7 @@ namespace Space.ComponentSystem.Entities
 
             entity.AddComponent(new AstronomicBody(type));
             entity.AddComponent(new Detectable("Textures/radar_planet"));
-            entity.AddComponent(new PlanetRenderer(texture));
+            entity.AddComponent(new PlanetRenderer(texture, radius, atmosphereTint, planetTint));
 
             return entity;
         }

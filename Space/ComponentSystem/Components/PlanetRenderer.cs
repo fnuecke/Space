@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Components
     /// Draws its atmosphere and shadow based on the sun it orbits.
     /// </para>
     /// </summary>
-    public sealed class PlanetRenderer : TransformedRenderer
+    public sealed class PlanetRenderer : AbstractRenderer
     {
         #region Fields
 
@@ -23,32 +23,32 @@ namespace Space.ComponentSystem.Components
         public Color AtmosphereTint;
 
         /// <summary>
-        /// The texture used for the atmosphere.
+        /// The shader we use to render our planets.
         /// </summary>
-        private Texture2D _atmosphereTexture;
-
-        /// <summary>
-        /// The texture used for the shadow.
-        /// </summary>
-        private Texture2D _shadowTexture;
+        private Microsoft.Xna.Framework.Graphics.Effect _planetRenderer;
 
         #endregion
 
         #region Constructor
-        
-        public PlanetRenderer(string textureName, Color atmosphereTint)
-            : base(textureName)
+
+        public PlanetRenderer(string textureName, float radius, Color atmosphereTint, Color planetTint)
+            : base(textureName, planetTint, radius)
         {
             AtmosphereTint = atmosphereTint;
         }
 
-        public PlanetRenderer(string textureName)
-            : this(textureName, Color.PaleTurquoise)
+        public PlanetRenderer(string textureName, float radius, Color atmosphereTint)
+            : this(textureName, radius, atmosphereTint, Color.White)
+        {
+        }
+
+        public PlanetRenderer(string textureName, float radius)
+            : this(textureName, radius, Color.PaleTurquoise)
         {
         }
 
         public PlanetRenderer()
-            : this(string.Empty)
+            : this(string.Empty, 0)
         {
         }
 
@@ -69,100 +69,75 @@ namespace Space.ComponentSystem.Components
                 // Get parameterization in proper type.
                 var args = (RendererParameterization)parameterization;
 
-                // Load our atmosphere texture, if it's not set.
-                if (_atmosphereTexture == null)
+                // Get the effect, if we don't have it yet.
+                if (_planetRenderer == null)
                 {
-                    _atmosphereTexture = args.Content.Load<Texture2D>("Textures/planet_atmo");
-                }
-                if (_shadowTexture == null)
-                {
-                    _shadowTexture = args.Content.Load<Texture2D>("Textures/planet_shadow2");
+                    _planetRenderer = args.Content.Load<Microsoft.Xna.Framework.Graphics.Effect>("Effects/Planet");
                 }
 
-                // Get the rectangles at which we'll draw. These are offset
-                // by half the texture size for the following test.
-                Vector2 atmosphereOrigin;
-                atmosphereOrigin.X = _atmosphereTexture.Width / 2;
-                atmosphereOrigin.Y = _atmosphereTexture.Height / 2;
-                Rectangle atmosphereDestination;
-                atmosphereDestination.X = (int)(transform.Translation.X - atmosphereOrigin.X * Scale);
-                atmosphereDestination.Y = (int)(transform.Translation.Y - atmosphereOrigin.Y * Scale);
-                atmosphereDestination.Width = (int)(_atmosphereTexture.Width * Scale);
-                atmosphereDestination.Height = (int)(_atmosphereTexture.Height * Scale);
+                // Get the position at which to draw (in screen space).
+                Vector2 position;
+                position.X = transform.Translation.X - Scale + args.Transform.Translation.X;
+                position.Y = transform.Translation.Y - Scale + args.Transform.Translation.Y;
 
-                Vector2 shadowOrigin;
-                shadowOrigin.X = _shadowTexture.Width * 3 / 4;
-                shadowOrigin.Y = _shadowTexture.Height / 2;
-                Rectangle shadowDestination;
-                shadowDestination.X = (int)(transform.Translation.X - shadowOrigin.X * Scale);
-                shadowDestination.Y = (int)(transform.Translation.Y - shadowOrigin.Y * Scale);
-                shadowDestination.Width = (int)(_shadowTexture.Width * Scale);
-                shadowDestination.Height = (int)(_shadowTexture.Height * Scale);
-
-                // Are they within our screen space? Use a somewhat loosened
-                // up clipping rectangle, to account for rotated and non-
-                // rectangular textures.
-                // Note that this is mainly a performance gain because we can
-                // avoid computing the directions to the suns this way.
-                Rectangle looseClipRectangle = args.SpriteBatch.GraphicsDevice.Viewport.Bounds;
-                looseClipRectangle.Inflate(512, 512);
-                looseClipRectangle.Offset(-(int)args.Transform.Translation.X, -(int)args.Transform.Translation.Y);
-                var atmosphereVisible = atmosphereDestination.Intersects(looseClipRectangle);
-                var shadowVisible = shadowDestination.Intersects(looseClipRectangle);
-
-                // If either is, carry on.
-                if (atmosphereVisible || shadowVisible)
+                // Check if we're even visible.
+                Rectangle clipRectangle = args.SpriteBatch.GraphicsDevice.Viewport.Bounds;
+                clipRectangle.Inflate((int)(2 * Scale), (int)(2 * Scale));
+                if (clipRectangle.Contains((int)position.X, (int)position.Y))
                 {
                     // Get position relative to our sun, to rotate atmosphere and shadow.
-                    float sunDirection = 0;
-                    Entity sun = null;
-                    var ellipse = Entity.GetComponent<EllipsePath>();
-                    while (ellipse != null)
-                    {
-                        sun = Entity.Manager.GetEntity(ellipse.CenterEntityId);
-                        ellipse = sun.GetComponent<EllipsePath>();
-                    }
+                    Vector2 toSun = Vector2.Zero;
+                    Entity sun = GetSun();
                     if (sun != null)
                     {
                         var sunTransform = sun.GetComponent<Transform>();
                         if (sunTransform != null)
                         {
-                            var toSun = sunTransform.Translation - transform.Translation;
-                            sunDirection = (float)System.Math.Atan2(toSun.Y, toSun.X);
+                            toSun = sunTransform.Translation - transform.Translation;
+                            toSun.Normalize();
                         }
                     }
 
-                    var position = transform.Translation;
-                    position.X += args.Transform.Translation.X;
-                    position.Y += args.Transform.Translation.Y;
+                    float textureScale = _texture.Width / (3 * Scale);
+                    float textureOffset = (transform.Rotation + (float)System.Math.PI) / ((float)System.Math.PI * 2f);
 
                     // Draw whatever is visible.
-                    if (atmosphereVisible)
-                    {
-                        // Draw.
-                        args.SpriteBatch.Draw(_atmosphereTexture, position, null, AtmosphereTint,
-                            sunDirection, atmosphereOrigin, Scale, SpriteEffects.None, 0);
-                    }
+                    _planetRenderer.Parameters["DisplaySize"].SetValue(Scale);
+                    _planetRenderer.Parameters["TextureSize"].SetValue(_texture.Width);
+                    _planetRenderer.Parameters["TextureOffset"].SetValue(textureOffset * textureScale);
+                    _planetRenderer.Parameters["TextureScale"].SetValue(textureScale);
+                    _planetRenderer.Parameters["PlanetTint"].SetValue(Tint.ToVector4());
+                    _planetRenderer.Parameters["AtmosphereTint"].SetValue(AtmosphereTint.ToVector4());
+                    _planetRenderer.Parameters["LightDirection"].SetValue(toSun);
 
-                    if (shadowVisible)
-                    {
-                        // Draw.
-                        args.SpriteBatch.Draw(_shadowTexture, position, null, Color.White,
-                            sunDirection, shadowOrigin, Scale, SpriteEffects.None, 0);
-                    }
-
+                    args.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, _planetRenderer);
+                    args.SpriteBatch.Draw(_texture, position, null, Color.White, 0, Vector2.Zero, 2 * Scale / _texture.Width, SpriteEffects.None, 0);
+                    args.SpriteBatch.End();
 #if DEBUG
                     var sb = new System.Text.StringBuilder();
                     sb.AppendFormat("Position: {0}\n", transform.Translation);
                     sb.AppendFormat("Rotation: {0}\n", (int)MathHelper.ToDegrees(transform.Rotation));
                     sb.AppendFormat("Scale: {0}\n", Scale);
-                    sb.AppendFormat("Angle to sun: {0}\n", (int)MathHelper.ToDegrees(-sunDirection));
                     sb.AppendFormat("Mass: {0:f}\n", Entity.GetComponent<Gravitation>().Mass);
-
-                    args.SpriteBatch.DrawString(args.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, transform.Translation, Color.White);
+                    sb.AppendFormat("uvrot: {0:f}\n", (transform.Rotation + (float)System.Math.PI) / ((float)System.Math.PI * 2f));
+                    args.SpriteBatch.Begin();
+                    args.SpriteBatch.DrawString(args.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, position, Color.White);
+                    args.SpriteBatch.End();
 #endif
                 }
             }
+        }
+
+        private Entity GetSun()
+        {
+            Entity sun = null;
+            var ellipse = Entity.GetComponent<EllipsePath>();
+            while (ellipse != null)
+            {
+                sun = Entity.Manager.GetEntity(ellipse.CenterEntityId);
+                ellipse = sun.GetComponent<EllipsePath>();
+            }
+            return sun;
         }
 
         #endregion
