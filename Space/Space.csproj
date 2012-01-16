@@ -157,6 +157,7 @@
     <Compile Include="ScreenManagement\Screens\Gameplay\Background.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\InputHandler.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Radar.cs" />
+    <Compile Include="ScreenManagement\Screens\Helper\BasicForms.cs" />
     <Compile Include="Simulation\Commands\DebugCommand.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
