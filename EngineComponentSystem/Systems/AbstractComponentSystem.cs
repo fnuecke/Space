@@ -218,16 +218,32 @@ namespace Engine.ComponentSystem.Systems
 
         #region Serialization / Hashing / Cloning
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public virtual Packet Packetize(Packet packet)
         {
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public virtual void Depacketize(Packet packet)
         {
             throw new NotSupportedException();
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public virtual void Hash(Hasher hasher)
         {
         }
@@ -248,6 +264,18 @@ namespace Engine.ComponentSystem.Systems
             return DeepCopy(null);
         }
 
+        /// <summary>
+        /// Creates a deep copy, with a component list only containing
+        /// clones of components not bound to an entity. If possible, the
+        /// specified instance will be reused.
+        /// 
+        /// <para>
+        /// Subclasses must take care of duplicating reference types, to complete
+        /// the deep-copy of the object. Caches, i.e. lists / dictionaries / etc.
+        /// to quickly look up components must be reset / rebuilt.
+        /// </para>
+        /// </summary>
+        /// <returns>A deep, with a semi-cleared copy of this system.</returns>
         public virtual IComponentSystem DeepCopy(IComponentSystem into)
         {
             // Get something to start with.

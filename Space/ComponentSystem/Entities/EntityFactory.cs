@@ -38,7 +38,7 @@ namespace Space.ComponentSystem.Entities
                 // And don't regenerate.
                 typeof(Health),
                 typeof(Energy)
-            }, new Vector2(15500, 15500)));
+            }, new Vector2(50000, 50000)));
 
             return entity;
         }
@@ -103,7 +103,7 @@ namespace Space.ComponentSystem.Entities
             energy.UpdateOrder = 14;
 
             // Physics related components.
-            entity.AddComponent(new Transform(new Vector2(36000, 38000)));
+            entity.AddComponent(new Transform(new Vector2(50000, 50000)));
             entity.AddComponent(velocity);
             entity.AddComponent(new Spin());
             entity.AddComponent(acceleration);

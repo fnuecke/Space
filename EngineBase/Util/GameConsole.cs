@@ -640,10 +640,6 @@ namespace Engine.Util
                         Execute(_input.ToString());
                         ResetInput();
                         break;
-                    case Keys.Escape:
-                        IsOpen = false;
-                        ResetInput();
-                        break;
                     case Keys.Home:
                         _cursor = 0;
                         ResetTabCompletion();
@@ -774,7 +770,12 @@ namespace Engine.Util
                         }
                         break;
                     default:
-                        if (KeyMap != null)
+                        if (args.Key == Hotkey)
+                        {
+                            IsOpen = false;
+                            ResetInput();
+                        }
+                        else if (KeyMap != null)
                         {
                             char ch = KeyMap[args.Modifier, args.Key];
                             if (ch != '\0')

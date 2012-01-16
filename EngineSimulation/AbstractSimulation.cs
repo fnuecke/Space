@@ -113,6 +113,13 @@ namespace Engine.Simulation
 
         #region Hashing / Cloning / Serialization
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public virtual Packet Packetize(Packet packet)
         {
             // Write the frame number we're currently in.
@@ -127,6 +134,10 @@ namespace Engine.Simulation
             return packet;
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public virtual void Depacketize(Packet packet)
         {
             // Get the current frame of the simulation.
@@ -162,6 +173,11 @@ namespace Engine.Simulation
             return DeepCopy(null);
         }
 
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
         public virtual ISimulation DeepCopy(ISimulation into)
         {
             AbstractSimulation copy;

@@ -320,10 +320,13 @@ namespace Engine.Controller
 
                 case TssControllerMessage.GameStateRequest:
                     // Client needs game state.
+                    var hasher = new Hasher();
+                    _tss.Hash(hasher);
                     using (var packet = new Packet())
                     {
                         Session.SendTo(args.Player, packet
                             .Write((byte)TssControllerMessage.GameStateResponse)
+                            .Write(hasher.Value)
                             .Write(_tss));
                     }
                     break;

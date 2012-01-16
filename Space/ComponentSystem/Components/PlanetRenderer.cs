@@ -169,6 +169,14 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
+        /// <summary>
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
+        /// </summary>
+        /// <param name="into"></param>
+        /// <returns>
+        /// An independent (deep) clone of this instance.
+        /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
             var copy = (PlanetRenderer)base.DeepCopy(into);
@@ -176,8 +184,6 @@ namespace Space.ComponentSystem.Components
             if (copy == into)
             {
                 copy.AtmosphereTint = AtmosphereTint;
-                copy._atmosphereTexture = _atmosphereTexture;
-                copy._shadowTexture = _shadowTexture;
             }
 
             return copy;

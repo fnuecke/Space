@@ -273,7 +273,14 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
+                        var serverHash = args.Data.ReadInt32();
                         args.Data.ReadPacketizableInto(_tss);
+                        var hasher = new Hasher();
+                        _tss.Hash(hasher);
+                        if (hasher.Value != serverHash)
+                        {
+                            throw new InvalidOperationException("Hash mismatch after deserialization.");
+                        }
                     }
                     break;
 

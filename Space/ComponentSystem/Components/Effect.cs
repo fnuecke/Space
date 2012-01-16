@@ -175,12 +175,23 @@ namespace Space.ComponentSystem.Components
 
         #region Serialization
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
                 .Write(EffectName);
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
@@ -194,6 +205,14 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
+        /// <summary>
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
+        /// </summary>
+        /// <param name="into"></param>
+        /// <returns>
+        /// An independent (deep) clone of this instance.
+        /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
             var copy = (Effect)base.DeepCopy(into);
@@ -208,6 +227,21 @@ namespace Space.ComponentSystem.Components
             copy._isDrawingInstance = false;
 
             return copy;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + ", EffectName = " + EffectName + ", Emitting = " + Emitting.ToString();
         }
 
         #endregion

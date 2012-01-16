@@ -7,28 +7,28 @@
     <SunMassMean>125000</SunMassMean>
     <SunMassStdDev>25000</SunMassStdDev>
 
-    <MassPerVolume>0.000005</MassPerVolume>
+    <MassPerVolume>0.00001</MassPerVolume>
 
     <PlanetsMean>4</PlanetsMean>
     <PlanetsStdDev>4</PlanetsStdDev>
 
-    <PlanetRadiusMean>600</PlanetRadiusMean>
-    <PlanetRadiusStdDev>250</PlanetRadiusStdDev>
+    <PlanetRadiusMean>400</PlanetRadiusMean>
+    <PlanetRadiusStdDev>150</PlanetRadiusStdDev>
 
-    <PlanetOrbitMean>6000</PlanetOrbitMean>
-    <PlanetOrbitStdDev>1000</PlanetOrbitStdDev>
+    <PlanetOrbitMean>6500</PlanetOrbitMean>
+    <PlanetOrbitStdDev>500</PlanetOrbitStdDev>
     <PlanetOrbitEccentricityMean>0.4</PlanetOrbitEccentricityMean>
     <PlanetOrbitEccentricityStdDev>0.15</PlanetOrbitEccentricityStdDev>
     <PlanetOrbitAngleDeviationMean>10</PlanetOrbitAngleDeviationMean>
     <PlanetOrbitAngleDeviationStdDev>5</PlanetOrbitAngleDeviationStdDev>
 
-    <MoonsMean>2</MoonsMean>
-    <MoonsStdDev>2</MoonsStdDev>
-    <MoonRadiusMean>100</MoonRadiusMean>
+    <MoonsMean>1</MoonsMean>
+    <MoonsStdDev>3</MoonsStdDev>
+    <MoonRadiusMean>75</MoonRadiusMean>
     <MoonRadiusStdDev>25</MoonRadiusStdDev>
     
-    <MoonOrbitMean>325</MoonOrbitMean>
-    <MoonOrbitStdDev>75</MoonOrbitStdDev>
+    <MoonOrbitMean>450</MoonOrbitMean>
+    <MoonOrbitStdDev>50</MoonOrbitStdDev>
     
     <MoonOrbitEccentricityMean>0.3</MoonOrbitEccentricityMean>
     <MoonOrbitEccentricityStdDev>0.1</MoonOrbitEccentricityStdDev>

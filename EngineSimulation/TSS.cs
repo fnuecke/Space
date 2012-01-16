@@ -475,6 +475,7 @@ namespace Engine.Simulation
         private void FastForward(long frame)
         {
             // Start threads for the non-trailing frames.
+#if TSS_THREADING
             var tasks = new Task[_threadData.Length];
             for (int i = 0; i < _threadData.Length; i++)
             {
@@ -482,6 +483,7 @@ namespace Engine.Simulation
                 _threadData[i].frame = frame - _delays[i];
                 tasks[i] = TaskStarter(_threadData[i]);
             }
+#endif
 
             // Process the trailing state, see if we need a roll-back.
             bool needsRewind = false;
@@ -499,7 +501,8 @@ namespace Engine.Simulation
                 // Do the actual stepping for the state.
                 TrailingState.Update();
             }
-
+            
+#if TSS_THREADING
             // Wait for our worker threads to finish.
             Task.WaitAll(tasks);
 
@@ -517,6 +520,27 @@ namespace Engine.Simulation
                 // Clean up stuff that's too old to keep.
                 PrunePastEvents();
             }
+#else
+            // Check if we had trailing tentative commands.
+            if (needsRewind)
+            {
+                logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
+                MirrorState(TrailingState, _simulations.Length - 2);
+            }
+
+            // Fast-forward the remaining states.
+            for (int i = 0; i < _simulations.Length - 1; i++)
+            {
+                while (_simulations[i].CurrentFrame < frame - _delays[i])
+                {
+                    PrepareForUpdate(_simulations[i]);
+                    _simulations[i].Update();
+                }
+            }
+
+            // Clean up stuff that's too old to keep.
+            PrunePastEvents();
+#endif
         }
 
         /// <summary>
@@ -559,6 +583,11 @@ namespace Engine.Simulation
             }
         }
 
+        /// <summary>
+        /// Utility method for argument binding.
+        /// </summary>
+        /// <param name="data">The thread data to bind.</param>
+        /// <returns>A new task for the given thread data.</returns>
         private Task TaskStarter(ThreadData data)
         {
             return Task.Factory.StartNew(() => ThreadedUpdate(data));

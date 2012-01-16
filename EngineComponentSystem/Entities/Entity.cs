@@ -13,6 +13,12 @@ namespace Engine.ComponentSystem.Entities
     /// </summary>
     public sealed class Entity : IPacketizable, ICopyable<Entity>, IHashable
     {
+        #region Logger
+        
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -264,8 +270,6 @@ namespace Engine.ComponentSystem.Entities
             packet.ReadPacketizableInto(_idManager);
         }
 
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-
         /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
@@ -277,7 +281,7 @@ namespace Engine.ComponentSystem.Entities
             foreach (var component in _components)
             {
                 component.Hash(hasher);
-                logger.Trace("{0} -> {1}", component, hasher.Value);
+                //logger.Trace("{0} -> {1}", component, hasher.Value);
             }
         }
 

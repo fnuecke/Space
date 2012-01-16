@@ -29,6 +29,9 @@ namespace Space.Simulation.Commands
         /// <param name="manager">The manager to apply it to.</param>
         public static void HandleCommand(Command command, IEntityManager manager)
         {
+            // We normally want to mess with the player's ship somehow.
+            var avatar = manager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+
             switch ((SpaceCommandType)command.Type)
             {
                 case SpaceCommandType.PlayerInput:
@@ -36,8 +39,11 @@ namespace Space.Simulation.Commands
                     {
                         var inputCommand = (PlayerInputCommand)command;
 
-                        // Get the player's avatar, and the ship controller.
-                        var avatar = manager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+                        // Make sure we have the player's avatar.
+                        if (avatar == null)
+                        {
+                            return;
+                        }
                         var input = avatar.GetComponent<ShipControl>();
 
                         // What type of player input should we process?
@@ -99,19 +105,24 @@ namespace Space.Simulation.Commands
                             debugCommand.Data.Reset();
                         }
 
-                        // We normally want to mess with the player's ship somehow.
-                        var avatar = manager.SystemManager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
-
                         // What's the debug command to process?
                         switch (debugCommand.Debug)
                         {
                             // Jump to location.
                             case DebugCommand.DebugCommandType.GotoPosition:
+                                if (avatar == null)
+                                {
+                                    return;
+                                }
                                 avatar.GetComponent<Transform>().SetTranslation(debugCommand.Data.ReadVector2());
                                 break;
 
                             // Adjust thruster stats.
                             case DebugCommand.DebugCommandType.SetThrusterAccelerationForce:
+                                if (avatar == null)
+                                {
+                                    return;
+                                }
                                 var accelerationForce = debugCommand.Data.ReadSingle();
                                 foreach (var thruster in avatar.GetComponent<EntityModules<EntityAttributeType>>().GetModules<ThrusterModule>())
                                 {
@@ -119,6 +130,10 @@ namespace Space.Simulation.Commands
                                 }
                                 break;
                             case DebugCommand.DebugCommandType.SetThrusterEnergyConsumption:
+                                if (avatar == null)
+                                {
+                                    return;
+                                }
                                 var energyConsumption = debugCommand.Data.ReadSingle();
                                 foreach (var thruster in avatar.GetComponent<EntityModules<EntityAttributeType>>().GetModules<ThrusterModule>())
                                 {

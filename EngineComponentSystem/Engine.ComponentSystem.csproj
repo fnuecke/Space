@@ -104,7 +104,6 @@
     <Compile Include="Components\CollidableSphere.cs" />
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
-    <Compile Include="Components\Gravitation.cs" />
     <Compile Include="Components\Index.cs" />
     <Compile Include="Components\Messages\Collision.cs" />
     <Compile Include="Components\Messages\ModuleRemoved.cs" />

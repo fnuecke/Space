@@ -221,7 +221,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return GetType().Name + ": " + IndexGroups.ToString() + ", " + PositionChanged.ToString() + ", " + PreviousPosition.ToString();
+            return base.ToString() + ", IndexGroups = " + IndexGroups.ToString() + ", PositionChanged = " + PositionChanged.ToString() + ", PreviousPosition = " + PreviousPosition.ToString() + ", CellIdChanged = " + _cellIdChanged.ToString() + ", PreviousCellId = " + _previousCellId.ToString();
         }
 
         #endregion

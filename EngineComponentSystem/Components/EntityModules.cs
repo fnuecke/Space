@@ -348,9 +348,15 @@ namespace Engine.ComponentSystem.Components
 
         #region ToString
 
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
-            return GetType().Name + ": " + Modules.Count.ToString();
+            return base.ToString() + ", Count = " + Modules.Count.ToString();
         }
 
         #endregion

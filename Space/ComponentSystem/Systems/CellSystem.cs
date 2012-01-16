@@ -29,7 +29,7 @@ namespace Space.ComponentSystem.Systems
         /// Dictates the size of cells, where the actual cell size is 2 to the
         /// power of this value.
         /// </summary>
-        public const int CellSizeShiftAmount = 16;
+        public const int CellSizeShiftAmount = 17;
 
         /// <summary>
         /// The size of a single cell in world units (normally: pixels).

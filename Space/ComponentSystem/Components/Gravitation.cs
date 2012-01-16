@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
@@ -7,7 +8,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
-namespace Engine.ComponentSystem.Components
+namespace Space.ComponentSystem.Components
 {
     /// <summary>
     /// Component that takes care of entities working in a gravitational
@@ -152,7 +153,7 @@ namespace Engine.ComponentSystem.Components
 
                             // If we're near the core only pull if  the other
                             // object isn't currently accelerating.
-                            if (distanceSquared < 512)
+                            if (distanceSquared < 262144) // 262144 = 512 * 512, so we allow overriding gravity at radius 512
                             {
                                 var accleration = neigbour.GetComponent<Acceleration>();
                                 if (accleration == null || accleration.Value == Vector2.Zero)
@@ -201,6 +202,13 @@ namespace Engine.ComponentSystem.Components
 
         #region Serialization / Hashing
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
@@ -208,6 +216,10 @@ namespace Engine.ComponentSystem.Components
                 .Write(Mass);
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
@@ -216,6 +228,11 @@ namespace Engine.ComponentSystem.Components
             Mass = packet.ReadSingle();
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
@@ -228,6 +245,14 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
+        /// <summary>
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
+        /// </summary>
+        /// <param name="into"></param>
+        /// <returns>
+        /// An independent (deep) clone of this instance.
+        /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
             var copy = (Gravitation)base.DeepCopy(into);
@@ -249,9 +274,15 @@ namespace Engine.ComponentSystem.Components
 
         #region ToString
 
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
         public override string ToString()
         {
-            return GetType().Name + ": " + GravitationType.ToString() + ", " + Mass.ToString();
+            return base.ToString() + ", Type = " + GravitationType.ToString() + ", Mass = " + Mass.ToString();
         }
 
         #endregion

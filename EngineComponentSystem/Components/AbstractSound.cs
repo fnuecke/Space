@@ -94,6 +94,14 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
+        /// <summary>
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
+        /// </summary>
+        /// <param name="into"></param>
+        /// <returns>
+        /// An independent (deep) clone of this instance.
+        /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
             var copy = (AbstractSound)base.DeepCopy(into);

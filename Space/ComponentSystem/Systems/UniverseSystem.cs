@@ -250,7 +250,7 @@ namespace Space.ComponentSystem.Systems
             var renderer = planet.GetComponent<PlanetRenderer>();
             renderer.Tint = Color.DarkOliveGreen;
             renderer.AtmosphereTint = Color.LightSkyBlue;
-            renderer.Scale = planetRadius / 470f;
+            renderer.Scale = planetRadius * 2 / 470f;
 
             var spin = planet.GetComponent<Spin>();
             spin.Value = (float)random.NextDouble() * 0.003f - 0.0015f;
@@ -263,7 +263,7 @@ namespace Space.ComponentSystem.Systems
             float dominantMoonOrbitAngle = (float)(random.NextDouble() * Math.PI * 2);
 
             // And track the radii. Start outside our planet.
-            float previousMoonOrbit = planetRadius;
+            float previousMoonOrbit = (_constaints.PlanetRadiusMean + _constaints.PlanetRadiusStdDev) * 1.5f;
 
             // The create as many as we sample.
             for (int j = 0; j < numMoons; j++)
@@ -304,7 +304,7 @@ namespace Space.ComponentSystem.Systems
                 mass: moonMass);
 
             var renderer = moon.GetComponent<PlanetRenderer>();
-            renderer.Scale = moonRadius / 470f;
+            renderer.Scale = moonRadius * 2 / 470f;
             renderer.AtmosphereTint = Color.White;
 
             var spin = moon.GetComponent<Spin>();

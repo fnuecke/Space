@@ -221,9 +221,16 @@ namespace Space.ComponentSystem.Components
 
         #region Serialization / Hashing
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public override Packet Packetize(Packet packet)
         {
-            return packet
+            return base.Packetize(packet)
                 .Write(TargetRotation)
                 .Write(Shooting)
                 .Write((byte)AccelerationDirection)
@@ -231,8 +238,14 @@ namespace Space.ComponentSystem.Components
                 .Write(_previousRotation);
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
+            base.Depacketize(packet);
+
             TargetRotation = packet.ReadSingle();
             Shooting = packet.ReadBoolean();
             AccelerationDirection = (Directions)packet.ReadByte();
@@ -240,8 +253,15 @@ namespace Space.ComponentSystem.Components
             _previousRotation = packet.ReadSingle();
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
+            base.Hash(hasher);
+            
             hasher.Put(BitConverter.GetBytes(TargetRotation));
             hasher.Put((byte)AccelerationDirection);
             hasher.Put(BitConverter.GetBytes(Shooting));
@@ -253,6 +273,14 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
+        /// <summary>
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
+        /// </summary>
+        /// <param name="into"></param>
+        /// <returns>
+        /// An independent (deep) clone of this instance.
+        /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
             var copy = (ShipControl)base.DeepCopy(into);

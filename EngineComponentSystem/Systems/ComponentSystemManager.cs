@@ -196,6 +196,13 @@ namespace Engine.ComponentSystem.Systems
 
         #region Serialization / Hashing / Cloning
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public Packet Packetize(Packet packet)
         {
             int numToSync = 0;
@@ -220,6 +227,10 @@ namespace Engine.ComponentSystem.Systems
             return packet;
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
             int numToSync = packet.ReadInt32();
@@ -230,6 +241,11 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
             foreach (var system in _systems)
@@ -241,11 +257,20 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// Create a deep copy of the object.
+        /// </summary>
+        /// <returns>A deep copy of this entity.</returns>
         public IComponentSystemManager DeepCopy()
         {
             return DeepCopy(null);
         }
 
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
         public IComponentSystemManager DeepCopy(IComponentSystemManager into)
         {
             var copy = (ComponentSystemManager)(into ?? MemberwiseClone());

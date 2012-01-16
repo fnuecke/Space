@@ -115,6 +115,13 @@ namespace Engine.ComponentSystem.Components
 
         #region Serialization
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
@@ -123,6 +130,10 @@ namespace Engine.ComponentSystem.Components
                 .Write(Scale);
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
@@ -141,6 +152,14 @@ namespace Engine.ComponentSystem.Components
 
         #region Copying
 
+        /// <summary>
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
+        /// </summary>
+        /// <param name="into"></param>
+        /// <returns>
+        /// An independent (deep) clone of this instance.
+        /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
             var copy = (AbstractRenderer)base.DeepCopy(into);
