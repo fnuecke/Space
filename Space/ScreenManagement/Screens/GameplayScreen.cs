@@ -2,8 +2,6 @@ using System;
 using Microsoft.Xna.Framework;
 using Space.Control;
 using Space.ScreenManagement.Screens.Gameplay;
-using Space.XUI;
-using XUI;
 
 namespace Space.ScreenManagement.Screens
 {
@@ -15,11 +13,6 @@ namespace Space.ScreenManagement.Screens
         #region Fields
 
         private float _pauseAlpha;
-
-        /// <summary>
-        /// Input layer for XUI.
-        /// </summary>
-        private GameInput _gameInput;
 
         /// <summary>
         /// The game client that's active for this game.
@@ -74,21 +67,6 @@ namespace Space.ScreenManagement.Screens
             // timing mechanism that we have just finished a very long frame, and that
             // it should not try to catch up.
             ScreenManager.Game.ResetElapsedTime();
-            
-            // Create the GameInput - UI depends on this.
-            _gameInput = new GameInput((int)E_UiButton.Count, (int)E_UiAxis.Count);
-            // Setup the UI's input mappings.
-            _UI.SetupControls(_gameInput);
-            // Setup the UI with default settings.
-            _UI.Startup(ScreenManager.Game, _gameInput);
-            // Add the initial UI screen.
-            _UI.Screen.AddScreen(new IngameMain());
-        }
-
-        public override void UnloadContent()
-        {
-            // Clean up GUI stuff.
-            _UI.Shutdown();
         }
 
         #endregion
@@ -113,13 +91,6 @@ namespace Space.ScreenManagement.Screens
                 if (!otherScreenHasFocus)
                 {
                     _input.Update();
-
-                    // Update the input.
-                    _gameInput.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
-
-                    // Update the UI.
-                    _UI.Sprite.BeginUpdate();
-                    _UI.Screen.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
                 }
             }
             else
@@ -164,9 +135,6 @@ namespace Space.ScreenManagement.Screens
             // Render the radar.
             _radar.Draw();
             
-            // render the UI - default 2D render pass
-            _UI.Sprite.Render(0);
-
             // If the game is transitioning on or off, fade it out to black.
             if (TransitionPosition > 0 || _pauseAlpha > 0)
             {

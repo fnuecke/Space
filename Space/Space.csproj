@@ -195,7 +195,6 @@
     </Compile>
     <Compile Include="View\NetGraph.cs" />
     <Compile Include="View\SessionInfo.cs" />
-    <Compile Include="XUI\IngameMain.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />
@@ -238,15 +237,6 @@
       <Name>Space.Content %28data%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
       <Project>{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\XUIContent\XUI.Content.contentproj">
-      <Project>{D78EAE4D-281B-4EBA-91A2-37B0C2D34967}</Project>
-      <Name>XUI.Content %28Content%29</Name>
-      <XnaReferenceType>Content</XnaReferenceType>
-    </ProjectReference>
-    <ProjectReference Include="..\XUI\XUI.csproj">
-      <Project>{2F953A14-0E2F-4670-8D82-866020E8DE7B}</Project>
-      <Name>XUI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
