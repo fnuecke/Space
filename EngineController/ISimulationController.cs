@@ -13,5 +13,11 @@ namespace Engine.Controller
         /// The underlying simulation controlled by this controller.
         /// </summary>
         ISimulation Simulation { get; }
+
+        /// <summary>
+        /// The current actual game speed, based on possible slow-downs due
+        /// to the server or other clients.
+        /// </summary>
+        double ActualSpeed { get; }
     }
 }

@@ -59,12 +59,6 @@ namespace Engine.Controller
         /// </summary>
         private int _hashValue;
 
-        /// <summary>
-        /// The adjusted speed we're currently running at, based on how well
-        /// other clients (and the server) currently fare.
-        /// </summary>
-        private double _adjustedSpeed = 1.0;
-
         #endregion
 
         #region Construction / Destruction
@@ -138,7 +132,7 @@ namespace Engine.Controller
                         Session.Send(packet
                             .Write((byte)TssControllerMessage.Synchronize)
                             .Write(_tss.CurrentFrame)
-                            .Write((float)CurrentLoad));
+                            .Write((float)SafeLoad));
                     }
                 }
             }

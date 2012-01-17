@@ -21,14 +21,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Number of frames to check into the past if a sound has been played.
         /// </summary>
-        private const int DeadPeriod = 15;
-
-        /// <summary>
-        /// Epsilon range (norm, not distance) in which sound events of the
-        /// same cue type are considered equal (avoid multi-play due to late
-        /// command altering position or velocity slightly).
-        /// </summary>
-        private static readonly float Epsilon = 4;
+        private const int DeadPeriod = 5;
 
         #endregion
 
@@ -113,7 +106,7 @@ namespace Engine.ComponentSystem.Systems
                         foreach (var soundCue in _parameterization.SoundCues)
                         {
                             // Enqueue play a sound.
-                            Enqueue(new SoundEvent(soundCue, _parameterization), frame);
+                            Enqueue(new SoundEvent(soundCue, component.Entity.UID, _parameterization), frame);
                         }
                     }
                 }
@@ -253,35 +246,15 @@ namespace Engine.ComponentSystem.Systems
                 if (_recentlyPlayed.ContainsKey(testFrame))
                 {
                     // Got a list for this frame, check if the same sound was
-                    // played at the same position already.
-                    if (ContainsWithPosition(_recentlyPlayed[testFrame], e))
+                    // played by the same entity already.
+                    foreach (var soundEvent in _recentlyPlayed[testFrame])
                     {
-                        // Yes, skip it.
-                        return true;
+                        if (soundEvent.EmitterId == e.EmitterId)
+                        {
+                            // Yes, skip it.
+                            return true;
+                        }
                     }
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Checks if a sound event is in the given lists, tested by sound cue
-        /// name, emitter position and emitter velocity.
-        /// </summary>
-        /// <param name="list">The list to look in.</param>
-        /// <param name="e">The parameterization with the event info.</param>
-        /// <returns>Whether such an event was already played.</returns>
-        private static bool ContainsWithPosition(ICollection<SoundEvent> list, SoundEvent e)
-        {
-            foreach (var item in list)
-            {
-                if (item.SoundCue.Equals(e.SoundCue) &&
-                    (item.Position == e.Position ||
-                    System.Math.Abs((item.Position - e.Position).LengthSquared()) < Epsilon) &&
-                    (item.Velocity == e.Velocity ||
-                    System.Math.Abs((item.Velocity - e.Velocity).LengthSquared()) < Epsilon))
-                {
-                    return true;
                 }
             }
             return false;
@@ -294,10 +267,12 @@ namespace Engine.ComponentSystem.Systems
         private sealed class SoundEvent
         {
             public string SoundCue;
+            public int EmitterId;
             public Vector2 Position;
             public Vector2 Velocity;
-            public SoundEvent(string soundCue, SoundParameterization p)
+            public SoundEvent(string soundCue, int emitterId, SoundParameterization p)
             {
+                this.EmitterId = emitterId;
                 this.SoundCue = soundCue;
                 this.Position = p.Position;
                 this.Velocity = p.Velocity;

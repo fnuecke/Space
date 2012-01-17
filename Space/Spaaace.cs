@@ -408,7 +408,7 @@ namespace Space
                             sb.AppendFormat("Objects in system: {0}\n", universe.GetSystemList(cellId).Count);
                         }
 
-                        sb.AppendFormat("Update load: {0:f}\n", client.Controller.CurrentLoad);
+                        sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
 
                         var index = systemManager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
                         if (index != null)

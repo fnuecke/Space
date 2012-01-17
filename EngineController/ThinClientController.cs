@@ -36,6 +36,12 @@ namespace Engine.Controller
         /// </summary>
         public override double CurrentLoad { get { return _server.CurrentLoad; } }
 
+        /// <summary>
+        /// The current actual game speed, based on possible slow-downs due
+        /// to the server or other clients.
+        /// </summary>
+        public double ActualSpeed { get { return _server.ActualSpeed; } }
+
         #endregion
 
         #region Fields
