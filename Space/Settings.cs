@@ -29,6 +29,11 @@ namespace Space
         /// </summary>
         public bool Fullscreen = false;
 
+        /// <summary>
+        /// Whether to enable post processing effects.
+        /// </summary>
+        public bool PostProcessing = true;
+
         #endregion
 
         #region Interface
@@ -51,6 +56,12 @@ namespace Space
         /// Address of the last server we tried to connect to.
         /// </summary>
         public string LastServerAddress = "127.0.0.1";
+
+        /// <summary>
+        /// Autoexec file, contains console commands to automatically execute
+        /// after joining a game.
+        /// </summary>
+        public string AutoexecFilename = "autoexec.cfg";
 
         #endregion
 

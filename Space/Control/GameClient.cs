@@ -1,7 +1,9 @@
-﻿using Engine.ComponentSystem.Systems;
+﻿using System.IO;
+using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation.Commands;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 
@@ -12,6 +14,12 @@ namespace Space.Control
     /// </summary>
     public class GameClient : GameComponent
     {
+        #region Logger
+        
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -45,11 +53,24 @@ namespace Space.Control
         }
 
         /// <summary>
+        /// Adds event listener for connected events, to auto execute console
+        /// commands.
+        /// </summary>
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            Controller.Session.JoinResponse += ConsoleAutoexec;
+        }
+
+        /// <summary>
         /// Kills off the emitter and controller.
         /// </summary>
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
+            Controller.Session.JoinResponse -= ConsoleAutoexec;
+
             Controller.Dispose();
 
             base.Dispose(disposing);
@@ -118,6 +139,46 @@ namespace Space.Control
             base.Update(gameTime);
 
             Controller.Update(gameTime);
+        }
+
+        #endregion
+
+        #region Event handlers
+
+        /// <summary>
+        /// Join complete, run our autoexec file, if we have one.
+        /// </summary>
+        private void ConsoleAutoexec(object sender, JoinResponseEventArgs e)
+        {
+            var console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
+            if (console != null)
+            {
+                if (File.Exists(Settings.Instance.AutoexecFilename))
+                {
+                    logger.Info("Found autoexec file at '{0}', running it now...", Settings.Instance.AutoexecFilename);
+                    try
+                    {
+                        using (var stream = File.OpenRead(Settings.Instance.AutoexecFilename))
+                        using (var reader = new StreamReader(stream))
+                        {
+                            string line;
+                            while ((line = reader.ReadLine()) != null)
+                            {
+                                console.Execute(line);
+                            }
+                        }
+                        logger.Info("Done running autoexec file.");
+                    }
+                    catch (IOException)
+                    {
+                        logger.Info("Failed reading autoexec file, skipping.");
+                    }
+                }
+                else
+                {
+                    logger.Info("No autoexec file found, skipping.");
+                }
+            }
         }
 
         #endregion

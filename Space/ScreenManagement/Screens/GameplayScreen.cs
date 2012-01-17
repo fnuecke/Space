@@ -155,8 +155,11 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
-            // Required for post processing.
-            _postprocessing.BeginDraw();
+            if (Settings.Instance.PostProcessing)
+            {
+                // Required for post processing.
+                _postprocessing.BeginDraw();
+            }
 
             // Draw overall background (stars).
             _background.Draw();
@@ -167,8 +170,11 @@ namespace Space.ScreenManagement.Screens
             // Draw world elements.
             _client.Controller.Draw(gameTime);
 
-            // Finish up post processing, GUI should not be affected by it.
-            _postprocessing.Draw();
+            if (Settings.Instance.PostProcessing)
+            {
+                // Finish up post processing, GUI should not be affected by it.
+                _postprocessing.Draw();
+            }
 
             // Render the radar.
             _radar.Draw();
