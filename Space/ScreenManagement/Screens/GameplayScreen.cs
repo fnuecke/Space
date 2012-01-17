@@ -43,7 +43,7 @@ namespace Space.ScreenManagement.Screens
         /// <summary>
         /// Renderer for life- & energy display.
         /// </summary>
-        LifeEnergy _lifeEnergy;
+        LifeEnergyBar _lifeEnergy;
 
         /// <summary>
         /// The component responsible for post-processing effects.
@@ -68,7 +68,7 @@ namespace Space.ScreenManagement.Screens
             _background = new Background(client);
             _orbits = new Orbits(client);
             _radar = new Radar(client);
-            _lifeEnergy = new LifeEnergy(client);
+            _lifeEnergy = new LifeEnergyBar(client);
         }
 
         /// <summary>
