@@ -240,6 +240,12 @@ namespace Engine.Util
         /// </summary>
         private int _tabCompleteIndex = -1;
 
+        /// <summary>
+        /// Tracks whether we're currently at the last matching command for
+        /// autocomplete cycling.
+        /// </summary>
+        private bool _tabCompleteAtEnd;
+
         #endregion
 
         #region Constructor
@@ -716,36 +722,76 @@ namespace Engine.Util
                         {
                             if (_inputBeforeTab == null)
                             {
+                                // First time we're trying to complete,
+                                // remember what our initial input was,
+                                // i.e. the string we're trying to complete.
                                 _inputBeforeTab = _input.ToString().Substring(0, _cursor).Trim();
                             }
                             if (_inputBeforeTab.Length > 0)
                             {
+                                // For looping backwards.
+                                int previousIndex = _tabCompleteIndex;
+                                // Tracks the index in the command list we're
+                                // currently at.
                                 int numMatches = -1;
-                                bool testIfLast = false;
+                                // This flag is set if we find something, and
+                                // unset if we continue iterating. This allows
+                                // us to wrap back to the beginning.
+                                // In reverse search, this flag is used to
+                                // track whether we already had a match.
+                                bool flag = false;
                                 foreach (var command in _commands)
                                 {
                                     if (command.Key.StartsWith(_inputBeforeTab, StringComparison.Ordinal))
                                     {
+                                        // Got a match.
                                         ++numMatches;
-                                        if (!testIfLast && _tabCompleteIndex < numMatches)
+                                        // Check which way we're actually searching.
+                                        if (args.Modifier == KeyModifier.Shift)
                                         {
-                                            // Found a match we can use.
-                                            _input.Clear();
-                                            _input.Append(command.Key);
-                                            _cursor = _input.Length;
-                                            _tabCompleteIndex = numMatches;
-                                            testIfLast = true;
+                                            // Backwards. If we had a match but
+                                            // are past the current element,
+                                            // stop now. Otherwise go as far to
+                                            // the right as we can.
+                                            if (flag && previousIndex == numMatches)
+                                            {
+                                                break;
+                                            }
+                                            else
+                                            {
+                                                // Found a match we can use.
+                                                _input.Clear();
+                                                _input.Append(command.Key);
+                                                _cursor = _input.Length;
+                                                _tabCompleteIndex = numMatches;
+                                                flag = true;
+                                            }
                                         }
-                                        else if (testIfLast)
+                                        else
                                         {
-                                            testIfLast = false;
-                                            break;
+                                            // Forwards.
+                                            if (!flag && (_tabCompleteAtEnd || _tabCompleteIndex < numMatches))
+                                            {
+                                                // Found a match we can use.
+                                                _input.Clear();
+                                                _input.Append(command.Key);
+                                                _cursor = _input.Length;
+                                                _tabCompleteIndex = numMatches;
+                                                flag = true;
+                                            }
+                                            else if (flag)
+                                            {
+                                                flag = false;
+                                                break;
+                                            }
                                         }
                                     }
                                 }
-                                if (testIfLast)
+                                // We stopped at the last match in the list,
+                                // rewind.
+                                if (args.Modifier != KeyModifier.Shift)
                                 {
-                                    _tabCompleteIndex = -1;
+                                    _tabCompleteAtEnd = flag;
                                 }
                             }
                             else
