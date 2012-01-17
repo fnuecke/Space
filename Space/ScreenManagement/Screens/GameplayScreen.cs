@@ -41,6 +41,11 @@ namespace Space.ScreenManagement.Screens
         Radar _radar;
 
         /// <summary>
+        /// Renderer for life- & energy display.
+        /// </summary>
+        LifeEnergy _lifeEnergy;
+
+        /// <summary>
         /// The component responsible for post-processing effects.
         /// </summary>
         Postprocessing _postprocessing;
@@ -63,6 +68,7 @@ namespace Space.ScreenManagement.Screens
             _background = new Background(client);
             _orbits = new Orbits(client);
             _radar = new Radar(client);
+            _lifeEnergy = new LifeEnergy(client);
         }
 
         /// <summary>
@@ -72,6 +78,8 @@ namespace Space.ScreenManagement.Screens
         {
             _background.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
             _radar.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
+            _lifeEnergy.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
+
             _orbits.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
 
             _postprocessing = new Postprocessing(ScreenManager.Game);
@@ -164,6 +172,9 @@ namespace Space.ScreenManagement.Screens
 
             // Render the radar.
             _radar.Draw();
+
+            // Render the life- and energy display.
+            _lifeEnergy.Draw();
 
             // If the game is transitioning on or off, fade it out to black.
             if (TransitionPosition > 0 || _pauseAlpha > 0)

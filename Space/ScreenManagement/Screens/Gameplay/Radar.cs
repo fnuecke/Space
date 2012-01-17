@@ -262,6 +262,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // ... and the border of the radar a bit lighter.
             BasicForms.DrawRectangle(_spriteBatch, _radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.3f);
 
+
             // Done drawing.
             _spriteBatch.End();
         }
