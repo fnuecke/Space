@@ -108,6 +108,7 @@ namespace Engine.Controller
         /// in the base class. Also part of synchronizing run speeds on
         /// server and client by sending sync requests in certain intervals.
         /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         public override void Update(GameTime gameTime)
         {
             if (Session.ConnectionState == ClientState.Connected && !_tss.WaitingForSynchronization)

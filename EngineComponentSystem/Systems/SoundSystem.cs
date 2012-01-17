@@ -120,7 +120,7 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        public override void Draw(long frame)
+        public override void Draw(GameTime gameTime, long frame)
         {
             if (SetLastFrame(frame)) { return; }
 

@@ -99,6 +99,11 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Reused for iteration.
         /// </summary>
+        private List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(1024);
+
+        /// <summary>
+        /// Reused for iteration.
+        /// </summary>
         private List<QuadTree<int>> _reusableTreeList = new List<QuadTree<int>>(8);
 
         /// <summary>
@@ -200,35 +205,38 @@ namespace Engine.ComponentSystem.Systems
         public override void Update(long frame)
         {
             // Check all components for changes.
-            var currentComponents = new List<AbstractComponent>(UpdateableComponents);
-            foreach (var component in currentComponents)
+            _reusableComponentList.AddRange(UpdateableComponents);
+            foreach (var component in _reusableComponentList)
             {
-                _parameterization.PositionChanged = false;
                 if (component.Enabled)
                 {
                     component.Update(_parameterization);
-                }
-                if (_parameterization.PositionChanged)
-                {
-                    // We need to check if this entities position in the
-                    // index is still valid. Get new position.
-                    var transform = component.Entity.GetComponent<Transform>();
-
-                    // Cannot track objects that don't have a position.
-                    if (transform == null)
+                    if (_parameterization.PositionChanged)
                     {
-                        continue;
-                    }
+                        // We need to check if this entities position in the
+                        // index is still valid. Get new position.
+                        var transform = component.Entity.GetComponent<Transform>();
 
-                    // Update all indexes the component is part of.
-                    foreach (var tree in TreesForGroups(_parameterization.IndexGroups, _reusableTreeList))
-                    {
-                        tree.Update(ref _parameterization.PreviousPosition, ref transform.Translation, component.Entity.UID);
-                    }
+#if DEBUG
+                        // Cannot track objects that don't have a position.
+                        if (transform == null)
+                        {
+                            throw new InvalidOperationException("Indexed objects must have a transform component.");
+                        }
+#endif
 
-                    _reusableTreeList.Clear();
+                        // Update all indexes the component is part of.
+                        foreach (var tree in TreesForGroups(_parameterization.IndexGroups, _reusableTreeList))
+                        {
+                            tree.Update(ref _parameterization.PreviousPosition, ref transform.Translation, component.Entity.UID);
+                        }
+
+                        _reusableTreeList.Clear();
+                    }
+                    _parameterization.PositionChanged = false;
                 }
             }
+            _reusableComponentList.Clear();
         }
 
         public override void Clear()
@@ -374,9 +382,10 @@ namespace Engine.ComponentSystem.Systems
             else
             {
                 copy._trees = new QuadTree<int>[sizeof(ulong) * 8];
-                copy._reusableEntityIdList = new List<int>();
-                copy._reusableTreeList = new List<QuadTree<int>>();
                 copy._parameterization = new IndexParameterization();
+                copy._reusableComponentList = new List<AbstractComponent>(1024);
+                copy._reusableTreeList = new List<QuadTree<int>>();
+                copy._reusableEntityIdList = new List<int>();
             }
 
             return copy;

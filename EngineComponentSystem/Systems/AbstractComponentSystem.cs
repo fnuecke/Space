@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -92,8 +93,9 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Default implementation does nothing.
         /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public virtual void Draw(long frame)
+        public virtual void Draw(GameTime gameTime, long frame)
         {
         }
 

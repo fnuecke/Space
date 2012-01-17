@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 namespace Engine.ComponentSystem.Systems
 {
     /// <summary>
@@ -31,8 +32,9 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Draw all subsystems.
         /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        void Draw(long frame);
+        void Draw(GameTime gameTime, long frame);
 
         /// <summary>
         /// Add the component to supported subsystems.

@@ -102,44 +102,48 @@ namespace Engine.ComponentSystem.Components
         {
             var transform = Entity.GetComponent<Transform>();
 
+#if DEBUG
             // Only if a transform is set.
-            if (transform != null)
+            if (transform == null)
             {
-                var args = (DefaultLogicParameterization)parameterization;
-
-                // Try to get the center of the entity we're rotating around.
-                Vector2 center = Vector2.Zero;
-                var centerEntity = Entity.Manager.GetEntity(CenterEntityId);
-                if (centerEntity != null)
-                {
-                    var centerTransform = centerEntity.GetComponent<Transform>();
-                    if (centerTransform != null)
-                    {
-                        center = centerTransform.Translation;
-                    }
-                }
-
-                // Get the angle based on the time passed.
-                double t = PeriodOffset + System.Math.PI * args.Frame / Period;
-                float sinT = (float)System.Math.Sin(t);
-                float cosT = (float)System.Math.Cos(t);
-
-                var f = (float)System.Math.Sqrt(System.Math.Abs(MinorRadius * MinorRadius - MajorRadius * MajorRadius));
-
-                // If our angle changed, recompute our sine and cosine.
-                if (_angle != Angle)
-                {
-                    _angle = Angle;
-                    _sinPhi = (float)System.Math.Sin(_angle);
-                    _cosPhi = (float)System.Math.Cos(_angle);
-                }
-
-                // Compute the current position and set it.
-                transform.SetTranslation(
-                    center.X + f * _cosPhi + MajorRadius * cosT * _cosPhi - MinorRadius * sinT * _sinPhi,
-                    center.Y + f * _sinPhi + MajorRadius * cosT * _sinPhi + MinorRadius * sinT * _cosPhi
-                );
+                throw new InvalidOperationException("Ellipse path's entities must have a transform component.");
             }
+#endif
+
+            var args = (DefaultLogicParameterization)parameterization;
+
+            // Try to get the center of the entity we're rotating around.
+            Vector2 center = Vector2.Zero;
+            var centerEntity = Entity.Manager.GetEntity(CenterEntityId);
+            if (centerEntity != null)
+            {
+                var centerTransform = centerEntity.GetComponent<Transform>();
+                if (centerTransform != null)
+                {
+                    center = centerTransform.Translation;
+                }
+            }
+
+            // Get the angle based on the time passed.
+            double t = PeriodOffset + System.Math.PI * args.Frame / Period;
+            float sinT = (float)System.Math.Sin(t);
+            float cosT = (float)System.Math.Cos(t);
+
+            var f = (float)System.Math.Sqrt(System.Math.Abs(MinorRadius * MinorRadius - MajorRadius * MajorRadius));
+
+            // If our angle changed, recompute our sine and cosine.
+            if (_angle != Angle)
+            {
+                _angle = Angle;
+                _sinPhi = (float)System.Math.Sin(_angle);
+                _cosPhi = (float)System.Math.Cos(_angle);
+            }
+
+            // Compute the current position and set it.
+            transform.SetTranslation(
+                center.X + f * _cosPhi + MajorRadius * cosT * _cosPhi - MinorRadius * sinT * _sinPhi,
+                center.Y + f * _sinPhi + MajorRadius * cosT * _sinPhi + MinorRadius * sinT * _cosPhi
+            );
         }
 
         /// <summary>

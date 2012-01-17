@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -40,7 +41,7 @@ namespace Engine.ComponentSystem.Systems
         /// The component system manager this system is part of.
         /// </summary>
         IComponentSystemManager Manager { get; set; }
-
+        
         /// <summary>
         /// A list of components registered in this system.
         /// </summary>
@@ -78,8 +79,9 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Draw all components in this system.
         /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        void Draw(long frame);
+        void Draw(GameTime gameTime, long frame);
 
         /// <summary>
         /// Add the component to this system, if it's supported.

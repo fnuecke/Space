@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -59,11 +60,11 @@ namespace Engine.ComponentSystem.Systems
         /// Draw all known systems.
         /// </summary>
         /// <param name="frame">The frame in which the draw is applied.</param>
-        public void Draw(long frame)
+        public void Draw(GameTime gameTime, long frame)
         {
             foreach (var system in _systems)
             {
-                system.Draw(frame);
+                system.Draw(gameTime, frame);
             }
         }
 

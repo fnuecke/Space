@@ -15,6 +15,11 @@ namespace Engine.ComponentSystem.Parameterizations
     public class RendererParameterization
     {
         /// <summary>
+        /// The game time object for the current update.
+        /// </summary>
+        public GameTime GameTime;
+
+        /// <summary>
         /// The sprite batch object to use for rendering into.
         /// </summary>
         public SpriteBatch SpriteBatch;

@@ -176,7 +176,7 @@ namespace Space.ComponentSystem.Components
                                 {
                                     // Adjust velocity.
                                     delta.Normalize();
-                                    otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(65536, distanceSquared));
+                                    otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(262144, distanceSquared));
                                 }
                             }
                         }

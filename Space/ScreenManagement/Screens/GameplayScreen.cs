@@ -130,7 +130,7 @@ namespace Space.ScreenManagement.Screens
             _background.Draw();
 
             // Draw world elements.
-            _client.Controller.Draw();
+            _client.Controller.Draw(gameTime);
 
             // Render the radar.
             _radar.Draw();

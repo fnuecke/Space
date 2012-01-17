@@ -8,6 +8,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Simulation
 {
@@ -583,6 +584,7 @@ namespace Engine.Simulation
             }
         }
 
+#if TSS_THREADING
         /// <summary>
         /// Utility method for argument binding.
         /// </summary>
@@ -615,6 +617,7 @@ namespace Engine.Simulation
                 throw;
             }
         }
+#endif
 
         /// <summary>
         /// Rewind the simulation to the "beginning" of the given frame.
@@ -867,9 +870,9 @@ namespace Engine.Simulation
             /// <summary>
             /// Only render passes supported, based on leading state.
             /// </summary>
-            public void Draw(long frame)
+            public void Draw(GameTime gameTime, long frame)
             {
-                _tss.LeadingState.EntityManager.SystemManager.Draw(frame);
+                _tss.LeadingState.EntityManager.SystemManager.Draw(gameTime, frame);
             }
 
             #endregion

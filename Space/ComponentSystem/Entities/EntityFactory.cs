@@ -287,8 +287,9 @@ namespace Space.ComponentSystem.Entities
         public static Entity CreateOrbitingAstronomicalObject(
             string texture,
             Color planetTint,
-            Color atmosphereTint,
             float radius,
+            float rotationDirection,
+            Color atmosphereTint,
             Entity center,
             float majorRadius,
             float minorRadius,
@@ -312,7 +313,7 @@ namespace Space.ComponentSystem.Entities
 
             entity.AddComponent(new AstronomicBody(type));
             entity.AddComponent(new Detectable("Textures/radar_planet"));
-            entity.AddComponent(new PlanetRenderer(texture, radius, atmosphereTint, planetTint));
+            entity.AddComponent(new PlanetRenderer(texture, planetTint, radius, rotationDirection, atmosphereTint));
 
             return entity;
         }

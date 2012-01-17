@@ -100,11 +100,12 @@ namespace Engine.Controller
         /// <summary>
         /// Render the server game state.
         /// </summary>
-        public override void Draw()
+        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
+        public override void Draw(GameTime gameTime)
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                Simulation.EntityManager.SystemManager.Draw(Simulation.CurrentFrame);
+                Simulation.EntityManager.SystemManager.Draw(gameTime, Simulation.CurrentFrame);
             }
         }
 

@@ -544,9 +544,9 @@ namespace Engine.Collections
                 // Point is outside our current tree bounds. Expand it to allow
                 // fitting in the new point.
                 uint neededSizeX = GetNextHighestPowerOfTwo(
-                    (uint)System.Math.Max(0, System.Math.Abs(point.X) - 1));
+                    (uint)System.Math.Abs(point.X));
                 uint neededSizeY = GetNextHighestPowerOfTwo(
-                    (uint)System.Math.Max(0, System.Math.Abs(point.Y) - 1));
+                    (uint)System.Math.Abs(point.Y));
                 int neededSize = (int)System.Math.Max(neededSizeX, neededSizeY);
 
                 // Avoid possible issues when adding the first point at (0, 0).
