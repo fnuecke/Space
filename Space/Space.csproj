@@ -155,6 +155,7 @@
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="ScreenManagement\Screens\Entries\OptionMenuEntry.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Background.cs" />
+    <Compile Include="ScreenManagement\Screens\Gameplay\LifeEnergy.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\InputHandler.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Radar.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\BasicForms.cs" />
