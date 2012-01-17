@@ -97,10 +97,15 @@ namespace Space.ComponentSystem.Entities
             var velocity = new Velocity();
             velocity.UpdateOrder = 13;
 
+            // Run weapon control after velocity, to spawn projectiles at the
+            // correct position.
+            var weaponControl = new WeaponControl();
+            weaponControl.UpdateOrder = 14;
+
             // Energy should be update after it was used, to give it a chance
             // to regenerate (e.g. if we're using less than we produce this
             // avoids always displaying slightly less than max).
-            energy.UpdateOrder = 14;
+            energy.UpdateOrder = 15;
 
             // Physics related components.
             entity.AddComponent(new Transform(new Vector2(50000, 50000)));
@@ -123,7 +128,7 @@ namespace Space.ComponentSystem.Entities
 
             // Controllers for maneuvering and shooting.
             entity.AddComponent(shipControl);
-            entity.AddComponent(new WeaponControl());
+            entity.AddComponent(weaponControl);
             entity.AddComponent(new ShipInfo());
 
             // Audio and display components.
