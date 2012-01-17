@@ -14,8 +14,7 @@ VertexShaderData VertexShaderFunction(VertexShaderData input)
 
 float4 PixelShaderFunction(VertexShaderData input) : COLOR0
 {
-    float a = (input.TextureCoordinate.x * input.TextureCoordinate.x +
-               input.TextureCoordinate.y * input.TextureCoordinate.y - 1) / Thickness + 1;
+    float a = (max(abs(input.TextureCoordinate.x), abs(input.TextureCoordinate.y)) - 1) / Thickness + 1;
     return Color * (1 - a * a);
 }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
@@ -142,7 +143,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             center.Y = viewport.Height / 2f;
 
             // Get bounds in which to display the icon.
-            Rectangle screenBounds = viewport.Bounds;
+            var screenBounds = viewport.Bounds;
 
             // Precomputed for the loop.
             float radarRangeSquared = radarRange * radarRange;

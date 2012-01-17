@@ -15,6 +15,53 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public sealed class IndexSystem : AbstractComponentSystem<IndexParameterization, NullParameterization>
     {
+        #region Debug stuff
+        #if DEBUG
+
+        public int DEBUG_NumIndexes
+        {
+            get
+            {
+                int count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        ++count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public int DEBUG_Count
+        {
+            get
+            {
+                int count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        count += index.Count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public void DEBUG_DrawIndex(ulong groups, Engine.Graphics.AbstractShape shape, Vector2 translation)
+        {
+            foreach (var tree in TreesForGroups(groups, _reusableTreeList))
+            {
+                tree.Draw(shape, translation);   
+            }
+            _reusableTreeList.Clear();
+        }
+
+        #endif
+        #endregion
+
         #region Constants
 
         /// <summary>
@@ -31,7 +78,7 @@ namespace Engine.ComponentSystem.Systems
         /// Minimum size of a node in our index as the required bit shift, i.e.
         /// the actual minimum node size is <c>1 &lt;&lt; MinimumNodeSizeShift</c>.
         /// </summary>
-        public const int MinimumNodeSizeShift = 5;
+        public const int MinimumNodeSizeShift = 7;
 
         /// <summary>
         /// Minimum size of a node in our index.
@@ -41,7 +88,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Maximum entries per node in our index to use.
         /// </summary>
-        private const int _maxEntriesPerNode = 16;
+        private const int _maxEntriesPerNode = 10;
 
         #endregion
 
@@ -112,38 +159,6 @@ namespace Engine.ComponentSystem.Systems
         private List<int> _reusableEntityIdList = new List<int>(64);
 
         #endregion
-
-        public int DEBUG_NumIndexes
-        {
-            get
-            {
-                int count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        ++count;
-                    }
-                }
-                return count;
-            }
-        }
-
-        public int DEBUG_Count
-        {
-            get
-            {
-                int count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        count += index.Count;
-                    }
-                }
-                return count;
-            }
-        }
 
         #region Entity lookup
 

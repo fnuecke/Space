@@ -777,6 +777,11 @@ namespace Engine.Simulation
                 return _tss.LeadingState.EntityManager.GetEntity(entityUid);
             }
 
+            public bool Contains(int entityUid)
+            {
+                return _tss.LeadingState.EntityManager.Contains(entityUid);
+            }
+
             #region Unsupported
 
             public event EventHandler<EntityEventArgs> Added;

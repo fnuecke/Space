@@ -3,14 +3,14 @@
 namespace Engine.Graphics
 {
     /// <summary>
-    /// Utility class for rendering filled ellipses or circles.
+    /// Utility class for rendering filled rectangles.
     /// </summary>
-    public sealed class FilledEllipse : AbstractEllipse
+    public sealed class FilledRectangle : AbstractShape
     {
         #region Fields
         
         /// <summary>
-        /// The current border gradient of the ellipse.
+        /// The current border gradient of the rectangle.
         /// </summary>
         private float _gradient;
 
@@ -19,11 +19,11 @@ namespace Engine.Graphics
         #region Constructor
 
         /// <summary>
-        /// Creates a new ellipse renderer for the given game.
+        /// Creates a new rectangle renderer for the given game.
         /// </summary>
         /// <param name="game"></param>
-        public FilledEllipse(Game game)
-            : base(game, "Effects/FilledCircle")
+        public FilledRectangle(Game game)
+            : base(game, "Effects/FilledRectangle")
         {
             // Set defaults.
             SetGradient(1f);
@@ -34,7 +34,7 @@ namespace Engine.Graphics
         #region Accessors
 
         /// <summary>
-        /// Sets a new gradient for this ellipse.
+        /// Sets a new gradient for this rectangle.
         /// </summary>
         /// <param name="gradient">The new gradient.</param>
         public void SetGradient(float gradient)

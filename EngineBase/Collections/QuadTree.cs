@@ -1159,100 +1159,48 @@ namespace Engine.Collections
 
         #endregion
 
-        //#region Drawing (mostly for debugging)
+        #region Rendering
 
+        /// <summary>
+        /// Renders a graphical representation of this tree's cells using the
+        /// specified shape renderer.
+        /// </summary>
+        /// <param name="rectangle">The shape renderer to paint with.</param>
+        /// <param name="translation">The translation to apply to all draw
+        /// operation.</param>
+        public void Draw(Engine.Graphics.AbstractShape shape, Vector2 translation)
+        {
+            DrawNode(_root, translation.X, translation.Y, _bounds.Width, shape);
+        }
 
-        //public void Print(string name = "index")
-        //{
-        //    var bitmap = new System.Drawing.Bitmap(8192, 8192);
+        /// <summary>
+        /// Renders a single note into a sprite batch, and recursively render
+        /// its children.
+        /// </summary>
+        private void DrawNode(Node node, float centerX, float centerY, int size, Engine.Graphics.AbstractShape shape)
+        {
+            // Abort if there is no node here.
+            if (node == null)
+            {
+                return;
+            }
 
-        //    var graphics = System.Drawing.Graphics.FromImage(bitmap);
+            // Render the bounds for this node.
+            shape.SetCenter(centerX, centerY);
+            shape.SetSize(size - 1);
+            shape.Draw();
 
-        //    graphics.Clear(System.Drawing.Color.White);
-        //    graphics.TranslateTransform(_bounds.Width >> 1, _bounds.Height >> 1);
-        //    var nodeSize = _bounds.Width;
-        //    var node = _root;
-        //    while (node != null && !node.IsLeaf && node.GetChildrenCount() < 2)
-        //    {
-        //        nodeSize >>= 1;
-        //        for (int i = 0; i < 4; ++i)
-        //        {
-        //            if (node.Children[i] != null)
-        //            {
-        //                node = node.Children[i];
-        //                switch (i)
-        //                {
-        //                    case 0:
-        //                        break;
-        //                    case 1:
-        //                        graphics.TranslateTransform(-nodeSize, 0);
-        //                        break;
-        //                    case 2:
-        //                        graphics.TranslateTransform(0, -nodeSize);
-        //                        break;
-        //                    case 3:
-        //                        graphics.TranslateTransform(-nodeSize, -nodeSize);
-        //                        break;
-        //                }
-        //                break;
-        //            }
-        //        }
-        //    }
-        //    graphics.ScaleTransform(8192 / (float)nodeSize, 8192 / (float)nodeSize);
+            // Check for child nodes.
+            for (int i = 0; i < 4; ++i)
+            {
+                DrawNode(node.Children[i],
+                            centerX + (((i & 1) == 0) ? -(size >> 2) : (size >> 2)),
+                            centerY + (((i & 2) == 0) ? -(size >> 2) : (size >> 2)),
+                            size >> 1,
+                            shape);
+            }
+        }
 
-        //    DrawNode(0, 0, node, nodeSize, graphics);
-
-        //    bitmap.Save(name + ".bmp");
-        //}
-
-        //private void DrawNode(int x, int y, Node node, int size, System.Drawing.Graphics graphics)
-        //{
-        //    if (node == null)
-        //    {
-        //        return;
-        //    }
-
-        //    var pen = new System.Drawing.Pen(_colors.ContainsKey(size) ? _colors[size] : System.Drawing.Color.DarkBlue, 1);
-        //    graphics.DrawRectangle(pen, x, y, size - 1, size - 1);
-        //    //graphics.DrawString(node.GetCount().ToString(), new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, 10),
-        //    //    new System.Drawing.SolidBrush(System.Drawing.Color.Red), x + 3 + ((int)System.Math.Log(size, 2) - 6) * 10, y + 3);
-
-        //    if (node.IsLeaf)
-        //    {
-        //        pen = new System.Drawing.Pen(System.Drawing.Color.Blue, 1);
-        //        foreach (var entry in node.Entries)
-        //        {
-        //            graphics.DrawEllipse(pen, entry.Value.Point.X - 2, entry.Value.Point.Y - 2, 3, 3);
-        //            graphics.DrawString(entry.Value.Value.ToString(), new System.Drawing.Font(System.Drawing.FontFamily.GenericMonospace, 10),
-        //                new System.Drawing.SolidBrush(System.Drawing.Color.Black), entry.Value.Point.X, entry.Value.Point.Y);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        for (int i = 0; i < 4; ++i)
-        //        {
-        //            DrawNode(x + (((i & 1) == 0) ? 0 : (size >> 1)),
-        //                     y + (((i & 2) == 0) ? 0 : (size >> 1)), node.Children[i], size >> 1, graphics);
-        //        }
-        //    }
-        //}
-
-        //private Dictionary<int, System.Drawing.Color> _colors = new Dictionary<int, System.Drawing.Color>()
-        //{
-        //    { 1 << 0, System.Drawing.Color.Magenta },
-        //    { 1 << 1, System.Drawing.Color.Tomato },
-        //    { 1 << 2, System.Drawing.Color.SpringGreen },
-        //    { 1 << 3, System.Drawing.Color.SkyBlue },
-        //    { 1 << 4, System.Drawing.Color.Wheat },
-        //    { 1 << 5, System.Drawing.Color.Violet },
-        //    { 1 << 6, System.Drawing.Color.Tan },
-        //    { 1 << 7, System.Drawing.Color.Blue },
-        //    { 1 << 8, System.Drawing.Color.Orange },
-        //    { 1 << 9, System.Drawing.Color.Green },
-        //    { 1 << 10, System.Drawing.Color.Red },
-        //    { 1 << 11, System.Drawing.Color.Yellow }
-        //};
-
-        //#endregion
+        #endregion
     }
 }

@@ -3,14 +3,14 @@
 namespace Engine.Graphics
 {
     /// <summary>
-    /// Utility class for rendering ellipses or circles.
+    /// Utility class for rendering rectangles.
     /// </summary>
-    public sealed class Ellipse : AbstractEllipse
+    public sealed class Rectangle : AbstractShape
     {
         #region Fields
         
         /// <summary>
-        /// The current thickness of the ellipse.
+        /// The current thickness of the rectangle.
         /// </summary>
         private float _thickness;
 
@@ -19,11 +19,11 @@ namespace Engine.Graphics
         #region Constructor
 
         /// <summary>
-        /// Creates a new ellipse renderer for the given game.
+        /// Creates a new rectangle renderer for the given game.
         /// </summary>
         /// <param name="game"></param>
-        public Ellipse(Game game)
-            : base(game, "Effects/Circle")
+        public Rectangle(Game game)
+            : base(game, "Effects/Rectangle")
         {
             // Set defaults.
             SetThickness(1f);
@@ -34,7 +34,7 @@ namespace Engine.Graphics
         #region Accessors
 
         /// <summary>
-        /// Sets a new thickness for this ellipse.
+        /// Sets a new thickness for this rectangle.
         /// </summary>
         /// <param name="thickness">The new thickness.</param>
         public void SetThickness(float thickness)

@@ -181,7 +181,8 @@ namespace Space
                 "Leave the current game.");
 
             #region Debug commands
-            
+            #if DEBUG
+
             _console.AddCommand("d_goto", args =>
             {
                 Vector2 position;
@@ -220,6 +221,22 @@ namespace Space
                 "Sets the specified energy consumption for all equipped thrusters.",
                 "d_thrusterec <consumption> - set the specified energy consumption.");
 
+            _console.AddCommand("d_renderindex", args =>
+            {
+                int index = int.Parse(args[1]);
+                if (index > 64)
+                {
+                    _console.WriteLine("Invalid index, must be smaller or equal to 64.");
+                }
+                else
+                {
+                    _indexGroup = index;
+                }
+            },
+                "Enables rendering of the index with the given index.",
+                "d_renderindex <index> - render the cells of the specified index.");
+
+            #endif
             #endregion
 
             // Copy everything written to our game console to the actual console,
@@ -346,6 +363,9 @@ namespace Space
 
 #if DEBUG
 
+        private Engine.Graphics.Rectangle _indexRectangle;
+        private int _indexGroup = -1;
+
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
@@ -353,6 +373,12 @@ namespace Space
         protected override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
+
+            if (_indexRectangle == null)
+            {
+                _indexRectangle = new Engine.Graphics.Rectangle(this);
+                _indexRectangle.SetColor(Color.LightGreen * 0.25f);
+            }
 
             _fps.Put(1 / gameTime.ElapsedGameTime.TotalSeconds);
 
@@ -413,6 +439,10 @@ namespace Space
                         var index = systemManager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
                         if (index != null)
                         {
+                            if (_indexGroup >= 0)
+                            {
+                                index.DEBUG_DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2) - position);
+                            }
                             sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
                         }
 

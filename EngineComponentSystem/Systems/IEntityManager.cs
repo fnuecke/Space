@@ -78,6 +78,13 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="entityUid">The id of the entity to look up.</param>
         /// <returns>The current representation in this manager.</returns>
         Entity GetEntity(int entityUid);
+        
+        /// <summary>
+        /// Test whether the specified entity is in this manager.
+        /// </summary>
+        /// <param name="entityUid">The id of the entity to check for.</param>
+        /// <returns>Whether the manager contains the entity or not.</returns>
+        bool Contains(int entityUid);
 
         #endregion
     }
