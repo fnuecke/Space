@@ -14,14 +14,24 @@ namespace Space.ScreenManagement.Screens.Gameplay
     {
 
         /// <summary>
+        /// The values for the sections in the health bar.
+        /// </summary>
+        private int[] Ranges = { 50, 500, 2500};
+
+        /// <summary>
+        /// The minimum gap between two sections in the health bar.
+        /// </summary>
+        private int MinGap = 3;
+
+        /// <summary>
         /// Sprite batch used for rendering.
         /// </summary>
         private SpriteBatch _spriteBatch;
 
         /// <summary>
-        /// Ship image (for testing only).
+        /// Helper class for drawing basic forms.
         /// </summary>
-        private Texture2D _ship;
+        private BasicForms _basicForms;
 
         /// <summary>
         /// The local client, used to fetch player's position and radar range.
@@ -39,6 +49,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
             _spriteBatch = spriteBatch;
+            _basicForms = new BasicForms(_spriteBatch);
         }
 
         public void Draw()
@@ -52,27 +63,54 @@ namespace Space.ScreenManagement.Screens.Gameplay
             int positionX = (viewport.Width - width) / 2;
             int positionY = (viewport.Height - height) / 2 - 40;
 
-            int maxLife = 560;
-            int currentLife = 460;
+            int maxLife = 100;
+            int currentLife = 100;
 
-            BasicForms.FillRectangle(_spriteBatch, positionX, positionY, width, height, Color.Black);
-            BasicForms.FillRectangle(_spriteBatch, positionX + 1, positionY + 1, (int) ((width - 2) * (currentLife * 1.0/maxLife)), height - 2, new Color(142, 232, 63));
+            int border = 1;
 
-            for (int i = 25; i <= currentLife; i += 25)
+            _basicForms.FillRectangle(positionX, positionY, width, height, Color.Black);
+            _basicForms.FillRectangle(positionX + border, positionY + border, (int)((width - 2 * border) * (currentLife * 1.0 / maxLife)), height - 2 * border, new Color(142, 232, 63));
+
+            // draw the standard pattern
+            for (int i = 1; i * 1.0 / (width - 2 * border) < currentLife * 1.0 / maxLife; i += 2)
             {
-                int pos = (int) ((i * 1.0) / maxLife * width);
-                BasicForms.FillRectangle(_spriteBatch, positionX + 1 + pos, positionY + 1, 1, height - 2, Color.Red);
+                _basicForms.FillRectangle(positionX + border + i, positionY + border + 2, 1, height - 2 * border - 2, Color.White * 0.3f);
             }
 
-            for (int i = 100; i <= currentLife; i += 100)
+            // draw the first separation
+            for (int i = Ranges[0]; i < currentLife; i += Ranges[0])
             {
-                int pos = (int) ((i * 1.0) / maxLife * width);
-                BasicForms.FillRectangle(_spriteBatch, positionX + 1 + pos, positionY + 1, 2, height - 2, Color.Red);
+                int pos = (int)((i * 1.0) / maxLife * (width - 2 * border));
+                if (pos < MinGap)
+                {
+                    break;
+                }
+                _basicForms.FillRectangle(positionX + border + pos, positionY + border + 2, 1, height - 2 * border - 2 * 2, Color.Black * 0.25f);
             }
 
+            // draw the second separation
+            for (int i = Ranges[1]; i <= currentLife; i += Ranges[1])
+            {
+                int pos = (int)((i * 1.0) / maxLife * (width - 2 * border));
+                if (pos < MinGap)
+                {
+                    break;
+                }
+                _basicForms.FillRectangle(positionX + border + pos, positionY + border + 1, 1, height - 2 * border - 2 * 1, Color.Black);
+            }
+
+            // draw the third separation
+            for (int i = Ranges[2]; i <= currentLife; i += Ranges[2])
+            {
+                int pos = (int)((i * 1.0) / maxLife * (width - 2 * border));
+                if (pos < MinGap)
+                {
+                    break;
+                }
+                _basicForms.FillRectangle(positionX + border + pos, positionY, 2, height, Color.Black);
+            }
 
             _spriteBatch.End();
         }
-
     }
 }

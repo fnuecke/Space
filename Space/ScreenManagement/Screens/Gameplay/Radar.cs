@@ -45,6 +45,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private Texture2D _radarBackground;
 
+        /// <summary>
+        /// Helper class for drawing basic forms.
+        /// </summary>
+        private BasicForms _basicForms;
+
         #endregion
 
         #region Single-Allocation
@@ -71,6 +76,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _spriteBatch = spriteBatch;
 
             _radarBackground = content.Load<Texture2D>("Textures/radar_background");
+            _basicForms = new BasicForms(_spriteBatch);
         }
 
         #endregion
@@ -254,13 +260,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _reusableNeighborList.Clear();
 
             // Make the background of the radar a bit darker...
-            BasicForms.FillRectangle(_spriteBatch, 0, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
-            BasicForms.FillRectangle(_spriteBatch, viewport.Width - _radarBorderSize, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
-            BasicForms.FillRectangle(_spriteBatch, _radarBorderSize, 0, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
-            BasicForms.FillRectangle(_spriteBatch, _radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
+            _basicForms.FillRectangle(0, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
+            _basicForms.FillRectangle(viewport.Width - _radarBorderSize, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
+            _basicForms.FillRectangle(_radarBorderSize, 0, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
+            _basicForms.FillRectangle(_radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
 
             // ... and the border of the radar a bit lighter.
-            BasicForms.DrawRectangle(_spriteBatch, _radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.3f);
+            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.3f);
 
 
             // Done drawing.
