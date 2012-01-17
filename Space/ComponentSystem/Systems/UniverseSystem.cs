@@ -239,8 +239,9 @@ namespace Space.ComponentSystem.Systems
             var planet = EntityFactory.CreateOrbitingAstronomicalObject(
                 texture: "Textures/rock_07",
                 planetTint: Color.Lerp(Color.DarkOliveGreen, Color.White, 0.5f),
-                atmosphereTint: Color.LightSkyBlue,
                 radius: planetRadius,
+                rotationDirection: (float)(2 * System.Math.PI * random.NextDouble()),
+                atmosphereTint: Color.LightSkyBlue,
                 center: sun,
                 majorRadius: planetOrbitMajorRadius,
                 minorRadius: planetOrbitMinorRadius,
@@ -293,8 +294,9 @@ namespace Space.ComponentSystem.Systems
             var moon = EntityFactory.CreateOrbitingAstronomicalObject(
                 texture: "Textures/rock_02",
                 planetTint: Color.White,
-                atmosphereTint: Color.Transparent,
                 radius: moonRadius,
+                rotationDirection: (float)(2 * System.Math.PI * random.NextDouble()),
+                atmosphereTint: Color.Transparent,
                 center: planet,
                 majorRadius: moonOrbitMajorRadius,
                 minorRadius: moonOrbitMinorRadius,

@@ -52,12 +52,6 @@ namespace Engine.Controller
         private float[] _clientLoads;
 
         /// <summary>
-        /// The adjusted speed we're currently running at, based on how well
-        /// our clients currently fare.
-        /// </summary>
-        private double _adjustedSpeed = 1.0;
-
-        /// <summary>
         /// Keeping track of whether we might be the one slowing the game.
         /// </summary>
         private bool _serverIsSlowing;
@@ -111,8 +105,8 @@ namespace Engine.Controller
 
             // Also take the possibility of the server slowing down the game
             // into account.
-            double serverSpeed = 1f / CurrentLoad;
-            if (CurrentLoad >= 1f && serverSpeed < _adjustedSpeed)
+            double serverSpeed = 1f / SafeLoad;
+            if (SafeLoad >= 1f && serverSpeed < _adjustedSpeed)
             {
                 _adjustedSpeed = serverSpeed;
                 _serverIsSlowing = true;
@@ -150,8 +144,8 @@ namespace Engine.Controller
         private void AdjustSpeed()
         {
             // Find the participant with the worst update load.
-            double worstLoad = CurrentLoad;
-            _serverIsSlowing = (CurrentLoad >= 1f);
+            double worstLoad = SafeLoad;
+            _serverIsSlowing = (SafeLoad >= 1f);
             for (int i = 0; i < _clientLoads.Length; i++)
             {
                 if (_clientLoads[i] > worstLoad)

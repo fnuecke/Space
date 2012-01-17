@@ -131,53 +131,60 @@ namespace Space.ComponentSystem.Components
                 {
                     // If they have an enabled gravitation component...
                     var otherGravitation = neigbour.GetComponent<Gravitation>();
-                    if (otherGravitation == null || !otherGravitation.Enabled)
+
+#if DEBUG
+                    // Validation.
+                    if ((otherGravitation.GravitationType & GravitationTypes.Attractee) == 0)
+                    {
+                        throw new InvalidOperationException("Non-attractees must not be added to the index.");
+                    }
+#endif
+
+                    // Is it enabled?
+                    if (!otherGravitation.Enabled)
                     {
                         continue;
                     }
-                    // ... and can be attracted compute our influence on them/
-                    if ((otherGravitation.GravitationType & GravitationTypes.Attractee) != 0)
+
+                    // Get their velocity (which is what we'll change) and position.
+                    var otherVelocity = neigbour.GetComponent<Velocity>();
+                    var otherTransform = neigbour.GetComponent<Transform>();
+
+                    // We need both.
+                    if (otherVelocity != null && otherTransform != null)
                     {
-                        // Get their velocity (which is what we'll change) and position.
-                        var otherVelocity = neigbour.GetComponent<Velocity>();
-                        var otherTransform = neigbour.GetComponent<Transform>();
+                        // Get the delta vector between the two positions.
+                        var delta = otherTransform.Translation - myTransform.Translation;
 
-                        // We need both.
-                        if (otherVelocity != null && otherTransform != null)
+                        // Compute the angle between us and the other entity.
+                        float distanceSquared = delta.LengthSquared();
+
+                        // If we're near the core only pull if  the other
+                        // object isn't currently accelerating.
+                        if (distanceSquared < 262144) // 262144 = 512 * 512, so we allow overriding gravity at radius 512
                         {
-                            // Get the delta vector between the two positions.
-                            var delta = otherTransform.Translation - myTransform.Translation;
-
-                            // Compute the angle between us and the other entity.
-                            float distanceSquared = delta.LengthSquared();
-
-                            // If we're near the core only pull if  the other
-                            // object isn't currently accelerating.
-                            if (distanceSquared < 262144) // 262144 = 512 * 512, so we allow overriding gravity at radius 512
+                            var accleration = neigbour.GetComponent<Acceleration>();
+                            if (accleration == null || accleration.Value == Vector2.Zero)
                             {
-                                var accleration = neigbour.GetComponent<Acceleration>();
-                                if (accleration == null || accleration.Value == Vector2.Zero)
+                                if (otherVelocity.Value.LengthSquared() < 16 && distanceSquared < 4)
                                 {
-                                    if (otherVelocity.Value.LengthSquared() < 16 && distanceSquared < 4)
-                                    {
-                                        // Dock.
-                                        otherTransform.SetTranslation(ref myTransform.Translation);
-                                        otherVelocity.Value = Vector2.Zero;
-                                    }
-                                    else
-                                    {
-                                        // Adjust velocity.
-                                        delta.Normalize();
-                                        otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(65536, distanceSquared));
-                                    }
+                                    // Dock.
+                                    otherTransform.SetTranslation(ref myTransform.Translation);
+                                    otherVelocity.Value = Vector2.Zero;
+                                }
+                                else
+                                {
+                                    // Adjust velocity.
+                                    delta.Normalize();
+                                    otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(262144, distanceSquared));
                                 }
                             }
-                            else
-                            {
-                                // Adjust velocity.
-                                delta.Normalize();
-                                otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(65536, distanceSquared));
-                            }
+                        }
+                        else
+                        {
+                            // Adjust velocity.
+                            delta.Normalize();
+                            otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(65536, distanceSquared));
                         }
                     }
                 }

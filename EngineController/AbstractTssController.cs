@@ -70,6 +70,13 @@ namespace Engine.Controller
         /// </summary>
         protected const double _targetElapsedMilliseconds = 1000.0 / 60.0;
 
+        /// <summary>
+        /// The actual load is multiplied with this factor to provide a little
+        /// buffer, allowing server/clients to react to slow downs before the
+        /// game becomes unresponsive.
+        /// </summary>
+        protected const double _loadBufferFactor = 1.8;
+
         #endregion
 
         #region Properties
@@ -87,7 +94,19 @@ namespace Engine.Controller
         /// The factor represents a buffer, to start slowing down the
         /// simulation before it's too late.
         /// </remarks>
-        public override double CurrentLoad { get { return _updateLoad.Mean() * 1.8; } }
+        public override double CurrentLoad { get { return _updateLoad.Mean(); } }
+
+        /// <summary>
+        /// The current actual game speed, based on possible slow-downs due
+        /// to the server or other clients.
+        /// </summary>
+        public double ActualSpeed { get { return _adjustedSpeed; } }
+
+        /// <summary>
+        /// Adjusted load value to allow reacting to slow downs of server or
+        /// clients before the game becomes unresponsive.
+        /// </summary>
+        protected double SafeLoad { get { return CurrentLoad * _loadBufferFactor; } }
 
         #endregion
 
@@ -99,6 +118,12 @@ namespace Engine.Controller
         /// themselves by getting a snapshot of the complete simulation.
         /// </summary>
         protected TSS _tss;
+
+        /// <summary>
+        /// The adjusted speed we're currently running at, based on how well
+        /// other clients (and the server) currently fare.
+        /// </summary>
+        protected double _adjustedSpeed = 1.0;
 
         /// <summary>
         /// The remainder of time we did not update last frame, which we'll add to the

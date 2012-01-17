@@ -23,6 +23,12 @@ namespace Space.ComponentSystem.Components
         public Color AtmosphereTint;
 
         /// <summary>
+        /// The direction of this planets rotation, i.e. the normal to the
+        /// planets rotation axis.
+        /// </summary>
+        public Vector2 RotationDirection;
+
+        /// <summary>
         /// The shader we use to render our planets.
         /// </summary>
         private Microsoft.Xna.Framework.Graphics.Effect _planetRenderer;
@@ -31,24 +37,18 @@ namespace Space.ComponentSystem.Components
 
         #region Constructor
 
-        public PlanetRenderer(string textureName, float radius, Color atmosphereTint, Color planetTint)
-            : base(textureName, planetTint, radius)
+        public PlanetRenderer(string planetTexture, Color planetTint, float planetRadius, float planetRotationDirection, Color atmosphereTint)
+            : base(planetTexture, planetTint, planetRadius)
         {
             AtmosphereTint = atmosphereTint;
-        }
-
-        public PlanetRenderer(string textureName, float radius, Color atmosphereTint)
-            : this(textureName, radius, atmosphereTint, Color.White)
-        {
-        }
-
-        public PlanetRenderer(string textureName, float radius)
-            : this(textureName, radius, Color.PaleTurquoise)
-        {
+            RotationDirection = Vector2.UnitX;
+            Matrix matrix = Matrix.CreateRotationZ(planetRotationDirection);
+            Vector2.Transform(ref RotationDirection, ref matrix, out RotationDirection);
+            RotationDirection.Normalize(); // Avoid inaccuracies due to transform.
         }
 
         public PlanetRenderer()
-            : this(string.Empty, 0)
+            : this(string.Empty, Color.White, 0, 0, Color.White)
         {
         }
 
@@ -99,12 +99,17 @@ namespace Space.ComponentSystem.Components
                     }
 
                     float textureScale = _texture.Width / (3 * Scale);
-                    float textureOffset = (transform.Rotation + (float)System.Math.PI) / ((float)System.Math.PI * 2f);
+                    float textureOffset = (float)args.GameTime.TotalGameTime.TotalSeconds * 10;
+                    var spin = Entity.GetComponent<Spin>();
+                    if (spin != null)
+                    {
+                        textureOffset *= spin.Value;
+                    }
 
                     // Draw whatever is visible.
                     _planetRenderer.Parameters["DisplaySize"].SetValue(Scale);
                     _planetRenderer.Parameters["TextureSize"].SetValue(_texture.Width);
-                    _planetRenderer.Parameters["TextureOffset"].SetValue(textureOffset * textureScale);
+                    _planetRenderer.Parameters["TextureOffset"].SetValue(RotationDirection * textureOffset * textureScale);
                     _planetRenderer.Parameters["TextureScale"].SetValue(textureScale);
                     _planetRenderer.Parameters["PlanetTint"].SetValue(Tint.ToVector4());
                     _planetRenderer.Parameters["AtmosphereTint"].SetValue(AtmosphereTint.ToVector4());

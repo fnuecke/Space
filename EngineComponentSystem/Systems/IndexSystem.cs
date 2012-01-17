@@ -15,6 +15,53 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public sealed class IndexSystem : AbstractComponentSystem<IndexParameterization, NullParameterization>
     {
+        #region Debug stuff
+        #if DEBUG
+
+        public int DEBUG_NumIndexes
+        {
+            get
+            {
+                int count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        ++count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public int DEBUG_Count
+        {
+            get
+            {
+                int count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        count += index.Count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public void DEBUG_DrawIndex(ulong groups, Engine.Graphics.AbstractShape shape, Vector2 translation)
+        {
+            foreach (var tree in TreesForGroups(groups, _reusableTreeList))
+            {
+                tree.Draw(shape, translation);   
+            }
+            _reusableTreeList.Clear();
+        }
+
+        #endif
+        #endregion
+
         #region Constants
 
         /// <summary>
@@ -31,7 +78,7 @@ namespace Engine.ComponentSystem.Systems
         /// Minimum size of a node in our index as the required bit shift, i.e.
         /// the actual minimum node size is <c>1 &lt;&lt; MinimumNodeSizeShift</c>.
         /// </summary>
-        public const int MinimumNodeSizeShift = 5;
+        public const int MinimumNodeSizeShift = 7;
 
         /// <summary>
         /// Minimum size of a node in our index.
@@ -41,7 +88,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Maximum entries per node in our index to use.
         /// </summary>
-        private const int _maxEntriesPerNode = 16;
+        private const int _maxEntriesPerNode = 10;
 
         #endregion
 
@@ -99,6 +146,11 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Reused for iteration.
         /// </summary>
+        private List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(1024);
+
+        /// <summary>
+        /// Reused for iteration.
+        /// </summary>
         private List<QuadTree<int>> _reusableTreeList = new List<QuadTree<int>>(8);
 
         /// <summary>
@@ -107,38 +159,6 @@ namespace Engine.ComponentSystem.Systems
         private List<int> _reusableEntityIdList = new List<int>(64);
 
         #endregion
-
-        public int DEBUG_NumIndexes
-        {
-            get
-            {
-                int count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        ++count;
-                    }
-                }
-                return count;
-            }
-        }
-
-        public int DEBUG_Count
-        {
-            get
-            {
-                int count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        count += index.Count;
-                    }
-                }
-                return count;
-            }
-        }
 
         #region Entity lookup
 
@@ -200,35 +220,38 @@ namespace Engine.ComponentSystem.Systems
         public override void Update(long frame)
         {
             // Check all components for changes.
-            var currentComponents = new List<AbstractComponent>(UpdateableComponents);
-            foreach (var component in currentComponents)
+            _reusableComponentList.AddRange(UpdateableComponents);
+            foreach (var component in _reusableComponentList)
             {
-                _parameterization.PositionChanged = false;
                 if (component.Enabled)
                 {
                     component.Update(_parameterization);
-                }
-                if (_parameterization.PositionChanged)
-                {
-                    // We need to check if this entities position in the
-                    // index is still valid. Get new position.
-                    var transform = component.Entity.GetComponent<Transform>();
-
-                    // Cannot track objects that don't have a position.
-                    if (transform == null)
+                    if (_parameterization.PositionChanged)
                     {
-                        continue;
-                    }
+                        // We need to check if this entities position in the
+                        // index is still valid. Get new position.
+                        var transform = component.Entity.GetComponent<Transform>();
 
-                    // Update all indexes the component is part of.
-                    foreach (var tree in TreesForGroups(_parameterization.IndexGroups, _reusableTreeList))
-                    {
-                        tree.Update(ref _parameterization.PreviousPosition, ref transform.Translation, component.Entity.UID);
-                    }
+#if DEBUG
+                        // Cannot track objects that don't have a position.
+                        if (transform == null)
+                        {
+                            throw new InvalidOperationException("Indexed objects must have a transform component.");
+                        }
+#endif
 
-                    _reusableTreeList.Clear();
+                        // Update all indexes the component is part of.
+                        foreach (var tree in TreesForGroups(_parameterization.IndexGroups, _reusableTreeList))
+                        {
+                            tree.Update(ref _parameterization.PreviousPosition, ref transform.Translation, component.Entity.UID);
+                        }
+
+                        _reusableTreeList.Clear();
+                    }
+                    _parameterization.PositionChanged = false;
                 }
             }
+            _reusableComponentList.Clear();
         }
 
         public override void Clear()
@@ -374,9 +397,10 @@ namespace Engine.ComponentSystem.Systems
             else
             {
                 copy._trees = new QuadTree<int>[sizeof(ulong) * 8];
-                copy._reusableEntityIdList = new List<int>();
-                copy._reusableTreeList = new List<QuadTree<int>>();
                 copy._parameterization = new IndexParameterization();
+                copy._reusableComponentList = new List<AbstractComponent>(1024);
+                copy._reusableTreeList = new List<QuadTree<int>>();
+                copy._reusableEntityIdList = new List<int>();
             }
 
             return copy;

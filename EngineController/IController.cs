@@ -30,6 +30,7 @@ namespace Engine.Controller
         /// <summary>
         /// Called when the controller needs to be rendered.
         /// </summary>
-        void Draw();
+        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
+        void Draw(GameTime gameTime);
     }
 }

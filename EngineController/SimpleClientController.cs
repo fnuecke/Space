@@ -46,6 +46,7 @@ namespace Engine.Controller
 
         #region Logic
 
+        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         public override void Update(GameTime gameTime)
         {
             Session.Update();
@@ -56,11 +57,12 @@ namespace Engine.Controller
             }
         }
 
-        public override void Draw()
+        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
+        public override void Draw(GameTime gameTime)
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                Simulation.EntityManager.SystemManager.Draw(Simulation.CurrentFrame);
+                Simulation.EntityManager.SystemManager.Draw(gameTime, Simulation.CurrentFrame);
             }
         }
 

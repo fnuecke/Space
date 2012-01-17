@@ -132,11 +132,17 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>The current representation in this manager.</returns>
         public Entity GetEntity(int entityUid)
         {
-            //if (_entityMap.ContainsKey(entityUid))
-            //{
-                return _entityMap[entityUid];
-            //}
-            //return null;
+            return _entityMap[entityUid];
+        }
+
+        /// <summary>
+        /// Test whether the specified entity is in this manager.
+        /// </summary>
+        /// <param name="entityUid">The id of the entity to check for.</param>
+        /// <returns>Whether the manager contains the entity or not.</returns>
+        public bool Contains(int entityUid)
+        {
+            return _entityMap.ContainsKey(entityUid);
         }
 
         #endregion

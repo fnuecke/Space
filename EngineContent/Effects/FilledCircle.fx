@@ -1,4 +1,4 @@
-uniform extern float4 Color = float4(0.25, 1, 0, 1);
+uniform extern float4 Color = float4(1, 0, 1, 1);
 uniform extern float Gradient = 1;
 
 struct VertexShaderData

@@ -30,6 +30,12 @@ namespace Space.ScreenManagement.Screens
         Background _background;
 
         /// <summary>
+        /// Renderer for planet orbits (which is logically a part of the
+        /// radar system, but we want it to be behind planets.
+        /// </summary>
+        Orbits _orbits;
+
+        /// <summary>
         /// Renderer for radar system.
         /// </summary>
         Radar _radar;
@@ -55,6 +61,7 @@ namespace Space.ScreenManagement.Screens
 
             _input = new InputHandler(client);
             _background = new Background(client);
+            _orbits = new Orbits(client);
             _radar = new Radar(client);
             _lifeEnergy = new LifeEnergy(client);
         }
@@ -67,6 +74,8 @@ namespace Space.ScreenManagement.Screens
             _background.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
             _radar.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
             _lifeEnergy.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
+
+            _orbits.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
 
             // TODO preload any other ingame content we may need? (ship, planet etc textures)
 
@@ -136,8 +145,11 @@ namespace Space.ScreenManagement.Screens
             // Draw overall background (stars).
             _background.Draw();
 
+            // Render the orbits.
+            _orbits.Draw();
+            
             // Draw world elements.
-            _client.Controller.Draw();
+            _client.Controller.Draw(gameTime);
 
             // Render the radar.
             _radar.Draw();

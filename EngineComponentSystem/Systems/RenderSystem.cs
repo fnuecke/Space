@@ -37,7 +37,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Logic
 
-        public override void Draw(long frame)
+        public override void Draw(GameTime gameTime, long frame)
         {
             if (DrawableComponents.Count == 0)
             {
@@ -46,6 +46,7 @@ namespace Engine.ComponentSystem.Systems
 
             // Get translation, which may be overridden.
             _parameterization.Transform.Translation = GetTranslation();
+            _parameterization.GameTime = gameTime;
 
 //             // Then render all components.
 //             _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);

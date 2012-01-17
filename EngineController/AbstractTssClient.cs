@@ -59,12 +59,6 @@ namespace Engine.Controller
         /// </summary>
         private int _hashValue;
 
-        /// <summary>
-        /// The adjusted speed we're currently running at, based on how well
-        /// other clients (and the server) currently fare.
-        /// </summary>
-        private double _adjustedSpeed = 1.0;
-
         #endregion
 
         #region Construction / Destruction
@@ -108,6 +102,7 @@ namespace Engine.Controller
         /// in the base class. Also part of synchronizing run speeds on
         /// server and client by sending sync requests in certain intervals.
         /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         public override void Update(GameTime gameTime)
         {
             if (Session.ConnectionState == ClientState.Connected && !_tss.WaitingForSynchronization)
@@ -137,7 +132,7 @@ namespace Engine.Controller
                         Session.Send(packet
                             .Write((byte)TssControllerMessage.Synchronize)
                             .Write(_tss.CurrentFrame)
-                            .Write((float)CurrentLoad));
+                            .Write((float)SafeLoad));
                     }
                 }
             }

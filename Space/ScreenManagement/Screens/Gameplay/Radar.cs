@@ -2,7 +2,6 @@
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
-using Engine.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -18,35 +17,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// the overlay that displays icons for nearby but out-of-screen objects
     /// of interest (ones with a <c>Detectable</c> component).
     /// </summary>
-    public sealed class Radar
+    sealed class Radar
     {
         #region Constants
-
-        /// <summary>
-        /// Thickness of the rendered orbit ellipses.
-        /// </summary>
-        private const int _orbitThickness = 6;
 
         /// <summary>
         /// Size of the radar border in pixel.
         /// </summary>
         private const int _radarBorderSize = 50;
-
-        /// <summary>
-        /// Diffuse area of the dead zone (no immediate cutoff but fade to
-        /// red).
-        /// </summary>
-        private const int _deadZoneDiffuseWidth = 100;
-
-        /// <summary>
-        /// Color to paint orbits in.
-        /// </summary>
-        private static readonly Color _orbitColor = Color.Turquoise * 0.3f;
-
-        /// <summary>
-        /// Color to paint the dead zone around gravitational attractors in.
-        /// </summary>
-        private static readonly Color _deadZoneColor = Color.DarkRed * 0.2f;
 
         #endregion
 
@@ -67,17 +45,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private Texture2D _radarBackground;
 
-        /// <summary>
-        /// Used to draw orbits.
-        /// </summary>
-        private Ellipse _orbitEllipse;
-
-        /// <summary>
-        /// Used to draw areas where gravitation force is stronger than ship's
-        /// thrusters' force.
-        /// </summary>
-        private FilledEllipse _deadZoneEllipse;
-
         #endregion
 
         #region Single-Allocation
@@ -94,11 +61,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public Radar(GameClient client)
         {
             _client = client;
-            _orbitEllipse = new Ellipse(client.Game);
-            _orbitEllipse.SetThickness(_orbitThickness);
-            _deadZoneEllipse = new FilledEllipse(_client.Game);
-            _deadZoneEllipse.SetGradient(_deadZoneDiffuseWidth);
-            _deadZoneEllipse.SetColor(_deadZoneColor);
         }
 
         /// <summary>
@@ -184,7 +146,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             float radarRangeSquared = radarRange * radarRange;
 
             // Begin drawing.
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+            _spriteBatch.Begin();
 
             // Loop through all our neighbors.
             foreach (var neighbor in index.
@@ -206,92 +168,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // viewport. This will also serve as our direction vector.
                 var direction = neighborTransform.Translation - position;
 
-                // We'll make stuff far away a little less opaque. First get
-                // the linear relative distance.
-                float ld = direction.LengthSquared() / radarRangeSquared;
-                // Then apply a exponential fall-off, and make it cap a little
-                // early to get the 100% alpha when nearby, not only when
-                // exactly on top of the object ;)
-                ld = System.Math.Min(1, (1.1f - ld * ld * ld) * 1.1f);
-
-                // If it's an astronomical object, check if its orbit is
-                // potentially in our screen space, if so draw it.
-                var ellipse = neighbor.GetComponent<EllipsePath>();
-                if (ellipse != null)
-                {
-                    // The entity we're orbiting around is at one of the two
-                    // foci of the ellipse. We want the center, though.
-
-                    // Get the current position of the entity we're orbiting.
-                    var focusTransform = _client.Controller.Simulation.EntityManager.GetEntity(ellipse.CenterEntityId).GetComponent<Transform>().Translation;
-
-                    // Compute the distance of the ellipse's foci to the center
-                    // of the ellipse.
-                    float ellipseFocusDistance = (float)System.Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
-                    Vector2 ellipseCenter;
-                    ellipseCenter.X = ellipseFocusDistance;
-                    ellipseCenter.Y = 0;
-                    Matrix rotation = Matrix.CreateRotationZ(ellipse.Angle);
-                    Vector2.Transform(ref ellipseCenter, ref rotation, out ellipseCenter);
-                    ellipseCenter += focusTransform;
-
-                    // Far clipping, i.e. don't render if we're outside and
-                    // not seeing the ellipse.
-                    var distanceToCenterSquared = (ellipseCenter - position).LengthSquared();
-                    var farClipDistance = ellipse.MajorRadius + radius;
-                    farClipDistance *= farClipDistance;
-
-                    // Near clipping, i.e. don't render if we're inside the
-                    // ellipse, but not seeing its border.
-                    float nearClipDistance = System.Math.Max(0, ellipse.MinorRadius - radius);
-                    nearClipDistance *= nearClipDistance;
-
-                    // Check if we're cutting (potentially seeing) the orbit
-                    // ellipse of the neighbor.
-                    if (farClipDistance > distanceToCenterSquared &&
-                        nearClipDistance < distanceToCenterSquared)
-                    {
-                        // Yes, set the properties for our ellipse renderer.
-                        _orbitEllipse.SetCenter(ellipseCenter - position + center);
-                        _orbitEllipse.SetMajorRadius(ellipse.MajorRadius);
-                        _orbitEllipse.SetMinorRadius(ellipse.MinorRadius);
-                        _orbitEllipse.SetRotation(ellipse.Angle);
-
-                        // Scale the opacity based on our distance to the
-                        // actual object. Apply a exponential fall-off, and
-                        // make it cap a little early to get the 100% alpha
-                        // when nearby, not only when exactly on top of the
-                        // object ;)
-                        _orbitEllipse.SetColor(_orbitColor * ld);
-
-                        // And draw it!
-                        _orbitEllipse.Draw();
-                    }
-                }
-
-                // If the neighbor does collision damage and is an attractor,
-                // show the "dead zone" (i.e. the area beyond the point of no
-                // return).
-                var neighborGravitation = neighbor.GetComponent<Gravitation>();
-                var neighborCollisionDamage = neighbor.GetComponent<CollisionDamage>();
-                if (neighborCollisionDamage != null && neighborGravitation != null &&
-                    (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)
-                {
-                    // The point of no return is the distance at which the
-                    // gravitation is stronger than our maximum thruster
-                    // output.
-                    float maxAcceleration = info.MaxAcceleration;
-                    float neighborMass = neighborGravitation.Mass;
-                    float pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborMass / maxAcceleration);
-                    _deadZoneEllipse.SetCenter(neighborTransform.Translation - position + center);
-                    // Add the complete diffuse width, not just the half (which
-                    // would be the exact point), because it's unlikely someone
-                    // will exactly hit that point, so give them some fair
-                    // warning.
-                    _deadZoneEllipse.SetRadius(pointOfNoReturn + _deadZoneDiffuseWidth);
-                    _deadZoneEllipse.Draw();
-                }
-            
                 // Check if the object's inside. If so, skip it.
                 if (screenBounds.Contains((int)(direction.X + center.X), (int)(direction.Y + center.Y)))
                 {
@@ -305,6 +181,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 {
                     color = faction.Value.ToColor();
                 }
+
+                // We'll make stuff far away a little less opaque. First get
+                // the linear relative distance.
+                float ld = direction.LengthSquared() / radarRangeSquared;
+                // Then apply a exponential fall-off, and make it cap a little
+                // early to get the 100% alpha when nearby, not only when
+                // exactly on top of the object ;)
+                ld = System.Math.Min(1, (1.1f - ld * ld * ld) * 1.1f);
 
                 // Make stuff far away a little less opaque.
                 color *= ld;
@@ -369,7 +253,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // Clear the list for the next run.
             _reusableNeighborList.Clear();
 
-
             // Make the background of the radar a bit darker...
             BasicForms.FillRectangle(_spriteBatch, 0, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
             BasicForms.FillRectangle(_spriteBatch, viewport.Width - _radarBorderSize, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
@@ -382,7 +265,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             // Done drawing.
             _spriteBatch.End();
-
         }
 
         #endregion
