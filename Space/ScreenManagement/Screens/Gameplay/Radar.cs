@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Control;
 using Space.Data;
+using Space.ScreenManagement.Screens.Helper;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -25,6 +26,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// Thickness of the rendered orbit ellipses.
         /// </summary>
         private const int _orbitThickness = 6;
+
+        /// <summary>
+        /// Size of the radar border in pixel.
+        /// </summary>
+        private const int _radarBorderSize = 50;
 
         /// <summary>
         /// Diffuse area of the dead zone (no immediate cutoff but fade to
@@ -360,11 +366,22 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     origin, 1, SpriteEffects.None, 0);
             }
 
+            // Clear the list for the next run.
+            _reusableNeighborList.Clear();
+
+
+            // Make the background of the radar a bit darker...
+            BasicForms.FillRectangle(_spriteBatch, 0, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
+            BasicForms.FillRectangle(_spriteBatch, viewport.Width - _radarBorderSize, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
+            BasicForms.FillRectangle(_spriteBatch, _radarBorderSize, 0, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
+            BasicForms.FillRectangle(_spriteBatch, _radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
+
+            // ... and the border of the radar a bit lighter.
+            BasicForms.DrawRectangle(_spriteBatch, _radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.3f);
+
             // Done drawing.
             _spriteBatch.End();
 
-            // Clear the list for the next run.
-            _reusableNeighborList.Clear();
         }
 
         #endregion
