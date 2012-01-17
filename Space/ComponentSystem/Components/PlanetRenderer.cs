@@ -72,7 +72,7 @@ namespace Space.ComponentSystem.Components
                 // Get the effect, if we don't have it yet.
                 if (_planetRenderer == null)
                 {
-                    _planetRenderer = args.Content.Load<Microsoft.Xna.Framework.Graphics.Effect>("Effects/Planet");
+                    _planetRenderer = args.Content.Load<Microsoft.Xna.Framework.Graphics.Effect>("Shaders/Planet");
                 }
 
                 // Get the position at which to draw (in screen space).
