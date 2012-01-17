@@ -86,11 +86,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public LifeEnergyBar(GameClient client)
         {
             _client = client;
-
-            var viewport = _spriteBatch.GraphicsDevice.Viewport;
-            _positionX = (viewport.Width - _width) / 2;
-            _positionY = (viewport.Height - _height) / 2 - 40;
-
         }
 
         /// <summary>
@@ -100,6 +95,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _spriteBatch = spriteBatch;
             _basicForms = new BasicForms(_spriteBatch);
+
+            var viewport = _spriteBatch.GraphicsDevice.Viewport;
+            _positionX = (viewport.Width - _width) / 2;
+            _positionY = (viewport.Height - _height) / 2 - 40;
         }
 
         #endregion
