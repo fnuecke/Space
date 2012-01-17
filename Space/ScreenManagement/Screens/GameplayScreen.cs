@@ -45,6 +45,11 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         LifeEnergy _lifeEnergy;
 
+        /// <summary>
+        /// The component responsible for post-processing effects.
+        /// </summary>
+        Postprocessing _postprocessing;
+
         #endregion
 
         #region Initialization
@@ -77,12 +82,20 @@ namespace Space.ScreenManagement.Screens
 
             _orbits.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
 
+            _postprocessing = new Postprocessing(ScreenManager.Game);
+            ScreenManager.Game.Components.Add(_postprocessing);
+
             // TODO preload any other ingame content we may need? (ship, planet etc textures)
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that
             // it should not try to catch up.
             ScreenManager.Game.ResetElapsedTime();
+        }
+
+        public override void UnloadContent()
+        {
+            ScreenManager.Game.Components.Remove(_postprocessing);
         }
 
         #endregion
@@ -142,6 +155,9 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
+            // Required for post processing.
+            _postprocessing.BeginDraw();
+
             // Draw overall background (stars).
             _background.Draw();
 
@@ -150,6 +166,9 @@ namespace Space.ScreenManagement.Screens
             
             // Draw world elements.
             _client.Controller.Draw(gameTime);
+
+            // Finish up post processing, GUI should not be affected by it.
+            _postprocessing.Draw();
 
             // Render the radar.
             _radar.Draw();
