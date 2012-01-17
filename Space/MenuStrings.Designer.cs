@@ -214,6 +214,15 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Post processing.
+        /// </summary>
+        internal static string PostProcessing {
+            get {
+                return ResourceManager.GetString("PostProcessing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Are you sure you want to quit the Game?.
         /// </summary>
         internal static string QuitGameConfirmation {

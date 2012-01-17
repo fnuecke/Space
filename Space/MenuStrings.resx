@@ -177,4 +177,7 @@
   <data name="Connect" xml:space="preserve">
     <value>Connect</value>
   </data>
+  <data name="PostProcessing" xml:space="preserve">
+    <value>Post processing</value>
+  </data>
 </root>

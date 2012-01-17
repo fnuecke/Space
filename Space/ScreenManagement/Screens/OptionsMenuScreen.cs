@@ -55,11 +55,20 @@ namespace Space.ScreenManagement.Screens
                 { false, MenuStrings.Off },
                 { true, MenuStrings.On }
             }, Settings.Instance.Fullscreen);
+            var postprocessing = new OptionMenuEntry<bool>(MenuStrings.PostProcessing, new Dictionary<bool, string>
+            {
+                { false, MenuStrings.Off },
+                { true, MenuStrings.On }
+            }, Settings.Instance.PostProcessing);
             MenuEntry back = new MenuEntry(MenuStrings.Back);
 
             fullscreen.Changed += delegate(object sender, EventArgs e)
             {
                 Settings.Instance.Fullscreen = fullscreen.Value;
+            };
+            postprocessing.Changed += delegate(object sender, EventArgs e)
+            {
+                Settings.Instance.PostProcessing = postprocessing.Value;
             };
             resolution.Changed += delegate(object sender, EventArgs e)
             {
@@ -92,6 +101,7 @@ namespace Space.ScreenManagement.Screens
             MenuEntries.Add(language);
             MenuEntries.Add(resolution);
             MenuEntries.Add(fullscreen);
+            MenuEntries.Add(postprocessing);
             MenuEntries.Add(back);
 
             SetEscapeEntry(back);
