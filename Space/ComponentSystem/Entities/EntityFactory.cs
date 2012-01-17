@@ -49,11 +49,11 @@ namespace Space.ComponentSystem.Entities
         /// <param name="shipData">The ship info to use.</param>
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <returns>The new ship.</returns>
-        public static Entity CreateAIShip(ShipData shipData, Factions faction)
+        public static Entity CreateAIShip(ShipData shipData, Factions faction, AIComponent.AICommand command)
         {
             Entity entity = CreateShip(shipData, faction);
 
-            entity.AddComponent(new AIComponent());
+            entity.AddComponent(new AIComponent(command));
             entity.AddComponent(new Death());
             
             return entity;
