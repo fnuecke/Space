@@ -4,30 +4,39 @@ using System.Linq;
 using System.Text;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    class Behaviour
+    public class Behaviour
     {
-        protected Entity entity;
-        public Behaviour(Entity entity)
+        protected Vector2 wanderDirection;
+        protected AIComponent AiComponent;
+        public Behaviour(AIComponent entity)
         {
-            this.entity = entity;
+            this.AiComponent = entity;
         }
+
+        public virtual void Update()
+        {
+
+        }
+
+
         public void TurnToFace(Vector2 facePosition, float turnSpeed)
         {
-            var input = entity.GetComponent<ShipControl>();
-            
-            Transform transform = entity.GetComponent<Transform>();
-            float x = facePosition.X - transform.Translation.X;
-            float y = facePosition.Y - transform.Translation.Y;
+            //var input = AiComponent.Entity.GetComponent<ShipControl>();
 
-            float desiredAngle = (float)Math.Atan2(y, x);
-            float difference = WrapAngle(desiredAngle - transform.Rotation);
+            //Transform transform = AiComponent.Entity.GetComponent<Transform>();
+            //float x = facePosition.X - transform.Translation.X;
+            //float y = facePosition.Y - transform.Translation.Y;
 
-            difference = MathHelper.Clamp(difference, -turnSpeed, turnSpeed);
-            input.TargetRotation = WrapAngle(transform.Rotation + difference);
+
+            //float difference = WrapAngle(desiredAngle - transform.Rotation);
+
+            //difference = MathHelper.Clamp(difference, -turnSpeed, turnSpeed);
+
         }
         /// <summary>
         /// Returns the angle expressed in radians between -Pi and Pi.
@@ -45,6 +54,43 @@ namespace Space.ComponentSystem.Components.AIBehaviour
                 radians -= MathHelper.TwoPi;
             }
             return radians;
+        }
+        protected Vector2 CalculateEscapeDirection()
+        {
+            // Get local player's avatar.
+            var info = AiComponent.Entity.GetComponent<ShipInfo>();
+            var escapeDir = new Vector2(0, 0);
+            // Can't do anything without an avatar.
+            if (info == null)
+            {
+                return escapeDir;
+            }
+
+            var position = info.Position;
+            var radarRange = info.RadarRange;
+            var index = AiComponent.Entity.Manager.SystemManager.GetSystem<IndexSystem>();
+            if (index == null) return escapeDir;
+            foreach (var neighbor in index.
+               GetNeighbors(ref position, radarRange, Detectable.IndexGroup))
+            {
+                var transform = neighbor.GetComponent<Transform>();
+                if (transform == null) continue;
+
+                var neighborGravitation = neighbor.GetComponent<Gravitation>();
+                var neighborCollisionDamage = neighbor.GetComponent<CollisionDamage>();
+                if (neighborCollisionDamage != null && neighborGravitation != null &&
+                    (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)
+                {
+
+                    var direction = position - transform.Translation;
+                    if (direction.Length() < 2000)
+                    {
+                        direction.Normalize();
+                        escapeDir += direction;
+                    }
+                }
+            }
+            return escapeDir;
         }
     }
 }

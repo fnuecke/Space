@@ -50,36 +50,20 @@ namespace Space.Simulation.Commands
                         switch (inputCommand.Input)
                         {
                             // Start accelerating in the given direction.
-                            case PlayerInputCommand.PlayerInputCommandType.AccelerateUp:
-                                input.Accelerate(Directions.North);
+                            case PlayerInputCommand.PlayerInputCommandType.Accelerate:
+                                input.Accelerate(inputCommand.Value);
                                 break;
-                            case PlayerInputCommand.PlayerInputCommandType.AccelerateRight:
-                                input.Accelerate(Directions.East);
-                                break;
-                            case PlayerInputCommand.PlayerInputCommandType.AccelerateDown:
-                                input.Accelerate(Directions.South);
-                                break;
-                            case PlayerInputCommand.PlayerInputCommandType.AccelerateLeft:
-                                input.Accelerate(Directions.West);
-                                break;
+                            
 
                             // Stop accelerating in the given direction.
-                            case PlayerInputCommand.PlayerInputCommandType.StopUp:
-                                input.StopAccelerate(Directions.North);
+                            case PlayerInputCommand.PlayerInputCommandType.Stop:
+                                input.StopAccelerate();
                                 break;
-                            case PlayerInputCommand.PlayerInputCommandType.StopRight:
-                                input.StopAccelerate(Directions.East);
-                                break;
-                            case PlayerInputCommand.PlayerInputCommandType.StopDown:
-                                input.StopAccelerate(Directions.South);
-                                break;
-                            case PlayerInputCommand.PlayerInputCommandType.StopLeft:
-                                input.StopAccelerate(Directions.West);
-                                break;
+                            
 
                             // Begin rotating.
                             case PlayerInputCommand.PlayerInputCommandType.Rotate:
-                                input.TargetRotation = inputCommand.Value;
+                                input.TargetRotation = inputCommand.Value.X;
                                 break;
 
                             // Begin/stop shooting.
