@@ -27,23 +27,23 @@ namespace Space.ScreenManagement.Screens
         /// <summary>
         /// Renderer for overall background.
         /// </summary>
-        Background _background;
+        private Background _background;
 
         /// <summary>
         /// Renderer for planet orbits (which is logically a part of the
         /// radar system, but we want it to be behind planets.
         /// </summary>
-        Orbits _orbits;
+        private Orbits _orbits;
 
         /// <summary>
         /// Renderer for radar system.
         /// </summary>
-        Radar _radar;
+        private Radar _radar;
 
         /// <summary>
-        /// Renderer for life- & energy display.
+        /// Renderer for the HUD elements.
         /// </summary>
-        LifeEnergyBar _lifeEnergy;
+        private Hud _hud;
 
         /// <summary>
         /// The component responsible for post-processing effects.
@@ -68,7 +68,7 @@ namespace Space.ScreenManagement.Screens
             _background = new Background(client);
             _orbits = new Orbits(client);
             _radar = new Radar(client);
-            _lifeEnergy = new LifeEnergyBar(client);
+            _hud = new Hud(client);
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Space.ScreenManagement.Screens
         {
             _background.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
             _radar.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
-            _lifeEnergy.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
+            _hud.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
 
             _orbits.LoadContent(ScreenManager.SpriteBatch, ScreenManager.Game.Content);
 
@@ -120,6 +120,7 @@ namespace Space.ScreenManagement.Screens
                 if (!otherScreenHasFocus)
                 {
                     _input.Update();
+                    _hud.Update();
                 }
             }
             else
@@ -180,7 +181,7 @@ namespace Space.ScreenManagement.Screens
             _radar.Draw();
 
             // Render the life- and energy display.
-            _lifeEnergy.Draw();
+            _hud.Draw();
 
             // If the game is transitioning on or off, fade it out to black.
             if (TransitionPosition > 0 || _pauseAlpha > 0)
