@@ -11,7 +11,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 {
     public class Behaviour
     {
-        protected Vector2 wanderDirection;
+        protected Vector2 direction;
         protected AIComponent AiComponent;
         public Behaviour(AIComponent entity)
         {
@@ -67,11 +67,11 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             }
 
             var position = info.Position;
-            var radarRange = info.RadarRange;
+            var mass = info.Mass;
             var index = AiComponent.Entity.Manager.SystemManager.GetSystem<IndexSystem>();
             if (index == null) return escapeDir;
             foreach (var neighbor in index.
-               GetNeighbors(ref position, radarRange, Detectable.IndexGroup))
+               GetNeighbors(ref position, 5000, Detectable.IndexGroup))
             {
                 var transform = neighbor.GetComponent<Transform>();
                 if (transform == null) continue;
@@ -81,11 +81,12 @@ namespace Space.ComponentSystem.Components.AIBehaviour
                 if (neighborCollisionDamage != null && neighborGravitation != null &&
                     (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)
                 {
-
+                    var pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborGravitation.Mass / info.MaxAcceleration);
                     var direction = position - transform.Translation;
-                    if (direction.Length() < 2000)
+                    if (direction.Length() < pointOfNoReturn*1.1)
                     {
-                        direction.Normalize();
+                        if(direction != Vector2.Zero)
+                            direction.Normalize();
                         escapeDir += direction;
                     }
                 }
