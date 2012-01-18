@@ -13,6 +13,8 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public interface IComponentSystemManager : ICopyable<IComponentSystemManager>, IPacketizable, IHashable
     {
+        #region Properties
+        
         /// <summary>
         /// A list of registered subsystems.
         /// </summary>
@@ -22,6 +24,10 @@ namespace Engine.ComponentSystem.Systems
         /// The component system manager used together with this entity manager.
         /// </summary>
         IEntityManager EntityManager { get; set; }
+
+        #endregion
+
+        #region Logic
 
         /// <summary>
         /// Update all subsystems.
@@ -36,6 +42,10 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="frame">The frame in which the update is applied.</param>
         void Draw(GameTime gameTime, long frame);
 
+        #endregion
+
+        #region Components
+        
         /// <summary>
         /// Add the component to supported subsystems.
         /// </summary>
@@ -54,6 +64,10 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         void ClearComponents();
 
+        #endregion
+
+        #region Systems
+        
         /// <summary>
         /// Add the system to this manager.
         /// </summary>
@@ -79,11 +93,17 @@ namespace Engine.ComponentSystem.Systems
         /// <typeparam name="T">The type of the system to get.</typeparam>
         /// <returns>The first system of the given type, or <c>null</c> if no such system exits.</returns>
         T GetSystem<T>() where T : IComponentSystem;
+
+        #endregion
+
+        #region Messaging
         
         /// <summary>
         /// Send a message to all systems of this component system manager.
         /// </summary>
         /// <param name="message">The message to send.</param>
         void SendMessage(ValueType message);
+
+        #endregion
     }
 }

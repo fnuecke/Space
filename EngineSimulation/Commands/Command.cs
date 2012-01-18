@@ -64,10 +64,32 @@ namespace Engine.Simulation.Commands
 
         #region Equality
 
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>
+        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
+        /// </returns>
         public virtual bool Equals(Command other)
         {
             return other != null && other.Type.Equals(this.Type) &&
                 other.PlayerNumber == this.PlayerNumber;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return GetType().Name + ", IsAuthoritative = " + IsAuthoritative + ", PlayerNumber = " + PlayerNumber + ", Type = " + Type;
         }
 
         #endregion

@@ -51,7 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Effects\Circle.fx">
+    <Compile Include="Shaders\Circle.fx">
       <Name>Circle</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
@@ -80,21 +80,21 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Effects\FilledCircle.fx">
+    <Compile Include="Shaders\FilledCircle.fx">
       <Name>FilledCircle</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Effects\Rectangle.fx">
+    <Compile Include="Shaders\Rectangle.fx">
       <Name>Rectangle</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Effects\FilledRectangle.fx">
+    <Compile Include="Shaders\FilledRectangle.fx">
       <Name>FilledRectangle</Name>
       <Importer>EffectImporter</Importer>
       <Processor>EffectProcessor</Processor>

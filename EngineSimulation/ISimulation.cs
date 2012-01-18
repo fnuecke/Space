@@ -20,6 +20,13 @@ namespace Engine.Simulation
         /// </summary>
         IEntityManager EntityManager { get; }
 
+#if DEBUG && GAMELOG
+        /// <summary>
+        /// Whether to log any game state changes in detail, for debugging.
+        /// </summary>
+        bool GameLogEnabled { get; set; }
+#endif
+
         /// <summary>
         /// Advance the simulation by one frame.
         /// </summary>
