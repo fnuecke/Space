@@ -5,23 +5,22 @@ using System.Text;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
+using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    public class Behaviour
+    public abstract class Behaviour: IPacketizable
     {
         protected Vector2 direction;
-        protected AIComponent AiComponent;
-        public Behaviour(AIComponent entity)
+        public AiComponent AiComponent;
+        protected Behaviour(AiComponent entity)
         {
             this.AiComponent = entity;
         }
 
-        public virtual void Update()
-        {
-
-        }
+        public abstract void Update();
 
 
         public void TurnToFace(Vector2 facePosition, float turnSpeed)
@@ -93,5 +92,19 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             }
             return escapeDir;
         }
+
+        
+        public Packet Packetize(Packet packet)
+        {
+            return packet.Write(direction);
+
+        }
+
+        public void Depacketize(Packet packet)
+        {
+            direction = packet.ReadVector2();
+        }
+
+        
     }
 }

@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
     class AttackBehaviour : Behaviour
     {
         public int TargetEntity;
-        public AttackBehaviour(AIComponent aiComponent,int targetEntity)
+        public AttackBehaviour(AiComponent aiComponent,int targetEntity)
             :base(aiComponent)
         {
             TargetEntity = targetEntity;
@@ -37,7 +37,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
             direction =  transform.Translation - position ;
             
-
+            direction.Normalize();
             
             input.SetTargetRotation((float)Math.Atan2(direction.Y, direction.X));
             input.SetShooting(true);

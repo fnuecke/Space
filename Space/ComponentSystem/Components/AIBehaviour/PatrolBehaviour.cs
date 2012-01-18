@@ -7,7 +7,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
     {
 
         private static Random random = new Random();
-        public PatrolBehaviour(AIComponent component)
+        public PatrolBehaviour(AiComponent component)
             : base(component)
         {
 
@@ -31,7 +31,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
 
             input.SetStabilizing(true);
-            float distanceFromCenter = Vector2.Distance(AiComponent.AiCommand.target, info.Position);
+            float distanceFromCenter = Vector2.Distance(AiComponent.Command.Target, info.Position);
 
 
             //calculate if there is a dangerous object.. if yes get the hell out of here!
@@ -41,7 +41,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             //Rotate torwards our destination
             input.SetTargetRotation((float)Math.Atan2(direction.Y,direction.X));
             //not fullspeed if there is noting to fear about
-            if (escapeDir == Vector2.Zero && 3 * info.Speed > AiComponent.MaxSpeed)
+            if (escapeDir == Vector2.Zero && 3 * info.Speed > info.MaxSpeed)
             {
                 input.SetAcceleration(Vector2.Zero);
             }
