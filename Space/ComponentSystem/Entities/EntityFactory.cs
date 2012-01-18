@@ -17,9 +17,9 @@ namespace Space.ComponentSystem.Entities
         /// <param name="shipData">The ship info to use.</param>
         /// <param name="playerNumber">The player for whom to create the ship.</param>
         /// <returns>The new ship.</returns>
-        public static Entity CreatePlayerShip(ShipData shipData, int playerNumber)
+        public static Entity CreatePlayerShip(ShipData shipData, int playerNumber, Vector2 position)
         {
-            Entity entity = CreateShip(shipData, playerNumber.ToFaction());
+            Entity entity = CreateShip(shipData, playerNumber.ToFaction(), ref position);
 
             entity.AddComponent(new Avatar(playerNumber));
             entity.AddComponent(new Respawn(300, new HashSet<Type>()
@@ -38,8 +38,7 @@ namespace Space.ComponentSystem.Entities
                 // And don't regenerate.
                 typeof(Health),
                 typeof(Energy)
-            }, new Vector2(60000, 60000)));
-            entity.GetComponent<Transform>().Translation = new Vector2(60000, 60000);
+            }, position));
             return entity;
         }
 
@@ -49,9 +48,9 @@ namespace Space.ComponentSystem.Entities
         /// <param name="shipData">The ship info to use.</param>
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <returns>The new ship.</returns>
-        public static Entity CreateAIShip(ShipData shipData, Factions faction, AIComponent.AICommand command)
+        public static Entity CreateAIShip(ShipData shipData, Factions faction, Vector2 position, AIComponent.AICommand command)
         {
-            Entity entity = CreateShip(shipData, faction);
+            Entity entity = CreateShip(shipData, faction, ref position);
 
             entity.AddComponent(new AIComponent(command));
             entity.AddComponent(new Death());
@@ -65,7 +64,7 @@ namespace Space.ComponentSystem.Entities
         /// <param name="shipData">The ship info to use.</param>
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <returns>The new ship.</returns>
-        private static Entity CreateShip(ShipData shipData, Factions faction)
+        private static Entity CreateShip(ShipData shipData, Factions faction, ref Vector2 position)
         {
             var entity = new Entity();
 
@@ -108,7 +107,7 @@ namespace Space.ComponentSystem.Entities
             energy.UpdateOrder = 15;
 
             // Physics related components.
-            entity.AddComponent(new Transform(new Vector2(62500, 62500)));
+            entity.AddComponent(new Transform(position));
             entity.AddComponent(velocity);
             entity.AddComponent(new Spin());
             entity.AddComponent(acceleration);
