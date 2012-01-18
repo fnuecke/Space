@@ -39,7 +39,9 @@ namespace Engine.ComponentSystem.Systems
             var currentComponents = new List<AbstractComponent>(UpdateableComponents);
             foreach (var component in currentComponents)
             {
-                if (component.Enabled)
+                // Only enabled components, and ones that have not been removed
+                // in this very update run.
+                if (component.Enabled && component.Entity.Manager != null)
                 {
                     component.Update(_parameterization);
                 }

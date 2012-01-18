@@ -50,7 +50,7 @@
               <Texture>Textures/ship</Texture>
               <Scale>0.5</Scale>
               <CollisionRadius>3</CollisionRadius>
-              <Damage>5</Damage>
+              <Damage>50</Damage>
               <InitialVelocity>10 0</InitialVelocity>
             </Item>
           </Projectiles>
