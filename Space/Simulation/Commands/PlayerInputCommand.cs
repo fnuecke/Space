@@ -1,5 +1,6 @@
 ﻿using Engine.Serialization;
 using Engine.Simulation.Commands;
+using Microsoft.Xna.Framework;
 
 namespace Space.Simulation.Commands
 {
@@ -21,44 +22,19 @@ namespace Space.Simulation.Commands
             None,
 
             /// <summary>
-            /// Accelerate upwards.
+            /// Accelerate .
             /// </summary>
-            AccelerateUp,
+            Accelerate,
 
             /// <summary>
-            /// Accelerate to the right.
+            /// Try to stabilize the position.
             /// </summary>
-            AccelerateRight,
+            BeginStabilizing,
 
             /// <summary>
-            /// Accelerate downwards.
+            /// Stop trying to stabilize the position.
             /// </summary>
-            AccelerateDown,
-
-            /// <summary>
-            /// Accelerate to the left.
-            /// </summary>
-            AccelerateLeft,
-
-            /// <summary>
-            /// Stop upwards acceleration.
-            /// </summary>
-            StopUp,
-
-            /// <summary>
-            /// Stop accelerating to the right.
-            /// </summary>
-            StopRight,
-
-            /// <summary>
-            /// Stop downwards acceleration.
-            /// </summary>
-            StopDown,
-
-            /// <summary>
-            /// Stop accelerating to the left.
-            /// </summary>
-            StopLeft,
+            StopStabilizing,
 
             /// <summary>
             /// Rotate to a specified angle.
@@ -68,12 +44,12 @@ namespace Space.Simulation.Commands
             /// <summary>
             /// Begin shooting.
             /// </summary>
-            Shoot,
+            BeginShooting,
 
             /// <summary>
             /// Stop shooting.
             /// </summary>
-            CeaseFire
+            StopShooting
         }
 
         #endregion
@@ -90,7 +66,7 @@ namespace Space.Simulation.Commands
         /// rotation angle, for acceleration commands it is the relative
         /// thrust power.
         /// </summary>
-        public float Value;
+        public Vector2 Value;
 
         #endregion
 
@@ -101,7 +77,7 @@ namespace Space.Simulation.Commands
         /// </summary>
         /// <param name="input">The player input.</param>
         /// <param name="value">The associated value.</param>
-        public PlayerInputCommand(PlayerInputCommandType input, float value)
+        public PlayerInputCommand(PlayerInputCommandType input, Vector2 value)
             : base(SpaceCommandType.PlayerInput)
         {
             this.Input = input;
@@ -113,7 +89,7 @@ namespace Space.Simulation.Commands
         /// </summary>
         /// <param name="input">The player input.</param>
         public PlayerInputCommand(PlayerInputCommandType input)
-            : this(input, 0)
+            : this(input, Vector2.Zero)
         {
         }
 
@@ -124,7 +100,7 @@ namespace Space.Simulation.Commands
         /// For serialization.
         /// </remarks>
         public PlayerInputCommand()
-            : this(PlayerInputCommandType.None, 0)
+            : this(PlayerInputCommandType.None, Vector2.Zero)
         {
         }
 
@@ -155,7 +131,7 @@ namespace Space.Simulation.Commands
             base.Depacketize(packet);
 
             Input = (PlayerInputCommandType)packet.ReadByte();
-            Value = packet.ReadSingle();
+            Value = packet.ReadVector2();
         }
 
         #endregion

@@ -1,7 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
-using Engine.Util;
 using Space.ComponentSystem.Components;
 using Space.Data;
 using Space.Data.Modules;
@@ -49,45 +48,31 @@ namespace Space.Simulation.Commands
                         // What type of player input should we process?
                         switch (inputCommand.Input)
                         {
-                            // Start accelerating in the given direction.
-                            case PlayerInputCommand.PlayerInputCommandType.AccelerateUp:
-                                input.Accelerate(Directions.North);
-                                break;
-                            case PlayerInputCommand.PlayerInputCommandType.AccelerateRight:
-                                input.Accelerate(Directions.East);
-                                break;
-                            case PlayerInputCommand.PlayerInputCommandType.AccelerateDown:
-                                input.Accelerate(Directions.South);
-                                break;
-                            case PlayerInputCommand.PlayerInputCommandType.AccelerateLeft:
-                                input.Accelerate(Directions.West);
+                            // Accelerating in the given direction (or stop if
+                            // a zero vector  is given).
+                            case PlayerInputCommand.PlayerInputCommandType.Accelerate:
+                                input.SetAcceleration(inputCommand.Value);
                                 break;
 
-                            // Stop accelerating in the given direction.
-                            case PlayerInputCommand.PlayerInputCommandType.StopUp:
-                                input.StopAccelerate(Directions.North);
+                            // Begin/stop to stabilize our position.
+                            case PlayerInputCommand.PlayerInputCommandType.BeginStabilizing:
+                                input.SetStabilizing(true);
                                 break;
-                            case PlayerInputCommand.PlayerInputCommandType.StopRight:
-                                input.StopAccelerate(Directions.East);
-                                break;
-                            case PlayerInputCommand.PlayerInputCommandType.StopDown:
-                                input.StopAccelerate(Directions.South);
-                                break;
-                            case PlayerInputCommand.PlayerInputCommandType.StopLeft:
-                                input.StopAccelerate(Directions.West);
+                            case PlayerInputCommand.PlayerInputCommandType.StopStabilizing:
+                                input.SetStabilizing(false);
                                 break;
 
                             // Begin rotating.
                             case PlayerInputCommand.PlayerInputCommandType.Rotate:
-                                input.TargetRotation = inputCommand.Value;
+                                input.SetTargetRotation(inputCommand.Value.X);
                                 break;
 
                             // Begin/stop shooting.
-                            case PlayerInputCommand.PlayerInputCommandType.Shoot:
-                                input.Shooting = true;
+                            case PlayerInputCommand.PlayerInputCommandType.BeginShooting:
+                                input.SetShooting(true);
                                 break;
-                            case PlayerInputCommand.PlayerInputCommandType.CeaseFire:
-                                input.Shooting = false;
+                            case PlayerInputCommand.PlayerInputCommandType.StopShooting:
+                                input.SetShooting(false);
                                 break;
                         }
                     }

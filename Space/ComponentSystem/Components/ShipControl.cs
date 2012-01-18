@@ -21,19 +21,14 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>
-        /// The rotation we're targeting at the moment.
+        /// The current acceleration of the ship.
         /// </summary>
-        public float TargetRotation;
+        private Vector2 _directedAcceleration;
 
         /// <summary>
-        /// Whether to shoot or not.
+        /// Whether we're currently stabilizing our position or not.
         /// </summary>
-        public bool Shooting;
-
-        /// <summary>
-        /// The direction we're currently accelerating into.
-        /// </summary>
-        public Directions AccelerationDirection;
+        private bool _stabilizing;
 
         /// <summary>
         /// The current target rotation (used to check if the public one
@@ -42,30 +37,68 @@ namespace Space.ComponentSystem.Components
         private float _targetRotation;
 
         /// <summary>
+        /// Flag whether the rotation changed since the last update.
+        /// </summary>
+        private bool _targetRotationChanged;
+
+        /// <summary>
         /// The rotation we had in the previous update.
         /// </summary>
         private float _previousRotation;
+
+        /// <summary>
+        /// Whether to shoot or not.
+        /// </summary>
+        private bool _shooting;
 
         #endregion
 
         #region Utility Accessors
 
         /// <summary>
-        /// Begin or continue accelerating in the specified direction.
+        /// Begin or continue accelerating in the specified direction, or stop
+        /// accelerating if <c>Vector2.Zero</c> is given.
         /// </summary>
-        /// <param name="direction">The direction to accelerate into.</param>
-        public void Accelerate(Directions direction)
+        /// <param name="direction">The new directed acceleration.</param>
+        public void SetAcceleration(Vector2 direction)
         {
-            AccelerationDirection |= direction;
+            _directedAcceleration = direction;
+            if (_directedAcceleration != Vector2.Zero)
+            {
+                // Make sure we have a unit vector of our direction.
+                _directedAcceleration.Normalize();
+            }
         }
 
         /// <summary>
-        /// Stop accelerating in the specified direction.
+        /// Set whether to stabilize our position or not.
         /// </summary>
-        /// <param name="direction">The direction in which to stop accelerating.</param>
-        public void StopAccelerate(Directions direction)
+        /// <param name="stabilizing">Whether to stabilize or not.</param>
+        public void SetStabilizing(bool stabilizing)
         {
-            AccelerationDirection &= ~direction;
+            _stabilizing = stabilizing;
+        }
+
+        /// <summary>
+        /// Set a new target rotation for this ship.
+        /// </summary>
+        /// <param name="rotation">The rotation to rotate to.</param>
+        public void SetTargetRotation(float rotation)
+        {
+            if (_targetRotation != rotation)
+            {
+                _targetRotation = rotation;
+                _targetRotationChanged = true;
+            }
+        }
+
+        /// <summary>
+        /// Set whether to fire our weapons or not.
+        /// </summary>
+        /// <param name="shooting"></param>
+        public void SetShooting(bool shooting)
+        {
+            _shooting = shooting;
         }
 
         #endregion
@@ -84,24 +117,27 @@ namespace Space.ComponentSystem.Components
                 // Get the mass of the ship.
                 float mass = modules.GetValue(EntityAttributeType.Mass);
 
-                // Get the direction we want to accelerate into.
-                var directedAcceleration = DirectionConversion.DirectionToVector(AccelerationDirection);
+                // Get our acceleration direction, based on whether we're
+                // currently stabilizing or not.
+                Vector2 accelerationDirection;
                 float desiredAcceleration = float.MaxValue;
-                if (directedAcceleration == Vector2.Zero && AccelerationDirection != Directions.None)
+                if (_directedAcceleration == Vector2.Zero && _stabilizing)
                 {
-                    // If we aren't accelerating but somethings active we're
-                    // stabilizing.
-                    directedAcceleration = -Entity.GetComponent<Velocity>().Value;
-                    desiredAcceleration = directedAcceleration.Length();
+                    accelerationDirection = -Entity.GetComponent<Velocity>().Value;
+                    desiredAcceleration = accelerationDirection.Length();
                     // If it's zero, normalize will make it {NaN, NaN}. Avoid that.
-                    if (directedAcceleration != Vector2.Zero)
+                    if (accelerationDirection != Vector2.Zero)
                     {
-                        directedAcceleration.Normalize();
+                        accelerationDirection.Normalize();
                     }
+                }
+                else
+                {
+                    accelerationDirection = _directedAcceleration;
                 }
 
                 // Check if we're accelerating at all.
-                if (directedAcceleration != Vector2.Zero && desiredAcceleration != 0)
+                if (accelerationDirection != Vector2.Zero && desiredAcceleration != 0)
                 {
                     // Yes, accumulate the needed energy and thruster power.
                     float energyConsumption = 0;
@@ -140,7 +176,7 @@ namespace Space.ComponentSystem.Components
 
                     // Apply our acceleration. Use the min to our desired
                     // acceleration so we don't exceed our target.
-                    Entity.GetComponent<Acceleration>().Value = directedAcceleration * System.Math.Min(desiredAcceleration, acceleration);
+                    Entity.GetComponent<Acceleration>().Value = accelerationDirection * System.Math.Min(desiredAcceleration, acceleration);
                 }
                 else
                 {
@@ -153,14 +189,14 @@ namespace Space.ComponentSystem.Components
                 var rotation = modules.GetValue(EntityAttributeType.RotationForce) / mass;
 
                 // Update rotation / spin.
-                var currentDelta = Angle.MinAngle(transform.Rotation, TargetRotation);
+                var currentDelta = Angle.MinAngle(transform.Rotation, _targetRotation);
                 var requiredSpin = (currentDelta > 0
                             ? DirectionConversion.DirectionToScalar(Directions.Right)
                             : DirectionConversion.DirectionToScalar(Directions.Left))
                             * rotation;
 
                 // If the target rotation changed and we're either not spinning, or spinning the wrong way.
-                if (spin != null && (_targetRotation != TargetRotation) &&
+                if (_targetRotationChanged && spin != null &&
                     System.Math.Sign(spin.Value) != System.Math.Sign(requiredSpin))
                 {
                     // Is it worth starting to spin, or should we just jump to the position?
@@ -174,7 +210,7 @@ namespace Space.ComponentSystem.Components
                     else
                     {
                         // Set, only one frame (this one) required.
-                        transform.Rotation = TargetRotation;
+                        transform.Rotation = _targetRotation;
                         spin.Value = 0;
                     }
                 }
@@ -185,10 +221,10 @@ namespace Space.ComponentSystem.Components
             {
                 // Yes, check if we passed our target rotation. This is the case when the distance
                 // to the target in the last step was smaller than our rotational speed.
-                if (System.Math.Abs(Angle.MinAngle(_previousRotation, TargetRotation)) < System.Math.Abs(spin.Value))
+                if (System.Math.Abs(Angle.MinAngle(_previousRotation, _targetRotation)) < System.Math.Abs(spin.Value))
                 {
                     // Yes, set to that rotation and stop spinning.
-                    transform.Rotation = TargetRotation;
+                    transform.Rotation = _targetRotation;
                     spin.Value = 0;
                 }
             }
@@ -197,14 +233,14 @@ namespace Space.ComponentSystem.Components
             var weapons = Entity.GetComponent<WeaponControl>();
             if (weapons != null)
             {
-                weapons.Shooting = Shooting;
+                weapons.Shooting = _shooting;
             }
 
             // Remember rotation in this update for the next.
             _previousRotation = transform.Rotation;
 
             // We handled this change, if there was one.
-            _targetRotation = TargetRotation;
+            _targetRotationChanged = false;
         }
 
         /// <summary>
@@ -231,11 +267,12 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(TargetRotation)
-                .Write(Shooting)
-                .Write((byte)AccelerationDirection)
+                .Write(_directedAcceleration)
+                .Write(_stabilizing)
                 .Write(_targetRotation)
-                .Write(_previousRotation);
+                .Write(_targetRotationChanged)
+                .Write(_previousRotation)
+                .Write(_shooting);
         }
 
         /// <summary>
@@ -246,11 +283,12 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            TargetRotation = packet.ReadSingle();
-            Shooting = packet.ReadBoolean();
-            AccelerationDirection = (Directions)packet.ReadByte();
+            _directedAcceleration = packet.ReadVector2();
+            _stabilizing = packet.ReadBoolean();
             _targetRotation = packet.ReadSingle();
+            _targetRotationChanged = packet.ReadBoolean();
             _previousRotation = packet.ReadSingle();
+            _shooting = packet.ReadBoolean();
         }
 
         /// <summary>
@@ -261,12 +299,14 @@ namespace Space.ComponentSystem.Components
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
-            
-            hasher.Put(BitConverter.GetBytes(TargetRotation));
-            hasher.Put((byte)AccelerationDirection);
-            hasher.Put(BitConverter.GetBytes(Shooting));
+
+            hasher.Put(BitConverter.GetBytes(_directedAcceleration.X));
+            hasher.Put(BitConverter.GetBytes(_directedAcceleration.Y));
+            hasher.Put(BitConverter.GetBytes(_stabilizing));
             hasher.Put(BitConverter.GetBytes(_targetRotation));
+            hasher.Put(BitConverter.GetBytes(_targetRotationChanged));
             hasher.Put(BitConverter.GetBytes(_previousRotation));
+            hasher.Put(BitConverter.GetBytes(_shooting));
         }
 
         #endregion
@@ -287,11 +327,12 @@ namespace Space.ComponentSystem.Components
 
             if (copy == into)
             {
-                copy.TargetRotation = TargetRotation;
-                copy.Shooting = Shooting;
-                copy.AccelerationDirection = AccelerationDirection;
+                copy._directedAcceleration = _directedAcceleration;
+                copy._stabilizing = _stabilizing;
                 copy._targetRotation = _targetRotation;
+                copy._targetRotationChanged = _targetRotationChanged;
                 copy._previousRotation = _previousRotation;
+                copy._shooting = _shooting;
             }
 
             return copy;

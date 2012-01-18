@@ -1,5 +1,7 @@
 ﻿using System;
 using Engine.Input;
+using Engine.Util;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Space.Control;
 using Space.Simulation.Commands;
@@ -51,14 +53,29 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private DateTime _lastUpdate;
 
         /// <summary>
+        /// The current player acceleration.
+        /// </summary>
+        private Directions _accelerationDirection;
+
+        /// <summary>
         /// The last registered time that the mouse has moved.
         /// </summary>
-        private DateTime _rotationChanged;
+        private DateTime _accelerationChanged;
+
+        /// <summary>
+        /// Whether we're currently stabilizing our position or not.
+        /// </summary>
+        private bool _stabilizing;
 
         /// <summary>
         /// The target rotation based on the current mouse position.
         /// </summary>
         private float _targetRotation;
+
+        /// <summary>
+        /// The last registered time that the mouse has moved.
+        /// </summary>
+        private DateTime _rotationChanged;
 
         #endregion
 
@@ -86,7 +103,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 if (_rotationChanged > _lastUpdate)
                 {
                     // Yes, push command.
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, _targetRotation));
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, new Vector2(_targetRotation,0)));
+                }
+                if (_accelerationChanged > _lastUpdate)
+                {
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, DirectionConversion.DirectionToVector(_accelerationDirection)));
                 }
                 _lastUpdate = DateTime.Now;
             }
@@ -159,29 +180,35 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 case Keys.Down:
                 case Keys.S:
                     // Accelerate downwards.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.AccelerateDown);
+                    _accelerationDirection |= Directions.South;
                     break;
                 case Keys.Left:
                 case Keys.A:
                     // Accelerate left.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.AccelerateLeft);
+                    _accelerationDirection |= Directions.West;
                     break;
                 case Keys.Right:
                 case Keys.D:
                     // Accelerate right.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.AccelerateRight);
+                    _accelerationDirection |= Directions.East;
                     break;
                 case Keys.Up:
                 case Keys.W:
                     // Accelerate upwards.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.AccelerateUp);
+                    _accelerationDirection |= Directions.North;
+                    break;
+
+                case Keys.CapsLock:
+                    // Toggle stabilizers.
+                    _stabilizing = !_stabilizing;
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
                     break;
 
                 default:
                     return;
             }
 
-            _client.Controller.PushLocalCommand(command);
+            _accelerationChanged = DateTime.Now;
         }
 
         /// <summary>
@@ -191,31 +218,30 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             var args = (KeyboardInputEventArgs)e;
 
-            PlayerInputCommand command = null;
             switch (args.Key)
             {
                 case Keys.Down:
                 case Keys.S:
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopDown);
+                    _accelerationDirection &= ~Directions.South;
                     break;
                 case Keys.Left:
                 case Keys.A:
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopLeft);
+                    _accelerationDirection &= ~Directions.West;
                     break;
                 case Keys.Right:
                 case Keys.D:
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopRight);
+                    _accelerationDirection &= ~Directions.East;
                     break;
                 case Keys.Up:
                 case Keys.W:
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopUp);
+                    _accelerationDirection &= ~Directions.North;
                     break;
 
                 default:
                     return;
             }
 
-            _client.Controller.PushLocalCommand(command);
+            _accelerationChanged = DateTime.Now;
         }
 
         private void HandleMouseMoved(object sender, EventArgs e)
@@ -240,7 +266,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             if (args.Button == MouseInputEventArgs.MouseButton.Left)
             {
-                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Shoot));
+                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
             }
         }
 
@@ -250,7 +276,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             if (args.Button == MouseInputEventArgs.MouseButton.Left)
             {
-                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.CeaseFire));
+                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
             }
         }
 
