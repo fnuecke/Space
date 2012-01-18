@@ -53,20 +53,29 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private DateTime _lastUpdate;
 
         /// <summary>
-        /// The last registered time that the mouse has moved.
+        /// The current player acceleration.
         /// </summary>
-        private DateTime _rotationChanged;
+        private Directions _accelerationDirection;
+
         /// <summary>
         /// The last registered time that the mouse has moved.
         /// </summary>
         private DateTime _accelerationChanged;
 
         /// <summary>
+        /// Whether we're currently stabilizing our position or not.
+        /// </summary>
+        private bool _stabilizing;
+
+        /// <summary>
         /// The target rotation based on the current mouse position.
         /// </summary>
         private float _targetRotation;
 
-        private Directions _desiredDirection;
+        /// <summary>
+        /// The last registered time that the mouse has moved.
+        /// </summary>
+        private DateTime _rotationChanged;
 
         #endregion
 
@@ -98,7 +107,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 }
                 if (_accelerationChanged > _lastUpdate)
                 {
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, DirectionConversion.DirectionToVector(_desiredDirection)));
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, DirectionConversion.DirectionToVector(_accelerationDirection)));
                 }
                 _lastUpdate = DateTime.Now;
             }
@@ -171,22 +180,28 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 case Keys.Down:
                 case Keys.S:
                     // Accelerate downwards.
-                    _desiredDirection |= Directions.South;
+                    _accelerationDirection |= Directions.South;
                     break;
                 case Keys.Left:
                 case Keys.A:
                     // Accelerate left.
-                    _desiredDirection |= Directions.West;
+                    _accelerationDirection |= Directions.West;
                     break;
                 case Keys.Right:
                 case Keys.D:
                     // Accelerate right.
-                    _desiredDirection |= Directions.East;
+                    _accelerationDirection |= Directions.East;
                     break;
                 case Keys.Up:
                 case Keys.W:
                     // Accelerate upwards.
-                    _desiredDirection |= Directions.North;
+                    _accelerationDirection |= Directions.North;
+                    break;
+
+                case Keys.CapsLock:
+                    // Toggle stabilizers.
+                    _stabilizing = !_stabilizing;
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
                     break;
 
                 default:
@@ -203,24 +218,23 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             var args = (KeyboardInputEventArgs)e;
 
-            PlayerInputCommand command = null;
             switch (args.Key)
             {
                 case Keys.Down:
                 case Keys.S:
-                    _desiredDirection &= ~Directions.South;
+                    _accelerationDirection &= ~Directions.South;
                     break;
                 case Keys.Left:
                 case Keys.A:
-                    _desiredDirection &= ~Directions.West;
+                    _accelerationDirection &= ~Directions.West;
                     break;
                 case Keys.Right:
                 case Keys.D:
-                    _desiredDirection &= ~Directions.East;
+                    _accelerationDirection &= ~Directions.East;
                     break;
                 case Keys.Up:
                 case Keys.W:
-                    _desiredDirection &= ~Directions.North;
+                    _accelerationDirection &= ~Directions.North;
                     break;
 
                 default:
@@ -252,7 +266,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             if (args.Button == MouseInputEventArgs.MouseButton.Left)
             {
-                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Shoot));
+                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
             }
         }
 
@@ -262,7 +276,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             if (args.Button == MouseInputEventArgs.MouseButton.Left)
             {
-                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.CeaseFire));
+                _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
             }
         }
 

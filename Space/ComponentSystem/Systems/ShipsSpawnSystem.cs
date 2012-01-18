@@ -72,15 +72,14 @@ namespace Space.ComponentSystem.Systems
         public override void Update(long frame)
         {
             var cellSystem = Manager.GetSystem<CellSystem>();
-            var activeCells = cellSystem.ActiveCells;
-            foreach (var i in _entities)
+            foreach (var entityId in _entities)
             {
-                var entity = Manager.EntityManager.GetEntity(i);
+                var entity = Manager.EntityManager.GetEntity(entityId);
                 var transform = entity.GetComponent<Transform>();
                 if (!cellSystem.IsCellActive(CellSystem.GetCellIdFromCoordinates(ref transform.Translation)))
                 {
-                    _entities.Remove(i);
-                    Manager.EntityManager.RemoveEntity(i);
+                    _entities.Remove(entityId);
+                    Manager.EntityManager.RemoveEntity(entityId);
                 }
             }
         }

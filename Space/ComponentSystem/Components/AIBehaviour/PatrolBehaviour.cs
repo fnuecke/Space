@@ -1,12 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
-using Engine.Util;
 using Microsoft.Xna.Framework;
-using Space.Data;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
@@ -50,14 +43,15 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
             wanderDirection += 2 * CalculateEscapeDirection();
 
-            input.TargetRotation = (float)Math.Atan2(wanderDirection.Y,wanderDirection.X);
+            input.SetTargetRotation((float)Math.Atan2(wanderDirection.Y,wanderDirection.X));
             if (3 * info.Speed > AiComponent.MaxSpeed)
-                input.StopAccelerate();
+            {
+                input.SetAcceleration(Vector2.Zero);
+            }
             else
             {
-                input.Accelerate(wanderDirection);
+                input.SetAcceleration(wanderDirection);
             }
-                
         }
     }
-}
+}   
