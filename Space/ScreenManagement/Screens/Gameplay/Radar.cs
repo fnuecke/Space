@@ -26,6 +26,12 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private const int _radarBorderSize = 50;
 
+        /// <summary>
+        /// Percentage value when the health indicator within the radar frame
+        /// should start displaying low health in red color.
+        /// </summary>
+        private const float _healthIndicatorThreshold = 0.5f;
+
         #endregion
 
         #region Fields
@@ -154,6 +160,26 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // Begin drawing.
             _spriteBatch.Begin();
 
+            // Make the background of the radar a bit darker...
+            _basicForms.FillRectangle(0, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
+            _basicForms.FillRectangle(viewport.Width - _radarBorderSize, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
+            _basicForms.FillRectangle(_radarBorderSize, 0, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
+            _basicForms.FillRectangle(_radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
+
+            // ... and the border of the radar a bit lighter.
+            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.3f);
+
+            // Color the background of the radar red if health is low...
+            float healthPercent = info.Health / info.MaxHealth;
+            if (healthPercent < _healthIndicatorThreshold)
+            {
+                float redAlpha = (1 - healthPercent / _healthIndicatorThreshold) / 2;
+                _basicForms.FillRectangle(0, 0, _radarBorderSize, viewport.Height, Color.Red * redAlpha);
+                _basicForms.FillRectangle(viewport.Width - _radarBorderSize, 0, _radarBorderSize, viewport.Height, Color.Red * redAlpha);
+                _basicForms.FillRectangle(_radarBorderSize, 0, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Red * redAlpha);
+                _basicForms.FillRectangle(_radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Red * redAlpha);
+            }
+
             // Loop through all our neighbors.
             foreach (var neighbor in index.
                 GetNeighbors(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
@@ -258,16 +284,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             // Clear the list for the next run.
             _reusableNeighborList.Clear();
-
-            // Make the background of the radar a bit darker...
-            _basicForms.FillRectangle(0, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
-            _basicForms.FillRectangle(viewport.Width - _radarBorderSize, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
-            _basicForms.FillRectangle(_radarBorderSize, 0, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
-            _basicForms.FillRectangle(_radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
-
-            // ... and the border of the radar a bit lighter.
-            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.3f);
-
 
             // Done drawing.
             _spriteBatch.End();
