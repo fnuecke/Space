@@ -74,17 +74,17 @@ namespace Space.ComponentSystem.Entities
             var health = new Health(120);
             var energy = new Energy();
 
+            // Friction has to be updated before acceleration is, to allow
+            // maximum speed to be reached.
+            var friction = new Friction(0.01f, 0.02f);
+            friction.UpdateOrder = 10;
+
             // These components have to be updated in a specific order to
             // function as intended.
             // Ship control must come first, but after stuff like gravitation,
             // to be able to compute the stabilizer acceleration.
             var shipControl = new ShipControl();
-            shipControl.UpdateOrder = 10;
-
-            // Friction has to be updated before acceleration is, to allow
-            // maximum speed to be reached.
-            var friction = new Friction(0.01f, 0.02f);
-            friction.UpdateOrder = 11;
+            shipControl.UpdateOrder = 11;
 
             // Acceleration must come after ship control, due to it setting
             // its value.
