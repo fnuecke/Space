@@ -156,7 +156,12 @@ namespace Space.ComponentSystem.Entities
 
             return entity;
         }
+        public Entity CreateStation(ref Vector2 pos,Factions faction)
+        {
+            var entity = new Entity();
 
+            return entity;
+        }
         /// <summary>
         /// Copies modules from module array of a ShipData instance.
         /// </summary>
