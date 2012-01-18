@@ -23,7 +23,7 @@ namespace Engine.Graphics
         /// </summary>
         /// <param name="game"></param>
         public FilledEllipse(Game game)
-            : base(game, "Effects/FilledCircle")
+            : base(game, "Shaders/FilledCircle")
         {
             // Set defaults.
             SetGradient(1f);

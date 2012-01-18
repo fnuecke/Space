@@ -37,6 +37,8 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public interface IComponentSystem : ICopyable<IComponentSystem>, IPacketizable, IHashable
     {
+        #region Properties
+
         /// <summary>
         /// The component system manager this system is part of.
         /// </summary>
@@ -70,6 +72,10 @@ namespace Engine.ComponentSystem.Systems
         /// </remarks>
         bool ShouldSynchronize { get; }
 
+        #endregion
+
+        #region Logic
+
         /// <summary>
         /// Update all components in this system.
         /// </summary>
@@ -82,6 +88,10 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
         void Draw(GameTime gameTime, long frame);
+
+        #endregion
+
+        #region Components
 
         /// <summary>
         /// Add the component to this system, if it's supported.
@@ -101,6 +111,10 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         void Clear();
 
+        #endregion
+
+        #region Messaging
+        
         /// <summary>
         /// Inform a system of a message that was sent by another system.
         /// 
@@ -110,5 +124,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="message">The sent message.</param>
         void HandleMessage(ValueType message);
+
+        #endregion
     }
 }

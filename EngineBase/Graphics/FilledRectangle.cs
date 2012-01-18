@@ -23,7 +23,7 @@ namespace Engine.Graphics
         /// </summary>
         /// <param name="game"></param>
         public FilledRectangle(Game game)
-            : base(game, "Effects/FilledRectangle")
+            : base(game, "Shaders/FilledRectangle")
         {
             // Set defaults.
             SetGradient(1f);

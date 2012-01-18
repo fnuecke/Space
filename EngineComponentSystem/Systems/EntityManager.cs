@@ -33,6 +33,13 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         public IComponentSystemManager SystemManager { get; set; }
 
+#if DEBUG && GAMELOG
+        /// <summary>
+        /// Whether to log any game state changes in detail, for debugging.
+        /// </summary>
+        public bool GameLogEnabled { get; set; }
+#endif
+
         #endregion
 
         #region Fields

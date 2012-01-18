@@ -23,7 +23,7 @@ namespace Engine.Graphics
         /// </summary>
         /// <param name="game"></param>
         public Rectangle(Game game)
-            : base(game, "Effects/Rectangle")
+            : base(game, "Shaders/Rectangle")
         {
             // Set defaults.
             SetThickness(1f);

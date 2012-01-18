@@ -72,7 +72,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public void Update()
         {
             var info = _client.GetPlayerShipInfo();
-
             _healthEnergyBar.SetMaximumEnergy((int) info.MaxEnergy);
             _healthEnergyBar.SetCurrentEnergy((int) info.Energy);
             _healthEnergyBar.SetMaximumHealth((int) info.MaxHealth);

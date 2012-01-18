@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
@@ -19,8 +18,18 @@ namespace Engine.Simulation
     public sealed class TSS : IReversibleSimulation
     {
         #region Logger
-        
+
+        /// <summary>
+        /// Logger for general purpose logging.
+        /// </summary>
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+#if DEBUG && GAMELOG
+        /// <summary>
+        /// Logger for game log (i.e. steps happening in a simulation).
+        /// </summary>
+        private static NLog.Logger gamelog = NLog.LogManager.GetLogger("GameLog.Simulation");
+#endif
 
         #endregion
 
@@ -48,6 +57,13 @@ namespace Engine.Simulation
         /// back past.
         /// </summary>
         public long TrailingFrame { get { return _simulations[_simulations.Length - 1].CurrentFrame; } }
+
+#if DEBUG && GAMELOG
+        /// <summary>
+        /// Whether to log any game state changes in detail, for debugging.
+        /// </summary>
+        public bool GameLogEnabled { get; set; }
+#endif
 
         /// <summary>
         /// The component system manager in use in this simulation.
@@ -78,10 +94,12 @@ namespace Engine.Simulation
         /// </summary>
         private uint[] _delays;
 
+#if TSS_THREADING
         /// <summary>
         /// The parameterization for the different threads.
         /// </summary>
         private ThreadData[] _threadData;
+#endif
 
         /// <summary>
         /// The list of running states. They are ordered in in increasing delay, i.e.
@@ -118,10 +136,12 @@ namespace Engine.Simulation
             delays.CopyTo(_delays, 1);
             Array.Sort(_delays);
 
+#if TSS_THREADING
             // Initialize thread data. The trailing state will always be
             // updated by the main thread, to check if a rollback is required,
             // so we need one less than we have states.
             _threadData = new ThreadData[_delays.Length - 1];
+#endif
 
             // Generate initial states.
             _simulations = new IAuthoritativeSimulation[_delays.Length];
@@ -145,7 +165,13 @@ namespace Engine.Simulation
         /// <param name="state">the state to initialize this TSS to.</param>
         public void Initialize(IAuthoritativeSimulation state)
         {
-            MirrorState(state, _simulations.Length - 1);
+#if DEBUG && GAMELOG
+            if (GameLogEnabled)
+            {
+                gamelog.Trace("Initializing TSS.");
+            }
+#endif
+            MirrorSimulation(state, _simulations.Length - 1);
             WaitingForSynchronization = false;
         }
 
@@ -155,6 +181,12 @@ namespace Engine.Simulation
         /// </summary>
         public void Invalidate()
         {
+#if DEBUG && GAMELOG
+            if (GameLogEnabled)
+            {
+                gamelog.Trace("Invalidating TSS.");
+            }
+#endif
             OnInvalidated(EventArgs.Empty);
         }
 
@@ -184,6 +216,13 @@ namespace Engine.Simulation
         /// <param name="frame">the frame in which to execute the command.</param>
         public void PushCommand(Command command, long frame)
         {
+#if DEBUG && GAMELOG
+            if (GameLogEnabled)
+            {
+                gamelog.Trace("Pushing command to frame {0}: {1}", frame, command);
+            }
+#endif
+
             // Check if we can possibly apply this command.
             if (frame >= TrailingFrame)
             {
@@ -376,7 +415,7 @@ namespace Engine.Simulation
 
             // Unwrap the trailing state and mirror it to all the newer ones.
             packet.ReadPacketizableInto(_simulations[_simulations.Length - 1]);
-            MirrorState(_simulations[_simulations.Length - 1], _simulations.Length - 2);
+            MirrorSimulation(_simulations[_simulations.Length - 1], _simulations.Length - 2);
 
             // Find adds / removes / commands that our out of date now, but keep newer ones.
             PrunePastEvents();
@@ -475,9 +514,16 @@ namespace Engine.Simulation
         /// <param name="frame">the frame up to which to run.</param>
         private void FastForward(long frame)
         {
+#if DEBUG && GAMELOG
+            if (GameLogEnabled)
+            {
+                gamelog.Trace("Fast-forwarding TSS to frame {0}.", frame);
+            }
+#endif
+
             // Start threads for the non-trailing frames.
 #if TSS_THREADING
-            var tasks = new Task[_threadData.Length];
+            var tasks = new System.Threading.Tasks.Task[_threadData.Length];
             for (int i = 0; i < _threadData.Length; i++)
             {
                 _threadData[i].simulation = _simulations[i];
@@ -486,6 +532,12 @@ namespace Engine.Simulation
             }
 #endif
 
+#if DEBUG && !TSS_THREADING && GAMELOG
+            // Enable logging for the trailing state, and the trailing state
+            // only (so we only get the output of one simulation, the one
+            // that has the last say!)
+            TrailingState.GameLogEnabled = true;
+#endif
             // Process the trailing state, see if we need a roll-back.
             bool needsRewind = false;
             while (TrailingState.CurrentFrame + _delays[_simulations.Length - 1] < frame)
@@ -502,16 +554,16 @@ namespace Engine.Simulation
                 // Do the actual stepping for the state.
                 TrailingState.Update();
             }
-            
+
 #if TSS_THREADING
             // Wait for our worker threads to finish.
-            Task.WaitAll(tasks);
+            System.Threading.Tasks.Task.WaitAll(tasks);
 
             // Check if we had trailing tentative commands.
             if (needsRewind)
             {
                 logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
-                MirrorState(TrailingState, _simulations.Length - 2);
+                MirrorSimulation(TrailingState, _simulations.Length - 2);
 
                 // Update the other states once more.
                 FastForward(frame);
@@ -526,10 +578,11 @@ namespace Engine.Simulation
             if (needsRewind)
             {
                 logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
-                MirrorState(TrailingState, _simulations.Length - 2);
+                MirrorSimulation(TrailingState, _simulations.Length - 2);
             }
 
-            // Fast-forward the remaining states.
+            // Fast-forward the remaining states. Do not log in those, we only
+            // want to log the trailing state.
             for (int i = 0; i < _simulations.Length - 1; i++)
             {
                 while (_simulations[i].CurrentFrame < frame - _delays[i])
@@ -590,9 +643,9 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="data">The thread data to bind.</param>
         /// <returns>A new task for the given thread data.</returns>
-        private Task TaskStarter(ThreadData data)
+        private System.Threading.Tasks.Task TaskStarter(ThreadData data)
         {
-            return Task.Factory.StartNew(() => ThreadedUpdate(data));
+            return System.Threading.Tasks.Task.Factory.StartNew(() => ThreadedUpdate(data));
         }
 
         /// <summary>
@@ -629,13 +682,20 @@ namespace Engine.Simulation
         /// <param name="frame">the frame to rewind to.</param>
         private void Rewind(long frame)
         {
+#if DEBUG && GAMELOG
+            if (GameLogEnabled)
+            {
+                gamelog.Trace("Rewinding TSS to frame {0}.", frame);
+            }
+#endif
+
             // Find first state that's not past the frame.
             for (int i = 0; i < _simulations.Length; ++i)
             {
                 if (_simulations[i].CurrentFrame <= frame)
                 {
                     // Success, mirror the state to all newer ones.
-                    MirrorState(_simulations[i], i - 1);
+                    MirrorSimulation(_simulations[i], i - 1);
                     return; // Then return, so we don't trigger resync ;)
                 }
             }
@@ -649,7 +709,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="state">the state to mirror.</param>
         /// <param name="start">the index to start at.</param>
-        private void MirrorState(IAuthoritativeSimulation state, int start)
+        private void MirrorSimulation(IAuthoritativeSimulation state, int start)
         {
             for (int i = start; i >= 0; --i)
             {
@@ -705,6 +765,7 @@ namespace Engine.Simulation
             }
         }
 
+#if TSS_THREADING
         #region Thread parameter wrapper
 
         /// <summary>
@@ -724,6 +785,7 @@ namespace Engine.Simulation
         }
 
         #endregion
+#endif
 
         #endregion
 
@@ -732,15 +794,13 @@ namespace Engine.Simulation
         private class TSSEntityManager : IEntityManager
         {
             #region Properties
-            
-            public ReadOnlyCollection<Entity> Entities { get { throw new NotSupportedException(); } }
 
             public IComponentSystemManager SystemManager { get { return _systemManager; } set { throw new NotSupportedException(); } }
-            
+
             #endregion
 
             #region Fields
-            
+
             /// <summary>
             /// The TSS this wrapper is associated to.
             /// </summary>
@@ -759,6 +819,8 @@ namespace Engine.Simulation
             }
 
             #endregion
+
+            #region Entities
 
             public int AddEntity(Entity entity)
             {
@@ -782,11 +844,29 @@ namespace Engine.Simulation
                 return _tss.LeadingState.EntityManager.Contains(entityUid);
             }
 
+            #endregion
+
             #region Unsupported
 
             public event EventHandler<EntityEventArgs> Added;
 
             public event EventHandler<EntityEventArgs> Removed;
+
+            public ReadOnlyCollection<Entity> Entities { get { throw new NotSupportedException(); } }
+
+#if DEBUG && GAMELOG
+            public bool GameLogEnabled
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+                set
+                {
+                    throw new NotImplementedException();
+                }
+            }
+#endif
 
             public void RemoveEntity(Entity entity)
             {
@@ -827,7 +907,7 @@ namespace Engine.Simulation
         private class TSSComponentSystemManager : IComponentSystemManager
         {
             #region Fields
-            
+
             /// <summary>
             /// The TSS this wrapper is associated to.
             /// </summary>

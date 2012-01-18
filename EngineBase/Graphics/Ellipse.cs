@@ -23,7 +23,7 @@ namespace Engine.Graphics
         /// </summary>
         /// <param name="game"></param>
         public Ellipse(Game game)
-            : base(game, "Effects/Circle")
+            : base(game, "Shaders/Circle")
         {
             // Set defaults.
             SetThickness(1f);

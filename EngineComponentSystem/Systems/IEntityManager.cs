@@ -31,10 +31,17 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         IComponentSystemManager SystemManager { get; set; }
 
+#if DEBUG && GAMELOG
+        /// <summary>
+        /// Whether to log any game state changes in detail, for debugging.
+        /// </summary>
+        bool GameLogEnabled { get; set; }
+#endif
+
         #endregion
 
         #region Accessors
-        
+
         /// <summary>
         /// Add an entity object to this manager. This will add all the
         /// entity's components to the associated component system manager.

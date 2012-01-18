@@ -16,6 +16,17 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public class Gravitation : AbstractComponent
     {
+        #region Logger
+
+#if DEBUG && GAMELOG
+        /// <summary>
+        /// Logger for game log (i.e. steps happening in a simulation).
+        /// </summary>
+        private static NLog.Logger gamelog = NLog.LogManager.GetLogger("GameLog.Gravitation");
+#endif
+
+        #endregion
+
         #region Types
 
         /// <summary>
@@ -159,6 +170,13 @@ namespace Space.ComponentSystem.Components
                         // Compute the angle between us and the other entity.
                         float distanceSquared = delta.LengthSquared();
 
+#if DEBUG && GAMELOG
+                        if (Entity.Manager.GameLogEnabled)
+                        {
+                            gamelog.Trace("{0}: Attracting = {1}, old Velocity = {2}", Entity.UID, neigbour.UID, otherVelocity.Value);
+                        }
+#endif
+
                         // If we're near the core only pull if  the other
                         // object isn't currently accelerating.
                         if (distanceSquared < 262144) // 262144 = 512 * 512, so we allow overriding gravity at radius 512
@@ -176,7 +194,18 @@ namespace Space.ComponentSystem.Components
                                 {
                                     // Adjust velocity.
                                     delta.Normalize();
-                                    otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(262144, distanceSquared));
+                                    float gravitation = Mass * otherGravitation.Mass / System.Math.Max(262144, distanceSquared);
+                                    var directedGravitation = delta * gravitation;
+
+#if DEBUG && GAMELOG
+                                    if (Entity.Manager.GameLogEnabled)
+                                    {
+                                        gamelog.Trace("Delta = {0}, Gravitation = {1}", delta, gravitation);
+                                    }
+#endif
+
+                                    otherVelocity.Value.X -= directedGravitation.X;
+                                    otherVelocity.Value.Y -= directedGravitation.Y;
                                 }
                             }
                         }
@@ -184,8 +213,26 @@ namespace Space.ComponentSystem.Components
                         {
                             // Adjust velocity.
                             delta.Normalize();
-                            otherVelocity.Value -= delta * (Mass * otherGravitation.Mass / System.Math.Max(65536, distanceSquared));
+                            float gravitation = Mass * otherGravitation.Mass / distanceSquared;
+                            var directedGravitation = delta * gravitation;
+
+#if DEBUG && GAMELOG
+                            if (Entity.Manager.GameLogEnabled)
+                            {
+                                gamelog.Trace("Delta = {0}, Gravitation = {1}", delta, gravitation);
+                            }
+#endif
+
+                            otherVelocity.Value.X -= directedGravitation.X;
+                            otherVelocity.Value.Y -= directedGravitation.Y;
                         }
+
+#if DEBUG && GAMELOG
+                        if (Entity.Manager.GameLogEnabled)
+                        {
+                            gamelog.Trace("new Velocity = {0}", otherVelocity.Value);
+                        }
+#endif
                     }
                 }
 

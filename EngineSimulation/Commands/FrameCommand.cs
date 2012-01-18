@@ -56,10 +56,32 @@ namespace Engine.Simulation.Commands
 
         #region Equality
 
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>
+        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
+        /// </returns>
         public override bool Equals(Command other)
         {
             return other is FrameCommand && base.Equals(other) &&
                 ((FrameCommand)other).Frame == this.Frame;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + ", Frame = " + Frame;
         }
 
         #endregion

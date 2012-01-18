@@ -15,6 +15,17 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Friction : AbstractComponent
     {
+        #region Logger
+
+#if DEBUG && GAMELOG
+        /// <summary>
+        /// Logger for game log (i.e. steps happening in a simulation).
+        /// </summary>
+        private static NLog.Logger gamelog = NLog.LogManager.GetLogger("GameLog.Friction");
+#endif
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -68,11 +79,20 @@ namespace Engine.ComponentSystem.Components
                 // Only if a velocity is known.
                 if (velocity != null)
                 {
+#if DEBUG && GAMELOG
+                    if (Entity.Manager.GameLogEnabled)
+                    {
+                        gamelog.Trace("{0}: Friction = {1}, old Velocity = {2}", Entity.UID, Value, velocity.Value);
+                    }
+#endif
+
                     // Save previous velocity for stop check (due to MinVelocity).
                     var previousVelocity = velocity.Value.LengthSquared();
 
                     // Apply friction.
-                    velocity.Value = velocity.Value * (1 - Value);
+                    //velocity.Value = velocity.Value * (1 - Value);
+                    velocity.Value.X *= (1 - Value);
+                    velocity.Value.Y *= (1 - Value);
 
                     // If we're below a certain minimum speed, just stop, otherwise
                     // it'd be hard to. We only stop if we were faster than the minimum,
@@ -83,6 +103,13 @@ namespace Engine.ComponentSystem.Components
                     {
                         velocity.Value = Vector2.Zero;
                     }
+
+#if DEBUG && GAMELOG
+                    if (Entity.Manager.GameLogEnabled)
+                    {
+                        gamelog.Trace("new Velocity = {0}", velocity.Value);
+                    }
+#endif
                 }
             }
         }
