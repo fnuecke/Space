@@ -2,7 +2,6 @@
 using Engine.Input;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using Space.Control;
 using Space.Simulation.Commands;
 
@@ -174,38 +173,37 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 return;
             }
 
-            PlayerInputCommand command = null;
-            switch (args.Key)
+            if (args.Key == Settings.Instance.MoveDown)
             {
-                case Keys.Down:
-                case Keys.S:
-                    // Accelerate downwards.
-                    _accelerationDirection |= Directions.South;
-                    break;
-                case Keys.Left:
-                case Keys.A:
-                    // Accelerate left.
-                    _accelerationDirection |= Directions.West;
-                    break;
-                case Keys.Right:
-                case Keys.D:
-                    // Accelerate right.
-                    _accelerationDirection |= Directions.East;
-                    break;
-                case Keys.Up:
-                case Keys.W:
-                    // Accelerate upwards.
-                    _accelerationDirection |= Directions.North;
-                    break;
-
-                case Keys.CapsLock:
+                // Accelerate downwards.
+                _accelerationDirection |= Directions.South;
+            }
+            else if (args.Key == Settings.Instance.MoveLeft)
+            {
+                // Accelerate left.
+                _accelerationDirection |= Directions.West;
+            }
+            else if (args.Key == Settings.Instance.MoveRight)
+            {
+                // Accelerate right.
+                _accelerationDirection |= Directions.East;
+            }
+            else if (args.Key == Settings.Instance.MoveUp)
+            {
+                // Accelerate upwards.
+                _accelerationDirection |= Directions.North;
+            }
+            else
+            {
+                // Not an acceleration command, return after this, to avoid
+                // setting the timestamp.
+                if (args.Key == Settings.Instance.Stabilizer)
+                {
                     // Toggle stabilizers.
                     _stabilizing = !_stabilizing;
                     _client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
-                    break;
-
-                default:
-                    return;
+                }
+                return;
             }
 
             _accelerationChanged = DateTime.Now;
@@ -218,27 +216,25 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             var args = (KeyboardInputEventArgs)e;
 
-            switch (args.Key)
+            if (args.Key == Settings.Instance.MoveDown)
             {
-                case Keys.Down:
-                case Keys.S:
-                    _accelerationDirection &= ~Directions.South;
-                    break;
-                case Keys.Left:
-                case Keys.A:
-                    _accelerationDirection &= ~Directions.West;
-                    break;
-                case Keys.Right:
-                case Keys.D:
-                    _accelerationDirection &= ~Directions.East;
-                    break;
-                case Keys.Up:
-                case Keys.W:
-                    _accelerationDirection &= ~Directions.North;
-                    break;
-
-                default:
-                    return;
+                _accelerationDirection &= ~Directions.South;
+            }
+            else if (args.Key == Settings.Instance.MoveLeft)
+            {
+                _accelerationDirection &= ~Directions.West;
+            }
+            else if (args.Key == Settings.Instance.MoveRight)
+            {
+                _accelerationDirection &= ~Directions.East;
+            }
+            else if (args.Key == Settings.Instance.MoveUp)
+            {
+                _accelerationDirection &= ~Directions.North;
+            }
+            else
+            {
+                return;
             }
 
             _accelerationChanged = DateTime.Now;
