@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Components
             MaxSpeed = -1;
             MaxHealth = -1;
             AiCommand = command;
-
+            SwitchOrder();
         }
 
         public override void Update(object parameterization)
@@ -51,6 +51,7 @@ namespace Space.ComponentSystem.Components
                 MaxHealth = shipinfo.MaxHealth;
                 MaxSpeed = shipinfo.MaxSpeed;
             }
+            CalculateBehaviour();
             currentbehaviour.Update();
         }
         private void CalculateBehaviour()
@@ -68,6 +69,8 @@ namespace Space.ComponentSystem.Components
                 {
                     var transform = neighbor.GetComponent<Transform>();
                     if (transform == null) continue;
+                    var health = neighbor.GetComponent<Health>();
+                    if (health == null||health.Value == 0) continue;
                     var faction = neighbor.GetComponent<Faction>();
                     if(faction == null) continue;
                     if ((faction.Value & currentFaction) == 0)
@@ -88,7 +91,14 @@ namespace Space.ComponentSystem.Components
                     return;
 
                 }
+                var health = targetEntity.GetComponent<Health>();
                 var transform = targetEntity.GetComponent<Transform>();
+                if (health == null ||health.Value == 0|| transform == null)
+                {
+                    SwitchOrder();
+                    return;
+                }
+
                 var direction = position - transform.Translation;
                 if(direction.Length()>3000)
                     SwitchOrder();

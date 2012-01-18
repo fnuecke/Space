@@ -11,7 +11,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 {
     public class Behaviour
     {
-        protected Vector2 wanderDirection;
+        protected Vector2 direction;
         protected AIComponent AiComponent;
         public Behaviour(AIComponent entity)
         {

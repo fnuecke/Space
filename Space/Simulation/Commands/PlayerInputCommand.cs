@@ -27,14 +27,14 @@ namespace Space.Simulation.Commands
             Accelerate,
 
             /// <summary>
-            /// Stop acceleration.
+            /// Try to stabilize the position.
             /// </summary>
-            Stop,
+            BeginStabilizing,
 
             /// <summary>
-            /// Stop accelerating to the left.
+            /// Stop trying to stabilize the position.
             /// </summary>
-            StopLeft,
+            StopStabilizing,
 
             /// <summary>
             /// Rotate to a specified angle.
@@ -44,12 +44,12 @@ namespace Space.Simulation.Commands
             /// <summary>
             /// Begin shooting.
             /// </summary>
-            Shoot,
+            BeginShooting,
 
             /// <summary>
             /// Stop shooting.
             /// </summary>
-            CeaseFire
+            StopShooting
         }
 
         #endregion

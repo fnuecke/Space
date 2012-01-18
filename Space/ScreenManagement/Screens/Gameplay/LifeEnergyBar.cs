@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework;
 using Space.Control;
 using Space.ScreenManagement.Screens.Helper;
+using Engine.Util;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -28,6 +29,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
         #endregion
 
         #region Fields
+
+        private ContentManager _content;
 
         /// <summary>
         /// The width of the bar in pixel.
@@ -55,14 +58,19 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private int _currentLife = 100;
 
         /// <summary>
-        /// The value for maximum number of life.
+        /// The value for current number of energy.
         /// </summary>
-        private int _positionX;
+        private int _maxEnergy = 100;
 
         /// <summary>
-        /// The value for maximum number of life.
+        /// The value for maximum number of energy.
         /// </summary>
-        private int _positionY;
+        private int _currentEnergy = 40;
+
+        /// <summary>
+        /// The position (top-right) of the var.
+        /// </summary>
+        private Point _position;
 
         /// <summary>
         /// Sprite batch used for rendering.
@@ -93,13 +101,134 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
+            _content = content;
             _spriteBatch = spriteBatch;
             _basicForms = new BasicForms(_spriteBatch);
 
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
-            _positionX = (viewport.Width - _width) / 2;
-            _positionY = (viewport.Height - _height) / 2 - 40;
+            _position = new Point ((viewport.Width - _width) / 2, (viewport.Height - _height) / 2 - 40);
         }
+
+        #endregion
+
+        #region Setter
+
+        /// <summary>
+        /// Set all values of the life / energy bar.
+        /// </summary>
+        /// <param name="currentLife">The new value for the current life value</param>
+        /// <param name="maxLife">The new value for the maximum life value</param>
+        /// <param name="currentEnergy">The new value for the current energy value</param>
+        /// <param name="maxEnergy">The new value for the maximum energy value</param>
+        /// <param name="width">The new value for the width of the bar.</param>
+        /// <param name="height">The new value for the height of the bar.</param>
+        /// <param name="border">The new value for the size of the border of the bar.</param>
+        /// <param name="positionX">The new value for the x position of the bar.</param>
+        /// <param name="positionY">The new value for the y position of the bar.</param>
+        public void SetValues(int currentLife, int maxLife, int currentEnergy, int maxEnergy, int width, int height, int border, int positionX, int positionY)
+        {
+            _currentLife = currentLife;
+            _maxLife = maxLife;
+            _currentEnergy = currentEnergy;
+            _maxEnergy = maxEnergy;
+            _width = width;
+            _height = height;
+            _border = border;
+            _position.X = positionX;
+            _position.Y = positionY;
+        }
+
+        /// <summary>
+        /// Set a new value for the current life.
+        /// </summary>
+        /// <param name="currentLife">The new value for the current life.</param>
+        public void SetCurrentLife(int currentLife)
+        {
+            _currentLife = currentLife;
+        }
+
+        /// <summary>
+        /// Set a new value for the maximum life.
+        /// </summary>
+        /// <param name="maxLife">The new value for the maximum life.</param>
+        public void SetMaximumLife(int maxLife)
+        {
+            _maxLife = maxLife;
+        }
+
+        /// <summary>
+        /// Set a new value for the current energy.
+        /// </summary>
+        /// <param name="currentLife">The new value for the current energy.</param>
+        public void SetCurrentEnergy(int currentEnergy)
+        {
+            _currentEnergy = currentEnergy;
+        }
+
+        /// <summary>
+        /// Set a new value for the maximum life.
+        /// </summary>
+        /// <param name="maxLife">The new value for the maximum life.</param>
+        public void SetMaximumEnergy(int maxEnergy)
+        {
+            _maxEnergy = maxEnergy;
+        }
+
+        /// <summary>
+        /// Set a new value for the bar width.
+        /// </summary>
+        /// <param name="width">The new value for the bar width.</param>
+        public void SetWidth(int width)
+        {
+            _width = width;
+        }
+
+        /// <summary>
+        /// Set a new value for the bar height.
+        /// </summary>
+        /// <param name="height">The new value for the bar height.</param>
+        public void SetHeight(int height)
+        {
+            _height = height;
+        }
+
+        /// <summary>
+        /// Set a new value for the border thickness.
+        /// </summary>
+        /// <param name="border">The new value for the border thickness.</param>
+        public void SetBorderThickness(int border)
+        {
+            _border = border;
+        }
+
+        /// <summary>
+        /// Set a new value for the x position.
+        /// </summary>
+        /// <param name="positionX">The new value for the x position.</param>
+        public void SetPositionX(int positionX)
+        {
+            _position.X = positionX;
+        }
+
+        /// <summary>
+        /// Set a new value for the x position.
+        /// </summary>
+        /// <param name="positionY">The new value for the y position.</param>
+        public void SetPositionY(int positionY)
+        {
+            _position.Y = positionY;
+        }
+
+        /// <summary>
+        /// Set a new value for the position.
+        /// </summary>
+        /// <param name="position">The new value for the position.</param>
+        public void SetPosition(Point position)
+        {
+            _position = position;
+        }
+
+
 
         #endregion
 
@@ -112,17 +241,28 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _spriteBatch.Begin();
 
+            // display the current and maximum values in debug mode.
+            #if DEBUG 
+            SpriteFont Font1 = _content.Load<SpriteFont>("Fonts/ConsoleFont");
+            _spriteBatch.DrawString(Font1, _currentLife + "/" + _maxLife, new Vector2(_position.X + _width + 3, _position.Y - 2), Color.White);
+            _spriteBatch.DrawString(Font1, _currentEnergy + "/" + _maxEnergy, new Vector2(_position.X + _width + 3, _position.Y + _height - _border - 2), Color.White);
+            #endif
+
+            //////////////////////////////////////////////////////////////////////////
+            /// life bar
+            //////////////////////////////////////////////////////////////////////////
+
             // draw the black background
-            _basicForms.FillRectangle(_positionX, _positionY, _width, _height, Color.Black);
+            _basicForms.FillRectangle(_position.X, _position.Y, _width, _height, Color.Black);
             // draw the gray background
-            _basicForms.FillRectangle(_positionX + _border, _positionY + _border, _width - 2 * _border, _height - 2 * _border, new Color(40, 40, 40));
+            _basicForms.FillRectangle(_position.X + _border, _position.Y + _border, _width - 2 * _border, _height - 2 * _border, new Color(40, 40, 40));
             // draw the current life value
-            _basicForms.FillRectangle(_positionX + _border, _positionY + _border, (int)((_width - 2 * _border) * (_currentLife * 1.0 / _maxLife)), _height - 2 * _border, new Color(142, 232, 63));
+            _basicForms.FillRectangle(_position.X + _border, _position.Y + _border, (int)((_width - 2 * _border) * (_currentLife * 1.0 / _maxLife)), _height - 2 * _border, new Color(142, 232, 63));
 
             // draw the standard pattern
-            for (int i = 1; i * 1.0 / (_width - 2 * _border) < _currentLife * 1.0 / _maxLife; i += 2)
+            for (int i = 0; i * 1.0 / (_width - 2 * _border) < _currentLife * 1.0 / _maxLife; i += 2)
             {
-                _basicForms.FillRectangle(_positionX + _border + i, _positionY + _border + 2, 1, _height - 2 * _border - 2, Color.White * 0.3f);
+                _basicForms.FillRectangle(_position.X + _border + i, _position.Y + _border + 2, 1, _height - 2 * _border - 2, Color.White * 0.3f);
             }
 
             // draw the first separation
@@ -133,7 +273,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 {
                     break;
                 }
-                _basicForms.FillRectangle(_positionX + _border + pos, _positionY + _border + 2, 1, _height - 2 * _border - 2 * 2, Color.Black * 0.25f);
+                _basicForms.FillRectangle(_position.X + _border + pos, _position.Y + _border + 2, 1, _height - 2 * _border - 2 * 2, Color.Black * 0.25f);
             }
 
             // draw the second separation
@@ -144,7 +284,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 {
                     break;
                 }
-                _basicForms.FillRectangle(_positionX + _border + pos, _positionY + _border + 1, 1, _height - 2 * _border - 2 * 1, Color.Black);
+                _basicForms.FillRectangle(_position.X + _border + pos, _position.Y + _border + 1, 1, _height - 2 * _border - 2 * 1, Color.Black);
             }
 
             // draw the third separation
@@ -155,63 +295,32 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 {
                     break;
                 }
-                _basicForms.FillRectangle(_positionX + _border + pos, _positionY, 2, _height, Color.Black);
+                _basicForms.FillRectangle(_position.X + _border + pos, _position.Y, 2, _height, Color.Black);
+            }
+
+            //////////////////////////////////////////////////////////////////////////
+            /// energy bar
+            //////////////////////////////////////////////////////////////////////////
+
+            // draw the black background
+            _basicForms.FillRectangle(_position.X, _position.Y + _height - _border, _width, _height, Color.Black);
+            // draw the gray background
+            _basicForms.FillRectangle(_position.X + _border, _position.Y + _height, _width - 2 * _border, _height - 2 * _border, new Color(40, 40, 40));
+            // draw the energy background
+            _basicForms.FillRectangle(_position.X + _border, _position.Y + _height, (int)((_width - 2 * _border) * (_currentEnergy * 1.0 / _maxEnergy)), _height - 2 * _border, Color.Blue);
+
+            // draw the standard pattern
+            for (int i = 0; i * 1.0 / (_width - 2 * _border) < _currentEnergy * 1.0 / _maxEnergy; i += 2)
+            {
+                _basicForms.FillRectangle(_position.X + _border + i, _position.Y + _height, 1, _height - 2 * _border - 2, Color.White * 0.3f);
             }
 
             _spriteBatch.End();
         }
 
-        #endregion
 
-        #region Setter
-
-        /// <summary>
-        /// Set all values of the life / energy bar.
-        /// </summary>
-        /// <param name="currentLife">The new value for the current life value</param>
-        /// <param name="maxLife">The new value for the maximum life value</param>
-        /// <param name="width">The new value for the width of the bar.</param>
-        /// <param name="height">The new value for the height of the bar.</param>
-        /// <param name="border">The new value for the size of the border of the bar.</param>
-        public void SetValues(int currentLife, int maxLife, int width, int height, int border, int positionX, int positionY)
-        {
-            _currentLife = currentLife;
-            _maxLife = maxLife;
-            _width = width;
-            _height = height;
-            _border = border;
-            _positionX = positionX;
-            _positionY = positionY;
-        }
-
-        /// <summary>
-        /// Set new values for the current and maximum life value.
-        /// The other values (width, height, border, position) won't be changed.
-        /// Only use this method if the bar is not used by multiple elements.
-        /// </summary>
-        /// <param name="currentLife">The new value for the current life value</param>
-        /// <param name="maxLife">The new value for the maximum life value</param>
-        public void SetValues(int currentLife, int maxLife)
-        {
-            _currentLife = currentLife;
-            _maxLife = maxLife;
-        }
-
-        /// <summary>
-        /// Set new values for the current and maximum life and the position value.
-        /// The other values (width, height, border) won't be changed.
-        /// Only use this method if the bar is not used by multiple elements.
-        /// </summary>
-        /// <param name="currentLife">The new value for the current life value</param>
-        /// <param name="maxLife">The new value for the maximum life value</param>
-        public void SetValues(int currentLife, int maxLife, int positionX, int positionY)
-        {
-            _currentLife = currentLife;
-            _maxLife = maxLife;
-            _positionX = positionX;
-            _positionY = positionY;
-        }
 
         #endregion
+
     }
 }

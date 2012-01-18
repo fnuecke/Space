@@ -38,7 +38,7 @@ namespace Space.ComponentSystem.Entities
                 // And don't regenerate.
                 typeof(Health),
                 typeof(Energy)
-            }, new Vector2(63000, 63000)));
+            }, new Vector2(60000, 60000)));
 
             return entity;
         }
