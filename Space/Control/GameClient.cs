@@ -164,7 +164,12 @@ namespace Space.Control
                             string line;
                             while ((line = reader.ReadLine()) != null)
                             {
-                                console.Execute(line);
+                                // Clenan up input, and skip comment lines.
+                                line = line.Trim();
+                                if (!line.StartsWith("#"))
+                                {
+                                    console.Execute(line);
+                                }
                             }
                         }
                         logger.Info("Done running autoexec file.");

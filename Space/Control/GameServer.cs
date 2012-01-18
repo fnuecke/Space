@@ -106,7 +106,7 @@ namespace Space.Control
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
             var playerData = (PlayerData)e.Player.Data;
-            var ship = EntityFactory.CreatePlayerShip(playerData.Ship, e.Player.Number);
+            var ship = EntityFactory.CreatePlayerShip(playerData.Ship, e.Player.Number, new Vector2(60000, 60000));
             Controller.Simulation.EntityManager.AddEntity(ship);
         }
 

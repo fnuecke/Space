@@ -72,6 +72,31 @@ namespace Space
         /// </summary>
         public Keys ConsoleKey = Keys.OemTilde;
 
+        /// <summary>
+        /// Key to accelerate upwards.
+        /// </summary>
+        public Keys MoveUp = Keys.W;
+
+        /// <summary>
+        /// Key to accelerate downwards.
+        /// </summary>
+        public Keys MoveDown = Keys.S;
+
+        /// <summary>
+        /// Key to accelerate left.
+        /// </summary>
+        public Keys MoveLeft = Keys.A;
+
+        /// <summary>
+        /// Key to accelerate right.
+        /// </summary>
+        public Keys MoveRight = Keys.D;
+
+        /// <summary>
+        /// Key to toggle the stabilizer.
+        /// </summary>
+        public Keys Stabilizer = Keys.CapsLock;
+
         #endregion
 
         #region Save / Load / Singleton

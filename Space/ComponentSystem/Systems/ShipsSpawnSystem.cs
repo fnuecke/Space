@@ -92,9 +92,12 @@ namespace Space.ComponentSystem.Systems
                 if (info.State && info.X == 0 && info.Y == 0)
                 {
                     const int cellSize = CellSystem.CellSize;
-                    for (var i = 0; i < 10;i++ )
-                        _entities.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[0], Factions.Player5, new AIComponent.AICommand(
-                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)), cellSize, AIComponent.Order.Guard))));
+                    for (var i = 0; i < 10; i++)
+                    {
+                        _entities.Add(Manager.EntityManager.AddEntity(
+                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[0], Factions.Player5, new Vector2(62500, 62500),
+                            new AIComponent.AICommand(new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)), cellSize, AIComponent.Order.Guard))));
+                    }
                 }
             }
         }
