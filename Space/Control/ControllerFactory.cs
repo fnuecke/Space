@@ -37,7 +37,7 @@ namespace Space.Control
                     new AvatarSystem(),
                     new CellSystem(),
 
-                    //new ShipsSpawnSystem(game.Content),
+                    new ShipsSpawnSystem(game.Content),
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world"))
                 });
 
@@ -69,7 +69,7 @@ namespace Space.Control
                     new AvatarSystem(),
                     new CellSystem(),
 
-                    //new ShipsSpawnSystem(game.Content),
+                    new ShipsSpawnSystem(game.Content),
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
 
                     new PlayerCenteredSoundSystem(soundBank, controller.Session),
