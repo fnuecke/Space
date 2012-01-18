@@ -1185,10 +1185,23 @@ namespace Engine.Collections
                 return;
             }
 
-            // Render the bounds for this node.
-            shape.SetCenter(centerX, centerY);
-            shape.SetSize(size - 1);
-            shape.Draw();
+            // Render the bounds for this node, if they are visible.
+            float left = centerX - (size >> 1);
+            float top = centerY - (size >> 1);
+            float right = left + size;
+            float bottom = top + size;
+            float width = shape.GraphicsDevice.Viewport.Width;
+            float height = shape.GraphicsDevice.Viewport.Height;
+
+            if (IsInInterval(left, 0, width) ||
+                IsInInterval(right, 0, width) ||
+                IsInInterval(top, 0, height) ||
+                IsInInterval(bottom, 0, height))
+            {
+                shape.SetCenter(centerX, centerY);
+                shape.SetSize(size - 1);
+                shape.Draw();
+            }
 
             // Check for child nodes.
             for (int i = 0; i < 4; ++i)
@@ -1199,6 +1212,18 @@ namespace Engine.Collections
                             size >> 1,
                             shape);
             }
+        }
+
+        /// <summary>
+        /// Tests if a value is in the specified interval.
+        /// </summary>
+        /// <param name="value">The value to check.</param>
+        /// <param name="low">The lower bound of the interval.</param>
+        /// <param name="high">The upper bound of the intervale.</param>
+        /// <returns></returns>
+        private static bool IsInInterval(float value, float low, float high)
+        {
+            return value >= low && value <= high;
         }
 
         #endregion

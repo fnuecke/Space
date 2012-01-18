@@ -32,6 +32,15 @@ namespace Engine.Graphics
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// The graphics device to which this shape will be rendered.
+        /// </summary>
+        public GraphicsDevice GraphicsDevice { get { return _device; } }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
