@@ -8,18 +8,34 @@ using Space.ComponentSystem.Components.AIBehaviour;
 
 namespace Space.ComponentSystem.Components
 {
-    public class AIComponent : AbstractComponent
+    public class AiComponent : AbstractComponent
     {
-        public struct AICommand
+        #region Structs/Enums
+        public class AiCommand : IPacketizable
         {
-            public Vector2 target;
-            public int maxDistance;
+            public Vector2 Target;
+            public int MaxDistance;
             public Order order;
-            public AICommand(Vector2 target, int maxDistance, Order order)
+            public AiCommand(){}
+            public AiCommand(Vector2 target, int maxDistance, Order order)
             {
-                this.target = target;
-                this.maxDistance = maxDistance;
+                Target = target;
+                MaxDistance = maxDistance;
                 this.order = order;
+            }
+
+            public Packet Packetize(Packet packet)
+            {
+                return packet.Write(Target)
+                    .Write(MaxDistance)
+                    .Write((byte)order);
+            }
+
+            public void Depacketize(Packet packet)
+            {
+                Target = packet.ReadVector2();
+                MaxDistance = packet.ReadInt32();
+                order = (Order) packet.ReadByte();
             }
         }
         public enum Order
@@ -28,38 +44,36 @@ namespace Space.ComponentSystem.Components
             Guard,
             Attack
         }
-        public float MaxHealth;
-        public float MaxSpeed;
-        public int counter;
-        private Behaviour currentbehaviour;
-        private bool starting;
-        public AICommand AiCommand;
-        public AIComponent(AICommand command)
+        #endregion
+
+        #region Fields
+        private Behaviour _currentbehaviour;
+        public AiCommand Command;
+        #endregion
+
+        #region Constructor
+
+        public AiComponent(AiCommand command)
         {
-            MaxSpeed = -1;
-            MaxHealth = -1;
-            AiCommand = command;
+           
+            Command = command;
             SwitchOrder();
         }
+        #endregion
+        #region Logic
 
         public override void Update(object parameterization)
         {
-            if (MaxSpeed == -1)
-            {
-                var shipinfo = Entity.GetComponent<ShipInfo>();
-                if (shipinfo == null) return;
-                MaxHealth = shipinfo.MaxHealth;
-                MaxSpeed = shipinfo.MaxSpeed;
-            }
+            
             CalculateBehaviour();
-            currentbehaviour.Update();
+            _currentbehaviour.Update();
         }
         private void CalculateBehaviour()
         {
             // Get local player's avatar.
             var info = Entity.GetComponent<ShipInfo>();
             var position = info.Position;
-            if (currentbehaviour is PatrolBehaviour)
+            if (_currentbehaviour is PatrolBehaviour)
             {
                 var currentFaction = Entity.GetComponent<Faction>().Value;
                 var index = Entity.Manager.SystemManager.GetSystem<IndexSystem>();
@@ -75,15 +89,15 @@ namespace Space.ComponentSystem.Components
                     if(faction == null) continue;
                     if ((faction.Value & currentFaction) == 0)
                     {
-                        currentbehaviour = new AttackBehaviour(this, neighbor.UID);
+                        _currentbehaviour = new AttackBehaviour(this, neighbor.UID);
                         return;
                     }
 
                 }
             }
-            else if (currentbehaviour is AttackBehaviour)
+            else if (_currentbehaviour is AttackBehaviour)
             {
-                var targetEntity = Entity.Manager.GetEntity(((AttackBehaviour)currentbehaviour).TargetEntity);
+                var targetEntity = Entity.Manager.GetEntity(((AttackBehaviour)_currentbehaviour).TargetEntity);
                 
                 if (targetEntity == null)
                 {
@@ -119,16 +133,19 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         private void SwitchOrder()
         {
-            switch (AiCommand.order)
+            switch (Command.order)
             {
                 case (Order.Guard):
-                    currentbehaviour = new PatrolBehaviour(this);
+                    _currentbehaviour = new PatrolBehaviour(this);
                     break;
                 default:
-                    currentbehaviour = new PatrolBehaviour(this);
+                    _currentbehaviour = new PatrolBehaviour(this);
                     break;
             }
         }
+       
+
+
         /// <summary>
         /// Accepts <c>DefaultLogicParameterization</c>.
         /// </summary>
@@ -138,20 +155,39 @@ namespace Space.ComponentSystem.Components
         {
             return parameterizationType == typeof(DefaultLogicParameterization);
         }
-
+        #endregion
         #region Serialization
 
         public override Packet Packetize(Packet packet)
         {
-            return base.Packetize(packet)
-                ;
+            base.Packetize(packet);
+            packet.WriteWithTypeInfo(_currentbehaviour)
+                .Write(Command);
+            
+            return packet;
         }
 
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
+            _currentbehaviour = packet.ReadPacketizableWithTypeInfo<Behaviour>();
+            _currentbehaviour.AiComponent = this;
+            Command = packet.ReadPacketizable<AiCommand>();
+            
         }
 
+        public override AbstractComponent DeepCopy(AbstractComponent into)
+        {
+            var copy = (AiComponent)base.DeepCopy(into);
+
+            if (copy == into)
+            {
+                copy._currentbehaviour = _currentbehaviour;
+                copy.Command = Command;
+            }
+
+            return copy;
+        }
         #endregion
     }
 }
