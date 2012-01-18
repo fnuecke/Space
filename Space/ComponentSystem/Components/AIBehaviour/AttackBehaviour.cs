@@ -35,7 +35,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
             var position = info.Position;
 
-            direction = position - transform.Translation;
+            direction =  transform.Translation - position ;
             
 
             
@@ -47,10 +47,16 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             //Rotate torwards our destination
             
             //not fullspeed if there is noting to fear about
-            
-            
-            input.SetAcceleration(direction);
-            
+
+
+            if (escapeDir == Vector2.Zero &&  info.Energy < info.MaxEnergy * 0.2)
+            {
+                input.SetAcceleration(Vector2.Zero);
+            }
+            else//accelerate towrads Destiny
+            {
+                input.SetAcceleration(direction);
+            }
         }
     }
 }

@@ -83,7 +83,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
                 {
                     var pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborGravitation.Mass / info.MaxAcceleration);
                     var direction = position - transform.Translation;
-                    if (direction.Length() < pointOfNoReturn*1.1)
+                    if (direction.Length() < pointOfNoReturn*2)
                     {
                         if(direction != Vector2.Zero)
                             direction.Normalize();

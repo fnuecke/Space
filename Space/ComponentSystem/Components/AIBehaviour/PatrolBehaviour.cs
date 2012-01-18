@@ -30,7 +30,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             //prevent them from getting stuck on the edges of the screen.   
 
 
-
+            input.SetStabilizing(true);
             float distanceFromCenter = Vector2.Distance(AiComponent.AiCommand.target, info.Position);
 
 
