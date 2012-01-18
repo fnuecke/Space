@@ -12,7 +12,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 {
     public class PatrolBehaviour : Behaviour
     {
-        
+
         private static Random random = new Random();
         public PatrolBehaviour(AIComponent component)
             : base(component)
@@ -41,23 +41,23 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             float distanceFromCenter = Vector2.Distance(AiComponent.AiCommand.target, info.Position);
 
 
-            float normalizedDistance = distanceFromCenter / AiComponent.AiCommand.maxDistance;
+            //float normalizedDistance = distanceFromCenter / AiComponent.AiCommand.maxDistance;
 
-           
+            var escapeDir = CalculateEscapeDirection();
 
             // Once we've calculated how much we want to turn towards the center, we can
             // use the TurnToFace function to actually do the work.
 
-            wanderDirection += 2 * CalculateEscapeDirection();
+            wanderDirection += 2 * escapeDir;
 
-            input.TargetRotation = (float)Math.Atan2(wanderDirection.Y,wanderDirection.X);
-            if (3 * info.Speed > AiComponent.MaxSpeed)
+            input.TargetRotation = (float)Math.Atan2(wanderDirection.Y, wanderDirection.X);
+            if (escapeDir == Vector2.Zero && 3 * info.Speed > AiComponent.MaxSpeed)
                 input.StopAccelerate();
             else
             {
                 input.Accelerate(wanderDirection);
             }
-                
+
         }
     }
 }

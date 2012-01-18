@@ -5,7 +5,13 @@ using System.Text;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    //class AttackBehaviour:Behaviour
-    //{
-    //}
+    class AttackBehaviour : Behaviour
+    {
+        public int TargetEntity;
+        public AttackBehaviour(AIComponent aiComponent,int targetEntity)
+            :base(aiComponent)
+        {
+            TargetEntity = targetEntity;
+        }
+    }
 }
