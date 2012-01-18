@@ -26,6 +26,26 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private int MinGap = 3;
 
+        /// <summary>
+        /// The standard color (green) for the life bar.
+        /// </summary>
+        private Color _colorLifeGreen = new Color(142, 232, 63);
+
+        /// <summary>
+        /// The yellow color for the life bar.
+        /// </summary>
+        private Color _colorLifeYellow = new Color(240, 255, 0);
+
+        /// <summary>
+        /// The red color for the life bar.
+        /// </summary>
+        private Color _colorLifeRed = new Color(255, 0, 0);
+
+        /// <summary>
+        /// The color for the energy bar.
+        /// </summary>
+        private Color _colorEnergy = Color.Blue;
+
         #endregion
 
         #region Fields
@@ -55,7 +75,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// The value for maximum number of life.
         /// </summary>
-        private int _currentLife = 100;
+        private int _currentLife = 10;
 
         /// <summary>
         /// The value for current number of energy.
@@ -256,8 +276,24 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _basicForms.FillRectangle(_position.X, _position.Y, _width, _height, Color.Black);
             // draw the gray background
             _basicForms.FillRectangle(_position.X + _border, _position.Y + _border, _width - 2 * _border, _height - 2 * _border, new Color(40, 40, 40));
-            // draw the current life value
-            _basicForms.FillRectangle(_position.X + _border, _position.Y + _border, (int)((_width - 2 * _border) * (_currentLife * 1.0 / _maxLife)), _height - 2 * _border, new Color(142, 232, 63));
+
+            // first get the color for the current life bar ...
+            Color thisColor = _colorLifeGreen;
+            float currentValuePercent = (_currentLife * 1.0f) / _maxLife;
+            if (currentValuePercent < 0.5f && currentValuePercent >= 0.3f)
+            {
+                thisColor = Color.Lerp(_colorLifeGreen, _colorLifeYellow, 1-(currentValuePercent - 0.3f) / 0.2f);
+            }
+            else if (currentValuePercent < 0.3f && currentValuePercent >= 0.1f)
+            {
+                thisColor = Color.Lerp(_colorLifeYellow, _colorLifeRed, 1 - (currentValuePercent - 0.1f) / 0.2f);
+            }
+            else if (currentValuePercent < 0.1f)
+            {
+                thisColor = _colorLifeRed;
+            }
+            // ... then draw the current life value
+            _basicForms.FillRectangle(_position.X + _border, _position.Y + _border, (int)((_width - 2 * _border) * (_currentLife * 1.0 / _maxLife)), _height - 2 * _border, thisColor);
 
             // draw the standard pattern
             for (int i = 0; i * 1.0 / (_width - 2 * _border) < _currentLife * 1.0 / _maxLife; i += 2)
@@ -307,7 +343,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // draw the gray background
             _basicForms.FillRectangle(_position.X + _border, _position.Y + _height, _width - 2 * _border, _height - 2 * _border, new Color(40, 40, 40));
             // draw the energy background
-            _basicForms.FillRectangle(_position.X + _border, _position.Y + _height, (int)((_width - 2 * _border) * (_currentEnergy * 1.0 / _maxEnergy)), _height - 2 * _border, Color.Blue);
+            _basicForms.FillRectangle(_position.X + _border, _position.Y + _height, (int)((_width - 2 * _border) * (_currentEnergy * 1.0 / _maxEnergy)), _height - 2 * _border, _colorEnergy);
 
             // draw the standard pattern
             for (int i = 0; i * 1.0 / (_width - 2 * _border) < _currentEnergy * 1.0 / _maxEnergy; i += 2)
