@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Space.Control;
 using Space.ScreenManagement.Screens.Helper;
 using Engine.Util;
+using Space.ScreenManagement.Screens.Elements.Hud;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -36,6 +37,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private HealthEnergyBar _healthEnergyBar;
 
+        private HudBox _hudBox;
+
         #endregion
 
         #region Constructor
@@ -44,6 +47,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _client = client;
             _healthEnergyBar = new HealthEnergyBar(_client);
+            _hudBox = new HudBox(_client);
 
         }
 
@@ -56,6 +60,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _spriteBatch = spriteBatch;
 
             _healthEnergyBar.LoadContent(spriteBatch, content);
+            _hudBox.LoadContent(spriteBatch, content);
 
             // initialize the health & energy with standard values
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
@@ -84,6 +89,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             // draw the health & energy bar
             _healthEnergyBar.Draw();
+//          _hudBox.Draw();
         }
 
         #endregion
