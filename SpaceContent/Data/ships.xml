@@ -50,7 +50,7 @@
               <Texture>Textures/ship</Texture>
               <Scale>0.5</Scale>
               <CollisionRadius>3</CollisionRadius>
-              <Damage>5</Damage>
+              <Damage>50</Damage>
               <InitialVelocity>10 0</InitialVelocity>
             </Item>
           </Projectiles>
@@ -86,6 +86,73 @@
       <Sensors>
         <Item>
           <Range>40000</Range>
+        </Item>
+      </Sensors>
+    </Item>
+
+
+
+
+    <Item>
+      <Name>AI</Name>
+
+      <CollisionRadius>15</CollisionRadius>
+      <Texture>Textures/Stolen/Ships/broadsword_hftr</Texture>
+
+      <Hulls>
+        <Item>
+          <Attributes>
+            <Item>10 Mass</Item>
+          </Attributes>
+          <Health>50</Health>
+          <HealthRegeneration>0.05</HealthRegeneration>
+        </Item>
+      </Hulls>
+
+      <Reactors>
+        <Item>
+          <Attributes>
+            <Item>5 Mass</Item>
+          </Attributes>
+          <Energy>50</Energy>
+          <EnergyRegeneration>0.1</EnergyRegeneration>
+        </Item>
+      </Reactors>
+
+      <Thrusters>
+        <Item>
+          <Attributes>
+            <!--<Item>0 AccelerationForce</Item>-->
+            <Item>2 RotationForce</Item>
+            <Item>5 Mass</Item>
+          </Attributes>
+          <AccelerationForce>4</AccelerationForce>
+          <EnergyConsumption>0.15</EnergyConsumption>
+        </Item>
+      </Thrusters>
+
+      <Weapons>
+        <Item>
+          <Texture>Textures/Stolen/Projectiles/shell_small</Texture>
+          <Sound>laser</Sound>
+          <Cooldown>60</Cooldown>
+          <EnergyConsumption>0.01</EnergyConsumption>
+          <Projectiles>
+            <Item>
+              <Texture>Textures/Stolen/Projectiles/missile_MIRV</Texture>
+              <Scale>0.5</Scale>
+              <CollisionRadius>3</CollisionRadius>
+              <Damage>5</Damage>
+              <InitialVelocity>10 0</InitialVelocity>
+            </Item>
+          </Projectiles>
+        </Item>
+        
+      </Weapons>
+
+      <Sensors>
+        <Item>
+          <Range>3000</Range>
         </Item>
       </Sensors>
     </Item>

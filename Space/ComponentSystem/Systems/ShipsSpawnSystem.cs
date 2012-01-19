@@ -158,7 +158,7 @@ namespace Space.ComponentSystem.Systems
                                 cellSize, AiComponent.Order.Guard);
                         var faction = Factions.Player5;
                         _entities.Add(Manager.EntityManager.AddEntity(
-                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[0],faction,spawnPoint ,order
+                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],faction,spawnPoint ,order
                             )));
                     }
                 }

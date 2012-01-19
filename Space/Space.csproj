@@ -144,6 +144,7 @@
     <Compile Include="ComponentSystem\Components\ShipInfo.cs" />
     <Compile Include="ComponentSystem\Components\PlanetRenderer.cs" />
     <Compile Include="ComponentSystem\Components\Respawn.cs" />
+    <Compile Include="ComponentSystem\Components\SpawnComponent.cs" />
     <Compile Include="ComponentSystem\Components\ThrusterEffect.cs" />
     <Compile Include="ComponentSystem\Parameterizations\ParticleParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\ParticleSystem.cs" />
