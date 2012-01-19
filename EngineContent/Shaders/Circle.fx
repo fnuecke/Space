@@ -23,6 +23,8 @@ technique Render
 {
     pass Pass1
     {
+        AlphaBlendEnable = True;
+        DestBlend = One;
         VertexShader = compile vs_2_0 VertexShaderFunction();
         PixelShader = compile ps_2_0 PixelShaderFunction();
     }

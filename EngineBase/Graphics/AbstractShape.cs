@@ -249,8 +249,11 @@ namespace Engine.Graphics
             AdjustParameters();
 
             // Apply the effect and render our area.
-            _effect.CurrentTechnique.Passes[0].Apply();
-            _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, indices, 0, 2, _vertexDeclaration);
+            foreach (var pass in _effect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+                _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, indices, 0, 2, _vertexDeclaration);
+            }
         }
 
         /// <summary>
@@ -271,25 +274,6 @@ namespace Engine.Graphics
         /// </summary>
         private void RecomputeQuads()
         {
-            // Reset corner positions.
-
-            // Top left.
-            _vertices[0].Position.X = -_width / 2;
-            _vertices[0].Position.Y = _height / 2;
-            _vertices[0].Position.Z = 0;
-            // Top right.
-            _vertices[1].Position.X = _width / 2;
-            _vertices[1].Position.Y = _height / 2;
-            _vertices[1].Position.Z = 0;
-            // Bottom left.
-            _vertices[2].Position.X = -_width / 2;
-            _vertices[2].Position.Y = -_height / 2;
-            _vertices[2].Position.Z = 0;
-            // Bottom right.
-            _vertices[3].Position.X = _width / 2;
-            _vertices[3].Position.Y = -_height / 2;
-            _vertices[3].Position.Z = 0;
-
             // Adjust bounds.
             AdjustBounds();
 
@@ -319,6 +303,24 @@ namespace Engine.Graphics
         /// </summary>
         protected virtual void AdjustBounds()
         {
+            // Reset corner positions.
+
+            // Top left.
+            _vertices[0].Position.X = -_width / 2;
+            _vertices[0].Position.Y = _height / 2;
+            _vertices[0].Position.Z = 0;
+            // Top right.
+            _vertices[1].Position.X = _width / 2;
+            _vertices[1].Position.Y = _height / 2;
+            _vertices[1].Position.Z = 0;
+            // Bottom left.
+            _vertices[2].Position.X = -_width / 2;
+            _vertices[2].Position.Y = -_height / 2;
+            _vertices[2].Position.Z = 0;
+            // Bottom right.
+            _vertices[3].Position.X = _width / 2;
+            _vertices[3].Position.Y = -_height / 2;
+            _vertices[3].Position.Z = 0;
         }
 
         /// <summary>

@@ -117,11 +117,15 @@ namespace Space.ScreenManagement.Screens
             if (_client.IsRunning())
             {
                 _input.SetEnabled(!otherScreenHasFocus);
+
+                // Only update our input if we have focus.
                 if (!otherScreenHasFocus)
                 {
                     _input.Update();
-                    _hud.Update();
                 }
+
+                // Always update the HUD.
+                _hud.Update();
             }
             else
             {

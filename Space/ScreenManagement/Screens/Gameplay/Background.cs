@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.Graphics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
@@ -9,7 +10,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// Renderer class responsible for drawing the overall in-game background,
     /// i.e. the stars an debris behind ships and planets and stuff.
     /// </summary>
-    public sealed class Background
+    public sealed class Background : AbstractShape
     {
         #region Fields
 
@@ -27,7 +28,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// The overall background image (stars).
         /// </summary>
-        private Texture2D _background;
+        private Texture2D _backgroundStars;
 
         /// <summary>
         /// Layer to blot out some of the stars.
@@ -50,6 +51,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         #region Constructor
 
         public Background(GameClient client)
+            : base(client.Game, "Shaders/Space")
         {
             _client = client;
         }
@@ -61,10 +63,37 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _spriteBatch = spriteBatch;
 
-            _background = content.Load<Texture2D>("Textures/stars");
-            _backgroundDarkMatter = content.Load<Texture2D>("Textures/dark_matter");
-            _backgroundDebrisSmall = content.Load<Texture2D>("Textures/debris_small");
-            _backgroundDebrisLarge = content.Load<Texture2D>("Textures/debris_large");
+            _backgroundStars = content.Load<Texture2D>("Textures/Space/stars");
+            _backgroundDarkMatter = content.Load<Texture2D>("Textures/Space/dark_matter");
+            _backgroundDebrisSmall = content.Load<Texture2D>("Textures/Space/debris_small");
+            _backgroundDebrisLarge = content.Load<Texture2D>("Textures/Space/debris_large");
+
+            // Normally we'd want to set the parameters each draw call, but we
+            // only use this shader in one place, so it's OK to do this once.
+            _effect.Parameters["Stars"].SetValue(_backgroundStars);
+            _effect.Parameters["DarkMatter"].SetValue(_backgroundDarkMatter);
+            _effect.Parameters["DebrisSmall"].SetValue(_backgroundDebrisSmall);
+            _effect.Parameters["DebrisLarge"].SetValue(_backgroundDebrisLarge);
+
+            _effect.Parameters["DebrisSmallTint"].SetValue(Color.DarkSlateGray.ToVector4());
+            _effect.Parameters["DebrisLargeTint"].SetValue(Color.SlateGray.ToVector4());
+
+            // Set our size, which is simply the viewport, but keep it a square
+            // to avoid stretching of the background.
+            var viewport = _spriteBatch.GraphicsDevice.Viewport;
+            var maxsize = System.Math.Max(viewport.Width, viewport.Width);
+            SetSize(maxsize);
+            SetCenter(viewport.Width / 2, viewport.Height / 2);
+
+            // Adjust texture coordinates.
+            _vertices[0].Tex0.X = 0;
+            _vertices[0].Tex0.Y = 0;
+            _vertices[1].Tex0.X = 1;
+            _vertices[1].Tex0.Y = 0;
+            _vertices[2].Tex0.X = 0;
+            _vertices[2].Tex0.Y = 1;
+            _vertices[3].Tex0.X = 1;
+            _vertices[3].Tex0.Y = 1;
         }
 
         #endregion
@@ -72,78 +101,21 @@ namespace Space.ScreenManagement.Screens.Gameplay
         #region Drawing
 
         /// <summary>
-        /// Draw the overall in-game background.
+        /// Adjusts effect parameters prior to the draw call.
         /// </summary>
-        /// <remarks>
-        /// TODO: consider different "biomes" with different appearance
-        /// (coloration, debris texture, brightness, ...) and slowly blending
-        /// those.
-        /// </remarks>
-        public void Draw()
+        protected override void AdjustParameters()
         {
+            // Important: do not call our base, because we take no overall
+            // color parameter.
+
             // Get local player position.
             Vector2 position = Vector2.Zero;
             var info = _client.GetPlayerShipInfo();
             if (info != null)
             {
-                position = -info.Position;
+                position = info.Position;
             }
-
-            // Get our viewport.
-            var viewport = _spriteBatch.GraphicsDevice.Viewport;
-
-            Vector2 backgroundPosition;
-            Rectangle source;
-            source.Width = viewport.Width + 1;
-            source.Height = viewport.Height + 1;
-
-            // Draw the background, tiled, with the given translation.
-            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.Default, RasterizerState.CullNone);
-
-            // First the overall background (the stars).
-            backgroundPosition.X = position.X * 0.05f;
-            backgroundPosition.Y = position.Y * 0.05f;
-            source.X = -(int)(backgroundPosition.X);
-            source.Y = -(int)(backgroundPosition.Y);
-            backgroundPosition.X += source.X;
-            backgroundPosition.Y += source.Y;
-
-            _spriteBatch.Draw(_background, backgroundPosition, source, Color.White);
-
-            // Then the layer of "dark matter" (blot out some areas of the
-            // stars, to give a better feeling of depth).
-            backgroundPosition.X = position.X * 0.1f;
-            backgroundPosition.Y = position.Y * 0.1f;
-            source.X = -(int)(backgroundPosition.X);
-            source.Y = -(int)(backgroundPosition.Y);
-            backgroundPosition.X += source.X;
-            backgroundPosition.Y += source.Y;
-
-            _spriteBatch.Draw(_backgroundDarkMatter, backgroundPosition, source, Color.White * 0.95f);
-
-            // Next up some small debris, appearing to be further back.
-            backgroundPosition.X = position.X * 0.65f;
-            backgroundPosition.Y = position.Y * 0.65f;
-            source.X = -(int)(backgroundPosition.X);
-            source.Y = -(int)(backgroundPosition.Y);
-            backgroundPosition.X += source.X;
-            backgroundPosition.Y += source.Y;
-
-            _spriteBatch.Draw(_backgroundDebrisSmall, backgroundPosition, source, Color.DarkSlateGray * 0.75f);
-
-            // And then a layer with larger debris, almost on the actual layer
-            // of the player, to give a near to correct feeling of speed when
-            // there's nothing else around.
-            backgroundPosition.X = position.X * 0.95f;
-            backgroundPosition.Y = position.Y * 0.95f;
-            source.X = -(int)(backgroundPosition.X);
-            source.Y = -(int)(backgroundPosition.Y);
-            backgroundPosition.X += source.X;
-            backgroundPosition.Y += source.Y;
-
-            _spriteBatch.Draw(_backgroundDebrisLarge, backgroundPosition, source, Color.SlateGray * 0.25f);
-
-            _spriteBatch.End();
+            _effect.Parameters["Position"].SetValue(position / _width);
         }
 
         #endregion

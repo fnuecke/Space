@@ -71,6 +71,8 @@ namespace Engine.Graphics
         /// </summary>
         protected override void AdjustBounds()
         {
+            base.AdjustBounds();
+            
             // Top left.
             _vertices[0].Position.X -= _thickness / 2;
             _vertices[0].Position.Y += _thickness / 2;
