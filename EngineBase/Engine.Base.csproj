@@ -110,6 +110,7 @@
     <Compile Include="Graphics\FilledEllipse.cs" />
     <Compile Include="Graphics\Ellipse.cs" />
     <Compile Include="Graphics\FilledRectangle.cs" />
+    <Compile Include="Graphics\GradientRectangle.cs" />
     <Compile Include="Graphics\Rectangle.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />

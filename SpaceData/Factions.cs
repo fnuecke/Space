@@ -98,6 +98,12 @@ namespace Space.Data
         Player12 = 1 << 15,
 
         /// <summary>
+        /// Projectiles have their own group to allow "allying" them, which
+        /// avoid inter-projectile collisions.
+        /// </summary>
+        Projectiles = 1 << 16,
+
+        /// <summary>
         /// Always represents the last entry, for masking when inverting.
         /// </summary>
         /// <remarks>Make sure to update this when adding or removing entries.</remarks>

@@ -171,6 +171,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(renderer);
             return entity;
         }
+
         /// <summary>
         /// Copies modules from module array of a ShipData instance.
         /// </summary>
@@ -244,16 +245,27 @@ namespace Space.ComponentSystem.Entities
                 entity.AddComponent(new CollisionDamage(projectile.Damage));
             }
 
+            ulong collisionIndexGroup = 0;
+            if (!projectile.CanBeShot)
+            {
+                collisionIndexGroup = Factions.Projectiles.ToCollisionIndexGroup();
+            }
             if (projectile.Damage >= 0)
             {
-                entity.AddComponent(new Index(faction.ToCollisionIndexGroup()));
+                collisionIndexGroup |= faction.ToCollisionIndexGroup();
             }
             else if (projectile.Damage < 0)
             {
                 // Negative damage = healing -> collide will all our allies.
-                entity.AddComponent(new Index(faction.Inverse().ToCollisionIndexGroup()));
+                collisionIndexGroup |= faction.Inverse().ToCollisionIndexGroup();
             }
-            entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, faction.ToCollisionGroup()));
+            entity.AddComponent(new Index(collisionIndexGroup));
+            uint collisionGroup = faction.ToCollisionGroup();
+            if (!projectile.CanBeShot)
+            {
+                collisionGroup |= Factions.Projectiles.ToCollisionGroup();
+            }
+            entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, collisionGroup));
             if (!string.IsNullOrWhiteSpace(projectile.Texture))
             {
                 entity.AddComponent(new TransformedRenderer(projectile.Texture, faction.ToColor(), projectile.Scale));

@@ -82,11 +82,12 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public void Draw()
         {
             // draw the health & energy bar
-            if (_client.GetPlayerShipInfo().IsAlive)
+            var info = _client.GetPlayerShipInfo();
+            if (info != null && info.IsAlive)
             {
                 _healthEnergyBar.Draw();
             }
-//          _hudBox.Draw();
+            //_hudBox.Draw();
         }
 
         #endregion
