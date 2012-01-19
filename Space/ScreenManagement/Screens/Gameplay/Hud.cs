@@ -87,7 +87,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             {
                 _healthEnergyBar.Draw();
             }
-//          _hudBox.Draw();
+            //_hudBox.Draw();
         }
 
         #endregion
