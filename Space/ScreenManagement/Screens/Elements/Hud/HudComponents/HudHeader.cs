@@ -14,8 +14,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
     class HudHeader
     {
 
-        private const int StandardWidth = 301;
-        private const int StandardHeight = 19;
+        private const int StandardWidth = 302;
+        private const int StandardHeight = 18;
         private const int StandardWidthGap = 2;
         private const int StandardWidth2ndElement = 85;
         private const int StandardBorderSide = 1;
@@ -41,13 +41,13 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private BasicForms _basicForms;
 
-        private int _width;
-        private int _height;
-        private int _widthGap;
-        private int _width2ndElement;
-        private int _borderSide;
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public int WidthGap { get; set; }
+        public int Width2ndElement { get; set; }
+        public int BorderSide { get; set; }
+        public Point Position { get; set; }
 
-        private Point _position;
         private SpriteFont font;
 
 
@@ -55,37 +55,13 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _client = client;
 
-            _width = StandardWidth;
-            _height = StandardHeight;
-            _width2ndElement = StandardWidth2ndElement;
-            _widthGap = StandardWidthGap;
-            _borderSide = StandardBorderSide;
-            _position = new Point(300, 300);
+            Width = StandardWidth;
+            Height = StandardHeight;
+            Width2ndElement = StandardWidth2ndElement;
+            WidthGap = StandardWidthGap;
+            BorderSide = StandardBorderSide;
+            Position = new Point(100, 100);
         }
-
-        #region Getter / Setter
-
-        public int getHeight()
-        {
-            return _height;
-        }
-
-        public int getWidth()
-        {
-            return _width;
-        }
-
-        public void setHeight(int height)
-        {
-            _height = height;
-        }
-
-        public void setWidth(int width)
-        {
-            _width = width;
-        }
-
-        #endregion
 
         /// <summary>
         /// Load graphics content for the game.
@@ -96,7 +72,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spriteBatch = spriteBatch;
             _basicForms = new BasicForms(_spriteBatch);
 
-            font = _content.Load<SpriteFont>("Fonts/strasua_16");
+            font = _content.Load<SpriteFont>("Fonts/strasua_13");
         }
 
         /// <summary>
@@ -108,25 +84,24 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             // draw the first rectangle
             _basicForms.FillRectangle(
-                _position.X + _borderSide,
-                _position.Y,
-                _width - 2 * _borderSide - _widthGap - _width2ndElement,
-                _height,
-                Color.Green);
+                Position.X + BorderSide,
+                Position.Y,
+                Width - 2 * BorderSide - WidthGap - Width2ndElement,
+                Height,
+                HudColors.GreenDarkGradientDark);
 
             // draw the second rectangle
             _basicForms.FillRectangle(
-                _position.X + _width - _borderSide - _width2ndElement,
-                _position.Y,
-                _width2ndElement,
-                _height,
-                Color.Green);
+                Position.X + Width - BorderSide - Width2ndElement,
+                Position.Y,
+                Width2ndElement,
+                Height,
+                HudColors.GreenDarkGradientDark);
 
             // draw the title string
-            _spriteBatch.DrawString(font, "<title>", new Vector2(_position.X + _borderSide + 4, _position.Y + 2), HudColors.FontDark);
+            _spriteBatch.DrawString(font, "Guybrush Threepwood", new Vector2(Position.X + BorderSide + 2, Position.Y + 3), HudColors.FontDark);
 
             _spriteBatch.End();
-
         }
     }
 }
