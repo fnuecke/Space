@@ -156,10 +156,13 @@
     <Compile Include="ComponentSystem\Systems\Messages\CellStateChanged.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="Graphics\Sun.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudBox.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudColors.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudHeader.cs" />
     <Compile Include="ScreenManagement\Screens\Entries\OptionMenuEntry.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Background.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Hud.cs" />
-    <Compile Include="ScreenManagement\Screens\SingleElements\HealthEnergyBar.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Single\HealthEnergyBar.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\InputHandler.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Orbits.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Postprocessing.cs" />
