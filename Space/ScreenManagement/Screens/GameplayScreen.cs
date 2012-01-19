@@ -160,12 +160,6 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
-            if (Settings.Instance.PostProcessing)
-            {
-                // Required for post processing.
-                _postprocessing.BeginDraw();
-            }
-
             // Draw overall background (stars).
             _background.Draw();
 

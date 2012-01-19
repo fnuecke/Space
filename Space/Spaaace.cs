@@ -57,12 +57,19 @@ namespace Space
         /// </summary>
         public GameClient Client { get; set; }
 
+        /// <summary>
+        /// The render target that is pushed at the beginning of each draw
+        /// cycle.
+        /// </summary>
+        public Texture2D SceneTarget { get { return _scene; } }
+
         #endregion
 
         #region Fields
 
         private List<IGameComponent> _componentsToDispose = new List<IGameComponent>();
 
+        private RenderTarget2D _scene;
         private SpriteBatch _spriteBatch;
         private ScreenManager _screenManager;
         private GameConsole _console;
@@ -371,8 +378,6 @@ namespace Space
         private Engine.Graphics.Rectangle _indexRectangle;
         private int _indexGroup = -1;
 #endif
-
-        private RenderTarget2D _scene;
 
         /// <summary>
         /// This is called when the game should draw itself.

@@ -14,7 +14,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         Effect bloomCombineEffect;
         Effect gaussianBlurEffect;
 
-        RenderTarget2D sceneRenderTarget;
         RenderTarget2D renderTarget1;
         RenderTarget2D renderTarget2;
 
@@ -48,11 +47,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             SurfaceFormat format = pp.BackBufferFormat;
 
-            // Create a texture for rendering the main scene, prior to applying bloom.
-            sceneRenderTarget = new RenderTarget2D(GraphicsDevice, width, height, false,
-                                                   format, pp.DepthStencilFormat, pp.MultiSampleCount,
-                                                   RenderTargetUsage.DiscardContents);
-
             // Create two rendertargets for the bloom processing. These are half the
             // size of the backbuffer, in order to minimize fillrate costs. Reducing
             // the resolution in this way doesn't hurt quality, because we are going
@@ -70,7 +64,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         protected override void UnloadContent()
         {
-            sceneRenderTarget.Dispose();
             renderTarget1.Dispose();
             renderTarget2.Dispose();
         }
@@ -80,25 +73,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
         #region Draw
 
         /// <summary>
-        /// This should be called at the very start of the scene rendering.
-        /// The post processing component uses it to redirect drawing into its
-        /// custom render target, so it can capture the scene image in
-        /// preparation for applying the filters.
-        /// </summary>
-        public void BeginDraw()
-        {
-            if (Visible)
-            {
-                GraphicsDevice.SetRenderTarget(sceneRenderTarget);
-            }
-        }
-
-        /// <summary>
         /// This is where it all happens. Grabs a scene that has already been rendered,
         /// and uses post process magic to add a effects over the top of it.
         /// </summary>
         public void Draw()
         {
+            // Save main render targets.
+            RenderTargetBinding[] previousRenderTargets = GraphicsDevice.GetRenderTargets();
+
             GraphicsDevice.SamplerStates[1] = SamplerState.LinearClamp;
 
             // Pass 1: draw the scene into render target 1, using a
@@ -106,7 +88,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             bloomExtractEffect.Parameters["BloomThreshold"].SetValue(
                 Settings.BloomThreshold);
 
-            DrawFullscreenQuad(sceneRenderTarget, renderTarget1, bloomExtractEffect);
+            DrawFullscreenQuad(((Spaaace)Game).SceneTarget, renderTarget1, bloomExtractEffect);
 
             // Pass 2: draw from render target 1 into render target 2,
             // using a shader to apply a horizontal gaussian blur filter.
@@ -132,7 +114,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
             parameters["BloomSaturation"].SetValue(Settings.BloomSaturation);
             parameters["BaseSaturation"].SetValue(Settings.BaseSaturation);
 
-            GraphicsDevice.Textures[1] = sceneRenderTarget;
+            GraphicsDevice.Textures[1] = ((Spaaace)Game).SceneTarget;
+
+            // Restore render targets.
+            GraphicsDevice.SetRenderTargets(previousRenderTargets);
 
             Viewport viewport = GraphicsDevice.Viewport;
 
