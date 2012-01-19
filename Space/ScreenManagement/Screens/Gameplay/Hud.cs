@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
-using Space.ScreenManagement.Screens.Helper;
-using Engine.Util;
 using Space.ScreenManagement.Screens.Elements.Hud;
 
 namespace Space.ScreenManagement.Screens.Gameplay
@@ -88,7 +82,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public void Draw()
         {
             // draw the health & energy bar
-            _healthEnergyBar.Draw();
+            if (_client.GetPlayerShipInfo().IsAlive)
+            {
+                _healthEnergyBar.Draw();
+            }
 //          _hudBox.Draw();
         }
 

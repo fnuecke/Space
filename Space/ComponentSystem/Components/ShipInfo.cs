@@ -29,7 +29,7 @@ namespace Space.ComponentSystem.Components
                 var respawn = Entity.GetComponent<Respawn>();
                 if (respawn != null)
                 {
-                    return respawn.IsRespawning;
+                    return !respawn.IsRespawning;
                 }
                 else
                 {
