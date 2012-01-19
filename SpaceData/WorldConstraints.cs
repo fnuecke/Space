@@ -82,6 +82,21 @@ namespace Space.Data
         public float PlanetOrbitAngleDeviationStdDev;
 
         /// <summary>
+        /// The average distance of a Station to a Planet
+        /// </summary>
+        public float StationOrbitMean;
+
+        /// <summary>
+        /// The averageDeviation of the Stations orbit
+        /// </summary>
+        public float StationOrbitStdDev;
+
+        /// <summary>
+        /// The Chance that a Planet has a Station
+        /// </summary>
+        public float StationChance;
+
+        /// <summary>
         /// The average number of moons per planet.
         /// </summary>
         public int MoonsMean;
@@ -163,7 +178,16 @@ namespace Space.Data
         {
             return (float)gaussian.NextSampleClamped(PlanetOrbitAngleDeviationMean, PlanetOrbitAngleDeviationStdDev);
         }
-        
+
+        public bool SampleStation(IUniformRandom twister)
+        {
+            return (twister.NextDouble() < StationChance);
+        }
+
+        public float SampleStationOrbit(IGaussianRandom gaussian)
+        {
+            return (float)gaussian.NextSampleClamped(StationOrbitMean, StationOrbitStdDev);
+        }
         public int SampleMoons(IGaussianRandom gaussian)
         {
             return (int)gaussian.NextSampleClamped(MoonsMean, MoonsStdDev);

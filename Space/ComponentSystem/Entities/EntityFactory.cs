@@ -156,10 +156,19 @@ namespace Space.ComponentSystem.Entities
 
             return entity;
         }
-        public Entity CreateStation(ref Vector2 pos,Factions faction)
+        public static Entity CreateStation(float orbit,Factions faction,String texture,Entity center,float period,float periodoffset=0)
         {
             var entity = new Entity();
+            var renderer = new TransformedRenderer(texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
+            renderer.DrawOrder = 50; //< Draw ships above everything else.
 
+            entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
+            entity.AddComponent(new Spin());
+            entity.AddComponent(new EllipsePath(center.UID, orbit, orbit, 0, period, periodoffset));
+            entity.AddComponent(new Index(Detectable.IndexGroup));
+            entity.AddComponent(new Detectable("Textures/Stolen/Ships/sensor_array_dish"));
+            entity.AddComponent(new SpawnComponent());
+            entity.AddComponent(renderer);
             return entity;
         }
         /// <summary>

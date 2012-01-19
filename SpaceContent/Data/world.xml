@@ -22,6 +22,10 @@
     <PlanetOrbitAngleDeviationMean>10</PlanetOrbitAngleDeviationMean>
     <PlanetOrbitAngleDeviationStdDev>5</PlanetOrbitAngleDeviationStdDev>
 
+    <StationOrbitMean>50</StationOrbitMean>
+    <StationOrbitStdDev>20</StationOrbitStdDev>
+    <StationChance>0.2</StationChance>
+    
     <MoonsMean>1</MoonsMean>
     <MoonsStdDev>3</MoonsStdDev>
     <MoonRadiusMean>75</MoonRadiusMean>
