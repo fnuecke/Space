@@ -29,6 +29,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         private HudHeader _header;
         private HudSpacer _spacerTop;
         private HudSpacer _spacerBottom;
+        private HudHeader _footer;
 
         public HudBox(GameClient client)
         {
@@ -36,6 +37,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _header = new HudHeader(_client);
             _spacerTop = new HudSpacer(_client, HudSpacer.Mode.Top);
             _spacerBottom = new HudSpacer(_client, HudSpacer.Mode.Bottom);
+            _footer = new HudHeader(_client);
         }
 
         /// <summary>
@@ -52,6 +54,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spacerTop.Position = new Point(_header.Position.X, _header.Position.Y + _header.Height);
             _spacerBottom.LoadContent(spriteBatch, content);
             _spacerBottom.Position = new Point(_spacerTop.Position.X, _spacerTop.Position.Y + _spacerTop.GetHeight() + 200);
+            _footer.LoadContent(spriteBatch, content);
+            _footer.Position = new Point(_spacerBottom.Position.X, _spacerBottom.Position.Y + _spacerBottom.GetHeight());
         }
 
         /// <summary>
@@ -62,6 +66,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _header.Draw();
             _spacerTop.Draw();
             _spacerBottom.Draw();
+            _footer.Draw();
         }
     }
 }
