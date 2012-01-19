@@ -72,7 +72,7 @@ namespace Space.ComponentSystem.Components
                 // Get the effect, if we don't have it yet.
                 if (_planetRenderer == null)
                 {
-                    _planetRenderer = args.Content.Load<Microsoft.Xna.Framework.Graphics.Effect>("Shaders/Planet");
+                    _planetRenderer = args.Game.Content.Load<Microsoft.Xna.Framework.Graphics.Effect>("Shaders/Planet");
                 }
 
                 // Get the position at which to draw (in screen space).
@@ -126,13 +126,17 @@ namespace Space.ComponentSystem.Components
                     sb.AppendFormat("Mass: {0:f}\n", Entity.GetComponent<Gravitation>().Mass);
                     sb.AppendFormat("uvrot: {0:f}\n", (transform.Rotation + (float)System.Math.PI) / ((float)System.Math.PI * 2f));
                     args.SpriteBatch.Begin();
-                    args.SpriteBatch.DrawString(args.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, position, Color.White);
+                    args.SpriteBatch.DrawString(args.Game.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, position, Color.White);
                     args.SpriteBatch.End();
 #endif
                 }
             }
         }
 
+        /// <summary>
+        /// Utility method to find the sun we're rotating around.
+        /// </summary>
+        /// <returns></returns>
         private Entity GetSun()
         {
             Entity sun = null;

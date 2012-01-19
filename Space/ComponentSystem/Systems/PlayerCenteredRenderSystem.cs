@@ -2,7 +2,6 @@
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Systems
@@ -21,9 +20,8 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        public PlayerCenteredRenderSystem(SpriteBatch spriteBatch, ContentManager contentManager,
-            IGraphicsDeviceService graphics, IClientSession session)
-            : base(spriteBatch, contentManager, graphics)
+        public PlayerCenteredRenderSystem(Game game, SpriteBatch spriteBatch, IGraphicsDeviceService graphics, IClientSession session)
+            : base(game, spriteBatch, graphics)
         {
             this._session = session;
         }

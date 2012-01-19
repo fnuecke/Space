@@ -267,8 +267,7 @@ namespace Space.ComponentSystem.Entities
             return result;
         }
 
-        public static Entity CreateFixedAstronomicalObject(
-            string texture,
+        public static Entity CreateSun(
             float radius,
             Vector2 position,
             AstronomicBodyType type,
@@ -287,8 +286,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new Detectable("Textures/radar_sun"));
             entity.AddComponent(new AstronomicBody(type));
             
-            //entity.AddComponent(new TransformedRenderer(texture));
-            entity.AddComponent(new Effect("Effects/sun2"));
+            entity.AddComponent(new SunRenderer(radius));
 
             return entity;
         }

@@ -96,7 +96,7 @@ namespace Engine.ComponentSystem.Components
                 {
                     return;
                 }
-                _texture = args.Content.Load<Texture2D>(TextureName);
+                _texture = args.Game.Content.Load<Texture2D>(TextureName);
             }
         }
 

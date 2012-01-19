@@ -73,7 +73,7 @@ namespace Space.Control
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
 
                     new PlayerCenteredSoundSystem(soundBank, controller.Session),
-                    new PlayerCenteredRenderSystem(spriteBatch, game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
+                    new PlayerCenteredRenderSystem(game, spriteBatch, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
                 });
 
             // Done.
@@ -110,7 +110,7 @@ namespace Space.Control
                 server.Simulation.EntityManager.SystemManager.AddSystems(
                     new IComponentSystem[] {
                         new PlayerCenteredSoundSystem(soundBank, controller.Session),
-                        new PlayerCenteredRenderSystem(spriteBatch, game.Content, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
+                        new PlayerCenteredRenderSystem(game, spriteBatch, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
                     });
             }
             

@@ -272,6 +272,12 @@ namespace Space
             _audioEngine.Update();
 
             Services.AddService(typeof(SoundBank), _soundBank);
+
+            var pp = GraphicsDevice.PresentationParameters;
+            int width = pp.BackBufferWidth;
+            int height = pp.BackBufferHeight;
+            var format = pp.BackBufferFormat;
+            _scene = new RenderTarget2D(GraphicsDevice, width, height, false, format, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
         }
 
         #endregion
@@ -362,9 +368,11 @@ namespace Space
         #endregion
 
 #if DEBUG
-
         private Engine.Graphics.Rectangle _indexRectangle;
         private int _indexGroup = -1;
+#endif
+
+        private RenderTarget2D _scene;
 
         /// <summary>
         /// This is called when the game should draw itself.
@@ -372,8 +380,11 @@ namespace Space
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            base.Draw(gameTime);
+            GraphicsDevice.SetRenderTarget(_scene);
 
+            base.Draw(gameTime);
+            
+#if DEBUG
             if (_indexRectangle == null)
             {
                 _indexRectangle = new Engine.Graphics.Rectangle(this);
@@ -468,8 +479,13 @@ namespace Space
                     NetGraph.Draw(session.Information, ngOffset, _console.Font, _spriteBatch);
                 }
             }
-        }
-
 #endif
+
+            GraphicsDevice.SetRenderTarget(null);
+
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
+            _spriteBatch.Draw(_scene, GraphicsDevice.PresentationParameters.Bounds, Color.White);
+            _spriteBatch.End();
+        }
     }
 }

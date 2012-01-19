@@ -1,6 +1,5 @@
 ﻿using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Systems
@@ -25,11 +24,11 @@ namespace Engine.ComponentSystem.Systems
 
         #region Constructor
         
-        public RenderSystem(SpriteBatch spriteBatch, ContentManager contentManager)
+        public RenderSystem(Game game, SpriteBatch spriteBatch)
         {
             _parameterization = new TRendererParameterization();
+            _parameterization.Game = game;
             _parameterization.SpriteBatch = spriteBatch;
-            _parameterization.Content = contentManager;
             _parameterization.Transform = Matrix.Identity;
         }
 

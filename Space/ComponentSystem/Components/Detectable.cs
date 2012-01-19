@@ -70,7 +70,7 @@ namespace Space.ComponentSystem.Components
                 {
                     return;
                 }
-                Texture = args.Content.Load<Texture2D>(TextureName);
+                Texture = args.Game.Content.Load<Texture2D>(TextureName);
             }
         }
 

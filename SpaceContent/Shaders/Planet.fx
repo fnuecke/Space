@@ -167,12 +167,11 @@ technique Render
 {
     pass Planet
     {
+        AlphaBlendEnable = True;
         PixelShader = compile ps_2_0 PlanetShaderFunction();
     }
     pass Atmosphere
     {
-        AlphaBlendEnable = True;
-        DestBlend = One;
         PixelShader = compile ps_2_0 AtmosphereShaderFunction();
     }
 }

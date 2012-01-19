@@ -145,6 +145,7 @@
     <Compile Include="ComponentSystem\Components\PlanetRenderer.cs" />
     <Compile Include="ComponentSystem\Components\Respawn.cs" />
     <Compile Include="ComponentSystem\Components\SpawnComponent.cs" />
+    <Compile Include="ComponentSystem\Components\SunRenderer.cs" />
     <Compile Include="ComponentSystem\Components\ThrusterEffect.cs" />
     <Compile Include="ComponentSystem\Parameterizations\ParticleParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\ParticleSystem.cs" />
@@ -154,6 +155,7 @@
     <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
     <Compile Include="ComponentSystem\Systems\Messages\CellStateChanged.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
+    <Compile Include="Graphics\Sun.cs" />
     <Compile Include="ScreenManagement\Screens\Entries\OptionMenuEntry.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Background.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Hud.cs" />

@@ -18,13 +18,13 @@ namespace Engine.Graphics
         /// Meaning we want two triangles, the one from 0->1->2, and the
         /// one from 2->1->3 (or anything equivalent).
         /// </summary>
-        private static readonly short[] indices = { 0, 1, 2,   // First triangle.
+        protected static readonly short[] _indices = { 0, 1, 2,   // First triangle.
                                                     2, 1, 3 }; // Second triangle.
 
         /// <summary>
         /// Actual value for our vertex declaration.
         /// </summary>
-        private static readonly VertexDeclaration _vertexDeclaration = new VertexDeclaration(new[]
+        protected static readonly VertexDeclaration _vertexDeclaration = new VertexDeclaration(new[]
             {
                 new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
                 new VertexElement(sizeof(float) * 3, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0)
@@ -236,7 +236,7 @@ namespace Engine.Graphics
         /// <summary>
         /// Draw the shape.
         /// </summary>
-        public void Draw()
+        public virtual void Draw()
         {
             // Update our paint canvas if necessary.
             if (!_verticesAreValid)
@@ -252,7 +252,7 @@ namespace Engine.Graphics
             foreach (var pass in _effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, indices, 0, 2, _vertexDeclaration);
+                _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, _indices, 0, 2, _vertexDeclaration);
             }
         }
 
@@ -272,7 +272,7 @@ namespace Engine.Graphics
         /// Utility method to recompute position of quads if a parameter was
         /// changed.
         /// </summary>
-        private void RecomputeQuads()
+        protected void RecomputeQuads()
         {
             // Adjust bounds.
             AdjustBounds();

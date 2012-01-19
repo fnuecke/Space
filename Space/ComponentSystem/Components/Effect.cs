@@ -118,9 +118,9 @@ namespace Space.ComponentSystem.Components
             {
                 // Always create a deep copy, because this will always
                 // return the same instance.
-                _effect[0] = args.Content.Load<ParticleEffect>(EffectName).DeepCopy();
+                _effect[0] = args.Game.Content.Load<ParticleEffect>(EffectName).DeepCopy();
                 _effect[0].Initialise();
-                _effect[0].LoadContent(args.Content);
+                _effect[0].LoadContent(args.Game.Content);
             }
 
             // Render if we have our effect.

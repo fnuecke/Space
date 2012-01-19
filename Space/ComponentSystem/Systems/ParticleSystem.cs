@@ -1,5 +1,5 @@
 ﻿using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ProjectMercury.Renderers;
 using Space.ComponentSystem.Parameterizations;
@@ -14,12 +14,12 @@ namespace Space.ComponentSystem.Systems
     {
         #region Constructor
         
-        public ParticleSystem(SpriteBatch spriteBatch, ContentManager content, IGraphicsDeviceService graphics)
-            : base(spriteBatch, content)
+        public ParticleSystem(Game game, SpriteBatch spriteBatch, IGraphicsDeviceService graphics)
+            : base(game, spriteBatch)
         {
             var renderer = new SpriteBatchRenderer();
             renderer.GraphicsDeviceService = graphics;
-            renderer.LoadContent(content);
+            renderer.LoadContent(game.Content);
 
             _parameterization.Renderer = renderer;
         }

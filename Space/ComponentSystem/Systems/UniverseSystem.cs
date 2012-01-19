@@ -180,9 +180,8 @@ namespace Space.ComponentSystem.Systems
 
             // Create our sun.
             float sunMass = _constaints.SampleSunMass(gaussian);
-            Entity sun = EntityFactory.CreateFixedAstronomicalObject(
-                texture: "Textures/sun",
-                radius: 256,
+            Entity sun = EntityFactory.CreateSun(
+                radius: 512,
                 position: center,
                 type: AstronomicBodyType.Sun,
                 mass: sunMass);
