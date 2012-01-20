@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Entities;
+﻿using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -10,20 +9,6 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public interface IEntityManager : IPacketizable, IHashable, ICopyable<IEntityManager>
     {
-        #region Events
-
-        /// <summary>
-        /// Triggered when an entity was added to this manager.
-        /// </summary>
-        event EventHandler<EntityEventArgs> Added;
-
-        /// <summary>
-        /// Triggered when an entity was removed from this manager.
-        /// </summary>
-        event EventHandler<EntityEventArgs> Removed;
-
-        #endregion
-
         #region Properties
         
         /// <summary>

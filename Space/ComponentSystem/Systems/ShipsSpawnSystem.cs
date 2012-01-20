@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.Systems.Messages;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -73,35 +74,6 @@ namespace Space.ComponentSystem.Systems
     //}
     class ShipsSpawnSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
     {
-        #region Properties
-        
-        /// <summary>
-        /// The component system manager this system is part of.
-        /// </summary>
-        public override IComponentSystemManager Manager
-        {
-            get
-            {
-                return base.Manager;
-            }
-            set
-            {
-                if (Manager != null)
-                {
-                    Manager.EntityManager.Removed -= HandleEntityRemoved;
-                }
-
-                base.Manager = value;
-
-                if (Manager != null)
-                {
-                    Manager.EntityManager.Removed += HandleEntityRemoved;
-                }
-            }
-        }
-
-        #endregion
-
         #region Fields
 
         private List<int> _entities = new List<int>();
@@ -163,11 +135,11 @@ namespace Space.ComponentSystem.Systems
                     }
                 }
             }
-        }
-
-        private void HandleEntityRemoved(object sender, EntityEventArgs e)
-        {
-            _entities.Remove(e.EntityUid);
+            else if (message is EntityRemoved)
+            {
+                var info = (EntityRemoved)(ValueType)message;
+                _entities.Remove(info.EntityUid);
+            }
         }
 
         #endregion

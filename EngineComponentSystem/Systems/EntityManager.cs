@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.Systems.Messages;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -12,20 +13,6 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public class EntityManager : IEntityManager
     {
-        #region Events
-
-        /// <summary>
-        /// Triggered when an entity was added to this manager.
-        /// </summary>
-        public event EventHandler<EntityEventArgs> Added;
-
-        /// <summary>
-        /// Triggered when an entity was removed from this manager.
-        /// </summary>
-        public event EventHandler<EntityEventArgs> Removed;
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -126,7 +113,12 @@ namespace Engine.ComponentSystem.Systems
                 _idManager.ReleaseId(entity.UID);
                 entity.Manager = null;
                 entity.UID = -1;
-                OnRemoved(new EntityEventArgs(entity, entityUid));
+                EntityRemoved message;
+                message.Entity = entity;
+                message.EntityUid = entityUid;
+                SendEntityMessage(ref message);
+                SystemManager.SendSystemMessage(ref message);
+                SystemManager.SendComponentMessage(ref message);
                 return entity;
             }
             return null;
@@ -168,7 +160,11 @@ namespace Engine.ComponentSystem.Systems
             {
                 SystemManager.AddComponent(component);
             }
-            OnAdded(new EntityEventArgs(entity, -1));
+            EntityAdded message;
+            message.Entity = entity;
+            SendEntityMessage(ref message);
+            SystemManager.SendSystemMessage(ref message);
+            SystemManager.SendComponentMessage(ref message);
         }
 
         #endregion
@@ -184,26 +180,6 @@ namespace Engine.ComponentSystem.Systems
             foreach (var entity in _entityMap.Values)
             {
                 entity.SendMessage(ref message);
-            }
-        }
-
-        #endregion
-
-        #region Event dispatching
-
-        private void OnAdded(EntityEventArgs e)
-        {
-            if (Added != null)
-            {
-                Added(this, e);
-            }
-        }
-
-        private void OnRemoved(EntityEventArgs e)
-        {
-            if (Removed != null)
-            {
-                Removed(this, e);
             }
         }
 

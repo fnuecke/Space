@@ -152,6 +152,8 @@
     <Compile Include="Systems\IComponentSystemManager.cs" />
     <Compile Include="Systems\IEntityManager.cs" />
     <Compile Include="Systems\IndexSystem.cs" />
+    <Compile Include="Systems\Messages\EntityAdded.cs" />
+    <Compile Include="Systems\Messages\EntityRemoved.cs" />
     <Compile Include="Systems\RenderSystem.cs" />
     <Compile Include="Systems\SoundSystem.cs" />
   </ItemGroup>
