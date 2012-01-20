@@ -149,68 +149,69 @@ namespace Space.Data
         /// </summary>
         public float MoonOrbitAngleDeviationStdDev;
 
-        public float SampleSunMass(IGaussianRandom gaussian)
+        public float SampleSunMass(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(SunMassMean, SunMassStdDev);
+            return (float)random.NextSampleClamped(SunMassMean, SunMassStdDev);
         }
 
-        public int SamplePlanets(IGaussianRandom gaussian)
+        public int SamplePlanets(IGaussianRandom random)
         {
-            return (int)gaussian.NextSampleClamped(PlanetsMean, PlanetsStdDev);
+            return (int)random.NextSampleClamped(PlanetsMean, PlanetsStdDev);
         }
         
-        public float SamplePlanetRadius(IGaussianRandom gaussian)
+        public float SamplePlanetRadius(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(PlanetRadiusMean, PlanetRadiusStdDev);
+            return (float)random.NextSampleClamped(PlanetRadiusMean, PlanetRadiusStdDev);
         }
         
-        public float SamplePlanetOrbit(IGaussianRandom gaussian)
+        public float SamplePlanetOrbit(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(PlanetOrbitMean, PlanetOrbitStdDev);
+            return (float)random.NextSampleClamped(PlanetOrbitMean, PlanetOrbitStdDev);
         }
         
-        public float SamplePlanetOrbitEccentricity(IGaussianRandom gaussian)
+        public float SamplePlanetOrbitEccentricity(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(PlanetOrbitEccentricityMean, PlanetOrbitEccentricityStdDev);
+            return (float)random.NextSampleClamped(PlanetOrbitEccentricityMean, PlanetOrbitEccentricityStdDev);
         }
         
-        public float SamplePlanetOrbitAngleDeviation(IGaussianRandom gaussian)
+        public float SamplePlanetOrbitAngleDeviation(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(PlanetOrbitAngleDeviationMean, PlanetOrbitAngleDeviationStdDev);
+            return (float)random.NextSampleClamped(PlanetOrbitAngleDeviationMean, PlanetOrbitAngleDeviationStdDev);
         }
 
-        public bool SampleStation(IUniformRandom twister)
+        public bool SampleStation(IUniformRandom random)
         {
-            return (twister.NextDouble() < StationChance);
+            return (random.NextDouble() < StationChance);
         }
 
-        public float SampleStationOrbit(IGaussianRandom gaussian)
+        public float SampleStationOrbit(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(StationOrbitMean, StationOrbitStdDev);
-        }
-        public int SampleMoons(IGaussianRandom gaussian)
-        {
-            return (int)gaussian.NextSampleClamped(MoonsMean, MoonsStdDev);
+            return (float)random.NextSampleClamped(StationOrbitMean, StationOrbitStdDev);
         }
 
-        public float SampleMoonRadius(IGaussianRandom gaussian)
+        public int SampleMoons(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(MoonRadiusMean, MoonRadiusStdDev);
+            return (int)random.NextSampleClamped(MoonsMean, MoonsStdDev);
+        }
+
+        public float SampleMoonRadius(IGaussianRandom random)
+        {
+            return (float)random.NextSampleClamped(MoonRadiusMean, MoonRadiusStdDev);
         }
         
-        public float SampleMoonOrbit(IGaussianRandom gaussian)
+        public float SampleMoonOrbit(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(MoonOrbitMean, MoonOrbitStdDev);
+            return (float)random.NextSampleClamped(MoonOrbitMean, MoonOrbitStdDev);
         }
 
-        public float SampleMoonOrbitEccentricity(IGaussianRandom gaussian)
+        public float SampleMoonOrbitEccentricity(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(MoonOrbitEccentricityMean, MoonOrbitEccentricityStdDev);
+            return (float)random.NextSampleClamped(MoonOrbitEccentricityMean, MoonOrbitEccentricityStdDev);
         }
 
-        public float SampleMoonOrbitAngleDeviation(IGaussianRandom gaussian)
+        public float SampleMoonOrbitAngleDeviation(IGaussianRandom random)
         {
-            return (float)gaussian.NextSampleClamped(MoonOrbitAngleDeviationMean, MoonOrbitAngleDeviationStdDev);
+            return (float)random.NextSampleClamped(MoonOrbitAngleDeviationMean, MoonOrbitAngleDeviationStdDev);
         }
     }
 }

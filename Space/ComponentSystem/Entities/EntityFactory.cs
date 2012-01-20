@@ -156,21 +156,6 @@ namespace Space.ComponentSystem.Entities
 
             return entity;
         }
-        public static Entity CreateStation(float orbit,Factions faction,String texture,Entity center,float period,float periodoffset=0)
-        {
-            var entity = new Entity();
-            var renderer = new TransformedRenderer(texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
-            renderer.DrawOrder = 50; //< Draw ships above everything else.
-
-            entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
-            entity.AddComponent(new Spin());
-            entity.AddComponent(new EllipsePath(center.UID, orbit, orbit, 0, period, periodoffset));
-            entity.AddComponent(new Index(Detectable.IndexGroup));
-            entity.AddComponent(new Detectable("Textures/Stolen/Ships/sensor_array_dish"));
-            entity.AddComponent(new SpawnComponent());
-            entity.AddComponent(renderer);
-            return entity;
-        }
 
         /// <summary>
         /// Copies modules from module array of a ShipData instance.
@@ -288,10 +273,17 @@ namespace Space.ComponentSystem.Entities
             return result;
         }
 
+        /// <summary>
+        /// Creates a new sun.
+        /// </summary>
+        /// <param name="radius">The radius of the sun, for rendering and
+        /// collision detection.</param>
+        /// <param name="position">The position of the sun.</param>
+        /// <param name="mass">The mass of this sun.</param>
+        /// <returns>A new sun.</returns>
         public static Entity CreateSun(
             float radius,
             Vector2 position,
-            AstronomicBodyType type,
             float mass)
         {
             var entity = new Entity();
@@ -305,18 +297,35 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new CollisionDamage(1, float.MaxValue));
 
             entity.AddComponent(new Detectable("Textures/radar_sun"));
-            entity.AddComponent(new AstronomicBody(type));
             
             entity.AddComponent(new SunRenderer(radius));
 
             return entity;
         }
 
+        /// <summary>
+        /// Creates a new orbiting astronomical object, such as a planet or
+        /// moon.
+        /// </summary>
+        /// <param name="texture">The texture to use for the object.</param>
+        /// <param name="planetTint">The color tint for the texture.</param>
+        /// <param name="radius">The radius for rendering and collision detection.</param>
+        /// <param name="rotationDirection">The rotation direction.</param>
+        /// <param name="atmosphereTint">The atmosphere tint.</param>
+        /// <param name="center">The center entity we're orbiting.</param>
+        /// <param name="majorRadius">The major radius of the orbit ellipse.</param>
+        /// <param name="minorRadius">The minor radius of the orbit ellipse.</param>
+        /// <param name="angle">The angle of the orbit ellipse.</param>
+        /// <param name="period">The orbiting period.</param>
+        /// <param name="periodOffset">The period offset.</param>
+        /// <param name="mass">The mass of the entity, for gravitation.</param>
+        /// <returns></returns>
         public static Entity CreateOrbitingAstronomicalObject(
             string texture,
             Color planetTint,
             float radius,
             float rotationDirection,
+            float rotationSpeed,
             Color atmosphereTint,
             Entity center,
             float majorRadius,
@@ -324,24 +333,57 @@ namespace Space.ComponentSystem.Entities
             float angle,
             float period,
             float periodOffset,
-            AstronomicBodyType type,
             float mass)
         {
             if (period < 1)
             {
                 throw new ArgumentException("Period must be greater than zero.", "period");
             }
+
             var entity = new Entity();
 
             entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
-            entity.AddComponent(new Spin());
             entity.AddComponent(new EllipsePath(center.UID, majorRadius, minorRadius, angle, period, periodOffset));
             entity.AddComponent(new Index(Detectable.IndexGroup));
-            entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
+            if (mass > 0)
+            {
+                entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
+            }
 
-            entity.AddComponent(new AstronomicBody(type));
             entity.AddComponent(new Detectable("Textures/radar_planet"));
-            entity.AddComponent(new PlanetRenderer(texture, planetTint, radius, rotationDirection, atmosphereTint));
+            entity.AddComponent(new PlanetRenderer(texture, planetTint, radius, rotationDirection, rotationSpeed, atmosphereTint));
+
+            return entity;
+        }
+
+        /// <summary>
+        /// Creates a new space station.
+        /// </summary>
+        /// <param name="texture">The texture to use for rending the station.</param>
+        /// <param name="center">The center entity we're orbiting.</param>
+        /// <param name="orbitRadius">The orbit radius of the station.</param>
+        /// <param name="period">The orbiting period.</param>
+        /// <param name="periodOffset">The periodoffset.</param>
+        /// <param name="faction">The faction the station belongs to.</param>
+        /// <returns></returns>
+        public static Entity CreateStation(
+            String texture,
+            Entity center,
+            float orbitRadius,
+            float period,
+            Factions faction)
+        {
+            var entity = new Entity();
+
+            var renderer = new TransformedRenderer(texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
+
+            entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
+            entity.AddComponent(new Spin(((float)Math.PI) / period));
+            entity.AddComponent(new EllipsePath(center.UID, orbitRadius, orbitRadius, 0, period, 0));
+            entity.AddComponent(new Index(Detectable.IndexGroup));
+            entity.AddComponent(new Detectable("Textures/Stolen/Ships/sensor_array_dish"));
+            entity.AddComponent(new SpawnComponent());
+            entity.AddComponent(renderer);
 
             return entity;
         }

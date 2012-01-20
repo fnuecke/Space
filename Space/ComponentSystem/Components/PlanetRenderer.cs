@@ -37,18 +37,21 @@ namespace Space.ComponentSystem.Components
 
         #region Constructor
 
-        public PlanetRenderer(string planetTexture, Color planetTint, float planetRadius, float planetRotationDirection, Color atmosphereTint)
+        public PlanetRenderer(string planetTexture, Color planetTint,
+            float planetRadius, float planetRotationDirection,
+            float planetRotationSpeed, Color atmosphereTint)
             : base(planetTexture, planetTint, planetRadius)
         {
             AtmosphereTint = atmosphereTint;
             RotationDirection = Vector2.UnitX;
             Matrix matrix = Matrix.CreateRotationZ(planetRotationDirection);
             Vector2.Transform(ref RotationDirection, ref matrix, out RotationDirection);
-            RotationDirection.Normalize(); // Avoid inaccuracies due to transform.
+            RotationDirection.Normalize();
+            RotationDirection *= planetRotationSpeed;
         }
 
         public PlanetRenderer()
-            : this(string.Empty, Color.White, 0, 0, Color.White)
+            : this(string.Empty, Color.White, 0, 0, 0, Color.White)
         {
         }
 
@@ -100,11 +103,6 @@ namespace Space.ComponentSystem.Components
 
                     float textureScale = _texture.Width / (3 * Scale);
                     float textureOffset = (float)args.GameTime.TotalGameTime.TotalSeconds * 10;
-                    var spin = Entity.GetComponent<Spin>();
-                    if (spin != null)
-                    {
-                        textureOffset *= spin.Value;
-                    }
 
                     // Draw whatever is visible.
                     _planetRenderer.Parameters["DisplaySize"].SetValue(Scale);
