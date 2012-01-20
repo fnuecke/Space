@@ -31,7 +31,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private HealthEnergyBar _healthEnergyBar;
 
-        private HudBox _hudBox;
+        private HudRadio _hudBox;
 
         #endregion
 
@@ -41,7 +41,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _client = client;
             _healthEnergyBar = new HealthEnergyBar(_client);
-            _hudBox = new HudBox(_client);
+            _hudBox = new HudRadio(_client);
 
         }
 
@@ -55,7 +55,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             _healthEnergyBar.LoadContent(spriteBatch, content);
             _hudBox.LoadContent(spriteBatch, content);
-            _hudBox.SetPosition(new Point(60, 140));
+            _hudBox.SetPosition(new Point(60, 155));
 
             // initialize the health & energy with standard values
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
