@@ -12,6 +12,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 {
     class HudBox : IHudParentElement
     {
+
+        #region Fields
+
         /// <summary>
         /// The local client, used to fetch player's position and radar range.
         /// </summary>
@@ -27,10 +30,29 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private SpriteBatch _spriteBatch;
 
+        /// <summary>
+        /// The header label.
+        /// </summary>
         private HudHeader _header;
+
+        /// <summary>
+        /// The top spacer.
+        /// </summary>
         private HudSpacer _spacerTop;
+
+        /// <summary>
+        /// The content.
+        /// </summary>
         private HudContent _bgContent;
+
+        /// <summary>
+        /// The bottom spacer.
+        /// </summary>
         private HudSpacer _spacerBottom;
+
+        /// <summary>
+        /// The footer label.
+        /// </summary>
         private HudHeader _footer;
 
         /// <summary>
@@ -38,6 +60,14 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private Point _position = new Point(0, 0);
 
+        #endregion
+
+        #region Initialisation
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="client">The general client object.</param>
         public HudBox(GameClient client)
         {
             _client = client;
@@ -49,7 +79,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         }
 
         /// <summary>
-        /// Load graphics content for the game.
+        /// Load all elements of this gud element.
         /// </summary>
         public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
@@ -62,8 +92,13 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spacerBottom.LoadContent(spriteBatch, content);
             _footer.LoadContent(spriteBatch, content);
 
-            SetPosition(new Point(100, 100));
+            // set standard values for the fields
+            SetPosition(new Point(0, 0));
         }
+
+        #endregion
+
+        #region Getter & Setter
 
         // Implementation of IHudParentElement interface
         public void SetPosition(Point newPosition)
@@ -87,6 +122,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             return height;
         }
 
+        #endregion
+
+        #region Draw
 
         /// <summary>
         /// Render the HUD box with the current values.
@@ -99,5 +137,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spacerBottom.Draw();
             _footer.Draw();
         }
+
+        #endregion
     }
 }

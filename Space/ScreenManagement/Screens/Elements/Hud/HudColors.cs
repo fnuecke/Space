@@ -8,6 +8,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud.HudComponents
 {
     class HudColors
     {
+
         public static Color FontLight = Color.White;
         public static Color FontDark = Color.Black;
 
