@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
@@ -102,7 +101,13 @@ namespace Engine.ComponentSystem.Systems
         /// Send a message to all systems of this component system manager.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        void SendMessage(ValueType message);
+        void SendSystemMessage<T>(ref T message) where T : struct;
+
+        /// <summary>
+        /// Send a message to all components in all component system managers.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        void SendComponentMessage<T>(ref T message) where T : struct;
 
         #endregion
     }

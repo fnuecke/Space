@@ -122,7 +122,8 @@ namespace Space.ComponentSystem.Systems
             foreach (var bornCell in _bornCells)
             {
                 var xy = CoordinateIds.Split(bornCell);
-                Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true));
+                var message = CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true);
+                Manager.SendSystemMessage(ref message);
             }
             _bornCells.Clear();
 
@@ -132,7 +133,8 @@ namespace Space.ComponentSystem.Systems
             foreach (var deceasedCell in _deceasedCells)
             {
                 var xy = CoordinateIds.Split(deceasedCell);
-                Manager.SendMessage(CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false));
+                var message = CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false);
+                Manager.SendSystemMessage(ref message);
             }
             _deceasedCells.Clear();
 

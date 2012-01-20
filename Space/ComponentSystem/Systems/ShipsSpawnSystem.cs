@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.Systems.Messages;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -73,35 +74,6 @@ namespace Space.ComponentSystem.Systems
     //}
     class ShipsSpawnSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
     {
-        #region Properties
-        
-        /// <summary>
-        /// The component system manager this system is part of.
-        /// </summary>
-        public override IComponentSystemManager Manager
-        {
-            get
-            {
-                return base.Manager;
-            }
-            set
-            {
-                if (Manager != null)
-                {
-                    Manager.EntityManager.Removed -= HandleEntityRemoved;
-                }
-
-                base.Manager = value;
-
-                if (Manager != null)
-                {
-                    Manager.EntityManager.Removed += HandleEntityRemoved;
-                }
-            }
-        }
-
-        #endregion
-
         #region Fields
 
         private List<int> _entities = new List<int>();
@@ -141,33 +113,33 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override void HandleMessage(ValueType message)
+        public override void HandleSystemMessage<T>(ref T message)
         {
             if (message is CellStateChanged)
             {
-                var info = (CellStateChanged)message;
+                var info = (CellStateChanged)(ValueType)message;
                 if (info.State && info.X == 0 && info.Y == 0)
                 {
                     const int cellSize = CellSystem.CellSize;
                     for (var i = 0; i < 10; i++)
                     {
-                        var spawnPoint = new Vector2(60000+i* 500, 62500-i*600);
+                        var spawnPoint = new Vector2(60000 + i * 500, 62500 - i * 600);
                         var order =
                             new AiComponent.AiCommand(
-                                new Vector2(cellSize*info.X + (cellSize >> 1), cellSize*info.Y + (cellSize >> 1)),
+                                new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
                                 cellSize, AiComponent.Order.Guard);
                         var faction = Factions.Player5;
                         _entities.Add(Manager.EntityManager.AddEntity(
-                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],faction,spawnPoint ,order
+                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
                             )));
                     }
                 }
             }
-        }
-
-        private void HandleEntityRemoved(object sender, EntityEventArgs e)
-        {
-            _entities.Remove(e.EntityUid);
+            else if (message is EntityRemoved)
+            {
+                var info = (EntityRemoved)(ValueType)message;
+                _entities.Remove(info.EntityUid);
+            }
         }
 
         #endregion
