@@ -159,7 +159,7 @@
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudBox.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSpacer.cs" />
-    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudHeader.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudLabel.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudContent.cs" />
     <Compile Include="ScreenManagement\Screens\Entries\OptionMenuEntry.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Background.cs" />

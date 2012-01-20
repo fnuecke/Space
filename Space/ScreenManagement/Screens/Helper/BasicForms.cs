@@ -78,7 +78,7 @@ namespace Space.ScreenManagement.Screens.Helper {
 
         public void GradientRectangle(int x, int y, int width, int height, Color[] colors, float[] range)
         {
-            _gradient.SetCenter(x - width / 2, y - height / 2);
+            _gradient.SetCenter(x + width / 2, y + height / 2);
             _gradient.SetSize(width, height);
             _gradient.SetGradients(colors, range);
             _gradient.Draw();
