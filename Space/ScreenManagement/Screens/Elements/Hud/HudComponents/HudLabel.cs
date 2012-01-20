@@ -123,7 +123,14 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         public Boolean Display2ndElement { get; set; }
 
+        /// <summary>
+        /// Text that is displayed in the left label
+        /// </summary>
         public String TextLabelLeft { get; set; }
+
+        /// <summary>
+        /// Text that is displayed in the right label
+        /// </summary>
         public String TextLabelRight { get; set; }
 
         #endregion
@@ -187,7 +194,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
                     new[] { 0.2f, 0.8f });
 
                 // draw the title string
-                _spriteBatch.DrawString(_font, "Guybrush Threepwood", new Vector2(Position.X + BorderSide + 5, Position.Y + 3), HudColors.FontDark);
+                _spriteBatch.DrawString(_font, TextLabelLeft, new Vector2(Position.X + BorderSide + 5, Position.Y + 3), HudColors.FontDark);
             }
 
             // draw the second rectangle
@@ -202,8 +209,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
                     new[] { 0.2f, 0.8f });
 
                 // draw the sub string
-                var size = _font.MeasureString("Pirate");
-                _spriteBatch.DrawString(_font, "Pirate", new Vector2(Position.X + Width - BorderSide - Width2ndElement / 2 - size.X / 2, Position.Y + 3), HudColors.FontLight);
+                var size = _font.MeasureString(TextLabelRight);
+                _spriteBatch.DrawString(_font, TextLabelRight, new Vector2(Position.X + Width - BorderSide - Width2ndElement / 2 - size.X / 2, Position.Y + 3), HudColors.FontLight);
             }
 
             _spriteBatch.End();

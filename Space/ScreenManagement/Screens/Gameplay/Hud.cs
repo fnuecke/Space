@@ -56,6 +56,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _healthEnergyBar.LoadContent(spriteBatch, content);
             _hudBox.LoadContent(spriteBatch, content);
             _hudBox.SetPosition(new Point(60, 155));
+            _hudBox.setName("Guybrush Threepwood");
 
             // initialize the health & energy with standard values
             var viewport = _spriteBatch.GraphicsDevice.Viewport;

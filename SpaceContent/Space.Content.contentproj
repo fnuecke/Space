@@ -2029,7 +2029,6 @@
       <Processor>EffectProcessor</Processor>
     </Compile>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Compile Include="Shaders\Sun.fx">
       <Name>Sun</Name>

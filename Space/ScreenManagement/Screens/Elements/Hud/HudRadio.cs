@@ -118,6 +118,24 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             return height;
         }
 
+        /// <summary>
+        /// Set the name into the left text label.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public void setName(String name)
+        {
+            _footer.TextLabelLeft = name;
+        }
+
+        /// <summary>
+        /// Set the name into the left text label.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public void setTitle(String title)
+        {
+            _footer.TextLabelRight = title;
+        }
+
         #endregion
 
         #region Draw
