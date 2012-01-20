@@ -848,10 +848,6 @@ namespace Engine.Simulation
 
             #region Unsupported
 
-            public event EventHandler<EntityEventArgs> Added;
-
-            public event EventHandler<EntityEventArgs> Removed;
-
             public ReadOnlyCollection<Entity> Entities { get { throw new NotSupportedException(); } }
 
 #if DEBUG && GAMELOG

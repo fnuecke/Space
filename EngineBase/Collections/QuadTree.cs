@@ -784,12 +784,12 @@ namespace Engine.Collections
         private static int ComputeCell(int x, int y, int childSize, ref Vector2 point)
         {
             var cell = 0;
-            if ((int)point.X > x + childSize)
+            if ((int)point.X >= x + childSize)
             {
                 // Right half.
                 cell |= 1;
             }
-            if ((int)point.Y > y + childSize)
+            if ((int)point.Y >= y + childSize)
             {
                 // Lower half.
                 cell |= 2;
