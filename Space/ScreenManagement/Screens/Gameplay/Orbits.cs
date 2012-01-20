@@ -217,7 +217,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     // Check if we're cutting (potentially seeing) the orbit
                     // ellipse of the neighbor.
                     if (farClipDistance > distanceToCenterSquared &&
-                        nearClipDistance < distanceToCenterSquared)
+                        nearClipDistance <= distanceToCenterSquared)
                     {
                         // Yes, set the properties for our ellipse renderer.
                         _orbitEllipse.SetCenter(ellipseCenter - position + center);

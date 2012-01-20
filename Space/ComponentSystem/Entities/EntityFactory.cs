@@ -324,9 +324,8 @@ namespace Space.ComponentSystem.Entities
             string texture,
             Color planetTint,
             float radius,
-            float rotationDirection,
-            float rotationSpeed,
             Color atmosphereTint,
+            float rotationSpeed,
             Entity center,
             float majorRadius,
             float minorRadius,
@@ -343,6 +342,7 @@ namespace Space.ComponentSystem.Entities
             var entity = new Entity();
 
             entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
+            entity.AddComponent(new Spin(rotationSpeed));
             entity.AddComponent(new EllipsePath(center.UID, majorRadius, minorRadius, angle, period, periodOffset));
             entity.AddComponent(new Index(Detectable.IndexGroup));
             if (mass > 0)
@@ -351,7 +351,7 @@ namespace Space.ComponentSystem.Entities
             }
 
             entity.AddComponent(new Detectable("Textures/radar_planet"));
-            entity.AddComponent(new PlanetRenderer(texture, planetTint, radius, rotationDirection, rotationSpeed, atmosphereTint));
+            entity.AddComponent(new PlanetRenderer(texture, planetTint, radius, atmosphereTint));
 
             return entity;
         }

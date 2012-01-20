@@ -237,9 +237,8 @@ namespace Space.ComponentSystem.Systems
                 texture: "Textures/rock_07",
                 planetTint: Color.Lerp(Color.DarkOliveGreen, Color.White, 0.5f),
                 radius: planetRadius,
-                rotationDirection: (float)(2 * System.Math.PI * random.NextDouble()),
-                rotationSpeed: 0.001f + (float)random.NextDouble() * 0.0005f,
                 atmosphereTint: Color.LightSkyBlue,
+                rotationSpeed: (float)gaussian.NextSampleClamped(System.Math.PI / 6000, 0.0000125) * System.Math.Sign(random.NextDouble() - 0.5),
                 center: sun,
                 majorRadius: planetOrbitMajorRadius,
                 minorRadius: planetOrbitMinorRadius,
@@ -308,14 +307,13 @@ namespace Space.ComponentSystem.Systems
             float moonOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SampleMoonOrbitAngleDeviation(gaussian));
             float moonPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * moonOrbitMajorRadius / planetMass));
             float moonMass = _constaints.MassPerVolume * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
-
+            
             var moon = EntityFactory.CreateOrbitingAstronomicalObject(
                 texture: "Textures/rock_02",
                 planetTint: Color.White,
                 radius: moonRadius,
-                rotationDirection: (float)(2 * System.Math.PI * random.NextDouble()),
-                rotationSpeed: 0.001f + (float)random.NextDouble() * 0.0005f,
                 atmosphereTint: Color.Transparent,
+                rotationSpeed: (float)gaussian.NextSampleClamped(System.Math.PI / 20000, 0.0000025) * System.Math.Sign(random.NextDouble() - 0.5),
                 center: planet,
                 majorRadius: moonOrbitMajorRadius,
                 minorRadius: moonOrbitMinorRadius,

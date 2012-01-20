@@ -261,7 +261,11 @@ namespace Engine.Graphics
         /// </summary>
         protected virtual void AdjustParameters()
         {
-            _effect.Parameters["Color"].SetValue(_color.ToVector4());
+            var color = _effect.Parameters["Color"];
+            if (color != null)
+            {
+                color.SetValue(_color.ToVector4());
+            }
         }
 
         #endregion
