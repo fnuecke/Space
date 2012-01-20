@@ -82,7 +82,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _spriteBatch = spriteBatch;
 
             _radarBackground = content.Load<Texture2D>("Textures/radar_background");
-            _basicForms = new BasicForms(_spriteBatch);
+            _basicForms = new BasicForms(_spriteBatch, _client);
         }
 
         #endregion

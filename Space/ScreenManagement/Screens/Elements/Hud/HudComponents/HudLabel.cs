@@ -70,7 +70,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _content = content;
             _spriteBatch = spriteBatch;
-            _basicForms = new BasicForms(_spriteBatch);
+            _basicForms = new BasicForms(_spriteBatch, _client);
 
             font = _content.Load<SpriteFont>("Fonts/strasua_13");
         }
@@ -83,23 +83,24 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spriteBatch.Begin();
 
             // draw the first rectangle
-            _basicForms.FillRectangle(
+            _basicForms.GradientRectangle(
                 Position.X + BorderSide,
                 Position.Y,
                 Width - 2 * BorderSide - WidthGap - Width2ndElement,
                 Height,
-                HudColors.GreenDarkGradientDark);
+                new[] { HudColors.GreenDarkGradientLight, HudColors.GreenDarkGradientDark }, new[] { 0.2f, 0.8f });
 
             // draw the second rectangle
-            _basicForms.FillRectangle(
+            _basicForms.GradientRectangle(
                 Position.X + Width - BorderSide - Width2ndElement,
                 Position.Y,
                 Width2ndElement,
                 Height,
-                HudColors.GreenDarkGradientDark);
+                new[] { HudColors.GreenDarkGradientLight, HudColors.GreenDarkGradientDark }, new[] { 0.2f, 0.8f });
 
             // draw the title string
             _spriteBatch.DrawString(font, "Guybrush Threepwood", new Vector2(Position.X + BorderSide + 2, Position.Y + 3), HudColors.FontDark);
+            _spriteBatch.DrawString(font, "Pirate", new Vector2(Position.X + Width - Width2ndElement - BorderSide + 2, Position.Y + 3), HudColors.FontLight);
 
             _spriteBatch.End();
         }
