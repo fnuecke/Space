@@ -63,6 +63,12 @@ namespace Space
         /// </summary>
         public string AutoexecFilename = "autoexec.cfg";
 
+        /// <summary>
+        /// Compute the distance displayed in radar icons as the distance of
+        /// the object to the screen edge instead of to the player ship.
+        /// </summary>
+        public bool RadarDistanceFromBorder = true;
+
         #endregion
 
         #region Key bindings
