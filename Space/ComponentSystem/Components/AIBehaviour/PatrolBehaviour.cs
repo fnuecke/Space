@@ -1,4 +1,6 @@
 ﻿using System;
+using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
@@ -6,7 +8,9 @@ namespace Space.ComponentSystem.Components.AIBehaviour
     public class PatrolBehaviour : Behaviour
     {
 
-        private static Random random = new Random();
+        private static MersenneTwister random = new MersenneTwister();
+
+        public PatrolBehaviour(){}
         public PatrolBehaviour(AiComponent component)
             : base(component)
         {
@@ -30,7 +34,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             //prevent them from getting stuck on the edges of the screen.   
 
 
-            input.SetStabilizing(true);
+            
             float distanceFromCenter = Vector2.Distance(AiComponent.Command.Target, info.Position);
 
 
@@ -49,6 +53,19 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             {
                 input.SetAcceleration(direction);
             }
+        }
+
+        public override Packet Packetize(Packet packet)
+        {
+            return base.Packetize(packet)
+              .Write(random)  ;
+
+        }
+
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+            random = packet.ReadPacketizable<MersenneTwister>();
         }
     }
 }   

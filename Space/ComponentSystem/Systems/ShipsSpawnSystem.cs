@@ -149,18 +149,60 @@ namespace Space.ComponentSystem.Systems
                 if (info.State && info.X == 0 && info.Y == 0)
                 {
                     const int cellSize = CellSystem.CellSize;
-                    for (var i = 0; i < 10; i++)
-                    {
-                        var spawnPoint = new Vector2(60000+i* 500, 62500-i*600);
-                        var order =
-                            new AiComponent.AiCommand(
-                                new Vector2(cellSize*info.X + (cellSize >> 1), cellSize*info.Y + (cellSize >> 1)),
-                                cellSize, AiComponent.Order.Guard);
-                        var faction = Factions.Player5;
-                        _entities.Add(Manager.EntityManager.AddEntity(
-                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],faction,spawnPoint ,order
-                            )));
-                    }
+                    //for (var i = 0; i < 10; i++)
+                    //{
+                    var spawnPoint = new Vector2(60000 +  500, 62500 -  600);
+                    var order =
+                        new AiComponent.AiCommand(
+                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
+                            cellSize, AiComponent.Order.Guard);
+                    var faction = Factions.Player3;
+                    _entities.Add(Manager.EntityManager.AddEntity(
+                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
+                        )));
+
+
+                    spawnPoint = new Vector2(60000 + 400, 62500 - 200);
+                    order =
+                        new AiComponent.AiCommand(
+                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
+                            cellSize, AiComponent.Order.Guard);
+                    faction = Factions.Player4;
+                    _entities.Add(Manager.EntityManager.AddEntity(
+                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
+                        )));
+                    spawnPoint = new Vector2(60000 + 500, 62500 - 300);
+                    order =
+                        new AiComponent.AiCommand(
+                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
+                            cellSize, AiComponent.Order.Guard);
+                    faction = Factions.Player5;
+                    _entities.Add(Manager.EntityManager.AddEntity(
+                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
+                        )));
+                    spawnPoint = new Vector2(60000 + 500, 62500 - 400);
+                    order =
+                        new AiComponent.AiCommand(
+                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
+                            cellSize, AiComponent.Order.Guard);
+                    faction = Factions.Player6;
+                    _entities.Add(Manager.EntityManager.AddEntity(
+                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
+                        )));
+                    spawnPoint = new Vector2(60000 + 500, 62500 - 500);
+                    order =
+                        new AiComponent.AiCommand(
+                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
+                            cellSize, AiComponent.Order.Guard);
+                    faction = Factions.Player3;
+                    _entities.Add(Manager.EntityManager.AddEntity(
+                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
+                        )));
+
+
+
+                    
+                    //}
                 }
             }
         }

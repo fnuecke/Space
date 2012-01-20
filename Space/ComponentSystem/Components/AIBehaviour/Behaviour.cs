@@ -15,6 +15,8 @@ namespace Space.ComponentSystem.Components.AIBehaviour
     {
         protected Vector2 direction;
         public AiComponent AiComponent;
+
+        protected Behaviour(){}
         protected Behaviour(AiComponent entity)
         {
             this.AiComponent = entity;
@@ -94,13 +96,13 @@ namespace Space.ComponentSystem.Components.AIBehaviour
         }
 
         
-        public Packet Packetize(Packet packet)
+        public virtual Packet Packetize(Packet packet)
         {
             return packet.Write(direction);
 
         }
 
-        public void Depacketize(Packet packet)
+        public virtual void Depacketize(Packet packet)
         {
             direction = packet.ReadVector2();
         }

@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Components
             public Vector2 Target;
             public int MaxDistance;
             public Order order;
-            public AiCommand(){}
+            public AiCommand() { }
             public AiCommand(Vector2 target, int maxDistance, Order order)
             {
                 Target = target;
@@ -35,7 +35,7 @@ namespace Space.ComponentSystem.Components
             {
                 Target = packet.ReadVector2();
                 MaxDistance = packet.ReadInt32();
-                order = (Order) packet.ReadByte();
+                order = (Order)packet.ReadByte();
             }
         }
         public enum Order
@@ -52,10 +52,11 @@ namespace Space.ComponentSystem.Components
         #endregion
 
         #region Constructor
+        public AiComponent() { }
 
         public AiComponent(AiCommand command)
         {
-           
+
             Command = command;
             SwitchOrder();
         }
@@ -64,68 +65,113 @@ namespace Space.ComponentSystem.Components
 
         public override void Update(object parameterization)
         {
-            
+
             CalculateBehaviour();
             _currentbehaviour.Update();
         }
+
+        /// <summary>
+        /// Calculates which behaviour to use
+        /// </summary>
         private void CalculateBehaviour()
         {
-            // Get local player's avatar.
+            // Get local player's avatar. and position
             var info = Entity.GetComponent<ShipInfo>();
             var position = info.Position;
+
+            //check if there are enemys in the erea
             if (_currentbehaviour is PatrolBehaviour)
             {
-                var currentFaction = Entity.GetComponent<Faction>().Value;
-                var index = Entity.Manager.SystemManager.GetSystem<IndexSystem>();
-                if (index == null) return;
-                foreach (var neighbor in index.
-               GetNeighbors(ref position, 3000, Detectable.IndexGroup))
-                {
-                    var transform = neighbor.GetComponent<Transform>();
-                    if (transform == null) continue;
-                    var health = neighbor.GetComponent<Health>();
-                    if (health == null||health.Value == 0) continue;
-                    var faction = neighbor.GetComponent<Faction>();
-                    if(faction == null) continue;
-                    if ((faction.Value & currentFaction) == 0)
-                    {
-                        _currentbehaviour = new AttackBehaviour(this, neighbor.UID);
-                        return;
-                    }
-
-                }
+                CheckNeighbours(ref position,ref position);
             }
             else if (_currentbehaviour is AttackBehaviour)
             {
                 var targetEntity = Entity.Manager.GetEntity(((AttackBehaviour)_currentbehaviour).TargetEntity);
-                
+
                 if (targetEntity == null)
                 {
-                    SwitchOrder();
+                    CheckAndSwitchToMoveBehaviour(ref position);
                     return;
 
                 }
                 var health = targetEntity.GetComponent<Health>();
                 var transform = targetEntity.GetComponent<Transform>();
-                if (health == null ||health.Value == 0|| transform == null)
+                if (health == null || health.Value == 0 || transform == null)
                 {
-                    SwitchOrder();
+                    CheckAndSwitchToMoveBehaviour(ref position);
                     return;
                 }
 
                 var direction = position - transform.Translation;
-                if(direction.Length()>3000)
-                    SwitchOrder();
-                else
+                if (direction.Length() > 3000)
                 {
+
+
+                    
+                    CheckAndSwitchToMoveBehaviour(ref position);
+                    return;
+
+                }
+                if ((position - ((AttackBehaviour)_currentbehaviour).StartPosition).Length() > Command.MaxDistance)
+                {
+                    var move = new MoveBehaviour
+                    {
+                        TargetPosition = ((AttackBehaviour)_currentbehaviour).StartPosition
+                    };
+                    _currentbehaviour = move;
                     return;
                 }
 
+            }
+            else if (_currentbehaviour is MoveBehaviour)
+            {
+                var target = ((MoveBehaviour) _currentbehaviour).TargetPosition;
+                if((target-position).Length()<200)
+                    SwitchOrder();
+                return;
             }
 
 
 
 
+        }
+
+        private void CheckAndSwitchToMoveBehaviour(ref Vector2 position)
+        {
+            var startposition = ((AttackBehaviour) _currentbehaviour).StartPosition;
+            if (CheckNeighbours(ref position, ref startposition)) return;
+            var move = new MoveBehaviour
+                           {
+                               TargetPosition = startposition,
+                               AiComponent = this
+            };
+            _currentbehaviour = move;
+            
+        }
+        private bool CheckNeighbours(ref Vector2 position,ref Vector2 startPosition)
+        {
+            var currentFaction = Entity.GetComponent<Faction>().Value;
+            var index = Entity.Manager.SystemManager.GetSystem<IndexSystem>();
+            if (index == null) return false;
+            foreach (var neighbor in index.
+           GetNeighbors(ref position, 3000, Detectable.IndexGroup))
+            {
+                var transform = neighbor.GetComponent<Transform>();
+                if (transform == null) continue;
+                var health = neighbor.GetComponent<Health>();
+                if (health == null || health.Value == 0) continue;
+                var faction = neighbor.GetComponent<Faction>();
+                if (faction == null) continue;
+                if ((faction.Value & currentFaction) == 0)
+                {
+                    var attack = new AttackBehaviour(this, neighbor.UID);
+                    _currentbehaviour = attack;
+                    attack.StartPosition = startPosition;
+                    return true;
+                }
+
+            }
+            return false;
         }
 
         /// <summary>
@@ -143,7 +189,7 @@ namespace Space.ComponentSystem.Components
                     break;
             }
         }
-       
+
 
 
         /// <summary>
@@ -163,7 +209,7 @@ namespace Space.ComponentSystem.Components
             base.Packetize(packet);
             packet.WriteWithTypeInfo(_currentbehaviour)
                 .Write(Command);
-            
+
             return packet;
         }
 
@@ -173,7 +219,7 @@ namespace Space.ComponentSystem.Components
             _currentbehaviour = packet.ReadPacketizableWithTypeInfo<Behaviour>();
             _currentbehaviour.AiComponent = this;
             Command = packet.ReadPacketizable<AiCommand>();
-            
+
         }
 
         public override AbstractComponent DeepCopy(AbstractComponent into)

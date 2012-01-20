@@ -129,6 +129,7 @@
     <Compile Include="ComponentSystem\Components\AbstractRegeneratingValue.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\AttackBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\Behaviour.cs" />
+    <Compile Include="ComponentSystem\Components\AIBehaviour\MoveBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\PatrolBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIComponent.cs" />
     <Compile Include="ComponentSystem\Components\AstronomicBody.cs" />

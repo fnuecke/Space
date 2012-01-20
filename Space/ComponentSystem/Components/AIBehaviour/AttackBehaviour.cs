@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Engine.ComponentSystem.Components;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
@@ -10,6 +11,8 @@ namespace Space.ComponentSystem.Components.AIBehaviour
     class AttackBehaviour : Behaviour
     {
         public int TargetEntity;
+        public Vector2 StartPosition;
+        public AttackBehaviour(){}
         public AttackBehaviour(AiComponent aiComponent,int targetEntity)
             :base(aiComponent)
         {
@@ -36,11 +39,14 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             var position = info.Position;
 
             direction =  transform.Translation - position ;
-            
+            var distance = direction.Length();
             direction.Normalize();
             
             input.SetTargetRotation((float)Math.Atan2(direction.Y, direction.X));
-            input.SetShooting(true);
+            
+            //shoot only when in range...
+            input.SetShooting(distance<1000);
+            
             var escapeDir = CalculateEscapeDirection();
             direction += 2 * escapeDir;
 
@@ -48,6 +54,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             
             //not fullspeed if there is noting to fear about
 
+            
 
             if (escapeDir == Vector2.Zero &&  info.Energy < info.MaxEnergy * 0.2)
             {
@@ -57,6 +64,19 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             {
                 input.SetAcceleration(direction);
             }
+        }
+
+        public override Packet Packetize(Packet packet)
+        {
+            return base.Packetize(packet)
+                .Write(StartPosition);
+
+        }
+
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+            StartPosition = packet.ReadVector2();
         }
     }
 }
