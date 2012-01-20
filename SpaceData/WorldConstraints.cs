@@ -6,27 +6,37 @@ namespace Space.Data
     /// </summary>
     public class WorldConstraints
     {
+        /// <summary>
+        /// The chance we spawn multiple suns in a system.
+        /// </summary>
         public float SolarSystemMultiSunChance;
+
         /// <summary>
         /// The number of suns a system may have at max.
         /// </summary>
         public int SolarSystemMaxSuns;
 
         /// <summary>
-        /// The average mass of a sun.
+        /// The average size of a sun's radius.
         /// </summary>
-        public int SunMassMean;
+        public float SunRadiusMean;
 
         /// <summary>
-        /// The standard deviation of the mass of a sun.
+        /// The allowed deviation from the mean when generating a sun.
         /// </summary>
-        public int SunMassStdDev;
+        public float SunRadiusStdDev;
+
+        /// <summary>
+        /// Mass to attribute to a sun for it's size (base on the radius,
+        /// but computing the volume from that).
+        /// </summary>
+        public float SunMassFactor;
 
         /// <summary>
         /// Mass to attribute to another astronomical object for it's size
         /// (base on the radius, but computing the volume from that).
         /// </summary>
-        public float MassPerVolume;
+        public float PlanetMassFactor;
 
         /// <summary>
         /// The average number of planets per solar system.
@@ -149,9 +159,9 @@ namespace Space.Data
         /// </summary>
         public float MoonOrbitAngleDeviationStdDev;
 
-        public float SampleSunMass(IGaussianRandom random)
+        public float SampleSunRadius(IGaussianRandom random)
         {
-            return (float)random.NextSampleClamped(SunMassMean, SunMassStdDev);
+            return (float)random.NextSampleClamped(SunRadiusMean, SunRadiusStdDev);
         }
 
         public int SamplePlanets(IGaussianRandom random)

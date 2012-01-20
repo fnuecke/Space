@@ -178,9 +178,10 @@ namespace Space.ComponentSystem.Systems
             var gaussian = new Ziggurat(random);
 
             // Create our sun.
-            float sunMass = _constaints.SampleSunMass(gaussian);
+            float sunRadius = _constaints.SampleSunRadius(gaussian);
+            float sunMass = _constaints.SunMassFactor * 4f / 3f * (float)System.Math.PI * sunRadius * sunRadius * sunRadius;;
             Entity sun = EntityFactory.CreateSun(
-                radius: 512,
+                radius: sunRadius,
                 position: center,
                 mass: sunMass);
             list.Add(Manager.EntityManager.AddEntity(sun));
@@ -231,7 +232,7 @@ namespace Space.ComponentSystem.Systems
             float planetOrbitMinorRadius = (float)System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * (1 - planetOrbitEccentricity * planetOrbitEccentricity));
             float planetOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SamplePlanetOrbitAngleDeviation(gaussian));
             float planetPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * planetOrbitMajorRadius * 3 /* < slowing factor */ / sunMass));
-            float planetMass = _constaints.MassPerVolume * 4f / 3f * (float)System.Math.PI * planetRadius * planetRadius * planetRadius;
+            float planetMass = _constaints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * planetRadius * planetRadius * planetRadius;
 
             var planet = EntityFactory.CreateOrbitingAstronomicalObject(
                 texture: "Textures/rock_07",
@@ -306,7 +307,7 @@ namespace Space.ComponentSystem.Systems
             float moonOrbitMinorRadius = (float)System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * (1 - moonOrbitEccentricity * moonOrbitEccentricity));
             float moonOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SampleMoonOrbitAngleDeviation(gaussian));
             float moonPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * moonOrbitMajorRadius / planetMass));
-            float moonMass = _constaints.MassPerVolume * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
+            float moonMass = _constaints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
             
             var moon = EntityFactory.CreateOrbitingAstronomicalObject(
                 texture: "Textures/rock_02",

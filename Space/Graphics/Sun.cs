@@ -203,7 +203,7 @@ namespace Space.Graphics
             _effect.Parameters["TurbulenceOneOffset"].SetValue(_turbulenceOneRotation * offset);
             _effect.Parameters["TurbulenceTwoOffset"].SetValue(_turbulenceTwoRotation * offset);
             _effect.Parameters["RenderRadius"].SetValue(_width / 2);
-            _effect.Parameters["TextureScale"].SetValue((float)_surface.Width / (3 * _width));
+            _effect.Parameters["TextureScale"].SetValue((float)_surface.Width / (2 * _width));
 
             // And draw it.
             _effect.CurrentTechnique.Passes[0].Apply();
