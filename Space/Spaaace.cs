@@ -425,9 +425,9 @@ namespace Space
                     StringBuilder sb = new System.Text.StringBuilder();
 
                     // Draw session info and netgraph.
-                    var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 230, GraphicsDevice.Viewport.Height - 140);
-                    var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 360,
-                                                    GraphicsDevice.Viewport.Height - 140);
+                    var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 240, GraphicsDevice.Viewport.Height - 180);
+                    var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 370,
+                                                    GraphicsDevice.Viewport.Height - 180);
 
                     SessionInfo.Draw("Client", session, sessionOffset, _console.Font, _spriteBatch);
                     NetGraph.Draw(session.Information, ngOffset, _console.Font, _spriteBatch);
@@ -462,11 +462,10 @@ namespace Space
                             sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
                         }
 
-                        sb.AppendFormat("Health: {0:f}/{1:f}, Energy: {2:f}/{3:f}\n", info.Health, info.MaxHealth, info.Energy, info.MaxEnergy);
                         sb.AppendFormat("Speed: {0:f}/{1:f}\n", info.Speed, info.MaxSpeed);
                         sb.AppendFormat("Mass: {0:f}", info.Mass);
 
-                        _spriteBatch.DrawString(_console.Font, sb.ToString(), new Vector2(20, 20), Color.White);
+                        _spriteBatch.DrawString(_console.Font, sb.ToString(), new Vector2(60, 60), Color.White);
 
                         _spriteBatch.End();
                     }
@@ -477,8 +476,8 @@ namespace Space
                     var session = server.Controller.Session;
 
                     // Draw session info and netgraph.
-                    var ngOffset = new Vector2(150, GraphicsDevice.Viewport.Height - 140);
-                    var sessionOffset = new Vector2(10, GraphicsDevice.Viewport.Height - 140);
+                    var ngOffset = new Vector2(180, GraphicsDevice.Viewport.Height - 180);
+                    var sessionOffset = new Vector2(60, GraphicsDevice.Viewport.Height - 180);
 
                     SessionInfo.Draw("Server", session, sessionOffset, _console.Font, _spriteBatch);
                     NetGraph.Draw(session.Information, ngOffset, _console.Font, _spriteBatch);
