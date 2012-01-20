@@ -8,10 +8,11 @@ using Microsoft.Xna.Framework.Content;
 using Space.ScreenManagement.Screens.Helper;
 using Microsoft.Xna.Framework;
 using Space.ScreenManagement.Screens.Elements.Hud.HudComponents;
+using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudHeader
+    class HudHeader : IHudChildElement
     {
 
         private const int StandardWidth = 302;

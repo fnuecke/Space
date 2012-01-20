@@ -55,6 +55,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             _healthEnergyBar.LoadContent(spriteBatch, content);
             _hudBox.LoadContent(spriteBatch, content);
+            _hudBox.SetPosition(new Point(60, 140));
 
             // initialize the health & energy with standard values
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
@@ -87,7 +88,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             {
                 _healthEnergyBar.Draw();
             }
-            //_hudBox.Draw();
+            _hudBox.Draw();
         }
 
         #endregion

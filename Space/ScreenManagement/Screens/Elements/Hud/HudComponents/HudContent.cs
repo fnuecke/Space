@@ -8,10 +8,11 @@ using Microsoft.Xna.Framework.Content;
 using Space.ScreenManagement.Screens.Helper;
 using Microsoft.Xna.Framework;
 using Space.ScreenManagement.Screens.Elements.Hud.HudComponents;
+using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudContent
+    class HudContent : IHudChildElement
     {
 
         private const int StandardWidth = 302;
@@ -92,7 +93,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
                 Position.Y + BorderAround,
                 Width - 2 * BorderSide - 2 * BorderAround,
                 Height - 2 * BorderAround,
-                HudColors.BackgroundBox * 0.8f);
+                HudColors.BackgroundBox);
 
             _spriteBatch.End();
 
