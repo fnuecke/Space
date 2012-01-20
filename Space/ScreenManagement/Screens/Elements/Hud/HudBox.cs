@@ -6,10 +6,11 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 using Space.Control;
+using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudBox
+    class HudBox : IHudParentElement
     {
         /// <summary>
         /// The local client, used to fetch player's position and radar range.
@@ -32,6 +33,11 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         private HudSpacer _spacerBottom;
         private HudHeader _footer;
 
+        /// <summary>
+        /// The current top-left position of the parent element.
+        /// </summary>
+        private Point _position = new Point(0, 0);
+
         public HudBox(GameClient client)
         {
             _client = client;
@@ -51,16 +57,36 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spriteBatch = spriteBatch;
 
             _header.LoadContent(spriteBatch, content);
-            _header.Position = new Point(100, 100);
             _spacerTop.LoadContent(spriteBatch, content);
-            _spacerTop.Position = new Point(_header.Position.X, _header.Position.Y + _header.Height);
             _bgContent.LoadContent(spriteBatch, content);
-            _bgContent.Position = new Point(_spacerTop.Position.X, _spacerTop.Position.Y + _spacerTop.GetHeight());
             _spacerBottom.LoadContent(spriteBatch, content);
-            _spacerBottom.Position = new Point(_bgContent.Position.X, _bgContent.Position.Y + _bgContent.Height);
             _footer.LoadContent(spriteBatch, content);
+
+            SetPosition(new Point(100, 100));
+        }
+
+        // Implementation of IHudParentElement interface
+        public void SetPosition(Point newPosition)
+        {
+            _position = newPosition;
+            _header.Position = _position;
+            _spacerTop.Position = new Point(_header.Position.X, _header.Position.Y + _header.Height);
+            _bgContent.Position = new Point(_spacerTop.Position.X, _spacerTop.Position.Y + _spacerTop.GetHeight());
+            _spacerBottom.Position = new Point(_bgContent.Position.X, _bgContent.Position.Y + _bgContent.Height);
             _footer.Position = new Point(_spacerBottom.Position.X, _spacerBottom.Position.Y + _spacerBottom.GetHeight());
         }
+
+        // Implementation of IHudParentElement interface
+        public int GetHeight() {
+            int height = 0;
+            height += _header.Height;
+            height += _spacerTop.GetHeight();
+            height += _bgContent.Height;
+            height += _spacerBottom.GetHeight();
+            height += _footer.Height;
+            return height;
+        }
+
 
         /// <summary>
         /// Render the HUD box with the current values.
