@@ -141,24 +141,24 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override void HandleMessage(ValueType message)
+        public override void HandleSystemMessage<T>(ref T message)
         {
             if (message is CellStateChanged)
             {
-                var info = (CellStateChanged)message;
+                var info = (CellStateChanged)(ValueType)message;
                 if (info.State && info.X == 0 && info.Y == 0)
                 {
                     const int cellSize = CellSystem.CellSize;
                     for (var i = 0; i < 10; i++)
                     {
-                        var spawnPoint = new Vector2(60000+i* 500, 62500-i*600);
+                        var spawnPoint = new Vector2(60000 + i * 500, 62500 - i * 600);
                         var order =
                             new AiComponent.AiCommand(
-                                new Vector2(cellSize*info.X + (cellSize >> 1), cellSize*info.Y + (cellSize >> 1)),
+                                new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
                                 cellSize, AiComponent.Order.Guard);
                         var faction = Factions.Player5;
                         _entities.Add(Manager.EntityManager.AddEntity(
-                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],faction,spawnPoint ,order
+                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
                             )));
                     }
                 }

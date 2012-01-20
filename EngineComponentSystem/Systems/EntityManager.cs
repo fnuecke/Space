@@ -173,6 +173,22 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
+        #region Messaging
+
+        /// <summary>
+        /// Inform all entities in this system of a message.
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        public void SendEntityMessage<T>(ref T message) where T : struct
+        {
+            foreach (var entity in _entityMap.Values)
+            {
+                entity.SendMessage(ref message);
+            }
+        }
+
+        #endregion
+
         #region Event dispatching
 
         private void OnAdded(EntityEventArgs e)

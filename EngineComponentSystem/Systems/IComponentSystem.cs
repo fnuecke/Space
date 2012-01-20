@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -114,7 +113,13 @@ namespace Engine.ComponentSystem.Systems
         #endregion
 
         #region Messaging
-        
+
+        /// <summary>
+        /// Inform all components in this system of a message.
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        void SendComponentMessage<T>(ref T message) where T : struct;
+
         /// <summary>
         /// Inform a system of a message that was sent by another system.
         /// 
@@ -123,7 +128,7 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <param name="message">The sent message.</param>
-        void HandleMessage(ValueType message);
+        void HandleSystemMessage<T>(ref T message) where T : struct;
 
         #endregion
     }

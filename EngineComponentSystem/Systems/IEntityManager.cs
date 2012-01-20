@@ -94,5 +94,15 @@ namespace Engine.ComponentSystem.Systems
         bool Contains(int entityUid);
 
         #endregion
+
+        #region Messaging
+
+        /// <summary>
+        /// Inform all entities in this system of a message.
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        void SendEntityMessage<T>(ref T message) where T : struct;
+
+        #endregion
     }
 }

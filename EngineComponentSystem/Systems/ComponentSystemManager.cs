@@ -185,11 +185,23 @@ namespace Engine.ComponentSystem.Systems
         /// Send a message to all systems of this component system manager.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public void SendMessage(ValueType message)
+        public void SendSystemMessage<T>(ref T message) where T : struct
         {
             foreach (var system in _systems)
             {
-                system.HandleMessage(message);
+                system.HandleSystemMessage(ref message);
+            }
+        }
+
+        /// <summary>
+        /// Send a message to all components of this component system manager.
+        /// </summary>
+        /// <param name="message">The message to send.</param>
+        public void SendComponentMessage<T>(ref T message) where T : struct
+        {
+            foreach (var system in _systems)
+            {
+                system.SendComponentMessage(ref message);
             }
         }
 
