@@ -59,6 +59,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             BorderSide = StandardBorderSide;
             BorderAround = StandardBorderAround;
             Position = new Point(100, 100);
+
         }
 
         /// <summary>
@@ -68,7 +69,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _content = content;
             _spriteBatch = spriteBatch;
-            _basicForms = new BasicForms(_spriteBatch);
+            _basicForms = new BasicForms(_spriteBatch, _client);
             _spaceForms = new SpaceForms(_spriteBatch);
         }
 

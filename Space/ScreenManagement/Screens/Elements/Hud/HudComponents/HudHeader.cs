@@ -70,7 +70,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _content = content;
             _spriteBatch = spriteBatch;
-            _basicForms = new BasicForms(_spriteBatch);
+            _basicForms = new BasicForms(_spriteBatch, _client);
 
             font = _content.Load<SpriteFont>("Fonts/strasua_13");
         }
@@ -100,6 +100,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             // draw the title string
             _spriteBatch.DrawString(font, "Guybrush Threepwood", new Vector2(Position.X + BorderSide + 2, Position.Y + 3), HudColors.FontDark);
+
+            _basicForms.GradientRectangle(Position.X + 50, Position.Y + 100, 100, 50, new[] { Color.Red, Color.Blue }, new[] {0.4f, 0.6f});
 
             _spriteBatch.End();
         }

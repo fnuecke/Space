@@ -138,7 +138,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _content = content;
             _spriteBatch = spriteBatch;
-            _basicForms = new BasicForms(_spriteBatch);
+            _basicForms = new BasicForms(_spriteBatch, _client);
 
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
             _position = new Point ((viewport.Width - _width) / 2, (viewport.Height - _height) / 2 - 40);

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Space.Control;
 
 namespace Space.ScreenManagement.Screens.Helper {
     /// <summary>
@@ -11,6 +12,11 @@ namespace Space.ScreenManagement.Screens.Helper {
     /// </summary>
     class BasicForms
     {
+
+        /// <summary>
+        /// The local client, used to fetch player's position and radar range.
+        /// </summary>
+        private readonly GameClient _client;
 
         /// <summary>
         /// A Texture2D object that holds an 1x1 pixel which is used for the elements.
@@ -22,12 +28,17 @@ namespace Space.ScreenManagement.Screens.Helper {
         /// </summary>
         private SpriteBatch _spriteBatch;
 
+        private Engine.Graphics.GradientRectangle _gradient;
+
         /// <summary>
         /// Constructor.
         /// </summary>
-        public BasicForms(SpriteBatch spriteBatch)
+        public BasicForms(SpriteBatch spriteBatch, GameClient client)
         {
             _spriteBatch = spriteBatch;
+            _client = client;
+
+            _gradient = new Engine.Graphics.GradientRectangle(_client.Game);
             _t = new Texture2D(_spriteBatch.GraphicsDevice, 1, 1);
             _t.SetData(new[] { Color.White });
         }
@@ -61,14 +72,16 @@ namespace Space.ScreenManagement.Screens.Helper {
             _spriteBatch.Draw(_t, new Rectangle(x, y, width, height), color);
         }
 
-        public void GradientRectangle() { 
-//            var gr = new GradientRectangle(game); // irgendwo in nem feld halten, nicht immer neu anlegen.
-//            gr.SetCenter(512, 512);
-//            gr.SetSize(512);
-//            gr.SetGradients(new[] { Color.Yellow, Color.Blue });
-//            // oder
-//            gr.SetGradients(new[] { Color.Red, Color.Green, Color.Blue }, new[] { 0.5f, 0.7f, 0.9f });
-//            gr.Draw()
+        public void GradientRectangle(int x, int y, int width, int height, Color color1, Color color2) {
+            GradientRectangle(x, y, width, height, new[] { color1, color2 }, new[] { 0.0f, 1.0f });
+        }
+
+        public void GradientRectangle(int x, int y, int width, int height, Color[] colors, float[] range)
+        {
+            _gradient.SetCenter(x - width / 2, y - height / 2);
+            _gradient.SetSize(width, height);
+            _gradient.SetGradients(colors, range);
+            _gradient.Draw();
         }
     }
 }
