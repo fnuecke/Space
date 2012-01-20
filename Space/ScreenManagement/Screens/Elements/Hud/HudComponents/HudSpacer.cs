@@ -48,7 +48,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <summary>
         /// Standard value for the size of the outter border.
         /// </summary>
-        private const int StandardOutterBorder = 1;
+        private const int StandardOuterBorder = 1;
 
         /// <summary>
         /// Standard value for the size of the inner border.
@@ -114,9 +114,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         public int LengthLineSide { get; set; }
 
         /// <summary>
-        /// The size of the outter border
+        /// The size of the outer border
         /// </summary>
-        public int OutterBorder { get; set; }
+        public int OuterBorder { get; set; }
 
         /// <summary>
         /// The size of the inner border
@@ -139,7 +139,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <returns>The height of this element.</returns>
         public int GetHeight()
         {
-            return OutterBorder + ThicknessSpacer + InnerBorder;
+            return OuterBorder + ThicknessSpacer + InnerBorder;
         }
 
         #endregion
@@ -158,8 +158,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             // set the standard values into the field.
             Width = StandardWidth;
-            _height = ThicknessSpacer + StandardOutterBorder + StandardInnerBorder;
-            OutterBorder = StandardOutterBorder;
+            _height = ThicknessSpacer + StandardOuterBorder + StandardInnerBorder;
+            OuterBorder = StandardOuterBorder;
             InnerBorder = StandardInnerBorder;
             ThicknessSpacer = StandardThicknessSpacer;
             ThicknessLineSide = StandardThicknessLineSide;
@@ -191,7 +191,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             // prepare some values which are important to get the correct draw
             // position independent of the selected mode.
             int yMove = ThicknessSpacer;
-            int borderTop = OutterBorder;
+            int borderTop = OuterBorder;
             if (_mode == Mode.Bottom)
             {
                 yMove = -LengthLineSide;
@@ -199,7 +199,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             }
             else if (_mode == Mode.Center)
             {
-                borderTop = (InnerBorder + OutterBorder) / 2;
+                borderTop = (InnerBorder + OuterBorder) / 2;
             }
 
             // draw the horizontal line
@@ -208,7 +208,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
                 Position.Y + borderTop,
                 Width,
                 ThicknessSpacer,
-                HudColors.Lines);
+                HudColors.Lines * 0.9f);
 
             // draw the side lines
             if (_mode != Mode.Center)
@@ -218,14 +218,14 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
                     Position.Y + borderTop + yMove,
                     ThicknessLineSide,
                     LengthLineSide,
-                    HudColors.Lines);
+                    HudColors.Lines * 0.9f);
 
                 _basicForms.FillRectangle(
                     Position.X + Width - ThicknessLineSide,
                     Position.Y + borderTop + yMove,
                     ThicknessLineSide,
                     LengthLineSide,
-                    HudColors.Lines);
+                    HudColors.Lines * 0.9f);
             }
 
             _spriteBatch.End();

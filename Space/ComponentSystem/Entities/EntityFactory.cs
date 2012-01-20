@@ -303,7 +303,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new CollidableSphere(radius, Factions.None.ToCollisionGroup()));
             entity.AddComponent(new CollisionDamage(1, float.MaxValue));
 
-            entity.AddComponent(new Detectable("Textures/radar_sun"));
+            entity.AddComponent(new Detectable("Textures/Radar/Icons/radar_sun"));
             
             entity.AddComponent(new SunRenderer(radius));
 
@@ -357,7 +357,7 @@ namespace Space.ComponentSystem.Entities
                 entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
             }
 
-            entity.AddComponent(new Detectable("Textures/radar_planet"));
+            entity.AddComponent(new Detectable("Textures/Radar/Icons/radar_planet"));
             entity.AddComponent(new PlanetRenderer(texture, planetTint, radius, atmosphereTint));
 
             return entity;

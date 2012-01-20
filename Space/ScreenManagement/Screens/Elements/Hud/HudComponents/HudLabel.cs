@@ -42,6 +42,16 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private const int StandardBorderSide = 1;
 
+        /// <summary>
+        /// The standard value for the status whether the first element should be displayed or not.
+        /// </summary>
+        private const Boolean StandardDisplay1stElement = true;
+
+        /// <summary>
+        /// The standard value for the status whether the second element should be displayed or not.
+        /// </summary>
+        private const Boolean StandardDisplay2ndElement = true;
+
         #endregion
 
         #region Fields
@@ -103,6 +113,26 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         // Implementation of IHudChildElement interface
         public Point Position { get; set; }
 
+        /// <summary>
+        /// Status whether the first element should be displayed or not.
+        /// </summary>
+        public Boolean Display1stElement { get; set; }
+
+        /// <summary>
+        /// Status whether the second element should be displayed or not.
+        /// </summary>
+        public Boolean Display2ndElement { get; set; }
+
+        /// <summary>
+        /// Text that is displayed in the left label
+        /// </summary>
+        public String TextLabelLeft { get; set; }
+
+        /// <summary>
+        /// Text that is displayed in the right label
+        /// </summary>
+        public String TextLabelRight { get; set; }
+
         #endregion
 
         #region Initialization
@@ -121,7 +151,11 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             Width2ndElement = StandardWidth2ndElement;
             WidthGap = StandardWidthGap;
             BorderSide = StandardBorderSide;
+            Display1stElement = StandardDisplay1stElement;
+            Display2ndElement = StandardDisplay2ndElement;
             Position = new Point(0, 0);
+            TextLabelLeft = "";
+            TextLabelRight = "";
         }
 
         /// <summary>
@@ -148,25 +182,36 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _spriteBatch.Begin();
 
-            // draw the first rectangle
-            _basicForms.GradientRectangle(
-                Position.X + BorderSide,
-                Position.Y,
-                Width - 2 * BorderSide - WidthGap - Width2ndElement,
-                Height,
-                new[] { HudColors.GreenDarkGradientLight, HudColors.GreenDarkGradientDark }, new[] { 0.2f, 0.8f });
+            if (Display1stElement)
+            {
+                // draw the first rectangle
+                _basicForms.GradientRectangle(
+                    Position.X + BorderSide,
+                    Position.Y,
+                    Width - 2 * BorderSide - WidthGap - Width2ndElement,
+                    Height,
+                    new[] { HudColors.GreenDarkGradientLight * 0.85f, HudColors.GreenDarkGradientDark * 0.95f },
+                    new[] { 0.2f, 0.8f });
+
+                // draw the title string
+                _spriteBatch.DrawString(_font, TextLabelLeft, new Vector2(Position.X + BorderSide + 5, Position.Y + 3), HudColors.FontDark);
+            }
 
             // draw the second rectangle
-            _basicForms.GradientRectangle(
-                Position.X + Width - BorderSide - Width2ndElement,
-                Position.Y,
-                Width2ndElement,
-                Height,
-                new[] { HudColors.GreenDarkGradientLight, HudColors.GreenDarkGradientDark }, new[] { 0.2f, 0.8f });
+            if (Display2ndElement)
+            {
+                _basicForms.GradientRectangle(
+                    Position.X + Width - BorderSide - Width2ndElement,
+                    Position.Y,
+                    Width2ndElement,
+                    Height,
+                    new[] { HudColors.BlueGradientLight * 0.5f, HudColors.BlueGradientDark * 0.7f },
+                    new[] { 0.2f, 0.8f });
 
-            // draw the title string
-            _spriteBatch.DrawString(_font, "Guybrush Threepwood", new Vector2(Position.X + BorderSide + 2, Position.Y + 3), HudColors.FontDark);
-            _spriteBatch.DrawString(_font, "Pirate", new Vector2(Position.X + Width - Width2ndElement - BorderSide + 2, Position.Y + 3), HudColors.FontLight);
+                // draw the sub string
+                var size = _font.MeasureString(TextLabelRight);
+                _spriteBatch.DrawString(_font, TextLabelRight, new Vector2(Position.X + Width - BorderSide - Width2ndElement / 2 - size.X / 2, Position.Y + 3), HudColors.FontLight);
+            }
 
             _spriteBatch.End();
         }

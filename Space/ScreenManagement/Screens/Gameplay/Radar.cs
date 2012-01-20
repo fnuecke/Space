@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
@@ -19,7 +20,42 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// </summary>
     sealed class Radar
     {
+        #region Types
+
+        /// <summary>
+        /// Readable direction indexes for the radar images.
+        /// </summary>
+        private enum RadarDirection
+        {
+            Top,
+            Left,
+            Right,
+            Bottom,
+            TopLeft,
+            TopRight,
+            BottomLeft,
+            BottomRight
+        }
+
+        #endregion
+
         #region Constants
+
+        /// <summary>
+        /// Width of a single radar icon.
+        /// </summary>
+        private const int _radarIconWidth = 48;
+
+        /// <summary>
+        /// Height of a single radar icon.
+        /// </summary>
+        private const int _radarIconHeight = 48;
+
+        /// <summary>
+        /// Vertical offset of the distance number display relative to the
+        /// center of the radar icons.
+        /// </summary>
+        private const int _distanceOffset = 5;
 
         /// <summary>
         /// Size of the radar border in pixel.
@@ -49,7 +85,22 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Background image for radar icons.
         /// </summary>
-        private Texture2D _radarBackground;
+        private Texture2D[] _radarDirection = new Texture2D[8];
+
+        /// <summary>
+        /// Background for rendering the distance to a target.
+        /// </summary>
+        private Texture2D _radarDistance;
+
+        /// <summary>
+        /// Texture marking an icon as targeted.
+        /// </summary>
+        private Texture2D _radarTarget;
+
+        /// <summary>
+        /// Font used to render the distance on radar icons.
+        /// </summary>
+        private SpriteFont _distanceFont;
 
         /// <summary>
         /// Helper class for drawing basic forms.
@@ -81,7 +132,18 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _spriteBatch = spriteBatch;
 
-            _radarBackground = content.Load<Texture2D>("Textures/radar_background");
+            _radarDirection[(int)RadarDirection.Top] = content.Load<Texture2D>("Textures/Radar/top");
+            _radarDirection[(int)RadarDirection.Left] = content.Load<Texture2D>("Textures/Radar/left");
+            _radarDirection[(int)RadarDirection.Right] = content.Load<Texture2D>("Textures/Radar/right");
+            _radarDirection[(int)RadarDirection.Bottom] = content.Load<Texture2D>("Textures/Radar/bottom");
+            _radarDirection[(int)RadarDirection.TopLeft] = content.Load<Texture2D>("Textures/Radar/top_left");
+            _radarDirection[(int)RadarDirection.TopRight] = content.Load<Texture2D>("Textures/Radar/top_right");
+            _radarDirection[(int)RadarDirection.BottomLeft] = content.Load<Texture2D>("Textures/Radar/bottom_left");
+            _radarDirection[(int)RadarDirection.BottomRight] = content.Load<Texture2D>("Textures/Radar/bottom_right");
+            _radarDistance = content.Load<Texture2D>("Textures/Radar/distance");
+            _radarTarget = content.Load<Texture2D>("Textures/Radar/target");
+            _distanceFont = content.Load<SpriteFont>("Fonts/visitor");
+
             _basicForms = new BasicForms(_spriteBatch, _client);
         }
 
@@ -132,15 +194,15 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             // Get the texture origin (middle of the texture).
             Vector2 backgroundOrigin;
-            backgroundOrigin.X = _radarBackground.Width / 2.0f;
-            backgroundOrigin.Y = _radarBackground.Height / 2.0f;
+            backgroundOrigin.X = _radarIconWidth / 2.0f;
+            backgroundOrigin.Y = _radarIconHeight / 2.0f;
 
             // Get bounds in which to display the icon.
-            Rectangle screenBounds = viewport.Bounds;
+            var screenBounds = viewport.Bounds;
 
             // Get the inner bounds in which to display the icon, i.e. minus
             // half the size of the icon, so deflate by that.
-            Rectangle innerBounds = screenBounds;
+            var innerBounds = screenBounds;
             innerBounds.Inflate(-(int)backgroundOrigin.X, -(int)backgroundOrigin.Y);
 
             // Now this is the tricky part: we take the minimal bounding sphere
@@ -167,7 +229,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _basicForms.FillRectangle(_radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
 
             // ... and the border of the radar a bit lighter.
-            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.3f);
+            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.1f);
 
             // Color the background of the radar red if health is low...
             float healthPercent = info.Health / info.MaxHealth;
@@ -199,6 +261,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // viewport. Get the position of the detectable inside our
                 // viewport. This will also serve as our direction vector.
                 var direction = neighborTransform.Translation - position;
+                float distance = direction.Length();
 
                 // Check if the object's inside. If so, skip it.
                 if (screenBounds.Contains((int)(direction.X + center.X), (int)(direction.Y + center.Y)))
@@ -216,7 +279,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
                 // We'll make stuff far away a little less opaque. First get
                 // the linear relative distance.
-                float ld = direction.LengthSquared() / radarRangeSquared;
+                float ld = distance / radarRange;
                 // Then apply a exponential fall-off, and make it cap a little
                 // early to get the 100% alpha when nearby, not only when
                 // exactly on top of the object ;)
@@ -226,7 +289,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 color *= ld;
 
                 // Get the direction to the detectable and normalize it.
-                direction.Normalize();
+                direction /= distance;
 
                 // Figure out where we want to position our icon. As described
                 // above, we first get the point on the surrounding circle,
@@ -255,6 +318,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     iconPosition.X *= scale;
                     iconPosition.Y *= scale;
                 }
+                
+                // Adjust the distance to an object such that it is the
+                // distance to the screen edge, if so desired.
+                if (Settings.Instance.RadarDistanceFromBorder)
+                {
+                    distance -= iconPosition.Length();
+                }
 
                 // Adjust to the center.
                 iconPosition += center;
@@ -269,8 +339,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 iconPosition.Y = MathHelper.Clamp(iconPosition.Y, innerBounds.Top, innerBounds.Bottom);
 
                 // And, finally, draw it. First the background.
-                _spriteBatch.Draw(_radarBackground, iconPosition, null, color, 0,
-                    backgroundOrigin, 1, SpriteEffects.None, 0);
+                _spriteBatch.Draw(_radarDirection[(int)GetRadarDirection(ref iconPosition, ref innerBounds)],
+                    iconPosition, null,
+                    color, 0, backgroundOrigin, ld, SpriteEffects.None, 0);
 
                 // Get the texture origin (middle of the texture).
                 Vector2 origin;
@@ -278,8 +349,18 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 origin.Y = neighborDetectable.Texture.Height / 2.0f;
 
                 // And draw that, too.
-                _spriteBatch.Draw(neighborDetectable.Texture, iconPosition, null, color, 0,
-                    origin, 1, SpriteEffects.None, 0);
+                _spriteBatch.Draw(neighborDetectable.Texture, iconPosition, null,
+                    Color.White * ld, 0, origin, ld, SpriteEffects.None, 0);
+
+                // Draw the distance to the object.
+                _spriteBatch.Draw(_radarDistance, iconPosition, null,
+                    Color.White * ld, 0, backgroundOrigin, ld, SpriteEffects.None, 0);
+
+                string formattedDistance = FormatDistance(distance);
+                origin.X = _distanceFont.MeasureString(formattedDistance).X / 2f;
+                origin.Y = -_distanceOffset;
+                _spriteBatch.DrawString(_distanceFont, formattedDistance, iconPosition,
+                    Color.White * ld, 0, origin, ld, SpriteEffects.None, 0);
             }
 
             // Clear the list for the next run.
@@ -287,6 +368,100 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             // Done drawing.
             _spriteBatch.End();
+        }
+
+        /// <summary>
+        /// Gets the actual direction background to display. This checks which
+        /// borders the icon touches and returns the according direction.
+        /// </summary>
+        /// <param name="position">The icon's position.</param>
+        /// <param name="bounds">The bounds.</param>
+        /// <returns>The direction of the border contact of the icon.</returns>
+        private RadarDirection GetRadarDirection(ref Vector2 position, ref Rectangle bounds)
+        {
+            if (position.X == bounds.Left)
+            {
+                if (position.Y == bounds.Top)
+                {
+                    return RadarDirection.TopLeft;
+                }
+                else if (position.Y == bounds.Bottom)
+                {
+                    return RadarDirection.BottomLeft;
+                }
+                else
+                {
+                    return RadarDirection.Left;
+                }
+            }
+            else if (position.X == bounds.Right)
+            {
+                if (position.Y == bounds.Top)
+                {
+                    return RadarDirection.TopRight;
+                }
+                else if (position.Y == bounds.Bottom)
+                {
+                    return RadarDirection.BottomRight;
+                }
+                else
+                {
+                    return RadarDirection.Right;
+                }
+            }
+            else
+            {
+                if (position.Y == bounds.Top)
+                {
+                    return RadarDirection.Top;
+                }
+                else if (position.Y == bounds.Bottom)
+                {
+                    return RadarDirection.Bottom;
+                }
+                else
+                {
+                    // Should not be possible!
+                    throw new InvalidOperationException("Wait, wut?");
+                }
+            }
+        }
+
+        /// <summary>
+        /// List of SI units, used for distance formatting.
+        /// </summary>
+        private static readonly string[] _unitNames = new[] { "", "k", "m", "g", "t", "p", "e", "z", "y" };
+
+        /// <summary>
+        /// Formats a distance to a string to be displayed in a radar icon.
+        /// </summary>
+        /// <param name="distance">The distance to format.</param>
+        /// <returns>The formatted distance.</returns>
+        private string FormatDistance(float distance)
+        {
+            // Divide by thousand until we're blow it, and count the number
+            // of divisions to get the unit.
+            int unit = 0;
+            while (distance > 1000)
+            {
+                ++unit;
+                distance /= 1000;
+            }
+            string unitName = "?";
+            if (unit < _unitNames.Length)
+            {
+                unitName = _unitNames[unit];
+            }
+            // Don't show the post-comma digit if we're above 100 of the
+            // current unit.
+            if (distance > 100)
+            {
+                return string.Format("{0:f0}{1}", distance, unitName);
+            }
+            else
+            {
+                return string.Format("{0:f1}{1}", distance, unitName);
+            }
         }
 
         #endregion

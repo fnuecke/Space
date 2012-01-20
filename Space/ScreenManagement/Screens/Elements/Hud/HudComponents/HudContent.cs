@@ -150,7 +150,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
                 Position.Y + BorderAround,
                 Width - 2 * BorderSide - 2 * BorderAround,
                 Height - 2 * BorderAround,
-                HudColors.BackgroundBox);
+                HudColors.BackgroundBox * 0.7f);
 
             _spriteBatch.End();
         }
