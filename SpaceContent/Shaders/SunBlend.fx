@@ -1,5 +1,5 @@
 uniform extern texture ScreenTexture;
-uniform extern float ScaleFactor = 1.1;
+uniform extern float ScaleFactor = 1.075;
 
 // ------------------------------------------------------------------------- //
 

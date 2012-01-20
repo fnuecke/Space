@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
@@ -179,11 +178,11 @@ namespace Space.ComponentSystem.Systems
             var gaussian = new Ziggurat(random);
 
             // Create our sun.
-            float sunMass = _constaints.SampleSunMass(gaussian);
+            float sunRadius = _constaints.SampleSunRadius(gaussian);
+            float sunMass = _constaints.SunMassFactor * 4f / 3f * (float)System.Math.PI * sunRadius * sunRadius * sunRadius;;
             Entity sun = EntityFactory.CreateSun(
-                radius: 512,
+                radius: sunRadius,
                 position: center,
-                type: AstronomicBodyType.Sun,
                 mass: sunMass);
             list.Add(Manager.EntityManager.AddEntity(sun));
 
@@ -233,25 +232,21 @@ namespace Space.ComponentSystem.Systems
             float planetOrbitMinorRadius = (float)System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * (1 - planetOrbitEccentricity * planetOrbitEccentricity));
             float planetOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SamplePlanetOrbitAngleDeviation(gaussian));
             float planetPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * planetOrbitMajorRadius * 3 /* < slowing factor */ / sunMass));
-            float planetMass = _constaints.MassPerVolume * 4f / 3f * (float)System.Math.PI * planetRadius * planetRadius * planetRadius;
+            float planetMass = _constaints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * planetRadius * planetRadius * planetRadius;
 
             var planet = EntityFactory.CreateOrbitingAstronomicalObject(
                 texture: "Textures/rock_07",
                 planetTint: Color.Lerp(Color.DarkOliveGreen, Color.White, 0.5f),
                 radius: planetRadius,
-                rotationDirection: (float)(2 * System.Math.PI * random.NextDouble()),
                 atmosphereTint: Color.LightSkyBlue,
+                rotationSpeed: (float)gaussian.NextSampleClamped(System.Math.PI / 6000, 0.0000125) * System.Math.Sign(random.NextDouble() - 0.5),
                 center: sun,
                 majorRadius: planetOrbitMajorRadius,
                 minorRadius: planetOrbitMinorRadius,
                 angle: planetOrbitAngle,
                 period: planetPeriod,
                 periodOffset: (float)(2 * System.Math.PI * random.NextDouble()),
-                type: AstronomicBodyType.Planet,
                 mass: planetMass);
-
-            var spin = planet.GetComponent<Spin>();
-            spin.Value = 0.001f + (float)random.NextDouble() * 0.0005f;
 
             list.Add(Manager.EntityManager.AddEntity(planet));
 
@@ -263,8 +258,10 @@ namespace Space.ComponentSystem.Systems
             // And track the radii. Start outside our planet.
             float previousMoonOrbit = (_constaints.PlanetRadiusMean + _constaints.PlanetRadiusStdDev) * 1.5f;
             if (_constaints.SampleStation(random))
-                CreateStation(gaussian, planet, planetMass, planetRadius, list);
-                // The create as many as we sample.
+            {
+                CreateStation(random, gaussian, planet, planetMass, planetRadius, list);
+            }
+            // The create as many as we sample.
             for (int j = 0; j < numMoons; j++)
             {
                 previousMoonOrbit = CreateMoon(random, gaussian, planet, planetMass, previousMoonOrbit, dominantMoonOrbitAngle, list);
@@ -274,6 +271,7 @@ namespace Space.ComponentSystem.Systems
         }
 
         private void CreateStation(
+            IUniformRandom random,
             IGaussianRandom gaussian,
             Entity planet,
             float planetMass,
@@ -283,12 +281,16 @@ namespace Space.ComponentSystem.Systems
             var faction = Factions.Player5;
             var StationOrbit = planetRadius + _constaints.SampleStationOrbit(gaussian);
             var stationPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(StationOrbit * StationOrbit * StationOrbit / planetMass));
-            var station = EntityFactory.CreateStation(StationOrbit, faction, "Textures/Stolen/Ships/sensor_array", planet, stationPeriod);
-            var spin = station.GetComponent<Spin>();
-            spin.Value = ( (float)Math.PI)/stationPeriod  ;
+            var station = EntityFactory.CreateStation(
+                texture: "Textures/Stolen/Ships/sensor_array",
+                center: planet,
+                orbitRadius: StationOrbit,
+                period: stationPeriod,
+                faction: faction);
 
             list.Add(Manager.EntityManager.AddEntity(station));
         }
+
         private float CreateMoon(
             IUniformRandom random,
             IGaussianRandom gaussian,
@@ -305,25 +307,21 @@ namespace Space.ComponentSystem.Systems
             float moonOrbitMinorRadius = (float)System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * (1 - moonOrbitEccentricity * moonOrbitEccentricity));
             float moonOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SampleMoonOrbitAngleDeviation(gaussian));
             float moonPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * moonOrbitMajorRadius / planetMass));
-            float moonMass = _constaints.MassPerVolume * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
-
+            float moonMass = _constaints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
+            
             var moon = EntityFactory.CreateOrbitingAstronomicalObject(
                 texture: "Textures/rock_02",
                 planetTint: Color.White,
                 radius: moonRadius,
-                rotationDirection: (float)(2 * System.Math.PI * random.NextDouble()),
                 atmosphereTint: Color.Transparent,
+                rotationSpeed: (float)gaussian.NextSampleClamped(System.Math.PI / 20000, 0.0000025) * System.Math.Sign(random.NextDouble() - 0.5),
                 center: planet,
                 majorRadius: moonOrbitMajorRadius,
                 minorRadius: moonOrbitMinorRadius,
                 angle: moonOrbitAngle,
                 period: moonPeriod,
                 periodOffset: (float)(2 * System.Math.PI * random.NextDouble()),
-                type: AstronomicBodyType.Moon,
                 mass: moonMass);
-
-            var spin = moon.GetComponent<Spin>();
-            spin.Value = 0.001f + (float)random.NextDouble() * 0.0005f;
 
             list.Add(Manager.EntityManager.AddEntity(moon));
 

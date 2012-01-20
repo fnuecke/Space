@@ -4,10 +4,11 @@
     <SolarSystemMultiSunChance>0.01</SolarSystemMultiSunChance>
     <SolarSystemMaxSuns>3</SolarSystemMaxSuns>
 
-    <SunMassMean>125000</SunMassMean>
-    <SunMassStdDev>25000</SunMassStdDev>
-
-    <MassPerVolume>0.000025</MassPerVolume>
+    <SunRadiusMean>768</SunRadiusMean>
+    <SunRadiusStdDev>256</SunRadiusStdDev>
+    
+    <SunMassFactor>0.0002</SunMassFactor>
+    <PlanetMassFactor>0.000025</PlanetMassFactor>
 
     <PlanetsMean>4</PlanetsMean>
     <PlanetsStdDev>4</PlanetsStdDev>

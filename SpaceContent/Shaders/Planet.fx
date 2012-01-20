@@ -1,12 +1,15 @@
-uniform extern texture ScreenTexture;
-uniform extern float DisplaySize;
-uniform extern float TextureSize;
+uniform extern texture SurfaceTexture;
+uniform extern float4 SurfaceTint = 1;
+uniform extern float4 AtmosphereTint = 1;
+uniform extern float2 LightDirection = 0;
+
+uniform extern float RenderRadius;
+uniform extern float EmbossScale;
 
 uniform extern float2 TextureOffset = 0;
 uniform extern float TextureScale = 1;
-uniform extern float2 LightDirection = 0;
-uniform extern float4 PlanetTint = 1;
-uniform extern float4 AtmosphereTint = 1;
+
+// ------------------------------------------------------------------------- //
 
 const float relativeAtmosphereArea = 0.05;
 const float relativeOuterAtmosphere = 0.1;
@@ -15,9 +18,11 @@ const float relativeInnerAtmosphere = 0.4;
 const float outerAtmosphereAlpha = 0.45;
 const float innerAtmosphereAlpha = 0.35;
 
+// ------------------------------------------------------------------------- //
+
 SamplerState textureSampler = sampler_state
 {
-    Texture = <ScreenTexture>;
+    Texture = <SurfaceTexture>;
     MipFilter = Linear;
     MagFilter = Anisotropic;
     MinFilter = Anisotropic;
@@ -25,6 +30,21 @@ SamplerState textureSampler = sampler_state
     AddressU = Wrap;
     AddressV = Wrap;
 };
+
+// ------------------------------------------------------------------------- //
+
+struct VertexShaderData
+{
+    float4 Position : POSITION0;
+    float2 TextureCoordinate : TEXCOORD0;
+};
+
+VertexShaderData VertexShaderFunction(VertexShaderData input)
+{
+    return input;
+}
+
+// ------------------------------------------------------------------------- //
 
 // Used to get dark tones for shadow rendering.
 float3 threshold_low(float3 rgb, float level)
@@ -54,11 +74,13 @@ float3 threshold_high(float3 rgb, float level)
     }
 }
 
+// ------------------------------------------------------------------------- //
+
 // Renders the planet surface.
-float4 PlanetShaderFunction(float2 uv : TEXCOORD0) : COLOR
+float4 PlanetShaderFunction(VertexShaderData input) : COLOR0
 {
-    // Map position to [-1,1].
-    float2 pOuter = 2 * uv - 1;
+    // Outer point.
+    float2 pOuter = input.TextureCoordinate;
     // Also get a version mapped down even further, to allow the
     // atmosphere to overflow the planet in the freed area.
     float2 pInner = pOuter / (1 - relativeAtmosphereArea);
@@ -85,13 +107,12 @@ float4 PlanetShaderFunction(float2 uv : TEXCOORD0) : COLOR
         float2 uvSphere = (pInner * f + 1) / 2 + TextureOffset;
 
         // Actual color at position.
-        float4 color = tex2D(textureSampler, uvSphere / TextureScale) * PlanetTint;
+        float4 color = tex2D(textureSampler, uvSphere / TextureScale) * SurfaceTint;
 
         // Emboss effect.
         float4 relief = float4(0.5, 0.5, 0.5, 1);
-        float embossOffset = 1.0 / TextureSize;
-        relief.rgb -= tex2D(textureSampler, (uvSphere + LightDirection * embossOffset) / TextureScale).rgb * 2;
-        relief.rgb += tex2D(textureSampler, (uvSphere - LightDirection * embossOffset) / TextureScale).rgb * 2;
+        relief.rgb -= tex2D(textureSampler, (uvSphere + LightDirection * EmbossScale) / TextureScale).rgb * 2;
+        relief.rgb += tex2D(textureSampler, (uvSphere - LightDirection * EmbossScale) / TextureScale).rgb * 2;
         // Make in monochrome.
         relief.rgb = (relief.r + relief.g + relief.b) / 3.0;
 
@@ -113,16 +134,18 @@ float4 PlanetShaderFunction(float2 uv : TEXCOORD0) : COLOR
         color.rgb *= saturate(rOffset);
 
         // Alpha for smoother border.
-        float alpha = clamp((1 - rInner) * DisplaySize, 0, 1);
+        float alpha = clamp((1 - rInner) * RenderRadius, 0, 1);
         return color * alpha;
     }
 }
 
+// ------------------------------------------------------------------------- //
+
 // Renders the atmosphere on top of the planet.
-float4 AtmosphereShaderFunction(float2 uv : TEXCOORD0) : COLOR
+float4 AtmosphereShaderFunction(VertexShaderData input) : COLOR0
 {
-    // Map position to [-1,1].
-    float2 pOuter = 2 * uv - 1;
+    // Outer point.
+    float2 pOuter = input.TextureCoordinate;
     // Also get a version mapped down even further, to allow the
     // atmosphere to overflow the planet in the freed area.
     float2 pInner = pOuter / (1 - relativeAtmosphereArea);
@@ -163,11 +186,14 @@ float4 AtmosphereShaderFunction(float2 uv : TEXCOORD0) : COLOR
     return color;
 }
 
-technique Render
+// ------------------------------------------------------------------------- //
+
+technique Planet
 {
-    pass Planet
+    pass Surface
     {
         AlphaBlendEnable = True;
+        VertexShader = compile vs_2_0 VertexShaderFunction();
         PixelShader = compile ps_2_0 PlanetShaderFunction();
     }
     pass Atmosphere

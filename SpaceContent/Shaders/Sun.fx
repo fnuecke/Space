@@ -1,22 +1,22 @@
 // ------------------------------------------------------------------------- //
 
-uniform extern texture SunBase;
+uniform extern texture Surface;
 uniform extern texture TurbulenceOne;
 uniform extern texture TurbulenceTwo;
 uniform extern texture TurbulenceColor;
 
-uniform extern float DisplaySize = 1;
-uniform extern float Time = 0;
-uniform extern float2 BaseRotation = float2(1, 0);
-uniform extern float2 TurbulenceOneRotation = float2(0, -0.5);
-uniform extern float2 TurbulenceTwoRotation = float2(0.3, 0.3);
+uniform extern float RenderRadius = 1;
+
+uniform extern float2 SurfaceOffset;
+uniform extern float2 TurbulenceOneOffset;
+uniform extern float2 TurbulenceTwoOffset;
 uniform extern float TextureScale = 1;
 
 // ------------------------------------------------------------------------- //
 
 SamplerState baseSampler = sampler_state
 {
-    Texture = <SunBase>;
+    Texture = <Surface>;
     MipFilter = Linear;
     MagFilter = Anisotropic;
     MinFilter = Anisotropic;
@@ -70,7 +70,7 @@ VertexShaderData VertexShaderFunction(VertexShaderData input)
 
 // ------------------------------------------------------------------------- //
 
-float4 SunBaseShader(VertexShaderData input) : COLOR0
+float4 SurfaceShader(VertexShaderData input) : COLOR0
 {
     float2 p = input.TextureCoordinate;
     float r = dot(p, p);
@@ -83,13 +83,13 @@ float4 SunBaseShader(VertexShaderData input) : COLOR0
     {
         // Compute the spherized coordinate of the pixel.
         float f = (1 - sqrt(1 - r)) / r;
-        float2 uvSphere = (p * f + 1) / 2 + BaseRotation * Time;
+        float2 uvSphere = (p * f + 1) / 2 + SurfaceOffset;
 
         // Actual color at position.
         float4 color = tex2D(baseSampler, uvSphere / TextureScale);
         
         // Alpha for smoother border.
-        float alpha = clamp((1 - r) * DisplaySize, 0, 1);
+        float alpha = clamp((1 - r) * RenderRadius, 0, 1);
         return color * alpha;
     }
 }
@@ -126,9 +126,9 @@ float4 TurbulenceShader(VertexShaderData input) : COLOR0
     {
         // Compute the spherized coordinate of the pixel.
         float f = (1 - sqrt(1 - r)) / r;
-        float2 uvSphereBase = (p * f + 1) / 2 + BaseRotation * Time;
-        float2 uvSphereOne = (p * f + 1) / 2 + TurbulenceOneRotation * Time;
-        float2 uvSphereTwo = (p * f + 1) / 2 + TurbulenceTwoRotation * Time;
+        float2 uvSphereBase = (p * f + 1) / 2 + SurfaceOffset;
+        float2 uvSphereOne = (p * f + 1) / 2 + TurbulenceOneOffset;
+        float2 uvSphereTwo = (p * f + 1) / 2 + TurbulenceTwoOffset;
 
         // Actual colors at position.
         float4 color = tex2D(baseSampler, uvSphereBase / TextureScale) * 2 +
@@ -160,11 +160,10 @@ technique Sun
     pass Base
     {
         VertexShader = compile vs_2_0 VertexShaderFunction();
-        PixelShader = compile ps_2_0 SunBaseShader();
+        PixelShader = compile ps_2_0 SurfaceShader();
     }
     pass Turbulence
     {
-        VertexShader = compile vs_2_0 VertexShaderFunction();
         PixelShader = compile ps_2_0 TurbulenceShader();
     }
 }
