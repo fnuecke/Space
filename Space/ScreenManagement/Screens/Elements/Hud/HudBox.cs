@@ -28,6 +28,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         private HudHeader _header;
         private HudSpacer _spacerTop;
+        private HudContent _bgContent;
         private HudSpacer _spacerBottom;
         private HudHeader _footer;
 
@@ -36,6 +37,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _client = client;
             _header = new HudHeader(_client);
             _spacerTop = new HudSpacer(_client, HudSpacer.Mode.Top);
+            _bgContent = new HudContent(_client);
             _spacerBottom = new HudSpacer(_client, HudSpacer.Mode.Bottom);
             _footer = new HudHeader(_client);
         }
@@ -52,8 +54,10 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _header.Position = new Point(100, 100);
             _spacerTop.LoadContent(spriteBatch, content);
             _spacerTop.Position = new Point(_header.Position.X, _header.Position.Y + _header.Height);
+            _bgContent.LoadContent(spriteBatch, content);
+            _bgContent.Position = new Point(_spacerTop.Position.X, _spacerTop.Position.Y + _spacerTop.GetHeight());
             _spacerBottom.LoadContent(spriteBatch, content);
-            _spacerBottom.Position = new Point(_spacerTop.Position.X, _spacerTop.Position.Y + _spacerTop.GetHeight() + 200);
+            _spacerBottom.Position = new Point(_bgContent.Position.X, _bgContent.Position.Y + _bgContent.Height);
             _footer.LoadContent(spriteBatch, content);
             _footer.Position = new Point(_spacerBottom.Position.X, _spacerBottom.Position.Y + _spacerBottom.GetHeight());
         }
@@ -65,6 +69,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _header.Draw();
             _spacerTop.Draw();
+            _bgContent.Draw();
             _spacerBottom.Draw();
             _footer.Draw();
         }

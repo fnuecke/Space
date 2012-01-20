@@ -160,6 +160,7 @@
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSpacer.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudHeader.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudContent.cs" />
     <Compile Include="ScreenManagement\Screens\Entries\OptionMenuEntry.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Background.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Hud.cs" />
@@ -169,6 +170,7 @@
     <Compile Include="ScreenManagement\Screens\Gameplay\Postprocessing.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Radar.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\BasicForms.cs" />
+    <Compile Include="ScreenManagement\Screens\Helper\SpaceForms.cs" />
     <Compile Include="Simulation\Commands\DebugCommand.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />

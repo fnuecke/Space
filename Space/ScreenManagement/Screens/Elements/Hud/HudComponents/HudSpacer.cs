@@ -113,14 +113,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             // draw the horizontal line
             _basicForms.FillRectangle(
                 Position.X,
-                Position.Y,
-                Width,
-                GetHeight(),
-                Color.AliceBlue * 0.3f);
-
-            // draw the horizontal line
-            _basicForms.FillRectangle(
-                Position.X,
                 Position.Y + borderTop,
                 Width,
                 ThicknessSpacer,
