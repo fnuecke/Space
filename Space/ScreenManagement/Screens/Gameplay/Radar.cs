@@ -318,6 +318,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     iconPosition.X *= scale;
                     iconPosition.Y *= scale;
                 }
+                
+                // Adjust the distance to an object such that it is the
+                // distance to the screen edge, if so desired.
+                if (Settings.Instance.RadarDistanceFromBorder)
+                {
+                    distance -= iconPosition.Length();
+                }
 
                 // Adjust to the center.
                 iconPosition += center;
