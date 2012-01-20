@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -12,11 +13,13 @@ namespace Space.ComponentSystem.Components.AIBehaviour
     {
         public int TargetEntity;
         public Vector2 StartPosition;
+        public bool TargetDead;
         public AttackBehaviour(){}
         public AttackBehaviour(AiComponent aiComponent,int targetEntity)
             :base(aiComponent)
         {
             TargetEntity = targetEntity;
+            aiComponent.Entity.Manager.Removed += HandleEntityRemoved;
         }
 
 
@@ -78,5 +81,11 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             base.Depacketize(packet);
             StartPosition = packet.ReadVector2();
         }
+
+         private void HandleEntityRemoved(object sender, EntityEventArgs e)
+         {
+             if (e.EntityUid == TargetEntity)
+                 TargetDead = true;
+         }
     }
 }

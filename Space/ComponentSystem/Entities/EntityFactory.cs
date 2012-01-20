@@ -58,7 +58,13 @@ namespace Space.ComponentSystem.Entities
             
             return entity;
         }
-
+        public static Entity CreateExplosion(Vector2 position)
+        {
+            Entity entity = new Entity();
+            //entity.AddComponent(new Transform(position));
+            //entity.AddComponent(new ExplosionEffect());
+            return entity;
+        }
         /// <summary>
         /// Creates a new ship with the specified parameters.
         /// </summary>

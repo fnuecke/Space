@@ -33,13 +33,13 @@ namespace Space.ComponentSystem.Systems
     //    }
     //    public AiInfo()
     //    {
-            
+
     //    }
     //    #endregion
 
     //    #region Hash/Copy
 
-        
+
 
     //    public IComponentSystem DeepCopy(IComponentSystem into)
     //    {
@@ -74,7 +74,7 @@ namespace Space.ComponentSystem.Systems
     class ShipsSpawnSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
     {
         #region Properties
-        
+
         /// <summary>
         /// The component system manager this system is part of.
         /// </summary>
@@ -104,8 +104,8 @@ namespace Space.ComponentSystem.Systems
 
         #region Fields
 
+        //private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
         private List<int> _entities = new List<int>();
-
         private ContentManager _content;
 
         #endregion
@@ -129,13 +129,14 @@ namespace Space.ComponentSystem.Systems
         public override void Update(long frame)
         {
             var cellSystem = Manager.GetSystem<CellSystem>();
-            foreach (var entityId in _entities)
+            var entityCopy = new List<int>(_entities);
+            foreach (var entityId in entityCopy)
             {
                 var entity = Manager.EntityManager.GetEntity(entityId);
                 var transform = entity.GetComponent<Transform>();
                 if (!cellSystem.IsCellActive(CellSystem.GetCellIdFromCoordinates(ref transform.Translation)))
                 {
-                    _entities.Remove(entityId);
+                    
                     Manager.EntityManager.RemoveEntity(entityId);
                 }
             }
@@ -145,71 +146,84 @@ namespace Space.ComponentSystem.Systems
         {
             if (message is CellStateChanged)
             {
-                var info = (CellStateChanged)message;
-                if (info.State && info.X == 0 && info.Y == 0)
+                var info = (CellStateChanged) message;
+                if (info.State)
                 {
-                    const int cellSize = CellSystem.CellSize;
-                    //for (var i = 0; i < 10; i++)
+                    //if (!_entities.ContainsKey(info.Id))
                     //{
-                    var spawnPoint = new Vector2(60000 +  500, 62500 -  600);
+
+                    //var factionlist = Manager.GetSystem<UniverseSystem>().Faction;
+                    //var faction = Factions.Neutral;
+                    //if (factionlist.ContainsKey(info.Id))
+                    //    faction = factionlist[info.Id];
+                        const int cellSize = CellSystem.CellSize;
+                        var center = new Vector2(cellSize*info.X + (cellSize >> 1), cellSize*info.Y + (cellSize >> 1));
+
+
+
+
+                    if ( info.X == 0 && info.Y == 0)
+                {
+                        //for (var i = -2; i < 2; i++)
+                        //{
+                        //    for (var j = -2; j < 2; j++)
+
+
+                    var spawnPoint = new Vector2(60000 + 500, 62500 - 600);
                     var order =
                         new AiComponent.AiCommand(
                             new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
                             cellSize, AiComponent.Order.Guard);
-                    var faction = Factions.Player3;
-                    _entities.Add(Manager.EntityManager.AddEntity(
-                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
-                        )));
 
-
-                    spawnPoint = new Vector2(60000 + 400, 62500 - 200);
-                    order =
-                        new AiComponent.AiCommand(
-                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
-                            cellSize, AiComponent.Order.Guard);
-                    faction = Factions.Player4;
                     _entities.Add(Manager.EntityManager.AddEntity(
-                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
+                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], Factions.Player7, spawnPoint, order
                         )));
-                    spawnPoint = new Vector2(60000 + 500, 62500 - 300);
-                    order =
-                        new AiComponent.AiCommand(
-                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
-                            cellSize, AiComponent.Order.Guard);
-                    faction = Factions.Player5;
-                    _entities.Add(Manager.EntityManager.AddEntity(
-                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
-                        )));
-                    spawnPoint = new Vector2(60000 + 500, 62500 - 400);
-                    order =
-                        new AiComponent.AiCommand(
-                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
-                            cellSize, AiComponent.Order.Guard);
-                    faction = Factions.Player6;
-                    _entities.Add(Manager.EntityManager.AddEntity(
-                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
-                        )));
-                    spawnPoint = new Vector2(60000 + 500, 62500 - 500);
-                    order =
-                        new AiComponent.AiCommand(
-                            new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1)),
-                            cellSize, AiComponent.Order.Guard);
-                    faction = Factions.Player3;
-                    _entities.Add(Manager.EntityManager.AddEntity(
-                        EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
-                        )));
+                                //var spawnPoint = new Vector2(61000, 53000);
+                                ////var order =
+                                ////    new AiComponent.AiCommand(spawnPoint,
+                                //                              //cellSize, AiComponent.Order.Guard);
 
+                                ////_entities.Add(Manager.EntityManager.AddEntity(
+                                ////    EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction,
+                                ////                               spawnPoint, order
+                                ////        )));
 
+                                ////spawnPoint = new Vector2(center.X + j * (float)cellSize / 5,
+                                ////                            center.Y + i * (float)cellSize / 5);
+                                //var order =
+                                //    new AiComponent.AiCommand(spawnPoint,
+                                //                              cellSize, AiComponent.Order.Guard);
 
-                    
+                                //_entities.Add(Manager.EntityManager.AddEntity(
+                                //    EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction,
+                                //                               spawnPoint, order
+                                        //)));
+
+                }
+                       
+                        //_entities.Add(info.Id, list);
                     //}
                 }
+                //else
+                //{
+                //    if (_entities.ContainsKey(info.Id))
+                //    {
+                //        foreach (int id in _entities[info.Id])
+                //        {
+                //            Manager.EntityManager.RemoveEntity(id);
+                //        }
+
+                //        _entities.Remove(info.Id);
+                //    }
+                //}
+
             }
         }
 
         private void HandleEntityRemoved(object sender, EntityEventArgs e)
         {
-            _entities.Remove(e.EntityUid);
+            if(_entities.Contains(e.EntityUid))
+                _entities.Remove(e.EntityUid);
         }
 
         #endregion
@@ -222,7 +236,7 @@ namespace Space.ComponentSystem.Systems
             foreach (var item in _entities)
             {
                 packet.Write(item);
-                
+
 
             }
 
@@ -236,7 +250,7 @@ namespace Space.ComponentSystem.Systems
             for (int i = 0; i < numCells; i++)
             {
                 var key = packet.ReadInt32();
-                
+
                 _entities.Add(key);
             }
         }
@@ -246,9 +260,9 @@ namespace Space.ComponentSystem.Systems
             foreach (var entities in _entities)
             {
                 hasher.Put(BitConverter.GetBytes(entities));
-                
-                
-                
+
+
+
             }
         }
 
@@ -258,7 +272,7 @@ namespace Space.ComponentSystem.Systems
 
             if (copy == into)
             {
-                
+
                 copy._entities.Clear();
             }
             else

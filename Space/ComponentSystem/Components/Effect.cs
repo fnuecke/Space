@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Components
         /// Checks if we're the instance that's used to draw. If so, we will
         /// do updates, otherwise we won't.
         /// </summary>
-        private bool _isDrawingInstance;
+        protected bool _isDrawingInstance;
 
         /// <summary>
         /// The latest known frame in our simulation. Don't do updates before

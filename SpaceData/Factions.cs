@@ -146,7 +146,11 @@ namespace Space.Data
             { Factions.Player9, Color.LightCyan },
             { Factions.Player10, Color.Olive },
             { Factions.Player11, Color.Navy },
-            { Factions.Player12, Color.DarkRed }
+            { Factions.Player12, Color.DarkRed },
+            { Factions.NpcFractionA, Color.Crimson },
+            { Factions.NpcFractionB, Color.DarkBlue },
+            { Factions.NpcFractionC, Color.DarkGreen },
+            { Factions.Neutral, Color.White }
 
         };
 

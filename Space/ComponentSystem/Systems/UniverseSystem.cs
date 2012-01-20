@@ -28,6 +28,8 @@ namespace Space.ComponentSystem.Systems
 
         private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
 
+        public Dictionary<ulong, Factions> Faction = new Dictionary<ulong, Factions>();
+
         #endregion
 
         #region Constructor
@@ -50,25 +52,47 @@ namespace Space.ComponentSystem.Systems
 
                 if (info.State)
                 {
+
                     // Get random generator based on world seed and cell location.
                     var random = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
 
                     // List to accumulate entities we created for this system in.
                     List<int> list = new List<int>();
 
+                    //if (!Faction.ContainsKey(info.Id))
+                    //{
+                    //    var number = random.NextInt32(3);
+                    //    switch (number)
+                    //    {
+                    //        case (0):
+                    //            Faction.Add(info.Id, Factions.NpcFractionA);
+                    //            break;
+                    //        case (1):
+                    //            Faction.Add(info.Id, Factions.NpcFractionB);
+                    //            break;
+                    //        case (2):
+                    //            Faction.Add(info.Id, Factions.NpcFractionC);
+                    //            break;
+                    //        default:
+                    //            Faction.Add(info.Id, Factions.NpcFractionC);
+                    //            break;
+                    //    }
+                    //}
                     // Get center of our cell.
                     var cellSize = CellSystem.CellSize;
                     var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
 
                     if (info.X == 0 && info.Y == 0)
                     {
-                        CreateSystem(random, ref center, list, 7, new[] {
+                        CreateSystem(random, ref center, list,
+                            //Faction[info.Id], 
+                            7, new[] {
                             0, 0, 1, 2, 4, 2, 1
                         });
                     }
                     else
                     {
-                        CreateSystem(random, ref center, list);
+                        CreateSystem(random, ref center, list);//Faction[info.Id]);
                     }
 
                     _entities.Add(info.Id, list);
@@ -106,7 +130,13 @@ namespace Space.ComponentSystem.Systems
                     packet.Write(entityId);
                 }
             }
-
+            packet.Write(Faction.Count);
+            foreach (var item in Faction)
+            {
+                packet.Write(item.Key);
+                packet.Write((int)item.Value);
+                
+            }
             return packet;
         }
 
@@ -127,6 +157,15 @@ namespace Space.ComponentSystem.Systems
                 }
                 _entities.Add(key, list);
             }
+
+            Faction.Clear();
+            numCells = packet.ReadInt32();
+            for (int i = 0; i < numCells; i++)
+            {
+                var key = packet.ReadUInt64();
+                var value = (Factions) packet.ReadInt32();
+                Faction.Add(key,value);
+            }
         }
 
         public override void Hash(Hasher hasher)
@@ -139,6 +178,11 @@ namespace Space.ComponentSystem.Systems
                     hasher.Put(BitConverter.GetBytes(entity));
                 }
             }
+            foreach (var entities in Faction.Values)
+            {
+                
+                    hasher.Put(BitConverter.GetBytes((int)entities));
+            }
         }
 
         public override IComponentSystem DeepCopy(IComponentSystem into)
@@ -149,15 +193,22 @@ namespace Space.ComponentSystem.Systems
             {
                 copy.WorldSeed = WorldSeed;
                 copy._entities.Clear();
+                copy.Faction.Clear();
             }
             else
             {
                 copy._entities = new Dictionary<ulong, List<int>>();
+                copy.Faction = new Dictionary<ulong, Factions>();
             }
 
             foreach (var item in _entities)
             {
                 copy._entities.Add(item.Key, new List<int>(item.Value));
+
+            }
+            foreach (var factionse in Faction)
+            {
+                copy.Faction.Add(factionse.Key, factionse.Value);
             }
 
             return copy;
@@ -171,6 +222,7 @@ namespace Space.ComponentSystem.Systems
             IUniformRandom random,
             ref Vector2 center,
             List<int> list,
+          //  Factions faction,
             int numPlanets = -1,
             int[] numsMoons = null)
         {
@@ -179,7 +231,7 @@ namespace Space.ComponentSystem.Systems
 
             // Create our sun.
             float sunRadius = _constaints.SampleSunRadius(gaussian);
-            float sunMass = _constaints.SunMassFactor * 4f / 3f * (float)System.Math.PI * sunRadius * sunRadius * sunRadius;;
+            float sunMass = _constaints.SunMassFactor * 4f / 3f * (float)System.Math.PI * sunRadius * sunRadius * sunRadius; ;
             Entity sun = EntityFactory.CreateSun(
                 radius: sunRadius,
                 position: center,
@@ -211,7 +263,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     numMoons = _constaints.SampleMoons(gaussian);
                 }
-                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list);
+                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list);//, faction);
             }
         }
 
@@ -223,7 +275,9 @@ namespace Space.ComponentSystem.Systems
             float previousOrbitRadius,
             float dominantOrbitAngle,
             int numMoons,
-            List<int> list)
+            List<int> list
+            //,   Factions faction
+            )
         {
             // Sample planet properties.
             float planetRadius = _constaints.SamplePlanetRadius(gaussian);
@@ -259,7 +313,9 @@ namespace Space.ComponentSystem.Systems
             float previousMoonOrbit = (_constaints.PlanetRadiusMean + _constaints.PlanetRadiusStdDev) * 1.5f;
             if (_constaints.SampleStation(random))
             {
-                CreateStation(random, gaussian, planet, planetMass, planetRadius, list);
+                CreateStation(random, gaussian, planet, planetMass, planetRadius, list
+                    //, faction
+                    );
             }
             // The create as many as we sample.
             for (int j = 0; j < numMoons; j++)
@@ -276,9 +332,11 @@ namespace Space.ComponentSystem.Systems
             Entity planet,
             float planetMass,
             float planetRadius,
-            List<int> list)
+            List<int> list
+            //, Factions faction
+            )
         {
-            var faction = Factions.Player5;
+
             var StationOrbit = planetRadius + _constaints.SampleStationOrbit(gaussian);
             var stationPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(StationOrbit * StationOrbit * StationOrbit / planetMass));
             var station = EntityFactory.CreateStation(
@@ -286,7 +344,7 @@ namespace Space.ComponentSystem.Systems
                 center: planet,
                 orbitRadius: StationOrbit,
                 period: stationPeriod,
-                faction: faction);
+                faction: Factions.Player9);
 
             list.Add(Manager.EntityManager.AddEntity(station));
         }
@@ -308,7 +366,7 @@ namespace Space.ComponentSystem.Systems
             float moonOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SampleMoonOrbitAngleDeviation(gaussian));
             float moonPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * moonOrbitMajorRadius / planetMass));
             float moonMass = _constaints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
-            
+
             var moon = EntityFactory.CreateOrbitingAstronomicalObject(
                 texture: "Textures/rock_02",
                 planetTint: Color.White,

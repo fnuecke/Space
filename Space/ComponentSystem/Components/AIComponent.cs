@@ -86,7 +86,13 @@ namespace Space.ComponentSystem.Components
             }
             else if (_currentbehaviour is AttackBehaviour)
             {
-                var targetEntity = Entity.Manager.GetEntity(((AttackBehaviour)_currentbehaviour).TargetEntity);
+                var attack = (AttackBehaviour) _currentbehaviour;
+                if (attack.TargetDead)
+                {
+                    CheckAndSwitchToMoveBehaviour(ref position);
+                    return;
+                }
+                var targetEntity = Entity.Manager.GetEntity(attack.TargetEntity);
 
                 if (targetEntity == null)
                 {
