@@ -262,8 +262,9 @@ namespace Space.ComponentSystem.Systems
 
             // And track the radii. Start outside our planet.
             float previousMoonOrbit = (_constaints.PlanetRadiusMean + _constaints.PlanetRadiusStdDev) * 1.5f;
-
-            // The create as many as we sample.
+            if (_constaints.SampleStation(random))
+                CreateStation(gaussian, planet, planetMass, planetRadius, list);
+                // The create as many as we sample.
             for (int j = 0; j < numMoons; j++)
             {
                 previousMoonOrbit = CreateMoon(random, gaussian, planet, planetMass, previousMoonOrbit, dominantMoonOrbitAngle, list);
@@ -272,6 +273,22 @@ namespace Space.ComponentSystem.Systems
             return planetOrbitMajorRadius;
         }
 
+        private void CreateStation(
+            IGaussianRandom gaussian,
+            Entity planet,
+            float planetMass,
+            float planetRadius,
+            List<int> list)
+        {
+            var faction = Factions.Player5;
+            var StationOrbit = planetRadius + _constaints.SampleStationOrbit(gaussian);
+            var stationPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(StationOrbit * StationOrbit * StationOrbit / planetMass));
+            var station = EntityFactory.CreateStation(StationOrbit, faction, "Textures/Stolen/Ships/sensor_array", planet, stationPeriod);
+            var spin = station.GetComponent<Spin>();
+            spin.Value = ( (float)Math.PI)/stationPeriod  ;
+
+            list.Add(Manager.EntityManager.AddEntity(station));
+        }
         private float CreateMoon(
             IUniformRandom random,
             IGaussianRandom gaussian,

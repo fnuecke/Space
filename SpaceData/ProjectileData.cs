@@ -37,6 +37,14 @@ namespace Space.Data
         public float Damage;
 
         /// <summary>
+        /// Whether this projectile can be hit by other projectiles (e.g.
+        /// missiles may be shot down, but normal projectiles should not
+        /// interact).
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public bool CanBeShot = false;
+
+        /// <summary>
         /// The initial directed velocity of the projectile. This is rotated
         /// according to the emitters rotation. The set value applies directly
         /// if the emitter is facing to the right (i.e. is at zero rotation).

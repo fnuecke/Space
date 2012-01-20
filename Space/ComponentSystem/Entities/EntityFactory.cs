@@ -156,12 +156,22 @@ namespace Space.ComponentSystem.Entities
 
             return entity;
         }
-        public Entity CreateStation(ref Vector2 pos,Factions faction)
+        public static Entity CreateStation(float orbit,Factions faction,String texture,Entity center,float period,float periodoffset=0)
         {
             var entity = new Entity();
+            var renderer = new TransformedRenderer(texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
+            renderer.DrawOrder = 50; //< Draw ships above everything else.
 
+            entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
+            entity.AddComponent(new Spin());
+            entity.AddComponent(new EllipsePath(center.UID, orbit, orbit, 0, period, periodoffset));
+            entity.AddComponent(new Index(Detectable.IndexGroup));
+            entity.AddComponent(new Detectable("Textures/Stolen/Ships/sensor_array_dish"));
+            entity.AddComponent(new SpawnComponent());
+            entity.AddComponent(renderer);
             return entity;
         }
+
         /// <summary>
         /// Copies modules from module array of a ShipData instance.
         /// </summary>
@@ -235,16 +245,27 @@ namespace Space.ComponentSystem.Entities
                 entity.AddComponent(new CollisionDamage(projectile.Damage));
             }
 
+            ulong collisionIndexGroup = 0;
+            if (!projectile.CanBeShot)
+            {
+                collisionIndexGroup = Factions.Projectiles.ToCollisionIndexGroup();
+            }
             if (projectile.Damage >= 0)
             {
-                entity.AddComponent(new Index(faction.ToCollisionIndexGroup()));
+                collisionIndexGroup |= faction.ToCollisionIndexGroup();
             }
             else if (projectile.Damage < 0)
             {
                 // Negative damage = healing -> collide will all our allies.
-                entity.AddComponent(new Index(faction.Inverse().ToCollisionIndexGroup()));
+                collisionIndexGroup |= faction.Inverse().ToCollisionIndexGroup();
             }
-            entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, faction.ToCollisionGroup()));
+            entity.AddComponent(new Index(collisionIndexGroup));
+            uint collisionGroup = faction.ToCollisionGroup();
+            if (!projectile.CanBeShot)
+            {
+                collisionGroup |= Factions.Projectiles.ToCollisionGroup();
+            }
+            entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, collisionGroup));
             if (!string.IsNullOrWhiteSpace(projectile.Texture))
             {
                 entity.AddComponent(new TransformedRenderer(projectile.Texture, faction.ToColor(), projectile.Scale));
