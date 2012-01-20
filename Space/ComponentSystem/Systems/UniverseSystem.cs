@@ -235,7 +235,7 @@ namespace Space.ComponentSystem.Systems
             float planetMass = _constaints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * planetRadius * planetRadius * planetRadius;
 
             var planet = EntityFactory.CreateOrbitingAstronomicalObject(
-                texture: "Textures/rock_07",
+                texture: "Textures/Planets/rock_07",
                 planetTint: Color.Lerp(Color.DarkOliveGreen, Color.White, 0.5f),
                 radius: planetRadius,
                 atmosphereTint: Color.LightSkyBlue,
@@ -310,7 +310,7 @@ namespace Space.ComponentSystem.Systems
             float moonMass = _constaints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
             
             var moon = EntityFactory.CreateOrbitingAstronomicalObject(
-                texture: "Textures/rock_02",
+                texture: "Textures/Planets/rock_02",
                 planetTint: Color.White,
                 radius: moonRadius,
                 atmosphereTint: Color.Transparent,
