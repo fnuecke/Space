@@ -61,8 +61,8 @@ namespace Space.ComponentSystem.Entities
         public static Entity CreateExplosion(Vector2 position)
         {
             Entity entity = new Entity();
-            //entity.AddComponent(new Transform(position));
-            //entity.AddComponent(new ExplosionEffect());
+            entity.AddComponent(new Transform(position));
+            entity.AddComponent(new ExplosionEffect());
             return entity;
         }
         /// <summary>

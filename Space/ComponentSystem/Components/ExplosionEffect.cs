@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Components
         public ExplosionEffect()
             :base("Effects/BasicExplosion")
         {
-            
+            DrawOrder = 40;
         }
 
         public override void Update(object parameterization)

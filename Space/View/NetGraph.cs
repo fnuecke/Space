@@ -102,11 +102,11 @@ namespace Space.View
             avgOutgoing /= info.HistoryLength - 1;
             avgTotal /= info.HistoryLength - 1;
 
-            string netInfo = String.Format("in: {0}|{1}|{2}|{3:f}kB/s\n" +
-                                           "    aps: {12}|apc: {13:f}\n" +
-                                           "out: {4}|{5}|{6}|{7:f}kB/s\n" +
-                                           "     aps: {14}|apc: {15:f}\n" +
-                                           "sum: {8}|{9}|{10}|{11:f}kB/s",
+            string netInfo = String.Format("in: {0}|{1}|{2}|{3:f2}kB/s\n" +
+                                           "    aps: {12:f2}|apc: {13:f2}\n" +
+                                           "out: {4}|{5}|{6}|{7:f2}kB/s\n" +
+                                           "     aps: {14:f2}|apc: {15:f2}\n" +
+                                           "sum: {8}|{9}|{10}|{11:f2}kB/s",
                                            minIncoming, maxIncoming, avgIncoming, avgIncoming / 1024f,
                                            minOutgoing, maxOutgoing, avgOutgoing, avgOutgoing / 1024f,
                                            minTotal, maxTotal, avgTotal, avgTotal / 1024f,

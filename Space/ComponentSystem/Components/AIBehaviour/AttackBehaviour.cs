@@ -19,7 +19,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             :base(aiComponent)
         {
             TargetEntity = targetEntity;
-            aiComponent.Entity.Manager.Removed += HandleEntityRemoved;
+            //aiComponent.Entity.Manager.Removed += HandleEntityRemoved;
         }
 
 
@@ -82,10 +82,10 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             StartPosition = packet.ReadVector2();
         }
 
-         private void HandleEntityRemoved(object sender, EntityEventArgs e)
-         {
-             if (e.EntityUid == TargetEntity)
-                 TargetDead = true;
-         }
+         //private void HandleEntityRemoved(object sender, EntityEventArgs e)
+         //{
+         //    if (e.EntityUid == TargetEntity)
+         //        TargetDead = true;
+         //}
     }
 }

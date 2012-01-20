@@ -848,10 +848,6 @@ namespace Engine.Simulation
 
             #region Unsupported
 
-            public event EventHandler<EntityEventArgs> Added;
-
-            public event EventHandler<EntityEventArgs> Removed;
-
             public ReadOnlyCollection<Entity> Entities { get { throw new NotSupportedException(); } }
 
 #if DEBUG && GAMELOG
@@ -896,6 +892,11 @@ namespace Engine.Simulation
             public IEntityManager DeepCopy(IEntityManager into)
             {
                 throw new NotSupportedException();
+            }
+
+            public void SendEntityMessage<T>(ref T message) where T : struct
+            {
+                throw new NotImplementedException();
             }
 
             #endregion
@@ -1009,9 +1010,14 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
-            public void SendMessage(ValueType message)
+            public void SendSystemMessage<T>(ref T message) where T : struct
             {
                 throw new NotSupportedException();
+            }
+
+            public void SendComponentMessage<T>(ref T message) where T : struct
+            {
+                throw new NotImplementedException();
             }
 
             public Packet Packetize(Packet packet)

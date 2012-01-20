@@ -80,7 +80,7 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Interface
+        #region Logic
 
         /// <summary>
         /// Default implementation does nothing.
@@ -98,6 +98,10 @@ namespace Engine.ComponentSystem.Systems
         public virtual void Draw(GameTime gameTime, long frame)
         {
         }
+
+        #endregion
+
+        #region Components
 
         /// <summary>
         /// Add the component to this system, if it's supported.
@@ -204,6 +208,18 @@ namespace Engine.ComponentSystem.Systems
             return !_isDrawNullParameterized && component.SupportsDrawParameterization(typeof(TDrawParameterization));
         }
 
+        #endregion
+
+        #region Messaging
+
+        /// <summary>
+        /// Inform all components in this system of a message.
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        public void SendComponentMessage<T>(ref T message) where T : struct
+        {
+        }
+
         /// <summary>
         /// Inform a system of a message that was sent by another system.
         /// 
@@ -212,7 +228,7 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <param name="message">The sent message.</param>
-        public virtual void HandleMessage(ValueType message)
+        public virtual void HandleSystemMessage<T>(ref T message) where T : struct
         {
         }
 

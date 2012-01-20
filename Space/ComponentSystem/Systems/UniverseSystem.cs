@@ -44,11 +44,11 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void HandleMessage(ValueType message)
+        public override void HandleSystemMessage<T>(ref T message)
         {
             if (message is CellStateChanged)
             {
-                var info = (CellStateChanged)message;
+                var info = (CellStateChanged)(ValueType)message;
 
                 if (info.State)
                 {

@@ -24,8 +24,8 @@ namespace Space.ComponentSystem.Components
 
             if (health != null && health.Value == 0)
             {
-                //Console.WriteLine("death!");
-                //Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation));
+                ////Console.WriteLine("death!");
+                ////Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation));
                 Entity.Manager.RemoveEntity(Entity);
             }
         }
