@@ -19,9 +19,10 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             :base(aiComponent)
         {
             TargetEntity = targetEntity;
-            //aiComponent.Entity.Manager.Removed += HandleEntityRemoved;
+            
         }
-
+        #region Logic
+        
 
         public override void Update()
         {
@@ -68,6 +69,9 @@ namespace Space.ComponentSystem.Components.AIBehaviour
                 input.SetAcceleration(direction);
             }
         }
+        #endregion
+
+        #region Packet
 
         public override Packet Packetize(Packet packet)
         {
@@ -82,10 +86,6 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             StartPosition = packet.ReadVector2();
         }
 
-         //private void HandleEntityRemoved(object sender, EntityEventArgs e)
-         //{
-         //    if (e.EntityUid == TargetEntity)
-         //        TargetDead = true;
-         //}
+        #endregion
     }
 }

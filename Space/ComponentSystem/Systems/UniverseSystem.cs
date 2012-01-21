@@ -59,25 +59,26 @@ namespace Space.ComponentSystem.Systems
                     // List to accumulate entities we created for this system in.
                     List<int> list = new List<int>();
 
-                    //if (!Faction.ContainsKey(info.Id))
-                    //{
-                    //    var number = random.NextInt32(3);
-                    //    switch (number)
-                    //    {
-                    //        case (0):
-                    //            Faction.Add(info.Id, Factions.NpcFractionA);
-                    //            break;
-                    //        case (1):
-                    //            Faction.Add(info.Id, Factions.NpcFractionB);
-                    //            break;
-                    //        case (2):
-                    //            Faction.Add(info.Id, Factions.NpcFractionC);
-                    //            break;
-                    //        default:
-                    //            Faction.Add(info.Id, Factions.NpcFractionC);
-                    //            break;
-                    //    }
-                    //}
+                    if (!Faction.ContainsKey(info.Id))
+                    {
+                        var random2 = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
+                        var number = random2.NextInt32(3);
+                        switch (number)
+                        {
+                            case (0):
+                                Faction.Add(info.Id, Factions.NpcFractionA);
+                                break;
+                            case (1):
+                                Faction.Add(info.Id, Factions.NpcFractionB);
+                                break;
+                            case (2):
+                                Faction.Add(info.Id, Factions.NpcFractionC);
+                                break;
+                            default:
+                                Faction.Add(info.Id, Factions.NpcFractionC);
+                                break;
+                        }
+                    }
                     // Get center of our cell.
                     var cellSize = CellSystem.CellSize;
                     var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
@@ -85,14 +86,14 @@ namespace Space.ComponentSystem.Systems
                     if (info.X == 0 && info.Y == 0)
                     {
                         CreateSystem(random, ref center, list,
-                            //Faction[info.Id], 
+                            Faction[info.Id], 
                             7, new[] {
                             0, 0, 1, 2, 4, 2, 1
                         });
                     }
                     else
                     {
-                        CreateSystem(random, ref center, list);//Faction[info.Id]);
+                        CreateSystem(random, ref center, list,Faction[info.Id]);
                     }
 
                     _entities.Add(info.Id, list);
@@ -222,7 +223,7 @@ namespace Space.ComponentSystem.Systems
             IUniformRandom random,
             ref Vector2 center,
             List<int> list,
-          //  Factions faction,
+            Factions faction,
             int numPlanets = -1,
             int[] numsMoons = null)
         {
@@ -263,7 +264,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     numMoons = _constaints.SampleMoons(gaussian);
                 }
-                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list);//, faction);
+                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list, faction);
             }
         }
 
@@ -276,7 +277,7 @@ namespace Space.ComponentSystem.Systems
             float dominantOrbitAngle,
             int numMoons,
             List<int> list
-            //,   Factions faction
+            , Factions faction
             )
         {
             // Sample planet properties.
@@ -314,7 +315,7 @@ namespace Space.ComponentSystem.Systems
             if (_constaints.SampleStation(random))
             {
                 CreateStation(random, gaussian, planet, planetMass, planetRadius, list
-                    //, faction
+                    , faction
                     );
             }
             // The create as many as we sample.
@@ -333,7 +334,7 @@ namespace Space.ComponentSystem.Systems
             float planetMass,
             float planetRadius,
             List<int> list
-            //, Factions faction
+            , Factions faction
             )
         {
 
@@ -344,7 +345,7 @@ namespace Space.ComponentSystem.Systems
                 center: planet,
                 orbitRadius: StationOrbit,
                 period: stationPeriod,
-                faction: Factions.Player9);
+                faction: faction);
 
             list.Add(Manager.EntityManager.AddEntity(station));
         }

@@ -8,7 +8,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
     public class PatrolBehaviour : Behaviour
     {
 
-        private static MersenneTwister random = new MersenneTwister();
+        private MersenneTwister random = new MersenneTwister();
 
         public PatrolBehaviour(){}
         public PatrolBehaviour(AiComponent component)
@@ -66,6 +66,16 @@ namespace Space.ComponentSystem.Components.AIBehaviour
         {
             base.Depacketize(packet);
             random = packet.ReadPacketizable<MersenneTwister>();
+        }
+
+        public override Behaviour DeepCopy(Behaviour into)
+        {
+            var copy = (PatrolBehaviour)base.DeepCopy(into);
+            if (copy == into)
+            {
+                copy.random = random;
+            }
+            return copy;
         }
     }
 }   

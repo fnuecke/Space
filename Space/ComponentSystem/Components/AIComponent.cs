@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.Systems.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components.AIBehaviour;
@@ -196,7 +197,15 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-
+        public override void HandleMessage<T>(ref T message)
+        {
+            if(_currentbehaviour is AttackBehaviour &&message is EntityRemoved)
+            {
+                var beh = (AttackBehaviour) _currentbehaviour;
+                if (((EntityRemoved)((ValueType)message)).EntityUid == beh.TargetEntity)
+                    beh.TargetDead = true;
+            }
+        }
 
         /// <summary>
         /// Accepts <c>DefaultLogicParameterization</c>.

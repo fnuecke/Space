@@ -25,7 +25,7 @@
 
     <StationOrbitMean>50</StationOrbitMean>
     <StationOrbitStdDev>20</StationOrbitStdDev>
-    <StationChance>0.2</StationChance>
+    <StationChance>0.3</StationChance>
     
     <MoonsMean>1</MoonsMean>
     <MoonsStdDev>3</MoonsStdDev>
