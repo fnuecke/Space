@@ -41,6 +41,7 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         protected bool _isDrawingInstance;
 
+        protected float Scale = 0;
         /// <summary>
         /// The latest known frame in our simulation. Don't do updates before
         /// this one, to avoid stuttering (TSS rollbacks causing double updates
@@ -59,6 +60,7 @@ namespace Space.ComponentSystem.Components
             this.EffectName = effectName;
             Emitting = true;
             
+
         }
 
         public Effect()
@@ -101,6 +103,7 @@ namespace Space.ComponentSystem.Components
                     if (transform != null)
                     {
                         _effect[0].Trigger(transform.Translation);
+
                     }
                 }
 
@@ -121,16 +124,26 @@ namespace Space.ComponentSystem.Components
                 _effect[0] = args.Game.Content.Load<ParticleEffect>(EffectName).DeepCopy();
                 _effect[0].Initialise();
                 _effect[0].LoadContent(args.Game.Content);
+               
             }
 
             // Render if we have our effect.
             if (_effect[0] != null)
             {
+                if (Scale != 0)
+                {
+                    foreach (var effect in _effect[0])
+                    {
+                        effect.ReleaseScale += Scale;
+                    }
+                }
                 // Only render effects whose emitter is near or inside the
                 // visible bounds (performance), where possible.
                 var transform = Entity.GetComponent<Transform>();
                 if (transform != null)
                 {
+                    
+                    
                     var extendedView = args.SpriteBatch.GraphicsDevice.ScissorRectangle;
                     extendedView.Inflate(1024, 1024);
                     Point point;

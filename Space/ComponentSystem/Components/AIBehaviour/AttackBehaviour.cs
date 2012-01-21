@@ -19,6 +19,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             : base(aiComponent)
         {
             TargetEntity = targetEntity;
+            
         }
 
         #region Logic
@@ -37,7 +38,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
             var info = AiComponent.Entity.GetComponent<ShipInfo>();
             var input = AiComponent.Entity.GetComponent<ShipControl>();
-
+            input.SetStabilizing(false);
             var position = info.Position;
 
             direction = transform.Translation - position;
@@ -50,13 +51,14 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             input.SetShooting(distance < 1000);
 
             var escapeDir = CalculateEscapeDirection();
-            direction += 2 * escapeDir;
+            direction += 3 * escapeDir;
 
             //Rotate torwards our destination
 
             //not fullspeed if there is noting to fear about
 
-            if (escapeDir == Vector2.Zero && info.Energy < info.MaxEnergy * 0.2)
+
+            if (escapeDir == Vector2.Zero &&  info.RelativeEnergy < 0.2)
             {
                 input.SetAcceleration(Vector2.Zero);
             }
@@ -64,6 +66,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             {
                 input.SetAcceleration(direction);
             }
+            
         }
 
         #endregion

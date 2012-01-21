@@ -69,7 +69,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             var index = AiComponent.Entity.Manager.SystemManager.GetSystem<IndexSystem>();
             if (index == null) return escapeDir;
             foreach (var neighbor in index.
-               GetNeighbors(ref position, 5000, Detectable.IndexGroup))
+               GetNeighbors(ref position, 7000, Detectable.IndexGroup))
             {
                 var transform = neighbor.GetComponent<Transform>();
                 if (transform == null) continue;
