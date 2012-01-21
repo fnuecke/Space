@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
@@ -11,19 +6,20 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    public abstract class Behaviour: IPacketizable,ICopyable<Behaviour>
+    public abstract class Behaviour : IPacketizable, ICopyable<Behaviour>
     {
         protected Vector2 direction;
+
         public AiComponent AiComponent;
 
-        protected Behaviour(){}
+        protected Behaviour() { }
+
         protected Behaviour(AiComponent entity)
         {
             this.AiComponent = entity;
         }
 
         public abstract void Update();
-
 
         public void TurnToFace(Vector2 facePosition, float turnSpeed)
         {
@@ -37,8 +33,8 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             //float difference = WrapAngle(desiredAngle - transform.Rotation);
 
             //difference = MathHelper.Clamp(difference, -turnSpeed, turnSpeed);
-
         }
+
         /// <summary>
         /// Returns the angle expressed in radians between -Pi and Pi.
         /// <param name="radians">the angle to wrap, in radians.</param>
@@ -56,6 +52,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             }
             return radians;
         }
+
         protected Vector2 CalculateEscapeDirection()
         {
             // Get local player's avatar.
@@ -84,9 +81,9 @@ namespace Space.ComponentSystem.Components.AIBehaviour
                 {
                     var pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborGravitation.Mass / info.MaxAcceleration);
                     var direction = position - transform.Translation;
-                    if (direction.Length() < pointOfNoReturn*2)
+                    if (direction.Length() < pointOfNoReturn * 2)
                     {
-                        if(direction != Vector2.Zero)
+                        if (direction != Vector2.Zero)
                             direction.Normalize();
                         escapeDir += direction;
                     }
@@ -95,11 +92,9 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             return escapeDir;
         }
 
-        
         public virtual Packet Packetize(Packet packet)
         {
             return packet.Write(direction);
-
         }
 
         public virtual void Depacketize(Packet packet)
@@ -107,8 +102,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             direction = packet.ReadVector2();
         }
 
-
-        public virtual Behaviour DeepCopy()
+        public Behaviour DeepCopy()
         {
             return DeepCopy(null);
         }

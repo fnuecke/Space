@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    class MoveBehaviour:Behaviour
+    class MoveBehaviour : Behaviour
     {
         public Vector2 TargetPosition;
+
         public override void Update()
         {
             var info = AiComponent.Entity.GetComponent<ShipInfo>();
@@ -36,7 +34,20 @@ namespace Space.ComponentSystem.Components.AIBehaviour
         public override void Depacketize(Engine.Serialization.Packet packet)
         {
             base.Depacketize(packet);
+
             TargetPosition = packet.ReadVector2();
+        }
+
+        public override Behaviour DeepCopy(Behaviour into)
+        {
+            var copy = (MoveBehaviour)base.DeepCopy(into);
+
+            if (copy == into)
+            {
+                copy.TargetPosition = TargetPosition;
+            }
+
+            return copy;
         }
     }
 }

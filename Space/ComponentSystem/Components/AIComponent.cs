@@ -12,12 +12,17 @@ namespace Space.ComponentSystem.Components
     public class AiComponent : AbstractComponent
     {
         #region Structs/Enums
+
         public class AiCommand : IPacketizable
         {
             public Vector2 Target;
+
             public int MaxDistance;
+
             public Order order;
+
             public AiCommand() { }
+
             public AiCommand(Vector2 target, int maxDistance, Order order)
             {
                 Target = target;
@@ -45,23 +50,29 @@ namespace Space.ComponentSystem.Components
             Guard,
             Attack
         }
+
         #endregion
 
         #region Fields
+
         private Behaviour _currentbehaviour;
+
         public AiCommand Command;
+
         #endregion
 
         #region Constructor
+
         public AiComponent() { }
 
         public AiComponent(AiCommand command)
         {
-
             Command = command;
             SwitchOrder();
         }
+
         #endregion
+
         #region Logic
 
         public override void Update(object parameterization)
@@ -83,11 +94,11 @@ namespace Space.ComponentSystem.Components
             //check if there are enemys in the erea
             if (_currentbehaviour is PatrolBehaviour)
             {
-                CheckNeighbours(ref position,ref position);
+                CheckNeighbours(ref position, ref position);
             }
             else if (_currentbehaviour is AttackBehaviour)
             {
-                var attack = (AttackBehaviour) _currentbehaviour;
+                var attack = (AttackBehaviour)_currentbehaviour;
                 if (attack.TargetDead)
                 {
                     CheckAndSwitchToMoveBehaviour(ref position);
@@ -99,7 +110,6 @@ namespace Space.ComponentSystem.Components
                 {
                     CheckAndSwitchToMoveBehaviour(ref position);
                     return;
-
                 }
                 var health = targetEntity.GetComponent<Health>();
                 var transform = targetEntity.GetComponent<Transform>();
@@ -112,12 +122,8 @@ namespace Space.ComponentSystem.Components
                 var direction = position - transform.Translation;
                 if (direction.Length() > 3000)
                 {
-
-
-                    
                     CheckAndSwitchToMoveBehaviour(ref position);
                     return;
-
                 }
                 if ((position - ((AttackBehaviour)_currentbehaviour).StartPosition).Length() > Command.MaxDistance)
                 {
@@ -132,30 +138,27 @@ namespace Space.ComponentSystem.Components
             }
             else if (_currentbehaviour is MoveBehaviour)
             {
-                var target = ((MoveBehaviour) _currentbehaviour).TargetPosition;
-                if((target-position).Length()<200)
+                var target = ((MoveBehaviour)_currentbehaviour).TargetPosition;
+                if ((target - position).Length() < 200)
                     SwitchOrder();
                 return;
             }
-
-
-
-
         }
 
         private void CheckAndSwitchToMoveBehaviour(ref Vector2 position)
         {
-            var startposition = ((AttackBehaviour) _currentbehaviour).StartPosition;
+            var startposition = ((AttackBehaviour)_currentbehaviour).StartPosition;
             if (CheckNeighbours(ref position, ref startposition)) return;
             var move = new MoveBehaviour
                            {
                                TargetPosition = startposition,
                                AiComponent = this
-            };
+                           };
             _currentbehaviour = move;
-            
+
         }
-        private bool CheckNeighbours(ref Vector2 position,ref Vector2 startPosition)
+
+        private bool CheckNeighbours(ref Vector2 position, ref Vector2 startPosition)
         {
             var currentFaction = Entity.GetComponent<Faction>().Value;
             var index = Entity.Manager.SystemManager.GetSystem<IndexSystem>();
@@ -199,9 +202,9 @@ namespace Space.ComponentSystem.Components
 
         public override void HandleMessage<T>(ref T message)
         {
-            if(_currentbehaviour is AttackBehaviour &&message is EntityRemoved)
+            if (_currentbehaviour is AttackBehaviour && message is EntityRemoved)
             {
-                var beh = (AttackBehaviour) _currentbehaviour;
+                var beh = (AttackBehaviour)_currentbehaviour;
                 if (((EntityRemoved)((ValueType)message)).EntityUid == beh.TargetEntity)
                     beh.TargetDead = true;
             }
@@ -216,7 +219,9 @@ namespace Space.ComponentSystem.Components
         {
             return parameterizationType == typeof(DefaultLogicParameterization);
         }
+
         #endregion
+
         #region Serialization
 
         public override Packet Packetize(Packet packet)
@@ -243,12 +248,17 @@ namespace Space.ComponentSystem.Components
 
             if (copy == into)
             {
-                copy._currentbehaviour = _currentbehaviour;
                 copy.Command = Command;
+                copy._currentbehaviour = _currentbehaviour.DeepCopy(copy._currentbehaviour);
+            }
+            else
+            {
+                copy._currentbehaviour = _currentbehaviour.DeepCopy();
             }
 
             return copy;
         }
+
         #endregion
     }
 }
