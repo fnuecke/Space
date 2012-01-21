@@ -15,63 +15,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    //public class AiInfo :  IPacketizable, IHashable
-    //{
-    //    #region Fields
-
-    //    public Vector2 SpawnPoint;
-    //    public int RespawnTime;
-    //    public AiComponent.AiCommand AiCommand;
-    //    public Factions Faction;
-    //    #endregion
-    //    #region Constructor
-    //    public AiInfo(Vector2 spawnPoint,int respawnTime,Factions faction,AiComponent.AiCommand command)
-    //    {
-    //        SpawnPoint = spawnPoint;
-    //        RespawnTime = respawnTime;
-    //        AiCommand = command;
-    //        Faction = faction;
-    //    }
-    //    public AiInfo()
-    //    {
-            
-    //    }
-    //    #endregion
-
-    //    #region Hash/Copy
-
-        
-
-    //    public IComponentSystem DeepCopy(IComponentSystem into)
-    //    {
-
-    //        return into;
-    //    }
-
-    //    public Packet Packetize(Packet packet)
-    //    {
-    //        packet.Write(SpawnPoint)
-    //            .Write(RespawnTime)
-    //            ;
-    //        return packet;
-    //    }
-
-    //    public void Depacketize(Packet packet)
-    //    {
-    //        SpawnPoint = packet.ReadVector2();
-    //        RespawnTime = packet.ReadInt32();
-    //    }
-
-    //    public void Hash(Hasher hasher)
-    //    {
-
-
-    //        hasher.Put(BitConverter.GetBytes(SpawnPoint.X));
-    //        hasher.Put(BitConverter.GetBytes(SpawnPoint.Y));
-    //        hasher.Put(BitConverter.GetBytes(RespawnTime));
-    //    }
-    //    #endregion
-    //}
+    
     class ShipsSpawnSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
     {
         #region Fields
@@ -123,7 +67,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     const int cellSize = CellSystem.CellSize;
                     var center = new Vector2(cellSize*info.X + (cellSize >> 1), cellSize*info.Y + (cellSize >> 1));
-                    var faction = Manager.GetSystem<UniverseSystem>().Faction[info.Id];
+                    var cellInfo = Manager.GetSystem<UniverseSystem>().CellInfo[info.Id];
 
                     for (var i = -2; i < 2; i++)
                     {
@@ -136,7 +80,7 @@ namespace Space.ComponentSystem.Systems
                                 cellSize, AiComponent.Order.Guard);
                         
                         _entities.Add(Manager.EntityManager.AddEntity(
-                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], faction, spawnPoint, order
+                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], cellInfo.Faction, spawnPoint, order
                             )));
                     }
                     }

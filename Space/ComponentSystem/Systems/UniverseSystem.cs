@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Systems
 
         private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
 
-        public Dictionary<ulong, Factions> Faction = new Dictionary<ulong, Factions>();
+        public Dictionary<ulong, CellInfo> CellInfo = new Dictionary<ulong, CellInfo>();
 
         #endregion
 
@@ -59,25 +59,28 @@ namespace Space.ComponentSystem.Systems
                     // List to accumulate entities we created for this system in.
                     List<int> list = new List<int>();
 
-                    if (!Faction.ContainsKey(info.Id))
+                    if (!CellInfo.ContainsKey(info.Id))
                     {
                         var random2 = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
                         var number = random2.NextInt32(3);
+                        var cell = new CellInfo();
                         switch (number)
                         {
+                                
                             case (0):
-                                Faction.Add(info.Id, Factions.NpcFractionA);
+                                 cell.Faction = Factions.NpcFractionA;
                                 break;
                             case (1):
-                                Faction.Add(info.Id, Factions.NpcFractionB);
+                                cell.Faction = Factions.NpcFractionB;
                                 break;
                             case (2):
-                                Faction.Add(info.Id, Factions.NpcFractionC);
+                                cell.Faction = Factions.NpcFractionC;
                                 break;
                             default:
-                                Faction.Add(info.Id, Factions.NpcFractionC);
+                                cell.Faction = Factions.NpcFractionC;
                                 break;
                         }
+                        CellInfo.Add(info.Id, cell);
                     }
                     // Get center of our cell.
                     var cellSize = CellSystem.CellSize;
@@ -86,14 +89,14 @@ namespace Space.ComponentSystem.Systems
                     if (info.X == 0 && info.Y == 0)
                     {
                         CreateSystem(random, ref center, list,
-                            Faction[info.Id], 
+                            CellInfo[info.Id].Faction, 
                             7, new[] {
                             0, 0, 1, 2, 4, 2, 1
                         });
                     }
                     else
                     {
-                        CreateSystem(random, ref center, list,Faction[info.Id]);
+                        CreateSystem(random, ref center, list,CellInfo[info.Id].Faction);
                     }
 
                     _entities.Add(info.Id, list);
@@ -108,6 +111,12 @@ namespace Space.ComponentSystem.Systems
                         }
 
                         _entities.Remove(info.Id);
+                    }
+                    //remove only if not changed
+                    if (CellInfo.ContainsKey(info.Id))
+                    {
+                        if (!CellInfo[info.Id].Changed)
+                            CellInfo.Remove(info.Id);
                     }
                 }
             }
@@ -131,11 +140,11 @@ namespace Space.ComponentSystem.Systems
                     packet.Write(entityId);
                 }
             }
-            packet.Write(Faction.Count);
-            foreach (var item in Faction)
+            packet.Write(CellInfo.Count);
+            foreach (var item in CellInfo)
             {
                 packet.Write(item.Key);
-                packet.Write((int)item.Value);
+                packet.Write(item.Value);
                 
             }
             return packet;
@@ -159,13 +168,13 @@ namespace Space.ComponentSystem.Systems
                 _entities.Add(key, list);
             }
 
-            Faction.Clear();
+            CellInfo.Clear();
             numCells = packet.ReadInt32();
             for (int i = 0; i < numCells; i++)
             {
                 var key = packet.ReadUInt64();
-                var value = (Factions) packet.ReadInt32();
-                Faction.Add(key,value);
+                var value = packet.ReadPacketizable<CellInfo>();
+                CellInfo.Add(key,value);
             }
         }
 
@@ -179,10 +188,10 @@ namespace Space.ComponentSystem.Systems
                     hasher.Put(BitConverter.GetBytes(entity));
                 }
             }
-            foreach (var entities in Faction.Values)
+            foreach (var entities in CellInfo.Values)
             {
                 
-                    hasher.Put(BitConverter.GetBytes((int)entities));
+                    entities.Hash(hasher);
             }
         }
 
@@ -194,12 +203,12 @@ namespace Space.ComponentSystem.Systems
             {
                 copy.WorldSeed = WorldSeed;
                 copy._entities.Clear();
-                copy.Faction.Clear();
+                copy.CellInfo.Clear();
             }
             else
             {
                 copy._entities = new Dictionary<ulong, List<int>>();
-                copy.Faction = new Dictionary<ulong, Factions>();
+                copy.CellInfo = new Dictionary<ulong, CellInfo>();
             }
 
             foreach (var item in _entities)
@@ -207,9 +216,9 @@ namespace Space.ComponentSystem.Systems
                 copy._entities.Add(item.Key, new List<int>(item.Value));
 
             }
-            foreach (var factionse in Faction)
+            foreach (var factionse in CellInfo)
             {
-                copy.Faction.Add(factionse.Key, factionse.Value);
+                copy.CellInfo.Add(factionse.Key, factionse.Value);
             }
 
             return copy;
@@ -413,6 +422,49 @@ namespace Space.ComponentSystem.Systems
             return _entities[id];
         }
 
+        #endregion
+    }
+
+    public class CellInfo:IPacketizable,IHashable
+    {
+        public Factions Faction;
+        public bool Changed;
+        public int TechLevel { get { return TechLevel; }
+            set { TechLevel = value;
+                Changed = true;
+            }
+        }
+
+        /// <summary>
+        /// Changes the Faction of this Cell 
+        /// </summary>
+        /// <param name="faction"></param>
+        public void ChangeFaction(Factions faction)
+        {
+            Faction = faction;
+            Changed = true;
+        }
+        #region Packetize
+        
+        public Packet Packetize(Packet packet)
+        {
+            packet.Write((int)Faction);
+            packet.Write(Changed);
+            return packet;
+        }
+
+        public void Depacketize(Packet packet)
+        {
+            Faction = (Factions) packet.ReadInt32();
+            Changed = packet.ReadBoolean();
+        }
+
+        public void Hash(Hasher hasher)
+        {
+            hasher.Put(BitConverter.GetBytes((int) Faction))
+                .Put(BitConverter.GetBytes(Changed));
+
+        }
         #endregion
     }
 }
