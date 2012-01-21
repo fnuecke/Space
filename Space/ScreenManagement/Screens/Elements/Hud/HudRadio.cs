@@ -41,9 +41,14 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         private HudSpacer _spacerTop;
 
         /// <summary>
-        /// The content.
+        /// The portrait.
         /// </summary>
-        private HudContent _bgContent;
+        private HudContent _bgPortrait;
+
+        /// <summary>
+        /// The text.
+        /// </summary>
+        private HudContent _bgText;
 
         /// <summary>
         /// The bottom spacer.
@@ -72,7 +77,10 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _client = client;
             _spacerTop = new HudSpacer(_client, HudSpacer.Mode.Top);
-            _bgContent = new HudContent(_client);
+            _bgPortrait = new HudContent(_client, HudContent.Mode.Image, true, false);
+            _bgPortrait.setContentSize(69, 92);
+            _bgText = new HudContent(_client, HudContent.Mode.BackgroundOnly, false, true);
+            _bgText.setSize(_spacerTop.Width - _bgPortrait.getSize().X - 1, _bgPortrait.getSize().Y);
             _spacerBottom = new HudSpacer(_client, HudSpacer.Mode.Bottom);
             _footer = new HudHeader(_client);
         }
@@ -86,7 +94,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spriteBatch = spriteBatch;
 
             _spacerTop.LoadContent(spriteBatch, content);
-            _bgContent.LoadContent(spriteBatch, content);
+            _bgPortrait.LoadContent(spriteBatch, content);
+            _bgText.LoadContent(spriteBatch, content);
             _spacerBottom.LoadContent(spriteBatch, content);
             _footer.LoadContent(spriteBatch, content);
 
@@ -103,8 +112,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _position = newPosition;
             _spacerTop.Position = _position;
-            _bgContent.Position = new Point(_spacerTop.Position.X, _spacerTop.Position.Y + _spacerTop.GetHeight());
-            _spacerBottom.Position = new Point(_bgContent.Position.X, _bgContent.Position.Y + _bgContent.Height);
+            _bgPortrait.Position = new Point(_spacerTop.Position.X, _spacerTop.Position.Y + _spacerTop.GetHeight());
+            _bgText.Position = new Point(_bgPortrait.Position.X + _bgPortrait.getSize().X + 1, _bgPortrait.Position.Y);
+            _spacerBottom.Position = new Point(_bgPortrait.Position.X, _bgPortrait.Position.Y + _bgPortrait.getSize().Y);
             _footer.Position = new Point(_spacerBottom.Position.X, _spacerBottom.Position.Y + _spacerBottom.GetHeight());
         }
 
@@ -112,7 +122,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         public int GetHeight() {
             int height = 0;
             height += _spacerTop.GetHeight();
-            height += _bgContent.Height;
+            height += _bgPortrait.getSize().Y;
             height += _spacerBottom.GetHeight();
             height += _footer.Height;
             return height;
@@ -146,7 +156,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         public void Draw()
         {
             _spacerTop.Draw();
-            _bgContent.Draw();
+            _bgPortrait.Draw();
+            _bgText.Draw();
             _spacerBottom.Draw();
             _footer.Draw();
         }

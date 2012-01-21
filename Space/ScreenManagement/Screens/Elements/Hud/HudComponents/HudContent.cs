@@ -18,6 +18,14 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         #region Constants
 
         /// <summary>
+        /// Enums for the different Modes that are possible within this class.
+        /// </summary>
+        public enum Mode
+        {
+            BackgroundOnly, Image
+        }
+
+        /// <summary>
         /// The standard value for the width.
         /// </summary>
         private const int StandardWidth = 302;
@@ -66,24 +74,39 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private SpaceForms _spaceForms;
 
+        /// <summary>
+        /// The width of the element.
+        /// </summary>
+        public int _width;
+
+        /// <summary>
+        /// The height of the element.
+        /// </summary>
+        public int _height;
+
+        /// <summary>
+        /// The Texture2D image of the portrait that should be displayed.
+        /// </summary>
+        private Texture2D _image;
+
+        /// <summary>
+        /// The current mode.
+        /// </summary>
+        private Mode _currentMode;
+
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// The width of the element.
+        /// The size of the border on the left side side.
         /// </summary>
-        public int Width { get; set; }
+        public int BorderLeft { get; set; }
 
         /// <summary>
-        /// The height of the element.
+        /// The size of the border on the right side side.
         /// </summary>
-        public int Height { get; set; }
-
-        /// <summary>
-        /// The size of the border of the side.
-        /// </summary>
-        public int BorderSide { get; set; }
+        public int BorderRight { get; set; }
 
         /// <summary>
         /// The size of the border around the box.
@@ -95,22 +118,87 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #endregion
 
+        #region Getter & Setter
+
+        /// <summary>
+        /// Set a new image as a content portrait.
+        /// Please remember to reset the size if the image size has changed.
+        /// </summary>
+        /// <param name="path"></param>
+        public void setImage(String path)
+        {
+            _image = _client.Game.Content.Load<Texture2D>(path);
+        }
+
+        /// <summary>
+        /// Commit the size of the content (without the borders!) and this method
+        /// will calculate the real size of the element (with the borders)
+        /// </summary>
+        /// <param name="width">The new width of the content.</param>
+        /// <param name="height">The new height of the content.</param>
+        public void setContentSize(int width, int height)
+        {
+            _width = width + 2 * BorderAround + BorderLeft + BorderRight;
+            _height = height + 2 * BorderAround;
+        }
+
+        /// <summary>
+        /// Returns the content size (without the borders!)
+        /// </summary>
+        /// <returns>The content size (without the borders).</returns>
+        public Point getContentSize()
+        {
+            return new Point(_width - 2 * BorderAround - BorderLeft - BorderRight, _height - 2 * BorderAround);
+        }
+
+        /// <summary>
+        /// Returns the size of the element (with borders).
+        /// </summary>
+        /// <returns>The size of the element (with borders)</returns>
+        public Point getSize()
+        {
+            return new Point(_width, _height);
+        }
+
+        /// <summary>
+        /// Commit the size of the element (with the borders!)
+        /// </summary>
+        /// <param name="width">The new width of the element.</param>
+        /// <param name="height">The new height of the element.</param>
+        public void setSize(int width, int height)
+        {
+            _width = width;
+            _height = height;
+        }
+
+        #endregion
+
         #region Initialisation
 
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="client">The general client object.</param>
-        public HudContent(GameClient client)
+        public HudContent(GameClient client, Mode mode, Boolean addBorderToWest, Boolean addBorderToEast)
         {
             _client = client;
+            _currentMode = mode;
 
             // set the standard values into the field.
-            Width = StandardWidth;
-            Height = StandardHeight;
-            BorderSide = StandardBorderSide;
+            setSize(StandardWidth, StandardHeight);
+            BorderLeft = StandardBorderSide;
+            BorderRight = StandardBorderSide;
             BorderAround = StandardBorderAround;
             Position = new Point(100, 100);
+
+            if (!addBorderToWest)
+            {
+                BorderLeft = 0;
+            }
+            if (!addBorderToEast)
+            {
+                BorderRight = 0;
+            }
 
         }
 
@@ -123,6 +211,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spriteBatch = spriteBatch;
             _basicForms = new BasicForms(_spriteBatch, _client);
             _spaceForms = new SpaceForms(_spriteBatch);
+
+            // load an default image as image (image should not be null)
+            setImage("Textures/Portraits/default");
         }
 
         #endregion
@@ -138,19 +229,32 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             // draw the border around the box
             _spaceForms.DrawRectangleWithoutEdges(
-                Position.X + BorderSide,
+                Position.X + BorderLeft,
                 Position.Y,
-                Width - 2 * BorderSide,
-                Height,
+                _width - BorderLeft - BorderRight,
+                _height,
                 4, 2, HudColors.Lines);
 
-            // draw the background of the box
-            _basicForms.FillRectangle(
-                Position.X + BorderAround + BorderSide,
-                Position.Y + BorderAround,
-                Width - 2 * BorderSide - 2 * BorderAround,
-                Height - 2 * BorderAround,
-                HudColors.BackgroundBox * 0.7f);
+            if (_currentMode == Mode.BackgroundOnly)
+            {
+                // draw the background of the box
+                _basicForms.FillRectangle(
+                    Position.X + BorderAround + BorderLeft,
+                    Position.Y + BorderAround,
+                    _width - BorderLeft - BorderRight - 2 * BorderAround,
+                    _height - 2 * BorderAround,
+                    HudColors.BackgroundBox * 0.7f);
+            }
+
+            if (_currentMode == Mode.Image)
+            {
+                var posImage = new Rectangle(
+                    Position.X + BorderLeft + BorderAround,
+                    Position.Y + BorderAround,
+                    _image.Width,
+                    _image.Height);
+                _spriteBatch.Draw(_image, posImage, Color.White * 0.9f);
+            }
 
             _spriteBatch.End();
         }

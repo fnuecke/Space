@@ -18,7 +18,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         #region Constants
 
         /// <summary>
-        /// Enums for the different Modes that are possible within this class:
+        /// Enums for the different Modes that are possible within this class.
         /// </summary>
         public enum Mode
         {
@@ -46,7 +46,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         private const int StandardLengthLineSide = 8;
 
         /// <summary>
-        /// Standard value for the size of the outter border.
+        /// Standard value for the size of the outer border.
         /// </summary>
         private const int StandardOuterBorder = 1;
 
