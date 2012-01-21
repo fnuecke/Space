@@ -78,7 +78,7 @@ namespace Engine.ComponentSystem.Components
 
                 if (Entity != null)
                 {
-                    Entity.SendMessage(ref message);
+                    Entity.SendMessageToComponents(ref message);
                 }
             }
         }
@@ -107,7 +107,7 @@ namespace Engine.ComponentSystem.Components
 
                 if (Entity != null)
                 {
-                    Entity.SendMessage(ref message);
+                    Entity.SendMessageToComponents(ref message);
                 }
             }
         }

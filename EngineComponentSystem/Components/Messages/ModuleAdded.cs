@@ -13,12 +13,5 @@ namespace Engine.ComponentSystem.Components.Messages
         /// The module that was added.
         /// </summary>
         public AbstractEntityModule<TAttribute> Module;
-
-        internal static ModuleAdded<TAttribute> Create(AbstractEntityModule<TAttribute> module)
-        {
-            ModuleAdded<TAttribute> result;
-            result.Module = module;
-            return result;
-        }
     }
 }

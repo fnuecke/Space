@@ -127,6 +127,7 @@
     <Compile Include="Components\Messages\Collision.cs" />
     <Compile Include="Components\Messages\ModuleRemoved.cs" />
     <Compile Include="Components\Messages\ModuleAdded.cs" />
+    <Compile Include="Components\Messages\ModuleValueInvalidated.cs" />
     <Compile Include="Components\Messages\TranslationChanged.cs" />
     <Compile Include="Components\AbstractSound.cs" />
     <Compile Include="Components\Spin.cs" />

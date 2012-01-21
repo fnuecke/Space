@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Components
                                 // Generate message.
                                 WeaponFired message;
                                 message.Weapon = weapon;
-                                Entity.SendMessage(ref message);
+                                Entity.SendMessageToComponents(ref message);
                             }
                         }
                     }

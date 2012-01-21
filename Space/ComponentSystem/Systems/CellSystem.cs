@@ -123,7 +123,7 @@ namespace Space.ComponentSystem.Systems
             {
                 var xy = CoordinateIds.Split(bornCell);
                 var message = CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true);
-                Manager.SendSystemMessage(ref message);
+                Manager.SendMessageToSystems(ref message);
             }
             _bornCells.Clear();
 
@@ -134,7 +134,7 @@ namespace Space.ComponentSystem.Systems
             {
                 var xy = CoordinateIds.Split(deceasedCell);
                 var message = CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false);
-                Manager.SendSystemMessage(ref message);
+                Manager.SendMessageToSystems(ref message);
             }
             _deceasedCells.Clear();
 

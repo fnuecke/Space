@@ -462,7 +462,7 @@ namespace Space
                             sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
                         }
 
-                        sb.AppendFormat("Speed: {0:f}/{1:f}\n", info.Speed, info.MaxSpeed);
+                        sb.AppendFormat("Speed: {0:f}/{1:f}, Maximum acceleration: {2:f}\n", info.Speed, info.MaxSpeed, info.MaxAcceleration);
                         sb.AppendFormat("Mass: {0:f}", info.Mass);
 
                         _spriteBatch.DrawString(_console.Font, sb.ToString(), new Vector2(60, 60), Color.White);

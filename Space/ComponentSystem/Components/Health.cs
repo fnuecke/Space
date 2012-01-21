@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
 using Space.Data;
 using Space.Data.Modules;
@@ -36,28 +37,32 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">Handles module added / removed messages.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleAdded<EntityAttributeType> || message is ModuleRemoved<EntityAttributeType>)
+            if (message is ModuleValueInvalidated<EntityAttributeType>)
             {
-                // Module removed or added, recompute our values.
-                var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
-
-                // Rebuild base energy and regeneration values.
-                MaxValue = 0;
-                Regeneration = 0;
-                foreach (var hull in modules.GetModules<HullModule>())
+                var type = ((ModuleValueInvalidated<EntityAttributeType>)(ValueType)message).ValueType;
+                if (type == EntityAttributeType.Health || type == EntityAttributeType.HealthRegeneration)
                 {
-                    MaxValue += hull.Health;
-                    Regeneration += hull.HealthRegeneration;
-                }
+                    // Module removed or added, recompute our values.
+                    var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
 
-                // Apply bonuses.
-                MaxValue = modules.GetValue(EntityAttributeType.Health, MaxValue);
-                Regeneration = modules.GetValue(EntityAttributeType.HealthRegeneration, Regeneration);
+                    // Rebuild base energy and regeneration values.
+                    MaxValue = 0;
+                    Regeneration = 0;
+                    foreach (var hull in modules.GetModules<HullModule>())
+                    {
+                        MaxValue += hull.Health;
+                        Regeneration += hull.HealthRegeneration;
+                    }
 
-                // Adjust current health so it does not exceed our new maximum.
-                if (Value > MaxValue)
-                {
-                    Value = MaxValue;
+                    // Apply bonuses.
+                    MaxValue = modules.GetValue(EntityAttributeType.Health, MaxValue);
+                    Regeneration = modules.GetValue(EntityAttributeType.HealthRegeneration, Regeneration);
+
+                    // Adjust current health so it does not exceed our new maximum.
+                    if (Value > MaxValue)
+                    {
+                        Value = MaxValue;
+                    }
                 }
             }
         }

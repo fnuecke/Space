@@ -42,7 +42,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void HandleSystemMessage<T>(ref T message)
+        public override void HandleMessage<T>(ref T message)
         {
             if (message is CellStateChanged)
             {

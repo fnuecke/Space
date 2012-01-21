@@ -1,4 +1,7 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Components.Messages;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.Data;
 using Space.Data.Modules;
@@ -12,6 +15,30 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class ShipInfo : AbstractComponent
     {
+        #region Fields
+
+        /// <summary>
+        /// Cached value for maximum ship acceleration.
+        /// </summary>
+        private float _maxAcceleration;
+
+        /// <summary>
+        /// Cached value for maximum ship speed.
+        /// </summary>
+        private float _maxSpeed;
+
+        /// <summary>
+        /// Cached value for ship mass.
+        /// </summary>
+        private float _mass;
+
+        /// <summary>
+        /// Cached value for ship's radar range.
+        /// </summary>
+        private float _radarRange;
+
+        #endregion
+
         #region Health / Energy
 
         /// <summary>
@@ -46,7 +73,14 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var health = Entity.GetComponent<Health>();
-                return health.Value;
+                if (health != null)
+                {
+                    return health.Value;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
@@ -58,7 +92,14 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var health = Entity.GetComponent<Health>();
-                return health.MaxValue;
+                if (health != null)
+                {
+                    return health.MaxValue;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
@@ -70,7 +111,14 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var health = Entity.GetComponent<Health>();
-                return health.Value / health.MaxValue;
+                if (health != null)
+                {
+                    return health.Value / health.MaxValue;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
@@ -82,7 +130,14 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var energy = Entity.GetComponent<Energy>();
-                return energy.Value;
+                if (energy != null)
+                {
+                    return energy.Value;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
@@ -94,7 +149,14 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var energy = Entity.GetComponent<Energy>();
-                return energy.MaxValue;
+                if (energy != null)
+                {
+                    return energy.MaxValue;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
@@ -106,7 +168,14 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var energy = Entity.GetComponent<Energy>();
-                return energy.Value / energy.MaxValue;
+                if (energy != null)
+                {
+                    return energy.Value / energy.MaxValue;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
@@ -122,7 +191,14 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var transform = Entity.GetComponent<Transform>();
-                return transform.Translation;
+                if (transform != null)
+                {
+                    return transform.Translation;
+                }
+                else
+                {
+                    return Vector2.Zero;
+                }
             }
         }
 
@@ -134,7 +210,14 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var transform = Entity.GetComponent<Transform>();
-                return transform.Rotation;
+                if (transform != null)
+                {
+                    return transform.Rotation;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
@@ -145,8 +228,15 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var acceleartion = Entity.GetComponent<Acceleration>();
-                return acceleartion.Value != Vector2.Zero;
+                var acceleration = Entity.GetComponent<Acceleration>();
+                if (acceleration != null)
+                {
+                    return acceleration.Value != Vector2.Zero;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
 
@@ -166,47 +256,36 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var velocity = Entity.GetComponent<Velocity>();
-                return velocity.Value.Length();
+                if (velocity != null)
+                {
+                    return velocity.Value.Length();
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
         /// <summary>
         /// Get the maximum speed of the ship.
         /// </summary>
-        /// <remarks>
-        /// Performance note: store this value if you use it more than once.
-        /// </remarks>
         public float MaxSpeed
         {
             get
             {
-                // Apply modifiers and return.
-                return MaxAcceleration / Entity.GetComponent<Friction>().Value;
+                return _maxSpeed;
             }
         }
 
         /// <summary>
         /// Get the maximum acceleration this ship is capable of.
         /// </summary>
-        /// <remarks>
-        /// Performance note: store this value if you use it more than once.
-        /// </remarks>
         public float MaxAcceleration
         {
             get
             {
-                // Get ship modules.
-                var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
-
-                // Get acceleration from thrusters.
-                float maxAcceleration = 0;
-                foreach (var thruster in modules.GetModules<ThrusterModule>())
-                {
-                    maxAcceleration += thruster.AccelerationForce;
-                }
-
-                // Divide by mass and return.
-                return maxAcceleration / modules.GetValue(EntityAttributeType.Mass);
+                return _maxAcceleration;
             }
         }
 
@@ -218,7 +297,14 @@ namespace Space.ComponentSystem.Components
             get
             {
                 var spin = Entity.GetComponent<Spin>();
-                return spin.Value;
+                if (spin != null)
+                {
+                    return spin.Value;
+                }
+                else
+                {
+                    return 0;
+                }
             }
         }
 
@@ -229,45 +315,153 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Gets the overall mass of this ship.
         /// </summary>
-        /// <remarks>
-        /// Performance note: store this value if you use it more than once.
-        /// </remarks>
         public float Mass
         {
             get
             {
-                // Get ship modules.
-                var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
-
-                // Get the mass of the ship and return it.
-                return modules.GetValue(EntityAttributeType.Mass);
+                return _mass;
             }
         }
 
         /// <summary>
         /// Get the ship's overall radar range.
         /// </summary>
-        /// <remarks>
-        /// Performance note: store this value if you use it more than once.
-        /// </remarks>
         public float RadarRange
         {
             get
             {
-                // Get ship modules.
-                var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
-
-                // Figure out the overall range of our radar system.
-                float radarRange = 0;
-                foreach (var sensor in modules.GetModules<SensorModule>())
-                {
-                    // TODO in case we're adding sensor types (anti-cloaking, ...) check this one's actually a radar.
-                    radarRange += sensor.Range;
-                }
-
-                // Apply modifiers, compute max speed and return.
-                return modules.GetValue(EntityAttributeType.SensorRange, radarRange);
+                return _radarRange;
             }
+        }
+
+        #endregion
+
+        #region Messaging
+
+        /// <summary>
+        /// Handles a message. Updates speed and acceleration when modules
+        /// change.
+        /// </summary>
+        /// <param name="message">The message to handle.</param>
+        public override void HandleMessage<T>(ref T message)
+        {
+            if (message is ModuleValueInvalidated<EntityAttributeType>)
+            {
+                var type = ((ModuleValueInvalidated<EntityAttributeType>)(ValueType)message).ValueType;
+                if (type == EntityAttributeType.Mass || type == EntityAttributeType.AccelerationForce)
+                {
+                    // Get ship modules.
+                    var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
+                    if (modules != null)
+                    {
+                        if (type == EntityAttributeType.Mass)
+                        {
+                            // Get the mass of the ship and return it.
+                            _mass = modules.GetValue(EntityAttributeType.Mass);
+                        }
+
+                        // Recompute cached values.
+                        _maxAcceleration = 0;
+                        _maxSpeed = 0;
+
+                        // Maximum acceleration. Get ship modules.
+                        // Get acceleration from thrusters.
+                        foreach (var thruster in modules.GetModules<ThrusterModule>())
+                        {
+                            _maxAcceleration += thruster.AccelerationForce;
+                        }
+
+                        // Divide by mass and return.
+                        _maxAcceleration /= _mass;
+
+                        // Maximum speed.
+                        var friction = Entity.GetComponent<Friction>();
+                        if (friction != null)
+                        {
+                            _maxSpeed = MaxAcceleration / friction.Value;
+                        }
+                    }
+                }
+                else if (type == EntityAttributeType.SensorRange)
+                {
+                    // Get ship modules.
+                    var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
+                    if (modules != null)
+                    {
+                        // Figure out the overall range of our radar system.
+                        float radarRange = 0;
+                        foreach (var sensor in modules.GetModules<SensorModule>())
+                        {
+                            // TODO in case we're adding sensor types (anti-cloaking, ...) check this one's actually a radar.
+                            radarRange += sensor.Range;
+                        }
+
+                        // Apply modifiers, compute max speed and return.
+                        _radarRange = modules.GetValue(EntityAttributeType.SensorRange, radarRange);
+                    }
+                }
+            }
+        }
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Packet Packetize(Packet packet)
+        {
+            return base.Packetize(packet)
+                .Write(_maxAcceleration)
+                .Write(_maxSpeed)
+                .Write(_mass)
+                .Write(_radarRange);
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+
+            _maxAcceleration = packet.ReadSingle();
+            _maxSpeed = packet.ReadSingle();
+            _mass = packet.ReadSingle();
+            _radarRange = packet.ReadSingle();
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a deep copy of this instance by reusing the specified
+        /// instance, if possible.
+        /// </summary>
+        /// <param name="into"></param>
+        /// <returns>
+        /// An independent (deep) clone of this instance.
+        /// </returns>
+        public override AbstractComponent DeepCopy(AbstractComponent into)
+        {
+            var copy = (ShipInfo)base.DeepCopy(into);
+
+            if (copy == into)
+            {
+                copy._maxAcceleration = _maxAcceleration;
+                copy._maxSpeed = _maxSpeed;
+                copy._mass = _mass;
+                copy._radarRange = _maxSpeed;
+            }
+
+            return copy;
         }
 
         #endregion

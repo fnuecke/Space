@@ -161,19 +161,24 @@ namespace Engine.ComponentSystem.Components
             module.UID = _idManager.GetId();
             // Invalidate caches.
             _moduleCache.Remove(module.GetType());
+            ModuleValueInvalidated<TAttribute> invalidatedMessage;
             foreach (var attribute in module.Attributes)
             {
                 _attributeCache.Remove(attribute.Type);
+                invalidatedMessage.ValueType = attribute.Type;
+                Entity.SendMessageToComponents(ref invalidatedMessage);
             }
             foreach (var attributeType in module.AttributesToInvalidate)
             {
                 _attributeCache.Remove(attributeType);
+                invalidatedMessage.ValueType = attributeType;
+                Entity.SendMessageToComponents(ref invalidatedMessage);
             }
             if (Entity != null)
             {
-                ModuleAdded<TAttribute> message;
-                message.Module = module;
-                Entity.SendMessage(ref message);
+                ModuleAdded<TAttribute> addedMessage;
+                addedMessage.Module = module;
+                Entity.SendMessageToComponents(ref addedMessage);
             }
         }
 
@@ -206,16 +211,19 @@ namespace Engine.ComponentSystem.Components
             {
                 // Invalidate caches.
                 _moduleCache.Remove(module.GetType());
+                ModuleValueInvalidated<TAttribute> invalidatedMessage;
                 foreach (var attribute in module.Attributes)
                 {
                     _attributeCache.Remove(attribute.Type);
+                    invalidatedMessage.ValueType = attribute.Type;
+                    Entity.SendMessageToComponents(ref invalidatedMessage);
                 }
                 // Notify others *before* resetting the id.
                 if (Entity != null)
                 {
-                    ModuleRemoved<TAttribute> message;
-                    message.Module = module;
-                    Entity.SendMessage(ref message);
+                    ModuleRemoved<TAttribute> removedMessage;
+                    removedMessage.Module = module;
+                    Entity.SendMessageToComponents(ref removedMessage);
                 }
                 _idManager.ReleaseId(module.UID);
                 module.UID = -1;
