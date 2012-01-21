@@ -229,7 +229,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _basicForms.FillRectangle(_radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
 
             // ... and the border of the radar a bit lighter.
-            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.3f);
+            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.1f);
 
             // Color the background of the radar red if health is low...
             float healthPercent = info.Health / info.MaxHealth;

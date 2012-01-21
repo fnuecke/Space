@@ -10,7 +10,12 @@ using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudBox : IHudParentElement
+    /// <summary>
+    /// A HUD element that is used for displaying incoming radio messages.
+    /// The radio element displays an image of the receiver and the message
+    /// as a text.
+    /// </summary>
+    class HudRadio : IHudParentElement
     {
 
         #region Fields
@@ -29,11 +34,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// Sprite batch used for rendering.
         /// </summary>
         private SpriteBatch _spriteBatch;
-
-        /// <summary>
-        /// The header label.
-        /// </summary>
-        private HudHeader _header;
 
         /// <summary>
         /// The top spacer.
@@ -68,10 +68,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// Constructor
         /// </summary>
         /// <param name="client">The general client object.</param>
-        public HudBox(GameClient client)
+        public HudRadio(GameClient client)
         {
             _client = client;
-            _header = new HudHeader(_client);
             _spacerTop = new HudSpacer(_client, HudSpacer.Mode.Top);
             _bgContent = new HudContent(_client);
             _spacerBottom = new HudSpacer(_client, HudSpacer.Mode.Bottom);
@@ -79,14 +78,13 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         }
 
         /// <summary>
-        /// Load all elements of this gud element.
+        /// Load all elements of this HUD element.
         /// </summary>
         public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
             _content = content;
             _spriteBatch = spriteBatch;
 
-            _header.LoadContent(spriteBatch, content);
             _spacerTop.LoadContent(spriteBatch, content);
             _bgContent.LoadContent(spriteBatch, content);
             _spacerBottom.LoadContent(spriteBatch, content);
@@ -104,8 +102,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         public void SetPosition(Point newPosition)
         {
             _position = newPosition;
-            _header.Position = _position;
-            _spacerTop.Position = new Point(_header.Position.X, _header.Position.Y + _header.Height);
+            _spacerTop.Position = _position;
             _bgContent.Position = new Point(_spacerTop.Position.X, _spacerTop.Position.Y + _spacerTop.GetHeight());
             _spacerBottom.Position = new Point(_bgContent.Position.X, _bgContent.Position.Y + _bgContent.Height);
             _footer.Position = new Point(_spacerBottom.Position.X, _spacerBottom.Position.Y + _spacerBottom.GetHeight());
@@ -114,12 +111,29 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         // Implementation of IHudParentElement interface
         public int GetHeight() {
             int height = 0;
-            height += _header.Height;
             height += _spacerTop.GetHeight();
             height += _bgContent.Height;
             height += _spacerBottom.GetHeight();
             height += _footer.Height;
             return height;
+        }
+
+        /// <summary>
+        /// Set the name into the left text label.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public void setName(String name)
+        {
+            _footer.TextLabelLeft = name;
+        }
+
+        /// <summary>
+        /// Set the name into the left text label.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        public void setTitle(String title)
+        {
+            _footer.TextLabelRight = title;
         }
 
         #endregion
@@ -131,7 +145,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         public void Draw()
         {
-            _header.Draw();
             _spacerTop.Draw();
             _bgContent.Draw();
             _spacerBottom.Draw();

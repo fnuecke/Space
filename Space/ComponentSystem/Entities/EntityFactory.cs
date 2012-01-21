@@ -51,13 +51,20 @@ namespace Space.ComponentSystem.Entities
         public static Entity CreateAIShip(ShipData shipData, Factions faction, Vector2 position, AiComponent.AiCommand command)
         {
             Entity entity = CreateShip(shipData, faction, ref position);
-
+            var input = entity.GetComponent<ShipControl>();
+            input.SetStabilizing(true);
             entity.AddComponent(new AiComponent(command));
             entity.AddComponent(new Death());
             
             return entity;
         }
-
+        public static Entity CreateExplosion(Vector2 position)
+        {
+            Entity entity = new Entity();
+            entity.AddComponent(new Transform(position));
+            entity.AddComponent(new ExplosionEffect());
+            return entity;
+        }
         /// <summary>
         /// Creates a new ship with the specified parameters.
         /// </summary>

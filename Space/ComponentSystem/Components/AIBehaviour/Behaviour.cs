@@ -11,10 +11,12 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    public abstract class Behaviour: IPacketizable
+    public abstract class Behaviour: IPacketizable,ICopyable<Behaviour>
     {
         protected Vector2 direction;
         public AiComponent AiComponent;
+
+        protected Behaviour(){}
         protected Behaviour(AiComponent entity)
         {
             this.AiComponent = entity;
@@ -94,17 +96,35 @@ namespace Space.ComponentSystem.Components.AIBehaviour
         }
 
         
-        public Packet Packetize(Packet packet)
+        public virtual Packet Packetize(Packet packet)
         {
             return packet.Write(direction);
 
         }
 
-        public void Depacketize(Packet packet)
+        public virtual void Depacketize(Packet packet)
         {
             direction = packet.ReadVector2();
         }
 
-        
+
+        public virtual Behaviour DeepCopy()
+        {
+            return DeepCopy(null);
+        }
+
+        public virtual Behaviour DeepCopy(Behaviour into)
+        {
+            var copy = (into != null && into.GetType() == this.GetType())
+               ? into
+               : (Behaviour)MemberwiseClone();
+
+            if (copy == into)
+            {
+                copy.direction = direction;
+            }
+
+            return copy;
+        }
     }
 }

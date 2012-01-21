@@ -129,6 +129,7 @@
     <Compile Include="ComponentSystem\Components\AbstractRegeneratingValue.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\AttackBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\Behaviour.cs" />
+    <Compile Include="ComponentSystem\Components\AIBehaviour\MoveBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\PatrolBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIComponent.cs" />
     <Compile Include="ComponentSystem\Components\AstronomicBody.cs" />
@@ -136,6 +137,7 @@
     <Compile Include="ComponentSystem\Components\Death.cs" />
     <Compile Include="ComponentSystem\Components\Detectable.cs" />
     <Compile Include="ComponentSystem\Components\Energy.cs" />
+    <Compile Include="ComponentSystem\Components\ExplosionEffect.cs" />
     <Compile Include="ComponentSystem\Components\Faction.cs" />
     <Compile Include="ComponentSystem\Components\Gravitation.cs" />
     <Compile Include="ComponentSystem\Components\Health.cs" />
@@ -157,7 +159,7 @@
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="Graphics\Planet.cs" />
     <Compile Include="Graphics\Sun.cs" />
-    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudBox.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudRadio.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSpacer.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudLabel.cs" />
