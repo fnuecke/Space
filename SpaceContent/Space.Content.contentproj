@@ -2075,115 +2075,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fonts\strasua_16.png">
-      <Name>strasua_16</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Fonts\strasua_10.png">
-      <Name>strasua_10</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_11.png">
-      <Name>strasua_11</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_12.png">
-      <Name>strasua_12</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_13.png">
-      <Name>strasua_13</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_14.png">
-      <Name>strasua_14</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_15.png">
-      <Name>strasua_15</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_17.png">
-      <Name>strasua_17</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_18.png">
-      <Name>strasua_18</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_19.png">
-      <Name>strasua_19</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_20.png">
-      <Name>strasua_20</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_21.png">
-      <Name>strasua_21</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_22.png">
-      <Name>strasua_22</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_23.png">
-      <Name>strasua_23</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_24.png">
-      <Name>strasua_24</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_25.png">
-      <Name>strasua_25</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_26.png">
-      <Name>strasua_26</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_27.png">
-      <Name>strasua_27</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_28.png">
-      <Name>strasua_28</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_29.png">
-      <Name>strasua_29</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Fonts\strasua_30.png">
-      <Name>strasua_30</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Fonts\visitor.spritefont">
       <Name>visitor</Name>
       <Importer>FontDescriptionImporter</Importer>
@@ -2283,6 +2174,13 @@
       <Name>default</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Fonts\strasua_11.spritefont">
+      <Name>strasua_11</Name>
+      <Importer>FontDescriptionImporter</Importer>
+      <Processor>NuclexSpriteFontDescriptionProcessor</Processor>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

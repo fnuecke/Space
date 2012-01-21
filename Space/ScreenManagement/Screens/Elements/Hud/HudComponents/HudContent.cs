@@ -253,7 +253,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
                     Position.Y + BorderAround,
                     _image.Width,
                     _image.Height);
-                _spriteBatch.Draw(_image, posImage, Color.White * 0.9f);
+                _spriteBatch.Draw(_image, posImage, Color.White * 0.7f);
             }
 
             _spriteBatch.End();

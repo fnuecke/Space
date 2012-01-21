@@ -168,7 +168,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _basicForms = new BasicForms(_spriteBatch, _client);
 
             // load the font that is used for the labels
-            _font = _content.Load<SpriteFont>("Fonts/strasua_13");
+            _font = _content.Load<SpriteFont>("Fonts/strasua_11");
         }
 
         #endregion
@@ -194,7 +194,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
                     new[] { 0.2f, 0.8f });
 
                 // draw the title string
-                _spriteBatch.DrawString(_font, TextLabelLeft, new Vector2(Position.X + BorderSide + 5, Position.Y + 3), HudColors.FontDark);
+                _spriteBatch.DrawString(_font, TextLabelLeft, new Vector2(Position.X + BorderSide + 5, Position.Y + 2), HudColors.FontDark);
             }
 
             // draw the second rectangle
@@ -210,7 +210,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
                 // draw the sub string
                 var size = _font.MeasureString(TextLabelRight);
-                _spriteBatch.DrawString(_font, TextLabelRight, new Vector2(Position.X + Width - BorderSide - Width2ndElement / 2 - size.X / 2, Position.Y + 3), HudColors.FontLight);
+                _spriteBatch.DrawString(_font, TextLabelRight, new Vector2(Position.X + Width - BorderSide - Width2ndElement / 2 - size.X / 2, Position.Y + 2), HudColors.FontLight);
             }
 
             _spriteBatch.End();
