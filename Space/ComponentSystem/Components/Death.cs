@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Entities;
 
 namespace Space.ComponentSystem.Components
@@ -24,7 +25,14 @@ namespace Space.ComponentSystem.Components
 
             if (health != null && health.Value == 0)
             {
-                Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation));
+                var TransformedRenderer = Entity.GetComponent<TransformedRenderer>();
+                var size = 0.0;
+                if (TransformedRenderer != null)
+                {
+                    size = Math.Sqrt(TransformedRenderer.GetTextureSize());
+                }
+                Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation,(float)size));
+                
                 Entity.Manager.RemoveEntity(Entity);
             }
         }

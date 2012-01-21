@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Parameterizations;
+﻿using System;
+using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -75,7 +76,12 @@ namespace Engine.ComponentSystem.Components
                 args.SpriteBatch.End();
             }
         }
-
+        public double GetTextureSize()
+        {
+            if(_texture != null)
+                return Math.Sqrt((double)_texture.Width*_texture.Height);
+            return 0;
+        }
         #endregion
     }
 }

@@ -1,12 +1,15 @@
-﻿namespace Space.ComponentSystem.Components
+﻿using Microsoft.Xna.Framework;
+
+namespace Space.ComponentSystem.Components
 {
     sealed class ExplosionEffect : Effect
     {
-        public ExplosionEffect()
+        public ExplosionEffect(float scale = 0)
             : base("Effects/BasicExplosion")
         {
+            Scale = scale;
         }
-
+        
         public override void Update(object parameterization)
         {
             base.Update(parameterization);

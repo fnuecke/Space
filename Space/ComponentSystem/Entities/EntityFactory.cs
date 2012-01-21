@@ -65,13 +65,14 @@ namespace Space.ComponentSystem.Entities
         /// Creates a new explosion effect at the specified position.
         /// </summary>
         /// <param name="position">The position at which to show the explosion.</param>
+        /// <param name="scale">The Scale of the Explosion</param>
         /// <returns>The entity representing the explosion.</returns>
-        public static Entity CreateExplosion(Vector2 position)
+        public static Entity CreateExplosion(Vector2 position,float scale = 0)
         {
             Entity entity = new Entity();
 
             entity.AddComponent(new Transform(position));
-            entity.AddComponent(new ExplosionEffect());
+            entity.AddComponent(new ExplosionEffect(scale));
 
             return entity;
         }
@@ -394,7 +395,9 @@ namespace Space.ComponentSystem.Entities
             var entity = new Entity();
 
             var renderer = new TransformedRenderer(texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
-
+            //var health = new Health(120);
+            //entity.AddComponent(health);
+            //entity.AddComponent(new Death());
             entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
             entity.AddComponent(new Spin(((float)Math.PI) / period));
             entity.AddComponent(new EllipsePath(center.UID, orbitRadius, orbitRadius, 0, period, 0));

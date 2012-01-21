@@ -4,6 +4,7 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Entities;
 
 namespace Space.ComponentSystem.Components
 {
@@ -137,6 +138,13 @@ namespace Space.ComponentSystem.Components
                 }
                 else if (health.Value == 0)
                 {
+                    var transformedRenderer = Entity.GetComponent<TransformedRenderer>();
+                    var size = 0.0;
+                    if (transformedRenderer != null)
+                    {
+                        size = Math.Sqrt(transformedRenderer.GetTextureSize());
+                    }
+                    Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation, (float)size));
                     // Entity died, disable components and wait.
                     foreach (var componentType in ComponentsToDisable)
                     {

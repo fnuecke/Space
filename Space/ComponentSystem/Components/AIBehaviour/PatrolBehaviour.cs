@@ -14,10 +14,13 @@ namespace Space.ComponentSystem.Components.AIBehaviour
         public PatrolBehaviour(AiComponent component)
             : base(component)
         {
+            
         }
 
         public override void Update()
         {
+            
+            
             direction.X += MathHelper.Lerp(-.25f, .25f, (float)random.NextDouble());
             direction.Y += MathHelper.Lerp(-.25f, .25f, (float)random.NextDouble());
 
@@ -28,7 +31,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             var info = AiComponent.Entity.GetComponent<ShipInfo>();
             var input = AiComponent.Entity.GetComponent<ShipControl>();
             input.SetShooting(false);
-
+            input.SetStabilizing(true);
             //Next, we'll turn the characters back towards the center of the screen, to
             //prevent them from getting stuck on the edges of the screen.   
             float distanceFromCenter = Vector2.Distance(AiComponent.Command.Target, info.Position);
