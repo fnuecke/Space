@@ -45,6 +45,11 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private const int StandardBorderAround = 1;
 
+        /// <summary>
+        /// The standard value for the gap between the border and the content.
+        /// </summary>
+        private const int StandardGapBorderContent = 1;
+
         #endregion
 
         #region Fields
@@ -113,6 +118,11 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         public int BorderAround { get; set; }
 
+        /// <summary>
+        /// The gap between the border and the content.
+        /// </summary>
+        public int GapBorderContent { get; set; }
+
         // Implementation of IHudChildElement interface
         public Point Position { get; set; }
 
@@ -138,8 +148,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <param name="height">The new height of the content.</param>
         public void setContentSize(int width, int height)
         {
-            _width = width + 2 * BorderAround + BorderLeft + BorderRight;
-            _height = height + 2 * BorderAround;
+            _width = width + 2 * BorderAround + BorderLeft + BorderRight + 2 * GapBorderContent;
+            _height = height + 2 * BorderAround + 2 * GapBorderContent;
         }
 
         /// <summary>
@@ -148,7 +158,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <returns>The content size (without the borders).</returns>
         public Point getContentSize()
         {
-            return new Point(_width - 2 * BorderAround - BorderLeft - BorderRight, _height - 2 * BorderAround);
+            return new Point(_width - 2 * BorderAround - BorderLeft - BorderRight - 2 * GapBorderContent, _height - 2 * BorderAround - 2 * GapBorderContent);
         }
 
         /// <summary>
@@ -189,6 +199,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             BorderLeft = StandardBorderSide;
             BorderRight = StandardBorderSide;
             BorderAround = StandardBorderAround;
+            GapBorderContent = StandardGapBorderContent;
             Position = new Point(100, 100);
 
             if (!addBorderToWest)
@@ -239,18 +250,18 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             {
                 // draw the background of the box
                 _basicForms.FillRectangle(
-                    Position.X + BorderAround + BorderLeft,
-                    Position.Y + BorderAround,
-                    _width - BorderLeft - BorderRight - 2 * BorderAround,
-                    _height - 2 * BorderAround,
+                    Position.X + BorderAround + BorderLeft + GapBorderContent,
+                    Position.Y + BorderAround + GapBorderContent,
+                    _width - BorderLeft - BorderRight - 2 * BorderAround - 2 * GapBorderContent,
+                    _height - 2 * BorderAround - 2 * GapBorderContent,
                     HudColors.BackgroundBox * 0.7f);
             }
 
             if (_currentMode == Mode.Image)
             {
                 var posImage = new Rectangle(
-                    Position.X + BorderLeft + BorderAround,
-                    Position.Y + BorderAround,
+                    Position.X + BorderLeft + BorderAround + GapBorderContent,
+                    Position.Y + BorderAround + GapBorderContent,
                     _image.Width,
                     _image.Height);
                 _spriteBatch.Draw(_image, posImage, Color.White * 0.7f);
