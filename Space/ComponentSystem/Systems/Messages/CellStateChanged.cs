@@ -26,15 +26,5 @@
         /// The new state of the cell (active: <c>true</c>, inactive: <c>false</c>).
         /// </summary>
         public bool State;
-
-        public static CellStateChanged Create(int x, int y, ulong id, bool state)
-        {
-            CellStateChanged result;
-            result.X = x;
-            result.Y = y;
-            result.Id = id;
-            result.State = state;
-            return result;
-        }
     }
 }

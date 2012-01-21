@@ -89,8 +89,7 @@ namespace Engine.ComponentSystem.Components
         }
 
         /// <summary>
-        /// Inform a component of a message that was sent by a component of
-        /// the entity the component belongs to.
+        /// Inform a component of a message.
         /// 
         /// <para>
         /// Note that components will also receive the messages they send themselves.
