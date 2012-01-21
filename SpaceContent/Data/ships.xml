@@ -23,7 +23,7 @@
             <Item>5 Mass</Item>
           </Attributes>
           <Energy>50</Energy>
-          <EnergyRegeneration>0.1</EnergyRegeneration>
+          <EnergyRegeneration>0.2</EnergyRegeneration>
         </Item>
       </Reactors>
 
@@ -34,7 +34,7 @@
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
           </Attributes>
-          <AccelerationForce>4</AccelerationForce>
+          <AccelerationForce>6</AccelerationForce>
           <EnergyConsumption>0.15</EnergyConsumption>
         </Item>
       </Thrusters>

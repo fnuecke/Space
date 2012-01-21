@@ -116,9 +116,9 @@ namespace Engine.ComponentSystem.Systems
                 EntityRemoved message;
                 message.Entity = entity;
                 message.EntityUid = entityUid;
-                SendEntityMessage(ref message);
-                SystemManager.SendSystemMessage(ref message);
-                SystemManager.SendComponentMessage(ref message);
+                SendMessageToEntities(ref message);
+                SystemManager.SendMessageToSystems(ref message);
+                SystemManager.SendMessageToComponents(ref message);
                 return entity;
             }
             return null;
@@ -162,9 +162,9 @@ namespace Engine.ComponentSystem.Systems
             }
             EntityAdded message;
             message.Entity = entity;
-            SendEntityMessage(ref message);
-            SystemManager.SendSystemMessage(ref message);
-            SystemManager.SendComponentMessage(ref message);
+            SendMessageToEntities(ref message);
+            SystemManager.SendMessageToSystems(ref message);
+            SystemManager.SendMessageToComponents(ref message);
         }
 
         #endregion
@@ -175,11 +175,11 @@ namespace Engine.ComponentSystem.Systems
         /// Inform all entities in this system of a message.
         /// </summary>
         /// <param name="message">The sent message.</param>
-        public void SendEntityMessage<T>(ref T message) where T : struct
+        public void SendMessageToEntities<T>(ref T message) where T : struct
         {
             foreach (var entity in _entityMap.Values)
             {
-                entity.SendMessage(ref message);
+                entity.SendMessageToComponents(ref message);
             }
         }
 

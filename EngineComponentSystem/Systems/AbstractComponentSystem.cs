@@ -216,7 +216,7 @@ namespace Engine.ComponentSystem.Systems
         /// Inform all components in this system of a message.
         /// </summary>
         /// <param name="message">The sent message.</param>
-        public void SendComponentMessage<T>(ref T message) where T : struct
+        public void SendMessageToComponents<T>(ref T message) where T : struct
         {
         }
 
@@ -228,7 +228,7 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <param name="message">The sent message.</param>
-        public virtual void HandleSystemMessage<T>(ref T message) where T : struct
+        public virtual void HandleMessage<T>(ref T message) where T : struct
         {
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
+using Space.ComponentSystem.Entities;
 
 namespace Space.ComponentSystem.Components
 {
@@ -23,6 +24,7 @@ namespace Space.ComponentSystem.Components
 
             if (health != null && health.Value == 0)
             {
+                Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation));
                 Entity.Manager.RemoveEntity(Entity);
             }
         }

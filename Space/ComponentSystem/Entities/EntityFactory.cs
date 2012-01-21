@@ -39,6 +39,7 @@ namespace Space.ComponentSystem.Entities
                 typeof(Health),
                 typeof(Energy)
             }, position));
+
             return entity;
         }
 
@@ -52,9 +53,26 @@ namespace Space.ComponentSystem.Entities
         {
             Entity entity = CreateShip(shipData, faction, ref position);
 
+            var input = entity.GetComponent<ShipControl>();
+            input.SetStabilizing(true);
             entity.AddComponent(new AiComponent(command));
             entity.AddComponent(new Death());
             
+            return entity;
+        }
+
+        /// <summary>
+        /// Creates a new explosion effect at the specified position.
+        /// </summary>
+        /// <param name="position">The position at which to show the explosion.</param>
+        /// <returns>The entity representing the explosion.</returns>
+        public static Entity CreateExplosion(Vector2 position)
+        {
+            Entity entity = new Entity();
+
+            entity.AddComponent(new Transform(position));
+            entity.AddComponent(new ExplosionEffect());
+
             return entity;
         }
 
@@ -253,7 +271,7 @@ namespace Space.ComponentSystem.Entities
             entity.AddComponent(new CollidableSphere(projectile.CollisionRadius, collisionGroup));
             if (!string.IsNullOrWhiteSpace(projectile.Texture))
             {
-                entity.AddComponent(new TransformedRenderer(projectile.Texture, faction.ToColor(), projectile.Scale));
+                entity.AddComponent(new TransformedRenderer(projectile.Texture, projectile.Scale));
             }
             if (!string.IsNullOrWhiteSpace(projectile.Effect))
             {
@@ -290,10 +308,10 @@ namespace Space.ComponentSystem.Entities
 
             entity.AddComponent(new Transform(position));
             entity.AddComponent(new Spin());
-            entity.AddComponent(new Index(Detectable.IndexGroup | Factions.None.ToCollisionIndexGroup()));
+            entity.AddComponent(new Index(Detectable.IndexGroup | Factions.Nature.ToCollisionIndexGroup()));
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
-            entity.AddComponent(new CollidableSphere(radius, Factions.None.ToCollisionGroup()));
+            entity.AddComponent(new CollidableSphere(radius, Factions.Nature.ToCollisionGroup()));
             entity.AddComponent(new CollisionDamage(1, float.MaxValue));
 
             entity.AddComponent(new Detectable("Textures/Radar/Icons/radar_sun"));

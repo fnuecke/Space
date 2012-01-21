@@ -222,7 +222,7 @@ namespace Engine.ComponentSystem.Entities
         /// Send a message to all components of this entity.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public void SendMessage<T>(ref T message) where T : struct
+        public void SendMessageToComponents<T>(ref T message) where T : struct
         {
             foreach (var component in _components)
             {

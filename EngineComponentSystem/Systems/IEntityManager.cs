@@ -86,7 +86,7 @@ namespace Engine.ComponentSystem.Systems
         /// Inform all entities in this system of a message.
         /// </summary>
         /// <param name="message">The sent message.</param>
-        void SendEntityMessage<T>(ref T message) where T : struct;
+        void SendMessageToEntities<T>(ref T message) where T : struct;
 
         #endregion
     }

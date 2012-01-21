@@ -894,7 +894,7 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
-            public void SendEntityMessage<T>(ref T message) where T : struct
+            public void SendMessageToEntities<T>(ref T message) where T : struct
             {
                 throw new NotImplementedException();
             }
@@ -1010,12 +1010,12 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
-            public void SendSystemMessage<T>(ref T message) where T : struct
+            public void SendMessageToSystems<T>(ref T message) where T : struct
             {
                 throw new NotSupportedException();
             }
 
-            public void SendComponentMessage<T>(ref T message) where T : struct
+            public void SendMessageToComponents<T>(ref T message) where T : struct
             {
                 throw new NotImplementedException();
             }

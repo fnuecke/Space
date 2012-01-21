@@ -12,96 +12,96 @@ namespace Space.Data
     public enum Factions
     {
         /// <summary>
-        /// World stuff, e.g. uncontrolled vessels.
+        /// Fixed world entities such as suns, black holes, etc.
         /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// A neutral faction that will always appear neutral to all other
-        /// factions.
-        /// </summary>
-        Neutral = 1 << 0,
-
-        /// <summary>
-        /// Fraction one. Always at war with the other two.
-        /// </summary>
-        NpcFractionA = 1 << 1,
-
-        /// <summary>
-        /// Fraction two. Always at war with the other two.
-        /// </summary>
-        NpcFractionB = 1 << 2,
-
-        /// <summary>
-        /// Fraction two. Always at war with the other two.
-        /// </summary>
-        NpcFractionC = 1 << 3,
-
-        /// <summary>
-        /// Player one.
-        /// </summary>
-        Player1 = 1 << 4,
-
-        /// <summary>
-        /// Player two.
-        /// </summary>
-        Player2 = 1 << 5,
-
-        /// <summary>
-        /// Player three.
-        /// </summary>
-        Player3 = 1 << 6,
-
-        /// <summary>
-        /// Player four.
-        /// </summary>
-        Player4 = 1 << 7,
-
-        /// <summary>
-        /// Player five.
-        /// </summary>
-        Player5 = 1 << 8,
-
-        /// <summary>
-        /// Player six.
-        /// </summary>
-        Player6 = 1 << 9,
-
-        /// <summary>
-        /// Player seven.
-        /// </summary>
-        Player7 = 1 << 10,
-
-        /// <summary>
-        /// Player eight.
-        /// </summary>
-        Player8 = 1 << 11,
-
-        /// <summary>
-        /// Player nine.
-        /// </summary>
-        Player9 = 1 << 12,
-
-        /// <summary>
-        /// Player ten.
-        /// </summary>
-        Player10 = 1 << 13,
-
-        /// <summary>
-        /// Player eleven.
-        /// </summary>
-        Player11 = 1 << 14,
-
-        /// <summary>
-        /// Player twelve.
-        /// </summary>
-        Player12 = 1 << 15,
+        Nature = 1 << 0,
 
         /// <summary>
         /// Projectiles have their own group to allow "allying" them, which
         /// avoid inter-projectile collisions.
         /// </summary>
-        Projectiles = 1 << 16,
+        Projectiles = 1 << 1,
+
+        /// <summary>
+        /// A neutral faction that will always appear neutral to all other
+        /// factions.
+        /// </summary>
+        Neutral = 1 << 2,
+
+        /// <summary>
+        /// Fraction one.
+        /// </summary>
+        NpcFractionA = 1 << 3,
+
+        /// <summary>
+        /// Fraction two.
+        /// </summary>
+        NpcFractionB = 1 << 4,
+
+        /// <summary>
+        /// Fraction two.
+        /// </summary>
+        NpcFractionC = 1 << 5,
+
+        /// <summary>
+        /// Player one.
+        /// </summary>
+        Player1 = 1 << 6,
+
+        /// <summary>
+        /// Player two.
+        /// </summary>
+        Player2 = 1 << 7,
+
+        /// <summary>
+        /// Player three.
+        /// </summary>
+        Player3 = 1 << 8,
+
+        /// <summary>
+        /// Player four.
+        /// </summary>
+        Player4 = 1 << 9,
+
+        /// <summary>
+        /// Player five.
+        /// </summary>
+        Player5 = 1 << 10,
+
+        /// <summary>
+        /// Player six.
+        /// </summary>
+        Player6 = 1 << 11,
+
+        /// <summary>
+        /// Player seven.
+        /// </summary>
+        Player7 = 1 << 12,
+
+        /// <summary>
+        /// Player eight.
+        /// </summary>
+        Player8 = 1 << 13,
+
+        /// <summary>
+        /// Player nine.
+        /// </summary>
+        Player9 = 1 << 14,
+
+        /// <summary>
+        /// Player ten.
+        /// </summary>
+        Player10 = 1 << 15,
+
+        /// <summary>
+        /// Player eleven.
+        /// </summary>
+        Player11 = 1 << 16,
+
+        /// <summary>
+        /// Player twelve.
+        /// </summary>
+        Player12 = 1 << 17,
 
         /// <summary>
         /// Always represents the last entry, for masking when inverting.
@@ -115,7 +115,7 @@ namespace Space.Data
     public static class FactionsExtension
     {
         #region Lookup tables
-        
+
         private static Dictionary<Factions, int> _factionToPlayerNumber = new Dictionary<Factions, int>()
         {
             { Factions.Player1, 0 },
@@ -146,8 +146,11 @@ namespace Space.Data
             { Factions.Player9, Color.LightCyan },
             { Factions.Player10, Color.Olive },
             { Factions.Player11, Color.Navy },
-            { Factions.Player12, Color.DarkRed }
-
+            { Factions.Player12, Color.DarkRed },
+            { Factions.NpcFractionA, Color.Crimson },
+            { Factions.NpcFractionB, Color.DarkBlue },
+            { Factions.NpcFractionC, Color.DarkGreen },
+            { Factions.Neutral, Color.White }
         };
 
         private static Factions[] _playerNumberToFaction = new Factions[]
@@ -285,6 +288,6 @@ namespace Space.Data
 
         #endregion
     }
-    
+
     #endregion
 }

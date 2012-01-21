@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
 using Space.Data;
 
@@ -27,13 +28,17 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">Handles module added / removed messages.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleAdded<EntityAttributeType> || message is ModuleRemoved<EntityAttributeType>)
+            if (message is ModuleValueInvalidated<EntityAttributeType>)
             {
-                // Module removed or added, recompute our values.
-                var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
+                var type = ((ModuleValueInvalidated<EntityAttributeType>)(ValueType)message).ValueType;
+                if (type == EntityAttributeType.Mass)
+                {
+                    // Module removed or added, recompute our values.
+                    var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
 
-                // Get the mass of the ship and return it.
-                Mass = System.Math.Max(1, modules.GetValue(EntityAttributeType.Mass));
+                    // Get the mass of the ship and return it.
+                    Mass = System.Math.Max(1, modules.GetValue(EntityAttributeType.Mass));
+                }
             }
         }
 

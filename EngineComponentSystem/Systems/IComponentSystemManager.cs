@@ -101,13 +101,13 @@ namespace Engine.ComponentSystem.Systems
         /// Send a message to all systems of this component system manager.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        void SendSystemMessage<T>(ref T message) where T : struct;
+        void SendMessageToSystems<T>(ref T message) where T : struct;
 
         /// <summary>
         /// Send a message to all components in all component system managers.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        void SendComponentMessage<T>(ref T message) where T : struct;
+        void SendMessageToComponents<T>(ref T message) where T : struct;
 
         #endregion
     }

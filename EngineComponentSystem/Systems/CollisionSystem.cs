@@ -154,9 +154,9 @@ namespace Engine.ComponentSystem.Systems
             {
                 Collision message;
                 message.OtherEntity = otherCollidable.Entity;
-                currentCollidable.Entity.SendMessage(ref message);
+                currentCollidable.Entity.SendMessageToComponents(ref message);
                 message.OtherEntity = currentCollidable.Entity;
-                otherCollidable.Entity.SendMessage(ref message);
+                otherCollidable.Entity.SendMessageToComponents(ref message);
             }
         }
 

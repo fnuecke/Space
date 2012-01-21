@@ -118,7 +118,7 @@ namespace Engine.ComponentSystem.Systems
         /// Inform all components in this system of a message.
         /// </summary>
         /// <param name="message">The sent message.</param>
-        void SendComponentMessage<T>(ref T message) where T : struct;
+        void SendMessageToComponents<T>(ref T message) where T : struct;
 
         /// <summary>
         /// Inform a system of a message that was sent by another system.
@@ -128,7 +128,7 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <param name="message">The sent message.</param>
-        void HandleSystemMessage<T>(ref T message) where T : struct;
+        void HandleMessage<T>(ref T message) where T : struct;
 
         #endregion
     }

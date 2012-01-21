@@ -28,6 +28,8 @@ namespace Space.ComponentSystem.Systems
 
         private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
 
+        public Dictionary<ulong, CellInfo> CellInfo = new Dictionary<ulong, CellInfo>();
+
         #endregion
 
         #region Constructor
@@ -42,7 +44,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void HandleSystemMessage<T>(ref T message)
+        public override void HandleMessage<T>(ref T message)
         {
             if (message is CellStateChanged)
             {
@@ -50,25 +52,51 @@ namespace Space.ComponentSystem.Systems
 
                 if (info.State)
                 {
+
                     // Get random generator based on world seed and cell location.
                     var random = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
 
                     // List to accumulate entities we created for this system in.
                     List<int> list = new List<int>();
 
+                    if (!CellInfo.ContainsKey(info.Id))
+                    {
+                        var random2 = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
+                        var number = random2.NextInt32(3);
+                        var cell = new CellInfo();
+                        switch (number)
+                        {
+                                
+                            case (0):
+                                 cell.Faction = Factions.NpcFractionA;
+                                break;
+                            case (1):
+                                cell.Faction = Factions.NpcFractionB;
+                                break;
+                            case (2):
+                                cell.Faction = Factions.NpcFractionC;
+                                break;
+                            default:
+                                cell.Faction = Factions.NpcFractionC;
+                                break;
+                        }
+                        CellInfo.Add(info.Id, cell);
+                    }
                     // Get center of our cell.
                     var cellSize = CellSystem.CellSize;
                     var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
 
                     if (info.X == 0 && info.Y == 0)
                     {
-                        CreateSystem(random, ref center, list, 7, new[] {
+                        CreateSystem(random, ref center, list,
+                            CellInfo[info.Id].Faction, 
+                            7, new[] {
                             0, 0, 1, 2, 4, 2, 1
                         });
                     }
                     else
                     {
-                        CreateSystem(random, ref center, list);
+                        CreateSystem(random, ref center, list,CellInfo[info.Id].Faction);
                     }
 
                     _entities.Add(info.Id, list);
@@ -83,6 +111,12 @@ namespace Space.ComponentSystem.Systems
                         }
 
                         _entities.Remove(info.Id);
+                    }
+                    //remove only if not changed
+                    if (CellInfo.ContainsKey(info.Id))
+                    {
+                        if (!CellInfo[info.Id].Changed)
+                            CellInfo.Remove(info.Id);
                     }
                 }
             }
@@ -106,7 +140,13 @@ namespace Space.ComponentSystem.Systems
                     packet.Write(entityId);
                 }
             }
-
+            packet.Write(CellInfo.Count);
+            foreach (var item in CellInfo)
+            {
+                packet.Write(item.Key);
+                packet.Write(item.Value);
+                
+            }
             return packet;
         }
 
@@ -127,6 +167,15 @@ namespace Space.ComponentSystem.Systems
                 }
                 _entities.Add(key, list);
             }
+
+            CellInfo.Clear();
+            numCells = packet.ReadInt32();
+            for (int i = 0; i < numCells; i++)
+            {
+                var key = packet.ReadUInt64();
+                var value = packet.ReadPacketizable<CellInfo>();
+                CellInfo.Add(key,value);
+            }
         }
 
         public override void Hash(Hasher hasher)
@@ -139,6 +188,11 @@ namespace Space.ComponentSystem.Systems
                     hasher.Put(BitConverter.GetBytes(entity));
                 }
             }
+            foreach (var entities in CellInfo.Values)
+            {
+                
+                    entities.Hash(hasher);
+            }
         }
 
         public override IComponentSystem DeepCopy(IComponentSystem into)
@@ -149,15 +203,22 @@ namespace Space.ComponentSystem.Systems
             {
                 copy.WorldSeed = WorldSeed;
                 copy._entities.Clear();
+                copy.CellInfo.Clear();
             }
             else
             {
                 copy._entities = new Dictionary<ulong, List<int>>();
+                copy.CellInfo = new Dictionary<ulong, CellInfo>();
             }
 
             foreach (var item in _entities)
             {
                 copy._entities.Add(item.Key, new List<int>(item.Value));
+
+            }
+            foreach (var factionse in CellInfo)
+            {
+                copy.CellInfo.Add(factionse.Key, factionse.Value);
             }
 
             return copy;
@@ -171,6 +232,7 @@ namespace Space.ComponentSystem.Systems
             IUniformRandom random,
             ref Vector2 center,
             List<int> list,
+            Factions faction,
             int numPlanets = -1,
             int[] numsMoons = null)
         {
@@ -179,7 +241,7 @@ namespace Space.ComponentSystem.Systems
 
             // Create our sun.
             float sunRadius = _constaints.SampleSunRadius(gaussian);
-            float sunMass = _constaints.SunMassFactor * 4f / 3f * (float)System.Math.PI * sunRadius * sunRadius * sunRadius;;
+            float sunMass = _constaints.SunMassFactor * 4f / 3f * (float)System.Math.PI * sunRadius * sunRadius * sunRadius; ;
             Entity sun = EntityFactory.CreateSun(
                 radius: sunRadius,
                 position: center,
@@ -211,7 +273,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     numMoons = _constaints.SampleMoons(gaussian);
                 }
-                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list);
+                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list, faction);
             }
         }
 
@@ -223,7 +285,9 @@ namespace Space.ComponentSystem.Systems
             float previousOrbitRadius,
             float dominantOrbitAngle,
             int numMoons,
-            List<int> list)
+            List<int> list
+            , Factions faction
+            )
         {
             // Sample planet properties.
             float planetRadius = _constaints.SamplePlanetRadius(gaussian);
@@ -259,7 +323,9 @@ namespace Space.ComponentSystem.Systems
             float previousMoonOrbit = (_constaints.PlanetRadiusMean + _constaints.PlanetRadiusStdDev) * 1.5f;
             if (_constaints.SampleStation(random))
             {
-                CreateStation(random, gaussian, planet, planetMass, planetRadius, list);
+                CreateStation(random, gaussian, planet, planetMass, planetRadius, list
+                    , faction
+                    );
             }
             // The create as many as we sample.
             for (int j = 0; j < numMoons; j++)
@@ -276,9 +342,11 @@ namespace Space.ComponentSystem.Systems
             Entity planet,
             float planetMass,
             float planetRadius,
-            List<int> list)
+            List<int> list
+            , Factions faction
+            )
         {
-            var faction = Factions.Player5;
+
             var StationOrbit = planetRadius + _constaints.SampleStationOrbit(gaussian);
             var stationPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(StationOrbit * StationOrbit * StationOrbit / planetMass));
             var station = EntityFactory.CreateStation(
@@ -308,7 +376,7 @@ namespace Space.ComponentSystem.Systems
             float moonOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constaints.SampleMoonOrbitAngleDeviation(gaussian));
             float moonPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * moonOrbitMajorRadius / planetMass));
             float moonMass = _constaints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
-            
+
             var moon = EntityFactory.CreateOrbitingAstronomicalObject(
                 texture: "Textures/Planets/rock_02",
                 planetTint: Color.White,
@@ -354,6 +422,49 @@ namespace Space.ComponentSystem.Systems
             return _entities[id];
         }
 
+        #endregion
+    }
+
+    public class CellInfo:IPacketizable,IHashable
+    {
+        public Factions Faction;
+        public bool Changed;
+        public int TechLevel { get { return TechLevel; }
+            set { TechLevel = value;
+                Changed = true;
+            }
+        }
+
+        /// <summary>
+        /// Changes the Faction of this Cell 
+        /// </summary>
+        /// <param name="faction"></param>
+        public void ChangeFaction(Factions faction)
+        {
+            Faction = faction;
+            Changed = true;
+        }
+        #region Packetize
+        
+        public Packet Packetize(Packet packet)
+        {
+            packet.Write((int)Faction);
+            packet.Write(Changed);
+            return packet;
+        }
+
+        public void Depacketize(Packet packet)
+        {
+            Faction = (Factions) packet.ReadInt32();
+            Changed = packet.ReadBoolean();
+        }
+
+        public void Hash(Hasher hasher)
+        {
+            hasher.Put(BitConverter.GetBytes((int) Faction))
+                .Put(BitConverter.GetBytes(Changed));
+
+        }
         #endregion
     }
 }

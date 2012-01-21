@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Components.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using Space.ComponentSystem.Components;
@@ -104,25 +105,37 @@ namespace Space.Simulation.Commands
 
                             // Adjust thruster stats.
                             case DebugCommand.DebugCommandType.SetThrusterAccelerationForce:
-                                if (avatar == null)
                                 {
-                                    return;
-                                }
-                                var accelerationForce = debugCommand.Data.ReadSingle();
-                                foreach (var thruster in avatar.GetComponent<EntityModules<EntityAttributeType>>().GetModules<ThrusterModule>())
-                                {
-                                    thruster.AccelerationForce = accelerationForce;
+                                    if (avatar == null)
+                                    {
+                                        return;
+                                    }
+                                    var accelerationForce = debugCommand.Data.ReadSingle();
+                                    var modules = avatar.GetComponent<EntityModules<EntityAttributeType>>();
+                                    foreach (var thruster in modules.GetModules<ThrusterModule>())
+                                    {
+                                        thruster.AccelerationForce = accelerationForce;
+                                    }
+                                    ModuleValueInvalidated<EntityAttributeType> invalidatedMessage;
+                                    invalidatedMessage.ValueType = EntityAttributeType.AccelerationForce;
+                                    avatar.SendMessageToComponents(ref invalidatedMessage);
                                 }
                                 break;
                             case DebugCommand.DebugCommandType.SetThrusterEnergyConsumption:
-                                if (avatar == null)
                                 {
-                                    return;
-                                }
-                                var energyConsumption = debugCommand.Data.ReadSingle();
-                                foreach (var thruster in avatar.GetComponent<EntityModules<EntityAttributeType>>().GetModules<ThrusterModule>())
-                                {
-                                    thruster.EnergyConsumption = energyConsumption;
+                                    if (avatar == null)
+                                    {
+                                        return;
+                                    }
+                                    var energyConsumption = debugCommand.Data.ReadSingle();
+                                    var modules = avatar.GetComponent<EntityModules<EntityAttributeType>>();
+                                    foreach (var thruster in modules.GetModules<ThrusterModule>())
+                                    {
+                                        thruster.EnergyConsumption = energyConsumption;
+                                    }
+                                    ModuleValueInvalidated<EntityAttributeType> invalidatedMessage;
+                                    invalidatedMessage.ValueType = EntityAttributeType.ThrusterEnergyConsumption;
+                                    avatar.SendMessageToComponents(ref invalidatedMessage);
                                 }
                                 break;
 

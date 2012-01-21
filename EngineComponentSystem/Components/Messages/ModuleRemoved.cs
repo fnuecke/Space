@@ -13,12 +13,5 @@ namespace Engine.ComponentSystem.Components.Messages
         /// The module that was removed.
         /// </summary>
         public AbstractEntityModule<TAttribute> Module;
-
-        internal static ModuleRemoved<TAttribute> Create(AbstractEntityModule<TAttribute> module)
-        {
-            ModuleRemoved<TAttribute> result;
-            result.Module = module;
-            return result;
-        }
     }
 }
