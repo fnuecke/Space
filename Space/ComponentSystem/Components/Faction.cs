@@ -27,7 +27,7 @@ namespace Space.ComponentSystem.Components
         }
 
         public Faction()
-            : this(Factions.None)
+            : this(Factions.Nature)
         {
         }
 

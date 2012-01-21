@@ -37,7 +37,6 @@ namespace Space.Control
                     new AvatarSystem(),
                     new CellSystem(),
 
-                    
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
                     new ShipsSpawnSystem(game.Content)
                 });
@@ -70,7 +69,6 @@ namespace Space.Control
                     new AvatarSystem(),
                     new CellSystem(),
 
-                    
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
                     new ShipsSpawnSystem(game.Content),
 
