@@ -167,6 +167,7 @@
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="Graphics\Planet.cs" />
     <Compile Include="Graphics\Sun.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSingleLabel.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudRadio.cs" />
     <Compile Include="ScreenManagement\Screens\Stylesheet\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSpacer.cs" />
