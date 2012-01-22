@@ -66,7 +66,10 @@ namespace Space.ComponentSystem.Components
             if (_directedAcceleration != Vector2.Zero)
             {
                 // Make sure we have a unit vector of our direction.
-                _directedAcceleration.Normalize();
+                if (_directedAcceleration.LengthSquared() > 1)
+                {
+                    _directedAcceleration.Normalize();
+                }
             }
         }
 

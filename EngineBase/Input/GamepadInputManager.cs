@@ -18,22 +18,22 @@ namespace Engine.Input
         /// <summary>
         /// Fired when a button is newly pressed.
         /// </summary>
-        public event EventHandler<EventArgs> Pressed;
+        public event EventHandler<GamepadInputEventArgs> Pressed;
 
         /// <summary>
         /// Fired when a button is released.
         /// </summary>
-        public event EventHandler<EventArgs> Released;
+        public event EventHandler<GamepadInputEventArgs> Released;
 
         /// <summary>
         /// Fired when the left game pad stick was moved.
         /// </summary>
-        public event EventHandler<EventArgs> LeftMoved;
+        public event EventHandler<GamepadInputEventArgs> LeftMoved;
 
         /// <summary>
         /// Fired when the right game pad stick was moved.
         /// </summary>
-        public event EventHandler<EventArgs> RightMoved;
+        public event EventHandler<GamepadInputEventArgs> RightMoved;
 
         #endregion
 
@@ -46,12 +46,18 @@ namespace Engine.Input
 
         #endregion
 
+        #region Constructor
+        
         public GamepadInputManager(Game game)
             : base(game)
         {
             game.Services.AddService(typeof(IGamepadInputManager), this);
         }
 
+        #endregion
+
+        #region Logic
+        
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
@@ -71,32 +77,32 @@ namespace Engine.Input
                     if (!_previousState.IsButtonDown(button))
                     {
                         // Key was pressed.
-                        OnPressed(new GamePadInputEventArgs(currentState, button));
+                        OnPressed(new GamepadInputEventArgs(currentState, button));
                     }
                 }
                 else
                 {
                     if (_previousState.IsButtonDown(button))
                     {
-                        OnReleased(new GamePadInputEventArgs(currentState, button));
+                        OnReleased(new GamepadInputEventArgs(currentState, button));
                     }
                 }
             }
 
             if (currentState.ThumbSticks.Left != _previousState.ThumbSticks.Left)
             {
-                OnLeftMove(new GamePadInputEventArgs(currentState, Buttons.LeftStick, currentState.ThumbSticks.Left));
+                OnLeftMove(new GamepadInputEventArgs(currentState, Buttons.LeftStick, currentState.ThumbSticks.Left));
             }
 
             if (currentState.ThumbSticks.Right != _previousState.ThumbSticks.Right)
             {
-                OnRightMove(new GamePadInputEventArgs(currentState, Buttons.RightStick, currentState.ThumbSticks.Right));
+                OnRightMove(new GamepadInputEventArgs(currentState, Buttons.RightStick, currentState.ThumbSticks.Right));
             }
 
             _previousState = currentState;
         }
 
-        private void OnPressed(GamePadInputEventArgs e)
+        private void OnPressed(GamepadInputEventArgs e)
         {
             if (Pressed != null)
             {
@@ -104,7 +110,7 @@ namespace Engine.Input
             }
         }
 
-        private void OnReleased(GamePadInputEventArgs e)
+        private void OnReleased(GamepadInputEventArgs e)
         {
             if (Released != null)
             {
@@ -112,7 +118,7 @@ namespace Engine.Input
             }
         }
 
-        private void OnLeftMove(GamePadInputEventArgs e)
+        private void OnLeftMove(GamepadInputEventArgs e)
         {
             if (LeftMoved != null)
             {
@@ -120,12 +126,14 @@ namespace Engine.Input
             }
         }
 
-        private void OnRightMove(GamePadInputEventArgs e)
+        private void OnRightMove(GamepadInputEventArgs e)
         {
             if (RightMoved != null)
             {
                 RightMoved(this, e);
             }
         }
+
+        #endregion
     }
 }

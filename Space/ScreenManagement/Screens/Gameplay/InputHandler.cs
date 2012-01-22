@@ -60,9 +60,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// The current player acceleration.
         /// </summary>
-        private Directions _accelerationDirection;
+        private Vector2 _accelerationDirection;
 
-        private Vector2 _directdirection;
         /// <summary>
         /// The last registered time that the mouse has moved.
         /// </summary>
@@ -86,14 +85,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
         #endregion
 
         #region Constructor
-        
+
         public InputHandler(GameClient client)
         {
             _client = client;
 
             _keyboard = (IKeyboardInputManager)client.Game.Services.GetService(typeof(IKeyboardInputManager));
             _mouse = (IMouseInputManager)client.Game.Services.GetService(typeof(IMouseInputManager));
-            _gamepad = (IGamepadInputManager) client.Game.Services.GetService(typeof (IGamepadInputManager));
+            _gamepad = (IGamepadInputManager)client.Game.Services.GetService(typeof(IGamepadInputManager));
         }
 
         #endregion
@@ -110,16 +109,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 if (_rotationChanged > _lastUpdate)
                 {
                     // Yes, push command.
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, new Vector2(_targetRotation,0)));
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, new Vector2(_targetRotation, 0)));
                 }
                 if (_accelerationChanged > _lastUpdate)
                 {
-                    if(_directdirection != Vector2.Zero)
-                        _directdirection.Normalize();
-                    var dir = DirectionConversion.DirectionToVector(_accelerationDirection);
-                    if(dir != Vector2.Zero)
-                        dir.Normalize();
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate,_directdirection+ dir));
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, _accelerationDirection));
                 }
                 _lastUpdate = DateTime.Now;
             }
@@ -188,189 +182,175 @@ namespace Space.ScreenManagement.Screens.Gameplay
             }
         }
 
+        #region Keyboard
+
         /// <summary>
         /// Player pressed a key.
         /// </summary>
-        private void HandleKeyPressed(object sender, EventArgs e)
+        private void HandleKeyPressed(object sender, KeyboardInputEventArgs e)
         {
-            var args = (KeyboardInputEventArgs)e;
-
-            if (args.IsRepeat)
+            if (e.IsRepeat)
             {
                 return;
             }
 
-            if (args.Key == Settings.Instance.MoveDown)
+            if (e.Key == Settings.Instance.Stabilizer)
             {
-                // Accelerate downwards.
-                _accelerationDirection |= Directions.South;
-            }
-            else if (args.Key == Settings.Instance.MoveLeft)
-            {
-                // Accelerate left.
-                _accelerationDirection |= Directions.West;
-            }
-            else if (args.Key == Settings.Instance.MoveRight)
-            {
-                // Accelerate right.
-                _accelerationDirection |= Directions.East;
-            }
-            else if (args.Key == Settings.Instance.MoveUp)
-            {
-                // Accelerate upwards.
-                _accelerationDirection |= Directions.North;
+                // Toggle stabilizers.
+                _stabilizing = !_stabilizing;
+                _client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
             }
             else
             {
-                // Not an acceleration command, return after this, to avoid
-                // setting the timestamp.
-                if (args.Key == Settings.Instance.Stabilizer)
-                {
-                    // Toggle stabilizers.
-                    _stabilizing = !_stabilizing;
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
-                }
-                return;
+                UpdateKeyboardAcceleration(e.State);
             }
-
-            _accelerationChanged = DateTime.Now;
         }
 
         /// <summary>
         /// Player released a key.
         /// </summary>
-        private void HandleKeyReleased(object sender, EventArgs e)
+        private void HandleKeyReleased(object sender, KeyboardInputEventArgs e)
         {
-            var args = (KeyboardInputEventArgs)e;
-
-            if (args.Key == Settings.Instance.MoveDown)
-            {
-                _accelerationDirection &= ~Directions.South;
-            }
-            else if (args.Key == Settings.Instance.MoveLeft)
-            {
-                _accelerationDirection &= ~Directions.West;
-            }
-            else if (args.Key == Settings.Instance.MoveRight)
-            {
-                _accelerationDirection &= ~Directions.East;
-            }
-            else if (args.Key == Settings.Instance.MoveUp)
-            {
-                _accelerationDirection &= ~Directions.North;
-            }
-            else
-            {
-                return;
-            }
-
-            _accelerationChanged = DateTime.Now;
+            UpdateKeyboardAcceleration(e.State);
         }
 
-        private void HandleMouseMoved(object sender, EventArgs e)
+        /// <summary>
+        /// Updates acceleration direction based on key presses.
+        /// </summary>
+        /// <param name="state">The current keyboard state.</param>
+        private void UpdateKeyboardAcceleration(KeyboardState state)
         {
-            var args = (MouseInputEventArgs)e;
-
-            // Get angle to middle of screen (position of our ship), which
-            // will be our new target rotation.
-            int rx = args.X - _client.Game.GraphicsDevice.Viewport.Width / 2;
-            int ry = args.Y - _client.Game.GraphicsDevice.Viewport.Height / 2;
-            var mouseAngle = (float)System.Math.Atan2(ry, rx);
-
-            _targetRotation = mouseAngle;
-            _rotationChanged = DateTime.Now;
-        }
-
-        // TODO private void HandleGamePadStickMoved(object sender, EventArgs e) { update rotation }
-        private void HandleGamePadPressed(object sender,EventArgs e)
-        {
-            var args = (GamePadInputEventArgs)e;
-            switch (args.Buttons)
+            Directions direction = Directions.None;
+            if (state.IsKeyDown(Settings.Instance.MoveDown))
             {
-                case (Buttons.LeftThumbstickUp):
-                case (Buttons.LeftThumbstickLeft):
-                case (Buttons.LeftThumbstickDown):
-                case (Buttons.LeftThumbstickRight):
-                case (Buttons.RightThumbstickUp):
-                case (Buttons.RightThumbstickLeft):
-                case (Buttons.RightThumbstickDown):
-                case (Buttons.RightThumbstickRight):    
-                    break;
-                case (Buttons.RightShoulder):
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
-                    break;
-                default:
-                    break;
-                    
+                // Accelerate downwards.
+                direction |= Directions.Down;
             }
-            _accelerationChanged = DateTime.Now;
-        }
-        private void HandleGamePadReleased(object sender, EventArgs e)
-        {
-            var args = (GamePadInputEventArgs)e;
-
-            switch (args.Buttons)
+            if (state.IsKeyDown(Settings.Instance.MoveLeft))
             {
-                case (Buttons.LeftThumbstickUp):
-                case (Buttons.LeftThumbstickLeft):
-                case (Buttons.LeftThumbstickDown):
-                case (Buttons.LeftThumbstickRight):
-                case (Buttons.RightThumbstickUp):
-                case (Buttons.RightThumbstickLeft):
-                case (Buttons.RightThumbstickDown):
-                case (Buttons.RightThumbstickRight): 
-                    
-                    break;
-                case (Buttons.RightShoulder):
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
-                    break;
-                default:
-                    break;
-
+                // Accelerate left.
+                direction |= Directions.Left;
             }
-            
-        }
-
-        private void HandleGamePadLeftMoved(object sender, EventArgs e)
-        {
-            var args = (GamePadInputEventArgs) e;
-            _directdirection = args.State.ThumbSticks.Left;
-            _directdirection.Y = -_directdirection.Y;
-            _accelerationChanged = DateTime.Now;
-        }
-        private void HandleGamePadRightMoved(object sender, EventArgs e)
-        {
-            var args = (GamePadInputEventArgs)e;
-            var rightstick = args.State.ThumbSticks.Right;
-            if (rightstick != Vector2.Zero)
+            if (state.IsKeyDown(Settings.Instance.MoveRight))
             {
-
-
-                var mouseAngle =
-                    (float) System.Math.Atan2(-rightstick.Y, rightstick.X);
-                _targetRotation = mouseAngle;
+                // Accelerate right.
+                direction |= Directions.Right;
             }
-            _rotationChanged = DateTime.Now;
-        }
-        private void HandleMousePressed(object sender, EventArgs e)
-        {
-            var args = (MouseInputEventArgs)e;
+            if (state.IsKeyDown(Settings.Instance.MoveUp))
+            {
+                // Accelerate upwards.
+                direction |= Directions.Up;
+            }
 
-            if (args.Button == MouseInputEventArgs.MouseButton.Left)
+            var acceleration = DirectionConversion.DirectionToVector(direction);
+            if (acceleration != _accelerationDirection)
+            {
+                // Only update if something changed.
+                _accelerationDirection = acceleration;
+                _accelerationChanged = DateTime.Now;
+            }
+        }
+
+        #endregion
+
+        #region Mouse
+
+        /// <summary>
+        /// Handle mouse presses.
+        /// </summary>
+        private void HandleMousePressed(object sender, MouseInputEventArgs e)
+        {
+            if (e.Button == MouseInputEventArgs.MouseButton.Left)
             {
                 _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
             }
         }
 
-        private void HandleMouseReleased(object sender, EventArgs e)
+        /// <summary>
+        /// Handle mouse releases.
+        /// </summary>
+        private void HandleMouseReleased(object sender, MouseInputEventArgs e)
         {
-            var args = (MouseInputEventArgs)e;
-
-            if (args.Button == MouseInputEventArgs.MouseButton.Left)
+            if (e.Button == MouseInputEventArgs.MouseButton.Left)
             {
                 _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
             }
         }
+
+        /// <summary>
+        /// Update facing direction on mouse move.
+        /// </summary>
+        private void HandleMouseMoved(object sender, MouseInputEventArgs e)
+        {
+            // Get angle to middle of screen (position of our ship), which
+            // will be our new target rotation.
+            int rx = e.X - _client.Game.GraphicsDevice.Viewport.Width / 2;
+            int ry = e.Y - _client.Game.GraphicsDevice.Viewport.Height / 2;
+            _targetRotation = (float)System.Math.Atan2(ry, rx);
+            _rotationChanged = DateTime.Now;
+        }
+
+        #endregion
+
+        #region Gamepad
+
+        /// <summary>
+        /// Handle game pad button presses.
+        /// </summary>
+        private void HandleGamePadPressed(object sender, GamepadInputEventArgs e)
+        {
+            switch (e.Buttons)
+            {
+                case (Buttons.RightShoulder):
+                    // Shoot.
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Handle game pad key releases.
+        /// </summary>
+        private void HandleGamePadReleased(object sender, GamepadInputEventArgs e)
+        {
+            switch (e.Buttons)
+            {
+                case (Buttons.RightShoulder):
+                    // Stop shooting.
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Handle movement of the left stick, which controls our movement.
+        /// </summary>
+        private void HandleGamePadLeftMoved(object sender, GamepadInputEventArgs e)
+        {
+            _accelerationDirection = e.Position;
+            _accelerationDirection.Y = -_accelerationDirection.Y;
+            _accelerationChanged = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Handle movement of the right stick, which controls our direction.
+        /// </summary>
+        private void HandleGamePadRightMoved(object sender, GamepadInputEventArgs e)
+        {
+            if (e.Position != Vector2.Zero)
+            {
+                _targetRotation = (float)System.Math.Atan2(-e.Position.Y, e.Position.X);
+                _rotationChanged = DateTime.Now;
+            }
+        }
+
+        #endregion
 
         #endregion
     }

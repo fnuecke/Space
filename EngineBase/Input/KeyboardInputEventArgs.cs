@@ -9,6 +9,11 @@ namespace Engine.Input
     public sealed class KeyboardInputEventArgs : EventArgs
     {
         /// <summary>
+        /// The overall keyboard state that's now active.
+        /// </summary>
+        public KeyboardState State { get; private set; }
+
+        /// <summary>
         /// The key that was pressed or released.
         /// </summary>
         public Keys Key { get; private set; }
@@ -22,11 +27,6 @@ namespace Engine.Input
         /// Whether this press was generated due to key auto repeat.
         /// </summary>
         public bool IsRepeat { get; private set; }
-
-        /// <summary>
-        /// The overall keyboard state that's now active.
-        /// </summary>
-        public KeyboardState State { get; private set; }
 
         internal KeyboardInputEventArgs(KeyboardState state, Keys key, KeyModifier modifier, bool isRepeat)
         {

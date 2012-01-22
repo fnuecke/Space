@@ -17,22 +17,22 @@ namespace Engine.Input
         /// <summary>
         /// Fired when a mouse button is pressed.
         /// </summary>
-        public event EventHandler<EventArgs> Pressed;
+        public event EventHandler<MouseInputEventArgs> Pressed;
 
         /// <summary>
         /// Fired when a mouse button is released.
         /// </summary>
-        public event EventHandler<EventArgs> Released;
+        public event EventHandler<MouseInputEventArgs> Released;
 
         /// <summary>
         /// Fired when the scroll wheel is scrolled.
         /// </summary>
-        public event EventHandler<EventArgs> Scrolled;
+        public event EventHandler<MouseInputEventArgs> Scrolled;
 
         /// <summary>
         /// Fired when the mouse moves.
         /// </summary>
-        public event EventHandler<EventArgs> Moved;
+        public event EventHandler<MouseInputEventArgs> Moved;
         
         #endregion
         
@@ -45,6 +45,8 @@ namespace Engine.Input
 
         #endregion
 
+        #region Constructor
+        
         /// <summary>
         /// Creates a new mouse manager for the given game and adds it as a service.
         /// </summary>
@@ -54,7 +56,9 @@ namespace Engine.Input
         {
             game.Services.AddService(typeof(IMouseInputManager), this);
         }
-        
+
+        #endregion
+
         #region Logic
 
         /// <summary>

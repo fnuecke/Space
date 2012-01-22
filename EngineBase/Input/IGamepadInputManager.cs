@@ -11,21 +11,21 @@ namespace Engine.Input
         /// <summary>
         /// Fired when a button is newly pressed.
         /// </summary>
-        event EventHandler<EventArgs> Pressed;
+        event EventHandler<GamepadInputEventArgs> Pressed;
 
         /// <summary>
         /// Fired when a button is released.
         /// </summary>
-        event EventHandler<EventArgs> Released;
+        event EventHandler<GamepadInputEventArgs> Released;
 
         /// <summary>
         /// Fired when the left game pad stick was moved.
         /// </summary>
-        event EventHandler<EventArgs> LeftMoved;
+        event EventHandler<GamepadInputEventArgs> LeftMoved;
 
         /// <summary>
         /// Fired when the right game pad stick was moved.
         /// </summary>
-        event EventHandler<EventArgs> RightMoved;
+        event EventHandler<GamepadInputEventArgs> RightMoved;
     }
 }

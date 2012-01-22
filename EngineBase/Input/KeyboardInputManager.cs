@@ -18,12 +18,12 @@ namespace Engine.Input
         /// <summary>
         /// Fired when a key is newly pressed, or is repeated as set via RepeatDelay/RepeatRate.
         /// </summary>
-        public event EventHandler<EventArgs> Pressed;
+        public event EventHandler<KeyboardInputEventArgs> Pressed;
 
         /// <summary>
         /// Fired when a key is released.
         /// </summary>
-        public event EventHandler<EventArgs> Released;
+        public event EventHandler<KeyboardInputEventArgs> Released;
 
         #endregion
 

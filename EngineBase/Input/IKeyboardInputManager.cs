@@ -12,12 +12,12 @@ namespace Engine.Input
         /// <summary>
         /// Fired when a key is newly pressed or repeated.
         /// </summary>
-        event EventHandler<EventArgs> Pressed;
+        event EventHandler<KeyboardInputEventArgs> Pressed;
 
         /// <summary>
         /// Fired when a key is released.
         /// </summary>
-        event EventHandler<EventArgs> Released;
+        event EventHandler<KeyboardInputEventArgs> Released;
 
         /// <summary>
         /// Get a representation for a specific key-combination, which can be used
