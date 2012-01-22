@@ -7,9 +7,7 @@ using System.Windows;
 using Engine.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
-using Keys = Microsoft.Xna.Framework.Input.Keys;
-
+using Microsoft.Xna.Framework.Input;
 
 namespace Engine.Util
 {
@@ -248,7 +246,7 @@ namespace Engine.Util
 
         /// <summary>
         /// Tracks whether we're currently at the last matching command for
-        /// autocomplete cycling.
+        /// auto complete cycling.
         /// </summary>
         private bool _tabCompleteAtEnd;
 

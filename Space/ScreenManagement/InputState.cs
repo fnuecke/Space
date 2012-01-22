@@ -12,7 +12,7 @@ using System;
 //using Microsoft.Xna.Framework.Input.Touch;
 using Engine.Input;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
+
 #endregion
 
 namespace Space.ScreenManagement
@@ -52,67 +52,38 @@ namespace Space.ScreenManagement
             mouse.Moved += HandleMouseMoved;
         }
 
-        void HandleKeyPressed(object sender, EventArgs e)
+        void HandleKeyPressed(object sender, KeyboardInputEventArgs e)
         {
-            var args = (KeyboardInputEventArgs)e;
-            switch (args.Key)
+            if (Settings.Instance.MenuBindings.ContainsKey(e.Key))
             {
-                case Keys.Enter:
-                case Keys.E:
-                case Keys.Space:
-                case Keys.NumPad5:
-                    KeySelect = true;
-                    break;
-
-                case Keys.Right:
-                case Keys.D:
-                case Keys.NumPad6:
-                    KeyNext = true;
-                    break;
-
-                case Keys.Left:
-                case Keys.A:
-                case Keys.NumPad4:
-                    KeyPrevious = true;
-                    break;
-
-                case Keys.Escape:
-                    KeyCancel = true;
-                    KeyPause = true;
-                    break;
-
-                case Keys.Up:
-                case Keys.PageUp:
-                case Keys.W:
-                case Keys.NumPad8:
-                    KeyUp = true;
-                    break;
-
-                case Keys.Down:
-                case Keys.PageDown:
-                case Keys.S:
-                case Keys.NumPad2:
-                    KeyDown = true;
-                    break;
-
-                case Keys.Pause:
-                case Keys.F10:
-                    KeyPause = true;
-                    break;
-
-                case Keys.Tab:
-                    if (args.Modifier == KeyModifier.Shift)
-                    {
-                        KeyPrevious = true;
-                    }
-                    else
-                    {
+                switch (Settings.Instance.MenuBindings[e.Key])
+                {
+                    case Settings.MenuCommand.Up:
+                        KeyUp = true;
+                        break;
+                    case Settings.MenuCommand.Down:
+                        KeyDown = true;
+                        break;
+                    case Settings.MenuCommand.Next:
                         KeyNext = true;
-                    }
-                    break;
+                        break;
+                    case Settings.MenuCommand.Previous:
+                        KeyPrevious = true;
+                        break;
+                    case Settings.MenuCommand.Select:
+                        KeySelect = true;
+                        break;
+                    case Settings.MenuCommand.Back:
+                        KeyCancel = true;
+                        KeyPause = true;
+                        break;
+                    case Settings.MenuCommand.Pause:
+                        KeyPause = true;
+                        break;
 
-                default:
-                    break;
+                    default:
+                        break;
+                }
             }
         }
 

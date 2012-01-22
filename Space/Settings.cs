@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework.Input;
 
 namespace Space
@@ -12,6 +14,131 @@ namespace Space
     /// </summary>
     public class Settings
     {
+        #region Types
+
+        /// <summary>
+        /// Possible commands in the game's menu.
+        /// </summary>
+        public enum MenuCommand
+        {
+            /// <summary>
+            /// Move one entry up.
+            /// </summary>
+            Up,
+
+            /// <summary>
+            /// Move one entry down.
+            /// </summary>
+            Down,
+
+            /// <summary>
+            /// Toggle to the next option.
+            /// </summary>
+            Next,
+
+            /// <summary>
+            /// Toggle to the previous option.
+            /// </summary>
+            Previous,
+
+            /// <summary>
+            /// Select an entry or confirm option.
+            /// </summary>
+            Select,
+
+            /// <summary>
+            /// Go back in the menu, or abort editing (text fields).
+            /// </summary>
+            Back,
+
+            /// <summary>
+            /// Pause the game to open the ingame menu.
+            /// </summary>
+            Pause,
+
+            /// <summary>
+            /// Open up the console.
+            /// </summary>
+            Console
+        }
+
+        /// <summary>
+        /// Possible command type in the game (ship control essentially).
+        /// </summary>
+        public enum GameCommand
+        {
+            /// <summary>
+            /// Accelerate up.
+            /// </summary>
+            Up,
+
+            /// <summary>
+            /// Accelerate down.
+            /// </summary>
+            Down,
+
+            /// <summary>
+            /// Accelerate left.
+            /// </summary>
+            Left,
+
+            /// <summary>
+            /// Accelerate right.
+            /// </summary>
+            Right,
+
+            /// <summary>
+            /// Use object in game (e.g. space station for trading).
+            /// </summary>
+            Use,
+
+            /// <summary>
+            /// Stabilize the ship's position.
+            /// </summary>
+            Stabilize
+        }
+
+        #endregion
+
+        #region Constants
+
+        public static readonly Dictionary<Keys, MenuCommand> DefaultMenuBindings = new Dictionary<Keys, MenuCommand>()
+        {
+            { Keys.Up, MenuCommand.Up },
+            { Keys.W, MenuCommand.Up },
+            { Keys.S, MenuCommand.Down },
+            { Keys.Down, MenuCommand.Down},
+            { Keys.A, MenuCommand.Previous },
+            { Keys.Left, MenuCommand.Previous },
+            { Keys.D, MenuCommand.Next },
+            { Keys.Right, MenuCommand.Next },
+            { Keys.E, MenuCommand.Select },
+            { Keys.Enter, MenuCommand.Select },
+            { Keys.Back, MenuCommand.Back },
+            { Keys.Escape, MenuCommand.Back },
+            { Keys.Pause, MenuCommand.Pause },
+            { Keys.F10, MenuCommand.Pause },
+            { Keys.OemTilde, MenuCommand.Console }
+        };
+
+        public static readonly Dictionary<Keys, GameCommand> DefaultGameBindings = new Dictionary<Keys, GameCommand>()
+        {
+            { Keys.W, GameCommand.Up },
+            { Keys.Up, GameCommand.Up },
+            { Keys.S, GameCommand.Down },
+            { Keys.Down, GameCommand.Down },
+            { Keys.A, GameCommand.Left },
+            { Keys.Left, GameCommand.Left },
+            { Keys.D, GameCommand.Right },
+            { Keys.Right, GameCommand.Right },
+            { Keys.E, GameCommand.Use },
+            { Keys.Enter, GameCommand.Use },
+            { Keys.LeftShift, GameCommand.Stabilize },
+            { Keys.RightShift, GameCommand.Stabilize }
+        };
+
+        #endregion
+
         #region Display
 
         /// <summary>
@@ -71,37 +198,70 @@ namespace Space
 
         #endregion
 
-        #region Key bindings
+        #region Input
 
         /// <summary>
-        /// The key that opens the in-game console.
+        /// Whether to toggle stabilizer functionality or keep it active only
+        /// while the key is pressed.
         /// </summary>
-        public Keys ConsoleKey = Keys.OemTilde;
+        public bool ToggleStabilize = false;
 
         /// <summary>
-        /// Key to accelerate upwards.
+        /// Key bindings for menu control as set by the player.
         /// </summary>
-        public Keys MoveUp = Keys.W;
+        public SerializableDictionary<Keys, MenuCommand> MenuBindings = new SerializableDictionary<Keys, MenuCommand>(DefaultMenuBindings);
 
         /// <summary>
-        /// Key to accelerate downwards.
+        /// Key bindings for in game ship control as set by the player.
         /// </summary>
-        public Keys MoveDown = Keys.S;
+        /// <remarks>
+        /// Make sure to call <c>UpdateInversGameBindings</c> after modifying
+        /// the <c>GameBindings</c>.
+        /// </remarks>
+        public SerializableDictionary<Keys, GameCommand> GameBindings = new SerializableDictionary<Keys, GameCommand>(DefaultGameBindings);
 
         /// <summary>
-        /// Key to accelerate left.
+        /// Inverse game key bindings, mapping commands to keys. This is used
+        /// when looking up whether an action should be taken based on the
+        /// current keyboard state (as opposed to reacting to a key press
+        /// event).
         /// </summary>
-        public Keys MoveLeft = Keys.A;
+        /// <remarks>
+        /// Make sure to call <c>UpdateInversGameBindings</c> after modifying
+        /// the <c>GameBindings</c>.
+        /// </remarks>
+        [XmlIgnore]
+        public Dictionary<GameCommand, Keys[]> InverseGameBindings;
 
         /// <summary>
-        /// Key to accelerate right.
+        /// Updates the inverse game key bindings.
         /// </summary>
-        public Keys MoveRight = Keys.D;
+        private void UpdateInverseGameBindings()
+        {
+            InverseGameBindings = BuildInverseGameBindings();
+        }
 
-        /// <summary>
-        /// Key to toggle the stabilizer.
-        /// </summary>
-        public Keys Stabilizer = Keys.CapsLock;
+        private Dictionary<GameCommand, Keys[]> BuildInverseGameBindings()
+        {
+            var buffer = new Dictionary<GameCommand, List<Keys>>();
+
+            foreach (var item in GameBindings)
+            {
+                if (!buffer.ContainsKey(item.Value))
+                {
+                    buffer.Add(item.Value, new List<Keys>());
+                }
+                buffer[item.Value].Add(item.Key);
+            }
+
+            var result = new Dictionary<GameCommand, Keys[]>();
+            foreach (var item in buffer)
+            {
+                result.Add(item.Key, item.Value.ToArray());
+            }
+            
+            return result;
+        }
 
         #endregion
 
@@ -183,6 +343,7 @@ namespace Space
         /// </summary>
         private Settings()
         {
+            UpdateInverseGameBindings();
         }
 
         #endregion
