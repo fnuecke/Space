@@ -12,7 +12,7 @@ using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudHeader : IHudChildElement
+    class HudLabel : IHudChildElement
     {
 
         #region Constants
@@ -141,7 +141,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// Constructor
         /// </summary>
         /// <param name="client">The general client object.</param>
-        public HudHeader(GameClient client)
+        public HudLabel(GameClient client)
         {
             _client = client;
 
