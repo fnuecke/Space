@@ -105,17 +105,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         protected override void AdjustParameters()
         {
-            // Important: do not call our base, because we take no overall
-            // color parameter.
-
-            // Get local player position.
-            Vector2 position = Vector2.Zero;
-            var info = _client.GetPlayerShipInfo();
-            if (info != null)
-            {
-                position = info.Position;
-            }
-            _effect.Parameters["Position"].SetValue(position / _width);
+            // Get local camera position.
+            _effect.Parameters["Position"].SetValue(_client.GetCameraPosition() / _width);
         }
 
         #endregion

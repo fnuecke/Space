@@ -160,51 +160,7 @@ namespace Engine.Session
             // is now full.
             for (int i = _pending.Count - 1; i >= 0 && i < _pending.Count; --i)
             {
-                // First check if the client timed out while logging in.
-                // This is to kill off connections from other programs to this
-                // port (that we obviously don't want to talk to), or unresponsive
-                // clients.
-                if ((DateTime.Now - _pending[i].established).TotalMilliseconds > LoginTimeout)
-                {
-                    // Client took to long to complete login, kill the connection.
-                    _pending[i].stream.Dispose();
-                    _pending.RemoveAt(i);
-                }
-                else
-                {
-                    // Not timed out yet. Read a *single* packet from the stream, which
-                    // should be the login packet. We don't read as much as we can here,
-                    // because we can only handle a single packet anyway.
-                    IPacketStream stream = _pending[i].stream;
-                    try
-                    {
-                        using (var packet = stream.Read())
-                        {
-                            if (packet != null)
-                            {
-                                SessionMessage type = (SessionMessage)packet.ReadByte();
-                                using (var data = packet.ReadPacket())
-                                {
-                                    HandlePendingData(i, type, data);
-                                }
-                            }
-                        }
-                    }
-                    catch (IOException ex)
-                    {
-                        // Connection failed, disconnect.
-                        logger.TraceException("Socket connection died during login.", ex);
-                        stream.Dispose();
-                        _pending.RemoveAt(i);
-                    }
-                    catch (PacketException ex)
-                    {
-                        // Received invalid packet from server.
-                        logger.WarnException("Invalid packet received from client during login.", ex);
-                        stream.Dispose();
-                        _pending.RemoveAt(i);
-                    }
-                }
+                CheckPending(i);
             }
 
             // Check for incoming data. This is for the actual players already in the
@@ -263,7 +219,60 @@ namespace Engine.Session
 
             base.Update();
         }
-        
+
+        /// <summary>
+        /// Checks a single pending connections for data, or if it timed out.
+        /// </summary>
+        /// <param name="i">The number of the connection to check.</param>
+        private void CheckPending(int i)
+        {
+            // First check if the client timed out while logging in.
+            // This is to kill off connections from other programs to this
+            // port (that we obviously don't want to talk to), or unresponsive
+            // clients.
+            if ((DateTime.Now - _pending[i].established).TotalMilliseconds > LoginTimeout)
+            {
+                // Client took to long to complete login, kill the connection.
+                _pending[i].stream.Dispose();
+                _pending.RemoveAt(i);
+            }
+            else
+            {
+                // Not timed out yet. Read a *single* packet from the stream, which
+                // should be the login packet. We don't read as much as we can here,
+                // because we can only handle a single packet anyway.
+                IPacketStream stream = _pending[i].stream;
+                try
+                {
+                    using (var packet = stream.Read())
+                    {
+                        if (packet != null)
+                        {
+                            SessionMessage type = (SessionMessage)packet.ReadByte();
+                            using (var data = packet.ReadPacket())
+                            {
+                                HandlePendingData(i, type, data);
+                            }
+                        }
+                    }
+                }
+                catch (IOException ex)
+                {
+                    // Connection failed, disconnect.
+                    logger.TraceException("Socket connection died during login.", ex);
+                    stream.Dispose();
+                    _pending.RemoveAt(i);
+                }
+                catch (PacketException ex)
+                {
+                    // Received invalid packet from server.
+                    logger.WarnException("Invalid packet received from client during login.", ex);
+                    stream.Dispose();
+                    _pending.RemoveAt(i);
+                }
+            }
+        }
+
         /// <summary>
         /// Add a single connection for this server. This connection will be put into
         /// login pending mode, meaning it has to send its login data. If it doesn't

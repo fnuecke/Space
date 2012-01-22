@@ -182,6 +182,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 {
                     _gamepad.Pressed -= HandleGamePadPressed;
                     _gamepad.Released -= HandleGamePadReleased;
+                    _gamepad.LeftMoved -= HandleGamePadLeftMoved;
+                    _gamepad.RightMoved -= HandleGamePadRightMoved;
                 }
             }
         }

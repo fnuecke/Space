@@ -113,6 +113,7 @@ namespace Engine.ComponentSystem.Systems
         public IComponentSystemManager AddSystem(IComponentSystem system)
         {
             _systems.Add(system);
+            _mapping.Remove(system.GetType());
             system.Manager = this;
             return this;
         }
@@ -136,6 +137,7 @@ namespace Engine.ComponentSystem.Systems
         public void RemoveSystem(IComponentSystem system)
         {
             _systems.Remove(system);
+            _mapping.Remove(system.GetType());
             system.Manager = null;
         }
 
