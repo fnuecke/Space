@@ -234,7 +234,7 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Serialization / Hashing / Cloning
+        #region Serialization / Hashing
 
         /// <summary>
         /// Write the object's state to the given packet.
@@ -265,6 +265,10 @@ namespace Engine.ComponentSystem.Systems
         public virtual void Hash(Hasher hasher)
         {
         }
+
+        #endregion
+
+        #region Copying
 
         /// <summary>
         /// Creates a deep copy, with a component list only containing

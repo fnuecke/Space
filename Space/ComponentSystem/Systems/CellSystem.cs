@@ -119,11 +119,16 @@ namespace Space.ComponentSystem.Systems
             // Get the cells that became alive.
             _bornCells.UnionWith(_newCells);
             _bornCells.ExceptWith(_livingCells);
+            CellStateChanged changedMessage;
             foreach (var bornCell in _bornCells)
             {
                 var xy = CoordinateIds.Split(bornCell);
-                var message = CellStateChanged.Create(xy.Item1, xy.Item2, bornCell, true);
-                Manager.SendMessageToSystems(ref message);
+                changedMessage.Id = bornCell;
+                changedMessage.X = xy.Item1;
+                changedMessage.Y = xy.Item2;
+                changedMessage.State = true;
+                Manager.SendMessageToSystems(ref changedMessage);
+                Manager.SendMessageToComponents(ref changedMessage);
             }
             _bornCells.Clear();
 
@@ -133,8 +138,12 @@ namespace Space.ComponentSystem.Systems
             foreach (var deceasedCell in _deceasedCells)
             {
                 var xy = CoordinateIds.Split(deceasedCell);
-                var message = CellStateChanged.Create(xy.Item1, xy.Item2, deceasedCell, false);
-                Manager.SendMessageToSystems(ref message);
+                changedMessage.Id = deceasedCell;
+                changedMessage.X = xy.Item1;
+                changedMessage.Y = xy.Item2;
+                changedMessage.State = false;
+                Manager.SendMessageToSystems(ref changedMessage);
+                Manager.SendMessageToComponents(ref changedMessage);
             }
             _deceasedCells.Clear();
 

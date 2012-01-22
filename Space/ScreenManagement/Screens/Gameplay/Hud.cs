@@ -79,6 +79,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _healthEnergyBar.SetMaximumHealth((int) info.MaxHealth);
             _healthEnergyBar.SetCurrentHealth((int) info.Health);
         }
+
         /// <summary>
         /// Render the current health / energy bar with the current values.
         /// </summary>
@@ -88,6 +89,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var info = _client.GetPlayerShipInfo();
             if (info != null && info.IsAlive)
             {
+                var offset = _client.GetPlayerShipInfo().Position - _client.GetCameraPosition();
+                var viewport = _spriteBatch.GraphicsDevice.Viewport;
+                _healthEnergyBar.SetPosition(new Point((viewport.Width - _healthEnergyBar.GetWidth()) / 2 + (int)offset.X, (viewport.Height - _healthEnergyBar.GetHeight()) / 2 - 40 + (int)offset.Y));
                 _healthEnergyBar.Draw();
             }
             _hudBox.Draw();

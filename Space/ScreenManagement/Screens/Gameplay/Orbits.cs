@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
@@ -117,7 +116,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             }
 
             // Fetch all the components we need.
-            var position = info.Position;
+            var position = _client.GetCameraPosition();
             var index = _client.GetSystem<IndexSystem>();
 
             // Bail if we're missing something.
