@@ -285,10 +285,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private void HandleGamePadPressed(object sender,EventArgs e)
         {
             var args = (GamePadInputEventArgs)e;
-            if (args.IsRepeat)
-            {
-                return;
-            }
             switch (args.Buttons)
             {
                 case (Buttons.LeftThumbstickUp):
