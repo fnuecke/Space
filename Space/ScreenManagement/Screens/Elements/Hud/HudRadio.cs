@@ -58,7 +58,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <summary>
         /// The footer label.
         /// </summary>
-        private HudHeader _footer;
+        private HudLabel _footer;
 
         /// <summary>
         /// The current top-left position of the parent element.
@@ -82,7 +82,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _bgText = new HudContent(_client, HudContent.Mode.BackgroundOnly, false, true);
             _bgText.setSize(_spacerTop.Width - _bgPortrait.getSize().X - 1, _bgPortrait.getSize().Y);
             _spacerBottom = new HudSpacer(_client, HudSpacer.Mode.Bottom);
-            _footer = new HudHeader(_client);
+            _footer = new HudLabel(_client);
         }
 
         /// <summary>

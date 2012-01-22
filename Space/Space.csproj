@@ -160,6 +160,7 @@
     <Compile Include="Graphics\Planet.cs" />
     <Compile Include="Graphics\Sun.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudRadio.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudPlayers.cs" />
     <Compile Include="ScreenManagement\Screens\Stylesheet\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSpacer.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudLabel.cs" />
