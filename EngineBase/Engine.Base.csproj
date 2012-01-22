@@ -112,6 +112,9 @@
     <Compile Include="Graphics\FilledRectangle.cs" />
     <Compile Include="Graphics\GradientRectangle.cs" />
     <Compile Include="Graphics\Rectangle.cs" />
+    <Compile Include="Input\GamePadInputEventArgs.cs" />
+    <Compile Include="Input\GamepadInputManager.cs" />
+    <Compile Include="Input\IGamepadInputManager.cs" />
     <Compile Include="Input\IMouseInputManager.cs" />
     <Compile Include="Input\KeyComboEventArgs.cs" />
     <Compile Include="Input\KeyboardInputEventArgs.cs" />

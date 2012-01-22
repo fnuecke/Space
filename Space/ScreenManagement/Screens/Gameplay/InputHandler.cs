@@ -2,6 +2,7 @@
 using Engine.Input;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Space.Control;
 using Space.Simulation.Commands;
 
@@ -40,6 +41,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private IMouseInputManager _mouse;
 
         /// <summary>
+        /// The GamepadManager we're using.
+        /// </summary>
+        private IGamepadInputManager _gamepad;
+
+        /// <summary>
         /// Whether we're currently enabled or not. Just used to check if it's
         /// a repetitive 'set', to avoid adding ourselves as listeners over and
         /// over again.
@@ -56,6 +62,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private Directions _accelerationDirection;
 
+        private Vector2 _directdirection;
         /// <summary>
         /// The last registered time that the mouse has moved.
         /// </summary>
@@ -86,6 +93,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             _keyboard = (IKeyboardInputManager)client.Game.Services.GetService(typeof(IKeyboardInputManager));
             _mouse = (IMouseInputManager)client.Game.Services.GetService(typeof(IMouseInputManager));
+            _gamepad = (IGamepadInputManager) client.Game.Services.GetService(typeof (IGamepadInputManager));
         }
 
         #endregion
@@ -106,7 +114,12 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 }
                 if (_accelerationChanged > _lastUpdate)
                 {
-                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, DirectionConversion.DirectionToVector(_accelerationDirection)));
+                    if(_directdirection != Vector2.Zero)
+                        _directdirection.Normalize();
+                    var dir = DirectionConversion.DirectionToVector(_accelerationDirection);
+                    if(dir != Vector2.Zero)
+                        dir.Normalize();
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate,_directdirection+ dir));
                 }
                 _lastUpdate = DateTime.Now;
             }
@@ -143,6 +156,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     _mouse.Pressed += HandleMousePressed;
                     _mouse.Released += HandleMouseReleased;
                 }
+                if (_gamepad != null)
+                {
+                    _gamepad.Pressed += HandleGamePadPressed;
+                    _gamepad.Released += HandleGamePadReleased;
+                    _gamepad.LeftMoved += HandleGamePadLeftMoved;
+                    _gamepad.RightMoved += HandleGamePadRightMoved;
+                }
             }
             else
             {
@@ -157,6 +177,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     _mouse.Moved -= HandleMouseMoved;
                     _mouse.Pressed -= HandleMousePressed;
                     _mouse.Released -= HandleMouseReleased;
+                }
+                if (_gamepad != null)
+                {
+                    _gamepad.Pressed -= HandleGamePadPressed;
+                    _gamepad.Released -= HandleGamePadReleased;
                 }
             }
         }
@@ -255,7 +280,80 @@ namespace Space.ScreenManagement.Screens.Gameplay
         }
 
         // TODO private void HandleGamePadStickMoved(object sender, EventArgs e) { update rotation }
+        private void HandleGamePadPressed(object sender,EventArgs e)
+        {
+            var args = (GamePadInputEventArgs)e;
+            if (args.IsRepeat)
+            {
+                return;
+            }
+            switch (args.Buttons)
+            {
+                case (Buttons.LeftThumbstickUp):
+                case (Buttons.LeftThumbstickLeft):
+                case (Buttons.LeftThumbstickDown):
+                case (Buttons.LeftThumbstickRight):
+                case (Buttons.RightThumbstickUp):
+                case (Buttons.RightThumbstickLeft):
+                case (Buttons.RightThumbstickDown):
+                case (Buttons.RightThumbstickRight):    
+                    break;
+                case (Buttons.RightShoulder):
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
+                    break;
+                default:
+                    break;
+                    
+            }
+            _accelerationChanged = DateTime.Now;
+        }
+        private void HandleGamePadReleased(object sender, EventArgs e)
+        {
+            var args = (GamePadInputEventArgs)e;
 
+            switch (args.Buttons)
+            {
+                case (Buttons.LeftThumbstickUp):
+                case (Buttons.LeftThumbstickLeft):
+                case (Buttons.LeftThumbstickDown):
+                case (Buttons.LeftThumbstickRight):
+                case (Buttons.RightThumbstickUp):
+                case (Buttons.RightThumbstickLeft):
+                case (Buttons.RightThumbstickDown):
+                case (Buttons.RightThumbstickRight): 
+                    
+                    break;
+                case (Buttons.RightShoulder):
+                    _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
+                    break;
+                default:
+                    break;
+
+            }
+            
+        }
+
+        private void HandleGamePadLeftMoved(object sender, EventArgs e)
+        {
+            var args = (GamePadInputEventArgs) e;
+            _directdirection = args.State.ThumbSticks.Left;
+            _directdirection.Y = -_directdirection.Y;
+            _accelerationChanged = DateTime.Now;
+        }
+        private void HandleGamePadRightMoved(object sender, EventArgs e)
+        {
+            var args = (GamePadInputEventArgs)e;
+            var rightstick = args.State.ThumbSticks.Right;
+            if (rightstick != Vector2.Zero)
+            {
+
+
+                var mouseAngle =
+                    (float) System.Math.Atan2(-rightstick.Y, rightstick.X);
+                _targetRotation = mouseAngle;
+            }
+            _rotationChanged = DateTime.Now;
+        }
         private void HandleMousePressed(object sender, EventArgs e)
         {
             var args = (MouseInputEventArgs)e;

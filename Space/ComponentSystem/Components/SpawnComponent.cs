@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.Systems.Messages;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Entities;
+using Space.ComponentSystem.Systems.Messages;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -68,7 +72,33 @@ namespace Space.ComponentSystem.Components
         }
         #endregion
     }
-    class SpawnComponent:AbstractComponent
+    class SpawnComponent : AbstractComponent
     {
+
+        private List<int> _targets = new List<int>();
+        public override void HandleMessage<T>(ref T message)
+        {
+            if (message is CellStateChanged)
+            {
+
+            }
+            else if (message is EntityRemoved)
+            {
+                var entity = (EntityRemoved)(ValueType)message;
+                _targets.Remove(entity.EntityUid);
+            }
+        }
+
+        public override void Update(object parameterization)
+        {
+            foreach (var target in _targets)
+            {
+                //EntityFactory.CreateAIShip()
+            }
+        }
+        public override bool SupportsUpdateParameterization(Type parameterizationType)
+        {
+            return parameterizationType == typeof(DefaultLogicParameterization);
+        }
     }
 }
