@@ -89,14 +89,14 @@ namespace Space.ComponentSystem.Systems
                     if (info.X == 0 && info.Y == 0)
                     {
                         CreateSystem(random, ref center, list,
-                            CellInfo[info.Id].Faction, 
+                            CellInfo[info.Id], 
                             7, new[] {
                             0, 0, 1, 2, 4, 2, 1
                         });
                     }
                     else
                     {
-                        CreateSystem(random, ref center, list,CellInfo[info.Id].Faction);
+                        CreateSystem(random, ref center, list,CellInfo[info.Id]);
                     }
 
                     _entities.Add(info.Id, list);
@@ -117,6 +117,10 @@ namespace Space.ComponentSystem.Systems
                     {
                         if (!CellInfo[info.Id].Changed)
                             CellInfo.Remove(info.Id);
+                        else
+                        {
+                            CellInfo[info.Id].Stations.Clear();
+                        }
                     }
                 }
             }
@@ -232,7 +236,7 @@ namespace Space.ComponentSystem.Systems
             IUniformRandom random,
             ref Vector2 center,
             List<int> list,
-            Factions faction,
+            CellInfo cellInfo,
             int numPlanets = -1,
             int[] numsMoons = null)
         {
@@ -273,7 +277,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     numMoons = _constaints.SampleMoons(gaussian);
                 }
-                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list, faction);
+                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list, cellInfo);
             }
         }
 
@@ -285,8 +289,9 @@ namespace Space.ComponentSystem.Systems
             float previousOrbitRadius,
             float dominantOrbitAngle,
             int numMoons,
-            List<int> list,
-            Factions faction)
+            List<int> list
+            , CellInfo cellInfo
+            )
         {
             // Sample planet properties.
             float planetRadius = _constaints.SamplePlanetRadius(gaussian);
@@ -322,7 +327,9 @@ namespace Space.ComponentSystem.Systems
             float previousMoonOrbit = (_constaints.PlanetRadiusMean + _constaints.PlanetRadiusStdDev) * 1.5f;
             if (_constaints.SampleStation(random))
             {
-                CreateStation(random, gaussian, planet, planetMass, planetRadius, list, faction);
+                CreateStation(random, gaussian, planet, planetMass, planetRadius, list
+                    , cellInfo
+                    );
             }
             // The create as many as we sample.
             for (int j = 0; j < numMoons; j++)
@@ -339,8 +346,9 @@ namespace Space.ComponentSystem.Systems
             Entity planet,
             float planetMass,
             float planetRadius,
-            List<int> list,
-            Factions faction)
+            List<int> list
+            , CellInfo cellInfo
+            )
         {
 
             var StationOrbit = planetRadius + _constaints.SampleStationOrbit(gaussian);
@@ -350,9 +358,10 @@ namespace Space.ComponentSystem.Systems
                 center: planet,
                 orbitRadius: StationOrbit,
                 period: stationPeriod,
-                faction: faction);
+                faction: cellInfo.Faction);
 
             list.Add(Manager.EntityManager.AddEntity(station));
+            cellInfo.Stations.Add(station.UID);
         }
 
         private float CreateMoon(
@@ -425,6 +434,7 @@ namespace Space.ComponentSystem.Systems
     {
         public Factions Faction;
         public bool Changed;
+        public List<int> Stations = new List<int>();
         public int TechLevel { get { return TechLevel; }
             set { TechLevel = value;
                 Changed = true;

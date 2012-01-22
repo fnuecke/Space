@@ -143,7 +143,7 @@ namespace Space
             // Add some more utility components.
             Components.Add(new KeyboardInputManager(this));
             Components.Add(new MouseInputManager(this));
-
+            Components.Add(new GamepadInputManager(this));
             _console = new GameConsole(this);
             Components.Add(_console);
 
