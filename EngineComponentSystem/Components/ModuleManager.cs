@@ -262,6 +262,7 @@ namespace Engine.ComponentSystem.Components
             foreach (var module in packet.ReadPacketizablesWithTypeInfo<AbstractModule<TModifier>>())
             {
                 _modules.Add(module);
+                module.Component = this;
             }
 
             packet.ReadPacketizableInto(_idManager);
@@ -312,10 +313,13 @@ namespace Engine.ComponentSystem.Components
                 for (; i < copy._modules.Count; ++i)
                 {
                     copy._modules[i] = _modules[i].DeepCopy(copy._modules[i]);
+                    copy._modules[i].Component = copy;
                 }
                 for (; i < _modules.Count; ++i)
                 {
-                    copy._modules.Add(_modules[i].DeepCopy());
+                    var module = _modules[i].DeepCopy();
+                    copy._modules.Add(module);
+                    module.Component = copy;
                 }
 
                 copy._attributeCache.Clear();
@@ -329,7 +333,9 @@ namespace Engine.ComponentSystem.Components
                 copy._modules = new List<AbstractModule<TModifier>>();
                 foreach (var module in _modules)
                 {
-                    copy._modules.Add(module.DeepCopy());
+                    var moduleCopy = module.DeepCopy();
+                    copy._modules.Add(moduleCopy);
+                    moduleCopy.Component = copy;
                 }
 
                 // Copy the caches as well.

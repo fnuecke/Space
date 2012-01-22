@@ -189,12 +189,12 @@ namespace Space
             #region Debug commands
             #if DEBUG
 
-            _console.AddCommand("do", args =>
+            // Default handler to interpret everything that is not a command
+            // as a script.
+            _console.SetDefaultCommandHandler(args =>
             {
-                Client.Controller.PushLocalCommand(new ScriptCommand(string.Join(" ", args, 1, args.Length - 1)));
-            },
-                "Executes the specified script.",
-                "do <script> - executes script.");
+                Client.Controller.PushLocalCommand(new ScriptCommand(string.Join(" ", args)));
+            });
 
             _console.AddCommand("d_renderindex", args =>
             {
