@@ -195,7 +195,10 @@ def ge(id):
                             }
                             catch (System.Exception ex)
                             {
-                                logger.ErrorException("Error executing script.", ex);
+                                if (!_ignoreScriptOutput)
+                                {
+                                    logger.ErrorException("Error executing script.", ex);
+                                }
                             }
                         }
                     }

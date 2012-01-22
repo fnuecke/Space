@@ -11,21 +11,21 @@ namespace Engine.Input
         /// <summary>
         /// Fired when a mouse button is pressed.
         /// </summary>
-        event EventHandler<EventArgs> Pressed;
+        event EventHandler<MouseInputEventArgs> Pressed;
 
         /// <summary>
         /// Fired when a mouse button is released.
         /// </summary>
-        event EventHandler<EventArgs> Released;
+        event EventHandler<MouseInputEventArgs> Released;
 
         /// <summary>
         /// Fired when the scroll wheel is scrolled.
         /// </summary>
-        event EventHandler<EventArgs> Scrolled;
+        event EventHandler<MouseInputEventArgs> Scrolled;
 
         /// <summary>
         /// Fired when the mouse moves.
         /// </summary>
-        event EventHandler<EventArgs> Moved;
+        event EventHandler<MouseInputEventArgs> Moved;
     }
 }

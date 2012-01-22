@@ -45,6 +45,11 @@ namespace Engine.Input
         }
 
         /// <summary>
+        /// The overall mouse state that's now active.
+        /// </summary>
+        public MouseState State { get; private set; }
+
+        /// <summary>
         /// The button relevant to this event.
         /// </summary>
         public MouseButton Button { get; private set; }
@@ -80,11 +85,6 @@ namespace Engine.Input
         public int Y { get; private set; }
 
         /// <summary>
-        /// The overall mouse state that's now active.
-        /// </summary>
-        public MouseState State { get; private set; }
-
-        /// <summary>
         /// For pressed / released events.
         /// </summary>
         internal MouseInputEventArgs(MouseState mouseState, MouseButton button, ButtonState buttonState)
@@ -95,7 +95,7 @@ namespace Engine.Input
         }
 
         /// <summary>
-        /// For scrollwheel events.
+        /// For scroll wheel events.
         /// </summary>
         internal MouseInputEventArgs(MouseState mouseState, int delta)
         {

@@ -1,48 +1,63 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 namespace Engine.Input
 {
-    public class GamepadInputManager :GameComponent, IGamepadInputManager
+    /// <summary>
+    /// This class may be used to get an event driven access to user game pad
+    /// input.
+    /// 
+    /// Upon creation, this class registers itself as a service with the game it
+    /// is created for, so it can be accessed by any other component.
+    /// </summary>
+    public sealed class GamepadInputManager : GameComponent, IGamepadInputManager
     {
-
-          #region Properties
-
-        /// <summary>
-        /// The delay before a key start to trigger repeatedly.
-        /// </summary>
-        public int RepeatDelay { get; set; }
+        #region Events
 
         /// <summary>
-        /// The delay between triggering when triggering repeatedly (key held down).
+        /// Fired when a button is newly pressed.
         /// </summary>
-        public int RepeatRate { get; set; }
-
-
-        private Vector2 _lastLeftStick;
+        public event EventHandler<GamepadInputEventArgs> Pressed;
 
         /// <summary>
-        /// Last time we sent a repeated key press.
+        /// Fired when a button is released.
         /// </summary>
-        private DateTime _lastRepeat;
+        public event EventHandler<GamepadInputEventArgs> Released;
+
+        /// <summary>
+        /// Fired when the left game pad stick was moved.
+        /// </summary>
+        public event EventHandler<GamepadInputEventArgs> LeftMoved;
+
+        /// <summary>
+        /// Fired when the right game pad stick was moved.
+        /// </summary>
+        public event EventHandler<GamepadInputEventArgs> RightMoved;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// State from the last update, to check for changes.
         /// </summary>
         private GamePadState _previousState;
-        #endregion
-        public GamepadInputManager(Game game) : base(game)
-        {
-           
-            game.Services.AddService(typeof(IGamepadInputManager),this);
 
-        }
+        #endregion
+
+        #region Constructor
         
-       
+        public GamepadInputManager(Game game)
+            : base(game)
+        {
+            game.Services.AddService(typeof(IGamepadInputManager), this);
+        }
+
+        #endregion
+
+        #region Logic
+        
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
@@ -52,62 +67,42 @@ namespace Engine.Input
                 return;
             }
 
-
             // The current time, used to check for repeats.
-            var currentTime = DateTime.Now;
-
-            var currentState = GamePad.GetState((PlayerIndex) 0);
-            var buttons = Enum.GetValues(typeof (Buttons));
+            var currentState = GamePad.GetState((PlayerIndex)0);
+            var buttons = Enum.GetValues(typeof(Buttons));
             foreach (Buttons button in buttons)
             {
                 if (currentState.IsButtonDown(button))
                 {
-                    if (_previousState.IsButtonDown(button))
-                    {
-                        // Key was held.
-                        if (RepeatDelay > 0 && RepeatRate > 0 && _lastRepeat != null)
-                        {
-                            if (new TimeSpan(currentTime.Ticks - _lastRepeat.Ticks).TotalMilliseconds > RepeatRate)
-                            {
-                                _lastRepeat = currentTime;
-                                OnPressed(new GamePadInputEventArgs(currentState, button, true));
-                            }
-                        }
-                    }
-                    else
+                    if (!_previousState.IsButtonDown(button))
                     {
                         // Key was pressed.
-                        if (RepeatDelay > 0 && RepeatRate > 0)
-                        {
-                            
-                            _lastRepeat = currentTime.AddMilliseconds(RepeatDelay);
-                        }
-                        OnPressed(new GamePadInputEventArgs(currentState, button, false));
+                        OnPressed(new GamepadInputEventArgs(currentState, button));
                     }
                 }
                 else
                 {
                     if (_previousState.IsButtonDown(button))
                     {
-
-                        OnReleased(new GamePadInputEventArgs(currentState, button, false));
+                        OnReleased(new GamepadInputEventArgs(currentState, button));
                     }
                 }
-
-                
             }
 
             if (currentState.ThumbSticks.Left != _previousState.ThumbSticks.Left)
             {
-                OnLeftMove(new GamePadInputEventArgs(currentState));
+                OnLeftMove(new GamepadInputEventArgs(currentState, Buttons.LeftStick, currentState.ThumbSticks.Left));
             }
+
             if (currentState.ThumbSticks.Right != _previousState.ThumbSticks.Right)
             {
-                OnRightMove(new GamePadInputEventArgs(currentState));
+                OnRightMove(new GamepadInputEventArgs(currentState, Buttons.RightStick, currentState.ThumbSticks.Right));
             }
+
             _previousState = currentState;
         }
-        private void OnPressed(GamePadInputEventArgs e)
+
+        private void OnPressed(GamepadInputEventArgs e)
         {
             if (Pressed != null)
             {
@@ -115,7 +110,7 @@ namespace Engine.Input
             }
         }
 
-        private void OnReleased(GamePadInputEventArgs e)
+        private void OnReleased(GamepadInputEventArgs e)
         {
             if (Released != null)
             {
@@ -123,23 +118,22 @@ namespace Engine.Input
             }
         }
 
-        private void OnLeftMove(GamePadInputEventArgs e)
+        private void OnLeftMove(GamepadInputEventArgs e)
         {
             if (LeftMoved != null)
             {
                 LeftMoved(this, e);
             }
         }
-        private void OnRightMove(GamePadInputEventArgs e)
+
+        private void OnRightMove(GamepadInputEventArgs e)
         {
             if (RightMoved != null)
             {
                 RightMoved(this, e);
             }
         }
-        public event EventHandler<EventArgs> Pressed;
-        public event EventHandler<EventArgs> Released;
-        public event EventHandler<EventArgs> LeftMoved;
-        public event EventHandler<EventArgs> RightMoved;
+
+        #endregion
     }
 }
