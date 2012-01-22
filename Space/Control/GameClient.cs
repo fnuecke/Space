@@ -6,6 +6,7 @@ using Engine.Simulation.Commands;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
 
 namespace Space.Control
 {
@@ -106,6 +107,16 @@ namespace Space.Control
                 }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Gets the current camera position, i.e. the view center, in global
+        /// coordinates.
+        /// </summary>
+        /// <returns></returns>
+        public Vector2 GetCameraPosition()
+        {
+            return GetSystem<PlayerCenteredRenderSystem>().CameraPositon;
         }
 
         /// <summary>

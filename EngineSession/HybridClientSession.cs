@@ -228,6 +228,14 @@ namespace Engine.Session
             this._playerData = (TPlayerData)playerData;
             ConnectionState = ClientState.Connecting;
 
+            // Check if the server is already full.
+            if (server.NumPlayers >= server.MaxPlayers)
+            {
+                logger.Debug("Join failed, server already full.");
+                Reset();
+                return;
+            }
+
             // Create the two 'pipes' we use to pass data from client to server
             // and vice versa.
             var toClient = new SlidingStream();
@@ -251,17 +259,11 @@ namespace Engine.Session
                 _information.PutOutgoingPacketSize(written);
                 _information.PutOutgoingPacketCompression(((float)packet.Length / (float)written) - 1f);
             }
-            try
-            {
-                // Let's try this... this can throw if the server is already full.
-                ((HybridServerSession<TPlayerData>)server).
-                    Add(new SlidingPacketStream(toServer, toClient));
-            }
-            catch (InvalidOperationException ex)
-            {
-                logger.DebugException("Join failed.", ex);
-                Reset();
-            }
+
+            // Let's try this. This can throw if the server is already
+            // full, but that shouldn't happen, because we checked above.
+            ((HybridServerSession<TPlayerData>)server).
+                Add(new SlidingPacketStream(toServer, toClient));
         }
 
         /// <summary>

@@ -167,7 +167,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
             }
 
             // Fetch all the components we need.
-            var position = info.Position;
             var index = _client.GetSystem<IndexSystem>();
 
             // Bail if we're missing something.
@@ -176,29 +175,32 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 return;
             }
 
+            // Get the actual position we're rendering at. Note that this will
+            // actually allow the player to "extend" his radar by the maximum
+            // distance of the camera to his ship. That'll be a negligible
+            // amount, however, in relation to the total radar range.
+            var position = _client.GetCameraPosition();
+
             // Figure out the overall range of our radar system.
             float radarRange = info.RadarRange;
 
             // Our mass.
             float mass = info.Mass;
 
-            // Get our viewport.
-            var viewport = _spriteBatch.GraphicsDevice.Viewport;
+            // Get bounds in which to display the icon.
+            var screenBounds = _spriteBatch.GraphicsDevice.Viewport.Bounds;
 
             // Get the screen's center, used for diverse computations, and as
             // a center for relative computations (because the player's always
             // rendered in the center of the screen).
             Vector2 center;
-            center.X = viewport.Width / 2f;
-            center.Y = viewport.Height / 2f;
+            center.X = screenBounds.Width / 2f;
+            center.Y = screenBounds.Height / 2f;
 
             // Get the texture origin (middle of the texture).
             Vector2 backgroundOrigin;
             backgroundOrigin.X = _radarIconWidth / 2.0f;
             backgroundOrigin.Y = _radarIconHeight / 2.0f;
-
-            // Get bounds in which to display the icon.
-            var screenBounds = viewport.Bounds;
 
             // Get the inner bounds in which to display the icon, i.e. minus
             // half the size of the icon, so deflate by that.
@@ -223,23 +225,23 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _spriteBatch.Begin();
 
             // Make the background of the radar a bit darker...
-            _basicForms.FillRectangle(0, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
-            _basicForms.FillRectangle(viewport.Width - _radarBorderSize, 0, _radarBorderSize, viewport.Height, Color.Black * 0.15f);
-            _basicForms.FillRectangle(_radarBorderSize, 0, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
-            _basicForms.FillRectangle(_radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
+            _basicForms.FillRectangle(0, 0, _radarBorderSize, screenBounds.Height, Color.Black * 0.15f);
+            _basicForms.FillRectangle(screenBounds.Width - _radarBorderSize, 0, _radarBorderSize, screenBounds.Height, Color.Black * 0.15f);
+            _basicForms.FillRectangle(_radarBorderSize, 0, screenBounds.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
+            _basicForms.FillRectangle(_radarBorderSize, screenBounds.Height - _radarBorderSize, screenBounds.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
 
             // ... and the border of the radar a bit lighter.
-            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, viewport.Width - 2 * _radarBorderSize, viewport.Height - 2 * _radarBorderSize, Color.White * 0.1f);
+            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, screenBounds.Width - 2 * _radarBorderSize, screenBounds.Height - 2 * _radarBorderSize, Color.White * 0.1f);
 
             // Color the background of the radar red if health is low...
-            float healthPercent = info.Health / info.MaxHealth;
-            if (healthPercent < _healthIndicatorThreshold)
+            float healthPercent = info.RelativeHealth;
+            if (info.RelativeHealth < _healthIndicatorThreshold)
             {
                 float redAlpha = (1 - healthPercent / _healthIndicatorThreshold) / 2;
-                _basicForms.FillRectangle(0, 0, _radarBorderSize, viewport.Height, Color.Red * redAlpha);
-                _basicForms.FillRectangle(viewport.Width - _radarBorderSize, 0, _radarBorderSize, viewport.Height, Color.Red * redAlpha);
-                _basicForms.FillRectangle(_radarBorderSize, 0, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Red * redAlpha);
-                _basicForms.FillRectangle(_radarBorderSize, viewport.Height - _radarBorderSize, viewport.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Red * redAlpha);
+                _basicForms.FillRectangle(0, 0, _radarBorderSize, screenBounds.Height, Color.Red * redAlpha);
+                _basicForms.FillRectangle(screenBounds.Width - _radarBorderSize, 0, _radarBorderSize, screenBounds.Height, Color.Red * redAlpha);
+                _basicForms.FillRectangle(_radarBorderSize, 0, screenBounds.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Red * redAlpha);
+                _basicForms.FillRectangle(_radarBorderSize, screenBounds.Height - _radarBorderSize, screenBounds.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Red * redAlpha);
             }
 
             // Loop through all our neighbors.

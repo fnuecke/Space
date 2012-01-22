@@ -285,9 +285,8 @@ namespace Space.ComponentSystem.Systems
             float previousOrbitRadius,
             float dominantOrbitAngle,
             int numMoons,
-            List<int> list
-            , Factions faction
-            )
+            List<int> list,
+            Factions faction)
         {
             // Sample planet properties.
             float planetRadius = _constaints.SamplePlanetRadius(gaussian);
@@ -323,9 +322,7 @@ namespace Space.ComponentSystem.Systems
             float previousMoonOrbit = (_constaints.PlanetRadiusMean + _constaints.PlanetRadiusStdDev) * 1.5f;
             if (_constaints.SampleStation(random))
             {
-                CreateStation(random, gaussian, planet, planetMass, planetRadius, list
-                    , faction
-                    );
+                CreateStation(random, gaussian, planet, planetMass, planetRadius, list, faction);
             }
             // The create as many as we sample.
             for (int j = 0; j < numMoons; j++)
@@ -342,9 +339,8 @@ namespace Space.ComponentSystem.Systems
             Entity planet,
             float planetMass,
             float planetRadius,
-            List<int> list
-            , Factions faction
-            )
+            List<int> list,
+            Factions faction)
         {
 
             var StationOrbit = planetRadius + _constaints.SampleStationOrbit(gaussian);
