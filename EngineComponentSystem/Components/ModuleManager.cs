@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Engine.ComponentSystem.Components.Messages;
-using Engine.Data;
+using Engine.ComponentSystem.Modules;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -16,17 +16,17 @@ namespace Engine.ComponentSystem.Components
     /// <b>Important</b>: the type parameter <em>must</em> be an <c>enum</c>.
     /// </para>
     /// </summary>
-    /// <typeparam name="TAttribute">The enum that holds the possible types of
-    /// attributes.</typeparam>
-    public sealed class EntityModules<TAttribute> : AbstractComponent
-        where TAttribute : struct
+    /// <typeparam name="TModifier">The enum that holds the possible types of
+    /// modifiers.</typeparam>
+    public sealed class ModuleManager<TModifier> : AbstractComponent
+        where TModifier : struct
     {
         #region Properties
 
         /// <summary>
         /// A list of all known attributes.
         /// </summary>
-        public ReadOnlyCollection<AbstractEntityModule<TAttribute>> Modules { get { return _modules.AsReadOnly(); } }
+        public ReadOnlyCollection<AbstractModule<TModifier>> Modules { get { return _modules.AsReadOnly(); } }
 
         #endregion
 
@@ -35,30 +35,22 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Actual list of attributes registered.
         /// </summary>
-        private List<AbstractEntityModule<TAttribute>> _modules = new List<AbstractEntityModule<TAttribute>>();
+        private List<AbstractModule<TModifier>> _modules = new List<AbstractModule<TModifier>>();
 
         /// <summary>
         /// Cached computation results for accumulative attribute values.
         /// </summary>
-        private Dictionary<TAttribute, float> _attributeCache = new Dictionary<TAttribute, float>();
+        private Dictionary<TModifier, float> _attributeCache = new Dictionary<TModifier, float>();
 
         /// <summary>
         /// Cached lists of components by type.
         /// </summary>
-        private Dictionary<Type, List<AbstractEntityModule<TAttribute>>> _moduleCache = new Dictionary<Type, List<AbstractEntityModule<TAttribute>>>();
+        private Dictionary<Type, List<AbstractModule<TModifier>>> _moduleCache = new Dictionary<Type, List<AbstractModule<TModifier>>>();
 
         /// <summary>
         /// Manager for component ids.
         /// </summary>
         private IdManager _idManager = new IdManager();
-
-        #endregion
-
-        #region Constructor
-
-        public EntityModules()
-        {
-        }
 
         #endregion
 
@@ -76,7 +68,7 @@ namespace Engine.ComponentSystem.Components
         /// overall value.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes tracked by this component.</returns>
-        public float GetValue(TAttribute attributeType)
+        public float GetValue(TModifier attributeType)
         {
             if (_attributeCache.ContainsKey(attributeType))
             {
@@ -100,12 +92,12 @@ namespace Engine.ComponentSystem.Components
         /// <param name="baseValue">The base value to start from.</param>
         /// <returns>The accumulative value of the specified attribute type
         /// over all attributes tracked by this component.</returns>
-        public float GetValue(TAttribute attributeType, float baseValue)
+        public float GetValue(TModifier attributeType, float baseValue)
         {
-            var attributes = new List<ModuleAttribute<TAttribute>>();
+            var attributes = new List<Modifier<TModifier>>();
             foreach (var module in _modules)
             {
-                attributes.AddRange(module.Attributes);
+                attributes.AddRange(module.Modifiers);
             }
             return attributes.Accumulate(attributeType, baseValue);
         }
@@ -117,14 +109,14 @@ namespace Engine.ComponentSystem.Components
         /// <typeparam name="T">The type of the component to get.</typeparam>
         /// <returns></returns>
         public IEnumerable<T> GetModules<T>()
-            where T : AbstractEntityModule<TAttribute>
+            where T : AbstractModule<TModifier>
         {
             Type type = typeof(T);
             if (_moduleCache.ContainsKey(type))
             {
                 return _moduleCache[type].Cast<T>();
             }
-            var modules = new List<AbstractEntityModule<TAttribute>>();
+            var modules = new List<AbstractModule<TModifier>>();
             foreach (var module in _modules)
             {
                 if (module.GetType() == type)
@@ -147,7 +139,7 @@ namespace Engine.ComponentSystem.Components
         /// </para>
         /// </summary>
         /// <param name="module">The module to add.</param>
-        public void AddModule(AbstractEntityModule<TAttribute> module)
+        public void AddModule(AbstractModule<TModifier> module)
         {
             if (module == null || _modules.Contains(module))
             {
@@ -159,24 +151,13 @@ namespace Engine.ComponentSystem.Components
             }
             _modules.Add(module);
             module.UID = _idManager.GetId();
+            module.Component = this;
             // Invalidate caches.
             _moduleCache.Remove(module.GetType());
-            ModuleValueInvalidated<TAttribute> invalidatedMessage;
-            foreach (var attribute in module.Attributes)
-            {
-                _attributeCache.Remove(attribute.Type);
-                invalidatedMessage.ValueType = attribute.Type;
-                Entity.SendMessageToComponents(ref invalidatedMessage);
-            }
-            foreach (var attributeType in module.AttributesToInvalidate)
-            {
-                _attributeCache.Remove(attributeType);
-                invalidatedMessage.ValueType = attributeType;
-                Entity.SendMessageToComponents(ref invalidatedMessage);
-            }
+            module.Invalidate();
             if (Entity != null)
             {
-                ModuleAdded<TAttribute> addedMessage;
+                ModuleAdded<TModifier> addedMessage;
                 addedMessage.Module = module;
                 Entity.SendMessageToComponents(ref addedMessage);
             }
@@ -193,7 +174,7 @@ namespace Engine.ComponentSystem.Components
         /// </para>
         /// </summary>
         /// <param name="modules">The modules to add.</param>
-        public void AddModules(IEnumerable<AbstractEntityModule<TAttribute>> modules)
+        public void AddModules(IEnumerable<AbstractModule<TModifier>> modules)
         {
             foreach (var module in modules)
             {
@@ -205,28 +186,25 @@ namespace Engine.ComponentSystem.Components
         /// Removes a module from this component.
         /// </summary>
         /// <param name="module">The module to remove.</param>
-        public AbstractEntityModule<TAttribute> RemoveModule(AbstractEntityModule<TAttribute> module)
+        public AbstractModule<TModifier> RemoveModule(AbstractModule<TModifier> module)
         {
             if (_modules.Remove(module))
             {
                 // Invalidate caches.
                 _moduleCache.Remove(module.GetType());
-                ModuleValueInvalidated<TAttribute> invalidatedMessage;
-                foreach (var attribute in module.Attributes)
-                {
-                    _attributeCache.Remove(attribute.Type);
-                    invalidatedMessage.ValueType = attribute.Type;
-                    Entity.SendMessageToComponents(ref invalidatedMessage);
-                }
                 // Notify others *before* resetting the id.
                 if (Entity != null)
                 {
-                    ModuleRemoved<TAttribute> removedMessage;
+                    ModuleRemoved<TModifier> removedMessage;
                     removedMessage.Module = module;
                     Entity.SendMessageToComponents(ref removedMessage);
                 }
+                // Invalidate after event, to avoid handlers of that to rebuild
+                // the cache.
+                module.Invalidate();
                 _idManager.ReleaseId(module.UID);
                 module.UID = -1;
+                module.Component = null;
             }
             return module;
         }
@@ -236,9 +214,22 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="index">The index of the module to remove.</param>
         /// <returns>The removed module.</returns>
-        public AbstractEntityModule<TAttribute> RemoveModuleAt(int index)
+        public AbstractModule<TModifier> RemoveModuleAt(int index)
         {
             return RemoveModule(_modules[index]);
+        }
+
+        /// <summary>
+        /// Invalidates cache and sends invalidated message for the modifier of
+        /// the specified type.
+        /// </summary>
+        /// <param name="type">The type of modifier to invalidate.</param>
+        public void Invalidate(TModifier type)
+        {
+            ModuleValueInvalidated<TModifier> invalidatedMessage;
+            _attributeCache.Remove(type);
+            invalidatedMessage.ValueType = type;
+            Entity.SendMessageToComponents(ref invalidatedMessage);
         }
 
         #endregion
@@ -268,7 +259,7 @@ namespace Engine.ComponentSystem.Components
             base.Depacketize(packet);
 
             _modules.Clear();
-            foreach (var module in packet.ReadPacketizablesWithTypeInfo<AbstractEntityModule<TAttribute>>())
+            foreach (var module in packet.ReadPacketizablesWithTypeInfo<AbstractModule<TModifier>>())
             {
                 _modules.Add(module);
             }
@@ -308,7 +299,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            var copy = (EntityModules<TAttribute>)base.DeepCopy(into);
+            var copy = (ModuleManager<TModifier>)base.DeepCopy(into);
 
             if (copy == into)
             {
@@ -335,15 +326,15 @@ namespace Engine.ComponentSystem.Components
             else
             {
                 // Create a new list and copy all modules.
-                copy._modules = new List<AbstractEntityModule<TAttribute>>();
+                copy._modules = new List<AbstractModule<TModifier>>();
                 foreach (var module in _modules)
                 {
                     copy._modules.Add(module.DeepCopy());
                 }
 
                 // Copy the caches as well.
-                copy._attributeCache = new Dictionary<TAttribute, float>(_attributeCache);
-                copy._moduleCache = new Dictionary<Type, List<AbstractEntityModule<TAttribute>>>();
+                copy._attributeCache = new Dictionary<TModifier, float>(_attributeCache);
+                copy._moduleCache = new Dictionary<Type, List<AbstractModule<TModifier>>>();
 
                 // And the id manager.
                 copy._idManager = _idManager.DeepCopy();

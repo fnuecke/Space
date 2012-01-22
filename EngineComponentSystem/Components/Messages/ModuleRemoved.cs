@@ -1,4 +1,4 @@
-﻿using Engine.Data;
+﻿using Engine.ComponentSystem.Modules;
 
 namespace Engine.ComponentSystem.Components.Messages
 {
@@ -12,6 +12,6 @@ namespace Engine.ComponentSystem.Components.Messages
         /// <summary>
         /// The module that was removed.
         /// </summary>
-        public AbstractEntityModule<TAttribute> Module;
+        public AbstractModule<TAttribute> Module;
     }
 }

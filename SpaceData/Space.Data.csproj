@@ -94,27 +94,23 @@
   <ItemGroup>
     <Compile Include="AstronomicBodyType.cs" />
     <Compile Include="Factions.cs" />
-    <Compile Include="Modules\HullModule.cs" />
-    <Compile Include="Modules\SensorModule.cs" />
+    <Compile Include="ComponentSystem\Modules\HullModule.cs" />
+    <Compile Include="ComponentSystem\Modules\SensorModule.cs" />
     <Compile Include="Profile.cs" />
     <Compile Include="ProjectileData.cs" />
-    <Compile Include="Modules\ThrusterModule.cs" />
-    <Compile Include="Modules\ReactorModule.cs" />
+    <Compile Include="ComponentSystem\Modules\ThrusterModule.cs" />
+    <Compile Include="ComponentSystem\Modules\ReactorModule.cs" />
     <Compile Include="WorldConstraints.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="EntityAttributeType.cs" />
+    <Compile Include="SpaceModifier.cs" />
     <Compile Include="ShipData.cs" />
-    <Compile Include="Modules\ShieldModule.cs" />
-    <Compile Include="Modules\WeaponModule.cs" />
+    <Compile Include="ComponentSystem\Modules\ShieldModule.cs" />
+    <Compile Include="ComponentSystem\Modules\WeaponModule.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineData\Engine.Data.csproj">
-      <Project>{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}</Project>
-      <Name>Engine.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>

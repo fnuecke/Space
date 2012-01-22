@@ -1,11 +1,12 @@
 ﻿using System;
-using Engine.Data;
+using Engine.ComponentSystem.Modules;
 using Engine.Serialization;
 using Engine.Util;
+using Space.Data;
 
-namespace Space.Data.Modules
+namespace Space.ComponentSystem.Modules
 {
-    public class SensorModule : AbstractEntityModule<EntityAttributeType>
+    public class SensorModule : AbstractModule<SpaceModifier>
     {
         #region Fields
 
@@ -20,7 +21,7 @@ namespace Space.Data.Modules
 
         public SensorModule()
         {
-            AddAttributeTypeToInvalidate(EntityAttributeType.SensorRange);
+            AddAttributeTypeToInvalidate(SpaceModifier.SensorRange);
         }
 
         #endregion
@@ -53,7 +54,7 @@ namespace Space.Data.Modules
 
         #region Copying
 
-        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
             var copy = (SensorModule)base.DeepCopy(into);
 

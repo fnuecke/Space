@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using Engine.Input;
-using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -190,43 +189,12 @@ namespace Space
             #region Debug commands
             #if DEBUG
 
-            _console.AddCommand("d_goto", args =>
+            _console.AddCommand("do", args =>
             {
-                Vector2 position;
-                position.X = float.Parse(args[1]);
-                position.Y = float.Parse(args[2]);
-                using (var packet = new Packet())
-                {
-                    packet.Write(position);
-                    Client.Controller.PushLocalCommand(new DebugCommand(DebugCommand.DebugCommandType.GotoPosition, packet));
-                }
+                Client.Controller.PushLocalCommand(new ScriptCommand(string.Join(" ", args, 1, args.Length - 1)));
             },
-                "Jump to the specified coordinates.",
-                "d_goto <x> <y> - jump to the specified (X, Y) coordinate.");
-
-            _console.AddCommand("d_thrusteraf", args =>
-            {
-                float accelerationForce = float.Parse(args[1]);
-                using (var packet = new Packet())
-                {
-                    packet.Write(accelerationForce);
-                    Client.Controller.PushLocalCommand(new DebugCommand(DebugCommand.DebugCommandType.SetThrusterAccelerationForce, packet));
-                }
-            },
-                "Sets the specified acceleration force for all equipped thrusters.",
-                "d_thrusteraf <force> - set the specified acceleration force.");
-
-            _console.AddCommand("d_thrusterec", args =>
-            {
-                float energyConsumption = float.Parse(args[1]);
-                using (var packet = new Packet())
-                {
-                    packet.Write(energyConsumption);
-                    Client.Controller.PushLocalCommand(new DebugCommand(DebugCommand.DebugCommandType.SetThrusterEnergyConsumption, packet));
-                }
-            },
-                "Sets the specified energy consumption for all equipped thrusters.",
-                "d_thrusterec <consumption> - set the specified energy consumption.");
+                "Executes the specified script.",
+                "do <script> - executes script.");
 
             _console.AddCommand("d_renderindex", args =>
             {

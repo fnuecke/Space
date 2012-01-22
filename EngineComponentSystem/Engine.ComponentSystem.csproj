@@ -117,7 +117,7 @@
     <Compile Include="Components\AbstractRenderer.cs" />
     <Compile Include="Components\Acceleration.cs" />
     <Compile Include="Components\EllipsePath.cs" />
-    <Compile Include="Components\EntityModules.cs" />
+    <Compile Include="Components\ModuleManager.cs" />
     <Compile Include="Components\Avatar.cs" />
     <Compile Include="Components\CollidableBox.cs" />
     <Compile Include="Components\CollidableSphere.cs" />
@@ -130,6 +130,8 @@
     <Compile Include="Components\Messages\ModuleValueInvalidated.cs" />
     <Compile Include="Components\Messages\TranslationChanged.cs" />
     <Compile Include="Components\AbstractSound.cs" />
+    <Compile Include="Modules\AbstractModule.cs" />
+    <Compile Include="Modules\Modifier.cs" />
     <Compile Include="Components\Spin.cs" />
     <Compile Include="Components\Transform.cs" />
     <Compile Include="Components\TransformedRenderer.cs" />
@@ -158,10 +160,6 @@
     <Compile Include="Systems\SoundSystem.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineData\Engine.Data.csproj">
-      <Project>{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}</Project>
-      <Name>Engine.Data</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>

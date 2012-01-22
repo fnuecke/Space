@@ -5,7 +5,7 @@
     /// actual game logic, i.e. all attributes of the same type are computed
     /// together, then used somehow.
     /// </summary>
-    public enum EntityAttributeType
+    public enum SpaceModifier
     {
         /// <summary>
         /// Invalid attribute.

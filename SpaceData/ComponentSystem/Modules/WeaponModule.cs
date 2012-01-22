@@ -1,14 +1,15 @@
 ﻿using System;
-using Engine.Data;
+using Engine.ComponentSystem.Modules;
 using Engine.Serialization;
 using Engine.Util;
+using Space.Data;
 
-namespace Space.Data.Modules
+namespace Space.ComponentSystem.Modules
 {
     /// <summary>
     /// Represents a single weapon item.
     /// </summary>
-    public class WeaponModule : AbstractEntityModule<EntityAttributeType>
+    public class WeaponModule : AbstractModule<SpaceModifier>
     {
         #region Fields
         
@@ -43,14 +44,19 @@ namespace Space.Data.Modules
 
         public WeaponModule()
         {
-            AddAttributeTypeToInvalidate(EntityAttributeType.WeaponCooldown);
-            AddAttributeTypeToInvalidate(EntityAttributeType.WeaponEnergyConsumption);
+            AddAttributeTypeToInvalidate(SpaceModifier.WeaponCooldown);
+            AddAttributeTypeToInvalidate(SpaceModifier.WeaponEnergyConsumption);
         }
 
         #endregion
 
         #region Serialization / Hashing / Cloning
 
+        /// <summary>
+        /// Packetizes the specified packet.
+        /// </summary>
+        /// <param name="packet">The packet.</param>
+        /// <returns></returns>
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
@@ -61,6 +67,10 @@ namespace Space.Data.Modules
                 .Write(Projectiles);
         }
 
+        /// <summary>
+        /// Depacketizes the specified packet.
+        /// </summary>
+        /// <param name="packet">The packet.</param>
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
@@ -72,6 +82,10 @@ namespace Space.Data.Modules
             Projectiles = packet.ReadPacketizables<ProjectileData>();
         }
 
+        /// <summary>
+        /// Hashes the specified hasher.
+        /// </summary>
+        /// <param name="hasher">The hasher.</param>
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
@@ -87,7 +101,7 @@ namespace Space.Data.Modules
 
         #region Copying
 
-        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
             var copy = (WeaponModule)base.DeepCopy(into);
 

@@ -3,8 +3,8 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Modules;
 using Space.Data;
-using Space.Data.Modules;
 
 namespace Space.ComponentSystem.Components
 {
@@ -345,19 +345,19 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">The message to handle.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleValueInvalidated<EntityAttributeType>)
+            if (message is ModuleValueInvalidated<SpaceModifier>)
             {
-                var type = ((ModuleValueInvalidated<EntityAttributeType>)(ValueType)message).ValueType;
-                if (type == EntityAttributeType.Mass || type == EntityAttributeType.AccelerationForce)
+                var type = ((ModuleValueInvalidated<SpaceModifier>)(ValueType)message).ValueType;
+                if (type == SpaceModifier.Mass || type == SpaceModifier.AccelerationForce)
                 {
                     // Get ship modules.
-                    var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
+                    var modules = Entity.GetComponent<ModuleManager<SpaceModifier>>();
                     if (modules != null)
                     {
-                        if (type == EntityAttributeType.Mass)
+                        if (type == SpaceModifier.Mass)
                         {
                             // Get the mass of the ship and return it.
-                            _mass = modules.GetValue(EntityAttributeType.Mass);
+                            _mass = modules.GetValue(SpaceModifier.Mass);
                         }
 
                         // Recompute cached values.
@@ -382,10 +382,10 @@ namespace Space.ComponentSystem.Components
                         }
                     }
                 }
-                else if (type == EntityAttributeType.SensorRange)
+                else if (type == SpaceModifier.SensorRange)
                 {
                     // Get ship modules.
-                    var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
+                    var modules = Entity.GetComponent<ModuleManager<SpaceModifier>>();
                     if (modules != null)
                     {
                         // Figure out the overall range of our radar system.
@@ -397,7 +397,7 @@ namespace Space.ComponentSystem.Components
                         }
 
                         // Apply modifiers, compute max speed and return.
-                        _radarRange = modules.GetValue(EntityAttributeType.SensorRange, radarRange);
+                        _radarRange = modules.GetValue(SpaceModifier.SensorRange, radarRange);
                     }
                 }
             }

@@ -96,13 +96,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineData\Engine.Data.csproj">
-      <Project>{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}</Project>
-      <Name>Engine.Data</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
+      <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
+      <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

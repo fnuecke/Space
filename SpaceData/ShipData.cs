@@ -1,6 +1,6 @@
 ﻿using Engine.Serialization;
 using Microsoft.Xna.Framework.Content;
-using Space.Data.Modules;
+using Space.ComponentSystem.Modules;
 
 namespace Space.Data
 {

@@ -1,15 +1,16 @@
 ﻿using System;
-using Engine.Data;
+using Engine.ComponentSystem.Modules;
 using Engine.Serialization;
 using Engine.Util;
+using Space.Data;
 
-namespace Space.Data.Modules
+namespace Space.ComponentSystem.Modules
 {
     /// <summary>
     /// Represents a single thruster item, which is responsible for providing
     /// a base speed for a certain energy drained.
     /// </summary>
-    public class ThrusterModule : AbstractEntityModule<EntityAttributeType>
+    public class ThrusterModule : AbstractModule<SpaceModifier>
     {
         #region Fields
         
@@ -29,8 +30,8 @@ namespace Space.Data.Modules
 
         public ThrusterModule()
         {
-            AddAttributeTypeToInvalidate(EntityAttributeType.AccelerationForce);
-            AddAttributeTypeToInvalidate(EntityAttributeType.ThrusterEnergyConsumption);
+            AddAttributeTypeToInvalidate(SpaceModifier.AccelerationForce);
+            AddAttributeTypeToInvalidate(SpaceModifier.ThrusterEnergyConsumption);
         }
 
         #endregion
@@ -64,7 +65,7 @@ namespace Space.Data.Modules
 
         #region Copying
 
-        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
             var copy = (ThrusterModule)base.DeepCopy(into);
 

@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
+using Space.ComponentSystem.Modules;
 using Space.Data;
-using Space.Data.Modules;
 
 namespace Space.ComponentSystem.Components
 {
@@ -37,13 +37,13 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">Handles module added / removed messages.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleValueInvalidated<EntityAttributeType>)
+            if (message is ModuleValueInvalidated<SpaceModifier>)
             {
-                var type = ((ModuleValueInvalidated<EntityAttributeType>)(ValueType)message).ValueType;
-                if (type == EntityAttributeType.Energy || type == EntityAttributeType.EnergyRegeneration)
+                var type = ((ModuleValueInvalidated<SpaceModifier>)(ValueType)message).ValueType;
+                if (type == SpaceModifier.Energy || type == SpaceModifier.EnergyRegeneration)
                 {
                     // Module removed or added, recompute our values.
-                    var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
+                    var modules = Entity.GetComponent<ModuleManager<SpaceModifier>>();
 
                     // Rebuild base energy and regeneration values.
                     MaxValue = 0;
@@ -55,8 +55,8 @@ namespace Space.ComponentSystem.Components
                     }
 
                     // Apply bonuses.
-                    MaxValue = modules.GetValue(EntityAttributeType.Energy, MaxValue);
-                    Regeneration = modules.GetValue(EntityAttributeType.EnergyRegeneration, Regeneration);
+                    MaxValue = modules.GetValue(SpaceModifier.Energy, MaxValue);
+                    Regeneration = modules.GetValue(SpaceModifier.EnergyRegeneration, Regeneration);
 
                     // Adjust current energy so it does not exceed our new maximum.
                     if (Value > MaxValue)

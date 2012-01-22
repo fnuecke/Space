@@ -10,9 +10,9 @@
 
       <Hulls>
         <Item>
-          <Attributes>
+          <Modifiers>
             <Item>10 Mass</Item>
-          </Attributes>
+          </Modifiers>
           <Health>50</Health>
           <HealthRegeneration>0.05</HealthRegeneration>
         </Item>
@@ -20,9 +20,9 @@
 
       <Reactors>
         <Item>
-          <Attributes>
+          <Modifiers>
             <Item>5 Mass</Item>
-          </Attributes>
+          </Modifiers>
           <Energy>50</Energy>
           <EnergyRegeneration>0.1</EnergyRegeneration>
         </Item>
@@ -30,11 +30,11 @@
 
       <Thrusters>
         <Item>
-          <Attributes>
+          <Modifiers>
             <Item>8 AccelerationForce</Item>
             <Item>2 RotationForce</Item>
             <Item>5 Mass</Item>
-          </Attributes>
+          </Modifiers>
           <AccelerationForce>2</AccelerationForce>
           <EnergyConsumption>0.5</EnergyConsumption>
         </Item>
