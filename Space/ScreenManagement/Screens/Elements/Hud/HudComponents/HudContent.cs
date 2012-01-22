@@ -12,7 +12,7 @@ using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudContent : IHudChildElement
+    class HudContent : IHudElement
     {
 
         #region Constants
@@ -99,6 +99,12 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private Mode _currentMode;
 
+        /// <summary>
+        /// The position.
+        /// </summary>
+        private Point _position;
+
+
         #endregion
 
         #region Properties
@@ -122,9 +128,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// The gap between the border and the content.
         /// </summary>
         public int GapBorderContent { get; set; }
-
-        // Implementation of IHudChildElement interface
-        public Point Position { get; set; }
 
         #endregion
 
@@ -181,6 +184,26 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _height = height;
         }
 
+        public void SetPosition(Point newPosition)
+        {
+            _position = newPosition;
+        }
+
+        public Point GetPosition()
+        {
+            return _position;
+        }
+
+        public int GetHeight()
+        {
+            return _height;
+        }
+
+        public void SetHeight(int height)
+        {
+            _height = height;
+        }
+
         #endregion
 
         #region Initialisation
@@ -200,7 +223,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             BorderRight = StandardBorderSide;
             BorderAround = StandardBorderAround;
             GapBorderContent = StandardGapBorderContent;
-            Position = new Point(100, 100);
+            _position = new Point(100, 100);
 
             if (!addBorderToWest)
             {
@@ -240,8 +263,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             // draw the border around the box
             _spaceForms.DrawRectangleWithoutEdges(
-                Position.X + BorderLeft,
-                Position.Y,
+                _position.X + BorderLeft,
+                _position.Y,
                 _width - BorderLeft - BorderRight,
                 _height,
                 4, 2, HudColors.Lines);
@@ -250,8 +273,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             {
                 // draw the background of the box
                 _basicForms.FillRectangle(
-                    Position.X + BorderAround + BorderLeft + GapBorderContent,
-                    Position.Y + BorderAround + GapBorderContent,
+                    _position.X + BorderAround + BorderLeft + GapBorderContent,
+                    _position.Y + BorderAround + GapBorderContent,
                     _width - BorderLeft - BorderRight - 2 * BorderAround - 2 * GapBorderContent,
                     _height - 2 * BorderAround - 2 * GapBorderContent,
                     HudColors.BackgroundBox * 0.7f);
@@ -260,8 +283,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             if (_currentMode == Mode.Image)
             {
                 var posImage = new Rectangle(
-                    Position.X + BorderLeft + BorderAround + GapBorderContent,
-                    Position.Y + BorderAround + GapBorderContent,
+                    _position.X + BorderLeft + BorderAround + GapBorderContent,
+                    _position.Y + BorderAround + GapBorderContent,
                     _image.Width,
                     _image.Height);
                 _spriteBatch.Draw(_image, posImage, Color.White * 0.7f);

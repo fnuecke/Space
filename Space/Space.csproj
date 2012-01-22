@@ -191,7 +191,6 @@
     <Compile Include="ScreenManagement\Screens\Helper\BasicForms.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\SpaceForms.cs" />
     <Compile Include="ScreenManagement\Screens\Interfaces\IHudParentElement.cs" />
-    <Compile Include="ScreenManagement\Screens\Interfaces\IHudChildElement.cs" />
     <Compile Include="Simulation\Commands\ScriptCommand.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
