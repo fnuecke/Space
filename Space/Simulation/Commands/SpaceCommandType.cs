@@ -10,6 +10,6 @@
         /// <summary>
         /// A debugging command issued by a player.
         /// </summary>
-        DebugCommand
+        ScriptCommand
     }
 }

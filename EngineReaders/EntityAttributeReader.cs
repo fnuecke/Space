@@ -1,5 +1,5 @@
 using System;
-using Engine.Data;
+using Engine.ComponentSystem.Modules;
 using Microsoft.Xna.Framework.Content;
 
 namespace Engine.Serialization
@@ -7,17 +7,17 @@ namespace Engine.Serialization
     /// <summary>
     /// This is for reading data in binary format written with the <c>FixedWriter</c>.
     /// </summary>
-    public sealed class EntityAttributeReader<TAttribute> : ContentTypeReader<ModuleAttribute<TAttribute>>
-        where TAttribute : struct
+    public sealed class EntityAttributeReader<TModifier> : ContentTypeReader<Modifier<TModifier>>
+        where TModifier : struct
     {
-        protected override ModuleAttribute<TAttribute> Read(ContentReader input, ModuleAttribute<TAttribute> existingInstance)
+        protected override Modifier<TModifier> Read(ContentReader input, Modifier<TModifier> existingInstance)
         {
             if (existingInstance == null)
             {
-                existingInstance = new ModuleAttribute<TAttribute>();
+                existingInstance = new Modifier<TModifier>();
             }
-            existingInstance.Type = (TAttribute)Enum.Parse(typeof(TAttribute), input.ReadString());
-            existingInstance.ComputationType = (ModuleAttributeComputationType)input.ReadByte();
+            existingInstance.Type = (TModifier)Enum.Parse(typeof(TModifier), input.ReadString());
+            existingInstance.ComputationType = (ModifierComputationType)input.ReadByte();
             existingInstance.Value = (float)input.ReadSingle();
             return existingInstance;
         }

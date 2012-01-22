@@ -30,257 +30,247 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (Gamelog)|Any CPU = Debug (Gamelog)|Any CPU
-		Debug (Gamelog)|x86 = Debug (Gamelog)|x86
+
 		Debug (TSS Threading)|Any CPU = Debug (TSS Threading)|Any CPU
-		Debug (TSS Threading)|x86 = Debug (TSS Threading)|x86
+
 		Debug|Any CPU = Debug|Any CPU
-		Debug|x86 = Debug|x86
+
 		Release (TSS Threading)|Any CPU = Release (TSS Threading)|Any CPU
-		Release (TSS Threading)|x86 = Release (TSS Threading)|x86
+
 		Release|Any CPU = Release|Any CPU
-		Release|x86 = Release|x86
+
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug (Gamelog)|Any CPU.Build.0 = Debug|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+
+
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug|Any CPU.Build.0 = Debug|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug|x86.ActiveCfg = Debug|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Debug|x86.Build.0 = Debug|x86
+
+
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Release (TSS Threading)|x86.Build.0 = Release|x86
+
+
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Release|Any CPU.ActiveCfg = Release|x86
 		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Release|Any CPU.Build.0 = Release|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Release|x86.ActiveCfg = Release|x86
-		{D573EB83-8626-431B-97DC-F0D754D6A99C}.Release|x86.Build.0 = Release|x86
+
+
 		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
-		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
+
 		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
-		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
+
 		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Debug|x86.ActiveCfg = Debug|x86
+
 		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
-		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
+
 		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Release|Any CPU.ActiveCfg = Release|x86
-		{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}.Release|x86.ActiveCfg = Release|x86
+
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug (Gamelog)|Any CPU.Build.0 = Debug|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+
+
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug|Any CPU.Build.0 = Debug|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug|x86.ActiveCfg = Debug|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Debug|x86.Build.0 = Debug|x86
+
+
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release (TSS Threading)|x86.Build.0 = Release|x86
+
+
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release|Any CPU.ActiveCfg = Release|x86
 		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release|Any CPU.Build.0 = Release|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release|x86.ActiveCfg = Release|x86
-		{48F0591F-9238-4FF0-AC34-04E14C291AA3}.Release|x86.Build.0 = Release|x86
+
+
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug (Gamelog)|Any CPU.Build.0 = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+
+
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug|Any CPU.Build.0 = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug|x86.ActiveCfg = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Debug|x86.Build.0 = Debug|x86
+
+
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release|Any CPU.ActiveCfg = Debug|x86
 		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release|Any CPU.Build.0 = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release|x86.ActiveCfg = Debug|x86
-		{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}.Release|x86.Build.0 = Debug|x86
+
+
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug (Gamelog)|Any CPU.Build.0 = Debug|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+
+
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug|Any CPU.Build.0 = Debug|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug|x86.ActiveCfg = Debug|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Debug|x86.Build.0 = Debug|x86
+
+
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Release (TSS Threading)|x86.Build.0 = Release|x86
+
+
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Release|Any CPU.ActiveCfg = Release|x86
 		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Release|Any CPU.Build.0 = Release|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Release|x86.ActiveCfg = Release|x86
-		{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}.Release|x86.Build.0 = Release|x86
+
+
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug (Gamelog)|Any CPU.Build.0 = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+
+
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug|Any CPU.Build.0 = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug|x86.ActiveCfg = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Debug|x86.Build.0 = Debug|x86
+
+
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release|Any CPU.ActiveCfg = Debug|x86
 		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release|Any CPU.Build.0 = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release|x86.ActiveCfg = Debug|x86
-		{B40055F1-158F-4C54-BC3F-D269ABB941FD}.Release|x86.Build.0 = Debug|x86
+
+
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug (Gamelog)|Any CPU.Build.0 = Debug|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+
+
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug|Any CPU.Build.0 = Debug|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug|x86.ActiveCfg = Debug|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Debug|x86.Build.0 = Debug|x86
+
+
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release (TSS Threading)|x86.Build.0 = Release|x86
+
+
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release|Any CPU.ActiveCfg = Release|x86
 		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release|Any CPU.Build.0 = Release|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release|x86.ActiveCfg = Release|x86
-		{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}.Release|x86.Build.0 = Release|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug (Gamelog)|Any CPU.Build.0 = Debug|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug (Gamelog)|x86.Build.0 = Debug|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug|Any CPU.Build.0 = Debug|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug|x86.ActiveCfg = Debug|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Debug|x86.Build.0 = Debug|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release (TSS Threading)|x86.Build.0 = Release|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release|Any CPU.ActiveCfg = Release|x86
 		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release|Any CPU.Build.0 = Release|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release|x86.ActiveCfg = Release|x86
-		{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}.Release|x86.Build.0 = Release|x86
+
+
 		{96E70AC4-C288-478C-866E-5C7280067642}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug (Gamelog)|x86
 		{96E70AC4-C288-478C-866E-5C7280067642}.Debug (Gamelog)|Any CPU.Build.0 = Debug (Gamelog)|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Debug (Gamelog)|x86.ActiveCfg = Debug (Gamelog)|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Debug (Gamelog)|x86.Build.0 = Debug (Gamelog)|x86
+
+
 		{96E70AC4-C288-478C-866E-5C7280067642}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug (TSS Threading)|x86
 		{96E70AC4-C288-478C-866E-5C7280067642}.Debug (TSS Threading)|Any CPU.Build.0 = Debug (TSS Threading)|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Debug (TSS Threading)|x86.ActiveCfg = Debug (TSS Threading)|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Debug (TSS Threading)|x86.Build.0 = Debug (TSS Threading)|x86
+
+
 		{96E70AC4-C288-478C-866E-5C7280067642}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{96E70AC4-C288-478C-866E-5C7280067642}.Debug|Any CPU.Build.0 = Debug|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Debug|x86.ActiveCfg = Debug|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Debug|x86.Build.0 = Debug|x86
+
+
 		{96E70AC4-C288-478C-866E-5C7280067642}.Release (TSS Threading)|Any CPU.ActiveCfg = Release (TSS Threading)|x86
 		{96E70AC4-C288-478C-866E-5C7280067642}.Release (TSS Threading)|Any CPU.Build.0 = Release (TSS Threading)|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Release (TSS Threading)|x86.ActiveCfg = Release (TSS Threading)|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Release (TSS Threading)|x86.Build.0 = Release (TSS Threading)|x86
+
+
 		{96E70AC4-C288-478C-866E-5C7280067642}.Release|Any CPU.ActiveCfg = Release|x86
 		{96E70AC4-C288-478C-866E-5C7280067642}.Release|Any CPU.Build.0 = Release|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Release|x86.ActiveCfg = Release|x86
-		{96E70AC4-C288-478C-866E-5C7280067642}.Release|x86.Build.0 = Release|x86
+
+
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug (Gamelog)|x86
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug (Gamelog)|Any CPU.Build.0 = Debug (Gamelog)|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug (Gamelog)|x86.ActiveCfg = Debug (Gamelog)|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug (Gamelog)|x86.Build.0 = Debug (Gamelog)|x86
+
+
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug (TSS Threading)|x86.ActiveCfg = Debug (Gamelog)|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug (TSS Threading)|x86.Build.0 = Debug (Gamelog)|x86
+
+
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug|Any CPU.Build.0 = Debug|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug|x86.ActiveCfg = Debug|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Debug|x86.Build.0 = Debug|x86
+
+
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release (TSS Threading)|x86.Build.0 = Release|x86
+
+
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release|Any CPU.ActiveCfg = Release|x86
 		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release|Any CPU.Build.0 = Release|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release|x86.ActiveCfg = Release|x86
-		{C82769BC-E5C6-4382-8AFE-3648C6B8627B}.Release|x86.Build.0 = Release|x86
+
+
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug (Gamelog)|Any CPU.Build.0 = Debug|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+
+
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug|Any CPU.Build.0 = Debug|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug|x86.ActiveCfg = Debug|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Debug|x86.Build.0 = Debug|x86
+
+
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release (TSS Threading)|x86.Build.0 = Release|x86
+
+
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release|Any CPU.ActiveCfg = Release|x86
 		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release|Any CPU.Build.0 = Release|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release|x86.ActiveCfg = Release|x86
-		{10945D08-8588-4F0E-9671-0E90D374EB78}.Release|x86.Build.0 = Release|x86
+
+
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug (Gamelog)|Any CPU.Build.0 = Debug|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+
+
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug (TSS Threading)|Any CPU.Build.0 = Debug|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+
+
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug|Any CPU.Build.0 = Debug|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug|x86.ActiveCfg = Debug|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Debug|x86.Build.0 = Debug|x86
+
+
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release (TSS Threading)|Any CPU.Build.0 = Release|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release (TSS Threading)|x86.Build.0 = Release|x86
+
+
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release|Any CPU.ActiveCfg = Release|x86
 		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release|Any CPU.Build.0 = Release|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release|x86.ActiveCfg = Release|x86
-		{93B52E9C-6872-40F0-B577-D3D9363F7AF1}.Release|x86.Build.0 = Release|x86
+
+
 		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|Any CPU
-		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Debug (Gamelog)|x86.ActiveCfg = Debug|Any CPU
+
 		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|Any CPU
-		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Debug (TSS Threading)|x86.ActiveCfg = Debug|Any CPU
+
 		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Debug|x86.ActiveCfg = Debug|Any CPU
+
 		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Release (TSS Threading)|Any CPU.ActiveCfg = Debug|Any CPU
-		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Release (TSS Threading)|x86.ActiveCfg = Debug|Any CPU
+
 		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{79AD66DC-9105-4998-9DF9-F53EF5C99A87}.Release|x86.ActiveCfg = Debug|Any CPU
+
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

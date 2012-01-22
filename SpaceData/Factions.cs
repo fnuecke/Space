@@ -31,17 +31,17 @@ namespace Space.Data
         /// <summary>
         /// Fraction one.
         /// </summary>
-        NpcFractionA = 1 << 3,
+        NpcFactionA = 1 << 3,
 
         /// <summary>
         /// Fraction two.
         /// </summary>
-        NpcFractionB = 1 << 4,
+        NpcFactionB = 1 << 4,
 
         /// <summary>
         /// Fraction two.
         /// </summary>
-        NpcFractionC = 1 << 5,
+        NpcFactionC = 1 << 5,
 
         /// <summary>
         /// Player one.
@@ -147,9 +147,9 @@ namespace Space.Data
             { Factions.Player10, Color.Olive },
             { Factions.Player11, Color.Navy },
             { Factions.Player12, Color.DarkRed },
-            { Factions.NpcFractionA, Color.Crimson },
-            { Factions.NpcFractionB, Color.DarkBlue },
-            { Factions.NpcFractionC, Color.DarkGreen },
+            { Factions.NpcFactionA, Color.Crimson },
+            { Factions.NpcFactionB, Color.DarkBlue },
+            { Factions.NpcFactionC, Color.DarkGreen },
             { Factions.Neutral, Color.White }
         };
 

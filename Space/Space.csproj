@@ -73,6 +73,14 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="IronPython, Version=2.7.0.40, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libraries\IronPython.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Scripting, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libraries\Microsoft.Scripting.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
@@ -177,7 +185,7 @@
     <Compile Include="ScreenManagement\Screens\Helper\SpaceForms.cs" />
     <Compile Include="ScreenManagement\Screens\Interfaces\IHudParentElement.cs" />
     <Compile Include="ScreenManagement\Screens\Interfaces\IHudChildElement.cs" />
-    <Compile Include="Simulation\Commands\DebugCommand.cs" />
+    <Compile Include="Simulation\Commands\ScriptCommand.cs" />
     <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
     <Compile Include="ComponentSystem\Components\WeaponControl.cs" />
@@ -228,10 +236,6 @@
     <ProjectReference Include="..\EngineController\Engine.Controller.csproj">
       <Project>{10945D08-8588-4F0E-9671-0E90D374EB78}</Project>
       <Name>Engine.Controller</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineData\Engine.Data.csproj">
-      <Project>{3E0B241C-F603-4326-9DBA-6F57EC5F1B48}</Project>
-      <Name>Engine.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineReaders\Engine.Serialization.Readers.csproj">
       <Project>{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}</Project>

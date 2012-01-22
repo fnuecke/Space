@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
-using Engine.Data;
+using Engine.ComponentSystem.Modules;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -89,7 +89,7 @@ namespace Space.ComponentSystem.Entities
 
             var renderer = new TransformedRenderer(shipData.Texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
             renderer.DrawOrder = 50; //< Draw ships above everything else.
-            var modules = new EntityModules<EntityAttributeType>();
+            var modules = new ModuleManager<SpaceModifier>();
             var health = new Health(120);
             var energy = new Energy();
 
@@ -182,7 +182,7 @@ namespace Space.ComponentSystem.Entities
         /// <typeparam name="T">The type of modules to copy.</typeparam>
         /// <param name="array">The array to copy.</param>
         /// <returns>A copy of the array.</returns>
-        private static T[] ModuleArrayCopy<T>(T[] array) where T : AbstractEntityModule<EntityAttributeType>
+        private static T[] ModuleArrayCopy<T>(T[] array) where T : AbstractModule<SpaceModifier>
         {
             if (array == null)
             {

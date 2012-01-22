@@ -1,4 +1,4 @@
-﻿using Space.Data.Modules;
+﻿using Space.ComponentSystem.Modules;
 
 namespace Space.ComponentSystem.Components.Messages
 {
@@ -11,12 +11,5 @@ namespace Space.ComponentSystem.Components.Messages
         /// The weapon that was fired.
         /// </summary>
         public WeaponModule Weapon;
-
-        public static WeaponFired Create(WeaponModule weapon)
-        {
-            WeaponFired result;
-            result.Weapon = weapon;
-            return result;
-        }
     }
 }

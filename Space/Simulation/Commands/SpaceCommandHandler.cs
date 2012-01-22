@@ -1,10 +1,12 @@
-﻿using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Components.Messages;
+﻿using System.IO;
+using System.Reflection;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
+using IronPython.Hosting;
+using Microsoft.Scripting.Hosting;
 using Space.ComponentSystem.Components;
 using Space.Data;
-using Space.Data.Modules;
 
 namespace Space.Simulation.Commands
 {
@@ -16,6 +18,76 @@ namespace Space.Simulation.Commands
         #region Logger
         
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
+        #region Scripting environment
+
+#if DEBUG
+        /// <summary>
+        /// The global scripting engine we'll be using.
+        /// </summary>
+        private static ScriptEngine _script = Python.CreateEngine();
+
+        /// <summary>
+        /// Set up scripting environment.
+        /// </summary>
+        static SpaceCommandHandler()
+        {
+            var executingAssembly = Assembly.GetExecutingAssembly();
+            _script.Runtime.LoadAssembly(executingAssembly);
+            foreach (var assembly in executingAssembly.GetReferencedAssemblies())
+            {
+                _script.Runtime.LoadAssembly(Assembly.Load(assembly));
+            }
+
+            // Register some macros in our scripting environment.
+            _script.Execute(
+@"
+# Import everything from the game we need.
+from Engine.ComponentSystem.Components import *
+from Engine.ComponentSystem.Modules import *
+from Engine.ComponentSystem.Systems import *
+from Space.ComponentSystem.Components import *
+from Space.ComponentSystem.Modules import *
+from Space.ComponentSystem.Systems import *
+from Space.Data import *
+
+# Then declare some utility methods.
+def goto(x, y):
+    avatar.GetComponent[Transform]().SetTranslation(x, y)
+
+def setaf(value):
+    for thruster in modules.GetModules[ThrusterModule]():
+        thruster.AccelerationForce = value
+        thruster.Invalidate()
+
+def setec(value):
+    for thruster in modules.GetModules[ThrusterModule]():
+        thruster.EnergyConsumption = value
+        thruster.Invalidate()
+
+def ge(id):
+    return manager.GetEntity(id)
+", _script.Runtime.Globals);
+
+            // Redirect scripting output to the logger.
+            var infoStream = new MemoryStream();
+            var errorStream = new MemoryStream();
+            _script.Runtime.IO.SetOutput(infoStream, new InfoStreamWriter(infoStream));
+            _script.Runtime.IO.SetErrorOutput(errorStream, new ErrorStreamWriter(errorStream));
+        }
+
+        /// <summary>
+        /// The frame number in which we executed the last command.
+        /// </summary>
+        private static long _lastScriptFrame;
+
+        /// <summary>
+        /// Whether to currently ignore script output.
+        /// </summary>
+        private static bool _ignoreScriptOutput;
+#endif
 
         #endregion
 
@@ -80,68 +152,51 @@ namespace Space.Simulation.Commands
                     break;
 
 #if DEBUG
-                case SpaceCommandType.DebugCommand:
-                    // Debug command.
+                case SpaceCommandType.ScriptCommand:
+                    // Script command.
                     {
-                        var debugCommand = (DebugCommand)command;
+                        var scriptCommand = (ScriptCommand)command;
 
-                        // Rewind the data packet.
-                        if (debugCommand.Data != null)
+                        lock (_script)
                         {
-                            debugCommand.Data.Reset();
-                        }
+                            // Avoid multiple prints of the same message (each
+                            // simulation in TSS calls this).
+                            if (((FrameCommand)command).Frame > _lastScriptFrame)
+                            {
+                                _lastScriptFrame = ((FrameCommand)command).Frame;
+                                _ignoreScriptOutput = false;
+                            }
+                            else
+                            {
+                                _ignoreScriptOutput = true;
+                            }
 
-                        // What's the debug command to process?
-                        switch (debugCommand.Debug)
-                        {
-                            // Jump to location.
-                            case DebugCommand.DebugCommandType.GotoPosition:
-                                if (avatar == null)
-                                {
-                                    return;
-                                }
-                                avatar.GetComponent<Transform>().SetTranslation(debugCommand.Data.ReadVector2());
-                                break;
+                            // Set context.
+                            var globals = _script.Runtime.Globals;
 
-                            // Adjust thruster stats.
-                            case DebugCommand.DebugCommandType.SetThrusterAccelerationForce:
-                                {
-                                    if (avatar == null)
-                                    {
-                                        return;
-                                    }
-                                    var accelerationForce = debugCommand.Data.ReadSingle();
-                                    var modules = avatar.GetComponent<EntityModules<EntityAttributeType>>();
-                                    foreach (var thruster in modules.GetModules<ThrusterModule>())
-                                    {
-                                        thruster.AccelerationForce = accelerationForce;
-                                    }
-                                    ModuleValueInvalidated<EntityAttributeType> invalidatedMessage;
-                                    invalidatedMessage.ValueType = EntityAttributeType.AccelerationForce;
-                                    avatar.SendMessageToComponents(ref invalidatedMessage);
-                                }
-                                break;
-                            case DebugCommand.DebugCommandType.SetThrusterEnergyConsumption:
-                                {
-                                    if (avatar == null)
-                                    {
-                                        return;
-                                    }
-                                    var energyConsumption = debugCommand.Data.ReadSingle();
-                                    var modules = avatar.GetComponent<EntityModules<EntityAttributeType>>();
-                                    foreach (var thruster in modules.GetModules<ThrusterModule>())
-                                    {
-                                        thruster.EnergyConsumption = energyConsumption;
-                                    }
-                                    ModuleValueInvalidated<EntityAttributeType> invalidatedMessage;
-                                    invalidatedMessage.ValueType = EntityAttributeType.ThrusterEnergyConsumption;
-                                    avatar.SendMessageToComponents(ref invalidatedMessage);
-                                }
-                                break;
+                            globals.SetVariable("manager", manager);
+                            globals.SetVariable("avatar", avatar);
 
-                            default:
-                                logger.Warn("Unhandled debug command type: {0}", debugCommand.Debug);
-                                break;
+                            // Some more utility variables used frequently.
+                            if (avatar != null)
+                            {
+                                var modules = avatar.GetComponent<ModuleManager<SpaceModifier>>();
+                                globals.SetVariable("modules", modules);
+                            }
+                            else
+                            {
+                                globals.RemoveVariable("modules");
+                            }
+
+                            // Try executing our script.
+                            try
+                            {
+                                _script.Execute(scriptCommand.Script, _script.Runtime.Globals);
+                            }
+                            catch (System.Exception ex)
+                            {
+                                logger.ErrorException("Error executing script.", ex);
+                            }
                         }
                     }
                     break;
@@ -152,6 +207,44 @@ namespace Space.Simulation.Commands
                     break;
             }
         }
+
+        #endregion
+
+        #region Stream classes for script IO
+
+#if DEBUG
+        private sealed class InfoStreamWriter : StreamWriter
+        {
+            public InfoStreamWriter(Stream stream)
+                : base(stream)
+            {
+            }
+
+            public override void Write(string value)
+            {
+                if (!_ignoreScriptOutput && !string.IsNullOrWhiteSpace(value))
+                {
+                    logger.Info(value);
+                }
+            }
+        }
+
+        private sealed class ErrorStreamWriter : StreamWriter
+        {
+            public ErrorStreamWriter(Stream stream)
+                : base(stream)
+            {
+            }
+
+            public override void Write(string value)
+            {
+                if (!_ignoreScriptOutput && !string.IsNullOrWhiteSpace(value))
+                {
+                    logger.Error(value);
+                }
+            }
+        }
+#endif
 
         #endregion
     }

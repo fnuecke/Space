@@ -7,8 +7,8 @@ using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Components.Messages;
 using Space.ComponentSystem.Entities;
+using Space.ComponentSystem.Modules;
 using Space.Data;
-using Space.Data.Modules;
 
 namespace Space.ComponentSystem.Components
 {
@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Components
             // Check all weapon modules.
             if (Shooting)
             {
-                var modules = Entity.GetComponent<EntityModules<EntityAttributeType>>();
+                var modules = Entity.GetComponent<ModuleManager<SpaceModifier>>();
                 var energy = Entity.GetComponent<Energy>();
                 var faction = Entity.GetComponent<Faction>();
 
@@ -60,7 +60,7 @@ namespace Space.ComponentSystem.Components
                 {
                     foreach (var weapon in modules.GetModules<WeaponModule>())
                     {
-                        var energyConsumption = modules.GetValue(EntityAttributeType.WeaponEnergyConsumption, weapon.EnergyConsumption);
+                        var energyConsumption = modules.GetValue(SpaceModifier.WeaponEnergyConsumption, weapon.EnergyConsumption);
                         if (energy != null && energy.Value >= energyConsumption)
                         {
                             // Test if this weapon is on cooldown.
@@ -68,7 +68,7 @@ namespace Space.ComponentSystem.Components
                             {
                                 energy.Value -= energyConsumption;
                                 // No, fire it.
-                                _cooldowns[weapon.UID] = (int)modules.GetValue(EntityAttributeType.WeaponCooldown, weapon.Cooldown);
+                                _cooldowns[weapon.UID] = (int)modules.GetValue(SpaceModifier.WeaponCooldown, weapon.Cooldown);
 
                                 // Generate projectiles.
                                 foreach (var projectileData in weapon.Projectiles)
@@ -104,18 +104,18 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">The message to handle.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleAdded<EntityAttributeType>)
+            if (message is ModuleAdded<SpaceModifier>)
             {
-                var added = (ModuleAdded<EntityAttributeType>)(ValueType)message;
+                var added = (ModuleAdded<SpaceModifier>)(ValueType)message;
                 if (added.Module is WeaponModule)
                 {
                     // Weapon was equipped, track a cooldown for it.
                     _cooldowns.Add(added.Module.UID, 0);
                 }
             }
-            else if (message is ModuleRemoved<EntityAttributeType>)
+            else if (message is ModuleRemoved<SpaceModifier>)
             {
-                var removed = (ModuleRemoved<EntityAttributeType>)(ValueType)message;
+                var removed = (ModuleRemoved<SpaceModifier>)(ValueType)message;
                 if (removed.Module is WeaponModule)
                 {
                     // Weapon was unequipped, stop tracking.

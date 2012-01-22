@@ -1,12 +1,13 @@
-﻿using Engine.Data;
+﻿using Engine.ComponentSystem.Modules;
+using Space.Data;
 
-namespace Space.Data.Modules
+namespace Space.ComponentSystem.Modules
 {
-    public class ShieldModule : AbstractEntityModule<EntityAttributeType>
+    public class ShieldModule : AbstractModule<SpaceModifier>
     {
         #region Copying
 
-        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
             var copy = (ShieldModule)base.DeepCopy(into);
 

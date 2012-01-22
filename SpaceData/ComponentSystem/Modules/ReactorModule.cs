@@ -1,14 +1,15 @@
 ﻿using System;
-using Engine.Data;
+using Engine.ComponentSystem.Modules;
 using Engine.Serialization;
 using Engine.Util;
+using Space.Data;
 
-namespace Space.Data.Modules
+namespace Space.ComponentSystem.Modules
 {
     /// <summary>
     /// Represents a reactor item, which is used to store and produce energy.
     /// </summary>
-    public class ReactorModule : AbstractEntityModule<EntityAttributeType>
+    public class ReactorModule : AbstractModule<SpaceModifier>
     {
         #region Fields
         
@@ -28,8 +29,8 @@ namespace Space.Data.Modules
 
         public ReactorModule()
         {
-            AddAttributeTypeToInvalidate(EntityAttributeType.Energy);
-            AddAttributeTypeToInvalidate(EntityAttributeType.EnergyRegeneration);
+            AddAttributeTypeToInvalidate(SpaceModifier.Energy);
+            AddAttributeTypeToInvalidate(SpaceModifier.EnergyRegeneration);
         }
 
         #endregion
@@ -65,7 +66,7 @@ namespace Space.Data.Modules
 
         #region Copying
 
-        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
             var copy = (ReactorModule)base.DeepCopy(into);
 

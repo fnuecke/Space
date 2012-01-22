@@ -1,15 +1,16 @@
 ﻿using System;
-using Engine.Data;
+using Engine.ComponentSystem.Modules;
 using Engine.Serialization;
 using Engine.Util;
+using Space.Data;
 
-namespace Space.Data.Modules
+namespace Space.ComponentSystem.Modules
 {
     /// <summary>
     /// Represents a single hull item, which determines an entity's max life
     /// and health regeneration.
     /// </summary>
-    public class HullModule : AbstractEntityModule<EntityAttributeType>
+    public class HullModule : AbstractModule<SpaceModifier>
     {
         #region Fields
         
@@ -29,8 +30,8 @@ namespace Space.Data.Modules
 
         public HullModule()
         {
-            AddAttributeTypeToInvalidate(EntityAttributeType.Health);
-            AddAttributeTypeToInvalidate(EntityAttributeType.HealthRegeneration);
+            AddAttributeTypeToInvalidate(SpaceModifier.Health);
+            AddAttributeTypeToInvalidate(SpaceModifier.HealthRegeneration);
         }
 
         #endregion
@@ -66,7 +67,7 @@ namespace Space.Data.Modules
 
         #region Copying
 
-        public override AbstractEntityModule<EntityAttributeType> DeepCopy(AbstractEntityModule<EntityAttributeType> into)
+        public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
             var copy = (HullModule)base.DeepCopy(into);
 

@@ -190,6 +190,12 @@ namespace Engine.Util
         private Dictionary<string, CommandInfo> _commands = new Dictionary<string, CommandInfo>();
 
         /// <summary>
+        /// Default command handler, used when an unknown command is
+        /// encountered.
+        /// </summary>
+        private CommandHandler _defaultHandler;
+
+        /// <summary>
         /// Input cursor offset.
         /// </summary>
         private int _cursor = 0;
@@ -486,6 +492,18 @@ namespace Engine.Util
         }
 
         /// <summary>
+        /// Sets a command handler to be invoked when an unknown command is
+        /// executed. Pass <c>null</c> to unset the default handler, back to
+        /// the default.
+        /// </summary>
+        /// <param name="handler">The command handler to use for unknown
+        /// commands.</param>
+        public void SetDefaultCommandHandler(CommandHandler handler)
+        {
+            _defaultHandler = handler;
+        }
+
+        /// <summary>
         /// Clears the complete buffer.
         /// </summary>
         public void Clear()
@@ -532,11 +550,16 @@ namespace Engine.Util
             }
 
             // Do we know that command?
+            CommandHandler handler = _defaultHandler;
             if (_commands.ContainsKey(args[0]))
+            {
+                handler = _commands[args[0]].handler;
+            }
+            if (handler != null)
             {
                 try
                 {
-                    _commands[args[0]].handler(args.ToArray());
+                    handler(args.ToArray());
                 }
                 catch (Exception e)
                 {
