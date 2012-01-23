@@ -43,7 +43,15 @@ namespace Engine.Network
         /// <summary>
         /// Close this connection for good. This class should not be used again after calling this.
         /// </summary>
-        public abstract void Dispose();
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
 
         #endregion
 

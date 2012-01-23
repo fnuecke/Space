@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -70,9 +69,9 @@ namespace Engine.Network
         /// <summary>
         /// Close this connection for good. This class should not be used again after calling this.
         /// </summary>
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            if (_udp != null)
+            if (disposing && _udp != null)
             {
                 if (Loopback != null)
                 {
@@ -84,8 +83,6 @@ namespace Engine.Network
                 _udp.Close();
                 _udp = null;
             }
-
-            GC.SuppressFinalize(this);
         }
 
         #endregion

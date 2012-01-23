@@ -79,6 +79,7 @@ namespace Space
         private SpriteBatch _spriteBatch;
         private ScreenManager _screenManager;
         private GameConsole _console;
+        private GameConsoleTarget _consoleLoggerTarget;
 
         private AudioEngine _audioEngine;
         private WaveBank _waveBank;
@@ -193,7 +194,7 @@ namespace Space
             _screenManager.AddScreen(new MainMenuScreen());
 
             // Add a logging target that'll write to our console.
-            new GameConsoleTarget(this, LogLevel.Debug);
+            _consoleLoggerTarget = new GameConsoleTarget(this, LogLevel.Debug);
 
             // More console setup. Only one console key is supported.
             _console.Hotkey = Settings.Instance.MenuBindings.First(binding => binding.Value == Settings.MenuCommand.Console).Key;
@@ -267,6 +268,31 @@ namespace Space
             if (disposing)
             {
                 _inputManager.Dispose();
+                _console.Dispose();
+                _screenManager.Dispose();
+                _consoleLoggerTarget.Dispose();
+
+                if (_spriteBatch != null)
+                {
+                    _spriteBatch.Dispose();
+                }
+                if (_audioEngine != null)
+                {
+                    _audioEngine.Dispose();
+                }
+                if (_waveBank != null)
+                {
+                    _waveBank.Dispose();
+                }
+                if (_soundBank != null)
+                {
+                    _soundBank.Dispose();
+                }
+
+                if (_scene != null)
+                {
+                    _scene.Dispose();
+                }
             }
         }
 

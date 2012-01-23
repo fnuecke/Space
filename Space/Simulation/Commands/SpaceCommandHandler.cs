@@ -30,6 +30,12 @@ namespace Space.Simulation.Commands
         private static ScriptEngine _script = Python.CreateEngine();
 
         /// <summary>
+        /// Used to keep multiple threads (TSS) from trying to execute
+        /// scripts at the same time.
+        /// </summary>
+        private static object _scriptLock = new object();
+
+        /// <summary>
         /// Set up scripting environment.
         /// </summary>
         static SpaceCommandHandler()
@@ -157,7 +163,7 @@ def ge(id):
                     {
                         var scriptCommand = (ScriptCommand)command;
 
-                        lock (_script)
+                        lock (_scriptLock)
                         {
                             // Avoid multiple prints of the same message (each
                             // simulation in TSS calls this).

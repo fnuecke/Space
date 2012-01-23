@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Space.ScreenManagement.Screens.Entries
 {
-    public class OptionMenuEntry<T> : MenuEntry
+    sealed class OptionMenuEntry<T> : MenuEntry
     {
         #region Events
 

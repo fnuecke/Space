@@ -9,7 +9,7 @@ namespace Space.Graphics
     /// <summary>
     /// Utility class for rendering suns.
     /// </summary>
-    sealed class Sun : AbstractShape
+    sealed class Sun : AbstractShape, IDisposable
     {
         #region Fields
         
@@ -105,6 +105,27 @@ namespace Space.Graphics
             _turbulenceTwoRotation *= 4;
         }
 
+        public void Dispose()
+        {
+            if (_surfaceSphere != null)
+            {
+                _surfaceSphere.Dispose();
+            }
+            if (_turbulenceSphere != null)
+            {
+                _turbulenceSphere.Dispose();
+            }
+            for (int i = 0; i < _mipmaps.Length; i++)
+            {
+                if (_mipmaps[i] != null)
+                {
+                    _mipmaps[i].Dispose();
+                }
+            }
+
+            GC.SuppressFinalize(this);
+        }
+
         /// <summary>
         /// Loads graphics and allocates graphics resources.
         /// </summary>
@@ -146,19 +167,6 @@ namespace Space.Graphics
                 width >>= 1;
                 height >>= 1;
                 _mipmaps[i] = new RenderTarget2D(GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
-            }
-        }
-
-        /// <summary>
-        /// Frees all graphics resources in use by this object.
-        /// </summary>
-        public void UnloadContent()
-        {
-            _surfaceSphere.Dispose();
-            _turbulenceSphere.Dispose();
-            for (int i = 0; i < _mipmaps.Length; i++)
-            {
-                _mipmaps[i].Dispose();
             }
         }
 

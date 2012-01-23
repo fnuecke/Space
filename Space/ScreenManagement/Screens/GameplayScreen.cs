@@ -9,7 +9,7 @@ namespace Space.ScreenManagement.Screens
     /// <summary>
     /// This screen implements the game's GUI.
     /// </summary>
-    class GameplayScreen : GameScreen
+    sealed class GameplayScreen : GameScreen
     {
         #region Fields
 
@@ -113,7 +113,14 @@ namespace Space.ScreenManagement.Screens
         {
             ScreenManager.Game.Components.Remove(_postprocessing);
 
-            _world.Dispose();
+            if (_postprocessing != null)
+            {
+                _postprocessing.Dispose();
+            }
+            if (_world != null)
+            {
+                _world.Dispose();
+            }
         }
 
         #endregion

@@ -143,13 +143,18 @@ namespace Engine.Session
 
         public void Dispose()
         {
-            if (Data != null)
+            Dispose(true);
+
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing && Data != null)
             {
                 Data.Dispose();
                 Data = null;
             }
-
-            GC.SuppressFinalize(this);
         }
     }
 

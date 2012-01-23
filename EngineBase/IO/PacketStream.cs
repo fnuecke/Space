@@ -114,11 +114,19 @@ namespace Engine.IO
 
         public void Dispose()
         {
-            _messageStream.Dispose();
-            _source.Dispose();
-            _sink.Dispose();
+            Dispose(true);
 
             GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _messageStream.Dispose();
+                _source.Dispose();
+                _sink.Dispose();
+            }
         }
 
         #endregion

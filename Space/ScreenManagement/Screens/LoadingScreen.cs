@@ -1,12 +1,3 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// LoadingScreen.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
 using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -27,7 +18,7 @@ namespace Space.ScreenManagement.Screens
     ///   next screen, which may take a long time to load its data. The loading
     ///   screen will be the only thing displayed while this load is taking place.
     /// </summary>
-    class LoadingScreen : GameScreen
+    sealed class LoadingScreen : GameScreen
     {
         #region Fields
 

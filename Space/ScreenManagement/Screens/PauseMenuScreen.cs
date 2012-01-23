@@ -1,12 +1,3 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// PauseMenuScreen.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
 using System;
 using Space.ScreenManagement.Screens.Entries;
 
@@ -16,7 +7,7 @@ namespace Space.ScreenManagement.Screens
     /// The pause menu comes up over the top of the game,
     /// giving the player options to resume or quit.
     /// </summary>
-    class PauseMenuScreen : MenuScreen
+    sealed class PauseMenuScreen : MenuScreen
     {
         #region Initialization
 
