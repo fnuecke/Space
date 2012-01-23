@@ -36,6 +36,14 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         public const int CellSize = 1 << CellSizeShiftAmount;
 
+        /// <summary>
+        /// The time to wait before actually killing of a cell after it has
+        /// gotten out of reach. This is to avoid reallocating cells over
+        /// and over again, if a player flies along a cell border or keeps
+        /// flying back and forth over it.
+        /// </summary>
+        private const int _cellDeathDelay = 5;
+
         #endregion
 
         #region Properties
@@ -54,6 +62,11 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private HashSet<ulong> _livingCells = new HashSet<ulong>();
 
+        /// <summary>
+        /// Cells awaiting cleanup, with the time when they became invalid.
+        /// </summary>
+        private Dictionary<ulong, DateTime> _pendingCells = new Dictionary<ulong, DateTime>();
+
         #endregion
 
         #region Single-Allocation
@@ -66,12 +79,17 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private HashSet<ulong> _bornCells = new HashSet<ulong>();
+        private HashSet<ulong> _bornCellsIds = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private HashSet<ulong> _deceasedCells = new HashSet<ulong>();
+        private HashSet<ulong> _deceasedCellsIds = new HashSet<ulong>();
+
+        /// <summary>
+        /// Reused each update, avoids memory re-allocation.
+        /// </summary>
+        private List<ulong> _pendingCellsIds = new List<ulong>();
 
         #endregion
 
@@ -80,6 +98,41 @@ namespace Space.ComponentSystem.Systems
         public CellSystem()
         {
             this.ShouldSynchronize = true;
+        }
+
+        #endregion
+
+        #region Accessors
+
+        /// <summary>
+        /// Tests if the specified cell is currently active.
+        /// </summary>
+        /// <param name="cellId">The id of the cell to check/</param>
+        /// <returns>Whether the cell is active or not.</returns>
+        public bool IsCellActive(ulong cellId)
+        {
+            return _livingCells.Contains(cellId);
+        }
+
+        /// <summary>
+        /// Gets the cell id for a given coordinate pair.
+        /// </summary>
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        /// <returns>The id of the cell containing that coordinate pair.</returns>
+        public static ulong GetCellIdFromCoordinates(int x, int y)
+        {
+            return CoordinateIds.Combine(x >> CellSizeShiftAmount, y >> CellSizeShiftAmount);
+        }
+
+        /// <summary>
+        /// Gets the cell id for a given position.
+        /// </summary>
+        /// <param name="position">The position.</param>
+        /// <returns>The id of the cell containing that position.</returns>
+        public static ulong GetCellIdFromCoordinates(ref Vector2 position)
+        {
+            return GetCellIdFromCoordinates((int)position.X, (int)position.Y);
         }
 
         #endregion
@@ -116,36 +169,58 @@ namespace Space.ComponentSystem.Systems
                 }
             }
 
-            // Get the cells that became alive.
-            _bornCells.UnionWith(_newCells);
-            _bornCells.ExceptWith(_livingCells);
+            // Get the cells that became alive, notify systems and components.
+            _bornCellsIds.UnionWith(_newCells);
+            _bornCellsIds.ExceptWith(_livingCells);
             CellStateChanged changedMessage;
-            foreach (var bornCell in _bornCells)
+            foreach (var cellId in _bornCellsIds)
             {
-                var xy = CoordinateIds.Split(bornCell);
-                changedMessage.Id = bornCell;
-                changedMessage.X = xy.Item1;
-                changedMessage.Y = xy.Item2;
-                changedMessage.State = true;
-                Manager.SendMessageToSystems(ref changedMessage);
-                Manager.SendMessageToComponents(ref changedMessage);
+                // If its in there, remove it from the pending list.
+                if (!_pendingCells.Remove(cellId))
+                {
+                    // Notify if cell wasn't alive already.
+                    var xy = CoordinateIds.Split(cellId);
+                    changedMessage.Id = cellId;
+                    changedMessage.X = xy.Item1;
+                    changedMessage.Y = xy.Item2;
+                    changedMessage.State = true;
+                    Manager.SendMessageToSystems(ref changedMessage);
+                    Manager.SendMessageToComponents(ref changedMessage);
+                }
             }
-            _bornCells.Clear();
+            _bornCellsIds.Clear();
 
-            // Get the cells that died.
-            _deceasedCells.UnionWith(_livingCells);
-            _deceasedCells.ExceptWith(_newCells);
-            foreach (var deceasedCell in _deceasedCells)
+            // Check pending list, kill off old cells, notify systems etc.
+            _pendingCellsIds.AddRange(_pendingCells.Keys);
+            foreach (var cellId in _pendingCellsIds)
             {
-                var xy = CoordinateIds.Split(deceasedCell);
-                changedMessage.Id = deceasedCell;
-                changedMessage.X = xy.Item1;
-                changedMessage.Y = xy.Item2;
-                changedMessage.State = false;
-                Manager.SendMessageToSystems(ref changedMessage);
-                Manager.SendMessageToComponents(ref changedMessage);
+                if ((DateTime.Now - _pendingCells[cellId]).TotalSeconds > _cellDeathDelay)
+                {
+                    // Timed out, kill it for good.
+                    _pendingCells.Remove(cellId);
+
+                    // Notify.
+                    var xy = CoordinateIds.Split(cellId);
+                    changedMessage.Id = cellId;
+                    changedMessage.X = xy.Item1;
+                    changedMessage.Y = xy.Item2;
+                    changedMessage.State = false;
+                    Manager.SendMessageToSystems(ref changedMessage);
+                    Manager.SendMessageToComponents(ref changedMessage);
+                }
             }
-            _deceasedCells.Clear();
+            _pendingCellsIds.Clear();
+
+            // Get the cells that died, put to pending list.
+            _deceasedCellsIds.UnionWith(_livingCells);
+            _deceasedCellsIds.ExceptWith(_newCells);
+            var now = DateTime.Now;
+            foreach (var cellId in _deceasedCellsIds)
+            {
+                // Add it to the pending list.
+                _pendingCells.Add(cellId, now);
+            }
+            _deceasedCellsIds.Clear();
 
             _livingCells.Clear();
             _livingCells.UnionWith(_newCells);
@@ -156,37 +231,6 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Utility methods
-
-        /// <summary>
-        /// Tests if the specified cell is currently active.
-        /// </summary>
-        /// <param name="cellId">The id of the cell to check/</param>
-        /// <returns>Whether the cell is active or not.</returns>
-        public bool IsCellActive(ulong cellId)
-        {
-            return _livingCells.Contains(cellId);
-        }
-
-        /// <summary>
-        /// Gets the cell id for a given coordinate pair.
-        /// </summary>
-        /// <param name="x">The x coordinate.</param>
-        /// <param name="y">The y coordinate.</param>
-        /// <returns>The id of the cell containing that coordinate pair.</returns>
-        public static ulong GetCellIdFromCoordinates(int x, int y)
-        {
-            return CoordinateIds.Combine(x >> CellSizeShiftAmount, y >> CellSizeShiftAmount);
-        }
-
-        /// <summary>
-        /// Gets the cell id for a given position.
-        /// </summary>
-        /// <param name="position">The position.</param>
-        /// <returns>The id of the cell containing that position.</returns>
-        public static ulong GetCellIdFromCoordinates(ref Vector2 position)
-        {
-            return GetCellIdFromCoordinates((int)position.X, (int)position.Y);
-        }
 
         /// <summary>
         /// Adds the combined coordinates for all neighboring cells and the
@@ -210,6 +254,13 @@ namespace Space.ComponentSystem.Systems
 
         #region Serialization / Hashing / Cloning
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public override Packet Packetize(Packet packet)
         {
             packet.Write(_livingCells.Count);
@@ -221,6 +272,10 @@ namespace Space.ComponentSystem.Systems
             return packet;
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
             _livingCells.Clear();
@@ -231,6 +286,11 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
             foreach (var cellId in _livingCells)
@@ -239,6 +299,10 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// Creates a deep copy of this system.
+        /// </summary>
+        /// <returns>A deep copy of this system.</returns>
         public override IComponentSystem DeepCopy(IComponentSystem into)
         {
             var copy = (CellSystem)base.DeepCopy(into);
@@ -247,13 +311,20 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._livingCells.Clear();
                 copy._livingCells.UnionWith(_livingCells);
+                copy._pendingCells.Clear();
             }
             else
             {
                 copy._livingCells = new HashSet<ulong>(_livingCells);
+                copy._pendingCells = new Dictionary<ulong, DateTime>();
                 copy._newCells = new HashSet<ulong>();
-                copy._bornCells = new HashSet<ulong>();
-                copy._deceasedCells = new HashSet<ulong>();
+                copy._bornCellsIds = new HashSet<ulong>();
+                copy._deceasedCellsIds = new HashSet<ulong>();
+                copy._pendingCellsIds = new List<ulong>();
+            }
+            foreach (var item in _pendingCells)
+            {
+                copy._pendingCells.Add(item.Key, item.Value);
             }
 
             return copy;

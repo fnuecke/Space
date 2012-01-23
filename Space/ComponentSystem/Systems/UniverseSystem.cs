@@ -12,23 +12,47 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    public class UniverseSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
+    /// <summary>
+    /// System responsible for tracking astronomical objects and relatively
+    /// stationary objects (such as space stations) in active cells.
+    /// 
+    /// <para>
+    /// It also tracks general stats about a cell, such as the predominant
+    /// faction in the system, state of stations and so on. This information
+    /// is only stored permanently if it changed, however. Otherwise it is
+    /// re-generated procedurally whenever a cell gets re-activated.
+    /// </para>
+    /// </summary>
+    sealed class UniverseSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
     {
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-
         #region Properties
 
-        public ulong WorldSeed { get; set; }
+        /// <summary>
+        /// The base seed for the current game world.
+        /// </summary>
+        public ulong WorldSeed { get; private set; }
 
         #endregion
 
         #region Fields
 
+        /// <summary>
+        /// Some constraints used for generating procedural content.
+        /// </summary>
         private WorldConstraints _constraints;
 
+        /// <summary>
+        /// Tracks currently active entities in active cells, for deletion
+        /// when a cell dies.
+        /// </summary>
         private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
 
-        public Dictionary<ulong, CellInfo> CellInfo = new Dictionary<ulong, CellInfo>();
+        /// <summary>
+        /// Tracks cell information for active cells and inactive cells that
+        /// are in a changed state (deviating from the one that would be
+        /// procedurally generated).
+        /// </summary>
+        private Dictionary<ulong, CellInfo> _cellInfo = new Dictionary<ulong, CellInfo>();
 
         #endregion
 
@@ -38,6 +62,20 @@ namespace Space.ComponentSystem.Systems
         {
             _constraints = constaits;
             ShouldSynchronize = true;
+        }
+
+        #endregion
+
+        #region Accessors
+
+        /// <summary>
+        /// Get the static cell information for the cell with the given id.
+        /// </summary>
+        /// <param name="cellId"></param>
+        /// <returns></returns>
+        public CellInfo GetCellInfo(ulong cellId)
+        {
+            return _cellInfo[cellId];
         }
 
         #endregion
@@ -58,70 +96,79 @@ namespace Space.ComponentSystem.Systems
                     // List to accumulate entities we created for this system in.
                     List<int> list = new List<int>();
 
-                    if (!CellInfo.ContainsKey(info.Id))
+                    // Check if we have a changed cell info.
+                    if (!_cellInfo.ContainsKey(info.Id))
                     {
-                        var random2 = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
-                        var number = random2.NextInt32(3);
-                        var cell = new CellInfo();
-                        switch (number)
-                        {
+                        // No, generate the default one. Get an independent
+                        // randomizer to avoid different results in other
+                        // sampling operations from when we have an existing
+                        // cell info.
+                        var independentRandom = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
 
-                            case (0):
-                                cell.Faction = Factions.NpcFactionA;
+                        // Figure out which faction should own this cell.
+                        Factions faction;
+                        switch (independentRandom.NextInt32(3))
+                        {
+                            case 0:
+                                faction = Factions.NpcFactionA;
                                 break;
-                            case (1):
-                                cell.Faction = Factions.NpcFactionB;
+                            case 1:
+                                faction = Factions.NpcFactionB;
                                 break;
-                            case (2):
-                                cell.Faction = Factions.NpcFactionC;
-                                break;
+                            case 2:
                             default:
-                                cell.Faction = Factions.NpcFactionC;
+                                faction = Factions.NpcFactionC;
                                 break;
                         }
-                        CellInfo.Add(info.Id, cell);
+
+                        // Figure out our tech level.
+                        // TODO make dependent on distance to center / start system.
+                        int techLevel = independentRandom.NextInt32(3);
+
+                        // Create the cell and push it.
+                        _cellInfo.Add(info.Id, new CellInfo(faction, techLevel));
                     }
+
                     // Get center of our cell.
                     var cellSize = CellSystem.CellSize;
                     var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
 
+                    // Check if it's the start system or not.
                     if (info.X == 0 && info.Y == 0)
                     {
+                        // It is, use a predefined number of planets and moons,
+                        // and make sure it's a solar system.
                         CreateSystem(random, ref center, list,
-                            CellInfo[info.Id],
-                            7, new[] {
-                            0, 0, 1, 2, 4, 2, 1
-                        });
+                            _cellInfo[info.Id],
+                            7, new[] { 0, 0, 1, 2, 4, 2, 1 });
                     }
                     else
                     {
-                        CreateSystem(random, ref center, list, CellInfo[info.Id]);
+                        // It isn't, randomize.
+                        CreateSystem(random, ref center, list, _cellInfo[info.Id]);
                     }
 
+                    // Done, store the list of generated entities.
                     _entities.Add(info.Id, list);
                 }
                 else
                 {
-                    if (_entities.ContainsKey(info.Id))
+                    // Kill all entities we spawned.
+                    foreach (int id in _entities[info.Id])
                     {
-                        foreach (int id in _entities[info.Id])
-                        {
-                            Manager.EntityManager.RemoveEntity(id);
-                        }
-
-                        _entities.Remove(info.Id);
+                        Manager.EntityManager.RemoveEntity(id);
                     }
-                    //remove only if not changed
-                    if (CellInfo.ContainsKey(info.Id))
+                    _entities.Remove(info.Id);
+
+                    // Remove cell info only if it does not deviate from the
+                    // procedural values.
+                    if (!_cellInfo[info.Id].Dirty)
                     {
-                        if (!CellInfo[info.Id].Changed)
-                        {
-                            CellInfo.Remove(info.Id);
-                        }
-                        else
-                        {
-                            CellInfo[info.Id].Stations.Clear();
-                        }
+                        _cellInfo.Remove(info.Id);
+                    }
+                    else
+                    {
+                        _cellInfo[info.Id].Stations.Clear();
                     }
                 }
             }
@@ -150,13 +197,14 @@ namespace Space.ComponentSystem.Systems
                     packet.Write(entityId);
                 }
             }
-            packet.Write(CellInfo.Count);
-            foreach (var item in CellInfo)
+
+            packet.Write(_cellInfo.Count);
+            foreach (var item in _cellInfo)
             {
                 packet.Write(item.Key);
                 packet.Write(item.Value);
-
             }
+
             return packet;
         }
 
@@ -182,13 +230,13 @@ namespace Space.ComponentSystem.Systems
                 _entities.Add(key, list);
             }
 
-            CellInfo.Clear();
+            _cellInfo.Clear();
             numCells = packet.ReadInt32();
             for (int i = 0; i < numCells; i++)
             {
                 var key = packet.ReadUInt64();
                 var value = packet.ReadPacketizable<CellInfo>();
-                CellInfo.Add(key, value);
+                _cellInfo.Add(key, value);
             }
         }
 
@@ -206,10 +254,9 @@ namespace Space.ComponentSystem.Systems
                     hasher.Put(BitConverter.GetBytes(entity));
                 }
             }
-            foreach (var entities in CellInfo.Values)
+            foreach (var cellInfo in _cellInfo.Values)
             {
-
-                entities.Hash(hasher);
+                cellInfo.Hash(hasher);
             }
         }
 
@@ -221,12 +268,12 @@ namespace Space.ComponentSystem.Systems
             {
                 copy.WorldSeed = WorldSeed;
                 copy._entities.Clear();
-                copy.CellInfo.Clear();
+                copy._cellInfo.Clear();
             }
             else
             {
                 copy._entities = new Dictionary<ulong, List<int>>();
-                copy.CellInfo = new Dictionary<ulong, CellInfo>();
+                copy._cellInfo = new Dictionary<ulong, CellInfo>();
             }
 
             foreach (var item in _entities)
@@ -234,9 +281,9 @@ namespace Space.ComponentSystem.Systems
                 copy._entities.Add(item.Key, new List<int>(item.Value));
 
             }
-            foreach (var factionse in CellInfo)
+            foreach (var cellInfo in _cellInfo)
             {
-                copy.CellInfo.Add(factionse.Key, factionse.Value);
+                copy._cellInfo.Add(cellInfo.Key, cellInfo.Value.DeepCopy());
             }
 
             return copy;
@@ -244,8 +291,13 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Utility methods
+        #region Generators
 
+        #region Solar systems
+
+        /// <summary>
+        /// Creates a new solar system.
+        /// </summary>
         private void CreateSystem(
             IUniformRandom random,
             ref Vector2 center,
@@ -295,6 +347,9 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// Creates a new planet.
+        /// </summary>
         private float CreatePlanet(
             IUniformRandom random,
             IGaussianRandom gaussian,
@@ -353,22 +408,24 @@ namespace Space.ComponentSystem.Systems
             return planetOrbitMajorRadius;
         }
 
+        /// <summary>
+        /// Creates a new space station, orbiting another object (planet, moon).
+        /// </summary>
         private void CreateStation(
             IUniformRandom random,
             IGaussianRandom gaussian,
-            Entity planet,
-            float planetMass,
-            float planetRadius,
+            Entity center,
+            float centerMass,
+            float centerRadius,
             List<int> list,
             CellInfo cellInfo)
         {
-
-            var StationOrbit = planetRadius + _constraints.SampleStationOrbit(gaussian);
-            var stationPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(StationOrbit * StationOrbit * StationOrbit / planetMass));
+            var stationOrbit = centerRadius + _constraints.SampleStationOrbit(gaussian);
+            var stationPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(stationOrbit * stationOrbit * stationOrbit / centerMass));
             var station = EntityFactory.CreateStation(
                 texture: "Textures/Stolen/Ships/sensor_array",
-                center: planet,
-                orbitRadius: StationOrbit,
+                center: center,
+                orbitRadius: stationOrbit,
                 period: stationPeriod,
                 faction: cellInfo.Faction);
 
@@ -376,6 +433,9 @@ namespace Space.ComponentSystem.Systems
             cellInfo.Stations.Add(station.UID);
         }
 
+        /// <summary>
+        /// Creates a new moon, orbiting a planet.
+        /// </summary>
         private float CreateMoon(
             IUniformRandom random,
             IGaussianRandom gaussian,
@@ -413,6 +473,8 @@ namespace Space.ComponentSystem.Systems
             return moonOrbitMajorRadius;
         }
 
+        #endregion
+
         private List<int> CreateAsteroidBelt()
         {
             List<int> list = new List<int>();
@@ -434,77 +496,154 @@ namespace Space.ComponentSystem.Systems
             return list;
         }
 
-        public List<int> GetSystemList(ulong id)
-        {
-            return _entities[id];
-        }
-
         #endregion
-    }
 
-    public class CellInfo : IPacketizable, IHashable
-    {
-        public Factions Faction;
+        #region CellInfo
 
-        public bool Changed;
-
-        public List<int> Stations = new List<int>();
-
-        public int TechLevel
+        /// <summary>
+        /// Class used to track persistent information on a single cell.
+        /// </summary>
+        public class CellInfo : IPacketizable, IHashable, ICopyable<CellInfo>
         {
-            get { return TechLevel; }
-            set
+            #region Properties
+
+            /// <summary>
+            /// Flag to check if the values deviate from the procedurally generated
+            /// ones, so that we know whether to persistently store the settings of
+            /// this cell, or not.
+            /// </summary>
+            public bool Dirty { get; private set; }
+
+            /// <summary>
+            /// The predominant faction in the system.
+            /// </summary>
+            public Factions Faction
             {
-                TechLevel = value;
-                Changed = true;
+                get
+                {
+                    return _faction;
+                }
+                set
+                {
+                    _faction = value;
+                    Dirty = true;
+                }
             }
-        }
 
-        /// <summary>
-        /// Changes the Faction of this Cell 
-        /// </summary>
-        /// <param name="faction"></param>
-        public void ChangeFaction(Factions faction)
-        {
-            Faction = faction;
-            Changed = true;
-        }
+            /// <summary>
+            /// The current tech level of the cell.
+            /// </summary>
+            public int TechLevel
+            {
+                get
+                {
+                    return _techLevel;
+                }
+                set
+                {
+                    _techLevel = value;
+                    Dirty = true;
+                }
+            }
 
-        #region Packetize
+            public List<int> Stations = new List<int>();
 
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public Packet Packetize(Packet packet)
-        {
-            packet.Write((int)Faction);
-            packet.Write(Changed);
-            return packet;
-        }
+            #endregion
 
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
-        {
-            Faction = (Factions)packet.ReadInt32();
-            Changed = packet.ReadBoolean();
-        }
+            #region Fields
 
-        /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
-        /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
-        {
-            hasher.Put(BitConverter.GetBytes((int)Faction))
-                .Put(BitConverter.GetBytes(Changed));
+            /// <summary>
+            /// Actual value for tech level.
+            /// </summary>
+            private Factions _faction;
+
+            /// <summary>
+            /// Actual value for tech level.
+            /// </summary>
+            private int _techLevel = 0;
+
+            #endregion
+
+            #region Constructor
+
+            public CellInfo(Factions faction, int techLevel)
+            {
+                // Assign directly to fields, to avoid setting the dirty flag.
+                _faction = faction;
+                _techLevel = techLevel;
+            }
+
+            public CellInfo()
+            {
+            }
+
+            #endregion
+
+            #region Serialization / Hashing
+
+            /// <summary>
+            /// Write the object's state to the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to write the data to.</param>
+            /// <returns>
+            /// The packet after writing.
+            /// </returns>
+            public Packet Packetize(Packet packet)
+            {
+                return packet
+                    .Write(Dirty)
+                    .Write((int)_faction)
+                    .Write(_techLevel);
+            }
+
+            /// <summary>
+            /// Bring the object to the state in the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to read from.</param>
+            public void Depacketize(Packet packet)
+            {
+                Dirty = packet.ReadBoolean();
+                _faction = (Factions)packet.ReadInt32();
+                _techLevel = packet.ReadInt32();
+            }
+
+            /// <summary>
+            /// Push some unique data of the object to the given hasher,
+            /// to contribute to the generated hash.
+            /// </summary>
+            /// <param name="hasher">The hasher to push data to.</param>
+            public void Hash(Hasher hasher)
+            {
+                hasher
+                    .Put(BitConverter.GetBytes(Dirty))
+                    .Put(BitConverter.GetBytes((int)_faction))
+                    .Put(BitConverter.GetBytes(_techLevel));
+            }
+
+            #endregion
+
+            #region Copying
+            
+            public CellInfo DeepCopy()
+            {
+                return DeepCopy(null);
+            }
+
+            public CellInfo DeepCopy(CellInfo into)
+            {
+                var copy = into ?? (CellInfo)MemberwiseClone();
+
+                if (copy == into)
+                {
+                    copy.Dirty = Dirty;
+                    copy._faction = _faction;
+                    copy._techLevel = _techLevel;
+                }
+
+                return copy;
+            }
+
+            #endregion
         }
 
         #endregion

@@ -456,12 +456,6 @@ namespace Space
 
                         var cellId = CoordinateIds.Combine(cellX, cellY);
 
-                        var universe = systemManager.GetSystem<Space.ComponentSystem.Systems.UniverseSystem>();
-                        if (universe != null)
-                        {
-                            sb.AppendFormat("Objects in system: {0}\n", universe.GetSystemList(cellId).Count);
-                        }
-
                         sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
 
                         var index = systemManager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();

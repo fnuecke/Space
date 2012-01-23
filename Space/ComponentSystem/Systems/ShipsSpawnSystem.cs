@@ -67,7 +67,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     const int cellSize = CellSystem.CellSize;
                     var center = new Vector2(cellSize*info.X + (cellSize >> 1), cellSize*info.Y + (cellSize >> 1));
-                    var cellInfo = Manager.GetSystem<UniverseSystem>().CellInfo[info.Id];
+                    var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
 
                     for (var i = -2; i < 2; i++)
                     {
