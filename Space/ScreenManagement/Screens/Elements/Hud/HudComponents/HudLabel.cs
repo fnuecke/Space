@@ -135,7 +135,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             // set the standard values into the field.
             SetWidth(StandardWidth);
-            _height = StandardHeight;
+            SetHeight(StandardHeight);
             Width2ndElement = StandardWidth2ndElement;
             WidthGap = StandardWidthGap;
             BorderSide = StandardBorderSide;
