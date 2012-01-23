@@ -131,7 +131,7 @@ namespace Space.ComponentSystem.Components
 
             if (copy == into)
             {
-                copy.Texture = Texture;
+                copy.Texture = (copy._textureName.Equals(_textureName) ? (copy.Texture ?? Texture) : Texture);
                 copy._textureName = _textureName;
             }
 

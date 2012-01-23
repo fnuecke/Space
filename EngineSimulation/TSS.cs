@@ -540,7 +540,7 @@ namespace Engine.Simulation
 #endif
             // Process the trailing state, see if we need a roll-back.
             bool needsRewind = false;
-            while (TrailingState.CurrentFrame + _delays[_simulations.Length - 1] < frame)
+            while (TrailingState.CurrentFrame < frame - _delays[_simulations.Length - 1])
             {
                 // It needs running, so prepare it for that.
                 PrepareForUpdate(TrailingState);

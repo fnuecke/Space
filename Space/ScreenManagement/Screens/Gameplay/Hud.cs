@@ -90,6 +90,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
 
             var info = _client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return;
+            }
+
             _healthEnergyBar.SetMaximumEnergy((int) info.MaxEnergy);
             _healthEnergyBar.SetCurrentEnergy((int) info.Energy);
             _healthEnergyBar.SetMaximumHealth((int) info.MaxHealth);
