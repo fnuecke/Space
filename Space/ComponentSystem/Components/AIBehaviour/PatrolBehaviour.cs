@@ -5,22 +5,21 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    public class PatrolBehaviour : Behaviour
+    sealed class PatrolBehaviour : Behaviour
     {
         private MersenneTwister random = new MersenneTwister();
-
-        public PatrolBehaviour() { }
 
         public PatrolBehaviour(AiComponent component)
             : base(component)
         {
-            
+        }
+
+        public PatrolBehaviour()
+        {
         }
 
         public override void Update()
         {
-            
-            
             direction.X += MathHelper.Lerp(-.25f, .25f, (float)random.NextDouble());
             direction.Y += MathHelper.Lerp(-.25f, .25f, (float)random.NextDouble());
 
@@ -62,6 +61,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
+
             random = packet.ReadPacketizable<MersenneTwister>();
         }
 

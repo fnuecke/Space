@@ -5,21 +5,22 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    class AttackBehaviour : Behaviour
+    sealed class AttackBehaviour : Behaviour
     {
-        public int TargetEntity;
-
         public Vector2 StartPosition;
 
-        public bool TargetDead;
+        public int TargetEntity;
 
-        public AttackBehaviour() { }
+        public bool TargetDead;
 
         public AttackBehaviour(AiComponent aiComponent, int targetEntity)
             : base(aiComponent)
         {
             TargetEntity = targetEntity;
-            
+        }
+
+        public AttackBehaviour()
+        {
         }
 
         #region Logic
@@ -30,10 +31,9 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
             if (targetEntity == null)
             {
-
                 return;
-
             }
+
             var transform = targetEntity.GetComponent<Transform>();
 
             var info = AiComponent.Entity.GetComponent<ShipInfo>();
@@ -58,7 +58,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             //not fullspeed if there is noting to fear about
 
 
-            if (escapeDir == Vector2.Zero &&  info.RelativeEnergy < 0.2)
+            if (escapeDir == Vector2.Zero && info.RelativeEnergy < 0.2f)
             {
                 input.SetAcceleration(Vector2.Zero);
             }
@@ -66,26 +66,45 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             {
                 input.SetAcceleration(direction);
             }
-            
         }
 
         #endregion
 
-        #region Packet
+        #region Serialization
 
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
+                .Write(StartPosition)
                 .Write(TargetEntity)
-                .Write(StartPosition);
+                .Write(TargetDead);
         }
 
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
 
-            TargetEntity = packet.ReadInt32();
             StartPosition = packet.ReadVector2();
+            TargetEntity = packet.ReadInt32();
+            TargetDead = packet.ReadBoolean();
+        }
+
+        #endregion
+
+        #region Copying
+
+        public override Behaviour DeepCopy(Behaviour into)
+        {
+            var copy = (AttackBehaviour)base.DeepCopy(into);
+
+            if (copy == into)
+            {
+                copy.TargetEntity = TargetEntity;
+                copy.StartPosition = StartPosition;
+                copy.TargetDead = TargetDead;
+            }
+
+            return copy;
         }
 
         #endregion
