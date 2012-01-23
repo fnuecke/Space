@@ -111,7 +111,7 @@ namespace Space.ScreenManagement
             ContentManager content = Game.Content;
 
             SpriteBatch = new SpriteBatch(GraphicsDevice);
-            Font = content.Load<SpriteFont>("Fonts/showcard_gothic");
+            Font = content.Load<SpriteFont>("Fonts/strasua_24");
             _blankTexture = content.Load<Texture2D>("Textures/blank");
 
             // Tell each of the screens to load their content.
