@@ -6,17 +6,19 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    public abstract class Behaviour : IPacketizable, ICopyable<Behaviour>
+    abstract class Behaviour : IPacketizable, ICopyable<Behaviour>
     {
         protected Vector2 direction;
 
         public AiComponent AiComponent;
 
-        protected Behaviour() { }
-
         protected Behaviour(AiComponent entity)
         {
             this.AiComponent = entity;
+        }
+
+        protected Behaviour()
+        {
         }
 
         public abstract void Update();
@@ -117,6 +119,9 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             {
                 copy.direction = direction;
             }
+
+            // Must be re-set from outside.
+            AiComponent = null;
 
             return copy;
         }

@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {
-    class MoveBehaviour : Behaviour
+    sealed class MoveBehaviour : Behaviour
     {
         public Vector2 TargetPosition;
 

@@ -15,8 +15,10 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Systems
 {
-    
-    class ShipsSpawnSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
+    /// <summary>
+    /// Manages spawning dynamic objects for cells, such as random ships.
+    /// </summary>
+    sealed class ShipsSpawnSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
     {
         #region Fields
 
@@ -66,7 +68,7 @@ namespace Space.ComponentSystem.Systems
                 if (info.State)
                 {
                     const int cellSize = CellSystem.CellSize;
-                    var center = new Vector2(cellSize*info.X + (cellSize >> 1), cellSize*info.Y + (cellSize >> 1));
+                    var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
                     var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
 
                     for (var i = -2; i < 2; i++)
@@ -74,15 +76,11 @@ namespace Space.ComponentSystem.Systems
                         for (var j = -2; j < 2; j++)
                         {
                             var spawnPoint = new Vector2(center.X + i * (float)cellSize / 5, center.Y - j * (float)cellSize / 5);
-                            var order =
-                                new AiComponent.AiCommand(spawnPoint
-                                ,
-                                cellSize, AiComponent.Order.Guard);
-                        
-                        _entities.Add(Manager.EntityManager.AddEntity(
-                            EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1], cellInfo.Faction, spawnPoint, order
-                            )));
-                    }
+                            var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Guard);
+
+                            _entities.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
+                                _content.Load<ShipData[]>("Data/ships")[1], cellInfo.Faction, spawnPoint, order)));
+                        }
                     }
                 }
             }
@@ -95,7 +93,7 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Cloning
+        #region Serialization / Hashing
 
         public override Packet Packetize(Packet packet)
         {
@@ -103,8 +101,6 @@ namespace Space.ComponentSystem.Systems
             foreach (var item in _entities)
             {
                 packet.Write(item);
-                
-
             }
 
             return packet;
@@ -116,9 +112,7 @@ namespace Space.ComponentSystem.Systems
             int numCells = packet.ReadInt32();
             for (int i = 0; i < numCells; i++)
             {
-                var key = packet.ReadInt32();
-                
-                _entities.Add(key);
+                _entities.Add(packet.ReadInt32());
             }
         }
 
@@ -127,11 +121,12 @@ namespace Space.ComponentSystem.Systems
             foreach (var entities in _entities)
             {
                 hasher.Put(BitConverter.GetBytes(entities));
-                
-                
-                
             }
         }
+
+        #endregion
+
+        #region Copying
 
         public override IComponentSystem DeepCopy(IComponentSystem into)
         {
@@ -139,17 +134,13 @@ namespace Space.ComponentSystem.Systems
 
             if (copy == into)
             {
-                
+                copy._content = _content;
                 copy._entities.Clear();
+                copy._entities.AddRange(_entities);
             }
             else
             {
-                copy._entities = new List<int>();
-            }
-
-            foreach (var item in _entities)
-            {
-                copy._entities.Add(item);
+                copy._entities = new List<int>(_entities);
             }
 
             return copy;

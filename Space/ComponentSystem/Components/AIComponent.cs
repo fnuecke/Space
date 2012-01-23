@@ -9,9 +9,16 @@ using Space.ComponentSystem.Components.AIBehaviour;
 
 namespace Space.ComponentSystem.Components
 {
-    public class AiComponent : AbstractComponent
+    sealed class AiComponent : AbstractComponent
     {
-        #region Structs/Enums
+        #region Types
+
+        public enum Order
+        {
+            Move,
+            Guard,
+            Attack
+        }
 
         public class AiCommand : IPacketizable
         {
@@ -21,13 +28,15 @@ namespace Space.ComponentSystem.Components
 
             public Order order;
 
-            public AiCommand() { }
-
             public AiCommand(Vector2 target, int maxDistance, Order order)
             {
                 Target = target;
                 MaxDistance = maxDistance;
                 this.order = order;
+            }
+
+            public AiCommand()
+            {
             }
 
             public Packet Packetize(Packet packet)
@@ -44,31 +53,27 @@ namespace Space.ComponentSystem.Components
                 order = (Order)packet.ReadByte();
             }
         }
-        public enum Order
-        {
-            Move,
-            Guard,
-            Attack
-        }
 
         #endregion
 
         #region Fields
 
-        private Behaviour _currentbehaviour;
-
         public AiCommand Command;
+
+        private Behaviour _currentbehaviour;
 
         #endregion
 
         #region Constructor
 
-        public AiComponent() { }
-
         public AiComponent(AiCommand command)
         {
             Command = command;
             SwitchOrder();
+        }
+
+        public AiComponent()
+        {
         }
 
         #endregion
@@ -77,7 +82,6 @@ namespace Space.ComponentSystem.Components
 
         public override void Update(object parameterization)
         {
-
             CalculateBehaviour();
             _currentbehaviour.Update();
         }
@@ -155,7 +159,6 @@ namespace Space.ComponentSystem.Components
                                AiComponent = this
                            };
             _currentbehaviour = move;
-
         }
 
         private bool CheckNeighbours(ref Vector2 position, ref Vector2 startPosition)
@@ -226,20 +229,19 @@ namespace Space.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            base.Packetize(packet);
-            packet.WriteWithTypeInfo(_currentbehaviour)
+            return base.Packetize(packet)
+                .WriteWithTypeInfo(_currentbehaviour)
                 .Write(Command);
-
-            return packet;
         }
 
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
+
             _currentbehaviour = packet.ReadPacketizableWithTypeInfo<Behaviour>();
             _currentbehaviour.AiComponent = this;
-            Command = packet.ReadPacketizable<AiCommand>();
 
+            Command = packet.ReadPacketizable<AiCommand>();
         }
 
         public override AbstractComponent DeepCopy(AbstractComponent into)
