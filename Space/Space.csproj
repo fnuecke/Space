@@ -127,6 +127,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\ProjectMercury.dll</HintPath>
     </Reference>
+    <Reference Include="SlimDX.DirectInput, Version=4.0.10.43, Culture=neutral, PublicKeyToken=96bb577564343f16, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Libraries\SlimDX.DirectInput.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -180,8 +184,6 @@
     <Compile Include="Input\GamePadHelper.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSingleLabel.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudRadio.cs" />
-    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudSample.cs" />
-    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudPlayerList.cs" />
     <Compile Include="ScreenManagement\Screens\Stylesheet\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSpacer.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudLabel.cs" />

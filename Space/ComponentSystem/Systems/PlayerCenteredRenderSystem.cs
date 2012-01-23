@@ -151,7 +151,6 @@ namespace Space.ComponentSystem.Systems
             if (Settings.Instance.EnableGamepad && _gamePad != null)
             {
                 offset = GamePadHelper.GetLook(_gamePad);
-                offset.Y = -offset.Y;
             }
             else if (_mouse != null)
             {

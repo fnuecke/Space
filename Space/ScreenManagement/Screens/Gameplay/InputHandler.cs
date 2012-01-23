@@ -132,7 +132,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
                 // Handle movement of the right stick, which controls our direction.
                 Vector2 gamepadLook = GamePadHelper.GetLook(_gamepad);
-                if (gamepadLook != _previousGamepadLook)
+                if (gamepadLook != _previousGamepadLook && gamepadLook != Vector2.Zero)
                 {
                     _targetRotation = (float)System.Math.Atan2(gamepadLook.Y, gamepadLook.X);
                     _rotationChanged = DateTime.Now;
