@@ -91,20 +91,47 @@ namespace Space.Control
         }
 
         /// <summary>
+        /// Get the information facade for the ship of the player with the
+        /// specified number, if possible.
+        /// </summary>
+        /// <param name="playerNumber">The number of the player to get the info
+        /// for.</param>
+        /// <returns>The player's ship information facade.</returns>
+        public ShipInfo GetPlayerShipInfo(int playerNumber)
+        {
+            var avatarSystem = GetSystem<AvatarSystem>();
+            if (avatarSystem != null)
+            {
+                var avatar = avatarSystem.GetAvatar(playerNumber);
+                if (avatar != null)
+                {
+                    return avatar.GetComponent<ShipInfo>();
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the information facade for the ship of the specified player,
+        /// if possible.
+        /// </summary>
+        /// <param name="player">The player to get the info fro.</param>
+        /// <returns>The local player's ship information facade.</returns>
+        public ShipInfo GetPlayerShipInfo(Player player)
+        {
+            return GetPlayerShipInfo(player.Number);
+        }
+
+        /// <summary>
         /// Get the information facade for the local player's ship in the
         /// game, if possible.
         /// </summary>
         /// <returns>The local player's ship information facade.</returns>
         public ShipInfo GetPlayerShipInfo()
         {
-            var avatarSystem = GetSystem<AvatarSystem>();
-            if (avatarSystem != null)
+            if (IsRunning())
             {
-                var avatar = avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
-                if (avatar != null)
-                {
-                    return avatar.GetComponent<ShipInfo>();
-                }
+                return GetPlayerShipInfo(Controller.Session.LocalPlayer);
             }
             return null;
         }
