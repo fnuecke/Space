@@ -10,7 +10,7 @@ namespace Space.ScreenManagement.Screens.Helper {
     /// <summary>
     /// A helper class which helps drawing standard items like rectangles, circles, etc...
     /// </summary>
-    class BasicForms
+    public class BasicForms
     {
 
         /// <summary>

@@ -15,25 +15,10 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
     /// The radio element displays an image of the receiver and the message
     /// as a text.
     /// </summary>
-    class HudRadio : IHudElement
+    class HudRadio : AHudElement
     {
 
         #region Fields
-
-        /// <summary>
-        /// The local client, used to fetch player's position and radar range.
-        /// </summary>
-        private readonly GameClient _client;
-
-        /// <summary>
-        /// The current content manager.
-        /// </summary>
-        private ContentManager _content;
-
-        /// <summary>
-        /// Sprite batch used for rendering.
-        /// </summary>
-        private SpriteBatch _spriteBatch;
 
         /// <summary>
         /// The top spacer.
@@ -60,13 +45,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private HudLabel _footer;
 
-        /// <summary>
-        /// The current top-left position of the parent element.
-        /// </summary>
-        private Point _position = new Point(0, 0);
-
-        private int _height;
-
         #endregion
 
         #region Initialisation
@@ -76,24 +54,25 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         /// <param name="client">The general client object.</param>
         public HudRadio(GameClient client)
+            : base(client)
         {
-            _client = client;
             _spacerTop = new HudSpacer(_client, HudSpacer.Mode.Top);
             _bgPortrait = new HudContent(_client, HudContent.Mode.Image, true, false);
             _bgPortrait.setContentSize(69, 92);
             _bgText = new HudContent(_client, HudContent.Mode.BackgroundOnly, false, true);
-            _bgText.setSize(_spacerTop.Width - _bgPortrait.getSize().X - 1, _bgPortrait.getSize().Y);
+            _bgText.setSize(_spacerTop.GetWidth() - _bgPortrait.getSize().X - 1, _bgPortrait.getSize().Y);
             _spacerBottom = new HudSpacer(_client, HudSpacer.Mode.Bottom);
             _footer = new HudLabel(_client);
+
+            SetPosition(new Point(100, 100));
         }
 
         /// <summary>
         /// Load all elements of this HUD element.
         /// </summary>
-        public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
-            _content = content;
-            _spriteBatch = spriteBatch;
+            base.LoadContent(spriteBatch, content);
 
             _spacerTop.LoadContent(spriteBatch, content);
             _bgPortrait.LoadContent(spriteBatch, content);
@@ -109,10 +88,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #region Getter & Setter
 
-        // Implementation of IHudParentElement interface
-        public void SetPosition(Point newPosition)
+        public override void SetPosition(Point position)
         {
-            _position = newPosition;
+            base.SetPosition(position);
             _spacerTop.SetPosition(_position);
             _bgPortrait.SetPosition(new Point(_spacerTop.GetPosition().X, _spacerTop.GetPosition().Y + _spacerTop.GetHeight()));
             _bgText.SetPosition(new Point(_bgPortrait.GetPosition().X + _bgPortrait.getSize().X + 1, _bgPortrait.GetPosition().Y));
@@ -120,24 +98,14 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _footer.SetPosition(new Point(_spacerBottom.GetPosition().X, _spacerBottom.GetPosition().Y + _spacerBottom.GetHeight()));
         }
 
-        public Point GetPosition()
+        public override int GetHeight()
         {
-            return _position;
-        }
-
-        // Implementation of IHudParentElement interface
-        public int GetHeight() {
             int height = 0;
             height += _spacerTop.GetHeight();
             height += _bgPortrait.GetHeight();
             height += _spacerBottom.GetHeight();
             height += _footer.GetHeight();
             return height;
-        }
-
-        public void SetHeight(int height)
-        {
-            _height = height;
         }
 
         /// <summary>
@@ -165,7 +133,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <summary>
         /// Render the HUD box with the current values.
         /// </summary>
-        public void Draw()
+        public override void Draw()
         {
             _spacerTop.Draw();
             _bgPortrait.Draw();

@@ -12,7 +12,7 @@ using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudSpacer : IHudElement
+    class HudSpacer : AHudElement
     {
 
         #region Constants
@@ -60,45 +60,13 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         #region Fields
 
         /// <summary>
-        /// The local client, used to fetch player's position and radar range.
-        /// </summary>
-        private readonly GameClient _client;
-
-        /// <summary>
-        /// The current content manager.
-        /// </summary>
-        private ContentManager _content;
-
-        /// <summary>
-        /// Sprite batch used for rendering.
-        /// </summary>
-        private SpriteBatch _spriteBatch;
-
-        /// <summary>
-        /// Helper class for drawing basic forms.
-        /// </summary>
-        private BasicForms _basicForms;
-
-        /// <summary>
-        /// The height of the object (addition of thickness spacer + outter border + inner border)
-        /// </summary>
-        private int _height;
-
-        /// <summary>
         /// The current mode.
         /// </summary>
         private Mode _mode;
 
-        private Point _position;
-
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// The width of the element.
-        /// </summary>
-        public int Width { get; set; }
 
         /// <summary>
         /// The thickness of the spacer.
@@ -129,31 +97,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #region Getter
 
-        /// <summary>
-        /// Calculates the height of the element and returns the value.
-        /// The height is an addition of the outer border, the thickniss of the
-        /// spacer and the inner border.
-        /// The lines on the side will NOT be added to the height.
-        /// </summary>
-        /// <returns>The height of this element.</returns>
-        public int GetHeight()
+        public override int GetHeight()
         {
             return OuterBorder + ThicknessSpacer + InnerBorder;
-        }
-
-        public void SetHeight(int height)
-        {
-            _height = height;
-        }
-
-        public void SetPosition(Point newPosition)
-        {
-            _position = newPosition;
-        }
-
-        public Point GetPosition()
-        {
-            return _position;
         }
 
         #endregion
@@ -166,29 +112,27 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <param name="client">The general client object.</param>
         /// <param name="mode">The mode that this object should use.</param>
         public HudSpacer(GameClient client, Mode mode)
+            : base(client)
         {
-            _client = client;
             _mode = mode;
 
             // set the standard values into the field.
-            Width = StandardWidth;
-            _height = ThicknessSpacer + StandardOuterBorder + StandardInnerBorder;
+            SetWidth(StandardWidth);
+            SetHeight(ThicknessSpacer + StandardOuterBorder + StandardInnerBorder);
             OuterBorder = StandardOuterBorder;
             InnerBorder = StandardInnerBorder;
             ThicknessSpacer = StandardThicknessSpacer;
             ThicknessLineSide = StandardThicknessLineSide;
             LengthLineSide = StandardLengthLineSide;
-            _position = new Point(100, 100);
+            SetPosition(new Point(100, 100));
         }
 
         /// <summary>
         /// Load graphics content for the game.
         /// </summary>
-        public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
-            _content = content;
-            _spriteBatch = spriteBatch;
-            _basicForms = new BasicForms(_spriteBatch, _client);
+            base.LoadContent(spriteBatch, content);
         }
 
         #endregion
@@ -198,7 +142,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <summary>
         /// Render the HUD header with the current values.
         /// </summary>
-        public void Draw()
+        public override void Draw()
         {
             _spriteBatch.Begin();
 
@@ -218,9 +162,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             // draw the horizontal line
             _basicForms.FillRectangle(
-                _position.X,
-                _position.Y + borderTop,
-                Width,
+                GetPosition().X,
+                GetPosition().Y + borderTop,
+                GetWidth(),
                 ThicknessSpacer,
                 HudColors.Lines * 0.9f);
 
@@ -228,15 +172,15 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             if (_mode != Mode.Center)
             {
                 _basicForms.FillRectangle(
-                    _position.X,
-                    _position.Y + borderTop + yMove,
+                    GetPosition().X,
+                    GetPosition().Y + borderTop + yMove,
                     ThicknessLineSide,
                     LengthLineSide,
                     HudColors.Lines * 0.9f);
 
                 _basicForms.FillRectangle(
-                    _position.X + Width - ThicknessLineSide,
-                    _position.Y + borderTop + yMove,
+                    GetPosition().X + GetWidth() - ThicknessLineSide,
+                    GetPosition().Y + borderTop + yMove,
                     ThicknessLineSide,
                     LengthLineSide,
                     HudColors.Lines * 0.9f);
