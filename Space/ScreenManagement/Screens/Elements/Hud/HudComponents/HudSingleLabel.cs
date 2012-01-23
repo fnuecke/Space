@@ -17,6 +17,11 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #region Constants
 
+        public enum Alignments
+        {
+            Right, Center, Left
+        }
+
         /// <summary>
         /// The standard value for the width;
         /// </summary>
@@ -34,6 +39,44 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// Holds the font information.
         /// </summary>
         private SpriteFont _font;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// The text that is displayed in the label.
+        /// </summary>
+        public String Text { get; set; }
+
+        /// <summary>
+        /// The color that is used to the top gradient color.
+        /// </summary>
+        public Color ColorNorth { get; set; }
+
+        /// <summary>
+        /// The color that is used to the bottom gradient color.
+        /// </summary>
+        public Color ColorSouth { get; set; }
+
+        /// <summary>
+        /// The text color.
+        /// </summary>
+        public Color ColorText { get; set; }
+
+        public Alignments TextAlign { get; set; }
+
+        #endregion
+
+        #region Getter / Setter
+
+        /// <summary>
+        /// Remove the text from the label.
+        /// </summary>
+        public void removeText()
+        {
+            Text = "";
+        }
 
         #endregion
 
@@ -60,6 +103,12 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             // load the font that is used for the labels
             _font = _content.Load<SpriteFont>("Fonts/strasua_11");
+
+            // set some standard values
+            Text = "";
+            ColorNorth = Color.Green;
+            ColorSouth = Color.Red;
+            ColorText = Color.Black;
         }
 
         #endregion
@@ -79,12 +128,20 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
                 GetPosition().Y,
                 GetWidth(),
                 GetHeight(),
-                new[] { HudColors.GreenDarkGradientLight * 0.85f, HudColors.GreenDarkGradientDark * 0.95f },
+                new[] { ColorNorth, ColorSouth },
                 new[] { 0.2f, 0.8f });
 
             // draw the title string
-            String TextLabelLeft = "Lalala";
-            _spriteBatch.DrawString(_font, TextLabelLeft, new Vector2(GetPosition().X + 5, GetPosition().Y + 2), HudColors.FontDark);
+            int xPos = GetPosition().X + 5;
+            if (TextAlign == Alignments.Center)
+            {
+                xPos = (int) ( GetPosition().X + (GetWidth() - _font.MeasureString(Text).X) / 2);
+            }
+            else if (TextAlign == Alignments.Right)
+            {
+                xPos = (int) (GetPosition().X + GetWidth() - 2 - _font.MeasureString(Text).X - 5);
+            }
+            _spriteBatch.DrawString(_font, Text, new Vector2(xPos, GetPosition().Y + 2), ColorText);
 
             _spriteBatch.End();
         }

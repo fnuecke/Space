@@ -47,6 +47,20 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// The name of the reiceiver.
+        /// </summary>
+        public String Name { get; set; }
+
+        /// <summary>
+        /// The description of the reiceiver.
+        /// </summary>
+        public String Description { get; set; }
+
+        #endregion
+
         #region Initialisation
 
         /// <summary>
@@ -75,6 +89,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             _bgPortrait.setContentSize(69, 92);
             _bgText.setSize(_spacerTop.GetWidth() - _bgPortrait.getSize().X - 1, _bgPortrait.getSize().Y);
+            _footer.SetTextLabelLeft("Guybrush");
+            _footer.SetTextLabelRight("Pir");
         }
 
         #endregion
@@ -107,7 +123,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <param name="name">The name.</param>
         public void setName(String name)
         {
-            _footer.TextLabelLeft = name;
+            _footer.SetTextLabelLeft(name);
         }
 
         /// <summary>
@@ -116,7 +132,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <param name="name">The name.</param>
         public void setTitle(String title)
         {
-            _footer.TextLabelRight = title;
+            _footer.SetTextLabelRight(title);
         }
 
         #endregion
