@@ -13,13 +13,24 @@ using Space.ScreenManagement.Screens.Helper;
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
     /// <summary>
-    /// A sample file that can be used as a kind of template to create a new
-    /// object for a new HUD element.
-    /// 
-    /// It is NOT intended to be used in the hud!
+    /// A HUD element that displayes a list all current players and their health.
     /// </summary>
     class HudPlayerList : AHudElement
     {
+
+        #region Constants
+
+        /// <summary>
+        /// The standard value of the padding of the label to the outer border.
+        /// </summary>
+        private const int StandardPadding = 2;
+
+        /// <summary>
+        /// The standard value of the bottom border to the next element.
+        /// </summary>
+        private const int StandardBorderBottom = 2;
+
+        #endregion
 
         #region Fields
 
@@ -28,11 +39,35 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private SpaceForms _spaceForms;
 
+        /// <summary>
+        /// A label to display the name of a player.
+        /// </summary>
         private HudSingleLabel _name;
+
+        /// <summary>
+        /// A label to display the current health of a player.
+        /// </summary>
         private HudSingleLabel _health;
 
-        private int _gapAround;
-        private int _gap;
+        /// <summary>
+        /// The padding of the label to the outer border.
+        /// </summary>
+        private int _padding;
+
+        /// <summary>
+        /// The bottom border to the next element.
+        /// </summary>
+        private int _borderBottom;
+
+        /// <summary>
+        /// A list that should always hold the names of the current players.
+        /// </summary>
+        String[] _listNames;
+
+        /// <summary>
+        /// A list that should always hold the health of the current players.
+        /// </summary>
+        float[] _listHealth;
 
         #endregion
 
@@ -54,14 +89,16 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             base.LoadContent(spriteBatch, content);
 
             _spaceForms = new SpaceForms(_spriteBatch);
+            _listNames = new String[0];
+            _listHealth = new float[0];
 
             _name.LoadContent(spriteBatch, content);
             _health.LoadContent(spriteBatch, content);
 
-            _gapAround = 2;
-            _gap = 2;
-
             // set some standard settings for the elements
+            _padding = StandardPadding;
+            _borderBottom = StandardBorderBottom;
+
             _name.Text = "DaKaTotal";
             _name.SetSize(new Point(128, 16));
             _name.ColorNorth = HudColors.GreenDarkGradientLight;
@@ -85,29 +122,47 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             base.SetPosition(position);
 
-            _name.SetPosition(new Point(GetPosition().X + _gapAround, GetPosition().Y + _gapAround));
-            _health.SetPosition(new Point(_name.GetPosition().X + _name.GetWidth() + 2 * _gapAround + 2, _name.GetPosition().Y));
+            _name.SetPosition(new Point(GetPosition().X + _padding, GetPosition().Y + _padding));
+            _health.SetPosition(new Point(_name.GetPosition().X + _name.GetWidth() + 2 * _padding + 2, _name.GetPosition().Y));
         }
 
         public override int GetHeight()
         {
             int height = 0;
-            height += _name.GetHeight() + 2 * _gapAround + _gap;
+            height += ((_name.GetHeight() + 2 * _padding + _borderBottom) * _listNames.Length);
             return height;
         }
 
         public override int GetWidth()
         {
             int width = 0;
-            width += _name.GetWidth() + 2 * _gapAround;
-            width += _gap;
-            width += _health.GetWidth() + 2 * _gapAround;
+            width += _name.GetWidth() + 2 * _padding;
+            width += _borderBottom;
+            width += _health.GetWidth() + 2 * _padding;
             return width;
         }
 
         #endregion
 
-        #region Draw
+        #region Update & Drawing
+
+        /// <summary>
+        /// Updates the data of the HUD elements
+        /// </summary>
+        public void Update()
+        {
+
+            // Updates the data of player names and their health
+            int numberOfPlayers = _client.Controller.Session.NumPlayers;
+            _listNames = new String[numberOfPlayers];
+            _listHealth = new float[numberOfPlayers];
+            for (int i = 0; i < numberOfPlayers; i++)
+            {
+                _listNames[i] = _client.Controller.Session.GetPlayer(i).Name;
+                _listHealth[i] = _client.GetPlayerShipInfo(i).Health / _client.GetPlayerShipInfo(i).MaxHealth;
+            }
+
+        }
 
         /// <summary>
         /// Render the HUD box with the current values.
@@ -117,49 +172,66 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             // save the original positions to be able to restore them later
             var originalNamePosition = _name.GetPosition();
             var originalHealthPosition = _health.GetPosition();
-
-            var info = _client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return;
-            }
-
-            var names = new[] { "DaKaTotal", "Sangar", "lordjoda" };
-            var health = new[] { (int) ((info.Health * 1.0 / info.MaxHealth) * 100), 95, 77 };
+            var originalColorNorth = _health.ColorNorth;
+            var originalColorSouth = _health.ColorSouth;
 
             var forY = GetPosition().Y;
-            for (int i = 0; i < names.Length; i++)
+            for (int i = 0; i < _listNames.Length; i++)
             {
                 // set the name for the current loop
-                _name.Text = names[i];
-                _health.Text = health[i] + "%";
+                _name.Text = _listNames[i];
+                _health.Text = ((int) (_listHealth[i] * 100)) + "%";
+
+                // color the health label yellow or red, if the health is low
+                Color thisColorNorth = originalColorNorth;
+                Color thisColorSouth = originalColorSouth;
+                if (_listHealth[i] < 0.5f && _listHealth[i] >= 0.3f)
+                {
+                    thisColorNorth = Color.Lerp(originalColorNorth, HudColors.OrangeGradientLight, (1 - (_listHealth[i] - 0.3f) / 0.2f));
+                    thisColorSouth = Color.Lerp(originalColorSouth, HudColors.OrangeGradientDark, (1 - (_listHealth[i] - 0.3f) / 0.2f));
+                }
+                else if (_listHealth[i] < 0.3f && _listHealth[i] >= 0.1f)
+                {
+                    thisColorNorth = Color.Lerp(HudColors.OrangeGradientLight, HudColors.RedGradientLight, 1 - (_listHealth[i] - 0.1f) / 0.2f);
+                    thisColorSouth = Color.Lerp(HudColors.OrangeGradientDark, HudColors.RedGradientDark, 1 - (_listHealth[i] - 0.1f) / 0.2f);
+                }
+                else if (_listHealth[i] < 0.1f)
+                {
+                    thisColorNorth = HudColors.RedGradientLight;
+                    thisColorSouth = HudColors.RedGradientDark;
+                }
+
+                _health.ColorNorth = thisColorNorth;
+                _health.ColorSouth = thisColorSouth;
 
                 _spriteBatch.Begin();
                 _spaceForms.DrawRectangleWithoutEdges(
                     GetPosition().X,
                     forY,
-                    _name.GetWidth() + 2 * _gapAround,
-                    _name.GetHeight() + _gapAround * 2,
-                    4, _gapAround, HudColors.Lines);
+                    _name.GetWidth() + 2 * _padding,
+                    _name.GetHeight() + _padding * 2,
+                    4, _padding, HudColors.Lines);
                 _spaceForms.DrawRectangleWithoutEdges(
-                    GetPosition().X + _name.GetWidth() + 2 * _gapAround + 2,
+                    GetPosition().X + _name.GetWidth() + 2 * _padding + 2,
                     forY,
-                    _health.GetWidth() + 2 * _gapAround,
-                    _health.GetHeight() + _gapAround * 2,
-                    4, _gapAround, HudColors.Lines);
+                    _health.GetWidth() + 2 * _padding,
+                    _health.GetHeight() + _padding * 2,
+                    4, _padding, HudColors.Lines);
                 _spriteBatch.End();
 
                 _name.Draw();
                 _health.Draw();
 
-                forY += _name.GetHeight() + 2 * _gapAround + _gap;
-                _name.SetPosition(new Point(_name.GetPosition().X, _name.GetPosition().Y + _name.GetHeight() + 2 * _gapAround + _gap));
-                _health.SetPosition(new Point(_health.GetPosition().X, _health.GetPosition().Y + _health.GetHeight() + 2 * _gapAround + _gap));
+                forY += _name.GetHeight() + 2 * _padding + _borderBottom;
+                _name.SetPosition(new Point(_name.GetPosition().X, _name.GetPosition().Y + _name.GetHeight() + 2 * _padding + _borderBottom));
+                _health.SetPosition(new Point(_health.GetPosition().X, _health.GetPosition().Y + _health.GetHeight() + 2 * _padding + _borderBottom));
             }
 
             // restore the original positions
             _name.SetPosition(originalNamePosition);
             _health.SetPosition(originalHealthPosition);
+            _health.ColorNorth = originalColorNorth;
+            _health.ColorSouth = originalColorSouth;
         }
 
         #endregion
