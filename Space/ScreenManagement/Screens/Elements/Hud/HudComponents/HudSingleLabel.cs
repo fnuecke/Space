@@ -49,7 +49,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             // set the standard values into the field.
             SetWidth(StandardWidth);
             SetHeight(StandardHeight);
-            SetPosition(new Point(0, 0));
         }
 
         /// <summary>

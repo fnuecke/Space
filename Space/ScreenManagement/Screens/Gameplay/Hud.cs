@@ -31,7 +31,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private HealthEnergyBar _healthEnergyBar;
 
-        private HudRadio _hudBox;
+        private HudRadio _hudRadioBox;
 
         #endregion
 
@@ -41,7 +41,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _client = client;
             _healthEnergyBar = new HealthEnergyBar(_client);
-            _hudBox = new HudRadio(_client);
+            _hudRadioBox = new HudRadio(_client);
 
         }
 
@@ -53,15 +53,16 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _content = content;
             _spriteBatch = spriteBatch;
 
+            // init the health & energy bar
             _healthEnergyBar.LoadContent(spriteBatch, content);
-            _hudBox.LoadContent(spriteBatch, content);
-            _hudBox.SetPosition(new Point(60, 155));
-            _hudBox.setName("Guybrush Threepwood");
-            _hudBox.setTitle("Pirate");
-
-            // initialize the health & energy with standard values
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
             _healthEnergyBar.SetPosition(new Point((viewport.Width - _healthEnergyBar.GetWidth()) / 2, (viewport.Height - _healthEnergyBar.GetHeight()) / 2 - 40));
+
+            // init the radio box
+            _hudRadioBox.LoadContent(spriteBatch, content);
+            _hudRadioBox.SetPosition(new Point(60, 155));
+            _hudRadioBox.setName("Guybrush Threepwood");
+            _hudRadioBox.setTitle("Pirate");
         }
 
         #endregion
@@ -94,7 +95,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 _healthEnergyBar.SetPosition(new Point((viewport.Width - _healthEnergyBar.GetWidth()) / 2 + (int)offset.X, (viewport.Height - _healthEnergyBar.GetHeight()) / 2 - 40 + (int)offset.Y));
                 _healthEnergyBar.Draw();
             }
-            _hudBox.Draw();
+            _hudRadioBox.Draw();
         }
 
         #endregion

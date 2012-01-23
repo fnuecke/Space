@@ -58,18 +58,11 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _spacerTop = new HudSpacer(_client, HudSpacer.Mode.Top);
             _bgPortrait = new HudContent(_client, HudContent.Mode.Image, true, false);
-            _bgPortrait.setContentSize(69, 92);
             _bgText = new HudContent(_client, HudContent.Mode.BackgroundOnly, false, true);
-            _bgText.setSize(_spacerTop.GetWidth() - _bgPortrait.getSize().X - 1, _bgPortrait.getSize().Y);
             _spacerBottom = new HudSpacer(_client, HudSpacer.Mode.Bottom);
             _footer = new HudLabel(_client);
-
-            SetPosition(new Point(100, 100));
         }
 
-        /// <summary>
-        /// Load all elements of this HUD element.
-        /// </summary>
         public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
             base.LoadContent(spriteBatch, content);
@@ -80,8 +73,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spacerBottom.LoadContent(spriteBatch, content);
             _footer.LoadContent(spriteBatch, content);
 
-            // set standard values for the fields
-            SetPosition(new Point(0, 0));
+            _bgPortrait.setContentSize(69, 92);
+            _bgText.setSize(_spacerTop.GetWidth() - _bgPortrait.getSize().X - 1, _bgPortrait.getSize().Y);
         }
 
         #endregion

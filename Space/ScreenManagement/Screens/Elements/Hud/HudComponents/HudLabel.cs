@@ -136,7 +136,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             BorderSide = StandardBorderSide;
             Display1stElement = StandardDisplay1stElement;
             Display2ndElement = StandardDisplay2ndElement;
-            SetPosition(new Point(0, 0));
             TextLabelLeft = "";
             TextLabelRight = "";
         }
