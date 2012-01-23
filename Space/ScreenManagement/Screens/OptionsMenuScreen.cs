@@ -9,9 +9,9 @@
 
 using System;
 using System.Collections.Generic;
-using Engine.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nuclex.Input.Devices;
 using Space.ScreenManagement.Screens.Entries;
 
 namespace Space.ScreenManagement.Screens
@@ -31,9 +31,7 @@ namespace Space.ScreenManagement.Screens
         public OptionsMenuScreen(Game game)
             : base(MenuStrings.Options)
         {
-            var keyboard = (IKeyboardInputManager)game.Services.GetService(typeof(IKeyboardInputManager));
-
-            var playerName = new EditableMenuEntry(MenuStrings.PlayerName, keyboard, Settings.Instance.PlayerName);
+            var playerName = new EditableMenuEntry(MenuStrings.PlayerName, (IKeyboard)game.Services.GetService(typeof(IKeyboard)), Settings.Instance.PlayerName);
             var language = new OptionMenuEntry<string>(MenuStrings.Language, new Dictionary<string, string>()
             {
                 { "en", MenuStrings.English },

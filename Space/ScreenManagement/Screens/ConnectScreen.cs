@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Net;
-using Engine.Input;
 using Engine.Session;
 using Microsoft.Xna.Framework;
+using Nuclex.Input.Devices;
 using Space.Control;
 using Space.Data;
 using Space.ScreenManagement.Screens.Entries;
@@ -27,9 +27,7 @@ namespace Space.ScreenManagement.Screens
         {
             _client = ((Spaaace)game).Client;
 
-            var keyboard = (IKeyboardInputManager)game.Services.GetService(typeof(IKeyboardInputManager));
-
-            _address = new EditableMenuEntry(MenuStrings.ServerAddress, keyboard,  Settings.Instance.LastServerAddress);
+            _address = new EditableMenuEntry(MenuStrings.ServerAddress, (IKeyboard)game.Services.GetService(typeof(IKeyboard)),  Settings.Instance.LastServerAddress);
             var connect = new MenuEntry(MenuStrings.Connect);
             var back = new MenuEntry(MenuStrings.Back);
 

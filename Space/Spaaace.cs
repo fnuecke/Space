@@ -4,12 +4,13 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
-using Engine.Input;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using NLog;
+using Nuclex.Input;
+using Nuclex.Input.Devices;
 using Space.Control;
 using Space.Data;
 using Space.ScreenManagement;
@@ -45,17 +46,17 @@ namespace Space
         /// <summary>
         /// The graphics device manager used in this game.
         /// </summary>
-        public GraphicsDeviceManager GraphicsDeviceManager { get; set; }
+        public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
 
         /// <summary>
         /// The game server currently running in this program.
         /// </summary>
-        public GameServer Server { get; set; }
+        public GameServer Server { get; private set; }
 
         /// <summary>
         /// The game client currently running in this program.
         /// </summary>
-        public GameClient Client { get; set; }
+        public GameClient Client { get; private set; }
 
         /// <summary>
         /// The render target that is pushed at the beginning of each draw
@@ -68,6 +69,11 @@ namespace Space
         #region Fields
 
         private List<IGameComponent> _componentsToDispose = new List<IGameComponent>();
+
+        /// <summary>
+        /// The input manager used throughout this game.
+        /// </summary>
+        private InputManager _inputManager;
 
         private RenderTarget2D _scene;
         private SpriteBatch _spriteBatch;
@@ -141,10 +147,37 @@ namespace Space
                 _componentsToDispose.Add(e.GameComponent);
             };
 
+            // Initialize input.
+            _inputManager = new InputManager(Services, Window.Handle);
+            Components.Add(_inputManager);
+
+            // Get our input devices.
+            foreach (var keyboard in _inputManager.Keyboards)
+            {
+                if (keyboard.IsAttached)
+                {
+                    Services.AddService(typeof(IKeyboard), keyboard);
+                    break;
+                }
+            }
+            foreach (var mouse in _inputManager.Mice)
+            {
+                if (mouse.IsAttached)
+                {
+                    Services.AddService(typeof(IMouse), mouse);
+                    break;
+                }
+            }
+            foreach (var gamepad in _inputManager.GamePads)
+            {
+                if (gamepad.IsAttached)
+                {
+                    Services.AddService(typeof(IGamePad), gamepad);
+                    break;
+                }
+            }
+
             // Add some more utility components.
-            Components.Add(new KeyboardInputManager(this));
-            Components.Add(new MouseInputManager(this));
-            Components.Add(new GamepadInputManager(this));
             _console = new GameConsole(this);
             Components.Add(_console);
 
@@ -222,6 +255,16 @@ namespace Space
             {
                 Console.WriteLine(((LineWrittenEventArgs)e).Message);
             };
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (disposing)
+            {
+                _inputManager.Dispose();
+            }
         }
 
         /// <summary>

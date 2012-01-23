@@ -83,6 +83,9 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
+    <Reference Include="Nuclex.Input">
+      <HintPath>..\Libraries\Nuclex.Input.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System">
       <Private>False</Private>
@@ -112,19 +115,6 @@
     <Compile Include="Graphics\FilledRectangle.cs" />
     <Compile Include="Graphics\GradientRectangle.cs" />
     <Compile Include="Graphics\Rectangle.cs" />
-    <Compile Include="Input\GamepadInputEventArgs.cs" />
-    <Compile Include="Input\GamepadInputManager.cs" />
-    <Compile Include="Input\IGamepadInputManager.cs" />
-    <Compile Include="Input\IMouseInputManager.cs" />
-    <Compile Include="Input\KeyComboEventArgs.cs" />
-    <Compile Include="Input\KeyboardInputEventArgs.cs" />
-    <Compile Include="Input\IKeyboardInputManager.cs" />
-    <Compile Include="Input\KeyboardInputManager.cs" />
-    <Compile Include="Input\KeyCombo.cs" />
-    <Compile Include="Input\KeyMap.cs" />
-    <Compile Include="Input\KeyModifier.cs" />
-    <Compile Include="Input\MouseInputEventArgs.cs" />
-    <Compile Include="Input\MouseInputManager.cs" />
     <Compile Include="IO\CompressedPacketStream.cs" />
     <Compile Include="IO\EncryptedPacketStream.cs" />
     <Compile Include="IO\IPacketStream.cs" />

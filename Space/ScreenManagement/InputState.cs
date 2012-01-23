@@ -1,19 +1,7 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// InputState.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
-#region Using Statements
-using System;
-//using Microsoft.Xna.Framework.Input.Touch;
-using Engine.Input;
 using Microsoft.Xna.Framework;
-
-#endregion
+using Microsoft.Xna.Framework.Input;
+using Nuclex.Input;
+using Nuclex.Input.Devices;
 
 namespace Space.ScreenManagement
 {
@@ -43,20 +31,32 @@ namespace Space.ScreenManagement
         /// </summary>
         public InputState(Game game)
         {
-            var keyboard = (IKeyboardInputManager)game.Services.GetService(typeof(IKeyboardInputManager));
-            var mouse = (IMouseInputManager)game.Services.GetService(typeof(IMouseInputManager));
+            var keyboard = (IKeyboard)game.Services.GetService(typeof(IKeyboard));
+            if (keyboard != null)
+            {
+                keyboard.KeyPressed += HandleKeyPressed;
+            }
 
-            keyboard.Pressed += HandleKeyPressed;
-            mouse.Pressed += HandleMousePressed;
-            mouse.Scrolled += HandleMouseScrolled;
-            mouse.Moved += HandleMouseMoved;
+            var mouse = (IMouse)game.Services.GetService(typeof(IMouse));
+            if (mouse != null)
+            {
+                mouse.MouseButtonPressed += HandleMousePressed;
+                mouse.MouseWheelRotated += HandleMouseScrolled;
+                mouse.MouseMoved += HandleMouseMoved;
+            }
+
+            var gamepad = (IGamePad)game.Services.GetService(typeof(IGamePad));
+            if (gamepad != null)
+            {
+                
+            }
         }
 
-        void HandleKeyPressed(object sender, KeyboardInputEventArgs e)
+        void HandleKeyPressed(Keys key)
         {
-            if (Settings.Instance.MenuBindings.ContainsKey(e.Key))
+            if (Settings.Instance.MenuBindings.ContainsKey(key))
             {
-                switch (Settings.Instance.MenuBindings[e.Key])
+                switch (Settings.Instance.MenuBindings[key])
                 {
                     case Settings.MenuCommand.Up:
                         KeyUp = true;
@@ -87,23 +87,21 @@ namespace Space.ScreenManagement
             }
         }
 
-        void HandleMousePressed(object sender, EventArgs e)
+        void HandleMousePressed(MouseButtons buttons)
         {
-            var args = (MouseInputEventArgs)e;
-            if (args.Button == MouseInputEventArgs.MouseButton.Left)
+            if (buttons == MouseButtons.Left)
             {
                 MouseSelect = true;
             }
-            else if (args.Button == MouseInputEventArgs.MouseButton.Right)
+            else if (buttons == MouseButtons.Right)
             {
                 KeyCancel = true;
             }
         }
 
-        void HandleMouseScrolled(object sender, EventArgs e)
+        void HandleMouseScrolled(float ticks)
         {
-            var args = (MouseInputEventArgs)e;
-            if (args.ScrollDelta < 0)
+            if (ticks < 0)
             {
                 KeyNext = true;
             }
@@ -113,10 +111,9 @@ namespace Space.ScreenManagement
             }
         }
 
-        void HandleMouseMoved(object sender, EventArgs e)
+        void HandleMouseMoved(float x, float y)
         {
-            var args = (MouseInputEventArgs)e;
-            MousePosition = new Vector2(args.X, args.Y);
+            MousePosition = new Vector2(x, y);
         }
 
         #endregion

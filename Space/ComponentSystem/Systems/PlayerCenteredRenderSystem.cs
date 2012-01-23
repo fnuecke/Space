@@ -3,6 +3,8 @@ using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Nuclex.Input.Devices;
+using Space.Input;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -26,6 +28,16 @@ namespace Space.ComponentSystem.Systems
         /// The session this system belongs to, for fetching the local player.
         /// </summary>
         private IClientSession _session;
+
+        /// <summary>
+        /// Used for dynamic camera offset.
+        /// </summary>
+        private IMouse _mouse;
+
+        /// <summary>
+        /// Used for dynamic camera offset.
+        /// </summary>
+        private IGamePad _gamePad;
 
         /// <summary>
         /// The last frame we updated our camera offset (interpolated). We need
@@ -55,7 +67,9 @@ namespace Space.ComponentSystem.Systems
         public PlayerCenteredRenderSystem(Game game, SpriteBatch spriteBatch, IGraphicsDeviceService graphics, IClientSession session)
             : base(game, spriteBatch, graphics)
         {
-            this._session = session;
+            _session = session;
+            _mouse = (IMouse)game.Services.GetService(typeof(IMouse));
+            _gamePad = (IGamePad)game.Services.GetService(typeof(IGamePad));
         }
 
         #region Accessors
@@ -126,30 +140,28 @@ namespace Space.ComponentSystem.Systems
         private Vector2 GetInputInducedOffset()
         {
             Vector2 offset;
+            offset.X = 0;
+            offset.Y = 0;
 
             // Get viewport, for mouse position scaling and offset scaling.
             var viewport = _parameterization.SpriteBatch.GraphicsDevice.Viewport;
             float offsetScale = (float)(System.Math.Sqrt(viewport.Width * viewport.Width + viewport.Height * viewport.Height) / 6.0);
 
-            // Get the game pad either way, because we need to check if it's connected.
-            var gamepad = Microsoft.Xna.Framework.Input.GamePad.GetState(PlayerIndex.One);
-
-            // If we have a gamepad attached, get the stick tilt.
-            if (Settings.Instance.EnableGamepad && gamepad.IsConnected)
+            // If we have a game pad attached, get the stick tilt.
+            if (Settings.Instance.EnableGamepad && _gamePad != null)
             {
-                offset = gamepad.ThumbSticks.Right;
+                offset = GamePadHelper.GetLook(_gamePad);
                 offset.Y = -offset.Y;
             }
-            else
+            else if (_mouse != null)
             {
                 // Otherwise use the mouse.
-                var mouse = Microsoft.Xna.Framework.Input.Mouse.GetState();
 
                 // Get the relative position of the mouse to the ship and
                 // apply some factoring to it (so that the maximum distance
                 // of cursor to ship is not half the screen size).
-                offset.X = ((MathHelper.Clamp(mouse.X, 0, viewport.Width) / (float)viewport.Width) - 0.5f) * 2;
-                offset.Y = ((MathHelper.Clamp(mouse.Y, 0, viewport.Height) / (float)viewport.Height) - 0.5f) * 2;
+                offset.X = ((MathHelper.Clamp(_mouse.GetState().X, 0, viewport.Width) / (float)viewport.Width) - 0.5f) * 2;
+                offset.Y = ((MathHelper.Clamp(_mouse.GetState().Y, 0, viewport.Height) / (float)viewport.Height) - 0.5f) * 2;
             }
 
             if (offset.LengthSquared() > 1)

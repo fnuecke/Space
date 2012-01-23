@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
-using Engine.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Nuclex.Input.Devices;
 
 namespace Space.ScreenManagement.Screens.Entries
 {
@@ -43,12 +43,7 @@ namespace Space.ScreenManagement.Screens.Entries
         /// <summary>
         /// Keyboard input manager we use to capture key presses.
         /// </summary>
-        private readonly IKeyboardInputManager _keyboard;
-
-        /// <summary>
-        /// Key map we use to convert key presses to characters.
-        /// </summary>
-        private readonly KeyMap _keyMap = KeyMap.KeyMapByLocale("en-US");
+        private readonly IKeyboard _keyboard;
 
         /// <summary>
         /// The color of the caret (input position marker).
@@ -79,20 +74,22 @@ namespace Space.ScreenManagement.Screens.Entries
 
         #region Constructor
 
-        public EditableMenuEntry(string label, IKeyboardInputManager keyboard, string defaultValue = "")
+        public EditableMenuEntry(string label, IKeyboard keyboard, string defaultValue = "")
             : base(label)
         {
             _keyboard = keyboard;
             _confirmedInput = defaultValue;
 
-            _keyboard.Pressed += HandleKeyPressed;
+            _keyboard.KeyPressed += HandleKeyPressed;
+            _keyboard.CharacterEntered += HandleCharacterEntered;
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                _keyboard.Pressed -= HandleKeyPressed;
+                _keyboard.KeyPressed -= HandleKeyPressed;
+                _keyboard.CharacterEntered -= HandleCharacterEntered;
             }
         }
 
@@ -137,11 +134,11 @@ namespace Space.ScreenManagement.Screens.Entries
             }
         }
 
-        public void HandleKeyPressed(object sender, KeyboardInputEventArgs e)
+        public void HandleKeyPressed(Keys key)
         {
             if (Focused)
             {
-                switch (e.Key)
+                switch (key)
                 {
                     case Keys.Back:
                         if (_cursor > 0)
@@ -175,19 +172,19 @@ namespace Space.ScreenManagement.Screens.Entries
                         break;
 
                     default:
-                        if (_keyMap != null)
-                        {
-                            char ch = _keyMap[e.Modifier, e.Key];
-                            if (ch != '\0')
-                            {
-                                _input.Insert(_cursor, ch);
-                                _cursor++;
-                            }
-                        }
                         break;
                 }
 
                 _lastKeyPress = DateTime.Now;
+            }
+        }
+
+        private void HandleCharacterEntered(char ch)
+        {
+            if (Focused && !char.IsControl(ch))
+            {
+                _input.Insert(_cursor, ch);
+                _cursor++;
             }
         }
 

@@ -120,6 +120,9 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
+    <Reference Include="Nuclex.Input">
+      <HintPath>..\Libraries\Nuclex.Input.dll</HintPath>
+    </Reference>
     <Reference Include="ProjectMercury, Version=3.1.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\ProjectMercury.dll</HintPath>
@@ -174,6 +177,7 @@
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="Graphics\Planet.cs" />
     <Compile Include="Graphics\Sun.cs" />
+    <Compile Include="Input\GamePadHelper.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSingleLabel.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudRadio.cs" />
     <Compile Include="ScreenManagement\Screens\Stylesheet\HudColors.cs" />

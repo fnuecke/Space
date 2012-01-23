@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
-using Engine.Input;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Nuclex.Input;
+using Nuclex.Input.Devices;
 using Space.Control;
+using Space.Input;
 using Space.Simulation.Commands;
 
 namespace Space.ScreenManagement.Screens.Gameplay
@@ -32,19 +34,19 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private GameClient _client;
 
         /// <summary>
-        /// The keyboard manager we're using.
+        /// The keyboard used for player input.
         /// </summary>
-        private IKeyboardInputManager _keyboard;
+        private IKeyboard _keyboard;
 
         /// <summary>
-        /// The mouse manager we're using.
+        /// The mouse used for player input.
         /// </summary>
-        private IMouseInputManager _mouse;
+        private IMouse _mouse;
 
         /// <summary>
-        /// The GamepadManager we're using.
+        /// The game pad used for player input.
         /// </summary>
-        private IGamepadInputManager _gamepad;
+        private IGamePad _gamepad;
 
         /// <summary>
         /// Whether we're currently enabled or not. Just used to check if it's
@@ -83,6 +85,18 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private DateTime _rotationChanged;
 
+        /// <summary>
+        /// Left game pad stick state from the last update, to check for
+        /// changes.
+        /// </summary>
+        private Vector2 _previousGamepadAcceleration;
+
+        /// <summary>
+        /// Right game pad stick state from the last update, to check for
+        /// changes.
+        /// </summary>
+        private Vector2 _previousGamepadLook;
+
         #endregion
 
         #region Constructor
@@ -91,9 +105,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _client = client;
 
-            _keyboard = (IKeyboardInputManager)client.Game.Services.GetService(typeof(IKeyboardInputManager));
-            _mouse = (IMouseInputManager)client.Game.Services.GetService(typeof(IMouseInputManager));
-            _gamepad = (IGamepadInputManager)client.Game.Services.GetService(typeof(IGamepadInputManager));
+            _keyboard = ((IKeyboard)client.Game.Services.GetService(typeof(IKeyboard)));
+            _mouse = ((IMouse)client.Game.Services.GetService(typeof(IMouse)));
+            _gamepad = ((IGamePad)client.Game.Services.GetService(typeof(IGamePad)));
         }
 
         #endregion
@@ -102,6 +116,30 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
         public void Update()
         {
+            // Handle game pad input that we can't properly handle via events.
+            if (Settings.Instance.EnableGamepad && _gamepad != null)
+            {
+                // Handle movement of the left stick, which controls our movement.
+                var currentGamePadState = _gamepad.GetExtendedState();
+                Vector2 gamepadAcceleration = GamePadHelper.GetAcceleration(_gamepad);
+                if (gamepadAcceleration != _previousGamepadAcceleration)
+                {
+                    _accelerationDirection = gamepadAcceleration;
+                    _accelerationDirection.Y = -_accelerationDirection.Y;
+                    _accelerationChanged = DateTime.Now;
+                }
+                _previousGamepadAcceleration = gamepadAcceleration;
+
+                // Handle movement of the right stick, which controls our direction.
+                Vector2 gamepadLook = GamePadHelper.GetLook(_gamepad);
+                if (gamepadLook != _previousGamepadLook)
+                {
+                    _targetRotation = (float)System.Math.Atan2(gamepadLook.Y, gamepadLook.X);
+                    _rotationChanged = DateTime.Now;
+                }
+                _previousGamepadLook = gamepadLook;
+            }
+
             // Only check every so often, as slight delays here will not be as
             // noticeable, due to the ship's slow turn speed.
             if ((DateTime.Now - _lastUpdate).TotalMilliseconds > _mousePollInterval)
@@ -140,45 +178,44 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // Register for key presses and releases (movement).
                 if (_keyboard != null)
                 {
-                    _keyboard.Pressed += HandleKeyPressed;
-                    _keyboard.Released += HandleKeyReleased;
+                    _keyboard.KeyPressed += HandleKeyPressed;
+                    _keyboard.KeyReleased += HandleKeyReleased;
                 }
 
                 // Register for mouse movement (orientation) and buttons (shooting).
                 if (_mouse != null)
                 {
-                    _mouse.Moved += HandleMouseMoved;
-                    _mouse.Pressed += HandleMousePressed;
-                    _mouse.Released += HandleMouseReleased;
+                    _mouse.MouseMoved += HandleMouseMoved;
+                    _mouse.MouseButtonPressed += HandleMousePressed;
+                    _mouse.MouseButtonReleased += HandleMouseReleased;
                 }
+
+                // Register for game pad buttons. Sticks are handled in update.
                 if (_gamepad != null)
                 {
-                    _gamepad.Pressed += HandleGamePadPressed;
-                    _gamepad.Released += HandleGamePadReleased;
-                    _gamepad.LeftMoved += HandleGamePadLeftMoved;
-                    _gamepad.RightMoved += HandleGamePadRightMoved;
+                    _gamepad.ButtonPressed += HandleGamePadPressed;
+                    _gamepad.ButtonReleased += HandleGamePadReleased;
                 }
             }
             else
             {
                 if (_keyboard != null)
                 {
-                    _keyboard.Pressed -= HandleKeyPressed;
-                    _keyboard.Released -= HandleKeyReleased;
+                    _keyboard.KeyPressed -= HandleKeyPressed;
+                    _keyboard.KeyReleased -= HandleKeyReleased;
                 }
 
                 if (_mouse != null)
                 {
-                    _mouse.Moved -= HandleMouseMoved;
-                    _mouse.Pressed -= HandleMousePressed;
-                    _mouse.Released -= HandleMouseReleased;
+                    _mouse.MouseMoved -= HandleMouseMoved;
+                    _mouse.MouseButtonPressed -= HandleMousePressed;
+                    _mouse.MouseButtonReleased -= HandleMouseReleased;
                 }
+
                 if (_gamepad != null)
                 {
-                    _gamepad.Pressed -= HandleGamePadPressed;
-                    _gamepad.Released -= HandleGamePadReleased;
-                    _gamepad.LeftMoved -= HandleGamePadLeftMoved;
-                    _gamepad.RightMoved -= HandleGamePadRightMoved;
+                    _gamepad.ButtonPressed -= HandleGamePadPressed;
+                    _gamepad.ButtonReleased -= HandleGamePadReleased;
                 }
             }
         }
@@ -188,16 +225,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Player pressed a key.
         /// </summary>
-        private void HandleKeyPressed(object sender, KeyboardInputEventArgs e)
+        private void HandleKeyPressed(Keys key)
         {
-            if (e.IsRepeat)
+            if (Settings.Instance.GameBindings.ContainsKey(key))
             {
-                return;
-            }
-
-            if (Settings.Instance.GameBindings.ContainsKey(e.Key))
-            {
-                if (Settings.Instance.GameBindings[e.Key] == Settings.GameCommand.Stabilize)
+                if (Settings.Instance.GameBindings[key] == Settings.GameCommand.Stabilize)
                 {
                     if (Settings.Instance.ToggleStabilize)
                     {
@@ -213,7 +245,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 }
                 else
                 {
-                    UpdateKeyboardAcceleration(e.State);
+                    UpdateKeyboardAcceleration();
                 }
             }
         }
@@ -221,11 +253,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Player released a key.
         /// </summary>
-        private void HandleKeyReleased(object sender, KeyboardInputEventArgs e)
+        private void HandleKeyReleased(Keys key)
         {
-            if (Settings.Instance.GameBindings.ContainsKey(e.Key))
+            if (Settings.Instance.GameBindings.ContainsKey(key))
             {
-                if (Settings.Instance.GameBindings[e.Key] == Settings.GameCommand.Stabilize)
+                if (Settings.Instance.GameBindings[key] == Settings.GameCommand.Stabilize)
                 {
                     if (!Settings.Instance.ToggleStabilize)
                     {
@@ -235,7 +267,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 }
                 else
                 {
-                    UpdateKeyboardAcceleration(e.State);
+                    UpdateKeyboardAcceleration();
                 }
             }
         }
@@ -244,8 +276,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// Updates acceleration direction based on key presses.
         /// </summary>
         /// <param name="state">The current keyboard state.</param>
-        private void UpdateKeyboardAcceleration(KeyboardState state)
+        private void UpdateKeyboardAcceleration()
         {
+            var state = _keyboard.GetState();
             Directions direction = Directions.None;
             if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Down].Any(key => state.IsKeyDown(key)))
             {
@@ -284,9 +317,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Handle mouse presses.
         /// </summary>
-        private void HandleMousePressed(object sender, MouseInputEventArgs e)
+        private void HandleMousePressed(MouseButtons buttons)
         {
-            if (e.Button == MouseInputEventArgs.MouseButton.Left)
+            if (buttons == MouseButtons.Left)
             {
                 _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
             }
@@ -295,9 +328,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Handle mouse releases.
         /// </summary>
-        private void HandleMouseReleased(object sender, MouseInputEventArgs e)
+        private void HandleMouseReleased(MouseButtons buttons)
         {
-            if (e.Button == MouseInputEventArgs.MouseButton.Left)
+            if (buttons == MouseButtons.Left)
             {
                 _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
             }
@@ -306,12 +339,12 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Update facing direction on mouse move.
         /// </summary>
-        private void HandleMouseMoved(object sender, MouseInputEventArgs e)
+        private void HandleMouseMoved(float x, float y)
         {
             // Get angle to middle of screen (position of our ship), which
             // will be our new target rotation.
-            int rx = e.X - _client.Game.GraphicsDevice.Viewport.Width / 2;
-            int ry = e.Y - _client.Game.GraphicsDevice.Viewport.Height / 2;
+            float rx = x - _client.Game.GraphicsDevice.Viewport.Width / 2;
+            float ry = y - _client.Game.GraphicsDevice.Viewport.Height / 2;
             _targetRotation = (float)System.Math.Atan2(ry, rx);
             _rotationChanged = DateTime.Now;
         }
@@ -323,9 +356,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Handle game pad button presses.
         /// </summary>
-        private void HandleGamePadPressed(object sender, GamepadInputEventArgs e)
+        private void HandleGamePadPressed(Buttons buttons)
         {
-            switch (e.Buttons)
+            switch (buttons)
             {
                 case (Buttons.RightShoulder):
                     // Shoot.
@@ -340,9 +373,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Handle game pad key releases.
         /// </summary>
-        private void HandleGamePadReleased(object sender, GamepadInputEventArgs e)
+        private void HandleGamePadReleased(Buttons buttons)
         {
-            switch (e.Buttons)
+            switch (buttons)
             {
                 case (Buttons.RightShoulder):
                     // Stop shooting.
@@ -351,28 +384,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
                 default:
                     break;
-            }
-        }
-
-        /// <summary>
-        /// Handle movement of the left stick, which controls our movement.
-        /// </summary>
-        private void HandleGamePadLeftMoved(object sender, GamepadInputEventArgs e)
-        {
-            _accelerationDirection = e.Position;
-            _accelerationDirection.Y = -_accelerationDirection.Y;
-            _accelerationChanged = DateTime.Now;
-        }
-
-        /// <summary>
-        /// Handle movement of the right stick, which controls our direction.
-        /// </summary>
-        private void HandleGamePadRightMoved(object sender, GamepadInputEventArgs e)
-        {
-            if (e.Position != Vector2.Zero)
-            {
-                _targetRotation = (float)System.Math.Atan2(-e.Position.Y, e.Position.X);
-                _rotationChanged = DateTime.Now;
             }
         }
 

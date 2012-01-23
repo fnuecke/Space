@@ -5,6 +5,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework.Input;
+using Nuclex.Input.Devices;
 
 namespace Space
 {
@@ -98,10 +99,36 @@ namespace Space
             Stabilize
         }
 
+        public enum GamePadCommand
+        {
+            /// <summary>
+            /// Horizontal acceleration axis.
+            /// </summary>
+            AccelerateX,
+
+            /// <summary>
+            /// Vertical acceleration axis.
+            /// </summary>
+            AccelerateY,
+
+            /// <summary>
+            /// Horizontal look axis.
+            /// </summary>
+            LookX,
+
+            /// <summary>
+            /// Vertical look axis.
+            /// </summary>
+            LookY
+        }
+
         #endregion
 
         #region Constants
 
+        /// <summary>
+        /// Default menu key bindings.
+        /// </summary>
         public static readonly Dictionary<Keys, MenuCommand> DefaultMenuBindings = new Dictionary<Keys, MenuCommand>()
         {
             { Keys.Up, MenuCommand.Up },
@@ -121,6 +148,9 @@ namespace Space
             { Keys.OemTilde, MenuCommand.Console }
         };
 
+        /// <summary>
+        /// Default in game key bindings.
+        /// </summary>
         public static readonly Dictionary<Keys, GameCommand> DefaultGameBindings = new Dictionary<Keys, GameCommand>()
         {
             { Keys.W, GameCommand.Up },
@@ -135,6 +165,17 @@ namespace Space
             { Keys.Enter, GameCommand.Use },
             { Keys.LeftShift, GameCommand.Stabilize },
             { Keys.RightShift, GameCommand.Stabilize }
+        };
+
+        /// <summary>
+        /// Default game pad axii (currently for Logitech Rumblepad).
+        /// </summary>
+        public static readonly Dictionary<ExtendedAxes, GamePadCommand> DefaultGamePadBindings = new Dictionary<ExtendedAxes, GamePadCommand>()
+        {
+            { ExtendedAxes.X, GamePadCommand.AccelerateX },
+            { ExtendedAxes.Y, GamePadCommand.AccelerateY },
+            { ExtendedAxes.Z, GamePadCommand.LookX },
+            { ExtendedAxes.RotationZ, GamePadCommand.LookY }
         };
 
         #endregion
@@ -212,6 +253,32 @@ namespace Space
         public bool EnableGamepad = true;
 
         /// <summary>
+        /// Invert the horizontal acceleration axis.
+        /// </summary>
+        public bool InvertGamepadAccelerationAxisX = false;
+
+        /// <summary>
+        /// Invert the vertical acceleration axis.
+        /// </summary>
+        public bool InvertGamepadAccelerationAxisY = false;
+
+        /// <summary>
+        /// Invert the horizontal look axis.
+        /// </summary>
+        public bool InvertGamepadLookAxisX = false;
+
+        /// <summary>
+        /// Invert the vertical look axis.
+        /// </summary>
+        public bool InvertGamepadLookAxisY = true;
+
+        /// <summary>
+        /// Epsilon value below which to ignore axis values (to compensate for
+        /// construction based inaccuracies in game pads).
+        /// </summary>
+        public float GamePadDetectionEpsilon = 0.15f;
+
+        /// <summary>
         /// Key bindings for menu control as set by the player.
         /// </summary>
         public SerializableDictionary<Keys, MenuCommand> MenuBindings = new SerializableDictionary<Keys, MenuCommand>(DefaultMenuBindings);
@@ -224,6 +291,16 @@ namespace Space
         /// the <c>GameBindings</c>.
         /// </remarks>
         public SerializableDictionary<Keys, GameCommand> GameBindings = new SerializableDictionary<Keys, GameCommand>(DefaultGameBindings);
+
+        /// <summary>
+        /// Game pad axis bindings for in game ship control as set by the
+        /// player.
+        /// </summary>
+        /// <remarks>
+        /// Make sure to call <c>UpdateInversGamePadBindings</c> after modifying
+        /// the <c>GamePadBindings</c>.
+        /// </remarks>
+        public SerializableDictionary<ExtendedAxes, GamePadCommand> GamePadBindings = new SerializableDictionary<ExtendedAxes, GamePadCommand>(DefaultGamePadBindings);
 
         /// <summary>
         /// Inverse game key bindings, mapping commands to keys. This is used
@@ -239,13 +316,38 @@ namespace Space
         public Dictionary<GameCommand, Keys[]> InverseGameBindings;
 
         /// <summary>
+        /// Inverse game pad axis bindings, mapping commands to keys. This is
+        /// used when looking up whether an action should be taken based on the
+        /// current game pad state.
+        /// </summary>
+        /// <remarks>
+        /// Make sure to call <c>UpdateInversGamePadBindings</c> after modifying
+        /// the <c>GamePadBindings</c>.
+        /// </remarks>
+        [XmlIgnore]
+        public Dictionary<GamePadCommand, ExtendedAxes[]> InverseGamePadBindings;
+
+        #region Update Methods
+
+        /// <summary>
         /// Updates the inverse game key bindings.
         /// </summary>
-        private void UpdateInverseGameBindings()
+        public void UpdateInverseGameBindings()
         {
             InverseGameBindings = BuildInverseGameBindings();
         }
 
+        /// <summary>
+        /// Updates the inverse game key bindings.
+        /// </summary>
+        public void UpdateInverseGamePadBindings()
+        {
+            InverseGamePadBindings = BuildInverseGamePadBindings();
+        }
+
+        /// <summary>
+        /// Builds the actual inverse dictionary.
+        /// </summary>
         private Dictionary<GameCommand, Keys[]> BuildInverseGameBindings()
         {
             var buffer = new Dictionary<GameCommand, List<Keys>>();
@@ -267,6 +369,33 @@ namespace Space
             
             return result;
         }
+
+        /// <summary>
+        /// Builds the actual inverse dictionary.
+        /// </summary>
+        private Dictionary<GamePadCommand, ExtendedAxes[]> BuildInverseGamePadBindings()
+        {
+            var buffer = new Dictionary<GamePadCommand, List<ExtendedAxes>>();
+
+            foreach (var item in GamePadBindings)
+            {
+                if (!buffer.ContainsKey(item.Value))
+                {
+                    buffer.Add(item.Value, new List<ExtendedAxes>());
+                }
+                buffer[item.Value].Add(item.Key);
+            }
+
+            var result = new Dictionary<GamePadCommand, ExtendedAxes[]>();
+            foreach (var item in buffer)
+            {
+                result.Add(item.Key, item.Value.ToArray());
+            }
+
+            return result;
+        }
+
+        #endregion
 
         #endregion
 
@@ -313,6 +442,8 @@ namespace Space
                         XmlSerializer serializer = new XmlSerializer(typeof(Settings));
                         _instance = (Settings)serializer.Deserialize(stream);
                     }
+                    _instance.UpdateInverseGameBindings();
+                    _instance.UpdateInverseGamePadBindings();
                 }
                 catch (IOException)
                 {
@@ -349,6 +480,7 @@ namespace Space
         private Settings()
         {
             UpdateInverseGameBindings();
+            UpdateInverseGamePadBindings();
         }
 
         #endregion

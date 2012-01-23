@@ -4,14 +4,13 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
-using Engine.Input;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Nuclex.Input.Devices;
 
 namespace Engine.Util
 {
-
     /// <summary>
     /// This is a simple console which can easily be plugged into an XNA game.
     /// 
@@ -52,7 +51,6 @@ namespace Engine.Util
     /// </example>
     public class GameConsole : DrawableGameComponent, IGameConsole
     {
-
         #region Constants
 
         /// <summary>
@@ -154,11 +152,6 @@ namespace Engine.Util
         public bool IsOpen { get; set; }
 
         /// <summary>
-        /// The key map to use for resolving Xna key presses to chars.
-        /// </summary>
-        public KeyMap KeyMap { get; set; }
-
-        /// <summary>
         /// SpriteBatch used for rendering.
         /// </summary>
         public SpriteBatch SpriteBatch { get; set; }
@@ -250,6 +243,12 @@ namespace Engine.Util
         /// </summary>
         private bool _tabCompleteAtEnd;
 
+        /// <summary>
+        /// Whether to open the console in the next update. Used to skip the
+        /// hot key from being printed in the console.
+        /// </summary>
+        private bool _shouldOpen;
+
         #endregion
 
         #region Constructor
@@ -267,7 +266,6 @@ namespace Engine.Util
             TextColor = Color.WhiteSmoke;
             CaretColor = new Color(0.4f, 0.4f, 0.4f, 0.4f);
             Hotkey = Keys.OemTilde;
-            KeyMap = KeyMap.KeyMapByLocale("en-US");
 
             // Add inbuilt functions.
             AddCommand(new[] { "help", "?", "commands", "cmdlist" },
@@ -296,17 +294,17 @@ namespace Engine.Util
         /// </summary>
         public override void Initialize()
         {
-            var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
+            var keyboard = (IKeyboard)Game.Services.GetService(typeof(IKeyboard));
             if (keyboard != null)
             {
-                keyboard.Pressed += HandleKeyPressed;
-
-                keyboard.Combo(Keys.V, KeyModifier.Control).Pressed += HandleInsert;
+                keyboard.KeyPressed += HandleKeyPressed;
+                keyboard.CharacterEntered += HandleCharacterEntered;
             }
-            var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
+
+            var mouse = (IMouse)Game.Services.GetService(typeof(IMouse));
             if (mouse != null)
             {
-                mouse.Scrolled += HandleMouseScrolled;
+                mouse.MouseWheelRotated += HandleMouseScrolled;
             }
 
             base.Initialize();
@@ -331,16 +329,19 @@ namespace Engine.Util
         {
             if (disposing)
             {
-                var keyboard = (IKeyboardInputManager)Game.Services.GetService(typeof(IKeyboardInputManager));
+                var keyboard = (IKeyboard)Game.Services.GetService(typeof(IKeyboard));
                 if (keyboard != null)
                 {
-                    keyboard.Pressed -= HandleKeyPressed;
+                    keyboard.KeyPressed -= HandleKeyPressed;
+                    keyboard.CharacterEntered -= HandleCharacterEntered;
                 }
-                var mouse = (IMouseInputManager)Game.Services.GetService(typeof(IMouseInputManager));
+
+                var mouse = (IMouse)Game.Services.GetService(typeof(IMouse));
                 if (mouse != null)
                 {
-                    mouse.Scrolled -= HandleMouseScrolled;
+                    mouse.MouseWheelRotated -= HandleMouseScrolled;
                 }
+
                 if (_pixelTexture != null)
                 {
                     _pixelTexture.Dispose();
@@ -348,6 +349,21 @@ namespace Engine.Util
             }
 
             base.Dispose(disposing);
+        }
+
+        /// <summary>
+        /// Checks if we should open the console.
+        /// </summary>
+        /// <param name="gameTime"></param>
+        public override void Update(GameTime gameTime)
+        {
+            base.Update(gameTime);
+
+            if (_shouldOpen)
+            {
+                IsOpen = true;
+                _shouldOpen = false;
+            }
         }
 
         /// <summary>
@@ -619,13 +635,11 @@ namespace Engine.Util
         /// <summary>
         /// Handle keyboard input.
         /// </summary>
-        private void HandleKeyPressed(object sender, EventArgs e)
+        private void HandleKeyPressed(Keys key)
         {
-            var args = (KeyboardInputEventArgs)e;
             if (IsOpen)
             {
-
-                switch (args.Key)
+                switch (key)
                 {
                     case Keys.Back:
                         if (_cursor > 0)
@@ -672,7 +686,7 @@ namespace Engine.Util
                         ResetTabCompletion();
                         break;
                     case Keys.Left:
-                        if (args.Modifier == KeyModifier.Control)
+                        if (IsControlPressed())
                         {
                             int startIndex = System.Math.Max(0, _cursor - 1);
                             while (startIndex > 0 && startIndex < _input.Length && _input[startIndex] == ' ')
@@ -696,7 +710,7 @@ namespace Engine.Util
                         ResetTabCompletion();
                         break;
                     case Keys.PageDown:
-                        if (args.Modifier == KeyModifier.Shift)
+                        if (IsShiftPressed())
                         {
                             _scroll = 0;
                         }
@@ -706,7 +720,7 @@ namespace Engine.Util
                         }
                         break;
                     case Keys.PageUp:
-                        if (args.Modifier == KeyModifier.Shift)
+                        if (IsShiftPressed())
                         {
                             _scroll = System.Math.Max(0, _buffer.Count - 1);
                         }
@@ -716,7 +730,7 @@ namespace Engine.Util
                         }
                         break;
                     case Keys.Right:
-                        if (args.Modifier == KeyModifier.Control)
+                        if (IsControlPressed())
                         {
                             int index = _input.ToString().IndexOf(' ', _cursor);
                             if (index == -1)
@@ -768,7 +782,7 @@ namespace Engine.Util
                                         // Got a match.
                                         ++numMatches;
                                         // Check which way we're actually searching.
-                                        if (args.Modifier == KeyModifier.Shift)
+                                        if (IsShiftPressed())
                                         {
                                             // Backwards. If we had a match but
                                             // are past the current element,
@@ -810,7 +824,7 @@ namespace Engine.Util
                                 }
                                 // We stopped at the last match in the list,
                                 // rewind.
-                                if (args.Modifier != KeyModifier.Shift)
+                                if (!IsShiftPressed())
                                 {
                                     _tabCompleteAtEnd = flag;
                                 }
@@ -837,20 +851,10 @@ namespace Engine.Util
                         }
                         break;
                     default:
-                        if (args.Key == Hotkey)
+                        if (key == Hotkey)
                         {
                             IsOpen = false;
                             ResetInput();
-                        }
-                        else if (KeyMap != null)
-                        {
-                            char ch = KeyMap[args.Modifier, args.Key];
-                            if (ch != '\0')
-                            {
-                                _input.Insert(_cursor, ch);
-                                ++_cursor;
-                                ResetTabCompletion();
-                            }
                         }
                         break;
                 }
@@ -859,10 +863,20 @@ namespace Engine.Util
             }
             else
             {
-                if (args.Key.Equals(Hotkey))
+                if (key.Equals(Hotkey))
                 {
-                    IsOpen = true;
+                    _shouldOpen = true;
                 }
+            }
+        }
+
+        private void HandleCharacterEntered(char ch)
+        {
+            if (IsOpen && !char.IsControl(ch))
+            {
+                _input.Insert(_cursor, ch);
+                ++_cursor;
+                ResetTabCompletion();
             }
         }
 
@@ -885,17 +899,29 @@ namespace Engine.Util
         /// <summary>
         /// Handle mouse scrolling of the console buffer
         /// </summary>
-        private void HandleMouseScrolled(object sender, EventArgs e)
+        private void HandleMouseScrolled(float ticks)
         {
             if (IsOpen)
             {
-                _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll - System.Math.Sign(((MouseInputEventArgs)e).ScrollDelta) * EntriesToScroll));
+                _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll - System.Math.Sign(ticks) * EntriesToScroll));
             }
         }
 
         #endregion
 
         #region Utility methods
+
+        private bool IsControlPressed()
+        {
+            var state = ((IKeyboard)Game.Services.GetService(typeof(IKeyboard))).GetState();
+            return state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl);
+        }
+
+        private bool IsShiftPressed()
+        {
+            var state = ((IKeyboard)Game.Services.GetService(typeof(IKeyboard))).GetState();
+            return state.IsKeyDown(Keys.LeftShift) || state.IsKeyDown(Keys.RightShift);
+        }
 
         private Rectangle ComputeBounds()
         {
