@@ -85,6 +85,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _healthEnergyBar.SetCurrentEnergy((int) info.Energy);
             _healthEnergyBar.SetMaximumHealth((int) info.MaxHealth);
             _healthEnergyBar.SetCurrentHealth((int) info.Health);
+
+            _hudPlayerList.Update();
         }
 
         /// <summary>
