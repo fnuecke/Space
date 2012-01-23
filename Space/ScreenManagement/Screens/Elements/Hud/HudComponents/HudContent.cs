@@ -12,7 +12,7 @@ using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudContent : IHudElement
+    class HudContent : AHudElement
     {
 
         #region Constants
@@ -55,39 +55,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         #region Fields
 
         /// <summary>
-        /// The local client, used to fetch player's position and radar range.
-        /// </summary>
-        private readonly GameClient _client;
-
-        /// <summary>
-        /// The current content manager.
-        /// </summary>
-        private ContentManager _content;
-
-        /// <summary>
-        /// Sprite batch used for rendering.
-        /// </summary>
-        private SpriteBatch _spriteBatch;
-
-        /// <summary>
-        /// Helper class for drawing basic forms.
-        /// </summary>
-        private BasicForms _basicForms;
-
-        /// <summary>
         /// Helper class for drawing game specific forms.
         /// </summary>
         private SpaceForms _spaceForms;
-
-        /// <summary>
-        /// The width of the element.
-        /// </summary>
-        public int _width;
-
-        /// <summary>
-        /// The height of the element.
-        /// </summary>
-        public int _height;
 
         /// <summary>
         /// The Texture2D image of the portrait that should be displayed.
@@ -98,12 +68,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// The current mode.
         /// </summary>
         private Mode _currentMode;
-
-        /// <summary>
-        /// The position.
-        /// </summary>
-        private Point _position;
-
 
         #endregion
 
@@ -184,26 +148,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _height = height;
         }
 
-        public void SetPosition(Point newPosition)
-        {
-            _position = newPosition;
-        }
-
-        public Point GetPosition()
-        {
-            return _position;
-        }
-
-        public int GetHeight()
-        {
-            return _height;
-        }
-
-        public void SetHeight(int height)
-        {
-            _height = height;
-        }
-
         #endregion
 
         #region Initialisation
@@ -213,8 +157,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         /// <param name="client">The general client object.</param>
         public HudContent(GameClient client, Mode mode, Boolean addBorderToWest, Boolean addBorderToEast)
+            : base(client)
         {
-            _client = client;
             _currentMode = mode;
 
             // set the standard values into the field.
@@ -223,7 +167,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             BorderRight = StandardBorderSide;
             BorderAround = StandardBorderAround;
             GapBorderContent = StandardGapBorderContent;
-            _position = new Point(100, 100);
+            SetPosition(new Point(100, 100));
 
             if (!addBorderToWest)
             {
@@ -239,11 +183,10 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <summary>
         /// Load graphics content for the game.
         /// </summary>
-        public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
-            _content = content;
-            _spriteBatch = spriteBatch;
-            _basicForms = new BasicForms(_spriteBatch, _client);
+            base.LoadContent(spriteBatch, content);
+
             _spaceForms = new SpaceForms(_spriteBatch);
 
             // load an default image as image (image should not be null)
@@ -254,37 +197,34 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #region Draw
 
-        /// <summary>
-        /// Render the HUD header with the current values.
-        /// </summary>
-        public void Draw()
+        public override void Draw()
         {
             _spriteBatch.Begin();
 
             // draw the border around the box
             _spaceForms.DrawRectangleWithoutEdges(
-                _position.X + BorderLeft,
-                _position.Y,
-                _width - BorderLeft - BorderRight,
-                _height,
+                GetPosition().X + BorderLeft,
+                GetPosition().Y,
+                GetWidth() - BorderLeft - BorderRight,
+                GetHeight(),
                 4, 2, HudColors.Lines);
 
             if (_currentMode == Mode.BackgroundOnly)
             {
                 // draw the background of the box
                 _basicForms.FillRectangle(
-                    _position.X + BorderAround + BorderLeft + GapBorderContent,
-                    _position.Y + BorderAround + GapBorderContent,
-                    _width - BorderLeft - BorderRight - 2 * BorderAround - 2 * GapBorderContent,
-                    _height - 2 * BorderAround - 2 * GapBorderContent,
+                    GetPosition().X + BorderAround + BorderLeft + GapBorderContent,
+                    GetPosition().Y + BorderAround + GapBorderContent,
+                    GetWidth() - BorderLeft - BorderRight - 2 * BorderAround - 2 * GapBorderContent,
+                    GetHeight() - 2 * BorderAround - 2 * GapBorderContent,
                     HudColors.BackgroundBox * 0.7f);
             }
 
             if (_currentMode == Mode.Image)
             {
                 var posImage = new Rectangle(
-                    _position.X + BorderLeft + BorderAround + GapBorderContent,
-                    _position.Y + BorderAround + GapBorderContent,
+                    GetPosition().X + BorderLeft + BorderAround + GapBorderContent,
+                    GetPosition().Y + BorderAround + GapBorderContent,
                     _image.Width,
                     _image.Height);
                 _spriteBatch.Draw(_image, posImage, Color.White * 0.7f);
