@@ -67,7 +67,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <summary>
         /// A list that should always hold the health of the current players.
         /// </summary>
-        int[] _listHealth;
+        float[] _listHealth;
 
         #endregion
 
@@ -90,7 +90,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             _spaceForms = new SpaceForms(_spriteBatch);
             _listNames = new String[0];
-            _listHealth = new int[0];
+            _listHealth = new float[0];
 
             _name.LoadContent(spriteBatch, content);
             _health.LoadContent(spriteBatch, content);
@@ -155,11 +155,11 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             // Updates the data of player names and their health
             int numberOfPlayers = _client.Controller.Session.NumPlayers;
             _listNames = new String[numberOfPlayers];
-            _listHealth = new int[numberOfPlayers];
+            _listHealth = new float[numberOfPlayers];
             for (int i = 0; i < numberOfPlayers; i++)
             {
                 _listNames[i] = _client.Controller.Session.GetPlayer(i).Name;
-                _listHealth[i] = (int)(_client.GetPlayerShipInfo(i).Health / _client.GetPlayerShipInfo(i).MaxHealth * 100);
+                _listHealth[i] = _client.GetPlayerShipInfo(i).Health / _client.GetPlayerShipInfo(i).MaxHealth;
             }
 
         }
@@ -172,13 +172,37 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             // save the original positions to be able to restore them later
             var originalNamePosition = _name.GetPosition();
             var originalHealthPosition = _health.GetPosition();
+            var originalColorNorth = _health.ColorNorth;
+            var originalColorSouth = _health.ColorSouth;
 
             var forY = GetPosition().Y;
             for (int i = 0; i < _listNames.Length; i++)
             {
                 // set the name for the current loop
                 _name.Text = _listNames[i];
-                _health.Text = _listHealth[i] + "%";
+                _health.Text = ((int) (_listHealth[i] * 100)) + "%";
+
+                // color the health label yellow or red, if the health is low
+                Color thisColorNorth = originalColorNorth;
+                Color thisColorSouth = originalColorSouth;
+                if (_listHealth[i] < 0.5f && _listHealth[i] >= 0.3f)
+                {
+                    thisColorNorth = Color.Lerp(originalColorNorth, HudColors.OrangeGradientLight, (1 - (_listHealth[i] - 0.3f) / 0.2f));
+                    thisColorSouth = Color.Lerp(originalColorSouth, HudColors.OrangeGradientDark, (1 - (_listHealth[i] - 0.3f) / 0.2f));
+                }
+                else if (_listHealth[i] < 0.3f && _listHealth[i] >= 0.1f)
+                {
+                    thisColorNorth = Color.Lerp(HudColors.OrangeGradientLight, HudColors.RedGradientLight, 1 - (_listHealth[i] - 0.1f) / 0.2f);
+                    thisColorSouth = Color.Lerp(HudColors.OrangeGradientDark, HudColors.RedGradientDark, 1 - (_listHealth[i] - 0.1f) / 0.2f);
+                }
+                else if (_listHealth[i] < 0.1f)
+                {
+                    thisColorNorth = HudColors.RedGradientLight;
+                    thisColorSouth = HudColors.RedGradientDark;
+                }
+
+                _health.ColorNorth = thisColorNorth;
+                _health.ColorSouth = thisColorSouth;
 
                 _spriteBatch.Begin();
                 _spaceForms.DrawRectangleWithoutEdges(
@@ -206,6 +230,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             // restore the original positions
             _name.SetPosition(originalNamePosition);
             _health.SetPosition(originalHealthPosition);
+            _health.ColorNorth = originalColorNorth;
+            _health.ColorSouth = originalColorSouth;
         }
 
         #endregion

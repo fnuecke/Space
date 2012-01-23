@@ -73,7 +73,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <summary>
         /// Remove the text from the label.
         /// </summary>
-        public void removeText()
+        public void RemoveText()
         {
             Text = "";
         }
