@@ -124,7 +124,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             ThicknessSpacer = StandardThicknessSpacer;
             ThicknessLineSide = StandardThicknessLineSide;
             LengthLineSide = StandardLengthLineSide;
-            SetPosition(new Point(100, 100));
         }
 
         /// <summary>

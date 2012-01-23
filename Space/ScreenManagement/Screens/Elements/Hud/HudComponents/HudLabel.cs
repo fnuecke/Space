@@ -56,12 +56,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #region Fields
 
-        /// <summary>
-        /// Holds the font information.
-        /// </summary>
-        private SpriteFont _font;
-
         private HudSingleLabel _label1;
+
         private HudSingleLabel _label2;
 
         #endregion
@@ -93,16 +89,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         public Boolean Display2ndElement { get; set; }
 
-        /// <summary>
-        /// Text that is displayed in the left label
-        /// </summary>
-        public String TextLabelLeft { get; set; }
-
-        /// <summary>
-        /// Text that is displayed in the right label
-        /// </summary>
-        public String TextLabelRight { get; set; }
-
         #endregion
 
         #region Getter / Setter
@@ -113,6 +99,25 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _label1.SetPosition(new Point(position.X + BorderSide, position.Y));
             _label2.SetPosition(new Point(position.X + GetWidth() - BorderSide - Width2ndElement, position.Y));
         }
+
+        /// <summary>
+        /// Set a text into the left label.
+        /// </summary>
+        /// <param name="text">The text to display</param>
+        public void SetTextLabelLeft(String text)
+        {
+            _label1.Text = text;
+        }
+
+        /// <summary>
+        /// Set a text into the right label.
+        /// </summary>
+        /// <param name="text">The text to display</param>
+        public void SetTextLabelRight(String text)
+        {
+            _label2.Text = text;
+        }
+
 
         #endregion
 
@@ -136,9 +141,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             BorderSide = StandardBorderSide;
             Display1stElement = StandardDisplay1stElement;
             Display2ndElement = StandardDisplay2ndElement;
-            SetPosition(new Point(0, 0));
-            TextLabelLeft = "";
-            TextLabelRight = "";
         }
 
         /// <summary>
@@ -148,18 +150,25 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             base.LoadContent(spriteBatch, content);
 
+            // set up the left label
             _label1.LoadContent(spriteBatch, content);
             _label1.SetPosition(new Point(GetPosition().X + BorderSide, GetPosition().Y));
             _label1.SetWidth(GetWidth() - 2 * BorderSide - WidthGap - Width2ndElement);
             _label1.SetHeight(GetHeight());
+            _label1.ColorNorth = HudColors.GreenDarkGradientLight * 0.85f;
+            _label1.ColorSouth = HudColors.GreenDarkGradientDark * 0.95f;
+            _label1.ColorText = HudColors.FontDark;
+            _label1.TextAlign = HudSingleLabel.Alignments.Left;
 
+            // set up the right label
             _label2.LoadContent(spriteBatch, content);
             _label2.SetPosition(new Point(GetPosition().X + GetWidth() - BorderSide - Width2ndElement, GetPosition().Y));
             _label2.SetWidth(Width2ndElement);
             _label2.SetHeight(GetHeight());
-
-            // load the font that is used for the labels
-            _font = _content.Load<SpriteFont>("Fonts/strasua_11");
+            _label2.ColorNorth = HudColors.BlueGradientLight * 0.85f;
+            _label2.ColorSouth = HudColors.BlueGradientDark * 0.95f;
+            _label2.ColorText = HudColors.FontLight;
+            _label2.TextAlign = HudSingleLabel.Alignments.Center;
         }
 
         #endregion

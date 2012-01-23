@@ -115,8 +115,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// <param name="height">The new height of the content.</param>
         public void setContentSize(int width, int height)
         {
-            _width = width + 2 * BorderAround + BorderLeft + BorderRight + 2 * GapBorderContent;
-            _height = height + 2 * BorderAround + 2 * GapBorderContent;
+            SetWidth(width + 2 * BorderAround + BorderLeft + BorderRight + 2 * GapBorderContent);
+            SetHeight(height + 2 * BorderAround + 2 * GapBorderContent);
         }
 
         /// <summary>
@@ -167,7 +167,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             BorderRight = StandardBorderSide;
             BorderAround = StandardBorderAround;
             GapBorderContent = StandardGapBorderContent;
-            SetPosition(new Point(100, 100));
 
             if (!addBorderToWest)
             {
