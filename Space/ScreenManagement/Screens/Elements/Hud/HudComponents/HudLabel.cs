@@ -12,7 +12,7 @@ using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudLabel : IHudChildElement
+    class HudLabel : IHudElement
     {
 
         #region Constants
@@ -81,6 +81,13 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private SpriteFont _font;
 
+        private HudSingleLabel _label1;
+        private HudSingleLabel _label2;
+
+        private Point _position;
+
+        private int _height;
+
         #endregion
 
         #region Properties
@@ -89,11 +96,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// The width of the element.
         /// </summary>
         public int Width { get; set; }
-
-        /// <summary>
-        /// The height of the element.
-        /// </summary>
-        public int Height { get; set; }
 
         /// <summary>
         /// The width of the gap between the two boxes.
@@ -109,9 +111,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// The size of the border on the sides.
         /// </summary>
         public int BorderSide { get; set; }
-
-        // Implementation of IHudChildElement interface
-        public Point Position { get; set; }
 
         /// <summary>
         /// Status whether the first element should be displayed or not.
@@ -135,6 +134,32 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #endregion
 
+        #region Getter / Setter
+
+        public void SetPosition(Point newPosition)
+        {
+            _position = newPosition;
+            _label1.SetPosition(new Point(newPosition.X + BorderSide, newPosition.Y));
+            _label2.SetPosition(new Point(newPosition.X + Width - BorderSide - Width2ndElement, newPosition.Y));
+        }
+
+        public Point GetPosition()
+        {
+            return _position;
+        }
+
+        public int GetHeight()
+        {
+            return _height;
+        }
+
+        public void SetHeight(int height)
+        {
+            _height = height;
+        }
+
+        #endregion
+
         #region Initialization
 
         /// <summary>
@@ -145,15 +170,18 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         {
             _client = client;
 
+            _label1 = new HudSingleLabel(_client);
+            _label2 = new HudSingleLabel(_client);
+
             // set the standard values into the field.
             Width = StandardWidth;
-            Height = StandardHeight;
+            _height = StandardHeight;
             Width2ndElement = StandardWidth2ndElement;
             WidthGap = StandardWidthGap;
             BorderSide = StandardBorderSide;
             Display1stElement = StandardDisplay1stElement;
             Display2ndElement = StandardDisplay2ndElement;
-            Position = new Point(0, 0);
+            _position = new Point(0, 0);
             TextLabelLeft = "";
             TextLabelRight = "";
         }
@@ -166,6 +194,16 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _content = content;
             _spriteBatch = spriteBatch;
             _basicForms = new BasicForms(_spriteBatch, _client);
+
+            _label1.LoadContent(spriteBatch, content);
+            _label1.SetPosition(new Point(_position.X + BorderSide, _position.Y));
+            _label1.Width = Width - 2 * BorderSide - WidthGap - Width2ndElement;
+            _label1.SetHeight(_height);
+
+            _label2.LoadContent(spriteBatch, content);
+            _label2.SetPosition(new Point(_position.X + Width - BorderSide - Width2ndElement, _position.Y));
+            _label2.Width = Width2ndElement;
+            _label2.SetHeight(_height);
 
             // load the font that is used for the labels
             _font = _content.Load<SpriteFont>("Fonts/strasua_11");
@@ -180,40 +218,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         public void Draw()
         {
-            _spriteBatch.Begin();
-
-            if (Display1stElement)
-            {
-                // draw the first rectangle
-                _basicForms.GradientRectangle(
-                    Position.X + BorderSide,
-                    Position.Y,
-                    Width - 2 * BorderSide - WidthGap - Width2ndElement,
-                    Height,
-                    new[] { HudColors.GreenDarkGradientLight * 0.85f, HudColors.GreenDarkGradientDark * 0.95f },
-                    new[] { 0.2f, 0.8f });
-
-                // draw the title string
-                _spriteBatch.DrawString(_font, TextLabelLeft, new Vector2(Position.X + BorderSide + 5, Position.Y + 2), HudColors.FontDark);
-            }
-
-            // draw the second rectangle
-            if (Display2ndElement)
-            {
-                _basicForms.GradientRectangle(
-                    Position.X + Width - BorderSide - Width2ndElement,
-                    Position.Y,
-                    Width2ndElement,
-                    Height,
-                    new[] { HudColors.BlueGradientLight * 0.5f, HudColors.BlueGradientDark * 0.7f },
-                    new[] { 0.2f, 0.8f });
-
-                // draw the sub string
-                var size = _font.MeasureString(TextLabelRight);
-                _spriteBatch.DrawString(_font, TextLabelRight, new Vector2(Position.X + Width - BorderSide - Width2ndElement / 2 - size.X / 2, Position.Y + 2), HudColors.FontLight);
-            }
-
-            _spriteBatch.End();
+            _label1.Draw();
+            _label2.Draw();
         }
 
         #endregion

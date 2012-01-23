@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace Space.ScreenManagement.Screens.Interfaces
 {
-    interface IHudParentElement
+    interface IHudElement
     {
 
         /// <summary>
@@ -16,8 +16,20 @@ namespace Space.ScreenManagement.Screens.Interfaces
         void SetPosition(Point newPosition);
 
         /// <summary>
+        /// Returns the position of the element.
+        /// </summary>
+        /// <return>The top-left position of the element.</return>
+        Point GetPosition();
+
+        /// <summary>
         /// Returns the height of the element, that means: It calculates the height of all child elements.
         /// </summary>
         int GetHeight();
+
+        /// <summary>
+        /// Set the height of the element.
+        /// Only use it for elements that supports dynamnic height.
+        /// </summary>
+        void SetHeight(int newHeight);
     }
 }

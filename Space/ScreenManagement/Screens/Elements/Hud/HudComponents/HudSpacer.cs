@@ -12,7 +12,7 @@ using Space.ScreenManagement.Screens.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudSpacer : IHudChildElement
+    class HudSpacer : IHudElement
     {
 
         #region Constants
@@ -89,6 +89,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private Mode _mode;
 
+        private Point _position;
+
         #endregion
 
         #region Properties
@@ -123,9 +125,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         public int InnerBorder { get; set; }
 
-        // Implementation of IHudChildElement interface
-        public Point Position { get; set; }
-
         #endregion
 
         #region Getter
@@ -140,6 +139,21 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         public int GetHeight()
         {
             return OuterBorder + ThicknessSpacer + InnerBorder;
+        }
+
+        public void SetHeight(int height)
+        {
+            _height = height;
+        }
+
+        public void SetPosition(Point newPosition)
+        {
+            _position = newPosition;
+        }
+
+        public Point GetPosition()
+        {
+            return _position;
         }
 
         #endregion
@@ -164,7 +178,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             ThicknessSpacer = StandardThicknessSpacer;
             ThicknessLineSide = StandardThicknessLineSide;
             LengthLineSide = StandardLengthLineSide;
-            Position = new Point(100, 100);
+            _position = new Point(100, 100);
         }
 
         /// <summary>
@@ -204,8 +218,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
             // draw the horizontal line
             _basicForms.FillRectangle(
-                Position.X,
-                Position.Y + borderTop,
+                _position.X,
+                _position.Y + borderTop,
                 Width,
                 ThicknessSpacer,
                 HudColors.Lines * 0.9f);
@@ -214,15 +228,15 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             if (_mode != Mode.Center)
             {
                 _basicForms.FillRectangle(
-                    Position.X,
-                    Position.Y + borderTop + yMove,
+                    _position.X,
+                    _position.Y + borderTop + yMove,
                     ThicknessLineSide,
                     LengthLineSide,
                     HudColors.Lines * 0.9f);
 
                 _basicForms.FillRectangle(
-                    Position.X + Width - ThicknessLineSide,
-                    Position.Y + borderTop + yMove,
+                    _position.X + Width - ThicknessLineSide,
+                    _position.Y + borderTop + yMove,
                     ThicknessLineSide,
                     LengthLineSide,
                     HudColors.Lines * 0.9f);

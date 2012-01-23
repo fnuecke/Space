@@ -15,7 +15,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
     /// The radio element displays an image of the receiver and the message
     /// as a text.
     /// </summary>
-    class HudRadio : IHudParentElement
+    class HudRadio : IHudElement
     {
 
         #region Fields
@@ -65,6 +65,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         private Point _position = new Point(0, 0);
 
+        private int _height;
+
         #endregion
 
         #region Initialisation
@@ -111,21 +113,31 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         public void SetPosition(Point newPosition)
         {
             _position = newPosition;
-            _spacerTop.Position = _position;
-            _bgPortrait.Position = new Point(_spacerTop.Position.X, _spacerTop.Position.Y + _spacerTop.GetHeight());
-            _bgText.Position = new Point(_bgPortrait.Position.X + _bgPortrait.getSize().X + 1, _bgPortrait.Position.Y);
-            _spacerBottom.Position = new Point(_bgPortrait.Position.X, _bgPortrait.Position.Y + _bgPortrait.getSize().Y);
-            _footer.Position = new Point(_spacerBottom.Position.X, _spacerBottom.Position.Y + _spacerBottom.GetHeight());
+            _spacerTop.SetPosition(_position);
+            _bgPortrait.SetPosition(new Point(_spacerTop.GetPosition().X, _spacerTop.GetPosition().Y + _spacerTop.GetHeight()));
+            _bgText.SetPosition(new Point(_bgPortrait.GetPosition().X + _bgPortrait.getSize().X + 1, _bgPortrait.GetPosition().Y));
+            _spacerBottom.SetPosition(new Point(_bgPortrait.GetPosition().X, _bgPortrait.GetPosition().Y + _bgPortrait.getSize().Y));
+            _footer.SetPosition(new Point(_spacerBottom.GetPosition().X, _spacerBottom.GetPosition().Y + _spacerBottom.GetHeight()));
+        }
+
+        public Point GetPosition()
+        {
+            return _position;
         }
 
         // Implementation of IHudParentElement interface
         public int GetHeight() {
             int height = 0;
             height += _spacerTop.GetHeight();
-            height += _bgPortrait.getSize().Y;
+            height += _bgPortrait.GetHeight();
             height += _spacerBottom.GetHeight();
-            height += _footer.Height;
+            height += _footer.GetHeight();
             return height;
+        }
+
+        public void SetHeight(int height)
+        {
+            _height = height;
         }
 
         /// <summary>
