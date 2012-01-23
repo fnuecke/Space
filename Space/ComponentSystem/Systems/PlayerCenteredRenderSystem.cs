@@ -155,12 +155,19 @@ namespace Space.ComponentSystem.Systems
             else if (_mouse != null)
             {
                 // Otherwise use the mouse.
-
+                var state = _mouse.GetState();
+                
                 // Get the relative position of the mouse to the ship and
                 // apply some factoring to it (so that the maximum distance
                 // of cursor to ship is not half the screen size).
-                offset.X = ((MathHelper.Clamp(_mouse.GetState().X, 0, viewport.Width) / (float)viewport.Width) - 0.5f) * 2;
-                offset.Y = ((MathHelper.Clamp(_mouse.GetState().Y, 0, viewport.Height) / (float)viewport.Height) - 0.5f) * 2;
+                if (state.X >= 0 && state.X < viewport.Width)
+                {
+                    offset.X = ((state.X / (float)viewport.Width) - 0.5f) * 2;
+                }
+                if (state.Y >= 0 && state.Y < viewport.Height)
+                {
+                    offset.Y = ((state.Y / (float)viewport.Height) - 0.5f) * 2;
+                }
             }
 
             if (offset.LengthSquared() > 1)

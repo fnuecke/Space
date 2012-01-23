@@ -118,7 +118,17 @@ namespace Space.ComponentSystem.Components
             if (modules != null)
             {
                 // Get the mass of the ship.
-                float mass = modules.GetValue(SpaceModifier.Mass);
+                float mass;
+
+                var info = Entity.GetComponent<ShipInfo>();
+                if (info != null)
+                {
+                    mass = info.Mass;
+                }
+                else
+                {
+                    mass = modules.GetValue(SpaceModifier.Mass);
+                }
 
                 // Get our acceleration direction, based on whether we're
                 // currently stabilizing or not.
