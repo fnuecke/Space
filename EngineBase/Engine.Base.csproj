@@ -159,6 +159,7 @@
     <Compile Include="Util\GameConsole.cs" />
     <Compile Include="Util\IGameConsole.cs" />
     <Compile Include="Util\LineWrittenEventArgs.cs" />
+    <Compile Include="Util\SerializableDictionary.cs" />
     <Compile Include="Util\SimpleCrypto.cs" />
     <Compile Include="IO\SlidingStream.cs" />
     <Compile Include="Util\Ziggurat.cs" />

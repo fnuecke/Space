@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Text;
 using Engine.Input;
@@ -158,8 +159,8 @@ namespace Space
             // Add a logging target that'll write to our console.
             new GameConsoleTarget(this, LogLevel.Debug);
 
-            // More console setup.
-            _console.Hotkey = Settings.Instance.ConsoleKey;
+            // More console setup. Only one console key is supported.
+            _console.Hotkey = Settings.Instance.MenuBindings.First(binding => binding.Value == Settings.MenuCommand.Console).Key;
 
             _console.AddCommand(new[] { "fullscreen", "fs" }, args =>
             {

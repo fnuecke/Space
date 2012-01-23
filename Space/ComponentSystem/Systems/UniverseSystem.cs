@@ -406,7 +406,7 @@ namespace Space.ComponentSystem.Systems
                 angle: moonOrbitAngle,
                 period: moonPeriod,
                 periodOffset: (float)(2 * System.Math.PI * random.NextDouble()),
-                mass: moonMass);
+                mass: /*moonMass*/ 0);
 
             list.Add(Manager.EntityManager.AddEntity(moon));
 

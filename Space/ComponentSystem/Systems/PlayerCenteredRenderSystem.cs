@@ -102,21 +102,11 @@ namespace Space.ComponentSystem.Systems
                     var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
                     if (avatar != null)
                     {
-                        // Get viewport, get mouse position relative to center
-                        // of screen.
-                        var viewport = _parameterization.SpriteBatch.GraphicsDevice.Viewport;
-
-                        // Non-fixed camera, update our offset based on the mouse
-                        // position, relative to the ship.
-                        var mouse = Microsoft.Xna.Framework.Input.Mouse.GetState();
+                        // Non-fixed camera, update our offset based on the game pad
+                        // or mouse position, relative to the ship.
+                        Vector2 currentOffset = GetInputInducedOffset();
                         var avatarPosition = avatar.GetComponent<Transform>().Translation;
 
-                        // Get the relative position of the mouse to the ship and
-                        // apply some factoring to it (so that the maximum distance
-                        // of cursor to ship is not half the screen size).
-                        Vector2 currentOffset;
-                        currentOffset.X = (mouse.X - viewport.Width / 2f) / 3;
-                        currentOffset.Y = (mouse.Y - viewport.Height / 2f) / 3;
                         // The interpolate to our new offset, slowly to make the
                         // effect less brain-melting.
                         _previousOffset = Vector2.Lerp(_previousOffset, currentOffset, 0.05f);
@@ -131,6 +121,42 @@ namespace Space.ComponentSystem.Systems
 
                 _lastFrame = frame;
             }
+        }
+
+        private Vector2 GetInputInducedOffset()
+        {
+            Vector2 offset;
+
+            // Get viewport, for mouse position scaling and offset scaling.
+            var viewport = _parameterization.SpriteBatch.GraphicsDevice.Viewport;
+            float offsetScale = (float)(System.Math.Sqrt(viewport.Width * viewport.Width + viewport.Height * viewport.Height) / 6.0);
+
+            // Get the game pad either way, because we need to check if it's connected.
+            var gamepad = Microsoft.Xna.Framework.Input.GamePad.GetState(PlayerIndex.One);
+
+            // If we have a gamepad attached, get the stick tilt.
+            if (Settings.Instance.EnableGamepad && gamepad.IsConnected)
+            {
+                offset = gamepad.ThumbSticks.Right;
+                offset.Y = -offset.Y;
+            }
+            else
+            {
+                // Otherwise use the mouse.
+                var mouse = Microsoft.Xna.Framework.Input.Mouse.GetState();
+
+                // Get the relative position of the mouse to the ship and
+                // apply some factoring to it (so that the maximum distance
+                // of cursor to ship is not half the screen size).
+                offset.X = ((MathHelper.Clamp(mouse.X, 0, viewport.Width) / (float)viewport.Width) - 0.5f) * 2;
+                offset.Y = ((MathHelper.Clamp(mouse.Y, 0, viewport.Height) / (float)viewport.Height) - 0.5f) * 2;
+            }
+
+            if (offset.LengthSquared() > 1)
+            {
+                offset.Normalize();
+            }
+            return offset * offsetScale;
         }
 
         /// <summary>

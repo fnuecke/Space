@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Engine.Input;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -194,15 +195,26 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 return;
             }
 
-            if (e.Key == Settings.Instance.Stabilizer)
+            if (Settings.Instance.GameBindings.ContainsKey(e.Key))
             {
-                // Toggle stabilizers.
-                _stabilizing = !_stabilizing;
-                _client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
-            }
-            else
-            {
-                UpdateKeyboardAcceleration(e.State);
+                if (Settings.Instance.GameBindings[e.Key] == Settings.GameCommand.Stabilize)
+                {
+                    if (Settings.Instance.ToggleStabilize)
+                    {
+                        // Toggle stabilizers.
+                        _stabilizing = !_stabilizing;
+                        _client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
+                    }
+                    else
+                    {
+                        // Just enable stabilizers.
+                        _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginStabilizing));
+                    }
+                }
+                else
+                {
+                    UpdateKeyboardAcceleration(e.State);
+                }
             }
         }
 
@@ -211,7 +223,21 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private void HandleKeyReleased(object sender, KeyboardInputEventArgs e)
         {
-            UpdateKeyboardAcceleration(e.State);
+            if (Settings.Instance.GameBindings.ContainsKey(e.Key))
+            {
+                if (Settings.Instance.GameBindings[e.Key] == Settings.GameCommand.Stabilize)
+                {
+                    if (!Settings.Instance.ToggleStabilize)
+                    {
+                        // Disable stabilizers if not toggling.
+                        _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
+                    }
+                }
+                else
+                {
+                    UpdateKeyboardAcceleration(e.State);
+                }
+            }
         }
 
         /// <summary>
@@ -221,22 +247,22 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private void UpdateKeyboardAcceleration(KeyboardState state)
         {
             Directions direction = Directions.None;
-            if (state.IsKeyDown(Settings.Instance.MoveDown))
+            if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Down].Any(key => state.IsKeyDown(key)))
             {
                 // Accelerate downwards.
                 direction |= Directions.Down;
             }
-            if (state.IsKeyDown(Settings.Instance.MoveLeft))
+            if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Left].Any(key => state.IsKeyDown(key)))
             {
                 // Accelerate left.
                 direction |= Directions.Left;
             }
-            if (state.IsKeyDown(Settings.Instance.MoveRight))
+            if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Right].Any(key => state.IsKeyDown(key)))
             {
                 // Accelerate right.
                 direction |= Directions.Right;
             }
-            if (state.IsKeyDown(Settings.Instance.MoveUp))
+            if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Up].Any(key => state.IsKeyDown(key)))
             {
                 // Accelerate upwards.
                 direction |= Directions.Up;

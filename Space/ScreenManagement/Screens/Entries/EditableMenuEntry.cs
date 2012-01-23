@@ -137,13 +137,11 @@ namespace Space.ScreenManagement.Screens.Entries
             }
         }
 
-        public void HandleKeyPressed(object sender, EventArgs e)
+        public void HandleKeyPressed(object sender, KeyboardInputEventArgs e)
         {
             if (Focused)
             {
-                var args = (KeyboardInputEventArgs)e;
-
-                switch (args.Key)
+                switch (e.Key)
                 {
                     case Keys.Back:
                         if (_cursor > 0)
@@ -179,7 +177,7 @@ namespace Space.ScreenManagement.Screens.Entries
                     default:
                         if (_keyMap != null)
                         {
-                            char ch = _keyMap[args.Modifier, args.Key];
+                            char ch = _keyMap[e.Modifier, e.Key];
                             if (ch != '\0')
                             {
                                 _input.Insert(_cursor, ch);

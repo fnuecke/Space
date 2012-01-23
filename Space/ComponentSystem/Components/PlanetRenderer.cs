@@ -106,7 +106,10 @@ namespace Space.ComponentSystem.Components
                     sb.AppendFormat("Position: {0}\n", transform.Translation);
                     sb.AppendFormat("Rotation: {0}\n", (int)MathHelper.ToDegrees(transform.Rotation));
                     sb.AppendFormat("Scale: {0}\n", Scale);
-                    sb.AppendFormat("Mass: {0:f}\n", Entity.GetComponent<Gravitation>().Mass);
+                    if (Entity.GetComponent<Gravitation>() != null)
+                    {
+                        sb.AppendFormat("Mass: {0:f}\n", Entity.GetComponent<Gravitation>().Mass);
+                    }
                     args.SpriteBatch.Begin();
                     args.SpriteBatch.DrawString(args.Game.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, position, Color.White);
                     args.SpriteBatch.End();
