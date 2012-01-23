@@ -207,6 +207,11 @@ namespace Space
         public bool ToggleStabilize = false;
 
         /// <summary>
+        /// Whether to use a game pad, if attached, for input.
+        /// </summary>
+        public bool EnableGamepad = true;
+
+        /// <summary>
         /// Key bindings for menu control as set by the player.
         /// </summary>
         public SerializableDictionary<Keys, MenuCommand> MenuBindings = new SerializableDictionary<Keys, MenuCommand>(DefaultMenuBindings);

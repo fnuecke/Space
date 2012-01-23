@@ -68,7 +68,7 @@ namespace Engine.Input
             }
 
             // The current time, used to check for repeats.
-            var currentState = GamePad.GetState((PlayerIndex)0);
+            var currentState = GamePad.GetState(PlayerIndex.One);
             var buttons = Enum.GetValues(typeof(Buttons));
             foreach (Buttons button in buttons)
             {
