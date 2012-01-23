@@ -107,8 +107,6 @@ namespace Space.ComponentSystem.Components
                     sb.AppendFormat("Position: {0}\n", transform.Translation);
                     sb.AppendFormat("Rotation: {0}\n", (int)MathHelper.ToDegrees(transform.Rotation));
                     sb.AppendFormat("Scale: {0}\n", Scale);
-                    sb.AppendFormat("ElapsedTime: {0}\n", args.GameTime.ElapsedGameTime);
-                    sb.AppendFormat("TotalTime: {0}\n", args.GameTime.TotalGameTime);
                     if (Entity.GetComponent<Gravitation>() != null)
                     {
                         sb.AppendFormat("Mass: {0:f}\n", Entity.GetComponent<Gravitation>().Mass);

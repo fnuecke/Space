@@ -149,6 +149,7 @@ namespace Space
 
             // Initialize input.
             _inputManager = new InputManager(Services, Window.Handle);
+            _inputManager.UpdateOrder = 0;
             Components.Add(_inputManager);
 
             // Get our input devices.
@@ -183,6 +184,8 @@ namespace Space
 
             // Create the screen manager component.
             _screenManager = new ScreenManager(this);
+            // Update after input manager.
+            _screenManager.UpdateOrder = 10;
             Components.Add(_screenManager);
 
             // Activate the first screens.
@@ -338,6 +341,8 @@ namespace Space
             {
                 Client = new GameClient(this);
             }
+            // Update after screen manager (input) but before server (logic).
+            Client.UpdateOrder = 25;
             Components.Add(Client);
         }
 
@@ -348,6 +353,8 @@ namespace Space
         {
             DisposeServer();
             Server = new GameServer(this);
+            // Update after screen manager and client to get input commands.
+            Server.UpdateOrder = 50;
             Components.Add(Server);
         }
 

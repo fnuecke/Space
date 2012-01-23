@@ -275,9 +275,6 @@ namespace Engine.ComponentSystem.Systems
                 // Clone system manager.
                 copy.SystemManager = SystemManager.DeepCopy(copy.SystemManager);
 
-                // Clone all entities.
-                copy._entityMap.Clear();
-
                 // Get a list of entities for re-use.
                 var copyValues = new Stack<Entity>(copy._entityMap.Values);
                 copy._entityMap.Clear();

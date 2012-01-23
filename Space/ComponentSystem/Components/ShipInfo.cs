@@ -458,7 +458,7 @@ namespace Space.ComponentSystem.Components
                 copy._maxAcceleration = _maxAcceleration;
                 copy._maxSpeed = _maxSpeed;
                 copy._mass = _mass;
-                copy._radarRange = _maxSpeed;
+                copy._radarRange = _radarRange;
             }
 
             return copy;
