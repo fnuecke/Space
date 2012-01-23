@@ -56,11 +56,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #region Fields
 
-        /// <summary>
-        /// Holds the font information.
-        /// </summary>
-        private SpriteFont _font;
-
         private HudSingleLabel _label1;
 
         private HudSingleLabel _label2;

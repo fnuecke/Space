@@ -32,6 +32,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private HealthEnergyBar _healthEnergyBar;
 
         private HudRadio _hudRadioBox;
+        private HudPlayerList _hudPlayerList;
 
         #endregion
 
@@ -42,6 +43,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _client = client;
             _healthEnergyBar = new HealthEnergyBar(_client);
             _hudRadioBox = new HudRadio(_client);
+            _hudPlayerList = new HudPlayerList(_client);
 
         }
 
@@ -63,6 +65,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _hudRadioBox.SetPosition(new Point(60, 155));
             _hudRadioBox.setName("Guybrush Threepwood");
             _hudRadioBox.setTitle("Pirate");
+
+            // init the player box
+            _hudPlayerList.LoadContent(spriteBatch, content);
+            _hudPlayerList.SetPosition(new Point(viewport.Width - _hudPlayerList.GetWidth() - 60, 60));
         }
 
         #endregion
@@ -96,6 +102,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 _healthEnergyBar.Draw();
             }
             _hudRadioBox.Draw();
+            _hudPlayerList.Draw();
         }
 
         #endregion
