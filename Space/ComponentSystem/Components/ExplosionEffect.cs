@@ -1,6 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-
-namespace Space.ComponentSystem.Components
+﻿namespace Space.ComponentSystem.Components
 {
     sealed class ExplosionEffect : Effect
     {
@@ -8,6 +6,10 @@ namespace Space.ComponentSystem.Components
             : base("Effects/BasicExplosion")
         {
             Scale = scale;
+        }
+
+        public ExplosionEffect()
+        {
         }
         
         public override void Update(object parameterization)

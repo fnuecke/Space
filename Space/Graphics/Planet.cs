@@ -122,7 +122,7 @@ namespace Space.Graphics
         protected override void AdjustParameters()
         {
             _effect.Parameters["SurfaceTexture"].SetValue(_surface);
-            _effect.Parameters["AtmosphereTint"].SetValue(_color.ToVector4());
+            _effect.Parameters["SurfaceTint"].SetValue(_color.ToVector4());
             _effect.Parameters["AtmosphereTint"].SetValue(_atmosphereTint.ToVector4());
             _effect.Parameters["LightDirection"].SetValue(_lightDirection);
 

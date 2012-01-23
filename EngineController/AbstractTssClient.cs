@@ -274,7 +274,8 @@ namespace Engine.Controller
                         _tss.Hash(hasher);
                         if (hasher.Value != serverHash)
                         {
-                            throw new InvalidOperationException("Hash mismatch after deserialization.");
+                            logger.Error("Hash mismatch after deserialization.");
+                            Session.Leave();
                         }
                     }
                     break;

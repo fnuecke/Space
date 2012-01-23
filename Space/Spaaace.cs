@@ -398,6 +398,7 @@ namespace Space
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.SetRenderTarget(_scene);
+            GraphicsDevice.Clear(Color.DarkSlateGray);
 
             base.Draw(gameTime);
             

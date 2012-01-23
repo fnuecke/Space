@@ -1,6 +1,7 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Graphics;
@@ -26,7 +27,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The renderer we use to render our planet.
         /// </summary>
-        private Planet _planet;
+        private static Planet _planet;
 
         #endregion
 
@@ -64,10 +65,6 @@ namespace Space.ComponentSystem.Components
                 if (_planet == null)
                 {
                     _planet = new Planet(args.Game);
-                    _planet.SetSize(Scale * 2);
-                    _planet.SetSurfaceTexture(_texture);
-                    _planet.SetSurfaceTint(Tint);
-                    _planet.SetAtmosphereTint(AtmosphereTint);
                 }
 
                 // Get the position at which to draw (in screen space).
@@ -96,8 +93,12 @@ namespace Space.ComponentSystem.Components
                     }
 
                     _planet.SetCenter(position);
-                    _planet.SetLightDirection(toSun);
                     _planet.SetRotation(transform.Rotation);
+                    _planet.SetSize(Scale * 2);
+                    _planet.SetSurfaceTexture(_texture);
+                    _planet.SetSurfaceTint(Tint);
+                    _planet.SetAtmosphereTint(AtmosphereTint);
+                    _planet.SetLightDirection(toSun);
                     _planet.SetGameTime(args.GameTime);
                     _planet.Draw();
 
@@ -106,6 +107,8 @@ namespace Space.ComponentSystem.Components
                     sb.AppendFormat("Position: {0}\n", transform.Translation);
                     sb.AppendFormat("Rotation: {0}\n", (int)MathHelper.ToDegrees(transform.Rotation));
                     sb.AppendFormat("Scale: {0}\n", Scale);
+                    sb.AppendFormat("ElapsedTime: {0}\n", args.GameTime.ElapsedGameTime);
+                    sb.AppendFormat("TotalTime: {0}\n", args.GameTime.TotalGameTime);
                     if (Entity.GetComponent<Gravitation>() != null)
                     {
                         sb.AppendFormat("Mass: {0:f}\n", Entity.GetComponent<Gravitation>().Mass);
@@ -136,6 +139,25 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
+        #region Serialization 
+
+        public override Packet Packetize(Packet packet)
+        {
+            return base.Packetize(packet)
+                .Write(AtmosphereTint.PackedValue);
+        }
+
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+
+            var color = new Color();
+            color.PackedValue = packet.ReadUInt32();
+            AtmosphereTint = color;
+        }
+
+        #endregion
+
         #region Copying
 
         /// <summary>
@@ -153,7 +175,6 @@ namespace Space.ComponentSystem.Components
             if (copy == into)
             {
                 copy.AtmosphereTint = AtmosphereTint;
-                copy._planet = _planet;
             }
 
             return copy;

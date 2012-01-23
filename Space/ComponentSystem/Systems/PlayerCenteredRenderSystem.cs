@@ -18,7 +18,17 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The current camera position used in this renderer.
         /// </summary>
-        public Vector2 CameraPositon { get { return _cameraPosition; } }
+        public Vector2 CameraPositon
+        { 
+            get
+            {
+                return _customCameraPosition ?? _cameraPosition;
+            } 
+            set 
+            {
+                _customCameraPosition = value; 
+            }
+        }
 
         #endregion
 
@@ -60,7 +70,7 @@ namespace Space.ComponentSystem.Systems
         /// Flag to tell if the current camera position was set from outside,
         /// or was dynamically computed.
         /// </summary>
-        private bool _isCameraFixed;
+        private Vector2? _customCameraPosition;
 
         #endregion
 
@@ -72,30 +82,6 @@ namespace Space.ComponentSystem.Systems
             _gamePad = (IGamePad)game.Services.GetService(typeof(IGamePad));
         }
 
-        #region Accessors
-
-        /// <summary>
-        /// Sets the camera position this renderer should use. The camera
-        /// position will no longer be computed dynamically, based on the
-        /// local player's ship's position. To re-enable this behavior,
-        /// pass <c>null</c>.
-        /// </summary>
-        /// <param name="cameraPosition"></param>
-        public void SetCameraPosition(Vector2? cameraPosition)
-        {
-            if (cameraPosition.HasValue)
-            {
-                _cameraPosition = cameraPosition.Value;
-                _isCameraFixed = true;
-            }
-            else
-            {
-                _isCameraFixed = false;
-            }
-        }
-
-        #endregion
-
         #region Logic
 
         /// <summary>
@@ -106,12 +92,10 @@ namespace Space.ComponentSystem.Systems
         /// <param name="frame">The frame the update applies to.</param>
         public override void Update(long frame)
         {
-            base.Update(frame);
-
             // Only update the offset if we didn't roll-back.
             if (frame > _lastFrame)
             {
-                if (!_isCameraFixed && _session.ConnectionState == ClientState.Connected)
+                if (!_customCameraPosition.HasValue && _session.ConnectionState == ClientState.Connected)
                 {
                     var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
                     if (avatar != null)
@@ -135,6 +119,8 @@ namespace Space.ComponentSystem.Systems
 
                 _lastFrame = frame;
             }
+
+            base.Update(frame);
         }
 
         private Vector2 GetInputInducedOffset()
@@ -205,11 +191,10 @@ namespace Space.ComponentSystem.Systems
 
             if (copy == into)
             {
-                copy._cameraPosition = _cameraPosition;
-                copy._isCameraFixed = _isCameraFixed;
-                copy._lastFrame = _lastFrame;
-                copy._previousOffset = _previousOffset;
                 copy._session = _session;
+                copy._previousOffset = _previousOffset;
+                copy._cameraPosition = _cameraPosition;
+                copy._customCameraPosition = _customCameraPosition;
             }
 
             return copy;

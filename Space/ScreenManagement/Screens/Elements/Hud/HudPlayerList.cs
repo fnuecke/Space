@@ -119,6 +119,11 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             var originalHealthPosition = _health.GetPosition();
 
             var info = _client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return;
+            }
+
             var names = new[] { "DaKaTotal", "Sangar", "lordjoda" };
             var health = new[] { (int) ((info.Health * 1.0 / info.MaxHealth) * 100), 95, 77 };
 
