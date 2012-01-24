@@ -188,6 +188,7 @@
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudPlayerList.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudRadio.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudSample.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudBuffBar.cs" />
     <Compile Include="ScreenManagement\Screens\Stylesheet\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSpacer.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudLabel.cs" />
