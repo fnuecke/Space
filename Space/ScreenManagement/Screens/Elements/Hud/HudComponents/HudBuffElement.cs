@@ -48,6 +48,16 @@ namespace Space.ScreenManagement.Screens.Elements.Hud.HudComponents
             _icon.SetSize(new Point(size.X - 2 * _padding, size.Y - 2 * _padding));
         }
 
+        public void SetImage(String path)
+        {
+            _icon.SetImage(path);
+        }
+
+        public void SetMode(HudIcon.Mode mode)
+        {
+            _icon.CurrentMode = mode;
+        }
+
         public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
             base.LoadContent(spriteBatch, content);
