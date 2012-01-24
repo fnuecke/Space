@@ -13,10 +13,16 @@ namespace Space.ScreenManagement.Screens.Elements.Hud.HudComponents
     class HudIcon : AHudElement
     {
 
+        public enum Mode {
+            Buff, Debuff, Neutral
+        }
+
         /// <summary>
         /// The Texture2D image of the portrait that should be displayed.
         /// </summary>
         private Texture2D _image;
+
+        public Mode CurrentMode { get; set; }
 
         /// <summary>
         /// Set a new image as a content portrait.
@@ -45,6 +51,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud.HudComponents
 
             // set some standard Values
             SetSize(new Point(40, 40));
+            CurrentMode = Mode.Neutral;
             SetImage("Textures/Icons/Buffs/default");
         }
 
@@ -52,7 +59,20 @@ namespace Space.ScreenManagement.Screens.Elements.Hud.HudComponents
         {
             _spriteBatch.Begin();
 
-            _basicForms.GradientRectangle(GetPosition().X, GetPosition().Y, GetWidth(), GetHeight(), Color.Red, Color.Blue);
+            // set the colors of the background dependant on the current mode
+            Color col1 = HudColors.GreenDarkGradientLight;
+            Color col2 = HudColors.GreenDarkGradientDark;
+            if (CurrentMode == Mode.Debuff)
+            {
+                col1 = HudColors.RedGradientLight;
+                col2 = HudColors.RedGradientDark;
+            }
+            else if (CurrentMode == Mode.Neutral)
+            {
+                col1 = HudColors.OrangeGradientLight;
+                col2 = HudColors.OrangeGradientDark;
+            }
+            _basicForms.GradientRectangle(GetPosition().X, GetPosition().Y, GetWidth(), GetHeight(), col1, col2);
 
             var posImage = new Rectangle(
                 GetPosition().X + ((GetWidth() - _image.Width) / 2),

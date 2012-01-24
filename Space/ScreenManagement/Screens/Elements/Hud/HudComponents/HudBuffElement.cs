@@ -54,11 +54,13 @@ namespace Space.ScreenManagement.Screens.Elements.Hud.HudComponents
 
             _spaceForms = new SpaceForms(_spriteBatch);
 
-            _icon.LoadContent(spriteBatch, content);
 
             _padding = StandardPadding;
             SetWidth(StandardWidth);
             SetHeight(StandardHeight);
+
+            _icon.LoadContent(spriteBatch, content);
+            _icon.CurrentMode = HudIcon.Mode.Buff;
         }
 
         public override void Draw()
