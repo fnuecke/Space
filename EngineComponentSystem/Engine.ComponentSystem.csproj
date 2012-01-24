@@ -138,10 +138,11 @@
     <Compile Include="Components\Velocity.cs" />
     <Compile Include="Entities\Entity.cs" />
     <Compile Include="Parameterizations\CollisionParameterization.cs" />
+    <Compile Include="Parameterizations\RendererUpdateParameterization.cs" />
     <Compile Include="Parameterizations\DefaultLogicParameterization.cs" />
     <Compile Include="Parameterizations\IndexParameterization.cs" />
     <Compile Include="Parameterizations\NullParameterization.cs" />
-    <Compile Include="Parameterizations\RendererParameterization.cs" />
+    <Compile Include="Parameterizations\RendererDrawParameterization.cs" />
     <Compile Include="Parameterizations\SoundParameterization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\AbstractComponentSystem.cs" />

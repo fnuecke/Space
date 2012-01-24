@@ -11,13 +11,8 @@ namespace Engine.ComponentSystem.Parameterizations
     /// in their <c>Update</c> call.
     /// </para>
     /// </summary>
-    public class RendererParameterization
+    public class RendererDrawParameterization
     {
-        /// <summary>
-        /// The game we're running.
-        /// </summary>
-        public Game Game;
-
         /// <summary>
         /// The game time object for the current update.
         /// </summary>

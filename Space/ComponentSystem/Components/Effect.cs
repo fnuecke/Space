@@ -41,7 +41,11 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         protected bool _isDrawingInstance;
 
-        protected float Scale = 0;
+        /// <summary>
+        /// The scale to apply to the effect.
+        /// </summary>
+        protected float Scale = 1;
+
         /// <summary>
         /// The latest known frame in our simulation. Don't do updates before
         /// this one, to avoid stuttering (TSS rollbacks causing double updates
@@ -51,12 +55,6 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         private long[] _lastKnownFrame = new long[1];
 
-        /// <summary>
-        /// Used keep multiple threads (TSS) from writing the last known frame
-        /// at the same time.
-        /// </summary>
-        private object _frameLock = new object();
-
         #endregion
 
         #region Constructor
@@ -65,8 +63,6 @@ namespace Space.ComponentSystem.Components
         {
             this.EffectName = effectName;
             Emitting = true;
-            
-
         }
 
         public Effect()
@@ -85,42 +81,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
-            var args = (DefaultLogicParameterization)parameterization;
-
-            // Logic, we need a transform to do the positioning.
-            if (_effect[0] != null && _isDrawingInstance)
-            {
-                lock (_frameLock)
-                {
-                    if (args.Frame > _lastKnownFrame[0])
-                    {
-                        _lastKnownFrame[0] = args.Frame;
-                    }
-                    else
-                    {
-                        return;
-                    }
-                }
-
-                // Only trigger new particles while we're enabled.
-                if (Emitting)
-                {
-                    var transform = Entity.GetComponent<Transform>();
-                    if (transform != null)
-                    {
-                        _effect[0].Trigger(transform.Translation);
-
-                    }
-                }
-
-                // Always update, to allow existing particles to disappear.
-                _effect[0].Update(1f / 60f);
-            }
-        }
-
-        public override void Draw(object parameterization)
-        {
-            var args = (ParticleParameterization)parameterization;
+            var args = (RendererUpdateParameterization)parameterization;
 
             // If we have an effect make sure its loaded and trigger it.
             if (_effect[0] == null && !string.IsNullOrWhiteSpace(EffectName))
@@ -130,26 +91,52 @@ namespace Space.ComponentSystem.Components
                 _effect[0] = args.Game.Content.Load<ParticleEffect>(EffectName).DeepCopy();
                 _effect[0].Initialise();
                 _effect[0].LoadContent(args.Game.Content);
-               
-            }
 
-            // Render if we have our effect.
-            if (_effect[0] != null)
-            {
                 if (Scale != 0)
                 {
                     foreach (var effect in _effect[0])
                     {
-                        effect.ReleaseScale += Scale;
+                        effect.ReleaseScale *= Scale;
                     }
                 }
+            }
+
+            // Logic, we need a transform to do the positioning.
+            if (_effect[0] != null && _isDrawingInstance)
+            {
+                if (args.Frame > _lastKnownFrame[0])
+                {
+                    _lastKnownFrame[0] = args.Frame;
+                }
+                else
+                {
+                    return;
+                }
+
+                // Only trigger new particles while we're enabled.
+                if (Emitting)
+                {
+                    var transform = Entity.GetComponent<Transform>();
+                    if (transform != null)
+                    {
+                        _effect[0].Trigger(transform.Translation);
+                    }
+                }
+            }
+        }
+
+        public override void Draw(object parameterization)
+        {
+            var args = (ParticleParameterization)parameterization;
+
+            // Render if we have our effect.
+            if (_effect[0] != null)
+            {
                 // Only render effects whose emitter is near or inside the
                 // visible bounds (performance), where possible.
                 var transform = Entity.GetComponent<Transform>();
                 if (transform != null)
                 {
-                    
-                    
                     var extendedView = args.SpriteBatch.GraphicsDevice.ScissorRectangle;
                     extendedView.Inflate(1024, 1024);
                     Point point;
@@ -164,6 +151,9 @@ namespace Space.ComponentSystem.Components
                 {
                     args.Renderer.RenderEffect(_effect[0], ref args.Transform);
                 }
+
+                // Always update, to allow existing particles to disappear.
+                _effect[0].Update(1f / 60f);
             }
 
             // We're the instance on which draw is called.
@@ -177,7 +167,8 @@ namespace Space.ComponentSystem.Components
         /// <returns>whether the type's supported or not.</returns>
         public override bool SupportsUpdateParameterization(Type parameterizationType)
         {
-            return parameterizationType == typeof(DefaultLogicParameterization);
+            return parameterizationType == typeof(RendererUpdateParameterization) ||
+                parameterizationType.IsSubclassOf(typeof(RendererUpdateParameterization));
         }
 
         /// <summary>
@@ -242,7 +233,6 @@ namespace Space.ComponentSystem.Components
                 copy.Emitting = Emitting;
                 copy._effect = _effect;
                 copy._lastKnownFrame = _lastKnownFrame;
-                copy._frameLock = _frameLock;
             }
             copy._isDrawingInstance = false;
 

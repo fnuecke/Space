@@ -1,4 +1,6 @@
-﻿using Engine.ComponentSystem.Parameterizations;
+﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -9,16 +11,31 @@ namespace Engine.ComponentSystem.Systems
     /// sub-classing with extended rendering configurations (see the particle
     /// render system).
     /// </summary>
-    public class RenderSystem<TRendererParameterization>
-        : AbstractComponentSystem<NullParameterization, TRendererParameterization>
-        where TRendererParameterization : RendererParameterization, new()
+    public class RenderSystem<TUpdateParameterization, TDrawParameterization>
+        : AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>
+        where TUpdateParameterization : RendererUpdateParameterization, new()
+        where TDrawParameterization : RendererDrawParameterization, new()
     {
         #region Fields
 
         /// <summary>
         /// The reusable parameterization.
         /// </summary>
-        protected TRendererParameterization _parameterization;
+        protected TUpdateParameterization _updateParameterization;
+
+        /// <summary>
+        /// The reusable parameterization.
+        /// </summary>
+        protected TDrawParameterization _drawParameterization;
+
+        #endregion
+
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused for iterating components.
+        /// </summary>
+        private List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(1024);
 
         #endregion
 
@@ -26,51 +43,50 @@ namespace Engine.ComponentSystem.Systems
         
         public RenderSystem(Game game, SpriteBatch spriteBatch)
         {
-            _parameterization = new TRendererParameterization();
-            _parameterization.Game = game;
-            _parameterization.SpriteBatch = spriteBatch;
-            _parameterization.Transform = Matrix.Identity;
+            _updateParameterization = new TUpdateParameterization();
+            _updateParameterization.Game = game;
+            _updateParameterization.SpriteBatch = spriteBatch;
+
+            _drawParameterization = new TDrawParameterization();
+            _drawParameterization.SpriteBatch = spriteBatch;
+            _drawParameterization.Transform = Matrix.Identity;
         }
 
         #endregion
 
         #region Logic
 
-        public override void Draw(GameTime gameTime, long frame)
+        public override void Update(long frame)
         {
-            if (DrawableComponents.Count == 0)
-            {
-                return;
-            }
+            // Set current frame.
+            _updateParameterization.Frame = frame;
 
-            // Get translation, which may be overridden.
-            _parameterization.Transform.Translation = GetTranslation();
-            _parameterization.GameTime = gameTime;
-
-//             // Then render all components.
-//             _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
-
-            // Keep track of the layer we're currently rendering. Although
-            // it's less efficient, we re-begin a batch for each layer,
-            // which is mostly a workaround for stuff being rendered by
-            // other sprite batches to appear at the correct layer (and not
-            // have them over-painted by the one fat end after the loop).
-            int layer = DrawableComponents[0].DrawOrder;
-
-            foreach (var component in DrawableComponents)
+            _reusableComponentList.AddRange(UpdateableComponents);
+            foreach (var component in _reusableComponentList)
             {
                 if (component.Enabled)
                 {
-//                     if (component.DrawOrder > layer)
-//                     {
-//                         layer = component.DrawOrder;
-//                         _parameterization.SpriteBatch.End();
-//                         _parameterization.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
-//                     }
-                    component.Draw(_parameterization);
+                    component.Update(_updateParameterization);
                 }
             }
-//             _parameterization.SpriteBatch.End();
+            _reusableComponentList.Clear();
+        }
+
+        public override void Draw(GameTime gameTime, long frame)
+        {
+            // Get translation, which may be overridden.
+            _drawParameterization.GameTime = gameTime;
+            _drawParameterization.Transform.Translation = GetTranslation();
+
+            _reusableComponentList.AddRange(DrawableComponents);
+            foreach (var component in _reusableComponentList)
+            {
+                if (component.Enabled)
+                {
+                    component.Draw(_drawParameterization);
+                }
+            }
+            _reusableComponentList.Clear();
         }
 
         /// <summary>
@@ -80,6 +96,22 @@ namespace Engine.ComponentSystem.Systems
         protected virtual Vector3 GetTranslation()
         {
             return Vector3.Zero;
+        }
+
+        #endregion
+
+        #region Copying
+
+        public override IComponentSystem DeepCopy(IComponentSystem into)
+        {
+            var copy = (RenderSystem<TUpdateParameterization, TDrawParameterization>)base.DeepCopy(into);
+
+            if (copy != into)
+            {
+                copy._reusableComponentList = new List<AbstractComponent>(1024);
+            }
+
+            return copy;
         }
 
         #endregion

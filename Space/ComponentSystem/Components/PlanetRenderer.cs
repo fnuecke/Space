@@ -3,7 +3,6 @@ using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Space.Graphics;
 
 namespace Space.ComponentSystem.Components
@@ -49,6 +48,19 @@ namespace Space.ComponentSystem.Components
 
         #region Logic
 
+        public override void Update(object parameterization)
+        {
+            base.Update(parameterization);
+            
+            // Get parameterization in proper type.
+            var args = (RendererUpdateParameterization)parameterization;
+
+            if (_planet == null)
+            {
+                _planet = new Planet(args.Game);
+            }
+        }
+
         public override void Draw(object parameterization)
         {
             // The position and orientation we're rendering at and in.
@@ -60,12 +72,7 @@ namespace Space.ComponentSystem.Components
                 base.Draw(parameterization);
 
                 // Get parameterization in proper type.
-                var args = (RendererParameterization)parameterization;
-
-                if (_planet == null)
-                {
-                    _planet = new Planet(args.Game);
-                }
+                var args = (RendererDrawParameterization)parameterization;
 
                 // Get the position at which to draw (in screen space).
                 Vector2 position;
@@ -101,20 +108,6 @@ namespace Space.ComponentSystem.Components
                     _planet.SetLightDirection(toSun);
                     _planet.SetGameTime(args.GameTime);
                     _planet.Draw();
-
-#if DEBUG
-                    var sb = new System.Text.StringBuilder();
-                    sb.AppendFormat("Position: {0}\n", transform.Translation);
-                    sb.AppendFormat("Rotation: {0}\n", (int)MathHelper.ToDegrees(transform.Rotation));
-                    sb.AppendFormat("Scale: {0}\n", Scale);
-                    if (Entity.GetComponent<Gravitation>() != null)
-                    {
-                        sb.AppendFormat("Mass: {0:f}\n", Entity.GetComponent<Gravitation>().Mass);
-                    }
-                    args.SpriteBatch.Begin();
-                    args.SpriteBatch.DrawString(args.Game.Content.Load<SpriteFont>("Fonts/ConsoleFont"), sb, position, Color.White);
-                    args.SpriteBatch.End();
-#endif
                 }
             }
         }

@@ -80,13 +80,12 @@ namespace Engine.ComponentSystem.Components
         #region Logic
 
         /// <summary>
-        /// Subclasses should call this in their overridden update method first, as
-        /// it takes care of properly setting the <c>texture</c> field.
+        /// Used to load the actual texture.
         /// </summary>
         /// <param name="parameterization"></param>
-        public override void Draw(object parameterization)
+        public override void Update(object parameterization)
         {
-            var args = (RendererParameterization)parameterization;
+            var args = (RendererUpdateParameterization)parameterization;
 
             // Load our texture, if it's not set.
             if (_texture == null)
@@ -105,10 +104,21 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="parameterizationType">the type to check.</param>
         /// <returns>whether the type's supported or not.</returns>
+        public override bool SupportsUpdateParameterization(Type parameterizationType)
+        {
+            return parameterizationType == typeof(RendererUpdateParameterization) ||
+                parameterizationType.IsSubclassOf(typeof(RendererUpdateParameterization));
+        }
+
+        /// <summary>
+        /// Accepts <c>RendererParameterization</c>s.
+        /// </summary>
+        /// <param name="parameterizationType">the type to check.</param>
+        /// <returns>whether the type's supported or not.</returns>
         public override bool SupportsDrawParameterization(Type parameterizationType)
         {
-            return parameterizationType == typeof(RendererParameterization) ||
-                parameterizationType.IsSubclassOf(typeof(RendererParameterization));
+            return parameterizationType == typeof(RendererDrawParameterization) ||
+                parameterizationType.IsSubclassOf(typeof(RendererDrawParameterization));
         }
 
         #endregion

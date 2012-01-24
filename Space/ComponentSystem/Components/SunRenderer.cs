@@ -33,6 +33,21 @@ namespace Space.ComponentSystem.Components
 
         #region Logic
 
+        public override void Update(object parameterization)
+        {
+            base.Update(parameterization);
+
+            // Get parameterization in proper type.
+            var args = (RendererUpdateParameterization)parameterization;
+
+            // Get the effect, if we don't have it yet.
+            if (_sun == null)
+            {
+                _sun = new Sun(args.Game);
+                _sun.LoadContent(args.SpriteBatch, args.Game.Content);
+            }
+        }
+
         public override void Draw(object parameterization)
         {
             // The position and orientation we're rendering at and in.
@@ -42,14 +57,7 @@ namespace Space.ComponentSystem.Components
             if (transform != null)
             {
                 // Get parameterization in proper type.
-                var args = (RendererParameterization)parameterization;
-
-                // Get the effect, if we don't have it yet.
-                if (_sun == null)
-                {
-                    _sun = new Sun(args.Game);
-                    _sun.LoadContent(args.SpriteBatch, args.Game.Content);
-                }
+                var args = (RendererDrawParameterization)parameterization;
 
                 // Check if we need to draw (in bounds of view port). Use a
                 // large bounding rectangle to account for the glow, so that

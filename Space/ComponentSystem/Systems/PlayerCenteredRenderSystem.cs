@@ -40,6 +40,11 @@ namespace Space.ComponentSystem.Systems
         private IClientSession _session;
 
         /// <summary>
+        /// The graphics device (used to look up the current viewport).
+        /// </summary>
+        private GraphicsDevice _graphicsDevice;
+
+        /// <summary>
         /// Used for dynamic camera offset.
         /// </summary>
         private IMouse _mouse;
@@ -78,6 +83,7 @@ namespace Space.ComponentSystem.Systems
             : base(game, spriteBatch, graphics)
         {
             _session = session;
+            _graphicsDevice = game.GraphicsDevice;
             _mouse = (IMouse)game.Services.GetService(typeof(IMouse));
             _gamePad = (IGamePad)game.Services.GetService(typeof(IGamePad));
         }
@@ -130,7 +136,7 @@ namespace Space.ComponentSystem.Systems
             offset.Y = 0;
 
             // Get viewport, for mouse position scaling and offset scaling.
-            var viewport = _parameterization.SpriteBatch.GraphicsDevice.Viewport;
+            var viewport = _graphicsDevice.Viewport;
             float offsetScale = (float)(System.Math.Sqrt(viewport.Width * viewport.Width + viewport.Height * viewport.Height) / 6.0);
 
             // If we have a game pad attached, get the stick tilt.
@@ -169,7 +175,7 @@ namespace Space.ComponentSystem.Systems
         protected override Vector3 GetTranslation()
         {
             // Get viewport, to center objects around the camera position.
-            var viewport = _parameterization.SpriteBatch.GraphicsDevice.Viewport;
+            var viewport = _graphicsDevice.Viewport;
 
             // Return the *negative* camera position, because that's the
             // actual amount we need to translate game objects to be drawn
@@ -192,6 +198,7 @@ namespace Space.ComponentSystem.Systems
             if (copy == into)
             {
                 copy._session = _session;
+                copy._graphicsDevice = _graphicsDevice;
                 copy._previousOffset = _previousOffset;
                 copy._cameraPosition = _cameraPosition;
                 copy._customCameraPosition = _customCameraPosition;

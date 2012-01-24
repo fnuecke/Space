@@ -59,7 +59,7 @@ namespace Engine.ComponentSystem.Components
                 base.Draw(parameterization);
 
                 // Get parameterization in proper type.
-                var args = (RendererParameterization)parameterization;
+                var args = (RendererDrawParameterization)parameterization;
 
                 // Get the rectangle at which we'll draw.
                 Vector2 origin;

@@ -19,7 +19,7 @@ namespace Engine.Graphics
         /// one from 2->1->3 (or anything equivalent).
         /// </summary>
         protected static readonly short[] _indices = { 0, 1, 2,   // First triangle.
-                                                    2, 1, 3 }; // Second triangle.
+                                                       2, 1, 3 }; // Second triangle.
 
         /// <summary>
         /// Actual value for our vertex declaration.
@@ -90,7 +90,7 @@ namespace Engine.Graphics
         protected Color _color;
 
         #endregion
-        
+
         #region Constructor
 
         /// <summary>
@@ -310,20 +310,20 @@ namespace Engine.Graphics
             // Reset corner positions.
 
             // Top left.
-            _vertices[0].Position.X = -_width / 2;
-            _vertices[0].Position.Y = _height / 2;
+            _vertices[0].Position.X = -_width / 2 - 0.5f;
+            _vertices[0].Position.Y = _height / 2 + 0.5f;
             _vertices[0].Position.Z = 0;
             // Top right.
-            _vertices[1].Position.X = _width / 2;
-            _vertices[1].Position.Y = _height / 2;
+            _vertices[1].Position.X = _width / 2 + 0.5f;
+            _vertices[1].Position.Y = _height / 2 + 0.5f;
             _vertices[1].Position.Z = 0;
             // Bottom left.
-            _vertices[2].Position.X = -_width / 2;
-            _vertices[2].Position.Y = -_height / 2;
+            _vertices[2].Position.X = -_width / 2 - 0.5f;
+            _vertices[2].Position.Y = -_height / 2 - 0.5f;
             _vertices[2].Position.Z = 0;
             // Bottom right.
-            _vertices[3].Position.X = _width / 2;
-            _vertices[3].Position.Y = -_height / 2;
+            _vertices[3].Position.X = _width / 2 + 0.5f;
+            _vertices[3].Position.Y = -_height / 2 - 0.5f;
             _vertices[3].Position.Z = 0;
         }
 

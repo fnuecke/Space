@@ -7,7 +7,7 @@ namespace Space.ComponentSystem.Parameterizations
     /// Used by the particle system to query whether and where to spawn new
     /// particles.
     /// </summary>
-    public sealed class ParticleParameterization : RendererParameterization
+    public sealed class ParticleParameterization : RendererDrawParameterization
     {
         /// <summary>
         /// The particle renderer to use.

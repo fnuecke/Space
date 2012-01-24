@@ -1,6 +1,5 @@
 using System;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
 using Space.ScreenManagement.Screens.Gameplay;
 
@@ -35,11 +34,6 @@ namespace Space.ScreenManagement.Screens
         /// radar system, but we want it to be behind planets.
         /// </summary>
         private Orbits _orbits;
-
-        /// <summary>
-        /// The render target we draw the game world into.
-        /// </summary>
-        private RenderTarget2D _world;
 
         /// <summary>
         /// Renderer for radar system.
@@ -93,14 +87,6 @@ namespace Space.ScreenManagement.Screens
             _postprocessing = new Postprocessing(game);
             ScreenManager.Game.Components.Add(_postprocessing);
 
-            PresentationParameters pp = game.GraphicsDevice.PresentationParameters;
-            int width = pp.BackBufferWidth;
-            int height = pp.BackBufferHeight;
-
-            SurfaceFormat format = pp.BackBufferFormat;
-
-            _world = new RenderTarget2D(game.GraphicsDevice, width, height, false, format, DepthFormat.None);
-
             // TODO preload any other ingame content we may need? (ship, planet etc textures)
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
@@ -116,10 +102,6 @@ namespace Space.ScreenManagement.Screens
             if (_postprocessing != null)
             {
                 _postprocessing.Dispose();
-            }
-            if (_world != null)
-            {
-                _world.Dispose();
             }
         }
 
@@ -185,37 +167,14 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
-            var graphicsDevice = ScreenManager.Game.GraphicsDevice;
-
             // Draw overall background (stars).
             _background.Draw();
-
-            // Draw the actual game world into a temporary target, because the
-            // draw updates textures for objects, so we need that prior to
-            // rendering the orbits -- but the orbits have to go behind the
-            // game world objects, so we need to save this to then paint it
-            // over the orbits.
-
-            // Save main render targets.
-            RenderTargetBinding[] previousRenderTargets = graphicsDevice.GetRenderTargets();
-
-            // Set world render target.
-            graphicsDevice.SetRenderTarget(_world);
-            graphicsDevice.Clear(Color.Transparent);
-
-            // Draw world elements.
-            _client.Controller.Draw(gameTime);
-
-            // Restore render targets.
-            graphicsDevice.SetRenderTargets(previousRenderTargets);
 
             // Render the orbits.
             _orbits.Draw();
 
-            // Paint the world content over the orbits.
-            ScreenManager.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
-            ScreenManager.SpriteBatch.Draw(_world, _world.Bounds, Color.White);
-            ScreenManager.SpriteBatch.End();
+            // Draw world elements.
+            _client.Controller.Draw(gameTime);
 
             // Finish up post processing, GUI should not be affected by it.
             if (Settings.Instance.PostProcessing)

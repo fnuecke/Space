@@ -25,6 +25,15 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused for iterating components.
+        /// </summary>
+        private List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(1024);
+
+        #endregion
+
         #region Logic
         
         /// <summary>
@@ -35,9 +44,11 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="frame">The frame the simulation is currently in.</param>
         public override void Update(long frame)
         {
+            // Set current frame.
             _parameterization.Frame = frame;
-            var currentComponents = new List<AbstractComponent>(UpdateableComponents);
-            foreach (var component in currentComponents)
+
+            _reusableComponentList.AddRange(UpdateableComponents);
+            foreach (var component in _reusableComponentList)
             {
                 // Only enabled components, and ones that have not been removed
                 // in this very update run.
@@ -46,6 +57,7 @@ namespace Engine.ComponentSystem.Systems
                     component.Update(_parameterization);
                 }
             }
+            _reusableComponentList.Clear();
         }
 
         #endregion
@@ -59,6 +71,7 @@ namespace Engine.ComponentSystem.Systems
             if (copy != into)
             {
                 copy._parameterization = new DefaultLogicParameterization();
+                copy._reusableComponentList = new List<AbstractComponent>(1024);
             }
 
             return copy;

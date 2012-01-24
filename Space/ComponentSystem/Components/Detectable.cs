@@ -58,9 +58,13 @@ namespace Space.ComponentSystem.Components
 
         #region Logic
 
-        public override void Draw(object parameterization)
+        /// <summary>
+        /// Used to load the actual texture.
+        /// </summary>
+        /// <param name="parameterization"></param>
+        public override void Update(object parameterization)
         {
-            var args = (RendererParameterization)parameterization;
+            var args = (RendererUpdateParameterization)parameterization;
 
             // Load our texture, if it's not set.
             if (Texture == null)
@@ -79,10 +83,10 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="parameterizationType">the type to check.</param>
         /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsDrawParameterization(Type parameterizationType)
+        public override bool SupportsUpdateParameterization(Type parameterizationType)
         {
-            return parameterizationType == typeof(RendererParameterization) ||
-                parameterizationType.IsSubclassOf(typeof(RendererParameterization));
+            return parameterizationType == typeof(RendererUpdateParameterization) ||
+                parameterizationType.IsSubclassOf(typeof(RendererUpdateParameterization));
         }
 
         #endregion
