@@ -102,7 +102,57 @@ namespace Space
             /// <summary>
             /// Stabilize the ship's position.
             /// </summary>
-            Stabilize
+            Stabilize,
+
+            /// <summary>
+            /// Untargets whatever we're currently targeting.
+            /// </summary>
+            ClearTarget,
+
+            /// <summary>
+            /// Select the next target (further away from our ship than the
+            /// current target).
+            /// </summary>
+            NextTarget,
+
+            /// <summary>
+            /// Select the previous target (closer to our ship than the current
+            /// target).
+            /// </summary>
+            PreviousTarget,
+
+            /// <summary>
+            /// Select the next enemy target (further away from our ship than
+            /// our current target, closest one if the current target is
+            /// friendly).
+            /// </summary>
+            NextEnemyTarget,
+
+            /// <summary>
+            /// Select the previous enemy target (closer to our ship than
+            /// our current target, furthest one if the current target is
+            /// friendly).
+            /// </summary>
+            PreviousEnemyTarget,
+
+            /// <summary>
+            /// Select the next friendly target (further away from our ship than
+            /// our current target, closest one if the current target is
+            /// an enemy).
+            /// </summary>
+            NextFriendlyTarget,
+
+            /// <summary>
+            /// Select the previous enemy target (closer to our ship than
+            /// our current target, furthest one if the current target is
+            /// an enemy).
+            /// </summary>
+            PreviousFriendlyTarget,
+
+            /// <summary>
+            /// Target the element closest to the current cursor position.
+            /// </summary>
+            CursorTarget
         }
 
         public enum GamePadCommand

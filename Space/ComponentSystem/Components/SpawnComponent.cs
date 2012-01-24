@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Parameterizations;
-using Engine.ComponentSystem.Systems.Messages;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Systems.Messages;
+using Space.ComponentSystem.Messages;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -101,8 +101,8 @@ namespace Space.ComponentSystem.Components
             }
             else if (message is EntityRemoved)
             {
-                var entity = (EntityRemoved)(ValueType)message;
-                _targets.Remove(entity.EntityUid);
+                var info = (EntityRemoved)(ValueType)message;
+                _targets.Remove(info.Entity.UID);
             }
         }
 

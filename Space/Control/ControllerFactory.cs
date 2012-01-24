@@ -29,7 +29,7 @@ namespace Space.Control
 
             // Add all systems we need in our game as a server.
             controller.Simulation.EntityManager.SystemManager.AddSystems(
-                new IComponentSystem[]
+                new ISystem[]
                 {
                     new DefaultLogicSystem(),
                     new IndexSystem(),
@@ -61,7 +61,7 @@ namespace Space.Control
 
             // Add all systems we need in our game as a client.
             controller.Simulation.EntityManager.SystemManager.AddSystems(
-                new IComponentSystem[]
+                new ISystem[]
                 {
                     new DefaultLogicSystem(),
                     new IndexSystem(),
@@ -108,7 +108,7 @@ namespace Space.Control
                 // Add all systems we need in *addition* to the ones the server
                 // already has.
                 server.Simulation.EntityManager.SystemManager.AddSystems(
-                    new IComponentSystem[] {
+                    new ISystem[] {
                         new PlayerCenteredSoundSystem(soundBank, controller.Session),
                         new PlayerCenteredRenderSystem(game, spriteBatch, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
                     });

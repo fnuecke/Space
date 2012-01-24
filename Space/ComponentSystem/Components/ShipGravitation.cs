@@ -1,6 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Components.Messages;
+using Engine.ComponentSystem.Messages;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components

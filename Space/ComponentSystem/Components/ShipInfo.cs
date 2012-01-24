@@ -1,6 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Components.Messages;
+using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Modules;
@@ -232,6 +232,25 @@ namespace Space.ComponentSystem.Components
                 if (acceleration != null)
                 {
                     return acceleration.Value != Vector2.Zero;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Tells whether the ship is currently stabilizing its position.
+        /// </summary>
+        public bool IsStabilizing
+        {
+            get
+            {
+                var control = Entity.GetComponent<ShipControl>();
+                if (control != null)
+                {
+                    return control.Stabilizing;
                 }
                 else
                 {

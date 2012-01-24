@@ -21,14 +21,14 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>
+        /// Whether we're currently stabilizing our position or not.
+        /// </summary>
+        public bool Stabilizing;
+
+        /// <summary>
         /// The current acceleration of the ship.
         /// </summary>
         private Vector2 _directedAcceleration;
-
-        /// <summary>
-        /// Whether we're currently stabilizing our position or not.
-        /// </summary>
-        private bool _stabilizing;
 
         /// <summary>
         /// The current target rotation (used to check if the public one
@@ -71,15 +71,6 @@ namespace Space.ComponentSystem.Components
                     _directedAcceleration.Normalize();
                 }
             }
-        }
-
-        /// <summary>
-        /// Set whether to stabilize our position or not.
-        /// </summary>
-        /// <param name="stabilizing">Whether to stabilize or not.</param>
-        public void SetStabilizing(bool stabilizing)
-        {
-            _stabilizing = stabilizing;
         }
 
         /// <summary>
@@ -134,7 +125,7 @@ namespace Space.ComponentSystem.Components
                 // currently stabilizing or not.
                 Vector2 accelerationDirection;
                 float desiredAcceleration = float.MaxValue;
-                if (_directedAcceleration == Vector2.Zero && _stabilizing)
+                if (_directedAcceleration == Vector2.Zero && Stabilizing)
                 {
                     accelerationDirection = -Entity.GetComponent<Velocity>().Value;
                     desiredAcceleration = accelerationDirection.Length();
@@ -281,7 +272,7 @@ namespace Space.ComponentSystem.Components
         {
             return base.Packetize(packet)
                 .Write(_directedAcceleration)
-                .Write(_stabilizing)
+                .Write(Stabilizing)
                 .Write(_targetRotation)
                 .Write(_targetRotationChanged)
                 .Write(_previousRotation)
@@ -297,7 +288,7 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             _directedAcceleration = packet.ReadVector2();
-            _stabilizing = packet.ReadBoolean();
+            Stabilizing = packet.ReadBoolean();
             _targetRotation = packet.ReadSingle();
             _targetRotationChanged = packet.ReadBoolean();
             _previousRotation = packet.ReadSingle();
@@ -315,7 +306,7 @@ namespace Space.ComponentSystem.Components
 
             hasher.Put(BitConverter.GetBytes(_directedAcceleration.X));
             hasher.Put(BitConverter.GetBytes(_directedAcceleration.Y));
-            hasher.Put(BitConverter.GetBytes(_stabilizing));
+            hasher.Put(BitConverter.GetBytes(Stabilizing));
             hasher.Put(BitConverter.GetBytes(_targetRotation));
             hasher.Put(BitConverter.GetBytes(_targetRotationChanged));
             hasher.Put(BitConverter.GetBytes(_previousRotation));
@@ -341,7 +332,7 @@ namespace Space.ComponentSystem.Components
             if (copy == into)
             {
                 copy._directedAcceleration = _directedAcceleration;
-                copy._stabilizing = _stabilizing;
+                copy.Stabilizing = Stabilizing;
                 copy._targetRotation = _targetRotation;
                 copy._targetRotationChanged = _targetRotationChanged;
                 copy._previousRotation = _previousRotation;

@@ -1,5 +1,5 @@
 ﻿using System;
-using Engine.ComponentSystem.Components.Messages;
+using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -78,7 +78,7 @@ namespace Engine.ComponentSystem.Components
 
                 if (Entity != null)
                 {
-                    Entity.SendMessageToComponents(ref message);
+                    Entity.SendMessage(ref message);
                 }
             }
         }
@@ -107,7 +107,7 @@ namespace Engine.ComponentSystem.Components
 
                 if (Entity != null)
                 {
-                    Entity.SendMessageToComponents(ref message);
+                    Entity.SendMessage(ref message);
                 }
             }
         }

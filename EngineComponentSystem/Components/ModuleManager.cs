@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Engine.ComponentSystem.Components.Messages;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Modules;
 using Engine.Serialization;
 using Engine.Util;
@@ -159,7 +159,7 @@ namespace Engine.ComponentSystem.Components
             {
                 ModuleAdded<TModifier> addedMessage;
                 addedMessage.Module = module;
-                Entity.SendMessageToComponents(ref addedMessage);
+                Entity.SendMessage(ref addedMessage);
             }
         }
 
@@ -197,7 +197,7 @@ namespace Engine.ComponentSystem.Components
                 {
                     ModuleRemoved<TModifier> removedMessage;
                     removedMessage.Module = module;
-                    Entity.SendMessageToComponents(ref removedMessage);
+                    Entity.SendMessage(ref removedMessage);
                 }
                 // Invalidate after event, to avoid handlers of that to rebuild
                 // the cache.
@@ -229,7 +229,7 @@ namespace Engine.ComponentSystem.Components
             ModuleValueInvalidated<TModifier> invalidatedMessage;
             _attributeCache.Remove(type);
             invalidatedMessage.ValueType = type;
-            Entity.SendMessageToComponents(ref invalidatedMessage);
+            Entity.SendMessage(ref invalidatedMessage);
         }
 
         #endregion

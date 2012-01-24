@@ -1,6 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using Engine.ComponentSystem.Components;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -24,37 +22,19 @@ namespace Engine.ComponentSystem.Systems
     }
 
     /// <summary>
-    /// Interface for component systems (which are responsible for
-    /// updating a specific type of component with an agreed upon
-    /// parameterization).
-    /// 
-    /// <para>
-    /// Note that cloning systems will simply result in a new
-    /// instance of the same type. Components will not be
-    /// copied.
-    /// </para>
+    /// Interface for generic systems (which implement self-contained logic).
     /// </summary>
-    public interface IComponentSystem : ICopyable<IComponentSystem>, IPacketizable, IHashable
+    public interface ISystem : ICopyable<ISystem>, IPacketizable, IHashable
     {
         #region Properties
 
         /// <summary>
         /// The component system manager this system is part of.
         /// </summary>
-        IComponentSystemManager Manager { get; set; }
-        
-        /// <summary>
-        /// A list of components registered in this system.
-        /// </summary>
-        ReadOnlyCollection<AbstractComponent> UpdateableComponents { get; }
+        ISystemManager Manager { get; set; }
 
         /// <summary>
-        /// A list of components registered in this system.
-        /// </summary>
-        ReadOnlyCollection<AbstractComponent> DrawableComponents { get; }
-
-        /// <summary>
-        /// Tells if this component system should be packetized and sent via
+        /// Tells if this system should be packetized and sent via
         /// the network (server to client). This should only be true for logic
         /// related systems, that affect functionality that has to work exactly
         /// the same on both server and client.
@@ -90,35 +70,7 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Components
-
-        /// <summary>
-        /// Add the component to this system, if it's supported.
-        /// </summary>
-        /// <param name="component">The component to add.</param>
-        /// <returns>This component system, for chaining.</returns>
-        IComponentSystem AddComponent(AbstractComponent component);
-
-        /// <summary>
-        /// Removes the component from the system, if it's in it.
-        /// </summary>
-        /// <param name="component">The component to remove.</param>
-        void RemoveComponent(AbstractComponent component);
-
-        /// <summary>
-        /// Removes all components from this system.
-        /// </summary>
-        void Clear();
-
-        #endregion
-
         #region Messaging
-
-        /// <summary>
-        /// Inform all components in this system of a message.
-        /// </summary>
-        /// <param name="message">The sent message.</param>
-        void SendMessageToComponents<T>(ref T message) where T : struct;
 
         /// <summary>
         /// Inform a system of a message that was sent by another system.

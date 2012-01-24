@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Entities;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Entities;
-using Space.ComponentSystem.Systems.Messages;
+using Space.ComponentSystem.Messages;
 using Space.Data;
 
 namespace Space.ComponentSystem.Systems
@@ -23,7 +22,7 @@ namespace Space.ComponentSystem.Systems
     /// re-generated procedurally whenever a cell gets re-activated.
     /// </para>
     /// </summary>
-    sealed class UniverseSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
+    sealed class UniverseSystem : AbstractSystem
     {
         #region Properties
 
@@ -260,7 +259,7 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override IComponentSystem DeepCopy(IComponentSystem into)
+        public override ISystem DeepCopy(ISystem into)
         {
             var copy = (UniverseSystem)base.DeepCopy(into);
 

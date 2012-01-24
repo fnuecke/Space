@@ -54,7 +54,7 @@ namespace Space.ComponentSystem.Entities
             Entity entity = CreateShip(shipData, faction, ref position);
 
             var input = entity.GetComponent<ShipControl>();
-            input.SetStabilizing(true);
+            input.Stabilizing = true;
             entity.AddComponent(new AiComponent(command));
             entity.AddComponent(new Death());
             

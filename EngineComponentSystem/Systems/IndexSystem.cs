@@ -254,7 +254,7 @@ namespace Engine.ComponentSystem.Systems
             _reusableComponentList.Clear();
         }
 
-        public override void Clear()
+        protected override void Clear()
         {
             base.Clear();
 
@@ -379,7 +379,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Serialization / Hashing / Cloning
 
-        public override IComponentSystem DeepCopy(IComponentSystem into)
+        public override ISystem DeepCopy(ISystem into)
         {
             var copy = (IndexSystem)base.DeepCopy(into);
 

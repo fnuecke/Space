@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Components.Messages;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
-using Space.ComponentSystem.Components.Messages;
 using Space.ComponentSystem.Entities;
+using Space.ComponentSystem.Messages;
 using Space.ComponentSystem.Modules;
 using Space.Data;
 
@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Components
                                 // Generate message.
                                 WeaponFired message;
                                 message.Weapon = weapon;
-                                Entity.SendMessageToComponents(ref message);
+                                Entity.SendMessage(ref message);
                             }
                         }
                     }

@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.Systems;
+﻿using Engine.ComponentSystem;
 using Engine.Simulation.Commands;
 
 namespace Engine.Simulation

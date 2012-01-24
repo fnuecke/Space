@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Systems.Messages;
+using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -21,7 +20,7 @@ namespace Space.ComponentSystem.Systems
     /// neighbor search).
     /// </para>
     /// </summary>
-    public class CellSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
+    public class CellSystem : AbstractSystem
     {
         #region Constants
 
@@ -137,15 +136,6 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Accept avatar components
-
-        protected override bool SupportsComponentUpdate(AbstractComponent component)
-        {
-            return component.GetType() == typeof(Avatar);
-        }
-
-        #endregion
-
         #region Logic
 
         /// <summary>
@@ -158,9 +148,15 @@ namespace Space.ComponentSystem.Systems
         {
             // Check the positions of all avatars to check which cells
             // should live, and which should die / stay dead.
-            foreach (var avatar in UpdateableComponents)
+            var avatarSystem = Manager.GetSystem<AvatarSystem>();
+            if (avatarSystem == null)
             {
-                var transform = avatar.Entity.GetComponent<Transform>();
+                return;
+            }
+
+            foreach (var avatar in avatarSystem.Avatars)
+            {
+                var transform = avatar.GetComponent<Transform>();
                 if (transform != null)
                 {
                     int x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
@@ -184,8 +180,7 @@ namespace Space.ComponentSystem.Systems
                     changedMessage.X = xy.Item1;
                     changedMessage.Y = xy.Item2;
                     changedMessage.State = true;
-                    Manager.SendMessageToSystems(ref changedMessage);
-                    Manager.SendMessageToComponents(ref changedMessage);
+                    Manager.SendMessage(ref changedMessage);
                 }
             }
             _bornCellsIds.Clear();
@@ -205,8 +200,7 @@ namespace Space.ComponentSystem.Systems
                     changedMessage.X = xy.Item1;
                     changedMessage.Y = xy.Item2;
                     changedMessage.State = false;
-                    Manager.SendMessageToSystems(ref changedMessage);
-                    Manager.SendMessageToComponents(ref changedMessage);
+                    Manager.SendMessage(ref changedMessage);
                 }
             }
             _pendingCellsIds.Clear();
@@ -303,7 +297,7 @@ namespace Space.ComponentSystem.Systems
         /// Creates a deep copy of this system.
         /// </summary>
         /// <returns>A deep copy of this system.</returns>
-        public override IComponentSystem DeepCopy(IComponentSystem into)
+        public override ISystem DeepCopy(ISystem into)
         {
             var copy = (CellSystem)base.DeepCopy(into);
 
@@ -322,6 +316,7 @@ namespace Space.ComponentSystem.Systems
                 copy._deceasedCellsIds = new HashSet<ulong>();
                 copy._pendingCellsIds = new List<ulong>();
             }
+
             foreach (var item in _pendingCells)
             {
                 copy._pendingCells.Add(item.Key, item.Value);

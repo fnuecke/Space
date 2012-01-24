@@ -170,6 +170,7 @@
     <Compile Include="ComponentSystem\Components\Respawn.cs" />
     <Compile Include="ComponentSystem\Components\SpawnComponent.cs" />
     <Compile Include="ComponentSystem\Components\SunRenderer.cs" />
+    <Compile Include="ComponentSystem\Components\Target.cs" />
     <Compile Include="ComponentSystem\Components\ThrusterEffect.cs" />
     <Compile Include="ComponentSystem\Parameterizations\ParticleParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\ParticleSystem.cs" />
@@ -177,7 +178,7 @@
     <Compile Include="ComponentSystem\Systems\UniverseSystem.cs" />
     <Compile Include="ComponentSystem\Components\WeaponSound.cs" />
     <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
-    <Compile Include="ComponentSystem\Systems\Messages\CellStateChanged.cs" />
+    <Compile Include="ComponentSystem\Messages\CellStateChanged.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="Graphics\Planet.cs" />
     <Compile Include="Graphics\Sun.cs" />
@@ -202,7 +203,7 @@
     <Compile Include="ScreenManagement\Screens\Helper\SpaceForms.cs" />
     <Compile Include="ScreenManagement\Screens\Interfaces\AHudElement.cs" />
     <Compile Include="Simulation\Commands\ScriptCommand.cs" />
-    <Compile Include="ComponentSystem\Components\Messages\WeaponFired.cs" />
+    <Compile Include="ComponentSystem\Messages\WeaponFired.cs" />
     <Compile Include="ComponentSystem\Components\ShipControl.cs" />
     <Compile Include="ComponentSystem\Components\WeaponControl.cs" />
     <Compile Include="ComponentSystem\Entities\EntityFactory.cs" />

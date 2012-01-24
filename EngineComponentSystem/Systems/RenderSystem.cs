@@ -102,7 +102,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Copying
 
-        public override IComponentSystem DeepCopy(IComponentSystem into)
+        public override ISystem DeepCopy(ISystem into)
         {
             var copy = (RenderSystem<TUpdateParameterization, TDrawParameterization>)base.DeepCopy(into);
 

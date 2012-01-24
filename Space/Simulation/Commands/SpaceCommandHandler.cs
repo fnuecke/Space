@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Reflection;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
@@ -135,10 +136,10 @@ def ge(id):
 
                             // Begin/stop to stabilize our position.
                             case PlayerInputCommand.PlayerInputCommandType.BeginStabilizing:
-                                input.SetStabilizing(true);
+                                input.Stabilizing = true;
                                 break;
                             case PlayerInputCommand.PlayerInputCommandType.StopStabilizing:
-                                input.SetStabilizing(false);
+                                input.Stabilizing = false;
                                 break;
 
                             // Begin rotating.

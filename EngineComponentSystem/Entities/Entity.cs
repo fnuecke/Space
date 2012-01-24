@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -75,11 +75,11 @@ namespace Engine.ComponentSystem.Entities
         /// system, the component will be registered with all applicable component systems.
         /// </summary>
         /// <param name="component">The component to add.</param>
-        public void AddComponent(AbstractComponent component)
+        public int AddComponent(AbstractComponent component)
         {
             if (component.Entity == this)
             {
-                return;
+                return component.UID;
             }
             if (component.Entity != null)
             {
@@ -89,6 +89,7 @@ namespace Engine.ComponentSystem.Entities
             {
                 component.UID = _idManager.GetId();
                 AddComponentUnchecked(component);
+                return component.UID;
             }
         }
 
@@ -186,14 +187,20 @@ namespace Engine.ComponentSystem.Entities
                 if (index >= 0)
                 {
                     var component = _components[index];
+
+                    _components.RemoveAt(index);
+                    _idManager.ReleaseId(component.UID);
+
                     if (Manager != null)
                     {
-                        Manager.SystemManager.RemoveComponent(component);
+                        ComponentRemoved message;
+                        message.Component = component;
+                        Manager.SendMessage(ref message);
                     }
-                    _idManager.ReleaseId(component.UID);
-                    _components.RemoveAt(index);
-                    component.UID = -1;
+
                     component.Entity = null;
+                    component.UID = -1;
+
                     return component;
                 }
             }
@@ -208,9 +215,12 @@ namespace Engine.ComponentSystem.Entities
         {
             _components.Add(component);
             component.Entity = this;
+
             if (Manager != null)
             {
-                Manager.SystemManager.AddComponent(component);
+                ComponentAdded message;
+                message.Component = component;
+                Manager.SendMessage(ref message);
             }
         }
 
@@ -222,7 +232,7 @@ namespace Engine.ComponentSystem.Entities
         /// Send a message to all components of this entity.
         /// </summary>
         /// <param name="message">The message to send.</param>
-        public void SendMessageToComponents<T>(ref T message) where T : struct
+        public void SendMessage<T>(ref T message) where T : struct
         {
             foreach (var component in _components)
             {

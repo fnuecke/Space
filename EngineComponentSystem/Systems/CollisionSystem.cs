@@ -154,9 +154,9 @@ namespace Engine.ComponentSystem.Systems
             {
                 Collision message;
                 message.OtherEntity = otherCollidable.Entity;
-                currentCollidable.Entity.SendMessageToComponents(ref message);
+                currentCollidable.Entity.SendMessage(ref message);
                 message.OtherEntity = currentCollidable.Entity;
-                otherCollidable.Entity.SendMessageToComponents(ref message);
+                otherCollidable.Entity.SendMessage(ref message);
             }
         }
 
@@ -164,7 +164,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Copying
 
-        public override IComponentSystem DeepCopy(IComponentSystem into)
+        public override ISystem DeepCopy(ISystem into)
         {
             var copy = (CollisionSystem)base.DeepCopy(into);
 

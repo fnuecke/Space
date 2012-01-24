@@ -38,7 +38,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
             var info = AiComponent.Entity.GetComponent<ShipInfo>();
             var input = AiComponent.Entity.GetComponent<ShipControl>();
-            input.SetStabilizing(false);
+            input.Stabilizing = false;
             var position = info.Position;
 
             direction = transform.Translation - position;

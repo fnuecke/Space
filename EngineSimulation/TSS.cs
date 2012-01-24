@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -76,21 +76,21 @@ namespace Engine.Simulation
         public bool WaitingForSynchronization { get; private set; }
 
         /// <summary>
-        /// Get the trailing state.
+        /// Get the trailing simulaton.
         /// </summary>
-        private IAuthoritativeSimulation TrailingState { get { return _simulations[_simulations.Length - 1]; } }
+        private IAuthoritativeSimulation TrailingSimulation { get { return _simulations[_simulations.Length - 1]; } }
 
         /// <summary>
-        /// Get the leading state.
+        /// Get the leading simulation.
         /// </summary>
-        private IAuthoritativeSimulation LeadingState { get { return _simulations[0]; } }
+        private IAuthoritativeSimulation LeadingSimulation { get { return _simulations[0]; } }
 
         #endregion
 
         #region Fields
 
         /// <summary>
-        /// The delays of the individual states.
+        /// The delays of the individual simulations.
         /// </summary>
         private uint[] _delays;
 
@@ -102,23 +102,27 @@ namespace Engine.Simulation
 #endif
 
         /// <summary>
-        /// The list of running states. They are ordered in in increasing delay, i.e.
-        /// the state at slot 0 is the leading one, 1 is the next newest, and so on.
+        /// The list of running simulations. They are ordered in in increasing
+        /// delay, i.e. the state at slot 0 is the leading one, 1 is the next
+        /// newest, and so on.
         /// </summary>
         private IAuthoritativeSimulation[] _simulations;
 
         /// <summary>
-        /// List of objects to add to delayed states when they reach the given frame.
+        /// List of objects to add to delayed simulations when they reach the
+        /// given frame.
         /// </summary>
         private Dictionary<long, List<Entity>> _adds = new Dictionary<long, List<Entity>>();
 
         /// <summary>
-        /// List of object ids to remove from delayed states when they reach the given frame.
+        /// List of object ids to remove from delayed simulations when they
+        /// reach the given frame.
         /// </summary>
         private Dictionary<long, List<int>> _removes = new Dictionary<long, List<int>>();
 
         /// <summary>
-        /// List of commands to execute in delayed states when they reach the given frame.
+        /// List of commands to push in delayed simulations when they reach the
+        /// given frame.
         /// </summary>
         private Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
 
@@ -129,7 +133,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Creates a new TSS based meta state.
         /// </summary>
-        /// <param name="delays">The delays to use for trailing states, with the delays in frames.</param>
+        /// <param name="delays">The delays to use for trailing simulations, with the delays in frames.</param>
         public TSS(uint[] delays)
         {
             _delays = new uint[delays.Length + 1];
@@ -137,13 +141,13 @@ namespace Engine.Simulation
             Array.Sort(_delays);
 
 #if TSS_THREADING
-            // Initialize thread data. The trailing state will always be
+            // Initialize thread data. The trailing simulation will always be
             // updated by the main thread, to check if a rollback is required,
-            // so we need one less than we have states.
+            // so we need one less than we have simulations.
             _threadData = new ThreadData[_delays.Length - 1];
 #endif
 
-            // Generate initial states.
+            // Generate initial simulations.
             _simulations = new IAuthoritativeSimulation[_delays.Length];
 
             // Our pass-through component manager, which allows adding and
@@ -159,11 +163,11 @@ namespace Engine.Simulation
         #region Invalidation / (Re-)Initialization
 
         /// <summary>
-        /// Initialize the TSS to the given state. This also clears the
+        /// Initialize the TSS to the given simulation. This also clears the
         /// <c>WaitingForSynchronization</c> flag.
         /// </summary>
-        /// <param name="state">the state to initialize this TSS to.</param>
-        public void Initialize(IAuthoritativeSimulation state)
+        /// <param name="simulation">The simulation to initialize this TSS to.</param>
+        public void Initialize(IAuthoritativeSimulation simulation)
         {
 #if DEBUG && GAMELOG
             if (GameLogEnabled)
@@ -171,13 +175,13 @@ namespace Engine.Simulation
                 gamelog.Trace("Initializing TSS.");
             }
 #endif
-            MirrorSimulation(state, _simulations.Length - 1);
+            MirrorSimulation(simulation, _simulations.Length - 1);
             WaitingForSynchronization = false;
         }
 
         /// <summary>
-        /// Mark the state as invalid (desynchronized). Will trigger a new
-        /// <c>ThresholdExceeded</c> event.
+        /// Mark the simulation as invalid (desynchronized). Will trigger a new
+        /// <c>Invalidated</c> event.
         /// </summary>
         public void Invalidate()
         {
@@ -195,11 +199,11 @@ namespace Engine.Simulation
         #region Interfaces
 
         /// <summary>
-        /// Push a command to all sub states.
+        /// Push a command to all sub simulations.
         /// 
-        /// This will lead to a rollback of all states that have already passed
-        /// the command's frame. They will be fast-forwarded appropriately in
-        /// the next Step().
+        /// This will lead to a rollback of all simulations that have already
+        /// passed the command's frame. They will be fast-forwarded
+        /// appropriately in the next update.
         /// </summary>
         /// <param name="command">the command to push.</param>
         public void PushCommand(Command command)
@@ -226,14 +230,14 @@ namespace Engine.Simulation
             // Check if we can possibly apply this command.
             if (frame >= TrailingFrame)
             {
-                // Store it to be removed in trailing states.
+                // Store it to be removed in trailing simulations.
                 if (!_commands.ContainsKey(frame))
                 {
                     // No such command yet, push it.
                     _commands.Add(frame, new List<Command>());
                 }
                 // We don't need to check for duplicate / replacing authoritative here,
-                // because the sub-state will do that itself.
+                // because the sub-simulation will do that itself.
                 _commands[frame].Add(command);
 
                 // Rewind to the frame to retroactively apply changes.
@@ -250,8 +254,8 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Advance leading state to <c>CurrentFrame + 1</c> and update all trailing
-        /// states accordingly.
+        /// Advance leading simulation to <c>CurrentFrame + 1</c> and update
+        /// all trailing simulations accordingly.
         /// </summary>
         public void Update()
         {
@@ -271,7 +275,7 @@ namespace Engine.Simulation
         /// <param name="frame">the frame to insert it at.</param>
         public void AddEntity(Entity entity, long frame)
         {
-            // Store it to be inserted in trailing states.
+            // Store it to be inserted in trailing simulations.
             if (!_adds.ContainsKey(frame))
             {
                 _adds.Add(frame, new List<Entity>());
@@ -305,7 +309,7 @@ namespace Engine.Simulation
         /// <param name="frame">the frame to remove it at.</param>
         public void RemoveEntity(int entityUid, long frame)
         {
-            // Store it to be removed in trailing states.
+            // Store it to be removed in trailing simulations.
             if (!_removes.ContainsKey(frame))
             {
                 _removes.Add(frame, new List<int>());
@@ -368,7 +372,7 @@ namespace Engine.Simulation
         #region Serialization / Hashing
 
         /// <summary>
-        /// Serialize a state to a packet.
+        /// Serialize a simulation to a packet.
         /// </summary>
         /// <param name="packet">the packet to write the data to.</param>
         public Packet Packetize(Packet packet)
@@ -405,9 +409,9 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Deserialize a state from a packet.
+        /// Deserialize a simulation from a packet.
         /// </summary>
-        /// <param name="packet">the packet to read the data from.</param>
+        /// <param name="packet">The packet to read the data from.</param>
         public void Depacketize(Packet packet)
         {
             // Get the current frame of the simulation.
@@ -473,7 +477,7 @@ namespace Engine.Simulation
         /// <param name="hasher">the hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
-            TrailingState.Hash(hasher);
+            TrailingSimulation.Hash(hasher);
         }
 
         /// <summary>
@@ -540,19 +544,19 @@ namespace Engine.Simulation
 #endif
             // Process the trailing state, see if we need a roll-back.
             bool needsRewind = false;
-            while (TrailingState.CurrentFrame < frame - _delays[_simulations.Length - 1])
+            while (TrailingSimulation.CurrentFrame < frame - _delays[_simulations.Length - 1])
             {
                 // It needs running, so prepare it for that.
-                PrepareForUpdate(TrailingState);
+                PrepareForUpdate(TrailingSimulation);
 
                 // Then check if any of the commands were tentative.
-                if (TrailingState.SkipTentativeCommands())
+                if (TrailingSimulation.SkipTentativeCommands())
                 {
                     needsRewind = true;
                 }
 
                 // Do the actual stepping for the state.
-                TrailingState.Update();
+                TrailingSimulation.Update();
             }
 
 #if TSS_THREADING
@@ -563,7 +567,7 @@ namespace Engine.Simulation
             if (needsRewind)
             {
                 logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
-                MirrorSimulation(TrailingState, _simulations.Length - 2);
+                MirrorSimulation(TrailingSimulation, _simulations.Length - 2);
 
                 // Update the other states once more.
                 FastForward(frame);
@@ -578,7 +582,7 @@ namespace Engine.Simulation
             if (needsRewind)
             {
                 logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
-                MirrorSimulation(TrailingState, _simulations.Length - 2);
+                MirrorSimulation(TrailingSimulation, _simulations.Length - 2);
             }
 
             // Fast-forward the remaining states. Do not log in those, we only
@@ -795,7 +799,7 @@ namespace Engine.Simulation
         {
             #region Properties
 
-            public IComponentSystemManager SystemManager { get { return _systemManager; } set { throw new NotSupportedException(); } }
+            public ISystemManager SystemManager { get { return _systemManager; } set { throw new NotSupportedException(); } }
 
             #endregion
 
@@ -806,7 +810,7 @@ namespace Engine.Simulation
             /// </summary>
             private TSS _tss;
 
-            private IComponentSystemManager _systemManager;
+            private ISystemManager _systemManager;
 
             #endregion
 
@@ -836,12 +840,12 @@ namespace Engine.Simulation
 
             public Entity GetEntity(int entityUid)
             {
-                return _tss.LeadingState.EntityManager.GetEntity(entityUid);
+                return _tss.LeadingSimulation.EntityManager.GetEntity(entityUid);
             }
 
             public bool Contains(int entityUid)
             {
-                return _tss.LeadingState.EntityManager.Contains(entityUid);
+                return _tss.LeadingSimulation.EntityManager.Contains(entityUid);
             }
 
             #endregion
@@ -894,7 +898,7 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
-            public void SendMessageToEntities<T>(ref T message) where T : struct
+            public void SendMessage<T>(ref T message) where T : struct
             {
                 throw new NotImplementedException();
             }
@@ -905,7 +909,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Helper for system initialization and accessing systems of the leading state.
         /// </summary>
-        private class TSSComponentSystemManager : IComponentSystemManager
+        private class TSSComponentSystemManager : ISystemManager
         {
             #region Fields
 
@@ -927,20 +931,33 @@ namespace Engine.Simulation
 
             #region Interfaces
 
-            public IComponentSystemManager AddSystem(IComponentSystem system)
+            /// <summary>
+            /// Draw the leading simulation.
+            /// </summary>
+            public void Draw(GameTime gameTime, long frame)
+            {
+                _tss.LeadingSimulation.EntityManager.SystemManager.Draw(gameTime, frame);
+            }
+
+            /// <summary>
+            /// Add a system to all sub-simulations.
+            /// </summary>
+            public ISystemManager AddSystem(ISystem system)
             {
                 if (_tss.CurrentFrame > 0)
                 {
                     throw new InvalidOperationException("Cannot add systems after simulation has started.");
                 }
+
                 foreach (var state in _tss._simulations)
                 {
                     state.EntityManager.SystemManager.AddSystem(system.DeepCopy());
                 }
+
                 return this;
             }
 
-            public void AddSystems(IEnumerable<IComponentSystem> systems)
+            public void AddSystems(IEnumerable<ISystem> systems)
             {
                 foreach (var system in systems)
                 {
@@ -948,41 +965,21 @@ namespace Engine.Simulation
                 }
             }
 
-            public T GetSystem<T>() where T : IComponentSystem
+            public T GetSystem<T>() where T : ISystem
             {
-                return _tss.LeadingState.EntityManager.SystemManager.GetSystem<T>();
-            }
-
-            /// <summary>
-            /// Only render passes supported, based on leading state.
-            /// </summary>
-            public void Draw(GameTime gameTime, long frame)
-            {
-                _tss.LeadingState.EntityManager.SystemManager.Draw(gameTime, frame);
+                return _tss.LeadingSimulation.EntityManager.SystemManager.GetSystem<T>();
             }
 
             #endregion
 
             #region Unsupported
 
-            public ReadOnlyCollection<IComponentSystem> Systems
-            {
-                get
-                {
-                    throw new NotSupportedException();
-                }
-            }
+            public ReadOnlyCollection<ISystem> Systems { get { throw new NotSupportedException(); } }
 
             public IEntityManager EntityManager
             {
-                get
-                {
-                    throw new NotSupportedException();
-                }
-                set
-                {
-                    throw new NotSupportedException();
-                }
+                get { throw new NotSupportedException(); }
+                set { throw new NotSupportedException(); }
             }
 
             public void Update(long frame)
@@ -990,34 +987,14 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
-            public void RemoveSystem(IComponentSystem system)
+            public void RemoveSystem(ISystem system)
             {
                 throw new NotSupportedException();
             }
 
-            public IComponentSystemManager AddComponent(AbstractComponent component)
+            public void SendMessage<T>(ref T message) where T : struct
             {
                 throw new NotSupportedException();
-            }
-
-            public void RemoveComponent(AbstractComponent component)
-            {
-                throw new NotSupportedException();
-            }
-
-            public void ClearComponents()
-            {
-                throw new NotSupportedException();
-            }
-
-            public void SendMessageToSystems<T>(ref T message) where T : struct
-            {
-                throw new NotSupportedException();
-            }
-
-            public void SendMessageToComponents<T>(ref T message) where T : struct
-            {
-                throw new NotImplementedException();
             }
 
             public Packet Packetize(Packet packet)
@@ -1035,12 +1012,12 @@ namespace Engine.Simulation
                 throw new NotSupportedException();
             }
 
-            public IComponentSystemManager DeepCopy()
+            public ISystemManager DeepCopy()
             {
                 throw new NotSupportedException();
             }
 
-            public IComponentSystemManager DeepCopy(IComponentSystemManager into)
+            public ISystemManager DeepCopy(ISystemManager into)
             {
                 throw new NotSupportedException();
             }

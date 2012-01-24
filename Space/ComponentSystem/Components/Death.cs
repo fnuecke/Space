@@ -1,7 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Entities;
 
 namespace Space.ComponentSystem.Components

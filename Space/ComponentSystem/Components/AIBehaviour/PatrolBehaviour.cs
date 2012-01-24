@@ -30,7 +30,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             var info = AiComponent.Entity.GetComponent<ShipInfo>();
             var input = AiComponent.Entity.GetComponent<ShipControl>();
             input.SetShooting(false);
-            input.SetStabilizing(true);
+            input.Stabilizing = true;
             //Next, we'll turn the characters back towards the center of the screen, to
             //prevent them from getting stuck on the edges of the screen.   
             float distanceFromCenter = Vector2.Distance(AiComponent.Command.Target, info.Position);

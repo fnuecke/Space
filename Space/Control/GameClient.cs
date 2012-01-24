@@ -160,7 +160,7 @@ namespace Space.Control
         /// </summary>
         /// <typeparam name="T">The type of the component system to get.</typeparam>
         /// <returns>The component system of that type, or <c>null</c></returns>
-        public T GetSystem<T>() where T : IComponentSystem
+        public T GetSystem<T>() where T : ISystem
         {
             if (IsRunning())
             {

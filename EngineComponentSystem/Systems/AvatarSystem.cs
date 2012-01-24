@@ -1,15 +1,25 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
-using Engine.ComponentSystem.Parameterizations;
+using Engine.ComponentSystem.Messages;
 
 namespace Engine.ComponentSystem.Systems
 {
     /// <summary>
     /// Look-up system which allows fetching avatars for individual players.
     /// </summary>
-    public class AvatarSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
+    public class AvatarSystem : AbstractSystem
     {
+        #region Properties
+
+        /// <summary>
+        /// The list of all currently known player avatars.
+        /// </summary>
+        public IEnumerable<Entity> Avatars { get { return _avatars.Values; } }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -39,34 +49,60 @@ namespace Engine.ComponentSystem.Systems
 
         #region Avatar entity tracking
 
-        public override void Clear()
+        public override void HandleMessage<T>(ref T message)
         {
-            base.Clear();
-            _avatars.Clear();
+            // Check if it was an entity added / removed message. If so, add or
+            // remove all components of that entity.
+            if (message is EntityAdded)
+            {
+                foreach (var component in ((EntityAdded)(ValueType)message).Entity.Components)
+                {
+                    AddAvatar(component);
+                }
+            }
+            else if (message is EntityRemoved)
+            {
+                foreach (var component in ((EntityRemoved)(ValueType)message).Entity.Components)
+                {
+                    RemoveAvatar(component);
+                }
+            }
+            else if (message is EntitiesCleared)
+            {
+                _avatars.Clear();
+            }
+            else if (message is ComponentAdded)
+            {
+                AddAvatar(((ComponentAdded)(ValueType)message).Component);
+            }
+            else if (message is ComponentRemoved)
+            {
+                RemoveAvatar(((ComponentAdded)(ValueType)message).Component);
+            }
         }
 
-        protected override bool SupportsComponentUpdate(AbstractComponent component)
+        private void AddAvatar(AbstractComponent component)
         {
-            return component.GetType() == typeof(Avatar);
+            if (component is Avatar)
+            {
+                var avatar = (Avatar)component;
+                _avatars[avatar.PlayerNumber] = avatar.Entity;
+            }
         }
 
-        protected override void HandleComponentAdded(AbstractComponent component)
+        private void RemoveAvatar(AbstractComponent component)
         {
-            var avatar = (Avatar)component;
-            _avatars[avatar.PlayerNumber] = avatar.Entity;
-        }
-
-        protected override void HandleComponentRemoved(AbstractComponent component)
-        {
-            var avatar = (Avatar)component;
-            _avatars.Remove(avatar.PlayerNumber);
+            if (component is Avatar)
+            {
+                _avatars.Remove(((Avatar)component).PlayerNumber);
+            }
         }
 
         #endregion
 
         #region Cloning
 
-        public override IComponentSystem DeepCopy(IComponentSystem into)
+        public override ISystem DeepCopy(ISystem into)
         {
             // Get the base clone.
             var copy = (AvatarSystem)base.DeepCopy(into);

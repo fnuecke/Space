@@ -1,8 +1,8 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
-using Engine.ComponentSystem.Systems.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components.AIBehaviour;
@@ -208,7 +208,7 @@ namespace Space.ComponentSystem.Components
             if (_currentbehaviour is AttackBehaviour && message is EntityRemoved)
             {
                 var beh = (AttackBehaviour)_currentbehaviour;
-                if (((EntityRemoved)((ValueType)message)).EntityUid == beh.TargetEntity)
+                if (((EntityRemoved)((ValueType)message)).Entity.UID == beh.TargetEntity)
                     beh.TargetDead = true;
             }
         }

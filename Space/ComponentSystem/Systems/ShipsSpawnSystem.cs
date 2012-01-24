@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Parameterizations;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
-using Engine.ComponentSystem.Systems.Messages;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Entities;
-using Space.ComponentSystem.Systems.Messages;
+using Space.ComponentSystem.Messages;
 using Space.Data;
 
 namespace Space.ComponentSystem.Systems
@@ -18,7 +17,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages spawning dynamic objects for cells, such as random ships.
     /// </summary>
-    sealed class ShipsSpawnSystem : AbstractComponentSystem<NullParameterization, NullParameterization>
+    sealed class ShipsSpawnSystem : AbstractSystem
     {
         #region Fields
 
@@ -87,7 +86,7 @@ namespace Space.ComponentSystem.Systems
             else if (message is EntityRemoved)
             {
                 var info = (EntityRemoved)(ValueType)message;
-                _entities.Remove(info.EntityUid);
+                _entities.Remove(info.Entity.UID);
             }
         }
 
@@ -128,7 +127,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
-        public override IComponentSystem DeepCopy(IComponentSystem into)
+        public override ISystem DeepCopy(ISystem into)
         {
             var copy = (ShipsSpawnSystem)base.DeepCopy(into);
 
