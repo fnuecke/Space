@@ -21,6 +21,15 @@ namespace Engine.Util
 
         #endregion
 
+        #region Fields
+
+        /// <summary>
+        /// Used for locking to support multi-threaded loading.
+        /// </summary>
+        private object _lock = new object();
+
+        #endregion
+
         #region Constructor
 
         /// <summary>
@@ -58,18 +67,27 @@ namespace Engine.Util
             var localizedAssetName = assetName + "." + Culture.Name;
             if (File.Exists(Path.Combine(RootDirectory, GetCleanPath(localizedAssetName) + ".xnb")))
             {
-                return base.Load<T>(localizedAssetName);
+                lock (_lock)
+                {
+                    return base.Load<T>(localizedAssetName);
+                }
             }
 
             // Try language only (xx).
             localizedAssetName = assetName + "." + Culture.TwoLetterISOLanguageName;
             if (File.Exists(Path.Combine(RootDirectory, GetCleanPath(localizedAssetName) + ".xnb")))
             {
-                return base.Load<T>(localizedAssetName);
+                lock (_lock)
+                {
+                    return base.Load<T>(localizedAssetName);
+                }
             }
 
             // Use invariant version (no language extension).
-            return base.Load<T>(assetName);
+            lock (_lock)
+            {
+                return base.Load<T>(assetName);
+            }
         }
 
         #endregion
