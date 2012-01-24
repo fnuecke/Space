@@ -68,6 +68,34 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
 
         #endregion
 
+        #region Getter & Setter
+
+        public override void SetPosition(Point position)
+        {
+            base.SetPosition(position);
+
+            _name.SetPosition(new Point(GetPosition().X + _padding, GetPosition().Y + _padding));
+            _health.SetPosition(new Point(_name.GetPosition().X + _name.GetWidth() + 2 * _padding + 2, _name.GetPosition().Y));
+        }
+
+        public override int GetHeight()
+        {
+            int height = 0;
+            height += ((_name.GetHeight() + 2 * _padding + _borderBottom) * _listNames.Length);
+            return height;
+        }
+
+        public override int GetWidth()
+        {
+            int width = 0;
+            width += _name.GetWidth() + 2 * _padding;
+            width += _borderBottom;
+            width += _health.GetWidth() + 2 * _padding;
+            return width;
+        }
+
+        #endregion
+
         #region Initialisation
 
         /// <summary>
@@ -109,34 +137,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _health.ColorSouth = HudColors.BlueGradientDark;
             _health.ColorText = HudColors.FontLight;
             _health.TextAlign = HudSingleLabel.Alignments.Center;
-        }
-
-        #endregion
-
-        #region Getter & Setter
-
-        public override void SetPosition(Point position)
-        {
-            base.SetPosition(position);
-
-            _name.SetPosition(new Point(GetPosition().X + _padding, GetPosition().Y + _padding));
-            _health.SetPosition(new Point(_name.GetPosition().X + _name.GetWidth() + 2 * _padding + 2, _name.GetPosition().Y));
-        }
-
-        public override int GetHeight()
-        {
-            int height = 0;
-            height += ((_name.GetHeight() + 2 * _padding + _borderBottom) * _listNames.Length);
-            return height;
-        }
-
-        public override int GetWidth()
-        {
-            int width = 0;
-            width += _name.GetWidth() + 2 * _padding;
-            width += _borderBottom;
-            width += _health.GetWidth() + 2 * _padding;
-            return width;
         }
 
         #endregion

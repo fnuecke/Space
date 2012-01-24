@@ -99,7 +99,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// Please remember to reset the size if the image size has changed.
         /// </summary>
         /// <param name="path"></param>
-        public void setImage(String path)
+        public void SetImage(String path)
         {
             _image = _client.Game.Content.Load<Texture2D>(path);
         }
@@ -110,7 +110,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         /// <param name="width">The new width of the content.</param>
         /// <param name="height">The new height of the content.</param>
-        public void setContentSize(int width, int height)
+        public void SetContentSize(int width, int height)
         {
             SetWidth(width + 2 * BorderAround + BorderLeft + BorderRight + 2 * GapBorderContent);
             SetHeight(height + 2 * BorderAround + 2 * GapBorderContent);
@@ -120,29 +120,9 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// Returns the content size (without the borders!)
         /// </summary>
         /// <returns>The content size (without the borders).</returns>
-        public Point getContentSize()
+        public Point GetContentSize()
         {
             return new Point(_width - 2 * BorderAround - BorderLeft - BorderRight - 2 * GapBorderContent, _height - 2 * BorderAround - 2 * GapBorderContent);
-        }
-
-        /// <summary>
-        /// Returns the size of the element (with borders).
-        /// </summary>
-        /// <returns>The size of the element (with borders)</returns>
-        public Point getSize()
-        {
-            return new Point(_width, _height);
-        }
-
-        /// <summary>
-        /// Commit the size of the element (with the borders!)
-        /// </summary>
-        /// <param name="width">The new width of the element.</param>
-        /// <param name="height">The new height of the element.</param>
-        public void setSize(int width, int height)
-        {
-            _width = width;
-            _height = height;
         }
 
         #endregion
@@ -159,7 +139,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _currentMode = mode;
 
             // set the standard values into the field.
-            setSize(StandardWidth, StandardHeight);
+            SetSize(new Point(StandardWidth, StandardHeight));
             BorderLeft = StandardBorderSide;
             BorderRight = StandardBorderSide;
             BorderAround = StandardBorderAround;
@@ -186,7 +166,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spaceForms = new SpaceForms(_spriteBatch);
 
             // load an default image as image (image should not be null)
-            setImage("Textures/Portraits/default");
+            SetImage("Textures/Portraits/default");
         }
 
         #endregion

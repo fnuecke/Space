@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
 using Space.ScreenManagement.Screens.Elements.Hud;
+using Space.ScreenManagement.Screens.Elements.Hud.HudComponents;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -10,7 +11,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     {
 
         #region Fields
-        
+
         /// <summary>
         /// The current content manager.
         /// </summary>
@@ -33,6 +34,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
         private HudRadio _hudRadioBox;
         private HudPlayerList _hudPlayerList;
+        private HudBuffBar _hudIconBar;
+
+        private int _gap = 20;
 
         #endregion
 
@@ -44,7 +48,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _healthEnergyBar = new HealthEnergyBar(_client);
             _hudRadioBox = new HudRadio(_client);
             _hudPlayerList = new HudPlayerList(_client);
-
+            _hudIconBar = new HudBuffBar(_client);
         }
 
         /// <summary>
@@ -69,6 +73,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // init the player box
             _hudPlayerList.LoadContent(spriteBatch, content);
             _hudPlayerList.SetPosition(new Point(viewport.Width - _hudPlayerList.GetWidth() - 60, 60));
+
+            _hudIconBar.LoadContent(spriteBatch, content);
         }
 
         #endregion
@@ -80,6 +86,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         public void Update()
         {
+            var viewport = _spriteBatch.GraphicsDevice.Viewport;
+
             var info = _client.GetPlayerShipInfo();
             if (info == null)
             {
@@ -92,6 +100,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _healthEnergyBar.SetCurrentHealth((int) info.Health);
 
             _hudPlayerList.Update();
+
+            _hudIconBar.SetPosition(new Point(viewport.Width - _hudIconBar.GetWidth() - 60, _hudPlayerList.GetPosition().Y + _hudPlayerList.GetHeight() + _gap));
         }
 
         /// <summary>
@@ -110,6 +120,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             }
             _hudRadioBox.Draw();
             _hudPlayerList.Draw();
+
+            _hudIconBar.Draw();
         }
 
         #endregion

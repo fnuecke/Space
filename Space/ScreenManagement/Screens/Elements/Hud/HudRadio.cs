@@ -84,8 +84,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _spacerBottom.LoadContent(spriteBatch, content);
             _footer.LoadContent(spriteBatch, content);
 
-            _bgPortrait.setContentSize(69, 92);
-            _bgText.setSize(_spacerTop.GetWidth() - _bgPortrait.getSize().X - 1, _bgPortrait.getSize().Y);
+            _bgPortrait.SetContentSize(69, 92);
+            _bgText.SetSize(new Point(_spacerTop.GetWidth() - _bgPortrait.GetSize().X - 1, _bgPortrait.GetSize().Y));
             _footer.SetTextLabelLeft("Guybrush");
             _footer.SetTextLabelRight("Pir");
         }
@@ -99,8 +99,8 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             base.SetPosition(position);
             _spacerTop.SetPosition(_position);
             _bgPortrait.SetPosition(new Point(_spacerTop.GetPosition().X, _spacerTop.GetPosition().Y + _spacerTop.GetHeight()));
-            _bgText.SetPosition(new Point(_bgPortrait.GetPosition().X + _bgPortrait.getSize().X + 1, _bgPortrait.GetPosition().Y));
-            _spacerBottom.SetPosition(new Point(_bgPortrait.GetPosition().X, _bgPortrait.GetPosition().Y + _bgPortrait.getSize().Y));
+            _bgText.SetPosition(new Point(_bgPortrait.GetPosition().X + _bgPortrait.GetSize().X + 1, _bgPortrait.GetPosition().Y));
+            _spacerBottom.SetPosition(new Point(_bgPortrait.GetPosition().X, _bgPortrait.GetPosition().Y + _bgPortrait.GetSize().Y));
             _footer.SetPosition(new Point(_spacerBottom.GetPosition().X, _spacerBottom.GetPosition().Y + _spacerBottom.GetHeight()));
         }
 
