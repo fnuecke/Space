@@ -9,7 +9,7 @@ namespace Space.ComponentSystem.Modules
     /// <summary>
     /// Represents a reactor item, which is used to store and produce energy.
     /// </summary>
-    public class ReactorModule : AbstractModule<SpaceModifier>
+    public sealed class Reactor : AbstractModule<SpaceModifier>
     {
         #region Fields
         
@@ -27,7 +27,7 @@ namespace Space.ComponentSystem.Modules
 
         #region Constructor
 
-        public ReactorModule()
+        public Reactor()
         {
             AddAttributeTypeToInvalidate(SpaceModifier.Energy);
             AddAttributeTypeToInvalidate(SpaceModifier.EnergyRegeneration);
@@ -68,7 +68,7 @@ namespace Space.ComponentSystem.Modules
 
         public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
-            var copy = (ReactorModule)base.DeepCopy(into);
+            var copy = (Reactor)base.DeepCopy(into);
 
             if (copy == into)
             {

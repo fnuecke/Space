@@ -6,7 +6,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Modules
 {
-    public class SensorModule : AbstractModule<SpaceModifier>
+    public sealed class Sensor : AbstractModule<SpaceModifier>
     {
         #region Fields
 
@@ -19,7 +19,7 @@ namespace Space.ComponentSystem.Modules
 
         #region Constructor
 
-        public SensorModule()
+        public Sensor()
         {
             AddAttributeTypeToInvalidate(SpaceModifier.SensorRange);
         }
@@ -56,7 +56,7 @@ namespace Space.ComponentSystem.Modules
 
         public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
-            var copy = (SensorModule)base.DeepCopy(into);
+            var copy = (Sensor)base.DeepCopy(into);
 
             if (copy == into)
             {

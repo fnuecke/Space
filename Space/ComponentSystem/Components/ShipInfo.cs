@@ -385,7 +385,7 @@ namespace Space.ComponentSystem.Components
 
                         // Maximum acceleration. Get ship modules.
                         // Get acceleration from thrusters.
-                        foreach (var thruster in modules.GetModules<ThrusterModule>())
+                        foreach (var thruster in modules.GetModules<Thruster>())
                         {
                             _maxAcceleration += thruster.AccelerationForce;
                         }
@@ -409,7 +409,7 @@ namespace Space.ComponentSystem.Components
                     {
                         // Figure out the overall range of our radar system.
                         float radarRange = 0;
-                        foreach (var sensor in modules.GetModules<SensorModule>())
+                        foreach (var sensor in modules.GetModules<Sensor>())
                         {
                             // TODO in case we're adding sensor types (anti-cloaking, ...) check this one's actually a radar.
                             radarRange += sensor.Range;

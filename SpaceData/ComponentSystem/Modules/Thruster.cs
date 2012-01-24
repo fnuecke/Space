@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Modules
     /// Represents a single thruster item, which is responsible for providing
     /// a base speed for a certain energy drained.
     /// </summary>
-    public class ThrusterModule : AbstractModule<SpaceModifier>
+    public sealed class Thruster : AbstractModule<SpaceModifier>
     {
         #region Fields
         
@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Modules
 
         #region Constructor
 
-        public ThrusterModule()
+        public Thruster()
         {
             AddAttributeTypeToInvalidate(SpaceModifier.AccelerationForce);
             AddAttributeTypeToInvalidate(SpaceModifier.ThrusterEnergyConsumption);
@@ -67,7 +67,7 @@ namespace Space.ComponentSystem.Modules
 
         public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
-            var copy = (ThrusterModule)base.DeepCopy(into);
+            var copy = (Thruster)base.DeepCopy(into);
 
             if (copy == into)
             {

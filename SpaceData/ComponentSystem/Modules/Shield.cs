@@ -3,13 +3,13 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Modules
 {
-    public class ShieldModule : AbstractModule<SpaceModifier>
+    public sealed class Shield : AbstractModule<SpaceModifier>
     {
         #region Copying
 
         public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
-            var copy = (ShieldModule)base.DeepCopy(into);
+            var copy = (Shield)base.DeepCopy(into);
 
             if (copy == into)
             {

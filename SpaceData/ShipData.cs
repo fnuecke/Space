@@ -24,36 +24,36 @@ namespace Space.Data
         /// <summary>
         /// Slots, occupied or not, of hulls for this ship.
         /// </summary>
-        public HullModule[] Hulls = new HullModule[0];
+        public Hull[] Hulls = new Hull[0];
 
         /// <summary>
         /// Slots, occupied or not, of reactors for this ship.
         /// </summary>
-        public ReactorModule[] Reactors = new ReactorModule[0];
+        public Reactor[] Reactors = new Reactor[0];
 
         /// <summary>
         /// Slots, occupied or not, of thrusters for this ship.
         /// </summary>
-        public ThrusterModule[] Thrusters = new ThrusterModule[0];
+        public Thruster[] Thrusters = new Thruster[0];
 
         /// <summary>
         /// Slots, occupied or not, of shields for this ship.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public ShieldModule[] Shields = new ShieldModule[0];
+        public Shield[] Shields = new Shield[0];
 
         /// <summary>
         /// Slots, occupied or not, of weapons for this ship.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public WeaponModule[] Weapons = new WeaponModule[0];
+        public Weapon[] Weapons = new Weapon[0];
 
 
         /// <summary>
         /// Slot, occupied or not, of sensors for this ship.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public SensorModule[] Sensors = new SensorModule[0];
+        public Sensor[] Sensors = new Sensor[0];
 
         #region Serialization
 
@@ -76,12 +76,12 @@ namespace Space.Data
             Name = packet.ReadString();
             CollisionRadius = packet.ReadSingle();
             Texture = packet.ReadString();
-            Hulls = packet.ReadPacketizables<HullModule>();
-            Reactors = packet.ReadPacketizables<ReactorModule>();
-            Thrusters = packet.ReadPacketizables<ThrusterModule>();
-            Shields = packet.ReadPacketizables<ShieldModule>();
-            Weapons = packet.ReadPacketizables<WeaponModule>();
-            Sensors = packet.ReadPacketizables<SensorModule>();
+            Hulls = packet.ReadPacketizables<Hull>();
+            Reactors = packet.ReadPacketizables<Reactor>();
+            Thrusters = packet.ReadPacketizables<Thruster>();
+            Shields = packet.ReadPacketizables<Shield>();
+            Weapons = packet.ReadPacketizables<Weapon>();
+            Sensors = packet.ReadPacketizables<Sensor>();
         }
 
         #endregion

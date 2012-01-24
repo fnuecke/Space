@@ -10,6 +10,6 @@ namespace Space.ComponentSystem.Messages
         /// <summary>
         /// The weapon that was fired.
         /// </summary>
-        public WeaponModule Weapon;
+        public Weapon Weapon;
     }
 }

@@ -65,12 +65,12 @@ def goto(x, y):
     avatar.GetComponent[Transform]().SetTranslation(x, y)
 
 def setaf(value):
-    for thruster in modules.GetModules[ThrusterModule]():
+    for thruster in modules.GetModules[Thruster]():
         thruster.AccelerationForce = value
         thruster.Invalidate()
 
 def setec(value):
-    for thruster in modules.GetModules[ThrusterModule]():
+    for thruster in modules.GetModules[Thruster]():
         thruster.EnergyConsumption = value
         thruster.Invalidate()
 

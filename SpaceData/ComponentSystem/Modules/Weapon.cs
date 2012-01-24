@@ -9,7 +9,7 @@ namespace Space.ComponentSystem.Modules
     /// <summary>
     /// Represents a single weapon item.
     /// </summary>
-    public class WeaponModule : AbstractModule<SpaceModifier>
+    public sealed class Weapon : AbstractModule<SpaceModifier>
     {
         #region Fields
         
@@ -42,7 +42,7 @@ namespace Space.ComponentSystem.Modules
 
         #region Constructor
 
-        public WeaponModule()
+        public Weapon()
         {
             AddAttributeTypeToInvalidate(SpaceModifier.WeaponCooldown);
             AddAttributeTypeToInvalidate(SpaceModifier.WeaponEnergyConsumption);
@@ -103,7 +103,7 @@ namespace Space.ComponentSystem.Modules
 
         public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
-            var copy = (WeaponModule)base.DeepCopy(into);
+            var copy = (Weapon)base.DeepCopy(into);
 
             if (copy == into)
             {

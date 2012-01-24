@@ -26,7 +26,7 @@ namespace Space.Control
         /// <summary>
         /// The controller used by this game client.
         /// </summary>
-        public IClientController<FrameCommand> Controller { get; set; }
+        public IClientController<FrameCommand> Controller { get; private set; }
 
         #endregion
 

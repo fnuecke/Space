@@ -48,7 +48,7 @@ namespace Space.ComponentSystem.Components
                     // Rebuild base energy and regeneration values.
                     MaxValue = 0;
                     Regeneration = 0;
-                    foreach (var hull in modules.GetModules<HullModule>())
+                    foreach (var hull in modules.GetModules<Hull>())
                     {
                         MaxValue += hull.Health;
                         Regeneration += hull.HealthRegeneration;

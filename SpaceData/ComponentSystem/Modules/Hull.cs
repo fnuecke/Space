@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Modules
     /// Represents a single hull item, which determines an entity's max life
     /// and health regeneration.
     /// </summary>
-    public class HullModule : AbstractModule<SpaceModifier>
+    public sealed class Hull : AbstractModule<SpaceModifier>
     {
         #region Fields
         
@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Modules
 
         #region Constructor
 
-        public HullModule()
+        public Hull()
         {
             AddAttributeTypeToInvalidate(SpaceModifier.Health);
             AddAttributeTypeToInvalidate(SpaceModifier.HealthRegeneration);
@@ -69,7 +69,7 @@ namespace Space.ComponentSystem.Modules
 
         public override AbstractModule<SpaceModifier> DeepCopy(AbstractModule<SpaceModifier> into)
         {
-            var copy = (HullModule)base.DeepCopy(into);
+            var copy = (Hull)base.DeepCopy(into);
 
             if (copy == into)
             {

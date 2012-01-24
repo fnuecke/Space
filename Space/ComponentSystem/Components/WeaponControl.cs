@@ -58,7 +58,7 @@ namespace Space.ComponentSystem.Components
 
                 if (modules != null && energy != null && faction != null)
                 {
-                    foreach (var weapon in modules.GetModules<WeaponModule>())
+                    foreach (var weapon in modules.GetModules<Weapon>())
                     {
                         var energyConsumption = modules.GetValue(SpaceModifier.WeaponEnergyConsumption, weapon.EnergyConsumption);
                         if (energy != null && energy.Value >= energyConsumption)
@@ -107,7 +107,7 @@ namespace Space.ComponentSystem.Components
             if (message is ModuleAdded<SpaceModifier>)
             {
                 var added = (ModuleAdded<SpaceModifier>)(ValueType)message;
-                if (added.Module is WeaponModule)
+                if (added.Module is Weapon)
                 {
                     // Weapon was equipped, track a cooldown for it.
                     _cooldowns.Add(added.Module.UID, 0);
@@ -116,7 +116,7 @@ namespace Space.ComponentSystem.Components
             else if (message is ModuleRemoved<SpaceModifier>)
             {
                 var removed = (ModuleRemoved<SpaceModifier>)(ValueType)message;
-                if (removed.Module is WeaponModule)
+                if (removed.Module is Weapon)
                 {
                     // Weapon was unequipped, stop tracking.
                     _cooldowns.Remove(removed.Module.UID);
