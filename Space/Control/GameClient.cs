@@ -204,13 +204,12 @@ namespace Space.Control
                     logger.Info("Found autoexec file at '{0}', running it now...", Settings.Instance.AutoexecFilename);
                     try
                     {
-                        using (var stream = File.OpenRead(Settings.Instance.AutoexecFilename))
-                        using (var reader = new StreamReader(stream))
+                        using (var reader = new StreamReader(File.OpenRead(Settings.Instance.AutoexecFilename)))
                         {
                             string line;
                             while ((line = reader.ReadLine()) != null)
                             {
-                                // Clenan up input, and skip comment lines.
+                                // Clean up input, and skip comment lines.
                                 line = line.Trim();
                                 if (!line.StartsWith("#"))
                                 {

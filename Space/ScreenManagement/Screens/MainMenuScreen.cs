@@ -1,12 +1,3 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// MainMenuScreen.cs
-//
-// Microsoft XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
 using System;
 using Space.ScreenManagement.Screens.Entries;
 
@@ -15,7 +6,7 @@ namespace Space.ScreenManagement.Screens
     /// <summary>
     /// The main menu screen is the first thing displayed when the game starts up.
     /// </summary>
-    class MainMenuScreen : MenuScreen
+    sealed class MainMenuScreen : MenuScreen
     {
         #region Initialization
 

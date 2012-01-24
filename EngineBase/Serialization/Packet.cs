@@ -1049,16 +1049,6 @@ namespace Engine.Serialization
         #region Equality
 
         /// <summary>
-        /// Compares two byte arrays.
-        /// </summary>
-        /// <param name="b1">The first array.</param>
-        /// <param name="b2">The second array.</param>
-        /// <param name="count">The number of bytes to check.</param>
-        /// <returns>Zero if the two are equal.</returns>
-        [DllImport("msvcrt.dll")]
-        private static extern int memcmp(byte[] b1, byte[] b2, long count);
-
-        /// <summary>
         /// Tests for equality with the specified object.
         /// </summary>
         /// <param name="other">The object to test for equality with.</param>
@@ -1067,7 +1057,24 @@ namespace Engine.Serialization
         {
             return other != null &&
                 other._stream.Length == _stream.Length &&
-                memcmp(other._stream.GetBuffer(), _stream.GetBuffer(), _stream.Length) == 0;
+                SafeNativeMethods.memcmp(other._stream.GetBuffer(), _stream.GetBuffer(), _stream.Length) == 0;
+        }
+
+        internal class SafeNativeMethods
+        {
+            /// <summary>
+            /// Compares two byte arrays.
+            /// </summary>
+            /// <param name="b1">The first array.</param>
+            /// <param name="b2">The second array.</param>
+            /// <param name="count">The number of bytes to check.</param>
+            /// <returns>Zero if the two are equal.</returns>
+            [DllImport("msvcrt.dll")]
+            internal static extern int memcmp(byte[] b1, byte[] b2, long count);
+
+            private SafeNativeMethods()
+            {
+            }
         }
 
         #endregion

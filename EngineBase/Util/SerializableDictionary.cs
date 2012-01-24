@@ -13,7 +13,7 @@ namespace Engine.Util
     /// <typeparam name="TKey">The type of key stored in this dictionary.</typeparam>
     /// <typeparam name="TVal">The type of value stored in this dictionary.</typeparam>
     [Serializable]
-    public class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSerializable, ISerializable
+    public sealed class SerializableDictionary<TKey, TVal> : Dictionary<TKey, TVal>, IXmlSerializable, ISerializable
     {
         #region Properties
 
@@ -28,7 +28,7 @@ namespace Engine.Util
         /// <summary>
         /// Lazy initialization of serializer used for values stored in the dictionary.
         /// </summary>
-        protected XmlSerializer ValueSerializer
+        private XmlSerializer ValueSerializer
         {
             get { return _valueSerializer ?? (_valueSerializer = new XmlSerializer(typeof(TVal))); }
         }
@@ -90,7 +90,8 @@ namespace Engine.Util
         /// </summary>
         /// <param name="info">The info.</param>
         /// <param name="context">The context.</param>
-        protected SerializableDictionary(SerializationInfo info, StreamingContext context)
+        private SerializableDictionary(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
             int itemCount = info.GetInt32("itemsCount");
             for (int i = 0; i < itemCount; i++)

@@ -51,6 +51,12 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         private long[] _lastKnownFrame = new long[1];
 
+        /// <summary>
+        /// Used keep multiple threads (TSS) from writing the last known frame
+        /// at the same time.
+        /// </summary>
+        private object _frameLock = new object();
+
         #endregion
 
         #region Constructor
@@ -84,7 +90,7 @@ namespace Space.ComponentSystem.Components
             // Logic, we need a transform to do the positioning.
             if (_effect[0] != null && _isDrawingInstance)
             {
-                lock (_lastKnownFrame)
+                lock (_frameLock)
                 {
                     if (args.Frame > _lastKnownFrame[0])
                     {
@@ -236,6 +242,7 @@ namespace Space.ComponentSystem.Components
                 copy.Emitting = Emitting;
                 copy._effect = _effect;
                 copy._lastKnownFrame = _lastKnownFrame;
+                copy._frameLock = _frameLock;
             }
             copy._isDrawingInstance = false;
 

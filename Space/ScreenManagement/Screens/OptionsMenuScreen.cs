@@ -21,7 +21,7 @@ namespace Space.ScreenManagement.Screens
     /// screen, and gives the user a chance to configure the game
     /// in various hopefully useful ways.
     /// </summary>
-    public class OptionsMenuScreen : MenuScreen
+    sealed class OptionsMenuScreen : MenuScreen
     {
         #region Initialization
 

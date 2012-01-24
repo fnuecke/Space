@@ -7,7 +7,7 @@ using Nuclex.Input.Devices;
 
 namespace Space.ScreenManagement.Screens.Entries
 {
-    public class EditableMenuEntry : MenuEntry
+    sealed class EditableMenuEntry : MenuEntry
     {
         #region Events
 

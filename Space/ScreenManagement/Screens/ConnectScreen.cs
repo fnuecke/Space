@@ -10,7 +10,7 @@ using Space.Session;
 
 namespace Space.ScreenManagement.Screens
 {
-    public class ConnectScreen : MenuScreen
+    sealed class ConnectScreen : MenuScreen
     {
         #region Fields
 

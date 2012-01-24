@@ -93,14 +93,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractCommandEmitter.cs" />
     <Compile Include="AbstractController.cs" />
     <Compile Include="AbstractTssClient.cs" />
     <Compile Include="AbstractTssController.cs" />
     <Compile Include="AbstractTssServer.cs" />
     <Compile Include="CommandEmitterEventArgs.cs" />
     <Compile Include="IClientController.cs" />
-    <Compile Include="ICommandEmitter.cs" />
     <Compile Include="IController.cs" />
     <Compile Include="ISimulationController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

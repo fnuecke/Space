@@ -1,12 +1,3 @@
-#region File Description
-//-----------------------------------------------------------------------------
-// MenuScreen.cs
-//
-// XNA Community Game Platform
-// Copyright (C) Microsoft Corporation. All rights reserved.
-//-----------------------------------------------------------------------------
-#endregion
-
 using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
@@ -19,7 +10,7 @@ namespace Space.ScreenManagement.Screens
     /// Base class for screens that contain a menu of options. The user can
     /// move up and down to select an entry, or cancel to back out of the screen.
     /// </summary>
-    public abstract class MenuScreen : GameScreen
+    abstract class MenuScreen : GameScreen
     {
         #region Properties
 

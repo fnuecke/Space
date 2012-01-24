@@ -15,6 +15,12 @@ namespace Space
     /// </summary>
     public class Settings
     {
+        #region Logger
+
+        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Types
 
         /// <summary>
@@ -409,18 +415,16 @@ namespace Space
         {
             try
             {
-                using (Stream stream = File.Create(filename))
+                // Produce minimal XML, so strip away the <?xml ... ?> header.
+                using (XmlWriter writer = XmlWriter.Create(File.Create(filename), new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true }))
                 {
-                    // Produce minimal XML, so strip away the <?xml ... ?> header.
-                    using (XmlWriter writer = XmlWriter.Create(stream, new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true }))
-                    {
-                        // And strip away namespaces, we don't want those.
-                        new XmlSerializer(typeof(Settings)).Serialize(writer, _instance, new XmlSerializerNamespaces(new XmlSerializerNamespaces(new[] { new XmlQualifiedName("", "") })));
-                    }
+                    // And strip away namespaces, we don't want those.
+                    new XmlSerializer(typeof(Settings)).Serialize(writer, _instance, new XmlSerializerNamespaces(new XmlSerializerNamespaces(new[] { new XmlQualifiedName("", "") })));
                 }
             }
-            catch (IOException)
+            catch (IOException ex)
             {
+                logger.ErrorException("Could not save settings.", ex);
             }
         }
 
@@ -445,11 +449,13 @@ namespace Space
                     _instance.UpdateInverseGameBindings();
                     _instance.UpdateInverseGamePadBindings();
                 }
-                catch (IOException)
+                catch (IOException ex)
                 {
+                    logger.ErrorException("Could not load settings.", ex);
                 }
-                catch (InvalidOperationException)
+                catch (InvalidOperationException ex)
                 {
+                    logger.ErrorException("Could not load settings.", ex);
                 }
             }
         }
