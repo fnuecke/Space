@@ -55,11 +55,7 @@ namespace Space.Control
             // Create actual controller.
             var controller = new SimpleClientController<PlayerData>(SpaceCommandHandler.HandleCommand);
 
-            // Needed by some systems.
-            var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
-            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
-
-            // Add all systems we need in our game as a client.
+            // Needed by some systems. Add all systems we need in our game as a client.
             controller.Simulation.EntityManager.SystemManager.AddSystems(
                 new ISystem[]
                 {
@@ -72,9 +68,17 @@ namespace Space.Control
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
                     new ShipsSpawnSystem(game.Content),
 
-                    new PlayerCenteredSoundSystem(soundBank, controller.Session),
-                    new PlayerCenteredRenderSystem(game, spriteBatch, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
+                    new PlayerCenteredRenderSystem(game,
+                        (SpriteBatch)game.Services.GetService(typeof(SpriteBatch)),
+                        ((Spaaace)game).GraphicsDeviceManager, controller.Session)
                 });
+
+            var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
+            if (soundBank != null)
+            {
+                controller.Simulation.EntityManager.SystemManager.AddSystem(
+                    new PlayerCenteredSoundSystem(soundBank, controller.Session));
+            }
 
             // Done.
             return controller;
@@ -101,17 +105,19 @@ namespace Space.Control
             // check for one, because we only add all at once -- here).
             if (server.Simulation.EntityManager.SystemManager.GetSystem<PlayerCenteredRenderSystem>() == null)
             {
-                // Needed by some systems.
-                var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
-                var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
+                // Needed by some systems. Add all systems we need in
+                // *addition* to the ones the server already has.
+                server.Simulation.EntityManager.SystemManager.AddSystem(
+                    new PlayerCenteredRenderSystem(game,
+                        (SpriteBatch)game.Services.GetService(typeof(SpriteBatch)),
+                        ((Spaaace)game).GraphicsDeviceManager, controller.Session));
 
-                // Add all systems we need in *addition* to the ones the server
-                // already has.
-                server.Simulation.EntityManager.SystemManager.AddSystems(
-                    new ISystem[] {
-                        new PlayerCenteredSoundSystem(soundBank, controller.Session),
-                        new PlayerCenteredRenderSystem(game, spriteBatch, ((Spaaace)game).GraphicsDeviceManager, controller.Session)
-                    });
+                var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
+                if (soundBank != null)
+                {
+                    server.Simulation.EntityManager.SystemManager.AddSystem(
+                        new PlayerCenteredSoundSystem(soundBank, controller.Session));
+                }
             }
             
             // Done.

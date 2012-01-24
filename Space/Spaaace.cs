@@ -312,15 +312,23 @@ namespace Space
             _console.WriteLine("Game Console. Type 'help' for available commands.");
 
             // Set up audio stuff.
+            try
+            {
+                _audioEngine = new AudioEngine("data/Audio/SpaceAudio.xgs");
+                _waveBank = new WaveBank(_audioEngine, "data/Audio/Wave Bank.xwb");
+                _soundBank = new SoundBank(_audioEngine, "data/Audio/Sound Bank.xsb");
 
-            _audioEngine = new AudioEngine("data/Audio/SpaceAudio.xgs");
-            _waveBank = new WaveBank(_audioEngine, "data/Audio/Wave Bank.xwb");
-            _soundBank = new SoundBank(_audioEngine, "data/Audio/Sound Bank.xsb");
+                _audioEngine.Update();
 
-            _audioEngine.Update();
+                Services.AddService(typeof(SoundBank), _soundBank);
+            }
+            catch (InvalidOperationException ex)
+            {
+                logger.ErrorException("Failed initializing AudioEngine.", ex);
+            }
 
-            Services.AddService(typeof(SoundBank), _soundBank);
-
+            // Set up the render target into which we'll draw everything (to
+            // allow switching to and from it for certain effects).
             var pp = GraphicsDevice.PresentationParameters;
             int width = pp.BackBufferWidth;
             int height = pp.BackBufferHeight;
@@ -336,7 +344,10 @@ namespace Space
         {
             base.Update(gameTime);
 
-            _audioEngine.Update();
+            if (_audioEngine != null)
+            {
+                _audioEngine.Update();
+            }
 
             foreach (var component in _componentsToDispose)
             {
