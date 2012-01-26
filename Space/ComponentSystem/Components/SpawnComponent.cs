@@ -8,13 +8,13 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Messages;
 using Space.Data;
+using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components
 {
     sealed class AiInfo : ICopyable<AiInfo>
     {
         #region Fields
-
         public Vector2 SpawnPoint;
 
         public int RespawnTime;
@@ -91,26 +91,25 @@ namespace Space.ComponentSystem.Components
 
     sealed class SpawnComponent : AbstractComponent
     {
-        private List<int> _targets = new List<int>();
+        public List<int> _targets = new List<int>();
 
-        public override void HandleMessage<T>(ref T message)
-        {
-            if (message is CellStateChanged)
-            {
-
-            }
-            else if (message is EntityRemoved)
-            {
-                var info = (EntityRemoved)(ValueType)message;
-                _targets.Remove(info.Entity.UID);
-            }
-        }
+        public int counter;
+       
 
         public override void Update(object parameterization)
         {
-            foreach (var target in _targets)
+            counter++;
+            if (counter % 1000 == 0)
             {
-                //EntityFactory.CreateAIShip()
+               
+
+                var shipSpawnSystem = Entity.Manager.SystemManager.GetSystem<ShipsSpawnSystem>();
+                var faction = Entity.GetComponent<Faction>();
+                var tranform = Entity.GetComponent<Transform>();
+                foreach (var target in _targets)
+                {
+                   shipSpawnSystem.CreateAttackingShip(ref tranform.Translation, target, faction.Value);
+                }
             }
         }
 

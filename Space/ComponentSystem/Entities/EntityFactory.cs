@@ -403,6 +403,7 @@ namespace Space.ComponentSystem.Entities
             //var health = new Health(120);
             //entity.AddComponent(health);
             //entity.AddComponent(new Death());
+            entity.AddComponent(new Faction(faction));
             entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
             entity.AddComponent(new Spin(((float)Math.PI) / period));
             entity.AddComponent(new EllipsePath(center.UID, orbitRadius, orbitRadius, 0, period, 0));

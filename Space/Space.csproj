@@ -155,6 +155,7 @@
     <Compile Include="ComponentSystem\Components\AIBehaviour\PatrolBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIComponent.cs" />
     <Compile Include="ComponentSystem\Components\AstronomicBody.cs" />
+    <Compile Include="ComponentSystem\Components\CellChangedComponent.cs" />
     <Compile Include="ComponentSystem\Components\CollisionDamage.cs" />
     <Compile Include="ComponentSystem\Components\Death.cs" />
     <Compile Include="ComponentSystem\Components\Detectable.cs" />
@@ -172,6 +173,7 @@
     <Compile Include="ComponentSystem\Components\SunRenderer.cs" />
     <Compile Include="ComponentSystem\Components\Target.cs" />
     <Compile Include="ComponentSystem\Components\ThrusterEffect.cs" />
+    <Compile Include="ComponentSystem\Messages\EntityChangedCell.cs" />
     <Compile Include="ComponentSystem\Parameterizations\ParticleParameterization.cs" />
     <Compile Include="ComponentSystem\Systems\ParticleSystem.cs" />
     <Compile Include="ComponentSystem\Systems\ShipsSpawnSystem.cs" />
