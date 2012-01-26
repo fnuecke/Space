@@ -540,7 +540,7 @@ namespace Engine.Simulation
             // Enable logging for the trailing state, and the trailing state
             // only (so we only get the output of one simulation, the one
             // that has the last say!)
-            GameLogEnabled = true;
+            TrailingSimulation.GameLogEnabled = true;
 #endif
             // Process the trailing state, see if we need a roll-back.
             bool needsRewind = false;
