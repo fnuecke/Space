@@ -21,7 +21,7 @@ namespace Space.ComponentSystem.Systems
     {
         #region Fields
 
-        private List<int> _entities = new List<int>();
+        private Dictionary<ulong,List<int>> _entities = new Dictionary<ulong,List<int>>();
 
         private ContentManager _content;
 
@@ -39,25 +39,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Update all components in this system.
-        /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Update(long frame)
-        {
-            var cellSystem = Manager.GetSystem<CellSystem>();
-            var entitiesCopy = new List<int>(_entities);
-            foreach (var entityId in entitiesCopy)
-            {
-                var entity = Manager.EntityManager.GetEntity(entityId);
-                var transform = entity.GetComponent<Transform>();
-                if (!cellSystem.IsCellActive(CellSystem.GetCellIdFromCoordinates(ref transform.Translation)))
-                {
-                    _entities.Remove(entityId);
-                    Manager.EntityManager.RemoveEntity(entityId);
-                }
-            }
-        }
+      
 
         public override void HandleMessage<T>(ref T message)
         {
@@ -69,27 +51,73 @@ namespace Space.ComponentSystem.Systems
                     const int cellSize = CellSystem.CellSize;
                     var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
                     var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
-
+                    var list = new List<int>();
+                    _entities.Add(info.Id, list);
                     for (var i = -2; i < 2; i++)
                     {
                         for (var j = -2; j < 2; j++)
                         {
                             var spawnPoint = new Vector2(center.X + i * (float)cellSize / 5, center.Y - j * (float)cellSize / 5);
-                            var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Guard);
-
-                            _entities.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
+                            var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Move);
+                            //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
+                            list.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
                                 _content.Load<ShipData[]>("Data/ships")[1], cellInfo.Faction, spawnPoint, order)));
                         }
+                    }
+                }
+                else
+                {
+                    var Listcopy = new List<int>(_entities[info.Id]);
+                    _entities.Remove(info.Id);
+                    foreach(var entry in Listcopy){
+                        Manager.EntityManager.RemoveEntity(entry);
                     }
                 }
             }
             else if (message is EntityRemoved)
             {
                 var info = (EntityRemoved)(ValueType)message;
-                _entities.Remove(info.Entity.UID);
+                var position = info.Entity.GetComponent<Transform>().Translation;
+                var cellId = CoordinateIds.Combine(
+                   (int)position.X >> CellSystem.CellSizeShiftAmount,
+                   (int)position.Y >> CellSystem.CellSizeShiftAmount);
+                
+                if(_entities.ContainsKey(cellId))
+                    _entities[cellId].Remove(info.Entity.UID);
+            }
+            else if (message is EntityChangedCell)
+            {
+                var info = (EntityChangedCell)(ValueType)message;
+                var entityID = info.EntityID;
+                _entities[info.OldCellID].Remove(info.EntityID);
+                if (Manager.GetSystem<CellSystem>().IsCellActive(info.NewCellID))
+                {
+                    _entities[info.NewCellID].Add(info.EntityID);
+                }
+                else
+                {
+                    Manager.EntityManager.RemoveEntity(entityID);
+                }
+
             }
         }
 
+        public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
+        {
+            var aicommand = new AiComponent.AiCommand(targetEntity,2000,AiComponent.Order.Move);
+            var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
+                   (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
+            _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],
+                faction, startPosition, aicommand)));
+        }
+        public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
+        {
+            var aicommand = new AiComponent.AiCommand(targetPosition, 2000, AiComponent.Order.Move);
+             var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
+                   (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
+            _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],
+                faction, startPosition, aicommand)));
+        }
         #endregion
 
         #region Serialization / Hashing
@@ -99,7 +127,12 @@ namespace Space.ComponentSystem.Systems
             packet.Write(_entities.Count);
             foreach (var item in _entities)
             {
-                packet.Write(item);
+                packet.Write(item.Key);
+                packet.Write(item.Value.Count);
+                foreach (var entityId in item.Value)
+                {
+                    packet.Write(entityId);
+                }
             }
 
             return packet;
@@ -111,15 +144,25 @@ namespace Space.ComponentSystem.Systems
             int numCells = packet.ReadInt32();
             for (int i = 0; i < numCells; i++)
             {
-                _entities.Add(packet.ReadInt32());
+                var key = packet.ReadUInt64();
+                var list = new List<int>();
+                int numEntities = packet.ReadInt32();
+                for (int j = 0; j < numEntities; j++)
+                {
+                    list.Add(packet.ReadInt32());
+                }
+                _entities.Add(key, list);
             }
         }
 
         public override void Hash(Hasher hasher)
         {
-            foreach (var entities in _entities)
+            foreach (var entities in _entities.Values)
             {
-                hasher.Put(BitConverter.GetBytes(entities));
+                foreach (var entity in entities)
+                {
+                    hasher.Put(BitConverter.GetBytes(entity));
+                }
             }
         }
 
@@ -135,13 +178,16 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._content = _content;
                 copy._entities.Clear();
-                copy._entities.AddRange(_entities);
             }
             else
             {
-                copy._entities = new List<int>(_entities);
+                copy._entities = new Dictionary<ulong,List<int>>();
             }
+            foreach (var item in _entities)
+            {
+                copy._entities.Add(item.Key, new List<int>(item.Value));
 
+            }
             return copy;
         }
 

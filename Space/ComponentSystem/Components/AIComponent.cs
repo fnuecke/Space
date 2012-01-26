@@ -28,13 +28,19 @@ namespace Space.ComponentSystem.Components
 
             public Order order;
 
+            public int TargetEntity;
             public AiCommand(Vector2 target, int maxDistance, Order order)
             {
                 Target = target;
                 MaxDistance = maxDistance;
                 this.order = order;
             }
-
+            public AiCommand(int target, int maxDistance, Order order)
+            {
+                TargetEntity = target;
+                MaxDistance = maxDistance;
+                this.order = order;
+            }
             public AiCommand()
             {
             }
@@ -197,6 +203,17 @@ namespace Space.ComponentSystem.Components
                 case (Order.Guard):
                     _currentbehaviour = new PatrolBehaviour(this);
                     break;
+                case (Order.Move):
+                    var behaviour = new MoveBehaviour();
+                    behaviour.AiComponent = this;
+                    if (Command.TargetEntity == 0)
+                        behaviour.TargetPosition = Command.Target;
+                    else
+                        behaviour.Target = Command.TargetEntity;
+                    _currentbehaviour = behaviour;
+                    break;
+
+
                 default:
                     _currentbehaviour = new PatrolBehaviour(this);
                     break;

@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Messages;
 using Space.Data;
+using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -149,10 +150,65 @@ namespace Space.ComponentSystem.Systems
 
                     // Done, store the list of generated entities.
                     _entities.Add(info.Id, list);
+
+                    var cellsystem = Manager.GetSystem<CellSystem>();
+                    var stationList = _cellInfo[info.Id].Stations;
+                    for (int ny = info.Y - 1; ny <= info.Y + 1; ny++)
+                    {
+                        for (int nx = info.X - 1; nx <= info.X + 1; nx++)
+                        {
+                            if((info.X+info.Y+ny+nx)%2 == 1){
+                            var id = CoordinateIds.Combine(nx, ny);
+                            if (_cellInfo.ContainsKey(id)&& (_cellInfo[id].Faction & _cellInfo[info.Id].Faction) == 0)
+                            {
+                                foreach (var station in _cellInfo[id].Stations)
+                                {
+                                    var entity = Manager.EntityManager.GetEntity(station);
+                                    var spawn = entity.GetComponent<SpawnComponent>();
+                                    spawn._targets.AddRange(stationList);
+                                }
+                                foreach (var station in stationList)
+                                {
+
+                                    var entity = Manager.EntityManager.GetEntity(station);
+                                    var spawn = entity.GetComponent<SpawnComponent>();
+                                    spawn._targets.AddRange(_cellInfo[id].Stations);
+
+                                }
+                            }
+                            }
+                        }
+                    }
                 }
                 else
                 {
                     // Kill all entities we spawned.
+                   
+                    var cellsystem = Manager.GetSystem<CellSystem>();
+                    var stationList = _cellInfo[info.Id].Stations;
+                    for (int ny = info.Y - 1; ny <= info.Y + 1; ny++)
+                    {
+                        for (int nx = info.X - 1; nx <= info.X + 1; nx++)
+                        {
+                            var id = CoordinateIds.Combine(nx, ny);
+                            if (cellsystem.IsCellActive(id))
+                            {
+                                foreach (var station in _cellInfo[id].Stations)
+                                {
+                                    var entity = Manager.EntityManager.GetEntity(station);
+                                    var spawn = entity.GetComponent<SpawnComponent>();
+                                    foreach (var station2 in stationList)
+                                    {
+                                        var entity2 = Manager.EntityManager.GetEntity(station2);
+                                        var spawn2 = entity2.GetComponent<SpawnComponent>();
+
+                                        spawn2._targets.Remove(station);
+                                        spawn._targets.Remove(station2);
+                                    }
+                                }
+                            }
+                        }
+                    }
                     foreach (int id in _entities[info.Id])
                     {
                         Manager.EntityManager.RemoveEntity(id);
@@ -622,7 +678,7 @@ namespace Space.ComponentSystem.Systems
             #endregion
 
             #region Copying
-            
+
             public CellInfo DeepCopy()
             {
                 return DeepCopy(null);
