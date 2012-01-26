@@ -91,7 +91,6 @@ namespace Space.ComponentSystem.Entities
             renderer.DrawOrder = 50; //< Draw ships above everything else.
             var modules = new ModuleManager<SpaceModifier>();
             var health = new Health(120);
-            var energy = new Energy();
 
             // Friction has to be updated before acceleration is, to allow
             // maximum speed to be reached.
@@ -123,7 +122,13 @@ namespace Space.ComponentSystem.Entities
             // Energy should be update after it was used, to give it a chance
             // to regenerate (e.g. if we're using less than we produce this
             // avoids always displaying slightly less than max).
+            var energy = new Energy();
             energy.UpdateOrder = 15;
+
+            // Update effects last, because they are spawned based on the
+            // position.
+            var thruster = new ThrusterEffect("Effects/thruster");
+            thruster.UpdateOrder = 16;
 
             // Physics related components.
             entity.AddComponent(new Transform(position));
@@ -152,7 +157,7 @@ namespace Space.ComponentSystem.Entities
             // Audio and display components.
             entity.AddComponent(new WeaponSound());
             entity.AddComponent(new Detectable("Textures/ship"));
-            entity.AddComponent(new ThrusterEffect("Effects/thruster"));
+            entity.AddComponent(thruster);
             entity.AddComponent(renderer);
 
             // Other game logic related components.

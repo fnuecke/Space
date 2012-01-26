@@ -248,10 +248,17 @@ namespace Space.ComponentSystem.Components
                 copy.Damage = Damage;
                 if (_cooldowns != null)
                 {
-                    copy._cooldowns.Clear();
-                    foreach (var item in _cooldowns)
+                    if (copy._cooldowns != null)
                     {
-                        copy._cooldowns.Add(item.Key, item.Value);
+                        copy._cooldowns.Clear();
+                        foreach (var item in _cooldowns)
+                        {
+                            copy._cooldowns.Add(item.Key, item.Value);
+                        }
+                    }
+                    else
+                    {
+                        copy._cooldowns = new Dictionary<int, int>(_cooldowns);
                     }
                 }
                 else

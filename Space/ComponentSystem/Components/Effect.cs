@@ -46,15 +46,6 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         protected float Scale = 1;
 
-        /// <summary>
-        /// The latest known frame in our simulation. Don't do updates before
-        /// this one, to avoid stuttering (TSS rollbacks causing double updates
-        /// or the like). As with the effect, as a pointer because only the
-        /// leading (drawing) instance should change this, but all instances
-        /// that are copies of the same need to know the leading value.
-        /// </summary>
-        private long[] _lastKnownFrame = new long[1];
-
         #endregion
 
         #region Constructor
@@ -81,6 +72,8 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
+            if (!_isDrawingInstance) return;
+
             var args = (RendererUpdateParameterization)parameterization;
 
             // If we have an effect make sure its loaded and trigger it.
@@ -92,7 +85,7 @@ namespace Space.ComponentSystem.Components
                 _effect[0].Initialise();
                 _effect[0].LoadContent(args.Game.Content);
 
-                if (Scale != 0)
+                if (Scale != 1)
                 {
                     foreach (var effect in _effect[0])
                     {
@@ -104,14 +97,8 @@ namespace Space.ComponentSystem.Components
             // Logic, we need a transform to do the positioning.
             if (_effect[0] != null && _isDrawingInstance)
             {
-                if (args.Frame > _lastKnownFrame[0])
-                {
-                    _lastKnownFrame[0] = args.Frame;
-                }
-                else
-                {
-                    return;
-                }
+                // Always update, to allow existing particles to disappear.
+                _effect[0].Update(1f / 60f);
 
                 // Only trigger new particles while we're enabled.
                 if (Emitting)
@@ -119,7 +106,7 @@ namespace Space.ComponentSystem.Components
                     var transform = Entity.GetComponent<Transform>();
                     if (transform != null)
                     {
-                        _effect[0].Trigger(transform.Translation);
+                        _effect[0].Trigger(ref transform.Translation);
                     }
                 }
             }
@@ -151,9 +138,6 @@ namespace Space.ComponentSystem.Components
                 {
                     args.Renderer.RenderEffect(_effect[0], ref args.Transform);
                 }
-
-                // Always update, to allow existing particles to disappear.
-                _effect[0].Update(1f / 60f);
             }
 
             // We're the instance on which draw is called.
@@ -232,7 +216,6 @@ namespace Space.ComponentSystem.Components
                 copy.EffectName = EffectName;
                 copy.Emitting = Emitting;
                 copy._effect = _effect;
-                copy._lastKnownFrame = _lastKnownFrame;
             }
             copy._isDrawingInstance = false;
 

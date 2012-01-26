@@ -144,12 +144,18 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// </summary>
         public override void Draw()
         {
-            if (_client.GetPlayerShipInfo().IsStabilizing)
+            var info = _client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return;
+            }
+
+            if (info.IsStabilizing)
             {
                 _stabilisator.Draw();
             }
 
-            if (_client.GetPlayerShipInfo().IsAccelerating)
+            if (info.IsAccelerating)
             {
                 _acceleration.Draw();
             }
