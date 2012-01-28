@@ -146,7 +146,7 @@ namespace Space.ComponentSystem.Components
                     // Yes, accumulate the needed energy and thruster power.
                     float energyConsumption = 0;
                     float accelerationForce = 0;
-                    foreach (var thruster in modules.GetModules<Thruster>())
+                    foreach (var thruster in Entity.GetComponents<Thruster>())
                     {
                         // Get the needed energy and thruster power.
                         energyConsumption += modules.GetValue(Attribute.ThrusterEnergyConsumption, thruster.EnergyConsumption);

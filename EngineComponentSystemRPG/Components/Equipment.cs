@@ -28,7 +28,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 {
                     for (int i = 0; i < slots.Length; i++)
                     {
-                        if (slots[i] != null)
+                        if (slots[i] > 0)
                         {
                             yield return Entity.Manager.GetEntity(slots[i]);
                         }

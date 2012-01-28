@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
-using Engine.ComponentSystem.Modules;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Data;
 using Space.Data;
 
 namespace Space.ComponentSystem.Entities
@@ -217,7 +217,7 @@ namespace Space.ComponentSystem.Entities
         /// <param name="emitter"></param>
         /// <param name="faction"></param>
         /// <returns></returns>
-        public static Entity CreateProjectile(ProjectileData projectile, Entity emitter, Factions faction)
+        public static Entity CreateProjectile(Projectile projectile, Entity emitter, Factions faction)
         {
             var entity = new Entity();
 
@@ -247,7 +247,7 @@ namespace Space.ComponentSystem.Entities
             }
             if (projectile.TimeToLive > 0)
             {
-                entity.AddComponent(new Expiration(projectile.TimeToLive));
+                entity.AddComponent(new Expiration((int)(projectile.TimeToLive * 60f)));
             }
             if (projectile.Damage != 0)
             {

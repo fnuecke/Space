@@ -47,7 +47,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        public Packet Packetize(Packet packet)
+        public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
                 .Write(Modifiers);
@@ -57,7 +57,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
+        public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
 
@@ -69,7 +69,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 

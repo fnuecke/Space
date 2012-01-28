@@ -1,12 +1,11 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
-using Engine.Serialization;
 
-namespace Space.Data.Constraints
+namespace Space.ComponentSystem.Constraints
 {
     /// <summary>
     /// Basic descriptor for a single ship class.
     /// </summary>
-    public sealed class ShipConstraints : IPacketizable
+    public sealed class ShipConstraints
     {
         #region General
 
@@ -64,51 +63,6 @@ namespace Space.Data.Constraints
         /// The number of weapon slots available for this ship class.
         /// </summary>
         public int WeaponSlots;
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public Packet Packetize(Packet packet)
-        {
-            packet.Write(Name);
-            packet.Write(Texture);
-            packet.Write(CollisionRadius);
-            packet.Write(Attributes);
-            packet.Write(SensorSlots);
-            packet.Write(HullSlots);
-            packet.Write(ReactorSlots);
-            packet.Write(ShieldSlots);
-            packet.Write(ThrusterSlots);
-            packet.Write(WeaponSlots);
-
-            return packet;
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public void Depacketize(Packet packet)
-        {
-            Name = packet.ReadString();
-            Texture = packet.ReadString();
-            CollisionRadius = packet.ReadSingle();
-            Attributes = packet.ReadPacketizables<AttributeModifier<AttributeType>>();
-            SensorSlots = packet.ReadInt32();
-            HullSlots = packet.ReadInt32();
-            ReactorSlots = packet.ReadInt32();
-            ShieldSlots = packet.ReadInt32();
-            ThrusterSlots = packet.ReadInt32();
-            WeaponSlots = packet.ReadInt32();
-        }
 
         #endregion
     }

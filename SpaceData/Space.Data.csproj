@@ -93,21 +93,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AstronomicBodyType.cs" />
-    <Compile Include="Constraints\ArmorConstraints.cs" />
-    <Compile Include="Constraints\ItemConstraints.cs" />
-    <Compile Include="Projectile.cs" />
-    <Compile Include="Constraints\ReactorConstraints.cs" />
-    <Compile Include="Constraints\SensorConstraints.cs" />
-    <Compile Include="Constraints\ShieldConstraints.cs" />
-    <Compile Include="Constraints\ThrusterConstraints.cs" />
-    <Compile Include="Constraints\WeaponConstraints.cs" />
     <Compile Include="Factions.cs" />
-    <Compile Include="ItemType.cs" />
-    <Compile Include="ProjectileData.cs" />
-    <Compile Include="Constraints\ShipConstraints.cs" />
     <Compile Include="WorldConstraints.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AttributeType.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">

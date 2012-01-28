@@ -49,7 +49,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EntityAttributeWriter.cs" />
+    <Compile Include="AttributeModifierConstraintWriter.cs" />
+    <Compile Include="AttributeModifierWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

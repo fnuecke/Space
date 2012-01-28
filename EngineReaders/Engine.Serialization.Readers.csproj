@@ -92,7 +92,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EntityAttributeReader.cs" />
+    <Compile Include="AttributeModifierReader.cs" />
+    <Compile Include="AttributeModifierConstraintReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

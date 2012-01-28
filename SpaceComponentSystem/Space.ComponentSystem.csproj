@@ -92,8 +92,17 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AttributeType.cs" />
     <Compile Include="Components\Ship.cs" />
-    <Compile Include="Entities\ItemFactory.cs" />
+    <Compile Include="Constraints\ArmorConstraints.cs" />
+    <Compile Include="Constraints\ItemConstraints.cs" />
+    <Compile Include="Constraints\ReactorConstraints.cs" />
+    <Compile Include="Constraints\SensorConstraints.cs" />
+    <Compile Include="Constraints\ShieldConstraints.cs" />
+    <Compile Include="Constraints\ShipConstraints.cs" />
+    <Compile Include="Constraints\ThrusterConstraints.cs" />
+    <Compile Include="Constraints\WeaponConstraints.cs" />
+    <Compile Include="Data\Projectile.cs" />
     <Compile Include="Components\Armor.cs" />
     <Compile Include="Components\Reactor.cs" />
     <Compile Include="Components\Sensor.cs" />
@@ -115,10 +124,6 @@
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SpaceData\Space.Data.csproj">
-      <Project>{48F0591F-9238-4FF0-AC34-04E14C291AA3}</Project>
-      <Name>Space.Data</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

@@ -27,7 +27,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Modified values, based on equipment and status effects.
         /// </summary>
-        private Dictionary<TAttribute, float[]> _modifiedAttributes;
+        private Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
 
         #endregion
 
@@ -317,6 +317,7 @@ namespace Engine.ComponentSystem.RPG.Components
             else
             {
                 copy._baseAttributes = new Dictionary<TAttribute, float>(_baseAttributes);
+                copy._modifiedAttributes = new Dictionary<TAttribute, float[]>();
 
                 // For multi-threading.
                 copy._reusableAdditiveList = new List<AttributeModifier<TAttribute>>();

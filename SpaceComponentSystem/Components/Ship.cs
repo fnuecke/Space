@@ -2,7 +2,7 @@
 
 namespace Space.ComponentSystem.Components
 {
-    public sealed class Ship : Character<Space.Data.AttributeType, Space.Data.ItemType>
+    public sealed class Ship : Character<AttributeType>
     {
     }
 }

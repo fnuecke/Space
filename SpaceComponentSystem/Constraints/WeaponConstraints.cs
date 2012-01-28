@@ -1,7 +1,9 @@
-﻿using Engine.Serialization;
+﻿using Engine.ComponentSystem.Entities;
 using Engine.Util;
+using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Data;
 
-namespace Space.Data.Constraints
+namespace Space.ComponentSystem.Constraints
 {
     /// <summary>
     /// Constraints for generating weapons.
@@ -60,13 +62,27 @@ namespace Space.Data.Constraints
         #region Sampling
 
         /// <summary>
+        /// Samples a new sensor based on these constraints.
+        /// </summary>
+        /// <param name="random">The randomizer to use.</param>
+        /// <returns>The sampled sensor.</returns>
+        public Entity SampleSensor(IUniformRandom random)
+        {
+            var entity = new Entity();
+
+            entity.AddComponent(new Weapon(Texture, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles));
+
+            return SampleAttributes(entity, random);
+        }
+
+        /// <summary>
         /// Samples the cooldown of this weapon.
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled cooldown.</returns>
-        public float SampleCooldown(IUniformRandom random)
+        private int SampleCooldown(IUniformRandom random)
         {
-            return MinCooldown + (float)random.NextDouble() * (MaxCooldown - MinCooldown);
+            return (int)((MinCooldown + (float)random.NextDouble() * (MaxCooldown - MinCooldown)) * 60f);
         }
 
         /// <summary>
@@ -74,7 +90,7 @@ namespace Space.Data.Constraints
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled energy consumption.</returns>
-        public float SampleEnergyConsumption(IUniformRandom random)
+        private float SampleEnergyConsumption(IUniformRandom random)
         {
             return MinEnergyConsumption + (float)random.NextDouble() * (MaxEnergyConsumption - MinEnergyConsumption);
         }
@@ -84,53 +100,9 @@ namespace Space.Data.Constraints
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled damage.</returns>
-        public float SampleDamage(IUniformRandom random)
+        private float SampleDamage(IUniformRandom random)
         {
             return MinDamage + (float)random.NextDouble() * (MaxDamage - MinDamage);
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(Texture)
-                .Write(Sound)
-                .Write(MinCooldown)
-                .Write(MaxCooldown)
-                .Write(MinEnergyConsumption)
-                .Write(MaxEnergyConsumption)
-                .Write(MinDamage)
-                .Write(MaxDamage)
-                .Write(Projectiles);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-            
-            Texture = packet.ReadString();
-            Sound = packet.ReadString();
-            MinCooldown = packet.ReadSingle();
-            MaxCooldown = packet.ReadSingle();
-            MinEnergyConsumption = packet.ReadSingle();
-            MaxEnergyConsumption = packet.ReadSingle();
-            MinDamage = packet.ReadSingle();
-            MaxDamage = packet.ReadSingle();
-            Projectiles = packet.ReadPacketizables<Projectile>();
         }
 
         #endregion

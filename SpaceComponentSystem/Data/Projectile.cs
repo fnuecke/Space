@@ -1,30 +1,27 @@
-﻿using System;
-using Engine.Serialization;
-using Engine.Util;
+﻿using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 
-namespace Space.Data
+namespace Space.ComponentSystem.Data
 {
-    public sealed class ProjectileData : IPacketizable, IHashable
+    /// <summary>
+    /// Contains data about a single projectile fired by a weapon.
+    /// </summary>
+    public sealed class Projectile : IPacketizable
     {
+        #region Fields
+
         /// <summary>
-        /// The texture to use to render the projectile.
+        /// The texture to use to render the projectile type.
         /// </summary>
         [ContentSerializer(Optional = true)]
         public string Texture = string.Empty;
 
         /// <summary>
-        /// Name of the particle effect to use.
+        /// Name of the particle effect to use for this projectile type.
         /// </summary>
         [ContentSerializer(Optional = true)]
         public string Effect = string.Empty;
-
-        /// <summary>
-        /// The scale at which to render the texture and effects.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public float Scale = 1;
 
         /// <summary>
         /// The collision radius of the projectile.
@@ -32,12 +29,7 @@ namespace Space.Data
         public float CollisionRadius;
 
         /// <summary>
-        /// The damage this projectile inflicts.
-        /// </summary>
-        public float Damage;
-
-        /// <summary>
-        /// Whether this projectile can be hit by other projectiles (e.g.
+        /// Whether this projectile type can be hit by other projectiles (e.g.
         /// missiles may be shot down, but normal projectiles should not
         /// interact).
         /// </summary>
@@ -74,62 +66,52 @@ namespace Space.Data
         public float Friction = 0;
 
         /// <summary>
-        /// The spin of the projectile.
+        /// The time this projectile will stay alive before disappearing,
+        /// in seconds.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public float Spin = 0;
+        public float TimeToLive = 5;
+
+        #endregion
+
+        #region Serialization
 
         /// <summary>
-        /// The time this projectile will stay alive before disappearing.
+        /// Write the object's state to the given packet.
         /// </summary>
-        [ContentSerializer(Optional = true)]
-        public int TimeToLive = 5 * 60; // ~5 seconds
-
-        #region Serialization / Hashing
-
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public Packet Packetize(Packet packet)
         {
-            packet.Write(Texture)
+            return packet
+                .Write(Texture)
                 .Write(Effect)
-                .Write(Scale)
                 .Write(CollisionRadius)
-                .Write(Damage)
+                .Write(CanBeShot)
                 .Write(InitialVelocity)
                 .Write(InitialRotation)
                 .Write(AccelerationForce)
                 .Write(Friction)
-                .Write(Spin)
                 .Write(TimeToLive);
-
-            return packet;
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
             Texture = packet.ReadString();
             Effect = packet.ReadString();
-            Scale = packet.ReadSingle();
             CollisionRadius = packet.ReadSingle();
-            Damage = packet.ReadSingle();
+            CanBeShot = packet.ReadBoolean();
             InitialVelocity = packet.ReadVector2();
             InitialRotation = packet.ReadSingle();
             AccelerationForce = packet.ReadSingle();
             Friction = packet.ReadSingle();
-            Spin = packet.ReadSingle();
-            TimeToLive = packet.ReadInt32();
-        }
-
-        public void Hash(Hasher hasher)
-        {
-            hasher.Put(BitConverter.GetBytes(CollisionRadius));
-            hasher.Put(BitConverter.GetBytes(Damage));
-            hasher.Put(BitConverter.GetBytes(InitialVelocity.X));
-            hasher.Put(BitConverter.GetBytes(InitialVelocity.Y));
-            hasher.Put(BitConverter.GetBytes(InitialRotation));
-            hasher.Put(BitConverter.GetBytes(AccelerationForce));
-            hasher.Put(BitConverter.GetBytes(Friction));
-            hasher.Put(BitConverter.GetBytes(Spin));
-            hasher.Put(BitConverter.GetBytes(TimeToLive));
+            TimeToLive = packet.ReadSingle();
         }
 
         #endregion

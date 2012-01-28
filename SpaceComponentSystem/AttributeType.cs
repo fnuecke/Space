@@ -1,4 +1,4 @@
-﻿namespace Space.Data
+﻿namespace Space.ComponentSystem
 {
     /// <summary>
     /// Types of ship attributes. This is used for grouping attributes for
