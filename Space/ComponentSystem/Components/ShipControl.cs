@@ -1,10 +1,10 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Modules;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -104,9 +104,9 @@ namespace Space.ComponentSystem.Components
             // Get components we depend upon / modify.
             var transform = Entity.GetComponent<Transform>();
             var spin = Entity.GetComponent<Spin>();
-            var modules = Entity.GetComponent<ModuleManager<SpaceModifier>>();
+            var character = Entity.GetComponent<Character<AttributeType>>();
 
-            if (modules != null)
+            if (character != null)
             {
                 // Get the mass of the ship.
                 float mass;
@@ -118,7 +118,7 @@ namespace Space.ComponentSystem.Components
                 }
                 else
                 {
-                    mass = modules.GetValue(SpaceModifier.Mass);
+                    mass = character.GetValue(AttributeType.Mass);
                 }
 
                 // Get our acceleration direction, based on whether we're
@@ -149,7 +149,7 @@ namespace Space.ComponentSystem.Components
                     foreach (var thruster in modules.GetModules<Thruster>())
                     {
                         // Get the needed energy and thruster power.
-                        energyConsumption += modules.GetValue(SpaceModifier.ThrusterEnergyConsumption, thruster.EnergyConsumption);
+                        energyConsumption += modules.GetValue(Attribute.ThrusterEnergyConsumption, thruster.EnergyConsumption);
                         accelerationForce += thruster.AccelerationForce;
                     }
 
@@ -176,7 +176,7 @@ namespace Space.ComponentSystem.Components
                     }
 
                     // Apply modifiers.
-                    float acceleration = modules.GetValue(SpaceModifier.AccelerationForce, accelerationForce) / mass;
+                    float acceleration = modules.GetValue(Attribute.AccelerationForce, accelerationForce) / mass;
 
                     // Apply our acceleration. Use the min to our desired
                     // acceleration so we don't exceed our target.
@@ -190,7 +190,7 @@ namespace Space.ComponentSystem.Components
 
                 // Compute its rotation speed. Yes, this is actually the rotation acceleration,
                 // but whatever...
-                var rotation = modules.GetValue(SpaceModifier.RotationForce) / mass;
+                var rotation = modules.GetValue(Attribute.RotationForce) / mass;
 
                 // Update rotation / spin.
                 var currentDelta = Angle.MinAngle(transform.Rotation, _targetRotation);

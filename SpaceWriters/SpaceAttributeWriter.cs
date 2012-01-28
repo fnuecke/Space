@@ -9,7 +9,7 @@ namespace Space.Serialization
     /// This is for reading actual XML files in the content project.
     /// </summary>
     [ContentTypeSerializer]
-    public sealed class SpaceAttributeSerializer : AbstractEntityAttributeSerializer<SpaceModifier>
+    public sealed class SpaceAttributeSerializer : AbstractEntityAttributeSerializer<AttributeType>
     {
     }
 
@@ -17,7 +17,7 @@ namespace Space.Serialization
     /// This is for writing data back in binary format.
     /// </summary>
     [ContentTypeWriter]
-    class SpaceAttributeWriter : AbstractEntityAttributeWriter<SpaceModifier>
+    class SpaceAttributeWriter : AbstractEntityAttributeWriter<AttributeType>
     {
     }
 }

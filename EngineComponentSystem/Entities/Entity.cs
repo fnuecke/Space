@@ -77,6 +77,10 @@ namespace Engine.ComponentSystem.Entities
         /// <param name="component">The component to add.</param>
         public int AddComponent(AbstractComponent component)
         {
+            if (component == null)
+            {
+                throw new ArgumentNullException("component");
+            }
             if (component.Entity == this)
             {
                 return component.UID;
@@ -85,12 +89,10 @@ namespace Engine.ComponentSystem.Entities
             {
                 throw new ArgumentException("Component is already part of an entity.", "component");
             }
-            else
-            {
-                component.UID = _idManager.GetId();
-                AddComponentUnchecked(component);
-                return component.UID;
-            }
+
+            component.UID = _idManager.GetId();
+            AddComponentUnchecked(component);
+            return component.UID;
         }
 
         /// <summary>
@@ -162,13 +164,14 @@ namespace Engine.ComponentSystem.Entities
         /// systems.
         /// </summary>
         /// <param name="component">The component to remove.</param>
-        public void RemoveComponent(AbstractComponent component)
+        /// <returns>True if the module was successfully removed, else false.</returns>
+        public bool RemoveComponent(AbstractComponent component)
         {
             if (component.Entity != this)
             {
-                return;
+                return false;
             }
-            RemoveComponent(component.UID);
+            return RemoveComponent(component.UID) != null;
         }
 
         /// <summary>
@@ -268,6 +271,9 @@ namespace Engine.ComponentSystem.Entities
         {
             // Id of this entity.
             UID = packet.ReadInt32();
+
+            // Invalidate caches.
+            _mapping.Clear();
 
             // All components in this entity.
             _components.Clear();

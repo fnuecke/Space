@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="Space.Data.Constraints.ArmorConstraints[]">
+    <!-- The type of armor each player starts with, which has fixed
+         values (enforced by min an max being equal). -->
+    <Item>
+      <Name>Starter Armor</Name>
+      <MinArmor>10</MinArmor>
+      <MaxArmor>10</MaxArmor>
+    </Item>
+    
+    <!-- NPC armor -->
+    <Item>
+      <Name>Level 1 AI Armor</Name>
+      <MinArmor>5</MinArmor>
+      <MaxArmor>15</MaxArmor>
+    </Item>
+  </Asset>
+</XnaContent>

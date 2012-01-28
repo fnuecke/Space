@@ -187,7 +187,7 @@ def ge(id):
                             // Some more utility variables used frequently.
                             if (avatar != null)
                             {
-                                var modules = avatar.GetComponent<ModuleManager<SpaceModifier>>();
+                                var modules = avatar.GetComponent<ModuleManager<AttributeType>>();
                                 globals.SetVariable("modules", modules);
                             }
                             else

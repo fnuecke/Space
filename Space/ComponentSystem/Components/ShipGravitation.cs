@@ -28,16 +28,16 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">Handles module added / removed messages.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleValueInvalidated<SpaceModifier>)
+            if (message is ModuleValueInvalidated<Attribute>)
             {
-                var type = ((ModuleValueInvalidated<SpaceModifier>)(ValueType)message).ValueType;
-                if (type == SpaceModifier.Mass)
+                var type = ((ModuleValueInvalidated<Attribute>)(ValueType)message).ValueType;
+                if (type == Attribute.Mass)
                 {
                     // Module removed or added, recompute our values.
-                    var modules = Entity.GetComponent<ModuleManager<SpaceModifier>>();
+                    var modules = Entity.GetComponent<ModuleManager<Attribute>>();
 
                     // Get the mass of the ship and return it.
-                    Mass = System.Math.Max(1, modules.GetValue(SpaceModifier.Mass));
+                    Mass = System.Math.Max(1, modules.GetValue(Attribute.Mass));
                 }
             }
         }

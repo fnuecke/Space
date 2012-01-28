@@ -1,7 +1,5 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
-using Space.ComponentSystem.Modules;
+﻿using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.RPG.Messages;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -37,33 +35,25 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">Handles module added / removed messages.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleValueInvalidated<SpaceModifier>)
+            if (message is CharacterStatsInvalidated)
             {
-                var type = ((ModuleValueInvalidated<SpaceModifier>)(ValueType)message).ValueType;
-                if (type == SpaceModifier.Health || type == SpaceModifier.HealthRegeneration)
-                {
-                    // Module removed or added, recompute our values.
-                    var modules = Entity.GetComponent<ModuleManager<SpaceModifier>>();
+                RecomputeValues();
+            }
+        }
 
-                    // Rebuild base energy and regeneration values.
-                    MaxValue = 0;
-                    Regeneration = 0;
-                    foreach (var hull in modules.GetModules<Hull>())
-                    {
-                        MaxValue += hull.Health;
-                        Regeneration += hull.HealthRegeneration;
-                    }
+        private void RecomputeValues()
+        {
+            // Recompute our values.
+            var character = Entity.GetComponent<Character<AttributeType>>();
 
-                    // Apply bonuses.
-                    MaxValue = modules.GetValue(SpaceModifier.Health, MaxValue);
-                    Regeneration = modules.GetValue(SpaceModifier.HealthRegeneration, Regeneration);
+            // Rebuild base energy and regeneration values.
+            MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Energy));
+            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.EnergyRegeneration));
 
-                    // Adjust current health so it does not exceed our new maximum.
-                    if (Value > MaxValue)
-                    {
-                        Value = MaxValue;
-                    }
-                }
+            // Adjust current energy so it does not exceed our new maximum.
+            if (Value > MaxValue)
+            {
+                Value = MaxValue;
             }
         }
 

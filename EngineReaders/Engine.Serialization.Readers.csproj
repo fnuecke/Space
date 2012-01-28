@@ -100,6 +100,10 @@
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
+      <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
+      <Name>Engine.ComponentSystem.RPG</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>

@@ -38,7 +38,7 @@ namespace Space.Control
                     new CellSystem(),
 
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
-                    new ShipsSpawnSystem(game.Content)
+                    //new ShipsSpawnSystem(game.Content)
                 });
 
             // Done.
@@ -66,7 +66,7 @@ namespace Space.Control
                     new CellSystem(),
 
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
-                    new ShipsSpawnSystem(game.Content),
+                    //new ShipsSpawnSystem(game.Content),
 
                     new PlayerCenteredRenderSystem(game,
                         (SpriteBatch)game.Services.GetService(typeof(SpriteBatch)),

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="Space.Data.Constraints.ReactorConstraints[]">
+    <!-- The type of reactor each player starts with, which has fixed
+         values (enforced by min an max being equal). -->
+    <Item>
+      <Name>Starter Reactor</Name>
+      <MinEnergy>50</MinEnergy>
+      <MaxEnergy>50</MaxEnergy>
+      <MinEnergyRegeneration>5</MinEnergyRegeneration>
+      <MaxEnergyRegeneration>5</MaxEnergyRegeneration>
+    </Item>
+
+    <!-- NPC reactors -->
+    <Item>
+      <Name>Level 1 AI Reactor</Name>
+      <MinEnergy>50</MinEnergy>
+      <MaxEnergy>75</MaxEnergy>
+      <MinEnergyRegeneration>3</MinEnergyRegeneration>
+      <MaxEnergyRegeneration>5</MaxEnergyRegeneration>
+    </Item>
+  </Asset>
+</XnaContent>

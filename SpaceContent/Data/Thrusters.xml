@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="Space.Data.Constraints.ThrusterConstraints[]">
+    <!-- The type of thruster each player starts with, which has fixed
+         values (enforced by min an max being equal). -->
+    <Item>
+      <Name>Starter Thruster</Name>
+      <MinAccelerationForce>2</MinAccelerationForce>
+      <MaxAccelerationForce>2</MaxAccelerationForce>
+      <MinRotationForce>1</MinRotationForce>
+      <MaxRotationForce>1</MaxRotationForce>
+      <MinEnergyConsumption>3</MinEnergyConsumption>
+      <MaxEnergyConsumption>3</MaxEnergyConsumption>
+    </Item>
+    
+    <!-- NPC thrusters -->
+    <Item>
+      <Name>Level 1 AI Thruster</Name>
+      <MinAccelerationForce>2</MinAccelerationForce>
+      <MaxAccelerationForce>3</MaxAccelerationForce>
+      <MinRotationForce>1</MinRotationForce>
+      <MaxRotationForce>1.5</MaxRotationForce>
+      <MinEnergyConsumption>2</MinEnergyConsumption>
+      <MaxEnergyConsumption>3</MaxEnergyConsumption>
+    </Item>
+  </Asset>
+</XnaContent>

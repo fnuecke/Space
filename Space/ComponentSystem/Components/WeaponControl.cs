@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Components
             // Check all weapon modules.
             if (Shooting)
             {
-                var modules = Entity.GetComponent<ModuleManager<SpaceModifier>>();
+                var modules = Entity.GetComponent<ModuleManager<Attribute>>();
                 var energy = Entity.GetComponent<Energy>();
                 var faction = Entity.GetComponent<Faction>();
 
@@ -60,7 +60,7 @@ namespace Space.ComponentSystem.Components
                 {
                     foreach (var weapon in modules.GetModules<Weapon>())
                     {
-                        var energyConsumption = modules.GetValue(SpaceModifier.WeaponEnergyConsumption, weapon.EnergyConsumption);
+                        var energyConsumption = modules.GetValue(Attribute.WeaponEnergyConsumption, weapon.EnergyConsumption);
                         if (energy != null && energy.Value >= energyConsumption)
                         {
                             // Test if this weapon is on cooldown.
@@ -68,7 +68,7 @@ namespace Space.ComponentSystem.Components
                             {
                                 energy.Value -= energyConsumption;
                                 // No, fire it.
-                                _cooldowns[weapon.UID] = (int)modules.GetValue(SpaceModifier.WeaponCooldown, weapon.Cooldown);
+                                _cooldowns[weapon.UID] = (int)modules.GetValue(Attribute.WeaponCooldown, weapon.Cooldown);
 
                                 // Generate projectiles.
                                 foreach (var projectileData in weapon.Projectiles)
@@ -104,18 +104,18 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">The message to handle.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleAdded<SpaceModifier>)
+            if (message is ModuleAdded<Attribute>)
             {
-                var added = (ModuleAdded<SpaceModifier>)(ValueType)message;
+                var added = (ModuleAdded<Attribute>)(ValueType)message;
                 if (added.Module is Weapon)
                 {
                     // Weapon was equipped, track a cooldown for it.
                     _cooldowns.Add(added.Module.UID, 0);
                 }
             }
-            else if (message is ModuleRemoved<SpaceModifier>)
+            else if (message is ModuleRemoved<Attribute>)
             {
-                var removed = (ModuleRemoved<SpaceModifier>)(ValueType)message;
+                var removed = (ModuleRemoved<Attribute>)(ValueType)message;
                 if (removed.Module is Weapon)
                 {
                     // Weapon was unequipped, stop tracking.
