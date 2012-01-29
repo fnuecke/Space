@@ -57,7 +57,7 @@ namespace Space.ComponentSystem.Entities
             input.Stabilizing = true;
             entity.AddComponent(new AiComponent(command));
             entity.AddComponent(new Death());
-            
+            entity.AddComponent(new CellChangedComponent());
             return entity;
         }
 

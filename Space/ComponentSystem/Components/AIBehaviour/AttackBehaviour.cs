@@ -13,12 +13,12 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
         public bool TargetDead;
 
-        public AttackBehaviour(AiComponent aiComponent, int targetEntity)
+        
+        public AttackBehaviour(AiComponent aiComponent)
             : base(aiComponent)
         {
-            TargetEntity = targetEntity;
+            
         }
-
         public AttackBehaviour()
         {
         }
@@ -49,7 +49,12 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
             //shoot only when in range...
             input.SetShooting(distance < 1000);
-
+            //to close to enemy
+            if (distance < 100)
+            {
+                direction += new Vector2(direction.Y, direction.X);
+                direction.Normalize();
+            }
             var escapeDir = CalculateEscapeDirection();
             direction += 3 * escapeDir;
 
