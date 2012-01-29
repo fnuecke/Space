@@ -33,11 +33,17 @@ namespace Space.ComponentSystem.Components
             // Recompute our values.
             var character = Entity.GetComponent<Character<AttributeType>>();
 
+            // Remember current relative value. Set to full if it was zero
+            // before, because that means we're initializing for the first
+            // time.
+            float relative = (MaxValue > 0) ? (Value / MaxValue) : 1;
+
             // Rebuild base energy and regeneration values.
             MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Energy));
             Regeneration = System.Math.Max(0, character.GetValue(AttributeType.EnergyRegeneration) / 60f);
 
-            base.RecomputeValues();
+            // Set new relative value.
+            Value = relative * MaxValue;
         }
 
         #endregion

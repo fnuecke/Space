@@ -69,9 +69,6 @@ namespace Space.ComponentSystem.Systems
                                 cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order);
 
                             list.Add(Manager.EntityManager.AddEntity(ship));
-
-                            ship.GetComponent<Health>().Value = float.MaxValue;
-                            ship.GetComponent<Energy>().Value = float.MaxValue;
                         }
                     }
                 }
@@ -124,9 +121,6 @@ namespace Space.ComponentSystem.Systems
                 faction, startPosition, Manager.EntityManager, _random, aicommand);
 
             _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
-
-            ship.GetComponent<Health>().Value = float.MaxValue;
-            ship.GetComponent<Energy>().Value = float.MaxValue;
         }
         public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
         {
@@ -139,9 +133,6 @@ namespace Space.ComponentSystem.Systems
                 faction, startPosition, Manager.EntityManager, _random, aicommand);
 
             _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
-
-            ship.GetComponent<Health>().Value = float.MaxValue;
-            ship.GetComponent<Energy>().Value = float.MaxValue;
         }
         #endregion
 

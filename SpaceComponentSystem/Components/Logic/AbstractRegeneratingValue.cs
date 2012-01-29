@@ -29,7 +29,7 @@ namespace Space.ComponentSystem.Components
                 {
                     _timeToWait = Timeout;
                 }
-                _value = System.Math.Min(MaxValue, System.Math.Max(0, value));
+                _value = System.Math.Max(0, System.Math.Min(MaxValue, value));
             }
         }
 
@@ -118,14 +118,7 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-        protected virtual void RecomputeValues()
-        {
-            // Adjust current energy so it does not exceed our new maximum.
-            if (Value > MaxValue)
-            {
-                Value = MaxValue;
-            }
-        }
+        protected abstract void RecomputeValues();
 
         #endregion
 

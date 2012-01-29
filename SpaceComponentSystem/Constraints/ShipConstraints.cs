@@ -207,6 +207,10 @@ namespace Space.ComponentSystem.Constraints
 
             // Add some character!
             entity.AddComponent(new Character<AttributeType>());
+            
+            // Fill up our values.
+            health.Value = health.MaxValue;
+            energy.Value = energy.MaxValue;
 
             return entity;
         }

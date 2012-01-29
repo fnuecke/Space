@@ -37,7 +37,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization"></param>
         public override void Update(object parameterization)
         {
-            if (Value == 0)
+            if (Value <= 0)
             {
                 EntityDied message;
                 Entity.SendMessage(ref message);
@@ -51,11 +51,17 @@ namespace Space.ComponentSystem.Components
             // Recompute our values.
             var character = Entity.GetComponent<Character<AttributeType>>();
 
+            // Remember current relative value. Set to full if it was zero
+            // before, because that means we're initializing for the first
+            // time.
+            float relative = (MaxValue > 0) ? (Value / MaxValue) : 1;
+
             // Rebuild base health and regeneration values.
             MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Health));
             Regeneration = System.Math.Max(0, character.GetValue(AttributeType.HealthRegeneration) / 60f);
 
-            base.RecomputeValues();
+            // Set new relative value.
+            Value = relative * MaxValue;
         }
 
         #endregion
