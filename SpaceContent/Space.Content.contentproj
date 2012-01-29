@@ -63,6 +63,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
+      <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
+      <Name>Engine.ComponentSystem.RPG</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
+      <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
+      <Name>Space.ComponentSystem</Name>
+    </ProjectReference>
     <ProjectReference Include="..\SpaceData\Space.Data.csproj">
       <Project>{48F0591F-9238-4FF0-AC34-04E14C291AA3}</Project>
       <Name>Space.Data</Name>

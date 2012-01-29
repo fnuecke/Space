@@ -42,63 +42,35 @@ namespace Space.ComponentSystem.Data
         public bool CanBeShot = false;
 
         /// <summary>
-        /// The minimal initial velocity of the projectile. This is
+        /// The range allowed for initial velocity of the projectile. This is
         /// rotated according to the emitters rotation. The set value applies
         /// directly if the emitter is facing to the right (i.e. is at zero
         /// rotation).
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public float MinInitialVelocity = 0;
+        public Interval<float> InitialVelocity = Interval<float>.Zero;
 
         /// <summary>
-        /// The maximal initial velocity of the projectile.
+        /// The allowed range for the angle to the emitter used as the
+        /// direction of the initial velocity.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public float MaxInitialVelocity = 0;
+        public Interval<float> InitialDirection = Interval<float>.Zero;
 
         /// <summary>
-        /// The minimum angle to the emitter used as the direction of the
-        /// initial velocity.
+        /// Allowed range for initial orientation of the projectile. As with
+        /// the initial velocity, this is rotated by the emitters rotation,
+        /// and the rotation applies directly if the emitter is facing to the
+        /// right, i.e. its own rotation is zero.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public float MinInitialDirection = 0;
+        public Interval<float> InitialRotation = Interval<float>.Zero;
 
         /// <summary>
-        /// The maximum angle to the emitter used as the direction of the
-        /// initial velocity.
+        /// Allowed range for the acceleration force applied to this projectile.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public float MaxInitialDirection = 0;
-
-        /// <summary>
-        /// Minimum initial orientation of the projectile. As with the initial
-        /// velocity, this is rotated by the emitters rotation, and the
-        /// rotation applies directly if the emitter is facing to the right,
-        /// i.e. its own rotation is zero.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public float MinInitialRotation = 0;
-
-        /// <summary>
-        /// Minimum initial orientation of the projectile. As with the initial
-        /// velocity, this is rotated by the emitters rotation, and the
-        /// rotation applies directly if the emitter is facing to the right,
-        /// i.e. its own rotation is zero.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public float MaxInitialRotation = 0;
-
-        /// <summary>
-        /// Minimum acceleration force applied to this projectile.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public float MinAccelerationForce = 0;
-
-        /// <summary>
-        /// Maximum acceleration force applied to this projectile.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public float MaxAccelerationForce = 0;
+        public Interval<float> AccelerationForce = Interval<float>.Zero;
 
         /// <summary>
         /// The friction used to slow the projectile down.
@@ -199,7 +171,7 @@ namespace Space.ComponentSystem.Data
         /// <returns>The sampled rotation.</returns>
         private float SampleInitialRotation(IUniformRandom random)
         {
-            return MathHelper.Lerp(MinInitialRotation, MaxInitialRotation, (float)random.NextDouble());
+            return MathHelper.Lerp(InitialRotation.Low, InitialRotation.High, (float)random.NextDouble());
         }
 
         /// <summary>
@@ -211,10 +183,10 @@ namespace Space.ComponentSystem.Data
         private Vector2 SampleInitialDirectedVelocity(float baseRotation, IUniformRandom random)
         {
             Vector2 velocity = Vector2.UnitX;
-            Matrix rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.Lerp(MinInitialDirection, MaxInitialDirection, (float)random.NextDouble()));
+            Matrix rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.Lerp(InitialDirection.Low, InitialDirection.High, (float)random.NextDouble()));
             Vector2.Transform(ref velocity, ref rotation, out velocity);
             velocity.Normalize();
-            velocity *= MathHelper.Lerp(MinInitialVelocity, MaxInitialVelocity, (float)random.NextDouble());
+            velocity *= MathHelper.Lerp(InitialVelocity.Low, InitialVelocity.High, (float)random.NextDouble());
             return velocity;
         }
 
@@ -230,7 +202,7 @@ namespace Space.ComponentSystem.Data
             Matrix rotation = Matrix.CreateRotationZ(baseRotation);
             Vector2.Transform(ref acceleration, ref rotation, out acceleration);
             acceleration.Normalize();
-            acceleration *= MathHelper.Lerp(MinAccelerationForce, MaxAccelerationForce, (float)random.NextDouble());
+            acceleration *= MathHelper.Lerp(AccelerationForce.Low, AccelerationForce.High, (float)random.NextDouble());
             return acceleration;
         }
 
@@ -252,14 +224,14 @@ namespace Space.ComponentSystem.Data
                 .Write(Effect)
                 .Write(CollisionRadius)
                 .Write(CanBeShot)
-                .Write(MinInitialVelocity)
-                .Write(MaxInitialVelocity)
-                .Write(MinInitialDirection)
-                .Write(MaxInitialDirection)
-                .Write(MinInitialRotation)
-                .Write(MaxInitialRotation)
-                .Write(MinAccelerationForce)
-                .Write(MaxAccelerationForce)
+                .Write(InitialVelocity.Low)
+                .Write(InitialVelocity.High)
+                .Write(InitialDirection.Low)
+                .Write(InitialDirection.High)
+                .Write(InitialRotation.Low)
+                .Write(InitialRotation.High)
+                .Write(AccelerationForce.Low)
+                .Write(AccelerationForce.High)
                 .Write(Friction)
                 .Write(TimeToLive);
         }
@@ -274,14 +246,25 @@ namespace Space.ComponentSystem.Data
             Effect = packet.ReadString();
             CollisionRadius = packet.ReadSingle();
             CanBeShot = packet.ReadBoolean();
-            MinInitialVelocity = packet.ReadSingle();
-            MaxInitialVelocity = packet.ReadSingle();
-            MinInitialDirection = packet.ReadSingle();
-            MaxInitialDirection = packet.ReadSingle();
-            MinInitialRotation = packet.ReadSingle();
-            MaxInitialRotation = packet.ReadSingle();
-            MinAccelerationForce = packet.ReadSingle();
-            MaxAccelerationForce = packet.ReadSingle();
+
+            float low, high;
+
+            low = packet.ReadSingle();
+            high = packet.ReadSingle();
+            InitialVelocity = new Interval<float>(low, high);
+
+            low = packet.ReadSingle();
+            high = packet.ReadSingle();
+            InitialDirection = new Interval<float>(low, high);
+
+            low = packet.ReadSingle();
+            high = packet.ReadSingle();
+            InitialRotation = new Interval<float>(low, high);
+
+            low = packet.ReadSingle();
+            high = packet.ReadSingle();
+            AccelerationForce = new Interval<float>(low, high);
+
             Friction = packet.ReadSingle();
             TimeToLive = packet.ReadSingle();
         }

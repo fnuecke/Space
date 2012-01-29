@@ -28,6 +28,11 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         private Dictionary<int, int> _cooldowns = new Dictionary<int, int>();
 
+        /// <summary>
+        /// Randomizer used for sampling projectiles.
+        /// </summary>
+        private MersenneTwister _random = new MersenneTwister(0);
+
         #endregion
 
         #region Logic
@@ -76,8 +81,7 @@ namespace Space.ComponentSystem.Components
                                     // Generate projectiles.
                                     foreach (var projectile in weapon.Projectiles)
                                     {
-                                        Entity.Manager.AddEntity(EntityFactory.CreateProjectile(
-                                            projectile, Entity, faction.Value));
+                                        Entity.Manager.AddEntity(projectile.SampleProjectile(weapon, faction.Value, _random));
                                     }
 
                                     // Generate message.
@@ -152,6 +156,8 @@ namespace Space.ComponentSystem.Components
                 packet.Write(kv.Value);
             }
 
+            packet.Write(_random);
+
             return packet;
         }
 
@@ -172,6 +178,8 @@ namespace Space.ComponentSystem.Components
                 var value = packet.ReadInt32();
                 _cooldowns.Add(key, value);
             }
+
+            _random = packet.ReadPacketizableInto<MersenneTwister>(_random);
         }
 
         /// <summary>
@@ -214,10 +222,12 @@ namespace Space.ComponentSystem.Components
                 {
                     copy._cooldowns.Add(item.Key, item.Value);
                 }
+                copy._random = _random.DeepCopy(copy._random);
             }
             else
             {
                 copy._cooldowns = new Dictionary<int, int>(_cooldowns);
+                copy._random = _random.DeepCopy();
             }
 
             return copy;

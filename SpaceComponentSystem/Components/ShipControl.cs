@@ -5,6 +5,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {

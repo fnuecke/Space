@@ -17,7 +17,7 @@
         <Item>
           <Texture>Textures/Stolen/Projectiles/missile_MIRV</Texture>
           <CollisionRadius>8</CollisionRadius>
-          <InitialVelocity>20 0</InitialVelocity>
+          <InitialVelocity>20</InitialVelocity>
         </Item>
       </Projectiles>
     </Item>
@@ -37,7 +37,7 @@
         <Item>
           <Texture>Textures/Stolen/Projectiles/missile_MIRV</Texture>
           <CollisionRadius>8</CollisionRadius>
-          <InitialVelocity>15 0</InitialVelocity>
+          <InitialVelocity>15</InitialVelocity>
         </Item>
       </Projectiles>
     </Item>

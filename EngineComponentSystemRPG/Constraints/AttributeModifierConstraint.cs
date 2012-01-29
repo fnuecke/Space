@@ -20,14 +20,9 @@ namespace Engine.ComponentSystem.RPG.Constraints
         public TAttribute Type;
 
         /// <summary>
-        /// The minimum value of the attribute.
+        /// The value range of the attribute.
         /// </summary>
-        public float MinValue;
-
-        /// <summary>
-        /// The maximum value of the attribute.
-        /// </summary>
-        public float MaxValue;
+        public Interval<float> Value;
 
         /// <summary>
         /// The computation type of this attribute, i.e. how it should be used
@@ -51,7 +46,7 @@ namespace Engine.ComponentSystem.RPG.Constraints
         /// <returns>The sampled attribute modifier.</returns>
         public AttributeModifier<TAttribute> SampleAttributeModifier(IUniformRandom random)
         {
-            var value = MathHelper.Lerp(MinValue, MaxValue, (float)random.NextDouble());
+            var value = MathHelper.Lerp(Value.Low, Value.High, (float)random.NextDouble());
             if (Round)
             {
                 value = (float)System.Math.Round(value);

@@ -128,13 +128,14 @@
     <Compile Include="Constraints\ShipConstraints.cs" />
     <Compile Include="Constraints\ThrusterConstraints.cs" />
     <Compile Include="Constraints\WeaponConstraints.cs" />
-    <Compile Include="Data\Projectile.cs" />
+    <Compile Include="Constraints\ProjectileConstraints.cs" />
     <Compile Include="Components\Items\Armor.cs" />
     <Compile Include="Components\Items\Reactor.cs" />
     <Compile Include="Components\Items\Sensor.cs" />
     <Compile Include="Components\Items\Shield.cs" />
     <Compile Include="Components\Items\Thruster.cs" />
     <Compile Include="Components\Items\Weapon.cs" />
+    <Compile Include="Messages\EntityDied.cs" />
     <Compile Include="Messages\WeaponFired.cs" />
     <Compile Include="Parameterizations\ParticleParameterization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -164,7 +165,9 @@
       <Name>Space.Base</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Data\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

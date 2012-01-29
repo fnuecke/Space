@@ -113,7 +113,7 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 // Recompute if an item with attribute modifiers was added.
                 var added = (ItemAdded)(ValueType)message;
-                if (added.Item.GetComponent<Attribute<TAttribute>>() != null)
+                if (added.Item.Entity.GetComponent<Attribute<TAttribute>>() != null)
                 {
                     RecomputeAttributes();
                 }
@@ -122,7 +122,7 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 // Recompute if an item with attribute modifiers was removed.
                 var removed = (ItemRemoved)(ValueType)message;
-                if (removed.Item.GetComponent<Attribute<TAttribute>>() != null)
+                if (removed.Item.Entity.GetComponent<Attribute<TAttribute>>() != null)
                 {
                     RecomputeAttributes();
                 }

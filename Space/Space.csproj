@@ -240,10 +240,6 @@
       <Project>{10945D08-8588-4F0E-9671-0E90D374EB78}</Project>
       <Name>Engine.Controller</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EngineReaders\Engine.Serialization.Readers.csproj">
-      <Project>{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}</Project>
-      <Name>Engine.Serialization.Readers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineSession\Engine.Session.csproj">
       <Project>{93B52E9C-6872-40F0-B577-D3D9363F7AF1}</Project>
       <Name>Engine.Session</Name>
@@ -255,6 +251,10 @@
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
+      <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>
+      <Name>Space.Base</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
       <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>

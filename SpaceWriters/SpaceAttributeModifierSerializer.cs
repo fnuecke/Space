@@ -1,7 +1,6 @@
 using Engine.Serialization;
-using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
-using Space.ComponentSystem;
+using Space.Data;
 
 namespace Space.Serialization
 {
@@ -10,14 +9,6 @@ namespace Space.Serialization
     /// </summary>
     [ContentTypeSerializer]
     public sealed class SpaceAttributeModifierSerializer : AbstractAttributeModifierSerializer<AttributeType>
-    {
-    }
-
-    /// <summary>
-    /// This is for writing data back in binary format.
-    /// </summary>
-    [ContentTypeWriter]
-    public sealed class SpaceAttributeModifierWriter : AbstractAttributeModifierWriter<AttributeType>
     {
     }
 }

@@ -2,9 +2,8 @@
 using System.Text.RegularExpressions;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
+using Engine.Util;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Content.Pipeline;
-using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 
 namespace Engine.Serialization
@@ -49,24 +48,24 @@ namespace Engine.Serialization
             switch (value.ComputationType)
             {
                 case AttributeComputationType.Additive:
-                    if (value.MinValue == value.MaxValue)
+                    if (value.Value.Low == value.Value.High)
                     {
-                        valueString = value.MinValue.ToString();
+                        valueString = value.Value.Low.ToString();
                     }
                     else
                     {
-                        valueString = value.MinValue.ToString() + " to " + value.MaxValue.ToString();
+                        valueString = value.Value.Low.ToString() + " to " + value.Value.High.ToString();
                     }
                     output.Xml.WriteValue(valueString + " " + Enum.GetName(typeof(TAttribute), value.Type));
                     break;
                 case AttributeComputationType.Multiplicative:
-                    if (value.MinValue == value.MaxValue)
+                    if (value.Value.Low == value.Value.High)
                     {
-                        valueString = ((value.MinValue - 1) * 100).ToString();
+                        valueString = ((value.Value.Low - 1) * 100).ToString();
                     }
                     else
                     {
-                        valueString = ((value.MinValue - 1) * 100).ToString() + " to " + ((value.MaxValue - 1) * 100).ToString();
+                        valueString = ((value.Value.Low - 1) * 100).ToString() + " to " + ((value.Value.High - 1) * 100).ToString();
                     }
                     output.Xml.WriteValue(valueString + "% " + Enum.GetName(typeof(TAttribute), value.Type));
                     break;
@@ -106,8 +105,7 @@ namespace Engine.Serialization
                 }
 
                 // Set final value in our instance.
-                existingInstance.MinValue = minValue;
-                existingInstance.MaxValue = maxValue;
+                existingInstance.Value = new Interval<float>(minValue, maxValue);
 
                 return existingInstance;
             }
@@ -115,32 +113,6 @@ namespace Engine.Serialization
             {
                 throw new ArgumentException("input");
             }
-        }
-    }
-
-    /// <summary>
-    /// This is for writing data back in binary format.
-    /// </summary>
-    public abstract class AbstractAttributeModifierConstraintWriter<TAttribute> : ContentTypeWriter<AttributeModifierConstraint<TAttribute>>
-        where TAttribute : struct
-    {
-        protected override void Write(ContentWriter output, AttributeModifierConstraint<TAttribute> value)
-        {
-            output.Write(Enum.GetName(typeof(TAttribute), value.Type));
-            output.Write((byte)value.ComputationType);
-            output.Write(value.MinValue);
-            output.Write(value.MaxValue);
-            output.Write(value.Round);
-        }
-
-        public override string GetRuntimeType(TargetPlatform targetPlatform)
-        {
-            return typeof(AttributeModifierConstraint<TAttribute>).AssemblyQualifiedName;
-        }
-
-        public override string GetRuntimeReader(TargetPlatform targetPlatform)
-        {
-            return typeof(AttributeModifierConstraint<TAttribute>).AssemblyQualifiedName;
         }
     }
 }

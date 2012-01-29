@@ -123,6 +123,7 @@
     <Compile Include="Util\ICopyable.cs" />
     <Compile Include="Util\IdManager.cs" />
     <Compile Include="Util\IGaussianRandom.cs" />
+    <Compile Include="Util\Interval.cs" />
     <Compile Include="Util\IUniformRandom.cs" />
     <Compile Include="Util\LocalizedContentManager.cs" />
     <Compile Include="IO\PacketStream.cs" />

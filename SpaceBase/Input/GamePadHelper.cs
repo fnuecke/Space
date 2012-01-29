@@ -8,7 +8,7 @@ namespace Space.Input
     /// Utility class, used for evaluating game pad state based on the current
     /// game settings.
     /// </summary>
-    static class GamePadHelper
+    public static class GamePadHelper
     {
         /// <summary>
         /// Gets the current acceleration vector.

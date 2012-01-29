@@ -47,7 +47,7 @@ namespace Space.ComponentSystem.Constraints
         public int SensorSlots;
 
         /// <summary>
-        /// The number of hull slots available for this ship class.
+        /// The number of armor slots available for this ship class.
         /// </summary>
         public int ArmorSlots;
 

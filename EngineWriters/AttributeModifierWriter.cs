@@ -2,8 +2,6 @@ using System;
 using System.Text.RegularExpressions;
 using Engine.ComponentSystem.RPG.Components;
 using Microsoft.Xna.Framework.Content;
-using Microsoft.Xna.Framework.Content.Pipeline;
-using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Compiler;
 using Microsoft.Xna.Framework.Content.Pipeline.Serialization.Intermediate;
 
 namespace Engine.Serialization
@@ -81,30 +79,6 @@ namespace Engine.Serialization
             {
                 throw new ArgumentException("input");
             }
-        }
-    }
-
-    /// <summary>
-    /// This is for writing data back in binary format.
-    /// </summary>
-    public abstract class AbstractAttributeModifierWriter<TAttribute> : ContentTypeWriter<AttributeModifier<TAttribute>>
-        where TAttribute : struct
-    {
-        protected override void Write(ContentWriter output, AttributeModifier<TAttribute> value)
-        {
-            output.Write(Enum.GetName(typeof(TAttribute), value.Type));
-            output.Write((byte)value.ComputationType);
-            output.Write(value.Value);
-        }
-
-        public override string GetRuntimeType(TargetPlatform targetPlatform)
-        {
-            return typeof(AttributeModifier<TAttribute>).AssemblyQualifiedName;
-        }
-
-        public override string GetRuntimeReader(TargetPlatform targetPlatform)
-        {
-            return typeof(AttributeModifierReader<TAttribute>).AssemblyQualifiedName;
         }
     }
 }

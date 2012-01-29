@@ -118,7 +118,7 @@ namespace Space.ComponentSystem.Components
             }
         }
 
-        protected void RecomputeValues()
+        protected virtual void RecomputeValues()
         {
             // Adjust current energy so it does not exceed our new maximum.
             if (Value > MaxValue)

@@ -40,14 +40,13 @@ namespace Space.ComponentSystem.Components
             if (Value == 0)
             {
                 EntityDied message;
-                message.Entity = Entity;
                 Entity.SendMessage(ref message);
             }
 
             base.Update(parameterization);
         }
 
-        private void RecomputeValues()
+        protected override void RecomputeValues()
         {
             // Recompute our values.
             var character = Entity.GetComponent<Character<AttributeType>>();

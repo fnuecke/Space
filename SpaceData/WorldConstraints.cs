@@ -6,6 +6,8 @@ namespace Space.Data
     /// </summary>
     public class WorldConstraints
     {
+        #region Fields
+        
         /// <summary>
         /// The chance we spawn multiple suns in a system.
         /// </summary>
@@ -158,6 +160,10 @@ namespace Space.Data
         /// from the dominant orbiting angle for its planet.
         /// </summary>
         public float MoonOrbitAngleDeviationStdDev;
+        
+        #endregion
+
+        #region Sampling
 
         public float SampleSunRadius(IGaussianRandom random)
         {
@@ -223,5 +229,7 @@ namespace Space.Data
         {
             return (float)random.NextSampleClamped(MoonOrbitAngleDeviationMean, MoonOrbitAngleDeviationStdDev);
         }
+
+        #endregion
     }
 }

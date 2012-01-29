@@ -3,6 +3,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -372,22 +373,8 @@ namespace Space.ComponentSystem.Components
                 _mass = character.GetValue(AttributeType.Mass);
 
                 // Recompute cached values.
-                _maxAcceleration = 0;
-                _maxSpeed = 0;
-
-                // Maximum acceleration. Get ship modules.
-                // Get acceleration from thrusters.
-                for (int i = 0; i < equipment.GetSlotCount<Thruster>(); i++)
-                {
-                    var thruster = equipment.GetItem<Thruster>(i);
-                    if (thruster != null)
-                    {
-                        _maxAcceleration += thruster.AccelerationForce;
-                    }
-                }
-
-                // Divide by mass and return.
-                _maxAcceleration /= _mass;
+                _maxAcceleration = character.GetValue(AttributeType.AccelerationForce) / _mass;
+                _maxSpeed = float.PositiveInfinity;
 
                 // Maximum speed.
                 var friction = Entity.GetComponent<Friction>();
@@ -397,19 +384,7 @@ namespace Space.ComponentSystem.Components
                 }
 
                 // Figure out the overall range of our radar system.
-                float radarRange = 0;
-                for (int i = 0; i < equipment.GetSlotCount<Sensor>(); i++)
-                {
-                    var sensor = equipment.GetItem<Sensor>(i);
-                    if (sensor != null)
-                    {
-                        // TODO in case we're adding sensor types (anti-cloaking, ...) check this one's actually a radar.
-                        radarRange += sensor.Range;
-                    }
-                }
-
-                // Apply modifiers, compute max speed and return.
-                _radarRange = character.GetValue(AttributeType.SensorRange, radarRange);
+                _radarRange = character.GetValue(AttributeType.SensorRange);
             }
         }
 

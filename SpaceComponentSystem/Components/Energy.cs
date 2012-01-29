@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -27,7 +28,7 @@ namespace Space.ComponentSystem.Components
 
         #region Logic
 
-        private void RecomputeValues()
+        protected override void RecomputeValues()
         {
             // Recompute our values.
             var character = Entity.GetComponent<Character<AttributeType>>();

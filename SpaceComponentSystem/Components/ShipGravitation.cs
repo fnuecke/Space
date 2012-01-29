@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
