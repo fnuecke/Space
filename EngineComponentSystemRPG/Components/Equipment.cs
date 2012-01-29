@@ -166,7 +166,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="type">The type of the item to get.</param>
         /// <param name="slot">The slot to remove the item from.</param>
         /// <returns>The unequipped item.</returns>
-        private Entity Unequip<T>(int slot) where T : Item
+        public Entity Unequip<T>(int slot) where T : Item
         {
             Validate(typeof(T), slot);
 
