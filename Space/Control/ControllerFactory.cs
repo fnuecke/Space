@@ -9,6 +9,7 @@ using Space.ComponentSystem.Systems;
 using Space.Data;
 using Space.Session;
 using Space.Simulation.Commands;
+using Space.Util;
 
 namespace Space.Control
 {
@@ -96,7 +97,8 @@ namespace Space.Control
             // The join data.
             string playerName = Settings.Instance.PlayerName;
             PlayerData playerData = new PlayerData();
-            playerData.Ship = game.Content.Load<ShipData[]>("Data/ships")[0];
+            // TODO: load actual player profile.
+            //playerData.Ship = game.Content.Load<ShipData[]>("Data/ships")[0];
 
             // Create actual controller.
             var controller = new ThinClientController<PlayerData>(server, playerName, playerData);

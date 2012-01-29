@@ -1,7 +1,9 @@
 ﻿using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
+using Engine.Util;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Constraints;
 using Space.ComponentSystem.Entities;
 using Space.Session;
 
@@ -22,7 +24,7 @@ namespace Space.Control
         #endregion
 
         #region Constructor
-        
+
         /// <summary>
         /// Creates a new game server for the specified game.
         /// </summary>
@@ -106,7 +108,11 @@ namespace Space.Control
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
             var playerData = (PlayerData)e.Player.Data;
-            var ship = EntityFactory.CreatePlayerShip(playerData.Ship, e.Player.Number, new Vector2(60000, 60000));
+            var ship = EntityFactory.CreatePlayerShip(
+                ConstraintsLibrary.GetConstraints<ShipConstraints>("Tank"),
+                e.Player.Number,
+                new Vector2(60000, 60000),
+                new MersenneTwister(0));
             Controller.Simulation.EntityManager.AddEntity(ship);
         }
 

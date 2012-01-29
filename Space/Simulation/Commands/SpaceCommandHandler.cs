@@ -1,13 +1,11 @@
 ﻿using System.IO;
 using System.Reflection;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using IronPython.Hosting;
 using Microsoft.Scripting.Hosting;
 using Space.ComponentSystem.Components;
-using Space.Data;
 
 namespace Space.Simulation.Commands
 {
@@ -184,16 +182,16 @@ def ge(id):
                             globals.SetVariable("manager", manager);
                             globals.SetVariable("avatar", avatar);
 
-                            // Some more utility variables used frequently.
-                            if (avatar != null)
-                            {
-                                var modules = avatar.GetComponent<ModuleManager<AttributeType>>();
-                                globals.SetVariable("modules", modules);
-                            }
-                            else
-                            {
-                                globals.RemoveVariable("modules");
-                            }
+//                             // Some more utility variables used frequently.
+//                             if (avatar != null)
+//                             {
+//                                 var modules = avatar.GetComponent<ModuleManager<AttributeType>>();
+//                                 globals.SetVariable("modules", modules);
+//                             }
+//                             else
+//                             {
+//                                 globals.RemoveVariable("modules");
+//                             }
 
                             // Try executing our script.
                             try

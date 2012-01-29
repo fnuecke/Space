@@ -8,6 +8,7 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Constraints;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Messages;
 using Space.Data;
@@ -24,6 +25,8 @@ namespace Space.ComponentSystem.Systems
         private Dictionary<ulong,List<int>> _entities = new Dictionary<ulong,List<int>>();
 
         private ContentManager _content;
+
+        private MersenneTwister _random = new MersenneTwister(0);
 
         #endregion
 
@@ -61,7 +64,8 @@ namespace Space.ComponentSystem.Systems
                             var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Move);
                             //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
                             list.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
-                                _content.Load<ShipData[]>("Data/ships")[1], cellInfo.Faction, spawnPoint, order)));
+                                ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                                cellInfo.Faction, spawnPoint, _random, order)));
                         }
                     }
                 }
@@ -107,16 +111,18 @@ namespace Space.ComponentSystem.Systems
             var aicommand = new AiComponent.AiCommand(targetEntity,2000,AiComponent.Order.Move);
             var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
                    (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
-            _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],
-                faction, startPosition, aicommand)));
+            _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
+                ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                faction, startPosition, _random, aicommand)));
         }
         public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
         {
             var aicommand = new AiComponent.AiCommand(targetPosition, 2000, AiComponent.Order.Move);
              var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
                    (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
-            _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],
-                faction, startPosition, aicommand)));
+             _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
+                 ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                faction, startPosition, _random, aicommand)));
         }
         #endregion
 
@@ -134,6 +140,8 @@ namespace Space.ComponentSystem.Systems
                     packet.Write(entityId);
                 }
             }
+
+            packet.Write(_random);
 
             return packet;
         }
@@ -153,6 +161,8 @@ namespace Space.ComponentSystem.Systems
                 }
                 _entities.Add(key, list);
             }
+
+            _random = packet.ReadPacketizableInto(_random);
         }
 
         public override void Hash(Hasher hasher)
@@ -178,16 +188,20 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._content = _content;
                 copy._entities.Clear();
+                copy._random = _random.DeepCopy(_random);
             }
             else
             {
-                copy._entities = new Dictionary<ulong,List<int>>();
+                copy._entities = new Dictionary<ulong, List<int>>();
+                copy._random = _random.DeepCopy();
             }
+
             foreach (var item in _entities)
             {
                 copy._entities.Add(item.Key, new List<int>(item.Value));
 
             }
+
             return copy;
         }
 

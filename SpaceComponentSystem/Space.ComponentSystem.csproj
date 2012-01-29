@@ -121,7 +121,9 @@
     <Compile Include="Components\WeaponControl.cs" />
     <Compile Include="Components\WeaponSound.cs" />
     <Compile Include="Constraints\ArmorConstraints.cs" />
+    <Compile Include="Constraints\ConstraintsLibrary.cs" />
     <Compile Include="Constraints\ItemConstraints.cs" />
+    <Compile Include="Constraints\PlayerShip.cs" />
     <Compile Include="Constraints\ReactorConstraints.cs" />
     <Compile Include="Constraints\SensorConstraints.cs" />
     <Compile Include="Constraints\ShieldConstraints.cs" />
@@ -165,9 +167,7 @@
       <Name>Space.Base</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Data\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--

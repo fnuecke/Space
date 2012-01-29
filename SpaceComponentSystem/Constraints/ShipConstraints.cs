@@ -12,7 +12,7 @@ namespace Space.ComponentSystem.Constraints
     /// <summary>
     /// Basic descriptor for a single ship class.
     /// </summary>
-    public sealed class ShipConstraints
+    public class ShipConstraints
     {
         #region General
 
@@ -78,10 +78,30 @@ namespace Space.ComponentSystem.Constraints
         /// <summary>
         /// Samples the attributes to apply to the item.
         /// </summary>
-        /// <param name="item">The item.</param>
+        /// <param name="faction">The faction the ship belongs to.</param>
+        /// <param name="position">The position at which to spawn the ship.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <return>The entity with the attributes applied.</return>
-        public Entity SampleShip(Factions faction, Vector2 position, IUniformRandom random)
+        public virtual Entity SampleShip(Factions faction, Vector2 position, IUniformRandom random)
+        {
+            var entity = CreateShip(faction, position);
+
+            // Add our attributes.
+            foreach (var attribute in Attributes)
+            {
+                entity.AddComponent(new Attribute<AttributeType>(attribute.SampleAttributeModifier(random)));
+            }
+
+            return entity;
+        }
+
+        /// <summary>
+        /// Sets up the basic ship data that is deterministic.
+        /// </summary>
+        /// <param name="faction"></param>
+        /// <param name="position"></param>
+        /// <returns></returns>
+        protected Entity CreateShip(Factions faction, Vector2 position)
         {
             var entity = new Entity();
 
@@ -164,12 +184,6 @@ namespace Space.ComponentSystem.Constraints
             // Other game logic related components.
             entity.AddComponent(health);
             entity.AddComponent(energy);
-
-            // Add our attributes.
-            foreach (var attribute in Attributes)
-            {
-                entity.AddComponent(new Attribute<AttributeType>(attribute.SampleAttributeModifier(random)));
-            }
 
             // Create equipment slots.
             var equipment = new Equipment();

@@ -75,13 +75,13 @@
       <Project>{48F0591F-9238-4FF0-AC34-04E14C291AA3}</Project>
       <Name>Space.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
+    <ProjectReference Include="..\EngineWriters\Engine.Serialization.csproj">
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
-      <Name>Engine.Serialization.Writers</Name>
+      <Name>Engine.Serialization</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceWriters\Space.Serialization.Writers.csproj">
+    <ProjectReference Include="..\SpaceWriters\Space.Serialization.csproj">
       <Project>{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}</Project>
-      <Name>Space.Serialization.Writers</Name>
+      <Name>Space.Serialization</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

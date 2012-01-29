@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
-    <ProjectGuid>{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}</ProjectGuid>
+    <ProjectGuid>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</ProjectGuid>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Space.Serialization</RootNamespace>
-    <AssemblyName>Space.Serialization.Writers</AssemblyName>
+    <RootNamespace>Engine.Serialization</RootNamespace>
+    <AssemblyName>Engine.Serialization</AssemblyName>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
@@ -49,22 +49,23 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="SpaceAttributeModifierConstraintSerializer.cs" />
-    <Compile Include="SpaceAttributeModifierSerializer.cs" />
+    <Compile Include="AttributeModifierConstraintSerializer.cs" />
+    <Compile Include="AttributeModifierSerializer.cs" />
+    <Compile Include="IntervalSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
-      <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
-      <Name>Engine.Serialization.Writers</Name>
+    <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
+      <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
+      <Name>Engine.ComponentSystem.RPG</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
-      <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>
-      <Name>Space.Base</Name>
+    <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
+      <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
+      <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
-      <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
-      <Name>Space.ComponentSystem</Name>
+    <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
+      <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
+      <Name>Engine.Base</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

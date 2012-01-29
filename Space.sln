@@ -7,11 +7,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Content", "SpaceConte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Data", "SpaceData\Space.Data.csproj", "{48F0591F-9238-4FF0-AC34-04E14C291AA3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Serialization.Writers", "SpaceWriters\Space.Serialization.Writers.csproj", "{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Serialization", "SpaceWriters\Space.Serialization.csproj", "{2AD492EE-80E6-45ED-BC8D-9CEE9DF5B96C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Base", "EngineBase\Engine.Base.csproj", "{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Serialization.Writers", "EngineWriters\Engine.Serialization.Writers.csproj", "{B40055F1-158F-4C54-BC3F-D269ABB941FD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Serialization", "EngineWriters\Engine.Serialization.csproj", "{B40055F1-158F-4C54-BC3F-D269ABB941FD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.Simulation", "EngineSimulation\Engine.Simulation.csproj", "{96E70AC4-C288-478C-866E-5C7280067642}"
 EndProject
