@@ -167,23 +167,34 @@ def ge(id):
                     break;
 
                 case SpaceCommandType.Equip:
-                    var equipCommand = (EquipCommand)command;
-                    try
                     {
-                        avatar.GetComponent<Equipment>().Equip(avatar.GetComponent<Inventory>().RemoveItemAt(equipCommand.InventoryIndex), equipCommand.Slot);
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        logger.WarnException("Invalid equip command.", ex);
+                        var equipCommand = (EquipCommand)command;
+                        try
+                        {
+                            var inventory = avatar.GetComponent<Inventory>();
+                            var item = avatar.GetComponent<Inventory>()[equipCommand.InventoryIndex];
+                            inventory.RemoveAt(equipCommand.InventoryIndex);
+                            avatar.GetComponent<Equipment>().Equip(item, equipCommand.Slot);
+                        }
+                        catch (IndexOutOfRangeException ex)
+                        {
+                            logger.ErrorException("Invalid equip command.", ex);
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            logger.ErrorException("Invalid equip command.", ex);
+                        }
                     }
                     break;
 
 #if DEBUG
                 case SpaceCommandType.AddItem:
-                    var addCommand = (AddItemCommand)command;
-                    var item = addCommand.Item.DeepCopy();
-                    manager.AddEntity(item);
-                    avatar.GetComponent<Inventory>().AddItem(item);
+                    {
+                        var addCommand = (AddItemCommand)command;
+                        var item = addCommand.Item.DeepCopy();
+                        manager.AddEntity(item);
+                        avatar.GetComponent<Inventory>().Add(item);
+                    }
                     break;
 
                 case SpaceCommandType.ScriptCommand:
@@ -210,7 +221,7 @@ def ge(id):
 
                             globals.SetVariable("manager", manager);
 
-                             // Some more utility variables used frequently.
+                            // Some more utility variables used frequently.
                             if (avatar != null)
                             {
                                 globals.SetVariable("avatar", avatar);

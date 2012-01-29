@@ -65,7 +65,7 @@ namespace Space.ComponentSystem.Components
                 {
                     for (int i = 0; i < equipment.GetSlotCount<Weapon>(); i++)
                     {
-                        var weapon = equipment.GetItem<Weapon>(i);
+                        var weapon = equipment.GetItem<Weapon>(i).GetComponent<Weapon>();
                         if (weapon != null)
                         {
                             var energyConsumption = character.GetValue(AttributeType.WeaponEnergyConsumption, weapon.EnergyConsumption);
@@ -115,7 +115,7 @@ namespace Space.ComponentSystem.Components
             if (message is ItemAdded)
             {
                 var added = (ItemAdded)(ValueType)message;
-                if (added.Item is Weapon)
+                if (added.Item.GetComponent<Item>() is Weapon)
                 {
                     // Weapon was equipped, track a cooldown for it.
                     _cooldowns.Add(added.Slot, 0);
@@ -124,7 +124,7 @@ namespace Space.ComponentSystem.Components
             else if (message is ItemRemoved)
             {
                 var removed = (ItemRemoved)(ValueType)message;
-                if (removed.Item is Weapon)
+                if (removed.Item.GetComponent<Item>() is Weapon)
                 {
                     // Weapon was unequipped, stop tracking.
                     _cooldowns.Remove(removed.Slot);

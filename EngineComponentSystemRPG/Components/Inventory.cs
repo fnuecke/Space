@@ -10,7 +10,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// <summary>
     /// Represents a player's inventory, with a list of items in it.
     /// </summary>
-    public sealed class Inventory : AbstractComponent
+    public sealed class Inventory : AbstractComponent, IList<Entity>
     {
         #region Fields
         
@@ -21,51 +21,180 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Accessors
+        #region List interface
 
         /// <summary>
-        /// Adds the item to the inventory.
+        /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
         /// </summary>
-        /// <param name="item">The item to add.</param>
-        public void AddItem(Entity item)
+        /// <returns>
+        /// The number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        ///   </returns>
+        public int Count
+        {
+            get { return _items.Count; }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
+        /// </summary>
+        /// <returns>true if the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only; otherwise, false.
+        ///   </returns>
+        public bool IsReadOnly { get { return false; } }
+
+        /// <summary>
+        /// Gets or sets the element at the specified index.
+        /// </summary>
+        /// <returns>
+        /// The element at the specified index.
+        ///   </returns>
+        ///   
+        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        ///   </exception>
+        ///   
+        /// <exception cref="T:System.NotSupportedException">
+        /// The property is set and the <see cref="T:System.Collections.Generic.IList`1"/> is read-only.
+        ///   </exception>
+        public Entity this[int index]
+        {
+            get
+            {
+                return Entity.Manager.GetEntity(_items[index]);
+            }
+            set
+            {
+                _items[index] = value.UID;
+            }
+        }
+
+        /// <summary>
+        /// Adds an item to the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        /// </summary>
+        /// <param name="item">The object to add to the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
+        /// <exception cref="T:System.NotSupportedException">
+        /// The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
+        ///   </exception>
+        public void Add(Entity item)
         {
             _items.Add(item.UID);
         }
 
         /// <summary>
-        /// Removes the item from the inventory.
+        /// Removes all items from the <see cref="T:System.Collections.Generic.ICollection`1"/>.
         /// </summary>
-        /// <param name="item">The item to remove.</param>
-        /// <returns>Whether the item was successfully removed.</returns>
-        public bool RemoveItem(Entity item)
+        /// <exception cref="T:System.NotSupportedException">
+        /// The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
+        ///   </exception>
+        public void Clear()
         {
-            return RemoveItem(item.UID);
+            _items.Clear();
         }
 
         /// <summary>
-        /// Removes the item with the specified id from the inventory.
+        /// Determines whether the <see cref="T:System.Collections.Generic.ICollection`1"/> contains a specific value.
         /// </summary>
-        /// <param name="entityUid">The entity uid of the item.</param>
-        /// <returns>Whether the item was successfully removed.</returns>
-        public bool RemoveItem(int entityUid)
+        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
+        /// <returns>
+        /// true if <paramref name="item"/> is found in the <see cref="T:System.Collections.Generic.ICollection`1"/>; otherwise, false.
+        /// </returns>
+        public bool Contains(Entity item)
         {
-            return _items.Remove(entityUid);
+            return _items.Contains(item.UID);
         }
 
         /// <summary>
-        /// Removes the item at the specified index from the inventory.
+        /// Copies to.
         /// </summary>
-        /// <param name="index">The index of the item to remove.</param>
-        /// <returns>The removed item.</returns>
-        public Entity RemoveItemAt(int index)
+        /// <param name="array">The array.</param>
+        /// <param name="arrayIndex">Index of the array.</param>
+        public void CopyTo(Entity[] array, int arrayIndex)
         {
-            if (index < 0 || index >= _items.Count)
+            for (int i = 0; i < _items.Count; i++)
             {
-                throw new ArgumentException("Invalid index.");
+                array[arrayIndex + i] = Entity.Manager.GetEntity(_items[i]);
             }
-            var entity = Entity.Manager.GetEntity(_items[index]);
+        }
+
+        /// <summary>
+        /// Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        /// </summary>
+        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList`1"/>.</param>
+        /// <returns>
+        /// The index of <paramref name="item"/> if found in the list; otherwise, -1.
+        /// </returns>
+        public int IndexOf(Entity item)
+        {
+            return _items.IndexOf(item.UID);
+        }
+
+        /// <summary>
+        /// Inserts an item to the <see cref="T:System.Collections.Generic.IList`1"/> at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
+        /// <param name="item">The object to insert into the <see cref="T:System.Collections.Generic.IList`1"/>.</param>
+        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        ///   </exception>
+        ///   
+        /// <exception cref="T:System.NotSupportedException">
+        /// The <see cref="T:System.Collections.Generic.IList`1"/> is read-only.
+        ///   </exception>
+        public void Insert(int index, Entity item)
+        {
+            _items.Insert(index, item.UID);
+        }
+
+        /// <summary>
+        /// Removes the first occurrence of a specific object from the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        /// </summary>
+        /// <param name="item">The object to remove from the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
+        /// <returns>
+        /// true if <paramref name="item"/> was successfully removed from the <see cref="T:System.Collections.Generic.ICollection`1"/>; otherwise, false. This method also returns false if <paramref name="item"/> is not found in the original <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        /// </returns>
+        /// <exception cref="T:System.NotSupportedException">
+        /// The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
+        ///   </exception>
+        public bool Remove(Entity item)
+        {
+            return _items.Remove(item.UID);
+        }
+
+        /// <summary>
+        /// Removes the <see cref="T:System.Collections.Generic.IList`1"/> item at the specified index.
+        /// </summary>
+        /// <param name="index">The zero-based index of the item to remove.</param>
+        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        ///   </exception>
+        ///   
+        /// <exception cref="T:System.NotSupportedException">
+        /// The <see cref="T:System.Collections.Generic.IList`1"/> is read-only.
+        ///   </exception>
+        public void RemoveAt(int index)
+        {
             _items.RemoveAt(index);
-            return entity;
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
+        /// </returns>
+        public IEnumerator<Entity> GetEnumerator()
+        {
+            for (int i = 0; i < _items.Count; i++)
+            {
+                yield return Entity.Manager.GetEntity(_items[i]);
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+        /// </returns>
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         #endregion
@@ -82,7 +211,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 // If an entity was removed from the game and it was in this
                 // inventory, remove it here, too.
                 var removed = (EntityRemoved)(ValueType)message;
-                RemoveItem(removed.Entity);
+                Remove(removed.Entity);
             }
         }
 

@@ -183,6 +183,7 @@
     <Compile Include="ScreenManagement\Screens\Helper\BasicForms.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\SpaceForms.cs" />
     <Compile Include="ScreenManagement\Screens\Interfaces\AHudElement.cs" />
+    <Compile Include="Session\Profile.cs" />
     <Compile Include="Simulation\Commands\AddItemCommand.cs" />
     <Compile Include="Simulation\Commands\EquipCommand.cs" />
     <Compile Include="Simulation\Commands\ScriptCommand.cs" />

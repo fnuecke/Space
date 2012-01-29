@@ -277,6 +277,11 @@ namespace Space.Util
         public string PlayerName = "Player";
 
         /// <summary>
+        /// Relative or absolute path to the folder to store profiles in.
+        /// </summary>
+        public string ProfileFolder = "save";
+
+        /// <summary>
         /// Address of the last server we tried to connect to.
         /// </summary>
         public string LastServerAddress = "127.0.0.1";

@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.Entities;
 
 namespace Engine.ComponentSystem.RPG.Messages
 {
@@ -10,7 +10,7 @@ namespace Engine.ComponentSystem.RPG.Messages
         /// <summary>
         /// The item that was equipped.
         /// </summary>
-        public Item Item;
+        public Entity Item;
 
         /// <summary>
         /// The slot to which the item was added.

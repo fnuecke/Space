@@ -17,6 +17,20 @@ namespace Engine.ComponentSystem.RPG.Components
     public class Character<TAttribute> : AbstractComponent
         where TAttribute : struct
     {
+        #region Properties
+
+        /// <summary>
+        /// The number of base attributes of this character.
+        /// </summary>
+        public int BaseAttributeCount { get { return _baseAttributes.Count; } }
+
+        /// <summary>
+        /// The types of base attributes of this character.
+        /// </summary>
+        public IEnumerable<TAttribute> BaseAttributeTypes { get { return _baseAttributes.Keys; } }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -122,7 +136,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 {
                     // Recompute if an item with attribute modifiers was added.
                     var added = (ItemAdded)(ValueType)message;
-                    if (added.Item.Entity.GetComponent<Attribute<TAttribute>>() != null)
+                    if (added.Item.GetComponent<Attribute<TAttribute>>() != null)
                     {
                         RecomputeAttributes();
                     }
@@ -131,7 +145,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 {
                     // Recompute if an item with attribute modifiers was removed.
                     var removed = (ItemRemoved)(ValueType)message;
-                    if (removed.Item.Entity.GetComponent<Attribute<TAttribute>>() != null)
+                    if (removed.Item.GetComponent<Attribute<TAttribute>>() != null)
                     {
                         RecomputeAttributes();
                     }
@@ -262,6 +276,17 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Packetize(packet);
 
+            return PacketizeLocal(packet);
+        }
+
+        /// <summary>
+        /// Special purpose packetize method, only writing own data, not that
+        /// of the base class. Used for saving.
+        /// </summary>
+        /// <param name="packet">The packet to write to.</param>
+        /// <returns>The writting to packet.</returns>
+        public Packet PacketizeLocal(Packet packet)
+        {
             packet.Write(_baseAttributes.Count);
             foreach (var attribute in _baseAttributes)
             {
@@ -280,6 +305,16 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Depacketize(packet);
 
+            DepacketizeLocal(packet);
+        }
+
+        /// <summary>
+        /// Pendant to <c>PacketizeLocal</c>, only reads own data and leaves
+        /// the base class alone.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public void DepacketizeLocal(Packet packet)
+        {
             var numBaseAttributes = packet.ReadInt32();
             for (int i = 0; i < numBaseAttributes; i++)
             {

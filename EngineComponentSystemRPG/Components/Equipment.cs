@@ -57,9 +57,19 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <returns>The number of available slots.</returns>
         public int GetSlotCount<T>() where T : Item
         {
-            if (_slots.ContainsKey(typeof(T)))
+            return GetSlotCount(typeof(T));
+        }
+
+        /// <summary>
+        /// Get the number of slots of the specified item type.
+        /// </summary>
+        /// <param name="itemType">The item type.</param>
+        /// <returns>The number of available slots.</returns>
+        public int GetSlotCount(Type itemType)
+        {
+            if (_slots.ContainsKey(itemType))
             {
-                return _slots[typeof(T)].Length;
+                return _slots[itemType].Length;
             }
             return 0;
         }
@@ -71,36 +81,51 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="count">The number of available slots.</param>
         public void SetSlotCount<T>(int count) where T : Item
         {
-            if (_slots.ContainsKey(typeof(T)))
+            SetSlotCount(typeof(T), count);
+        }
+        
+        /// <summary>
+        /// Sets the number of available slots for the specified item type.
+        /// </summary>
+        /// <param name="type">The item type.</param>
+        /// <param name="count">The number of available slots.</param>
+        public void SetSlotCount(Type type, int count)
+        {
+            if (!type.IsSubclassOf(typeof(Item)))
             {
-                if (_slots[typeof(T)].Length == count)
+                throw new ArgumentException("Invalid item type.", "type");
+            }
+
+            if (_slots.ContainsKey(type))
+            {
+                if (_slots[type].Length == count)
                 {
                     // Nothing changes.
                     return;
                 }
 
                 var slots = new int[count];
-                if (slots.Length < _slots[typeof(T)].Length)
+                if (slots.Length < _slots[type].Length)
                 {
                     // Less space than before, unequip stuff in removed slots.
-                    for (int i = slots.Length; i < _slots[typeof(T)].Length; i++)
+                    for (int i = slots.Length; i < _slots[type].Length; i++)
                     {
-                        Unequip<T>(i);
+                        Unequip(type, i);
                     }
                 }
                 else
                 {
                     // Got more slots, copy over.
-                    _slots[typeof(T)].CopyTo(slots, 0);
+                    _slots[type].CopyTo(slots, 0);
                 }
 
                 // Set new slot array.
-                _slots[typeof(T)] = slots;
+                _slots[type] = slots;
             }
             else
             {
                 // Don't have that yet, create new array.
-                _slots[typeof(T)] = new int[count];
+                _slots[type] = new int[count];
             }
         }
 
@@ -119,14 +144,14 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 throw new ArgumentException("Invalid item, not part of the simulation.", "item");
             }
-            var type = item.GetComponent<Item>();
-            if (type == null)
+            var itemType = item.GetComponent<Item>();
+            if (itemType == null)
             {
-                throw new ArgumentException("Invalid item, does not have a type.", "item");
+                throw new ArgumentException("Invalid item, does not have a type component.", "item");
             }
-            Validate(type.GetType(), slot);
+            Validate(itemType.GetType(), slot);
 
-            var slots = _slots[type.GetType()];
+            var slots = _slots[itemType.GetType()];
             if (slots[slot] > 0)
             {
                 throw new ArgumentException("Invalid slot, already an item in that slot", "slot");
@@ -135,9 +160,21 @@ namespace Engine.ComponentSystem.RPG.Components
             slots[slot] = item.UID;
 
             ItemAdded message;
-            message.Item = type;
+            message.Item = item;
             message.Slot = slot;
             Entity.SendMessage(ref message);
+        }
+
+        /// <summary>
+        /// Gets the item equipped in the specified slot.
+        /// </summary>
+        /// <typeparam name="T">The type of the item to get.</typeparam>
+        /// <param name="slot">The slot to get the item from.</param>
+        /// <returns>The item in that slot, or <c>null</c> if there is no item
+        /// in that slot.</returns>
+        public Entity GetItem<T>(int slot) where T : Item
+        {
+            return GetItem(typeof(T), slot);
         }
 
         /// <summary>
@@ -147,40 +184,52 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="slot">The slot to get the item from.</param>
         /// <returns>The item in that slot, or <c>null</c> if there is no item
         /// in that slot.</returns>
-        public T GetItem<T>(int slot) where T : Item
+        public Entity GetItem(Type type, int slot)
         {
-            Validate(typeof(T), slot);
+            Validate(type, slot);
 
-            var slots = _slots[typeof(T)];
+            var slots = _slots[type];
             if (slots[slot] <= 0)
             {
                 return null;
             }
 
-            return Entity.Manager.GetEntity(slots[slot]).GetComponent<T>();
+            return Entity.Manager.GetEntity(slots[slot]);
         }
 
         /// <summary>
         /// Unequips an item from the specified slot.
         /// </summary>
-        /// <param name="type">The type of the item to get.</param>
+        /// <typeparam name="T">The type of the item to unequip.</typeparam>
         /// <param name="slot">The slot to remove the item from.</param>
         /// <returns>The unequipped item.</returns>
         public Entity Unequip<T>(int slot) where T : Item
         {
-            Validate(typeof(T), slot);
+            return Unequip(typeof(T), slot);
+        }
 
-            var slots = _slots[typeof(T)];
+        /// <summary>
+        /// Unequips an item from the specified slot.
+        /// </summary>
+        /// <param name="type">The type of the item to equip.</param>
+        /// <param name="slot">The slot to remove the item from.</param>
+        /// <returns>The unequipped item, or <c>null</c> if there was no item
+        /// in that slot.</returns>
+        public Entity Unequip(Type type, int slot)
+        {
+            Validate(type, slot);
+
+            var slots = _slots[type];
             if (slots[slot] <= 0)
             {
-                throw new ArgumentException("No item in this slot.", "slot");
+                return null;
             }
 
             var item = Entity.Manager.GetEntity(slots[slot]);
             slots[slot] = 0;
 
             ItemRemoved message;
-            message.Item = item.GetComponent<T>();
+            message.Item = item;
             message.Slot = slot;
             Entity.SendMessage(ref message);
 
