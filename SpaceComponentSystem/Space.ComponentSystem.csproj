@@ -139,10 +139,12 @@
     <Compile Include="Components\Items\Thruster.cs" />
     <Compile Include="Components\Items\Weapon.cs" />
     <Compile Include="Constraints\WorldConstraints.cs" />
+    <Compile Include="Messages\CellStateChanged.cs" />
     <Compile Include="Messages\EntityDied.cs" />
     <Compile Include="Messages\WeaponFired.cs" />
     <Compile Include="Parameterizations\ParticleParameterization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Systems\CellSystem.cs" />
     <Compile Include="Systems\ParticleSystem.cs" />
     <Compile Include="Systems\PlayerCenteredRenderSystem.cs" />
     <Compile Include="Systems\PlayerCenteredSoundSystem.cs" />

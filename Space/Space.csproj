@@ -160,8 +160,6 @@
     <Compile Include="ComponentSystem\Messages\EntityChangedCell.cs" />
     <Compile Include="ComponentSystem\Systems\ShipsSpawnSystem.cs" />
     <Compile Include="ComponentSystem\Systems\UniverseSystem.cs" />
-    <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
-    <Compile Include="ComponentSystem\Messages\CellStateChanged.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudBuffElement.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudIcon.cs" />
