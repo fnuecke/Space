@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Systems
     /// Defines a sound system which uses the local player's avatar to
     /// determine the listener position.
     /// </summary>
-    class PlayerCenteredSoundSystem : SoundSystem
+    public sealed class PlayerCenteredSoundSystem : SoundSystem
     {
         #region Fields
 

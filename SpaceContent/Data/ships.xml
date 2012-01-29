@@ -15,7 +15,7 @@
       </Attributes>
 
       <SensorSlots>1</SensorSlots>
-      <HullSlots>2</HullSlots>
+      <ArmorSlots>2</ArmorSlots>
       <ReactorSlots>2</ReactorSlots>
       <ShieldSlots>1</ShieldSlots>
       <ThrusterSlots>2</ThrusterSlots>
@@ -36,7 +36,7 @@
       </Attributes>
 
       <SensorSlots>1</SensorSlots>
-      <HullSlots>1</HullSlots>
+      <ArmorSlots>1</ArmorSlots>
       <ReactorSlots>2</ReactorSlots>
       <ShieldSlots>1</ShieldSlots>
       <ThrusterSlots>2</ThrusterSlots>
@@ -57,7 +57,7 @@
       </Attributes>
 
       <SensorSlots>2</SensorSlots>
-      <HullSlots>1</HullSlots>
+      <ArmorSlots>1</ArmorSlots>
       <ReactorSlots>3</ReactorSlots>
       <ShieldSlots>1</ShieldSlots>
       <ThrusterSlots>2</ThrusterSlots>
@@ -79,7 +79,7 @@
       </Attributes>
 
       <SensorSlots>0</SensorSlots>
-      <HullSlots>1</HullSlots>
+      <ArmorSlots>1</ArmorSlots>
       <ReactorSlots>1</ReactorSlots>
       <ShieldSlots>1</ShieldSlots>
       <ThrusterSlots>1</ThrusterSlots>

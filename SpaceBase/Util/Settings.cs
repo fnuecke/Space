@@ -7,7 +7,7 @@ using Engine.Util;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input.Devices;
 
-namespace Space
+namespace Space.Util
 {
     /// <summary>
     /// All the game settings that can be changed and saved. Also provides

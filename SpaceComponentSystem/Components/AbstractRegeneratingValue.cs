@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
+using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -103,6 +104,27 @@ namespace Space.ComponentSystem.Components
         public override bool SupportsUpdateParameterization(Type parameterizationType)
         {
             return parameterizationType == typeof(DefaultLogicParameterization);
+        }
+
+        /// <summary>
+        /// Test for change in equipment.
+        /// </summary>
+        /// <param name="message">Handles module added / removed messages.</param>
+        public override void HandleMessage<T>(ref T message)
+        {
+            if (message is CharacterStatsInvalidated)
+            {
+                RecomputeValues();
+            }
+        }
+
+        protected void RecomputeValues()
+        {
+            // Adjust current energy so it does not exceed our new maximum.
+            if (Value > MaxValue)
+            {
+                Value = MaxValue;
+            }
         }
 
         #endregion

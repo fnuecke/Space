@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Nuclex.Input.Devices;
+using Space.Util;
 
 namespace Space.Input
 {

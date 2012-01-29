@@ -55,7 +55,7 @@ namespace Space.ComponentSystem.Constraints
         /// <summary>
         /// Possible projectiles this weapon fires.
         /// </summary>
-        public Projectile[] Projectiles;
+        public ProjectileConstraints[] Projectiles;
 
         #endregion
 

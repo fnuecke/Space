@@ -4,7 +4,7 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Entities;
+using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Components
 {
@@ -98,67 +98,40 @@ namespace Space.ComponentSystem.Components
         /// <param name="parameterization">Logic parameterization.</param>
         public override void Update(object parameterization)
         {
-            var health = Entity.GetComponent<Health>();
-            if (health != null)
+            if (_timeToRespawn > 0 && --_timeToRespawn == 0)
             {
-                if (_timeToRespawn > 0)
+                // Respawn.
+                // Try to position.
+                var transform = Entity.GetComponent<Transform>();
+                if (transform != null)
                 {
-                    if (--_timeToRespawn == 0)
-                    {
-                        // Respawn.
-                        // Try to position.
-                        var transform = Entity.GetComponent<Transform>();
-                        if (transform != null)
-                        {
-                            transform.SetTranslation(ref RespawnPosition);
-                            transform.Rotation = 0;
-                        }
-
-                        // Kill of remainder velocity.
-                        var velocity = Entity.GetComponent<Velocity>();
-                        if (velocity != null)
-                        {
-                            velocity.Value = Vector2.Zero;
-                        }
-
-                        // Fill up health / energy.
-                        health.Value = health.MaxValue * RelativeHealth;
-                        var energy = Entity.GetComponent<Energy>();
-                        if (energy != null)
-                        {
-                            energy.Value = energy.MaxValue * RelativeEnergy;
-                        }
-
-                        // Enable components.
-                        foreach (var componentType in ComponentsToDisable)
-                        {
-                            Entity.GetComponent(componentType).Enabled = true;
-                        }
-                    }
+                    transform.SetTranslation(ref RespawnPosition);
+                    transform.Rotation = 0;
                 }
-                else if (health.Value == 0)
-                {
-                    var transformedRenderer = Entity.GetComponent<TransformedRenderer>();
-                    var size = 0.0;
-                    if (transformedRenderer != null)
-                    {
-                        size = Math.Sqrt(transformedRenderer.GetTextureSize());
-                    }
-                    Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation, (float)size));
-                    // Entity died, disable components and wait.
-                    foreach (var componentType in ComponentsToDisable)
-                    {
-                        Entity.GetComponent(componentType).Enabled = false;
-                    }
-                    _timeToRespawn = RespawnTime;
 
-                    // Stop the entity, to avoid zooming off to nowhere when
-                    // killed by a sun, e.g.
-                    var velocity = Entity.GetComponent<Velocity>();
-                    if (velocity != null)
-                    {
-                        velocity.Value = Vector2.Zero;
-                    }
+                // Kill of remainder velocity.
+                var velocity = Entity.GetComponent<Velocity>();
+                if (velocity != null)
+                {
+                    velocity.Value = Vector2.Zero;
+                }
+
+                // Fill up health / energy.
+                var health = Entity.GetComponent<Health>();
+                if (health != null)
+                {
+                    health.Value = health.MaxValue * RelativeHealth;
+                }
+                var energy = Entity.GetComponent<Energy>();
+                if (energy != null)
+                {
+                    energy.Value = energy.MaxValue * RelativeEnergy;
+                }
+
+                // Enable components.
+                foreach (var componentType in ComponentsToDisable)
+                {
+                    Entity.GetComponent(componentType).Enabled = true;
                 }
             }
         }
@@ -171,6 +144,31 @@ namespace Space.ComponentSystem.Components
         public override bool SupportsUpdateParameterization(Type parameterizationType)
         {
             return parameterizationType == typeof(DefaultLogicParameterization);
+        }
+
+        public override void HandleMessage<T>(ref T message)
+        {
+            if (message is EntityDied)
+            {
+                var died = (EntityDied)(ValueType)message;
+
+                //Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation, (float)size));
+
+                // Entity died, disable components and wait.
+                foreach (var componentType in ComponentsToDisable)
+                {
+                    Entity.GetComponent(componentType).Enabled = false;
+                }
+                _timeToRespawn = RespawnTime;
+
+                // Stop the entity, to avoid zooming off to nowhere when
+                // killed by a sun, e.g.
+                var velocity = Entity.GetComponent<Velocity>();
+                if (velocity != null)
+                {
+                    velocity.Value = Vector2.Zero;
+                }
+            }
         }
 
         #endregion

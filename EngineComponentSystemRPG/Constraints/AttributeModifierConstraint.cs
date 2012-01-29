@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.RPG.Constraints
 {
@@ -50,7 +51,7 @@ namespace Engine.ComponentSystem.RPG.Constraints
         /// <returns>The sampled attribute modifier.</returns>
         public AttributeModifier<TAttribute> SampleAttributeModifier(IUniformRandom random)
         {
-            var value = MinValue + (float)random.NextDouble() * (MaxValue - MinValue);
+            var value = MathHelper.Lerp(MinValue, MaxValue, (float)random.NextDouble());
             if (Round)
             {
                 value = (float)System.Math.Round(value);

@@ -4,7 +4,7 @@ using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input.Devices;
-using Space.Input;
+using Space.Util;
 
 namespace Space.ComponentSystem.Systems
 {

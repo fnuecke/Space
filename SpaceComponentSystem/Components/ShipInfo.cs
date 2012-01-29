@@ -1,5 +1,6 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -361,61 +362,54 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">The message to handle.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleValueInvalidated<Attribute>)
+            if (message is CharacterStatsInvalidated)
             {
-                var type = ((ModuleValueInvalidated<Attribute>)(ValueType)message).ValueType;
-                if (type == Attribute.Mass || type == Attribute.AccelerationForce)
+                // Get ship modules.
+                var character = Entity.GetComponent<Character<AttributeType>>();
+                var equipment = Entity.GetComponent<Equipment>();
+
+                // Get the mass of the ship and return it.
+                _mass = character.GetValue(AttributeType.Mass);
+
+                // Recompute cached values.
+                _maxAcceleration = 0;
+                _maxSpeed = 0;
+
+                // Maximum acceleration. Get ship modules.
+                // Get acceleration from thrusters.
+                for (int i = 0; i < equipment.GetSlotCount<Thruster>(); i++)
                 {
-                    // Get ship modules.
-                    var modules = Entity.GetComponent<ModuleManager<Attribute>>();
-                    if (modules != null)
+                    var thruster = equipment.GetItem<Thruster>(i);
+                    if (thruster != null)
                     {
-                        if (type == Attribute.Mass)
-                        {
-                            // Get the mass of the ship and return it.
-                            _mass = modules.GetValue(Attribute.Mass);
-                        }
-
-                        // Recompute cached values.
-                        _maxAcceleration = 0;
-                        _maxSpeed = 0;
-
-                        // Maximum acceleration. Get ship modules.
-                        // Get acceleration from thrusters.
-                        foreach (var thruster in modules.GetModules<Thruster>())
-                        {
-                            _maxAcceleration += thruster.AccelerationForce;
-                        }
-
-                        // Divide by mass and return.
-                        _maxAcceleration /= _mass;
-
-                        // Maximum speed.
-                        var friction = Entity.GetComponent<Friction>();
-                        if (friction != null)
-                        {
-                            _maxSpeed = MaxAcceleration / friction.Value;
-                        }
+                        _maxAcceleration += thruster.AccelerationForce;
                     }
                 }
-                else if (type == Attribute.SensorRange)
-                {
-                    // Get ship modules.
-                    var modules = Entity.GetComponent<ModuleManager<Attribute>>();
-                    if (modules != null)
-                    {
-                        // Figure out the overall range of our radar system.
-                        float radarRange = 0;
-                        foreach (var sensor in modules.GetModules<Sensor>())
-                        {
-                            // TODO in case we're adding sensor types (anti-cloaking, ...) check this one's actually a radar.
-                            radarRange += sensor.Range;
-                        }
 
-                        // Apply modifiers, compute max speed and return.
-                        _radarRange = modules.GetValue(Attribute.SensorRange, radarRange);
+                // Divide by mass and return.
+                _maxAcceleration /= _mass;
+
+                // Maximum speed.
+                var friction = Entity.GetComponent<Friction>();
+                if (friction != null)
+                {
+                    _maxSpeed = MaxAcceleration / friction.Value;
+                }
+
+                // Figure out the overall range of our radar system.
+                float radarRange = 0;
+                for (int i = 0; i < equipment.GetSlotCount<Sensor>(); i++)
+                {
+                    var sensor = equipment.GetItem<Sensor>(i);
+                    if (sensor != null)
+                    {
+                        // TODO in case we're adding sensor types (anti-cloaking, ...) check this one's actually a radar.
+                        radarRange += sensor.Range;
                     }
                 }
+
+                // Apply modifiers, compute max speed and return.
+                _radarRange = character.GetValue(AttributeType.SensorRange, radarRange);
             }
         }
 

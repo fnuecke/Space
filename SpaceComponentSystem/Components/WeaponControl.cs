@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Parameterizations;
+using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
 using Engine.Util;
-using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Messages;
-using Space.ComponentSystem.Modules;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -52,35 +51,40 @@ namespace Space.ComponentSystem.Components
             // Check all weapon modules.
             if (Shooting)
             {
-                var modules = Entity.GetComponent<ModuleManager<Attribute>>();
+                var character = Entity.GetComponent<Character<AttributeType>>();
+                var equipment = Entity.GetComponent<Equipment>();
                 var energy = Entity.GetComponent<Energy>();
                 var faction = Entity.GetComponent<Faction>();
 
-                if (modules != null && energy != null && faction != null)
+                if (character != null && equipment != null && energy != null && faction != null)
                 {
-                    foreach (var weapon in modules.GetModules<Weapon>())
+                    for (int i = 0; i < equipment.GetSlotCount<Weapon>(); i++)
                     {
-                        var energyConsumption = modules.GetValue(Attribute.WeaponEnergyConsumption, weapon.EnergyConsumption);
-                        if (energy != null && energy.Value >= energyConsumption)
+                        var weapon = equipment.GetItem<Weapon>(i);
+                        if (weapon != null)
                         {
-                            // Test if this weapon is on cooldown.
-                            if (_cooldowns[weapon.UID] == 0)
+                            var energyConsumption = character.GetValue(AttributeType.WeaponEnergyConsumption, weapon.EnergyConsumption);
+                            if (energy != null && energy.Value >= energyConsumption)
                             {
-                                energy.Value -= energyConsumption;
-                                // No, fire it.
-                                _cooldowns[weapon.UID] = (int)modules.GetValue(Attribute.WeaponCooldown, weapon.Cooldown);
-
-                                // Generate projectiles.
-                                foreach (var projectileData in weapon.Projectiles)
+                                // Test if this weapon is on cooldown.
+                                if (_cooldowns[weapon.UID] == 0)
                                 {
-                                    Entity.Manager.AddEntity(EntityFactory.CreateProjectile(
-                                        projectileData, Entity, faction.Value));
-                                }
+                                    energy.Value -= energyConsumption;
+                                    // No, fire it.
+                                    _cooldowns[weapon.UID] = (int)character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown);
 
-                                // Generate message.
-                                WeaponFired message;
-                                message.Weapon = weapon;
-                                Entity.SendMessage(ref message);
+                                    // Generate projectiles.
+                                    foreach (var projectile in weapon.Projectiles)
+                                    {
+                                        Entity.Manager.AddEntity(EntityFactory.CreateProjectile(
+                                            projectile, Entity, faction.Value));
+                                    }
+
+                                    // Generate message.
+                                    WeaponFired message;
+                                    message.Weapon = weapon;
+                                    Entity.SendMessage(ref message);
+                                }
                             }
                         }
                     }
@@ -104,22 +108,22 @@ namespace Space.ComponentSystem.Components
         /// <param name="message">The message to handle.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ModuleAdded<Attribute>)
+            if (message is ItemAdded)
             {
-                var added = (ModuleAdded<Attribute>)(ValueType)message;
-                if (added.Module is Weapon)
+                var added = (ItemAdded)(ValueType)message;
+                if (added.Item is Weapon)
                 {
                     // Weapon was equipped, track a cooldown for it.
-                    _cooldowns.Add(added.Module.UID, 0);
+                    _cooldowns.Add(added.Slot, 0);
                 }
             }
-            else if (message is ModuleRemoved<Attribute>)
+            else if (message is ItemRemoved)
             {
-                var removed = (ModuleRemoved<Attribute>)(ValueType)message;
-                if (removed.Module is Weapon)
+                var removed = (ItemRemoved)(ValueType)message;
+                if (removed.Item is Weapon)
                 {
                     // Weapon was unequipped, stop tracking.
-                    _cooldowns.Remove(removed.Module.UID);
+                    _cooldowns.Remove(removed.Slot);
                 }
             }
         }

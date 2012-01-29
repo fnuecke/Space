@@ -3,6 +3,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.Util;
 using Microsoft.Xna.Framework.Content;
+using Space.Data;
 
 namespace Space.ComponentSystem.Constraints
 {
@@ -17,6 +18,12 @@ namespace Space.ComponentSystem.Constraints
         /// Unique name for this item type.
         /// </summary>
         public string Name;
+
+        /// <summary>
+        /// The quality of the item, to give a rough idea of the value.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public ItemQuality Quality = ItemQuality.Common;
 
         /// <summary>
         /// A list of attribute modifiers that are guaranteed to be applied to

@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.ComponentSystem", "Sp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Engine.ComponentSystem.RPG", "EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj", "{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Base", "SpaceBase\Space.Base.csproj", "{9D15628C-635B-495D-A06A-899DE5ED3035}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (Gamelog)|Any CPU = Debug (Gamelog)|Any CPU
@@ -293,6 +295,21 @@ Global
 		{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}.Release|Any CPU.ActiveCfg = Release|x86
 		{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}.Release|x86.ActiveCfg = Release|x86
 		{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}.Release|x86.Build.0 = Release|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Debug|x86.ActiveCfg = Debug|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Debug|x86.Build.0 = Debug|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Release (TSS Threading)|x86.Build.0 = Release|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Release|Any CPU.ActiveCfg = Release|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Release|x86.ActiveCfg = Release|x86
+		{9D15628C-635B-495D-A06A-899DE5ED3035}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

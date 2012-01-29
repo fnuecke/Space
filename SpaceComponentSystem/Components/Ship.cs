@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {

@@ -131,7 +131,8 @@ namespace Engine.ComponentSystem.RPG.Components
             slots[slot] = item.UID;
 
             ItemAdded message;
-            message.Item = item;
+            message.Item = type;
+            message.Slot = slot;
             Entity.SendMessage(ref message);
         }
 
@@ -142,7 +143,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="slot">The slot to get the item from.</param>
         /// <returns>The item in that slot, or <c>null</c> if there is no item
         /// in that slot.</returns>
-        public Entity GetItem<T>(int slot) where T : Item
+        public T GetItem<T>(int slot) where T : Item
         {
             Validate(typeof(T), slot);
 
@@ -152,7 +153,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 return null;
             }
 
-            return Entity.Manager.GetEntity(slots[slot]);
+            return Entity.Manager.GetEntity(slots[slot]).GetComponent<T>();
         }
 
         /// <summary>
@@ -175,7 +176,8 @@ namespace Engine.ComponentSystem.RPG.Components
             slots[slot] = 0;
 
             ItemRemoved message;
-            message.Item = item;
+            message.Item = item.GetComponent<T>();
+            message.Slot = slot;
             Entity.SendMessage(ref message);
 
             return item;

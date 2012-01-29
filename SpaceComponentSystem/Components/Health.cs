@@ -1,5 +1,5 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
-using Engine.ComponentSystem.RPG.Messages;
+using Space.ComponentSystem.Messages;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -30,15 +30,21 @@ namespace Space.ComponentSystem.Components
         #region Logic
 
         /// <summary>
-        /// Test for change in equipment.
+        /// Sends <c>EntityDied</c> messages if health is zero. It is expected
+        /// that this component will be disabled on death, so this won't be
+        /// spammed all the time.
         /// </summary>
-        /// <param name="message">Handles module added / removed messages.</param>
-        public override void HandleMessage<T>(ref T message)
+        /// <param name="parameterization"></param>
+        public override void Update(object parameterization)
         {
-            if (message is CharacterStatsInvalidated)
+            if (Value == 0)
             {
-                RecomputeValues();
+                EntityDied message;
+                message.Entity = Entity;
+                Entity.SendMessage(ref message);
             }
+
+            base.Update(parameterization);
         }
 
         private void RecomputeValues()
@@ -46,15 +52,11 @@ namespace Space.ComponentSystem.Components
             // Recompute our values.
             var character = Entity.GetComponent<Character<AttributeType>>();
 
-            // Rebuild base energy and regeneration values.
-            MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Energy));
-            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.EnergyRegeneration));
+            // Rebuild base health and regeneration values.
+            MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Health));
+            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.HealthRegeneration));
 
-            // Adjust current energy so it does not exceed our new maximum.
-            if (Value > MaxValue)
-            {
-                Value = MaxValue;
-            }
+            base.RecomputeValues();
         }
 
         #endregion

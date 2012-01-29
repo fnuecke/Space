@@ -42,13 +42,13 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The projectiles this weapon fires.
         /// </summary>
-        public Projectile[] Projectiles;
+        public ProjectileConstraints[] Projectiles;
 
         #endregion
 
         #region Constructor
 
-        public Weapon(string texture, string sound, int cooldown, float energyConsumption, float damage, Projectile[] projectiles)
+        public Weapon(string texture, string sound, int cooldown, float energyConsumption, float damage, ProjectileConstraints[] projectiles)
         {
             this.Texture = texture;
             this.Sound = sound;
@@ -95,7 +95,7 @@ namespace Space.ComponentSystem.Components
             Cooldown = packet.ReadInt32();
             EnergyConsumption = packet.ReadSingle();
             Damage = packet.ReadSingle();
-            Projectiles = packet.ReadPacketizables<Projectile>();
+            Projectiles = packet.ReadPacketizables<ProjectileConstraints>();
         }
 
         /// <summary>
