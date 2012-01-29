@@ -144,7 +144,7 @@ namespace Space.ComponentSystem.Components
                 if (accelerationDirection != Vector2.Zero && desiredAcceleration != 0)
                 {
                     // Get the needed energy and thruster power.
-                    var energyConsumption = character.GetValue(AttributeType.ThrusterEnergyConsumption);
+                    var energyConsumption = character.GetValue(AttributeType.ThrusterEnergyConsumption) / 60f;
                     var accelerationForce = character.GetValue(AttributeType.AccelerationForce);
 
                     // Get the percentage of the overall thrusters' power we

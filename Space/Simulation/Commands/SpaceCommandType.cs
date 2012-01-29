@@ -3,13 +3,23 @@
     public enum SpaceCommandType
     {
         /// <summary>
-        /// Player sends input command / server authorizes player command.
+        /// Player input used to control his ship.
         /// </summary>
         PlayerInput,
 
         /// <summary>
+        /// Equip an item from the inventory.
+        /// </summary>
+        Equip,
+
+        /// <summary>
         /// A debugging command issued by a player.
         /// </summary>
-        ScriptCommand
+        ScriptCommand,
+
+        /// <summary>
+        /// Add an item to a player's inventory.
+        /// </summary>
+        AddItem
     }
 }

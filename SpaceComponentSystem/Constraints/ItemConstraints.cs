@@ -10,14 +10,14 @@ namespace Space.ComponentSystem.Constraints
     /// <summary>
     /// Base class for item constraints.
     /// </summary>
-    public abstract class ItemConstraints
+    public abstract class ItemConstraints : IConstraint
     {
         #region Fields
         
         /// <summary>
         /// Unique name for this item type.
         /// </summary>
-        public string Name;
+        public string Name { get; set; }
 
         /// <summary>
         /// The quality of the item, to give a rough idea of the value.
@@ -57,6 +57,13 @@ namespace Space.ComponentSystem.Constraints
         #endregion
 
         #region Sampling
+
+        /// <summary>
+        /// Samples a new item.
+        /// </summary>
+        /// <param name="random">The randomizer to use.</param>
+        /// <returns>The sampled item.</returns>
+        public abstract Entity Sample(IUniformRandom random);
 
         /// <summary>
         /// Samples the attributes to apply to the item.

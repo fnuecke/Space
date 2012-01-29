@@ -96,12 +96,12 @@ namespace Space.ComponentSystem.Data
         /// <param name="faction">The faction the projectile belongs to.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>A new projectile.</returns>
-        public Entity SampleProjectile(Weapon emitter, Factions faction, IUniformRandom random)
+        public Entity SampleProjectile(Entity emitter, Weapon weapon, Factions faction, IUniformRandom random)
         {
             var entity = new Entity();
 
-            var emitterTransform = emitter.Entity.GetComponent<Transform>();
-            var emitterVelocity = emitter.Entity.GetComponent<Velocity>();
+            var emitterTransform = emitter.GetComponent<Transform>();
+            var emitterVelocity = emitter.GetComponent<Velocity>();
 
             var initialRotation = emitterTransform.Rotation + SampleInitialRotation(random);
             var transform = new Transform(emitterTransform.Translation, initialRotation);
@@ -126,9 +126,9 @@ namespace Space.ComponentSystem.Data
             {
                 entity.AddComponent(new Expiration((int)(TimeToLive * 60f)));
             }
-            if (emitter.Damage != 0)
+            if (weapon.Damage != 0)
             {
-                entity.AddComponent(new CollisionDamage(emitter.Damage));
+                entity.AddComponent(new CollisionDamage(weapon.Damage));
             }
 
             ulong collisionIndexGroup = 0;
@@ -136,11 +136,11 @@ namespace Space.ComponentSystem.Data
             {
                 collisionIndexGroup = Factions.Projectiles.ToCollisionIndexGroup();
             }
-            if (emitter.Damage >= 0)
+            if (weapon.Damage >= 0)
             {
                 collisionIndexGroup |= faction.ToCollisionIndexGroup();
             }
-            else if (emitter.Damage < 0)
+            else if (weapon.Damage < 0)
             {
                 // Negative damage = healing -> collide will all our allies.
                 collisionIndexGroup |= faction.Inverse().ToCollisionIndexGroup();
@@ -171,7 +171,7 @@ namespace Space.ComponentSystem.Data
         /// <returns>The sampled rotation.</returns>
         private float SampleInitialRotation(IUniformRandom random)
         {
-            return MathHelper.Lerp(InitialRotation.Low, InitialRotation.High, (float)random.NextDouble());
+            return MathHelper.ToRadians(MathHelper.Lerp(InitialRotation.Low, InitialRotation.High, (float)random.NextDouble()));
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Space.ComponentSystem.Data
         private Vector2 SampleInitialDirectedVelocity(float baseRotation, IUniformRandom random)
         {
             Vector2 velocity = Vector2.UnitX;
-            Matrix rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.Lerp(InitialDirection.Low, InitialDirection.High, (float)random.NextDouble()));
+            Matrix rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(InitialDirection.Low, InitialDirection.High, (float)random.NextDouble())));
             Vector2.Transform(ref velocity, ref rotation, out velocity);
             velocity.Normalize();
             velocity *= MathHelper.Lerp(InitialVelocity.Low, InitialVelocity.High, (float)random.NextDouble());

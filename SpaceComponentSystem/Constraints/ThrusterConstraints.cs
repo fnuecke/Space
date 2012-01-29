@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Constraints
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled thruster.</returns>
-        public Entity SampleThruster(IUniformRandom random)
+        public override Entity Sample(IUniformRandom random)
         {
             var entity = new Entity();
 

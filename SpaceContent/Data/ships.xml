@@ -2,63 +2,23 @@
 <XnaContent>
   <Asset Type="Space.ComponentSystem.Constraints.ShipConstraints[]">
     <Item>
-      <Name>Tank</Name>
+      <Name>Player</Name>
       <Texture>Textures/ship</Texture>
       <CollisionRadius>20</CollisionRadius>
 
       <Attributes>
         <Item>25 Mass</Item>
         <Item>100 Health</Item>
-        <Item>3 HealthRegeneration</Item>
+        <Item>2.5 HealthRegeneration</Item>
         <Item>50 Energy</Item>
-        <Item>1 EnergyRegeneration</Item>
+        <Item>0.5 EnergyRegeneration</Item>
+        <Item>0.5 AccelerationForce</Item>
+        <Item>0.25 RotationForce</Item>
       </Attributes>
 
       <SensorSlots>1</SensorSlots>
       <ArmorSlots>2</ArmorSlots>
       <ReactorSlots>2</ReactorSlots>
-      <ShieldSlots>1</ShieldSlots>
-      <ThrusterSlots>2</ThrusterSlots>
-      <WeaponSlots>2</WeaponSlots>
-    </Item>
-
-    <Item>
-      <Name>Damage Dealer</Name>
-      <Texture>Textures/ship</Texture>
-      <CollisionRadius>20</CollisionRadius>
-
-      <Attributes>
-        <Item>15 Mass</Item>
-        <Item>75 Health</Item>
-        <Item>2 HealthRegeneration</Item>
-        <Item>100 Energy</Item>
-        <Item>2 EnergyRegeneration</Item>
-      </Attributes>
-
-      <SensorSlots>1</SensorSlots>
-      <ArmorSlots>1</ArmorSlots>
-      <ReactorSlots>2</ReactorSlots>
-      <ShieldSlots>1</ShieldSlots>
-      <ThrusterSlots>2</ThrusterSlots>
-      <WeaponSlots>4</WeaponSlots>
-    </Item>
-
-    <Item>
-      <Name>Caster</Name>
-      <Texture>Textures/ship</Texture>
-      <CollisionRadius>20</CollisionRadius>
-
-      <Attributes>
-        <Item>15 Mass</Item>
-        <Item>50 Health</Item>
-        <Item>1 HealthRegeneration</Item>
-        <Item>150 Energy</Item>
-        <Item>3 EnergyRegeneration</Item>
-      </Attributes>
-
-      <SensorSlots>2</SensorSlots>
-      <ArmorSlots>1</ArmorSlots>
-      <ReactorSlots>3</ReactorSlots>
       <ShieldSlots>1</ShieldSlots>
       <ThrusterSlots>2</ThrusterSlots>
       <WeaponSlots>2</WeaponSlots>
@@ -71,11 +31,13 @@
       <CollisionRadius>24</CollisionRadius>
 
       <Attributes>
-        <Item>15 Mass</Item>
-        <Item>30 Health</Item>
-        <Item>2 HealthRegeneration</Item>
-        <Item>75 Energy</Item>
-        <Item>1 EnergyRegeneration</Item>
+        <Item>20 Mass</Item>
+        <Item>20 to 40 Health</Item>
+        <Item>1 to 1.5 HealthRegeneration</Item>
+        <Item>50 to 75 Energy</Item>
+        <Item>0.5 to 1 EnergyRegeneration</Item>
+        <Item>0.25 to 0.5 AccelerationForce</Item>
+        <Item>0.25 to 0.5 RotationForce</Item>
       </Attributes>
 
       <SensorSlots>0</SensorSlots>

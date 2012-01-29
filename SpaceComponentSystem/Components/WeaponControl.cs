@@ -45,11 +45,11 @@ namespace Space.ComponentSystem.Components
         public override void Update(object parameterization)
         {
             // Reduce cooldowns.
-            foreach (var componentUid in new List<int>(_cooldowns.Keys))
+            foreach (var slot in new List<int>(_cooldowns.Keys))
             {
-                if (_cooldowns[componentUid] > 0)
+                if (_cooldowns[slot] > 0)
                 {
-                    --_cooldowns[componentUid];
+                    --_cooldowns[slot];
                 }
             }
 
@@ -72,16 +72,16 @@ namespace Space.ComponentSystem.Components
                             if (energy != null && energy.Value >= energyConsumption)
                             {
                                 // Test if this weapon is on cooldown.
-                                if (_cooldowns[weapon.UID] == 0)
+                                if (_cooldowns[i] == 0)
                                 {
                                     energy.Value -= energyConsumption;
                                     // No, fire it.
-                                    _cooldowns[weapon.UID] = (int)character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown);
+                                    _cooldowns[i] = (int)(character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown) * 60f);
 
                                     // Generate projectiles.
                                     foreach (var projectile in weapon.Projectiles)
                                     {
-                                        Entity.Manager.AddEntity(projectile.SampleProjectile(weapon, faction.Value, _random));
+                                        Entity.Manager.AddEntity(projectile.SampleProjectile(Entity, weapon, faction.Value, _random));
                                     }
 
                                     // Generate message.

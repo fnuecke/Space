@@ -6,5 +6,9 @@ namespace Space.ComponentSystem.Constraints
     /// </summary>
     public sealed class ShieldConstraints : ItemConstraints
     {
+        public override Engine.ComponentSystem.Entities.Entity Sample(Engine.Util.IUniformRandom random)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

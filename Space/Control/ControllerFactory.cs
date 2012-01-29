@@ -5,8 +5,8 @@ using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Constraints;
 using Space.ComponentSystem.Systems;
-using Space.Data;
 using Space.Session;
 using Space.Simulation.Commands;
 using Space.Util;
@@ -39,7 +39,7 @@ namespace Space.Control
                     new CellSystem(),
 
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
-                    //new ShipsSpawnSystem(game.Content)
+                    new ShipsSpawnSystem(game.Content)
                 });
 
             // Done.
@@ -66,7 +66,7 @@ namespace Space.Control
                     new AvatarSystem(),
                     new CellSystem(),
 
-                    new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
+                    //new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
                     //new ShipsSpawnSystem(game.Content),
 
                     new PlayerCenteredRenderSystem(game,

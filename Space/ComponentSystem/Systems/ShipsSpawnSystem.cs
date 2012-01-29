@@ -65,7 +65,7 @@ namespace Space.ComponentSystem.Systems
                             //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
                             list.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
                                 ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
-                                cellInfo.Faction, spawnPoint, _random, order)));
+                                cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order)));
                         }
                     }
                 }
@@ -113,7 +113,7 @@ namespace Space.ComponentSystem.Systems
                    (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
             _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
                 ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
-                faction, startPosition, _random, aicommand)));
+                faction, startPosition, Manager.EntityManager, _random, aicommand)));
         }
         public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
         {
@@ -122,7 +122,7 @@ namespace Space.ComponentSystem.Systems
                    (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
              _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
                  ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
-                faction, startPosition, _random, aicommand)));
+                faction, startPosition, Manager.EntityManager, _random, aicommand)));
         }
         #endregion
 

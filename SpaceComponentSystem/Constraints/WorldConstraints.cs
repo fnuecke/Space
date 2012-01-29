@@ -1,5 +1,5 @@
 using Engine.Util;
-namespace Space.Data
+namespace Space.ComponentSystem.Constraints
 {
     /// <summary>
     /// Static parameters for cell population (system generation).

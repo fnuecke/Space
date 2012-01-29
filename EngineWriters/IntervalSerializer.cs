@@ -47,9 +47,14 @@ namespace Engine.Serialization
             var match = IntervalPattern.Match(input.Xml.ReadContentAsString());
             if (match.Success)
             {
+                existingInstance = existingInstance ?? new Interval<T>();
+
                 T low = Parse(match.Groups["low"].Value);
                 T high = match.Groups["high"].Success ? Parse(match.Groups["high"].Value) : low;
-                return new Interval<T>(low, high);
+
+                existingInstance.SetTo(low, high);
+
+                return existingInstance;
             }
             else
             {

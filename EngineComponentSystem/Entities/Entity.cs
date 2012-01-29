@@ -194,12 +194,9 @@ namespace Engine.ComponentSystem.Entities
                     _components.RemoveAt(index);
                     _idManager.ReleaseId(component.UID);
 
-                    if (Manager != null)
-                    {
-                        ComponentRemoved message;
-                        message.Component = component;
-                        Manager.SendMessage(ref message);
-                    }
+                    ComponentRemoved message;
+                    message.Component = component;
+                    SendMessage(ref message);
 
                     component.Entity = null;
                     component.UID = -1;
@@ -219,12 +216,9 @@ namespace Engine.ComponentSystem.Entities
             _components.Add(component);
             component.Entity = this;
 
-            if (Manager != null)
-            {
-                ComponentAdded message;
-                message.Component = component;
-                Manager.SendMessage(ref message);
-            }
+            ComponentAdded message;
+            message.Component = component;
+            SendMessage(ref message);
         }
 
         #endregion

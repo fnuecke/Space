@@ -115,6 +115,10 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="slot">The slot to equip it in.</param>
         public void Equip(Entity item, int slot)
         {
+            if (item.UID < 1)
+            {
+                throw new ArgumentException("Invalid item, not part of the simulation.", "item");
+            }
             var type = item.GetComponent<Item>();
             if (type == null)
             {
@@ -291,7 +295,13 @@ namespace Engine.ComponentSystem.RPG.Components
             }
             else
             {
-                copy._slots = new Dictionary<Type, int[]>(_slots);
+                copy._slots = new Dictionary<Type, int[]>();
+                foreach (var type in _slots)
+                {
+                    var slots = new int[type.Value.Length];
+                    type.Value.CopyTo(slots, 0);
+                    copy._slots[type.Key] = slots;
+                }
             }
 
             return copy;

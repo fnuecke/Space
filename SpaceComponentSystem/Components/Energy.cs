@@ -35,7 +35,7 @@ namespace Space.ComponentSystem.Components
 
             // Rebuild base energy and regeneration values.
             MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Energy));
-            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.EnergyRegeneration));
+            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.EnergyRegeneration) / 60f);
 
             base.RecomputeValues();
         }

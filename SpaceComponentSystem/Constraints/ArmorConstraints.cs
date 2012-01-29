@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Constraints
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled armor.</returns>
-        public Entity SampleArmor(IUniformRandom random)
+        public override Entity Sample(IUniformRandom random)
         {
             var entity = new Entity();
 

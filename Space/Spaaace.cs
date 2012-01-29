@@ -214,6 +214,7 @@ namespace Space
             _console.AddCommand("connect", args =>
             {
                 PlayerData playerData = new PlayerData();
+                // TODO: load actual player profile.
                 //playerData.Ship = Content.Load<ShipData[]>("Data/ships")[0];
                 Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, playerData);
             },

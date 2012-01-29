@@ -1,6 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using Engine.ComponentSystem;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using IronPython.Hosting;
@@ -51,10 +53,8 @@ namespace Space.Simulation.Commands
 @"
 # Import everything from the game we need.
 from Engine.ComponentSystem.Components import *
-from Engine.ComponentSystem.Modules import *
 from Engine.ComponentSystem.Systems import *
 from Space.ComponentSystem.Components import *
-from Space.ComponentSystem.Modules import *
 from Space.ComponentSystem.Systems import *
 from Space.Data import *
 
@@ -62,15 +62,15 @@ from Space.Data import *
 def goto(x, y):
     avatar.GetComponent[Transform]().SetTranslation(x, y)
 
-def setaf(value):
-    for thruster in modules.GetModules[Thruster]():
-        thruster.AccelerationForce = value
-        thruster.Invalidate()
+#def setaf(value):
+#    for thruster in modules.GetModules[Thruster]():
+#        thruster.AccelerationForce = value
+#        thruster.Invalidate()
 
-def setec(value):
-    for thruster in modules.GetModules[Thruster]():
-        thruster.EnergyConsumption = value
-        thruster.Invalidate()
+#def setec(value):
+#    for thruster in modules.GetModules[Thruster]():
+#        thruster.EnergyConsumption = value
+#        thruster.Invalidate()
 
 def ge(id):
     return manager.GetEntity(id)
@@ -156,7 +156,26 @@ def ge(id):
                     }
                     break;
 
+                case SpaceCommandType.Equip:
+                    var equipCommand = (EquipCommand)command;
+                    try
+                    {
+                        avatar.GetComponent<Equipment>().Equip(avatar.GetComponent<Inventory>().RemoveItemAt(equipCommand.InventoryIndex), equipCommand.Slot);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        logger.WarnException("Invalid equip command.", ex);
+                    }
+                    break;
+
 #if DEBUG
+                case SpaceCommandType.AddItem:
+                    var addCommand = (AddItemCommand)command;
+                    var item = addCommand.Item.DeepCopy();
+                    manager.AddEntity(item);
+                    avatar.GetComponent<Inventory>().AddItem(item);
+                    break;
+
                 case SpaceCommandType.ScriptCommand:
                     // Script command.
                     {

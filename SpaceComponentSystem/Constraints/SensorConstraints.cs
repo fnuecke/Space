@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Entities;
 using Engine.Util;
+using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Constraints
 {
@@ -15,9 +16,11 @@ namespace Space.ComponentSystem.Constraints
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled sensor.</returns>
-        public Entity SampleSensor(IUniformRandom random)
+        public override Entity Sample(IUniformRandom random)
         {
             var entity = new Entity();
+
+            entity.AddComponent(new Sensor());
 
             return SampleAttributes(entity, random);
         }

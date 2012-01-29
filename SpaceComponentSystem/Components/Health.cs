@@ -53,7 +53,7 @@ namespace Space.ComponentSystem.Components
 
             // Rebuild base health and regeneration values.
             MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Health));
-            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.HealthRegeneration));
+            Regeneration = System.Math.Max(0, character.GetValue(AttributeType.HealthRegeneration) / 60f);
 
             base.RecomputeValues();
         }

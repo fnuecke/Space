@@ -7,7 +7,7 @@
       <Name>Starter Reactor</Name>
       <GuaranteedAttributes>
         <Item>50 Energy</Item>
-        <Item>5 EnergyRegeneration</Item>
+        <Item>2.5 EnergyRegeneration</Item>
       </GuaranteedAttributes>
     </Item>
 
@@ -16,7 +16,7 @@
       <Name>Level 1 AI Reactor</Name>
       <GuaranteedAttributes>
         <Item>50 to 75 Energy</Item>
-        <Item>3 to 5 EnergyRegeneration</Item>
+        <Item>2 to 3 EnergyRegeneration</Item>
       </GuaranteedAttributes>
     </Item>
   </Asset>

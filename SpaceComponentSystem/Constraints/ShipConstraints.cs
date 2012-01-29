@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
@@ -12,7 +13,7 @@ namespace Space.ComponentSystem.Constraints
     /// <summary>
     /// Basic descriptor for a single ship class.
     /// </summary>
-    public class ShipConstraints
+    public class ShipConstraints : IConstraint
     {
         #region General
 
@@ -20,7 +21,7 @@ namespace Space.ComponentSystem.Constraints
         /// The name of the ship class, which serves as a unique type
         /// identifier.
         /// </summary>
-        public string Name;
+        public string Name { get; set; }
 
         /// <summary>
         /// The base texture to use for rendering the ship class.
@@ -87,9 +88,15 @@ namespace Space.ComponentSystem.Constraints
             var entity = CreateShip(faction, position);
 
             // Add our attributes.
+            var character = entity.GetComponent<Character<AttributeType>>();
             foreach (var attribute in Attributes)
             {
-                entity.AddComponent(new Attribute<AttributeType>(attribute.SampleAttributeModifier(random)));
+                var modifier = attribute.SampleAttributeModifier(random);
+                if (modifier.ComputationType == AttributeComputationType.Multiplicative)
+                {
+                    throw new InvalidOperationException("Base attributes must be additive.");
+                }
+                character.SetBaseValue(modifier.Type, modifier.Value);
             }
 
             return entity;
@@ -193,9 +200,16 @@ namespace Space.ComponentSystem.Constraints
             equipment.SetSlotCount<Shield>(ShieldSlots);
             equipment.SetSlotCount<Thruster>(ThrusterSlots);
             equipment.SetSlotCount<Weapon>(WeaponSlots);
+            entity.AddComponent(equipment);
+
+            // Give it an inventory as well.
+            entity.AddComponent(new Inventory());
+
+            // Add some character!
+            entity.AddComponent(new Character<AttributeType>());
 
             // Set value to max after equipping.
-            health.Value = health.MaxValue;
+            health.Value = System.Math.Max(1, health.MaxValue);
             energy.Value = energy.MaxValue;
 
             return entity;

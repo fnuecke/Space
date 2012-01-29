@@ -25,9 +25,9 @@ namespace Space.ComponentSystem.Components
         public string Sound;
 
         /// <summary>
-        /// The cooldown time to wait between shots.
+        /// The cooldown time to wait between shots, in seconds.
         /// </summary>
-        public int Cooldown;
+        public float Cooldown;
 
         /// <summary>
         /// The amount of energy this weapon requires for a single shot.
@@ -48,7 +48,7 @@ namespace Space.ComponentSystem.Components
 
         #region Constructor
 
-        public Weapon(string texture, string sound, int cooldown, float energyConsumption, float damage, ProjectileConstraints[] projectiles)
+        public Weapon(string texture, string sound, float cooldown, float energyConsumption, float damage, ProjectileConstraints[] projectiles)
         {
             this.Texture = texture;
             this.Sound = sound;
@@ -92,7 +92,7 @@ namespace Space.ComponentSystem.Components
 
             Texture = packet.ReadString();
             Sound = packet.ReadString();
-            Cooldown = packet.ReadInt32();
+            Cooldown = packet.ReadSingle();
             EnergyConsumption = packet.ReadSingle();
             Damage = packet.ReadSingle();
             Projectiles = packet.ReadPacketizables<ProjectileConstraints>();

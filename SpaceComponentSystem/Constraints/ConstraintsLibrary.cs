@@ -46,9 +46,10 @@ namespace Space.ComponentSystem.Constraints
         /// Helper for initializing a specific type.
         /// </summary>
         private static void Initialize<T>(string assetName, ContentManager content)
+            where T : IConstraint
         {
             _constraints[typeof(T)] = new Dictionary<string, object>();
-            foreach (var constraint in content.Load<ArmorConstraints[]>("Data/Armor"))
+            foreach (var constraint in content.Load<T[]>(assetName))
             {
                 _constraints[typeof(T)][constraint.Name] = constraint;
             }

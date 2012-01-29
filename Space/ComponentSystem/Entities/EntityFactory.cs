@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
@@ -50,7 +52,7 @@ namespace Space.ComponentSystem.Entities
         /// <param name="shipData">The ship info to use.</param>
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <returns>The new ship.</returns>
-        public static Entity CreateAIShip(ShipConstraints blueprint, Factions faction, Vector2 position, IUniformRandom random, AiComponent.AiCommand command)
+        public static Entity CreateAIShip(ShipConstraints blueprint, Factions faction, Vector2 position, IEntityManager manager, IUniformRandom random, AiComponent.AiCommand command)
         {
             Entity entity = blueprint.SampleShip(faction, position, random);
 
@@ -58,7 +60,25 @@ namespace Space.ComponentSystem.Entities
             input.Stabilizing = true;
             entity.AddComponent(new AiComponent(command));
             entity.AddComponent(new Death());
-            
+
+            var equipment = entity.GetComponent<Equipment>();
+
+            var item = ConstraintsLibrary.GetConstraints<ThrusterConstraints>("Level 1 AI Thruster").Sample(random);
+            manager.AddEntity(item);
+            equipment.Equip(item, 0);
+
+            item = ConstraintsLibrary.GetConstraints<ReactorConstraints>("Level 1 AI Reactor").Sample(random);
+            manager.AddEntity(item);
+            equipment.Equip(item, 0);
+
+            item = ConstraintsLibrary.GetConstraints<ArmorConstraints>("Level 1 AI Armor").Sample(random);
+            manager.AddEntity(item);
+            equipment.Equip(item, 0);
+
+            item = ConstraintsLibrary.GetConstraints<WeaponConstraints>("Level 1 AI Weapon").Sample(random);
+            manager.AddEntity(item);
+            equipment.Equip(item, 0);
+
             return entity;
         }
 

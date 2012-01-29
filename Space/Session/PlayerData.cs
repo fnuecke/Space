@@ -1,5 +1,4 @@
 ﻿using Engine.Serialization;
-using Space.ComponentSystem.Constraints;
 
 namespace Space.Session
 {
@@ -13,7 +12,7 @@ namespace Space.Session
         /// <summary>
         /// The ship of the player.
         /// </summary>
-        public PlayerShip Ship { get; set; }
+        public object Ship { get; set; }
 
         #endregion
 
@@ -21,12 +20,13 @@ namespace Space.Session
 
         public Packet Packetize(Packet packet)
         {
-            return packet.Write(Ship);
+            //return packet.Write(Ship);
+            return packet;
         }
 
         public void Depacketize(Packet packet)
         {
-            Ship = packet.ReadPacketizable<PlayerShip>();
+            //Ship = packet.ReadPacketizable<PlayerShip>();
         }
 
         #endregion

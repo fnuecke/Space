@@ -22,7 +22,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Base values for attributes.
         /// </summary>
-        private Dictionary<TAttribute, float> _baseAttributes;
+        private Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
 
         /// <summary>
         /// Modified values, based on equipment and status effects.
@@ -55,6 +55,8 @@ namespace Engine.ComponentSystem.RPG.Components
         public void SetBaseValue(TAttribute type, float value)
         {
             _baseAttributes[type] = value;
+
+            RecomputeAttributes();
         }
 
         /// <summary>
@@ -109,40 +111,48 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="message">The message.</param>
         public override void HandleMessage<T>(ref T message)
         {
-            if (message is ItemAdded)
+            if (message is EntityAdded && ((EntityAdded)(ValueType)message).Entity == Entity)
             {
-                // Recompute if an item with attribute modifiers was added.
-                var added = (ItemAdded)(ValueType)message;
-                if (added.Item.Entity.GetComponent<Attribute<TAttribute>>() != null)
-                {
-                    RecomputeAttributes();
-                }
+                RecomputeAttributes();
             }
-            else if (message is ItemRemoved)
+            // Only handle local commands if we're part of the system.
+            else if (Entity.Manager != null)
             {
-                // Recompute if an item with attribute modifiers was removed.
-                var removed = (ItemRemoved)(ValueType)message;
-                if (removed.Item.Entity.GetComponent<Attribute<TAttribute>>() != null)
+                if (message is ItemAdded)
                 {
-                    RecomputeAttributes();
+                    // Recompute if an item with attribute modifiers was added.
+                    var added = (ItemAdded)(ValueType)message;
+                    if (added.Item.Entity.GetComponent<Attribute<TAttribute>>() != null)
+                    {
+                        RecomputeAttributes();
+                    }
                 }
-            }
-            else if (message is ComponentAdded)
-            {
-                // Recompute if a status effect with attribute modifiers was added.
-                var added = (ComponentAdded)(ValueType)message;
-                if (added.Component is AttributeStatusEffect<TAttribute>)
+                else if (message is ItemRemoved)
                 {
-                    RecomputeAttributes();
+                    // Recompute if an item with attribute modifiers was removed.
+                    var removed = (ItemRemoved)(ValueType)message;
+                    if (removed.Item.Entity.GetComponent<Attribute<TAttribute>>() != null)
+                    {
+                        RecomputeAttributes();
+                    }
                 }
-            }
-            else if (message is ComponentRemoved)
-            {
-                // Recompute if a status effect with attribute modifiers was removed.
-                var removed = (ComponentRemoved)(ValueType)message;
-                if (removed.Component is AttributeStatusEffect<TAttribute>)
+                else if (message is ComponentAdded)
                 {
-                    RecomputeAttributes();
+                    // Recompute if a status effect with attribute modifiers was added.
+                    var added = (ComponentAdded)(ValueType)message;
+                    if (added.Component is AttributeStatusEffect<TAttribute> || added.Component == this)
+                    {
+                        RecomputeAttributes();
+                    }
+                }
+                else if (message is ComponentRemoved)
+                {
+                    // Recompute if a status effect with attribute modifiers was removed.
+                    var removed = (ComponentRemoved)(ValueType)message;
+                    if (removed.Component is AttributeStatusEffect<TAttribute>)
+                    {
+                        RecomputeAttributes();
+                    }
                 }
             }
         }
@@ -324,7 +334,12 @@ namespace Engine.ComponentSystem.RPG.Components
                 copy._reusableMultiplicativeList = new List<AttributeModifier<TAttribute>>();
             }
 
-            copy.RecomputeAttributes();
+            foreach (var attribute in _modifiedAttributes)
+            {
+                var value = new float[attribute.Value.Length];
+                attribute.Value.CopyTo(value, 0);
+                copy._modifiedAttributes[attribute.Key] = value;
+            }
 
             return copy;
         }

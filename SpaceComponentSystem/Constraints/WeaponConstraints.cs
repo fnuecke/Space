@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Entities;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Data;
 
@@ -23,34 +24,19 @@ namespace Space.ComponentSystem.Constraints
         public string Sound;
 
         /// <summary>
-        /// The minimum cooldown time to wait between shots, in seconds.
+        /// The cooldown time to wait between shots, in seconds.
         /// </summary>
-        public float MinCooldown;
+        public Interval<float> Cooldown = Interval<float>.Zero;
 
         /// <summary>
-        /// The maximum cooldown time to wait between shots, in seconds.
+        /// The energy this weapon consumes per shot.
         /// </summary>
-        public float MaxCooldown;
+        public Interval<float> EnergyConsumption = Interval<float>.Zero;
 
         /// <summary>
-        /// The minimum energy this weapon consumes per shot.
+        /// The damage this weapon's projectiles inflict.
         /// </summary>
-        public float MinEnergyConsumption;
-
-        /// <summary>
-        /// The maximum energy this weapon consumes per shot.
-        /// </summary>
-        public float MaxEnergyConsumption;
-
-        /// <summary>
-        /// The minimum damage this weapon's projectiles inflict.
-        /// </summary>
-        public float MinDamage;
-
-        /// <summary>
-        /// The maximum damage this weapon's projectiles inflict.
-        /// </summary>
-        public float MaxDamage;
+        public Interval<float> Damage = Interval<float>.Zero;
 
         /// <summary>
         /// Possible projectiles this weapon fires.
@@ -62,11 +48,11 @@ namespace Space.ComponentSystem.Constraints
         #region Sampling
 
         /// <summary>
-        /// Samples a new sensor based on these constraints.
+        /// Samples a new weapon based on these constraints.
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled sensor.</returns>
-        public Entity SampleSensor(IUniformRandom random)
+        /// <returns>The sampled weapon.</returns>
+        public override Entity Sample(IUniformRandom random)
         {
             var entity = new Entity();
 
@@ -80,9 +66,9 @@ namespace Space.ComponentSystem.Constraints
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled cooldown.</returns>
-        private int SampleCooldown(IUniformRandom random)
+        private float SampleCooldown(IUniformRandom random)
         {
-            return (int)((MinCooldown + (float)random.NextDouble() * (MaxCooldown - MinCooldown)) * 60f);
+            return MathHelper.Lerp(Cooldown.Low, Cooldown.High, (float)random.NextDouble());
         }
 
         /// <summary>
@@ -92,7 +78,7 @@ namespace Space.ComponentSystem.Constraints
         /// <returns>The sampled energy consumption.</returns>
         private float SampleEnergyConsumption(IUniformRandom random)
         {
-            return MinEnergyConsumption + (float)random.NextDouble() * (MaxEnergyConsumption - MinEnergyConsumption);
+            return MathHelper.Lerp(EnergyConsumption.Low, EnergyConsumption.High, (float)random.NextDouble());
         }
 
         /// <summary>
@@ -102,7 +88,7 @@ namespace Space.ComponentSystem.Constraints
         /// <returns>The sampled damage.</returns>
         private float SampleDamage(IUniformRandom random)
         {
-            return MinDamage + (float)random.NextDouble() * (MaxDamage - MinDamage);
+            return MathHelper.Lerp(Damage.Low, Damage.High, (float)random.NextDouble());
         }
 
         #endregion

@@ -190,6 +190,8 @@
     <Compile Include="ScreenManagement\Screens\Helper\BasicForms.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\SpaceForms.cs" />
     <Compile Include="ScreenManagement\Screens\Interfaces\AHudElement.cs" />
+    <Compile Include="Simulation\Commands\AddItemCommand.cs" />
+    <Compile Include="Simulation\Commands\EquipCommand.cs" />
     <Compile Include="Simulation\Commands\ScriptCommand.cs" />
     <Compile Include="ComponentSystem\Entities\EntityFactory.cs" />
     <Compile Include="Control\GameClient.cs" />
@@ -239,6 +241,10 @@
     <ProjectReference Include="..\EngineController\Engine.Controller.csproj">
       <Project>{10945D08-8588-4F0E-9671-0E90D374EB78}</Project>
       <Name>Engine.Controller</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineReaders\Engine.Serialization.Readers.csproj">
+      <Project>{4FCEA399-7964-435D-BBD9-50DAAF2D3973}</Project>
+      <Name>Engine.Serialization.Readers</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineSession\Engine.Session.csproj">
       <Project>{93B52E9C-6872-40F0-B577-D3D9363F7AF1}</Project>

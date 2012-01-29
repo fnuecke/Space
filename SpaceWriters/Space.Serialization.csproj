@@ -54,9 +54,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EngineWriters\Engine.Serialization.csproj">
+    <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
-      <Name>Engine.Serialization</Name>
+      <Name>Engine.Serialization.Writers</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
       <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>
