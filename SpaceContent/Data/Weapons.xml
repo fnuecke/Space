@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="Space.ComponentSystem.Constraints.WeaponConstraints[]">
+    <!-- The type of weapon each player starts with, which has fixed
+         values (enforced by min an max being equal). -->
+    <Item>
+      <Name>Starter Weapon</Name>
+      <Texture>Textures/Stolen/Projectiles/shell_small</Texture>
+      <Sound>laser</Sound>
+      <Cooldown>0.5</Cooldown>
+      <EnergyConsumption>5</EnergyConsumption>
+      <Damage>10</Damage>
+      <Projectiles>
+        <Item>
+          <Texture>Textures/Stolen/Projectiles/missile_MIRV</Texture>
+          <CollisionRadius>8</CollisionRadius>
+          <InitialVelocity>20</InitialVelocity>
+          <InitialDirection>-5 to 5</InitialDirection>
+        </Item>
+      </Projectiles>
+    </Item>
+    
+    <!-- NPC weapons -->
+    <Item>
+      <Name>Level 1 AI Weapon</Name>
+      <Texture>Textures/Stolen/Projectiles/shell_small</Texture>
+      <Sound>laser</Sound>
+      <Cooldown>0.5 to 0.75</Cooldown>
+      <EnergyConsumption>5 to 7.5</EnergyConsumption>
+      <Damage>5 to 15</Damage>
+      <Projectiles>
+        <Item>
+          <Texture>Textures/Stolen/Projectiles/missile_MIRV</Texture>
+          <CollisionRadius>8</CollisionRadius>
+          <InitialVelocity>15</InitialVelocity>
+          <InitialDirection>-15 to 15</InitialDirection>
+        </Item>
+      </Projectiles>
+    </Item>
+  </Asset>
+</XnaContent>

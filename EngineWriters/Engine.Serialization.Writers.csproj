@@ -49,21 +49,28 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EntityAttributeWriter.cs" />
+    <Compile Include="AttributeModifierConstraintSerializer.cs" />
+    <Compile Include="AttributeModifierSerializer.cs" />
+    <Compile Include="IntervalSerializer.cs" />
+    <Compile Include="IntervalWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
+      <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
+      <Name>Engine.ComponentSystem.RPG</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EngineReaders\Engine.Serialization.Readers.csproj">
-      <Project>{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}</Project>
-      <Name>Engine.Serialization.Readers</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineReaders\Engine.Serialization.Readers.csproj">
+      <Project>{4FCEA399-7964-435D-BBD9-50DAAF2D3973}</Project>
+      <Name>Engine.Serialization.Readers</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

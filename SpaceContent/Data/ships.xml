@@ -1,160 +1,51 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
-  <Asset Type="Space.Data.ShipData[]">
+  <Asset Type="Space.ComponentSystem.Constraints.ShipConstraints[]">
     <Item>
-      <Name>Sparrow</Name>
-
-      <CollisionRadius>15</CollisionRadius>
+      <Name>Player</Name>
       <Texture>Textures/ship</Texture>
+      <CollisionRadius>20</CollisionRadius>
 
-      <Hulls>
-        <Item>
-          <Modifiers>
-            <Item>10 Mass</Item>
-          </Modifiers>
-          <Health>50</Health>
-          <HealthRegeneration>0.05</HealthRegeneration>
-        </Item>
-      </Hulls>
+      <Attributes>
+        <Item>25 Mass</Item>
+        <Item>100 Health</Item>
+        <Item>2.5 HealthRegeneration</Item>
+        <Item>50 Energy</Item>
+        <Item>0.5 EnergyRegeneration</Item>
+        <Item>0.5 AccelerationForce</Item>
+        <Item>0.25 RotationForce</Item>
+      </Attributes>
 
-      <Reactors>
-        <Item>
-          <Modifiers>
-            <Item>5 Mass</Item>
-          </Modifiers>
-          <Energy>50</Energy>
-          <EnergyRegeneration>0.2</EnergyRegeneration>
-        </Item>
-      </Reactors>
-
-      <Thrusters>
-        <Item>
-          <Modifiers>
-            <!--<Item>0 AccelerationForce</Item>-->
-            <Item>2 RotationForce</Item>
-            <Item>5 Mass</Item>
-          </Modifiers>
-          <AccelerationForce>10</AccelerationForce>
-          <EnergyConsumption>0.15</EnergyConsumption>
-        </Item>
-      </Thrusters>
-
-      <Weapons>
-        <Item>
-          <Texture>Textures/ship</Texture>
-          <Sound>laser</Sound>
-          <Cooldown>30</Cooldown>  
-          <EnergyConsumption>0.01</EnergyConsumption>
-          <Projectiles>
-            <Item>
-              <Texture>Textures/ship</Texture>
-              <Scale>0.5</Scale>
-              <CollisionRadius>3</CollisionRadius>
-              <Damage>50</Damage>
-              <InitialVelocity>10 0</InitialVelocity>
-            </Item>
-          </Projectiles>
-        </Item>
-        <Item>
-          <Texture>Textures/ship</Texture>
-          <Sound>laser</Sound>
-          <Cooldown>20</Cooldown>
-          <EnergyConsumption>0.01</EnergyConsumption>
-          <Projectiles>
-            <Item>
-              <Texture>Textures/ship</Texture>
-              <Scale>0.75</Scale>
-              <CollisionRadius>3</CollisionRadius>
-              <Damage>15</Damage>
-              <InitialVelocity>0 10</InitialVelocity>
-              <AccelerationForce>0.5</AccelerationForce>
-              <Friction>0.05</Friction>
-            </Item>
-            <Item>
-              <Texture>Textures/ship</Texture>
-              <Scale>0.75</Scale>
-              <CollisionRadius>3</CollisionRadius>
-              <Damage>15</Damage>
-              <InitialVelocity>0 -10</InitialVelocity>
-              <AccelerationForce>0.5</AccelerationForce>
-              <Friction>0.05</Friction>
-            </Item>
-          </Projectiles>
-        </Item>
-      </Weapons>
-
-      <Sensors>
-        <Item>
-          <Range>40000</Range>
-        </Item>
-      </Sensors>
+      <SensorSlots>1</SensorSlots>
+      <ArmorSlots>2</ArmorSlots>
+      <ReactorSlots>2</ReactorSlots>
+      <ShieldSlots>1</ShieldSlots>
+      <ThrusterSlots>2</ThrusterSlots>
+      <WeaponSlots>2</WeaponSlots>
     </Item>
 
-
-
-
+    <!-- NPC ships -->
     <Item>
-      <Name>AI</Name>
-
-      <CollisionRadius>15</CollisionRadius>
+      <Name>Level 1 AI Ship</Name>
       <Texture>Textures/Stolen/Ships/broadsword_hftr</Texture>
+      <CollisionRadius>24</CollisionRadius>
 
-      <Hulls>
-        <Item>
-          <Modifiers>
-            <Item>10 Mass</Item>
-          </Modifiers>
-          <Health>50</Health>
-          <HealthRegeneration>0.05</HealthRegeneration>
-        </Item>
-      </Hulls>
+      <Attributes>
+        <Item>20 Mass</Item>
+        <Item>20 to 40 Health</Item>
+        <Item>1 to 1.5 HealthRegeneration</Item>
+        <Item>50 to 75 Energy</Item>
+        <Item>0.5 to 1 EnergyRegeneration</Item>
+        <Item>0.25 to 0.5 AccelerationForce</Item>
+        <Item>0.25 to 0.5 RotationForce</Item>
+      </Attributes>
 
-      <Reactors>
-        <Item>
-          <Modifiers>
-            <Item>5 Mass</Item>
-          </Modifiers>
-          <Energy>50</Energy>
-          <EnergyRegeneration>0.1</EnergyRegeneration>
-        </Item>
-      </Reactors>
-
-      <Thrusters>
-        <Item>
-          <Modifiers>
-            <!--<Item>0 AccelerationForce</Item>-->
-            <Item>2 RotationForce</Item>
-            <Item>5 Mass</Item>
-          </Modifiers>
-          <AccelerationForce>8</AccelerationForce>
-          <EnergyConsumption>0.15</EnergyConsumption>
-        </Item>
-      </Thrusters>
-
-      <Weapons>
-        <Item>
-          <Texture>Textures/Stolen/Projectiles/shell_small</Texture>
-          <Sound>laser</Sound>
-          <Cooldown>60</Cooldown>
-          <EnergyConsumption>0.01</EnergyConsumption>
-          <Projectiles>
-            <Item>
-              <Texture>Textures/Stolen/Projectiles/missile_MIRV</Texture>
-              <Scale>0.5</Scale>
-              <CollisionRadius>3</CollisionRadius>
-              <Damage>5</Damage>
-              <InitialVelocity>10 0</InitialVelocity>
-            </Item>
-          </Projectiles>
-        </Item>
-        
-      </Weapons>
-
-      <Sensors>
-        <Item>
-          <Range>3000</Range>
-        </Item>
-      </Sensors>
+      <SensorSlots>0</SensorSlots>
+      <ArmorSlots>1</ArmorSlots>
+      <ReactorSlots>1</ReactorSlots>
+      <ShieldSlots>1</ShieldSlots>
+      <ThrusterSlots>1</ThrusterSlots>
+      <WeaponSlots>1</WeaponSlots>
     </Item>
   </Asset>
 </XnaContent>

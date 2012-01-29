@@ -1,9 +1,12 @@
 ﻿using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
+using Engine.Util;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Constraints;
 using Space.ComponentSystem.Entities;
 using Space.Session;
+using Space.Simulation.Commands;
 
 namespace Space.Control
 {
@@ -22,7 +25,7 @@ namespace Space.Control
         #endregion
 
         #region Constructor
-        
+
         /// <summary>
         /// Creates a new game server for the specified game.
         /// </summary>
@@ -106,7 +109,29 @@ namespace Space.Control
             // Create a ship for the player.
             // TODO validate ship data (i.e. valid ship with valid equipment etc.)
             var playerData = (PlayerData)e.Player.Data;
-            var ship = EntityFactory.CreatePlayerShip(playerData.Ship, e.Player.Number, new Vector2(60000, 60000));
+
+            var random = new MersenneTwister(0);
+            var ship = EntityFactory.CreatePlayerShip(
+                ConstraintsLibrary.GetConstraints<ShipConstraints>("Player"),
+                e.Player.Number,
+                new Vector2(60000, 60000),
+                random);
+
+            // Create some basic equipment (TODO: move to player character creation, use sent data instead).
+            Controller.Simulation.PushCommand(new AddItemCommand(ConstraintsLibrary.GetConstraints<ThrusterConstraints>("Starter Thruster").Sample(random)));
+            Controller.Simulation.PushCommand(new AddItemCommand(ConstraintsLibrary.GetConstraints<ReactorConstraints>("Starter Reactor").Sample(random)));
+            Controller.Simulation.PushCommand(new AddItemCommand(ConstraintsLibrary.GetConstraints<SensorConstraints>("Starter Sensor").Sample(random)));
+            Controller.Simulation.PushCommand(new AddItemCommand(ConstraintsLibrary.GetConstraints<ArmorConstraints>("Starter Armor").Sample(random)));
+            Controller.Simulation.PushCommand(new AddItemCommand(ConstraintsLibrary.GetConstraints<WeaponConstraints>("Starter Weapon").Sample(random)));
+
+            // Back to front, because we do this in the same frame, and the
+            // command are otherwise deemed equal.
+            Controller.Simulation.PushCommand(new EquipCommand(4, 0));
+            Controller.Simulation.PushCommand(new EquipCommand(3, 0));
+            Controller.Simulation.PushCommand(new EquipCommand(2, 0));
+            Controller.Simulation.PushCommand(new EquipCommand(1, 0));
+            Controller.Simulation.PushCommand(new EquipCommand(0, 0));
+
             Controller.Simulation.EntityManager.AddEntity(ship);
         }
 

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="Space.ComponentSystem.Constraints.SensorConstraints[]">
+    <!-- The type of sensor each player starts with, which has fixed
+         values (enforced by min an max being equal). -->
+    <Item>
+      <Name>Starter Sensor</Name>
+      <GuaranteedAttributes>
+        <Item>30000 SensorRange</Item>
+      </GuaranteedAttributes>
+    </Item>
+  </Asset>
+</XnaContent>

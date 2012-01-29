@@ -1,14 +1,15 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("EngineFixedReader")]
-[assembly: AssemblyProduct("EngineFixedReader")]
+[assembly: AssemblyTitle("EngineReaders")]
+[assembly: AssemblyProduct("EngineReaders")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyCopyright("Copyright ©  2011")]
+[assembly: AssemblyCopyright("Copyright ©  2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -21,7 +22,7 @@ using System.Runtime.InteropServices;
 // On Windows, the following GUID is for the ID of the typelib if this
 // project is exposed to COM. On other platforms, it unique identifies the
 // title storage container when deploying this assembly to the device.
-[assembly: Guid("424913ad-fa3e-4b49-814a-e38b1f2d5da4")]
+[assembly: Guid("48eb50dd-d2dd-4336-9d91-e1b6c95e7480")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -1,7 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using IronPython.Hosting;
@@ -48,15 +49,16 @@ namespace Space.Simulation.Commands
                 _script.Runtime.LoadAssembly(Assembly.Load(assembly));
             }
 
-            // Register some macros in our scripting environment.
-            _script.Execute(
-@"
+            try
+            {
+                // Register some macros in our scripting environment.
+                _script.Execute(
+    @"
 # Import everything from the game we need.
 from Engine.ComponentSystem.Components import *
-from Engine.ComponentSystem.Modules import *
 from Engine.ComponentSystem.Systems import *
+from Engine.ComponentSystem.RPG.Components import *
 from Space.ComponentSystem.Components import *
-from Space.ComponentSystem.Modules import *
 from Space.ComponentSystem.Systems import *
 from Space.Data import *
 
@@ -64,19 +66,25 @@ from Space.Data import *
 def goto(x, y):
     avatar.GetComponent[Transform]().SetTranslation(x, y)
 
-def setaf(value):
-    for thruster in modules.GetModules[Thruster]():
-        thruster.AccelerationForce = value
-        thruster.Invalidate()
+# -- this works, but its easier to just use setBaseStat(AttributeType.AccelerationForce, value) instead
+#def addaf(value):
+#    for slot in range(0, equipment.GetSlotCount[Thruster]()):
+#        if equipment.GetItem[Thruster](slot):
+#            thruster = equipment.Unequip[Thruster](slot)
+#            thruster.AddComponent(Attribute[AttributeType](AttributeModifier[AttributeType](AttributeType.AccelerationForce, value)))
+#            equipment.Equip(thruster, slot)
 
-def setec(value):
-    for thruster in modules.GetModules[Thruster]():
-        thruster.EnergyConsumption = value
-        thruster.Invalidate()
+def setBaseStat(type, value):
+    character.SetBaseValue(type, value)
 
 def ge(id):
     return manager.GetEntity(id)
 ", _script.Runtime.Globals);
+            }
+            catch (Exception ex)
+            {
+                logger.WarnException("Failed initializing script engine.", ex);
+            }
 
             // Redirect scripting output to the logger.
             var infoStream = new MemoryStream();
@@ -158,7 +166,26 @@ def ge(id):
                     }
                     break;
 
+                case SpaceCommandType.Equip:
+                    var equipCommand = (EquipCommand)command;
+                    try
+                    {
+                        avatar.GetComponent<Equipment>().Equip(avatar.GetComponent<Inventory>().RemoveItemAt(equipCommand.InventoryIndex), equipCommand.Slot);
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        logger.WarnException("Invalid equip command.", ex);
+                    }
+                    break;
+
 #if DEBUG
+                case SpaceCommandType.AddItem:
+                    var addCommand = (AddItemCommand)command;
+                    var item = addCommand.Item.DeepCopy();
+                    manager.AddEntity(item);
+                    avatar.GetComponent<Inventory>().AddItem(item);
+                    break;
+
                 case SpaceCommandType.ScriptCommand:
                     // Script command.
                     {
@@ -182,17 +209,18 @@ def ge(id):
                             var globals = _script.Runtime.Globals;
 
                             globals.SetVariable("manager", manager);
-                            globals.SetVariable("avatar", avatar);
 
-                            // Some more utility variables used frequently.
+                             // Some more utility variables used frequently.
                             if (avatar != null)
                             {
-                                var modules = avatar.GetComponent<ModuleManager<SpaceModifier>>();
-                                globals.SetVariable("modules", modules);
-                            }
-                            else
-                            {
-                                globals.RemoveVariable("modules");
+                                globals.SetVariable("avatar", avatar);
+
+                                var character = avatar.GetComponent<Character<AttributeType>>();
+                                var inventory = avatar.GetComponent<Inventory>();
+                                var equipment = avatar.GetComponent<Equipment>();
+                                globals.SetVariable("character", character);
+                                globals.SetVariable("inventory", inventory);
+                                globals.SetVariable("equipment", equipment);
                             }
 
                             // Try executing our script.
@@ -206,6 +234,14 @@ def ge(id):
                                 {
                                     logger.ErrorException("Error executing script.", ex);
                                 }
+                            }
+                            finally
+                            {
+                                globals.RemoveVariable("manager");
+                                globals.RemoveVariable("avatar");
+                                globals.RemoveVariable("character");
+                                globals.RemoveVariable("inventory");
+                                globals.RemoveVariable("equipment");
                             }
                         }
                     }

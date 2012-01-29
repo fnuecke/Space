@@ -480,7 +480,7 @@ namespace Engine.Session
                             // Should we block the player?
                             if (requestArgs.ShouldBlock)
                             {
-                                throw new ArgumentException("Invalid data or actively blocked.");
+                                throw new PacketException("Invalid data or actively blocked.");
                             }
 
                             // After getting here it's official! We have a new player.

@@ -8,6 +8,7 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Constraints;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Messages;
 using Space.Data;
@@ -21,9 +22,11 @@ namespace Space.ComponentSystem.Systems
     {
         #region Fields
 
-        private Dictionary<ulong,List<int>> _entities = new Dictionary<ulong,List<int>>();
+        private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
 
         private ContentManager _content;
+
+        private MersenneTwister _random = new MersenneTwister(0);
 
         #endregion
 
@@ -39,7 +42,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-      
+
 
         public override void HandleMessage<T>(ref T message)
         {
@@ -60,8 +63,12 @@ namespace Space.ComponentSystem.Systems
                             var spawnPoint = new Vector2(center.X + i * (float)cellSize / 5, center.Y - j * (float)cellSize / 5);
                             var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Guard);
                             //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
-                            list.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
-                                _content.Load<ShipData[]>("Data/ships")[1], cellInfo.Faction, spawnPoint, order)));
+
+                            var ship = EntityFactory.CreateAIShip(
+                                ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                                cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order);
+
+                            list.Add(Manager.EntityManager.AddEntity(ship));
                         }
                     }
                 }
@@ -69,7 +76,8 @@ namespace Space.ComponentSystem.Systems
                 {
                     var Listcopy = new List<int>(_entities[info.Id]);
                     _entities.Remove(info.Id);
-                    foreach(var entry in Listcopy){
+                    foreach (var entry in Listcopy)
+                    {
                         Manager.EntityManager.RemoveEntity(entry);
                     }
                 }
@@ -81,8 +89,8 @@ namespace Space.ComponentSystem.Systems
                 var cellId = CoordinateIds.Combine(
                    (int)position.X >> CellSystem.CellSizeShiftAmount,
                    (int)position.Y >> CellSystem.CellSizeShiftAmount);
-                
-                if(_entities.ContainsKey(cellId))
+
+                if (_entities.ContainsKey(cellId))
                     _entities[cellId].Remove(info.Entity.UID);
             }
             else if (message is EntityChangedCell)
@@ -104,19 +112,27 @@ namespace Space.ComponentSystem.Systems
 
         public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
         {
-            var aicommand = new AiComponent.AiCommand(targetEntity,2000,AiComponent.Order.Move);
+            var aicommand = new AiComponent.AiCommand(targetEntity, 2000, AiComponent.Order.Move);
             var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
                    (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
-            _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],
-                faction, startPosition, aicommand)));
+
+            var ship = EntityFactory.CreateAIShip(
+                ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                faction, startPosition, Manager.EntityManager, _random, aicommand);
+
+            _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
         }
         public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
         {
             var aicommand = new AiComponent.AiCommand(targetPosition, 2000, AiComponent.Order.Move);
-             var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
-                   (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
-            _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(_content.Load<ShipData[]>("Data/ships")[1],
-                faction, startPosition, aicommand)));
+            var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
+                  (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
+
+            var ship = EntityFactory.CreateAIShip(
+                 ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                faction, startPosition, Manager.EntityManager, _random, aicommand);
+
+            _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
         }
         #endregion
 
@@ -134,6 +150,8 @@ namespace Space.ComponentSystem.Systems
                     packet.Write(entityId);
                 }
             }
+
+            packet.Write(_random);
 
             return packet;
         }
@@ -153,6 +171,8 @@ namespace Space.ComponentSystem.Systems
                 }
                 _entities.Add(key, list);
             }
+
+            _random = packet.ReadPacketizableInto(_random);
         }
 
         public override void Hash(Hasher hasher)
@@ -178,16 +198,20 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._content = _content;
                 copy._entities.Clear();
+                copy._random = _random.DeepCopy(_random);
             }
             else
             {
-                copy._entities = new Dictionary<ulong,List<int>>();
+                copy._entities = new Dictionary<ulong, List<int>>();
+                copy._random = _random.DeepCopy();
             }
+
             foreach (var item in _entities)
             {
                 copy._entities.Add(item.Key, new List<int>(item.Value));
 
             }
+
             return copy;
         }
 

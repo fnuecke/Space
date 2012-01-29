@@ -11,12 +11,13 @@ using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using Nuclex.Input;
 using Nuclex.Input.Devices;
+using Space.ComponentSystem.Constraints;
 using Space.Control;
-using Space.Data;
 using Space.ScreenManagement;
 using Space.ScreenManagement.Screens;
 using Space.Session;
 using Space.Simulation.Commands;
+using Space.Util;
 using Space.View;
 
 namespace Space
@@ -213,7 +214,8 @@ namespace Space
             _console.AddCommand("connect", args =>
             {
                 PlayerData playerData = new PlayerData();
-                playerData.Ship = Content.Load<ShipData[]>("Data/ships")[0];
+                // TODO: load actual player profile.
+                //playerData.Ship = Content.Load<ShipData[]>("Data/ships")[0];
                 Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, playerData);
             },
                 "Joins a game at the given host.",
@@ -370,6 +372,7 @@ namespace Space
         public void RestartClient(bool local = false)
         {
             DisposeClient();
+            ConstraintsLibrary.Initialize(Content);
             if (local)
             {
                 Client = new GameClient(this, Server);
@@ -389,6 +392,7 @@ namespace Space
         public void RestartServer()
         {
             DisposeServer();
+            ConstraintsLibrary.Initialize(Content);
             Server = new GameServer(this);
             // Update after screen manager and client to get input commands.
             Server.UpdateOrder = 50;

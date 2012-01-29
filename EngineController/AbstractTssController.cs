@@ -84,7 +84,7 @@ namespace Engine.Controller
         /// <summary>
         /// The underlying simulation controlled by this controller.
         /// </summary>
-        public ISimulation Simulation { get { return _tss; } }
+        public ISimulation Simulation { get { return _simulation; } }
 
         /// <summary>
         /// The current 'load', i.e. how much of the available time is actually
@@ -126,6 +126,11 @@ namespace Engine.Controller
         protected double _adjustedSpeed = 1.0;
 
         /// <summary>
+        /// Wrapper to restrict interaction with TSS.
+        /// </summary>
+        private SimulationWrapper _simulation;
+
+        /// <summary>
         /// The remainder of time we did not update last frame, which we'll add to the
         /// elapsed time in the next frame update.
         /// </summary>
@@ -151,6 +156,7 @@ namespace Engine.Controller
             : base(session)
         {
             _tss = new TSS(delays);
+            _simulation = new SimulationWrapper(_tss, this);
         }
 
         #endregion
@@ -260,6 +266,66 @@ namespace Engine.Controller
         {
             packet.Write((byte)TssControllerMessage.Command);
             return base.WrapDataForSend(command, packet);
+        }
+
+        #endregion
+
+        #region Simulation wrapper
+
+        private class SimulationWrapper : ISimulation
+        {
+            public long CurrentFrame { get { return _tss.CurrentFrame; } }
+
+            public ComponentSystem.IEntityManager EntityManager { get { return _tss.EntityManager; } }
+
+            private TSS _tss;
+
+            private AbstractTssController<TSession> _controller;
+
+            public SimulationWrapper(TSS tss, AbstractTssController<TSession> controller)
+            {
+                _tss = tss;
+                _controller = controller;
+            }
+
+            public void Update()
+            {
+                _tss.Update();
+            }
+
+            public void PushCommand(Command command)
+            {
+                _controller.Apply((FrameCommand)command);
+            }
+
+            #region Unsupported
+            
+            public ISimulation DeepCopy()
+            {
+                throw new NotImplementedException();
+            }
+
+            public ISimulation DeepCopy(ISimulation into)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Packet Packetize(Packet packet)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Depacketize(Packet packet)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Hash(Hasher hasher)
+            {
+                throw new NotImplementedException();
+            }
+
+            #endregion
         }
 
         #endregion

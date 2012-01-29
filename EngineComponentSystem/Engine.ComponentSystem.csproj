@@ -117,7 +117,6 @@
     <Compile Include="Components\AbstractRenderer.cs" />
     <Compile Include="Components\Acceleration.cs" />
     <Compile Include="Components\EllipsePath.cs" />
-    <Compile Include="Components\ModuleManager.cs" />
     <Compile Include="Components\Avatar.cs" />
     <Compile Include="Components\CollidableBox.cs" />
     <Compile Include="Components\CollidableSphere.cs" />
@@ -126,13 +125,8 @@
     <Compile Include="Components\Index.cs" />
     <Compile Include="Messages\Collision.cs" />
     <Compile Include="Messages\EntitiesCleared.cs" />
-    <Compile Include="Messages\ModuleRemoved.cs" />
-    <Compile Include="Messages\ModuleAdded.cs" />
-    <Compile Include="Messages\ModuleValueInvalidated.cs" />
     <Compile Include="Messages\TranslationChanged.cs" />
     <Compile Include="Components\AbstractSound.cs" />
-    <Compile Include="Modules\AbstractModule.cs" />
-    <Compile Include="Modules\Modifier.cs" />
     <Compile Include="Components\Spin.cs" />
     <Compile Include="Components\Transform.cs" />
     <Compile Include="Components\TransformedRenderer.cs" />

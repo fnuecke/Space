@@ -148,43 +148,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ComponentSystem\Components\AbstractRegeneratingValue.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\AttackBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\Behaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\MoveBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIBehaviour\PatrolBehaviour.cs" />
     <Compile Include="ComponentSystem\Components\AIComponent.cs" />
-    <Compile Include="ComponentSystem\Components\AstronomicBody.cs" />
     <Compile Include="ComponentSystem\Components\CellChangedComponent.cs" />
-    <Compile Include="ComponentSystem\Components\CollisionDamage.cs" />
-    <Compile Include="ComponentSystem\Components\Death.cs" />
-    <Compile Include="ComponentSystem\Components\Detectable.cs" />
-    <Compile Include="ComponentSystem\Components\Energy.cs" />
     <Compile Include="ComponentSystem\Components\ExplosionEffect.cs" />
-    <Compile Include="ComponentSystem\Components\Faction.cs" />
-    <Compile Include="ComponentSystem\Components\Gravitation.cs" />
-    <Compile Include="ComponentSystem\Components\Health.cs" />
-    <Compile Include="ComponentSystem\Components\Effect.cs" />
-    <Compile Include="ComponentSystem\Components\ShipGravitation.cs" />
-    <Compile Include="ComponentSystem\Components\ShipInfo.cs" />
-    <Compile Include="ComponentSystem\Components\PlanetRenderer.cs" />
-    <Compile Include="ComponentSystem\Components\Respawn.cs" />
     <Compile Include="ComponentSystem\Components\SpawnComponent.cs" />
-    <Compile Include="ComponentSystem\Components\SunRenderer.cs" />
     <Compile Include="ComponentSystem\Components\Target.cs" />
-    <Compile Include="ComponentSystem\Components\ThrusterEffect.cs" />
     <Compile Include="ComponentSystem\Messages\EntityChangedCell.cs" />
-    <Compile Include="ComponentSystem\Parameterizations\ParticleParameterization.cs" />
-    <Compile Include="ComponentSystem\Systems\ParticleSystem.cs" />
     <Compile Include="ComponentSystem\Systems\ShipsSpawnSystem.cs" />
     <Compile Include="ComponentSystem\Systems\UniverseSystem.cs" />
-    <Compile Include="ComponentSystem\Components\WeaponSound.cs" />
-    <Compile Include="ComponentSystem\Systems\CellSystem.cs" />
-    <Compile Include="ComponentSystem\Messages\CellStateChanged.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
-    <Compile Include="Graphics\Planet.cs" />
-    <Compile Include="Graphics\Sun.cs" />
-    <Compile Include="Input\GamePadHelper.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudBuffElement.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudIcon.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSingleLabel.cs" />
@@ -207,13 +183,10 @@
     <Compile Include="ScreenManagement\Screens\Helper\BasicForms.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\SpaceForms.cs" />
     <Compile Include="ScreenManagement\Screens\Interfaces\AHudElement.cs" />
+    <Compile Include="Simulation\Commands\AddItemCommand.cs" />
+    <Compile Include="Simulation\Commands\EquipCommand.cs" />
     <Compile Include="Simulation\Commands\ScriptCommand.cs" />
-    <Compile Include="ComponentSystem\Messages\WeaponFired.cs" />
-    <Compile Include="ComponentSystem\Components\ShipControl.cs" />
-    <Compile Include="ComponentSystem\Components\WeaponControl.cs" />
     <Compile Include="ComponentSystem\Entities\EntityFactory.cs" />
-    <Compile Include="ComponentSystem\Systems\PlayerCenteredRenderSystem.cs" />
-    <Compile Include="ComponentSystem\Systems\PlayerCenteredSoundSystem.cs" />
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Session\PlayerData.cs" />
@@ -236,7 +209,6 @@
     <Compile Include="ScreenManagement\Screens\MessageBoxScreen.cs" />
     <Compile Include="ScreenManagement\Screens\OptionsMenuScreen.cs" />
     <Compile Include="ScreenManagement\Screens\PauseMenuScreen.cs" />
-    <Compile Include="Settings.cs" />
     <Compile Include="Spaaace.cs" />
     <Compile Include="MenuStrings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -251,6 +223,10 @@
     <Content Include="GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
+      <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
+      <Name>Engine.ComponentSystem.RPG</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
@@ -260,7 +236,7 @@
       <Name>Engine.Controller</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineReaders\Engine.Serialization.Readers.csproj">
-      <Project>{8D8EC8EA-6D2C-4D70-A7B4-9EC99BCCAD92}</Project>
+      <Project>{4FCEA399-7964-435D-BBD9-50DAAF2D3973}</Project>
       <Name>Engine.Serialization.Readers</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineSession\Engine.Session.csproj">
@@ -275,9 +251,13 @@
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceData\Space.Data.csproj">
-      <Project>{48F0591F-9238-4FF0-AC34-04E14C291AA3}</Project>
-      <Name>Space.Data</Name>
+    <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
+      <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>
+      <Name>Space.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
+      <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
+      <Name>Space.ComponentSystem</Name>
     </ProjectReference>
     <ProjectReference Include="..\SpaceContent\Space.Content.contentproj">
       <Name>Space.Content %28data%29</Name>

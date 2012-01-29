@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
@@ -169,50 +168,6 @@ namespace Engine.Controller
         #endregion
 
         #region Modify simulation
-
-        /// <summary>
-        /// Add a entity to the simulation. Will be inserted at the
-        /// current leading frame. The entity will be given a unique
-        /// id, by which it may later be referenced for removals.
-        /// </summary>
-        /// <param name="entity">the entity to add.</param>
-        /// <param name="frame">the frame in which to add the entity.</param>
-        /// <returns>the id the entity was assigned.</returns>
-        public void AddEntity(Entity entity, long frame)
-        {
-            // Add the entity to the simulation.
-            _tss.AddEntity(entity, frame);
-
-            // Notify all players in the game about this.
-            using (var packet = new Packet())
-            {
-                Session.Send(packet
-                    .Write((byte)TssControllerMessage.AddGameObject)
-                    .Write(frame)
-                    .Write(entity));
-            }
-        }
-
-        /// <summary>
-        /// Removes a entity with the given id from the simulation.
-        /// The entity will be removed at the given frame.
-        /// </summary>
-        /// <param name="entityId">the id of the entity to remove.</param>
-        /// <param name="frame">the frame in which to remove the entity.</param>
-        public void RemoveEntity(int entityUid, long frame)
-        {
-            // Remove the entity from the simulation.
-            _tss.RemoveEntity(entityUid, frame);
-
-            // Notify all players in the game about this.
-            using (var packet = new Packet())
-            {
-                Session.Send(packet
-                    .Write((byte)TssControllerMessage.RemoveGameObject)
-                    .Write(frame)
-                    .Write(entityUid));
-            }
-        }
 
         /// <summary>
         /// Apply a command.

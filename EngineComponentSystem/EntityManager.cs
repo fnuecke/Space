@@ -184,7 +184,8 @@ namespace Engine.ComponentSystem
         {
             SystemManager.SendMessage(ref message);
 
-            foreach (var entity in _entityMap.Values)
+            // Cannot use single-allocated list here, because this can cascade.
+            foreach (var entity in new List<Entity>(_entityMap.Values))
             {
                 entity.SendMessage(ref message);
             }

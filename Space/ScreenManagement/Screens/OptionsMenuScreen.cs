@@ -13,6 +13,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input.Devices;
 using Space.ScreenManagement.Screens.Entries;
+using Space.Util;
 
 namespace Space.ScreenManagement.Screens
 {
