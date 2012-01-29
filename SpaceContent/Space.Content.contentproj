@@ -71,10 +71,6 @@
       <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
       <Name>Space.ComponentSystem</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SpaceData\Space.Data.csproj">
-      <Project>{48F0591F-9238-4FF0-AC34-04E14C291AA3}</Project>
-      <Name>Space.Data</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineWriters\Engine.Serialization.Writers.csproj">
       <Project>{B40055F1-158F-4C54-BC3F-D269ABB941FD}</Project>
       <Name>Engine.Serialization.Writers</Name>

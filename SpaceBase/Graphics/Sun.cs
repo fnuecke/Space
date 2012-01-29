@@ -9,7 +9,7 @@ namespace Space.Graphics
     /// <summary>
     /// Utility class for rendering suns.
     /// </summary>
-    sealed class Sun : AbstractShape, IDisposable
+    public sealed class Sun : AbstractShape, IDisposable
     {
         #region Fields
         

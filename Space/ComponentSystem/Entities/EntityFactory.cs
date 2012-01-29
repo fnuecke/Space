@@ -25,7 +25,7 @@ namespace Space.ComponentSystem.Entities
             Entity entity = blueprint.SampleShip(playerNumber.ToFaction(), position, random);
 
             entity.AddComponent(new Avatar(playerNumber));
-            entity.AddComponent(new Respawn(300, new HashSet<Type>()
+            entity.AddComponent(new Respawn(60, new HashSet<Type>()
             {
                 // Make ship uncontrollable.
                 typeof(ShipControl),

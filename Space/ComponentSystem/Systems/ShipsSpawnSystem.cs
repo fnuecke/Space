@@ -22,7 +22,7 @@ namespace Space.ComponentSystem.Systems
     {
         #region Fields
 
-        private Dictionary<ulong,List<int>> _entities = new Dictionary<ulong,List<int>>();
+        private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
 
         private ContentManager _content;
 
@@ -42,7 +42,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-      
+
 
         public override void HandleMessage<T>(ref T message)
         {
@@ -63,9 +63,15 @@ namespace Space.ComponentSystem.Systems
                             var spawnPoint = new Vector2(center.X + i * (float)cellSize / 5, center.Y - j * (float)cellSize / 5);
                             var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Move);
                             //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
-                            list.Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
+
+                            var ship = EntityFactory.CreateAIShip(
                                 ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
-                                cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order)));
+                                cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order);
+
+                            list.Add(Manager.EntityManager.AddEntity(ship));
+
+                            ship.GetComponent<Health>().Value = float.MaxValue;
+                            ship.GetComponent<Energy>().Value = float.MaxValue;
                         }
                     }
                 }
@@ -73,7 +79,8 @@ namespace Space.ComponentSystem.Systems
                 {
                     var Listcopy = new List<int>(_entities[info.Id]);
                     _entities.Remove(info.Id);
-                    foreach(var entry in Listcopy){
+                    foreach (var entry in Listcopy)
+                    {
                         Manager.EntityManager.RemoveEntity(entry);
                     }
                 }
@@ -85,8 +92,8 @@ namespace Space.ComponentSystem.Systems
                 var cellId = CoordinateIds.Combine(
                    (int)position.X >> CellSystem.CellSizeShiftAmount,
                    (int)position.Y >> CellSystem.CellSizeShiftAmount);
-                
-                if(_entities.ContainsKey(cellId))
+
+                if (_entities.ContainsKey(cellId))
                     _entities[cellId].Remove(info.Entity.UID);
             }
             else if (message is EntityChangedCell)
@@ -108,21 +115,33 @@ namespace Space.ComponentSystem.Systems
 
         public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
         {
-            var aicommand = new AiComponent.AiCommand(targetEntity,2000,AiComponent.Order.Move);
+            var aicommand = new AiComponent.AiCommand(targetEntity, 2000, AiComponent.Order.Move);
             var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
                    (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
-            _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
+
+            var ship = EntityFactory.CreateAIShip(
                 ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
-                faction, startPosition, Manager.EntityManager, _random, aicommand)));
+                faction, startPosition, Manager.EntityManager, _random, aicommand);
+
+            _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
+
+            ship.GetComponent<Health>().Value = float.MaxValue;
+            ship.GetComponent<Energy>().Value = float.MaxValue;
         }
         public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
         {
             var aicommand = new AiComponent.AiCommand(targetPosition, 2000, AiComponent.Order.Move);
-             var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
-                   (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
-             _entities[cellID].Add(Manager.EntityManager.AddEntity(EntityFactory.CreateAIShip(
+            var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
+                  (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
+
+            var ship = EntityFactory.CreateAIShip(
                  ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
-                faction, startPosition, Manager.EntityManager, _random, aicommand)));
+                faction, startPosition, Manager.EntityManager, _random, aicommand);
+
+            _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
+
+            ship.GetComponent<Health>().Value = float.MaxValue;
+            ship.GetComponent<Energy>().Value = float.MaxValue;
         }
         #endregion
 

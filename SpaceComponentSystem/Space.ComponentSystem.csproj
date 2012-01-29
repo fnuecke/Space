@@ -103,23 +103,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\AbstractRegeneratingValue.cs" />
-    <Compile Include="Components\CollisionDamage.cs" />
-    <Compile Include="Components\Death.cs" />
-    <Compile Include="Components\Detectable.cs" />
-    <Compile Include="Components\Effect.cs" />
-    <Compile Include="Components\Energy.cs" />
-    <Compile Include="Components\Faction.cs" />
-    <Compile Include="Components\Gravitation.cs" />
-    <Compile Include="Components\Health.cs" />
-    <Compile Include="Components\Respawn.cs" />
-    <Compile Include="Components\Ship.cs" />
-    <Compile Include="Components\ShipControl.cs" />
-    <Compile Include="Components\ShipGravitation.cs" />
-    <Compile Include="Components\ShipInfo.cs" />
-    <Compile Include="Components\ThrusterEffect.cs" />
-    <Compile Include="Components\WeaponControl.cs" />
-    <Compile Include="Components\WeaponSound.cs" />
+    <Compile Include="Components\Logic\AbstractRegeneratingValue.cs" />
+    <Compile Include="Components\Logic\CollisionDamage.cs" />
+    <Compile Include="Components\Logic\Death.cs" />
+    <Compile Include="Components\Util\Detectable.cs" />
+    <Compile Include="Components\Media\Effect.cs" />
+    <Compile Include="Components\Logic\Energy.cs" />
+    <Compile Include="Components\Util\Faction.cs" />
+    <Compile Include="Components\Logic\Gravitation.cs" />
+    <Compile Include="Components\Logic\Health.cs" />
+    <Compile Include="Components\Media\PlanetRenderer.cs" />
+    <Compile Include="Components\Logic\Respawn.cs" />
+    <Compile Include="Components\Logic\ShipControl.cs" />
+    <Compile Include="Components\Logic\ShipGravitation.cs" />
+    <Compile Include="Components\Util\ShipInfo.cs" />
+    <Compile Include="Components\Media\SunRenderer.cs" />
+    <Compile Include="Components\Media\ThrusterEffect.cs" />
+    <Compile Include="Components\Logic\WeaponControl.cs" />
+    <Compile Include="Components\Media\WeaponSound.cs" />
     <Compile Include="Constraints\ArmorConstraints.cs" />
     <Compile Include="Constraints\ConstraintsLibrary.cs" />
     <Compile Include="Constraints\IConstraint.cs" />

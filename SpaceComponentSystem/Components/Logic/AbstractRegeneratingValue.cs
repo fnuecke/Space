@@ -29,7 +29,7 @@ namespace Space.ComponentSystem.Components
                 {
                     _timeToWait = Timeout;
                 }
-                _value = System.Math.Max(0, value);
+                _value = System.Math.Min(MaxValue, System.Math.Max(0, value));
             }
         }
 

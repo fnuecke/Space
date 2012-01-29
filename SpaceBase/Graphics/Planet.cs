@@ -8,7 +8,7 @@ namespace Space.Graphics
     /// <summary>
     /// Utility class for rendering planets.
     /// </summary>
-    sealed class Planet : AbstractShape
+    public sealed class Planet : AbstractShape
     {
         #region Fields
 

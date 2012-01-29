@@ -208,10 +208,6 @@ namespace Space.ComponentSystem.Constraints
             // Add some character!
             entity.AddComponent(new Character<AttributeType>());
 
-            // Set value to max after equipping.
-            health.Value = System.Math.Max(1, health.MaxValue);
-            energy.Value = energy.MaxValue;
-
             return entity;
         }
 
