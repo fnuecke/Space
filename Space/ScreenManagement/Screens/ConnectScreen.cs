@@ -36,12 +36,9 @@ namespace Space.ScreenManagement.Screens
                 if (!_connecting)
                 {
                     _connecting = true;
-                    var playerData = new PlayerData();
-                    // TODO: load actual player profile.
-                    //playerData.Ship = game.Content.Load<ShipData[]>("Data/ships")[0];
                     try
                     {
-                        _client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(_address.InputText), 7777), Settings.Instance.PlayerName, playerData);
+                        _client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(_address.InputText), 7777), Settings.Instance.PlayerName, (Profile)Settings.Instance.CurrentProfile);
                         Settings.Instance.LastServerAddress = _address.InputText;
                     }
                     catch (Exception)

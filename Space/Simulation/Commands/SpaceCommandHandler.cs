@@ -121,6 +121,20 @@ def ge(id):
 
             switch ((SpaceCommandType)command.Type)
             {
+                case SpaceCommandType.RestoreProfile:
+                    // Player wants to load his profile. Only allow this once
+                    // a session, so skip if he already has an avatar.
+                    if (avatar == null)
+                    {
+                        var profileCommand = (RestoreProfileCommand)command;
+                        profileCommand.Profile.Restore(profileCommand.PlayerNumber, manager);
+                    }
+                    else
+                    {
+                        logger.Warn("Player already has an avatar, not restoring received profile.");
+                    }
+                    break;
+
                 case SpaceCommandType.PlayerInput:
                     // Player input command, apply it.
                     {

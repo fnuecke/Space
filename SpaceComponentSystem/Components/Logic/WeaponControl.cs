@@ -65,9 +65,10 @@ namespace Space.ComponentSystem.Components
                 {
                     for (int i = 0; i < equipment.GetSlotCount<Weapon>(); i++)
                     {
-                        var weapon = equipment.GetItem<Weapon>(i).GetComponent<Weapon>();
-                        if (weapon != null)
+                        var weaponEntity = equipment.GetItem<Weapon>(i);
+                        if (weaponEntity != null)
                         {
+                            var weapon = weaponEntity.GetComponent<Weapon>();
                             var energyConsumption = character.GetValue(AttributeType.WeaponEnergyConsumption, weapon.EnergyConsumption);
                             if (energy != null && energy.Value >= energyConsumption)
                             {

@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Constraints
     /// <summary>
     /// Basic descriptor for a single ship class.
     /// </summary>
-    public class ShipConstraints : IConstraint
+    public sealed class ShipConstraints : IConstraint
     {
         #region General
 
@@ -83,7 +83,7 @@ namespace Space.ComponentSystem.Constraints
         /// <param name="position">The position at which to spawn the ship.</param>
         /// <param name="random">The randomizer to use.</param>
         /// <return>The entity with the attributes applied.</return>
-        public virtual Entity SampleShip(Factions faction, Vector2 position, IUniformRandom random)
+        public Entity SampleShip(Factions faction, Vector2 position, IUniformRandom random)
         {
             var entity = CreateShip(faction, position);
 
@@ -108,7 +108,7 @@ namespace Space.ComponentSystem.Constraints
         /// <param name="faction"></param>
         /// <param name="position"></param>
         /// <returns></returns>
-        protected Entity CreateShip(Factions faction, Vector2 position)
+        private Entity CreateShip(Factions faction, Vector2 position)
         {
             var entity = new Entity();
 

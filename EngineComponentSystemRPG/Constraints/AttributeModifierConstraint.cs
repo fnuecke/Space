@@ -46,7 +46,9 @@ namespace Engine.ComponentSystem.RPG.Constraints
         /// <returns>The sampled attribute modifier.</returns>
         public AttributeModifier<TAttribute> SampleAttributeModifier(IUniformRandom random)
         {
-            var value = MathHelper.Lerp(Value.Low, Value.High, (float)random.NextDouble());
+            // Only randomize if necessary.
+            var value = (Value.Low == Value.High) ? Value.Low
+                : MathHelper.Lerp(Value.Low, Value.High, (float)random.NextDouble());
             if (Round)
             {
                 value = (float)System.Math.Round(value);

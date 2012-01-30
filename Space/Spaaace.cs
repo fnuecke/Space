@@ -213,10 +213,7 @@ namespace Space
                 "Search for games available on the local subnet.");
             _console.AddCommand("connect", args =>
             {
-                PlayerData playerData = new PlayerData();
-                // TODO: load actual player profile.
-                //playerData.Ship = Content.Load<ShipData[]>("Data/ships")[0];
-                Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, playerData);
+                Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, (Profile)Settings.Instance.CurrentProfile);
             },
                 "Joins a game at the given host.",
                 "connect <host> - join the host with the given host name or IP.");
@@ -313,6 +310,25 @@ namespace Space
 
             _console.WriteLine("Game Console. Type 'help' for available commands.");
 
+            // Load generator constraints.
+            ConstraintsLibrary.Initialize(Content);
+
+            // Create the profile implementation.
+            Settings.Instance.CurrentProfile = new Profile();
+
+            // Load / create profile.
+            if (Settings.Instance.CurrentProfile.Profiles.Contains(Settings.Instance.CurrentProfileName))
+            {
+                Settings.Instance.CurrentProfile.Load(Settings.Instance.CurrentProfileName);
+            }
+            else
+            {
+                // TODO: create profile selection screen, show it if no or an invalid profile is active.
+                Settings.Instance.CurrentProfile.Create("Default", Data.PlayerClassType.Default);
+                Settings.Instance.CurrentProfileName = "Default";
+                Settings.Instance.CurrentProfile.Save();
+            }
+
             // Set up audio stuff.
             try
             {
@@ -372,7 +388,6 @@ namespace Space
         public void RestartClient(bool local = false)
         {
             DisposeClient();
-            ConstraintsLibrary.Initialize(Content);
             if (local)
             {
                 Client = new GameClient(this, Server);
@@ -392,7 +407,6 @@ namespace Space
         public void RestartServer()
         {
             DisposeServer();
-            ConstraintsLibrary.Initialize(Content);
             Server = new GameServer(this);
             // Update after screen manager and client to get input commands.
             Server.UpdateOrder = 50;

@@ -186,11 +186,11 @@
     <Compile Include="Session\Profile.cs" />
     <Compile Include="Simulation\Commands\AddItemCommand.cs" />
     <Compile Include="Simulation\Commands\EquipCommand.cs" />
+    <Compile Include="Simulation\Commands\RestoreProfileCommand.cs" />
     <Compile Include="Simulation\Commands\ScriptCommand.cs" />
     <Compile Include="ComponentSystem\Entities\EntityFactory.cs" />
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />
-    <Compile Include="Session\PlayerData.cs" />
     <Compile Include="Simulation\Commands\SpaceCommandType.cs" />
     <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />
     <Compile Include="Simulation\Commands\SpaceCommandHandler.cs" />

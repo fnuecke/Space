@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
@@ -22,12 +23,30 @@ namespace Space.Control
 
         #endregion
 
+        #region Construction
+
+        /// <summary>
+        /// The interval in which we save the player's profile to disk.
+        /// </summary>
+        private const int _saveInterval = 60;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
         /// The controller used by this game client.
         /// </summary>
         public IClientController<FrameCommand> Controller { get; private set; }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The time we last saved our profile.
+        /// </summary>
+        private DateTime _lastSave = DateTime.Now;
 
         #endregion
 
@@ -186,6 +205,13 @@ namespace Space.Control
             base.Update(gameTime);
 
             Controller.Update(gameTime);
+
+            if ((DateTime.Now - _lastSave).TotalSeconds > _saveInterval)
+            {
+                Settings.Instance.CurrentProfile.Capture(GetPlayerShipInfo().Entity);
+                Settings.Instance.CurrentProfile.Save();
+                _lastSave = DateTime.Now;
+            }
         }
 
         #endregion

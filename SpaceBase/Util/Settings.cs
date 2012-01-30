@@ -6,6 +6,7 @@ using System.Xml.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input.Devices;
+using Space.Data;
 
 namespace Space.Util
 {
@@ -258,6 +259,12 @@ namespace Space.Util
         /// </summary>
         public bool PostProcessing = true;
 
+        /// <summary>
+        /// Compute the distance displayed in radar icons as the distance of
+        /// the object to the screen edge instead of to the player ship.
+        /// </summary>
+        public bool RadarDistanceFromBorder = true;
+
         #endregion
 
         #region Interface
@@ -269,12 +276,27 @@ namespace Space.Util
 
         #endregion
 
-        #region Miscellaneous
+        #region Player
 
         /// <summary>
         /// The Name of the Player
         /// </summary>
         public string PlayerName = "Player";
+
+        /// <summary>
+        /// The name of the profile currently in use.
+        /// </summary>
+        public string CurrentProfileName = string.Empty;
+
+        /// <summary>
+        /// The actual profile currently in use.
+        /// </summary>
+        [XmlIgnore]
+        public IProfile CurrentProfile;
+
+        #endregion
+
+        #region Miscellaneous
 
         /// <summary>
         /// Relative or absolute path to the folder to store profiles in.
@@ -291,12 +313,6 @@ namespace Space.Util
         /// after joining a game.
         /// </summary>
         public string AutoexecFilename = "autoexec.cfg";
-
-        /// <summary>
-        /// Compute the distance displayed in radar icons as the distance of
-        /// the object to the screen edge instead of to the player ship.
-        /// </summary>
-        public bool RadarDistanceFromBorder = true;
 
         #endregion
 

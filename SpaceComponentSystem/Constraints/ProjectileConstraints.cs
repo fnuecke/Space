@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.Data;
 
-namespace Space.ComponentSystem.Data
+namespace Space.ComponentSystem.Util
 {
     /// <summary>
     /// Contains data about a single projectile fired by a weapon.
@@ -171,7 +171,8 @@ namespace Space.ComponentSystem.Data
         /// <returns>The sampled rotation.</returns>
         private float SampleInitialRotation(IUniformRandom random)
         {
-            return MathHelper.ToRadians(MathHelper.Lerp(InitialRotation.Low, InitialRotation.High, (float)random.NextDouble()));
+            return MathHelper.ToRadians((InitialRotation.Low == InitialRotation.High) ? InitialRotation.Low
+                : MathHelper.Lerp(InitialRotation.Low, InitialRotation.High, (float)random.NextDouble()));
         }
 
         /// <summary>
@@ -186,7 +187,8 @@ namespace Space.ComponentSystem.Data
             Matrix rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(InitialDirection.Low, InitialDirection.High, (float)random.NextDouble())));
             Vector2.Transform(ref velocity, ref rotation, out velocity);
             velocity.Normalize();
-            velocity *= MathHelper.Lerp(InitialVelocity.Low, InitialVelocity.High, (float)random.NextDouble());
+            velocity *= (InitialVelocity.Low == InitialVelocity.High) ? InitialVelocity.Low
+                : MathHelper.Lerp(InitialVelocity.Low, InitialVelocity.High, (float)random.NextDouble());
             return velocity;
         }
 
@@ -202,7 +204,8 @@ namespace Space.ComponentSystem.Data
             Matrix rotation = Matrix.CreateRotationZ(baseRotation);
             Vector2.Transform(ref acceleration, ref rotation, out acceleration);
             acceleration.Normalize();
-            acceleration *= MathHelper.Lerp(AccelerationForce.Low, AccelerationForce.High, (float)random.NextDouble());
+            acceleration *= (AccelerationForce.Low == AccelerationForce.High) ? AccelerationForce.Low
+                : MathHelper.Lerp(AccelerationForce.Low, AccelerationForce.High, (float)random.NextDouble());
             return acceleration;
         }
 

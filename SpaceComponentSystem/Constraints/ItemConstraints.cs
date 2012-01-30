@@ -77,7 +77,8 @@ namespace Space.ComponentSystem.Constraints
             {
                 item.AddComponent(new Attribute<AttributeType>(attribute.SampleAttributeModifier(random)));
             }
-            var numAdditionalAttributes = random.NextInt32(MinAdditionalAttributes, MaxAdditionalAttributes);
+            var numAdditionalAttributes = (MinAdditionalAttributes == MaxAdditionalAttributes) ? MinAdditionalAttributes
+                : random.NextInt32(MinAdditionalAttributes, MaxAdditionalAttributes);
             for (int i = 0; i < numAdditionalAttributes; i++)
             {
                 item.AddComponent(new Attribute<AttributeType>(AdditionalAttributes[random.NextInt32(AdditionalAttributes.Length)].SampleAttributeModifier(random)));

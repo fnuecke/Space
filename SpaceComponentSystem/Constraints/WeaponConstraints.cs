@@ -2,7 +2,7 @@
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Data;
+using Space.ComponentSystem.Util;
 
 namespace Space.ComponentSystem.Constraints
 {
@@ -68,7 +68,8 @@ namespace Space.ComponentSystem.Constraints
         /// <returns>The sampled cooldown.</returns>
         private float SampleCooldown(IUniformRandom random)
         {
-            return MathHelper.Lerp(Cooldown.Low, Cooldown.High, (float)random.NextDouble());
+            return (Cooldown.Low == Cooldown.High) ? Cooldown.Low
+                : MathHelper.Lerp(Cooldown.Low, Cooldown.High, (float)random.NextDouble());
         }
 
         /// <summary>
@@ -78,7 +79,8 @@ namespace Space.ComponentSystem.Constraints
         /// <returns>The sampled energy consumption.</returns>
         private float SampleEnergyConsumption(IUniformRandom random)
         {
-            return MathHelper.Lerp(EnergyConsumption.Low, EnergyConsumption.High, (float)random.NextDouble());
+            return (EnergyConsumption.Low == EnergyConsumption.High) ? EnergyConsumption.Low
+                : MathHelper.Lerp(EnergyConsumption.Low, EnergyConsumption.High, (float)random.NextDouble());
         }
 
         /// <summary>
@@ -88,7 +90,8 @@ namespace Space.ComponentSystem.Constraints
         /// <returns>The sampled damage.</returns>
         private float SampleDamage(IUniformRandom random)
         {
-            return MathHelper.Lerp(Damage.Low, Damage.High, (float)random.NextDouble());
+            return (Damage.Low == Damage.High) ? Damage.Low
+                : MathHelper.Lerp(Damage.Low, Damage.High, (float)random.NextDouble());
         }
 
         #endregion

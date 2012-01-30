@@ -8,23 +8,32 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Constraints;
+using Space.ComponentSystem.Util;
 using Space.Data;
 
 namespace Space.ComponentSystem.Entities
 {
-    class EntityFactory
+    static class EntityFactory
     {
         /// <summary>
         /// Creates a new, player controlled ship.
         /// </summary>
-        /// <param name="shipData">The ship info to use.</param>
+        /// <param name="playerClass">The player's class, which determines the blueprint.</param>
         /// <param name="playerNumber">The player for whom to create the ship.</param>
+        /// <param name="position">The position at which to spawn and respawn the ship.</param>
         /// <returns>The new ship.</returns>
-        public static Entity CreatePlayerShip(ShipConstraints blueprint, int playerNumber, Vector2 position, IUniformRandom random)
+        public static Entity CreatePlayerShip(PlayerClassType playerClass, int playerNumber, Vector2 position)
         {
-            Entity entity = blueprint.SampleShip(playerNumber.ToFaction(), position, random);
+            // Player ships must be 'static', i.e. not have random attributes, so we don't need a randomizer.
+            Entity entity = playerClass.GetShipConstraints().SampleShip(playerNumber.ToFaction(), position, null);
 
+            // Remember the class.
+            entity.AddComponent(new PlayerClass(playerClass));
+
+            // Mark it as the player's avatar.
             entity.AddComponent(new Avatar(playerNumber));
+
+            // Make it respawn.
             entity.AddComponent(new Respawn(300, new HashSet<Type>()
             {
                 // Make ship uncontrollable.

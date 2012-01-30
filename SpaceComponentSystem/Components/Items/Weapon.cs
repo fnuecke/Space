@@ -3,7 +3,7 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
 using Engine.Util;
-using Space.ComponentSystem.Data;
+using Space.ComponentSystem.Util;
 
 namespace Space.ComponentSystem.Components
 {

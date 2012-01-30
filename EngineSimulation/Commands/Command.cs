@@ -19,7 +19,7 @@ namespace Engine.Simulation.Commands
         /// <summary>
         /// The number of the player that issued the command.
         /// </summary>
-        public int PlayerNumber;
+        public int PlayerNumber = -1;
 
         /// <summary>
         /// The type of the command.

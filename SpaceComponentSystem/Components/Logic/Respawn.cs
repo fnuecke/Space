@@ -35,12 +35,12 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The number of ticks to wait before respawning the entity.
         /// </summary>
-        public int RespawnTime;
+        public int Delay;
 
         /// <summary>
         /// The position at which to respawn the entity.
         /// </summary>
-        public Vector2 RespawnPosition;
+        public Vector2 Position;
 
         /// <summary>
         /// The relative amount of its maximum health the entity should have
@@ -63,22 +63,22 @@ namespace Space.ComponentSystem.Components
 
         #region Constructor
 
-        public Respawn(int respawnTime, HashSet<Type> disableComponents, Vector2 respawnPosition, float relativeHealth, float relativeEnergy)
+        public Respawn(int delay, HashSet<Type> disableComponents, Vector2 position, float relativeHealth, float relativeEnergy)
         {
-            this.RespawnTime = respawnTime;
-            this.RespawnPosition = respawnPosition;
+            this.Delay = delay;
+            this.Position = position;
             this.ComponentsToDisable = disableComponents;
             this.RelativeHealth = relativeHealth;
             this.RelativeEnergy = relativeEnergy;
         }
 
-        public Respawn(int respawnTime, HashSet<Type> disableComponents, Vector2 respawnPosition)
-            : this(respawnTime, disableComponents, respawnPosition, 1, 1)
+        public Respawn(int delay, HashSet<Type> disableComponents, Vector2 position)
+            : this(delay, disableComponents, position, 1, 1)
         {
         }
 
-        public Respawn(int respawnTime, HashSet<Type> disableComponents)
-            : this(respawnTime, disableComponents, Vector2.Zero)
+        public Respawn(int delay, HashSet<Type> disableComponents)
+            : this(delay, disableComponents, Vector2.Zero)
         {
         }
 
@@ -105,7 +105,7 @@ namespace Space.ComponentSystem.Components
                 var transform = Entity.GetComponent<Transform>();
                 if (transform != null)
                 {
-                    transform.SetTranslation(ref RespawnPosition);
+                    transform.SetTranslation(ref Position);
                     transform.Rotation = 0;
                 }
 
@@ -159,7 +159,7 @@ namespace Space.ComponentSystem.Components
                 {
                     Entity.GetComponent(componentType).Enabled = false;
                 }
-                _timeToRespawn = RespawnTime;
+                _timeToRespawn = Delay;
 
                 // Stop the entity, to avoid zooming off to nowhere when
                 // killed by a sun, e.g.
@@ -186,8 +186,8 @@ namespace Space.ComponentSystem.Components
         {
             base.Packetize(packet);
 
-            packet.Write(RespawnTime);
-            packet.Write(RespawnPosition);
+            packet.Write(Delay);
+            packet.Write(Position);
 
             packet.Write(ComponentsToDisable.Count);
             foreach (var componentType in ComponentsToDisable)
@@ -206,8 +206,8 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            RespawnTime = packet.ReadInt32();
-            RespawnPosition = packet.ReadVector2();
+            Delay = packet.ReadInt32();
+            Position = packet.ReadVector2();
 
             ComponentsToDisable.Clear();
             var numComponents = packet.ReadInt32();
@@ -249,8 +249,8 @@ namespace Space.ComponentSystem.Components
             {
                 copy.ComponentsToDisable.Clear();
                 copy.ComponentsToDisable.UnionWith(ComponentsToDisable);
-                copy.RespawnTime = RespawnTime;
-                copy.RespawnPosition = RespawnPosition;
+                copy.Delay = Delay;
+                copy.Position = Position;
                 copy.RelativeHealth = RelativeHealth;
                 copy.RelativeEnergy = RelativeEnergy;
                 copy._timeToRespawn = _timeToRespawn;

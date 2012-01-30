@@ -26,7 +26,7 @@ namespace Space.Control
         public static ISimulationController<IServerSession> CreateServer(Game game)
         {
             // Create actual controller.
-            var controller = new SimpleServerController<PlayerData>(7777, 12, SpaceCommandHandler.HandleCommand);
+            var controller = new SimpleServerController<Profile>(7777, 12, SpaceCommandHandler.HandleCommand);
 
             // Add all systems we need in our game as a server.
             controller.Simulation.EntityManager.SystemManager.AddSystems(
@@ -54,7 +54,7 @@ namespace Space.Control
         public static IClientController<FrameCommand> CreateRemoteClient(Game game)
         {
             // Create actual controller.
-            var controller = new SimpleClientController<PlayerData>(SpaceCommandHandler.HandleCommand);
+            var controller = new SimpleClientController<Profile>(SpaceCommandHandler.HandleCommand);
 
             // Needed by some systems. Add all systems we need in our game as a client.
             controller.Simulation.EntityManager.SystemManager.AddSystems(
@@ -94,14 +94,8 @@ namespace Space.Control
         /// <returns>A new client.</returns>
         public static IClientController<FrameCommand> CreateLocalClient(Game game, ISimulationController<IServerSession> server)
         {
-            // The join data.
-            string playerName = Settings.Instance.PlayerName;
-            PlayerData playerData = new PlayerData();
-            // TODO: load actual player profile.
-            //playerData.Ship = game.Content.Load<ShipData[]>("Data/ships")[0];
-
             // Create actual controller.
-            var controller = new ThinClientController<PlayerData>(server, playerName, playerData);
+            var controller = new ThinClientController<Profile>(server, Settings.Instance.PlayerName, (Profile)Settings.Instance.CurrentProfile);
 
             // Check if the server has all the services we need (enough to
             // check for one, because we only add all at once -- here).
