@@ -1,18 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.RegularExpressions;
 using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
+using Engine.Util;
 using Space.ComponentSystem.Components;
 using Space.Data;
+using Space.Util;
 
 namespace Space.Session
 {
-    sealed class Profile : IPacketizable
+    sealed class Profile : IPacketizable, IDisposable
     {
         #region Logger
         
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
+        #region Constants
+
+        /// <summary>
+        /// Pattern used to eliminate invalid chars from profile names, for saving.
+        /// </summary>
+        private static readonly Regex _invalidCharPattern = new Regex(string.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))), RegexOptions.Compiled);
 
         #endregion
 
@@ -21,7 +34,7 @@ namespace Space.Session
         /// <summary>
         /// The profile name. This is equal to the profile's file name.
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         // TODO: additional info we might want do display in character selection, such as level, gold, ...
 
@@ -35,6 +48,43 @@ namespace Space.Session
         private Packet _data = new Packet();
 
         #endregion
+
+        #region Construction / Destruction
+
+        public Profile(string name)
+        {
+            this.Name = name;
+            var profilePath = GetFullProfilePath();
+            if (File.Exists(profilePath))
+            {
+                // Load existing profile.
+                Load();
+            }
+            else
+            {
+                // Create new profile.
+                Initialize();
+            }
+        }
+
+        /// <summary>
+        /// Deserialization.
+        /// </summary>
+        public Profile()
+        {
+
+        }
+
+        public void Dispose()
+        {
+            _data.Dispose();
+
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region Snapshots
 
         /// <summary>
         /// Take a snapshot of a character's current state in a running game.
@@ -204,22 +254,88 @@ namespace Space.Session
             }
         }
 
+        #endregion
+
+        #region Saving
+
         /// <summary>
         /// Stores the profile to disk, under the specified profile name.
         /// </summary>
         public void Save()
         {
+            var data = _data.GetBuffer();
+            var hasher = new Hasher();
+            hasher.Put(data);
+            using (var packet = new Packet())
+            {
+                packet.Write(hasher.Value);
+                packet.Write(data);
+                var compressed = SimpleCompression.Compress(packet.GetBuffer());
+                File.WriteAllBytes(GetFullProfilePath(), compressed);
+            }
+        }
+
+        #endregion
+
+        #region Utility methods
+
+        /// <summary>
+        /// Get a cleaned up, full path to the file to save this profile in.
+        /// </summary>
+        /// <returns>The path to this profile.</returns>
+        private string GetFullProfilePath()
+        {
+            return _invalidCharPattern.Replace(Path.Combine(Settings.Instance.ProfileFolder, Name + ".sav"), "");
+        }
+
+        /// <summary>
+        /// Loads this profile from disk.
+        /// </summary>
+        private void Load()
+        {
+            var compressed = File.ReadAllBytes(GetFullProfilePath());
+            using (var packet = new Packet(SimpleCompression.Decompress(compressed)))
+            {
+                var hash = packet.ReadInt32();
+                var data = packet.ReadByteArray();
+                var hasher = new Hasher();
+                hasher.Put(data);
+                if (hasher.Value != hash)
+                {
+                    // Broken or modified data, don't use it.
+                    Initialize();
+                    return;
+                }
+
+                _data.Dispose();
+                _data = new Packet(data);
+            }
+        }
+
+        /// <summary>
+        /// Initializes this profile to a new ship.
+        /// </summary>
+        private void Initialize()
+        {
 
         }
 
+        #endregion
+
+        #region Serialization
+
         public Packet Packetize(Packet packet)
         {
-            throw new NotImplementedException();
+            return packet.Write(Name).Write(_data);
         }
 
         public void Depacketize(Packet packet)
         {
-            throw new NotImplementedException();
+            Name = packet.ReadString();
+            _data.Dispose();
+            _data = packet.ReadPacket();
         }
+
+        #endregion
     }
 }
