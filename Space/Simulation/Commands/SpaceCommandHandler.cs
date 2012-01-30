@@ -1,14 +1,9 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
-using IronPython.Hosting;
-using Microsoft.Scripting.Hosting;
 using Space.ComponentSystem.Components;
-using Space.Data;
 
 namespace Space.Simulation.Commands
 {
@@ -29,7 +24,7 @@ namespace Space.Simulation.Commands
         /// <summary>
         /// The global scripting engine we'll be using.
         /// </summary>
-        private static ScriptEngine _script = Python.CreateEngine();
+        private static Microsoft.Scripting.Hosting.ScriptEngine _script = IronPython.Hosting.Python.CreateEngine();
 
         /// <summary>
         /// Used to keep multiple threads (TSS) from trying to execute
@@ -42,11 +37,11 @@ namespace Space.Simulation.Commands
         /// </summary>
         static SpaceCommandHandler()
         {
-            var executingAssembly = Assembly.GetExecutingAssembly();
+            var executingAssembly = System.Reflection.Assembly.GetExecutingAssembly();
             _script.Runtime.LoadAssembly(executingAssembly);
             foreach (var assembly in executingAssembly.GetReferencedAssemblies())
             {
-                _script.Runtime.LoadAssembly(Assembly.Load(assembly));
+                _script.Runtime.LoadAssembly(System.Reflection.Assembly.Load(assembly));
             }
 
             try
@@ -54,7 +49,6 @@ namespace Space.Simulation.Commands
                 // Register some macros in our scripting environment.
                 _script.Execute(
     @"
-# Import everything from the game we need.
 from Engine.ComponentSystem.Components import *
 from Engine.ComponentSystem.Systems import *
 from Engine.ComponentSystem.RPG.Components import *
@@ -62,17 +56,8 @@ from Space.ComponentSystem.Components import *
 from Space.ComponentSystem.Systems import *
 from Space.Data import *
 
-# Then declare some utility methods.
 def goto(x, y):
     avatar.GetComponent[Transform]().SetTranslation(x, y)
-
-# -- this works, but its easier to just use setBaseStat(AttributeType.AccelerationForce, value) instead
-#def addaf(value):
-#    for slot in range(0, equipment.GetSlotCount[Thruster]()):
-#        if equipment.GetItem[Thruster](slot):
-#            thruster = equipment.Unequip[Thruster](slot)
-#            thruster.AddComponent(Attribute[AttributeType](AttributeModifier[AttributeType](AttributeType.AccelerationForce, value)))
-#            equipment.Equip(thruster, slot)
 
 def setBaseStat(type, value):
     character.SetBaseValue(type, value)
@@ -87,8 +72,8 @@ def ge(id):
             }
 
             // Redirect scripting output to the logger.
-            var infoStream = new MemoryStream();
-            var errorStream = new MemoryStream();
+            var infoStream = new System.IO.MemoryStream();
+            var errorStream = new System.IO.MemoryStream();
             _script.Runtime.IO.SetOutput(infoStream, new InfoStreamWriter(infoStream));
             _script.Runtime.IO.SetErrorOutput(errorStream, new ErrorStreamWriter(errorStream));
         }
@@ -240,7 +225,7 @@ def ge(id):
                             {
                                 globals.SetVariable("avatar", avatar);
 
-                                var character = avatar.GetComponent<Character<AttributeType>>();
+                                var character = avatar.GetComponent<Character<Space.Data.AttributeType>>();
                                 var inventory = avatar.GetComponent<Inventory>();
                                 var equipment = avatar.GetComponent<Equipment>();
                                 globals.SetVariable("character", character);
@@ -284,9 +269,9 @@ def ge(id):
         #region Stream classes for script IO
 
 #if DEBUG
-        private sealed class InfoStreamWriter : StreamWriter
+        private sealed class InfoStreamWriter : System.IO.StreamWriter
         {
-            public InfoStreamWriter(Stream stream)
+            public InfoStreamWriter(System.IO.Stream stream)
                 : base(stream)
             {
             }
@@ -300,9 +285,9 @@ def ge(id):
             }
         }
 
-        private sealed class ErrorStreamWriter : StreamWriter
+        private sealed class ErrorStreamWriter : System.IO.StreamWriter
         {
-            public ErrorStreamWriter(Stream stream)
+            public ErrorStreamWriter(System.IO.Stream stream)
                 : base(stream)
             {
             }

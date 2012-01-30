@@ -1,6 +1,6 @@
 ﻿using System;
-using Microsoft.Xna.Framework;
 using Engine.ComponentSystem.Components;
+using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AIBehaviour
 {

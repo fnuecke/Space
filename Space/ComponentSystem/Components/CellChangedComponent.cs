@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
-using Space.ComponentSystem.Messages;
 using Engine.Util;
+using Space.ComponentSystem.Messages;
 using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components

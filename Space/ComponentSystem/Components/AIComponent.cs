@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Parameterizations;
@@ -6,7 +7,6 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components.AIBehaviour;
-using System.Collections.Generic;
 
 namespace Space.ComponentSystem.Components
 {

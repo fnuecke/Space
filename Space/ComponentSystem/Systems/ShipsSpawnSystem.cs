@@ -85,13 +85,17 @@ namespace Space.ComponentSystem.Systems
             else if (message is EntityRemoved)
             {
                 var info = (EntityRemoved)(ValueType)message;
-                var position = info.Entity.GetComponent<Transform>().Translation;
-                var cellId = CoordinateIds.Combine(
-                   (int)position.X >> CellSystem.CellSizeShiftAmount,
-                   (int)position.Y >> CellSystem.CellSizeShiftAmount);
+                var transform = info.Entity.GetComponent<Transform>();
+                if (transform != null)
+                {
+                    var position = transform.Translation;
+                    var cellId = CoordinateIds.Combine(
+                       (int)position.X >> CellSystem.CellSizeShiftAmount,
+                       (int)position.Y >> CellSystem.CellSizeShiftAmount);
 
-                if (_entities.ContainsKey(cellId))
-                    _entities[cellId].Remove(info.Entity.UID);
+                    if (_entities.ContainsKey(cellId))
+                        _entities[cellId].Remove(info.Entity.UID);
+                }
             }
             else if (message is EntityChangedCell)
             {

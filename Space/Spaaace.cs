@@ -522,11 +522,12 @@ namespace Space
                         sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
 
                         var index = systemManager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
+                        var renderer = systemManager.GetSystem<ComponentSystem.Systems.PlayerCenteredRenderSystem>();
                         if (index != null)
                         {
                             if (_indexGroup >= 0)
                             {
-                                index.DEBUG_DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2) - position);
+                                index.DEBUG_DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2) - renderer.CameraPositon);
                             }
                             sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
                         }

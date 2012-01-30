@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Messages;
-using Space.Data;
 using Space.ComponentSystem.Systems;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
