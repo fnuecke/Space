@@ -66,8 +66,8 @@ namespace Space.Control
                     new AvatarSystem(),
                     new CellSystem(),
 
-                    //new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
-                    //new ShipsSpawnSystem(game.Content),
+                    new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
+                    new ShipsSpawnSystem(game.Content),
 
                     new PlayerCenteredRenderSystem(game,
                         (SpriteBatch)game.Services.GetService(typeof(SpriteBatch)),

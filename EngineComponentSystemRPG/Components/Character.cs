@@ -322,8 +322,6 @@ namespace Engine.ComponentSystem.RPG.Components
                 var value = packet.ReadSingle();
                 _baseAttributes[key] = value;
             }
-
-            RecomputeAttributes();
         }
 
         /// <summary>

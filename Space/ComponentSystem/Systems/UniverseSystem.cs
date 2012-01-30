@@ -465,31 +465,6 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Creates a new space station, orbiting another object (planet, moon).
-        /// </summary>
-        private void CreateStation(
-            IUniformRandom random,
-            IGaussianRandom gaussian,
-            Entity center,
-            float centerMass,
-            float centerRadius,
-            List<int> list,
-            CellInfo cellInfo)
-        {
-            var stationOrbit = centerRadius + _constraints.SampleStationOrbit(gaussian);
-            var stationPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(stationOrbit * stationOrbit * stationOrbit / centerMass));
-            var station = EntityFactory.CreateStation(
-                texture: "Textures/Stolen/Ships/sensor_array",
-                center: center,
-                orbitRadius: stationOrbit,
-                period: stationPeriod,
-                faction: cellInfo.Faction);
-
-            list.Add(Manager.EntityManager.AddEntity(station));
-            cellInfo.Stations.Add(station.UID);
-        }
-
-        /// <summary>
         /// Creates a new moon, orbiting a planet.
         /// </summary>
         private float CreateMoon(
@@ -530,6 +505,31 @@ namespace Space.ComponentSystem.Systems
         }
 
         #endregion
+
+        /// <summary>
+        /// Creates a new space station, orbiting another object (planet, moon).
+        /// </summary>
+        private void CreateStation(
+            IUniformRandom random,
+            IGaussianRandom gaussian,
+            Entity center,
+            float centerMass,
+            float centerRadius,
+            List<int> list,
+            CellInfo cellInfo)
+        {
+            var stationOrbit = centerRadius + _constraints.SampleStationOrbit(gaussian);
+            var stationPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(stationOrbit * stationOrbit * stationOrbit / centerMass));
+            var station = EntityFactory.CreateStation(
+                texture: "Textures/Stolen/Ships/sensor_array",
+                center: center,
+                orbitRadius: stationOrbit,
+                period: stationPeriod,
+                faction: cellInfo.Faction);
+
+            list.Add(Manager.EntityManager.AddEntity(station));
+            cellInfo.Stations.Add(station.UID);
+        }
 
         private List<int> CreateAsteroidBelt()
         {
