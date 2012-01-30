@@ -6,6 +6,16 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 {
     sealed class MoveBehaviour : Behaviour
     {
+
+        public MoveBehaviour(AiComponent component)
+            : base(component)
+        {
+
+        }
+        public MoveBehaviour()
+        {
+
+        }
         public Vector2 TargetPosition;
         public int Target;
         public override void Update()

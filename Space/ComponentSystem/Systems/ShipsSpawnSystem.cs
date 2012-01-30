@@ -61,7 +61,7 @@ namespace Space.ComponentSystem.Systems
                         for (var j = -2; j < 2; j++)
                         {
                             var spawnPoint = new Vector2(center.X + i * (float)cellSize / 5, center.Y - j * (float)cellSize / 5);
-                            var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Move);
+                            var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Guard);
                             //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
 
                             var ship = EntityFactory.CreateAIShip(

@@ -8,6 +8,13 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 {
     abstract class Behaviour : IPacketizable, ICopyable<Behaviour>
     {
+        public enum Behaviours
+        {
+            Attack,
+            Move,
+            Patrol
+        }
+
         protected Vector2 direction;
 
         public AiComponent AiComponent;
