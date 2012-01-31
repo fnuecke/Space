@@ -172,6 +172,7 @@
     <Compile Include="ScreenManagement\Screens\InputHandler\IMouseInput.cs" />
     <Compile Include="ScreenManagement\Screens\InputHandler\IKeyboardInput.cs" />
     <Compile Include="ScreenManagement\Screens\InputHandler\IGamepadInput.cs" />
+    <Compile Include="ScreenManagement\Screens\InputHandler\OriginInputHandler.cs" />
     <Compile Include="ScreenManagement\Screens\Stylesheet\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSpacer.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudLabel.cs" />
