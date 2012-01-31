@@ -9,6 +9,8 @@ using Space.Control;
 using Space.Input;
 using Space.Simulation.Commands;
 using Space.Util;
+using Space.ScreenManagement.Screens.Interfaces;
+using System.Collections.Generic;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -17,6 +19,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// </summary>
     public sealed class InputHandler
     {
+
         #region Constants
 
         /// <summary>
@@ -33,6 +36,24 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// The game client to inject commands into.
         /// </summary>
         private GameClient _client;
+
+        /// <summary>
+        /// A list of objects that implements the IMouseInput interface.
+        /// Will be looped in each mouse input handler.
+        /// </summary>
+        private List<IMouseInput> _mouseInput;
+
+        /// <summary>
+        /// A list of objects that implements the IKeyboardInput interface.
+        /// Will be looped in each keyboard input handler.
+        /// </summary>
+        private List<IKeyboardInput> _keyboardInput;
+
+        /// <summary>
+        /// A list of objects that implements the IGamepadInput interface.
+        /// Will be looped in each gamepad input handler.
+        /// </summary>
+        private List<IGamepadInput> _gamepadInput;
 
         /// <summary>
         /// The keyboard used for player input.
@@ -109,6 +130,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _keyboard = ((IKeyboard)client.Game.Services.GetService(typeof(IKeyboard)));
             _mouse = ((IMouse)client.Game.Services.GetService(typeof(IMouse)));
             _gamepad = ((IGamePad)client.Game.Services.GetService(typeof(IGamePad)));
+
+            _mouseInput = new List<IMouseInput>();
+            _keyboardInput = new List<IKeyboardInput>();
+            _gamepadInput = new List<IGamepadInput>();
         }
 
         #endregion
@@ -228,6 +253,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private void HandleKeyPressed(Keys key)
         {
+            // loop all keyboard listeners
+            foreach (IKeyboardInput i in _gamepadInput)
+            {
+                i.HandleKeyPressed(key);
+            }
+
+            // other actions
             if (Settings.Instance.GameBindings.ContainsKey(key))
             {
                 if (Settings.Instance.GameBindings[key] == Settings.GameCommand.Stabilize)
@@ -256,6 +288,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private void HandleKeyReleased(Keys key)
         {
+            // loop all keyboard listeners
+            foreach (IKeyboardInput i in _gamepadInput)
+            {
+                i.HandleKeyReleased(key);
+            }
+
+            // other actions
             if (Settings.Instance.GameBindings.ContainsKey(key))
             {
                 if (Settings.Instance.GameBindings[key] == Settings.GameCommand.Stabilize)
@@ -320,6 +359,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private void HandleMousePressed(MouseButtons buttons)
         {
+
+            // loop all mouse listener
+            foreach (IMouseInput i in _mouseInput)
+            {
+                i.HandleMousePressed(buttons);
+            }
+
+            // other actions
             if (buttons == MouseButtons.Left)
             {
                 _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
@@ -331,6 +378,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private void HandleMouseReleased(MouseButtons buttons)
         {
+            // loop all mouse listener
+            foreach (IMouseInput i in _mouseInput)
+            {
+                i.HandleMouseReleased(buttons);
+            }
+
+            // other actions
             if (buttons == MouseButtons.Left)
             {
                 _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
@@ -342,6 +396,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private void HandleMouseMoved(float x, float y)
         {
+            // loop all mouse listener
+            foreach (IMouseInput i in _mouseInput)
+            {
+                i.HandleMouseMoved(x, y);
+            }
+
+            // other actions
+
             // Get angle to middle of screen (position of our ship), which
             // will be our new target rotation.
             float rx = x - _client.Game.GraphicsDevice.Viewport.Width / 2;
@@ -359,6 +421,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private void HandleGamePadPressed(Buttons buttons)
         {
+
+            // loop all gamepad listeners
+            foreach (IGamepadInput i in _gamepadInput)
+            {
+                i.HandleGamePadPressed(buttons);
+            }
+
+            // other actions
             switch (buttons)
             {
                 case (Buttons.RightShoulder):
@@ -376,6 +446,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private void HandleGamePadReleased(Buttons buttons)
         {
+
+            // loop all gamepad listeners
+            foreach (IGamepadInput i in _gamepadInput)
+            {
+                i.HandleGamePadReleased(buttons);
+            }
+
+            // other actions
             switch (buttons)
             {
                 case (Buttons.RightShoulder):
@@ -389,6 +467,37 @@ namespace Space.ScreenManagement.Screens.Gameplay
         }
 
         #endregion
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Add any object that inplements the IMouseInput interface
+        /// </summary>
+        /// <param name="listener"></param>
+        public void AddMouseListener(IMouseInput listener)
+        {
+            _mouseInput.Add(listener);
+        }
+
+        /// <summary>
+        /// Add any object that inplements the IGamepadInput interface
+        /// </summary>
+        /// <param name="listener"></param>
+        public void AddGamepadListener(IGamepadInput listener)
+        {
+            _gamepadInput.Add(listener);
+        }
+
+        /// <summary>
+        /// Add any object that inplements the IKeyboardInput interface
+        /// </summary>
+        /// <param name="listener"></param>
+        public void AddKeyboardListener(IKeyboardInput listener)
+        {
+            _keyboardInput.Add(listener);
+        }
 
         #endregion
     }

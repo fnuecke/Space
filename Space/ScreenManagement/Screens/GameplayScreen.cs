@@ -53,6 +53,15 @@ namespace Space.ScreenManagement.Screens
 
         #endregion
 
+        #region Getter
+
+        public InputHandler GetInputHandler()
+        {
+            return _input;
+        }
+
+        #endregion
+
         #region Initialization
 
         /// <summary>
@@ -69,7 +78,7 @@ namespace Space.ScreenManagement.Screens
             _background = new Background(client);
             _orbits = new Orbits(client);
             _radar = new Radar(client);
-            _hud = new Hud(client);
+            _hud = new Hud(client, this);
         }
 
         /// <summary>

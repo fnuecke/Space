@@ -35,9 +35,9 @@
         <Item>20 to 40 Health</Item>
         <Item>1 to 1.5 HealthRegeneration</Item>
         <Item>50 to 75 Energy</Item>
-        <Item>0.5 to 1 EnergyRegeneration</Item>
-        <Item>0.25 to 0.5 AccelerationForce</Item>
-        <Item>0.25 to 0.5 RotationForce</Item>
+        <Item>0.5 EnergyRegeneration</Item>
+        <Item>0.25 AccelerationForce</Item>
+        <Item>0.25 RotationForce</Item>
       </Attributes>
 
       <SensorSlots>0</SensorSlots>

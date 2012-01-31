@@ -34,6 +34,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private HudRadio _hudRadioBox;
         private HudPlayerList _hudPlayerList;
         private HudBuffBar _hudIconBar;
+        private HudInputHandlerTest _test;
 
         private int _gap = 20;
 
@@ -41,13 +42,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
         #region Constructor
 
-        public Hud(GameClient client)
+        public Hud(GameClient client, GameplayScreen gameplayScreen)
         {
             _client = client;
             _healthEnergyBar = new HealthEnergyBar(_client);
             _hudRadioBox = new HudRadio(_client);
             _hudPlayerList = new HudPlayerList(_client);
             _hudIconBar = new HudBuffBar(_client);
+            _test = new HudInputHandlerTest(_client, gameplayScreen);
         }
 
         /// <summary>
@@ -74,6 +76,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _hudPlayerList.SetPosition(new Point(viewport.Width - _hudPlayerList.GetWidth() - 60, 60));
 
             _hudIconBar.LoadContent(spriteBatch, content);
+
+            _test.LoadContent(spriteBatch, content);
         }
 
         #endregion
@@ -101,6 +105,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _hudPlayerList.Update();
 
             _hudIconBar.SetPosition(new Point(viewport.Width - _hudIconBar.GetWidth() - 60, _hudPlayerList.GetPosition().Y + _hudPlayerList.GetHeight() + _gap));
+
+            _test.SetPosition(new Point(200, 200));
         }
 
         /// <summary>
@@ -121,6 +127,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _hudPlayerList.Draw();
 
             _hudIconBar.Draw();
+            _test.Draw();
         }
 
         #endregion

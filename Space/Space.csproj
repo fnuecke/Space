@@ -168,6 +168,10 @@
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudRadio.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudSample.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudBuffBar.cs" />
+    <Compile Include="ScreenManagement\Screens\Elements\Hud\HudInputHandlerTest.cs" />
+    <Compile Include="ScreenManagement\Screens\InputHandler\IMouseInput.cs" />
+    <Compile Include="ScreenManagement\Screens\InputHandler\IKeyboardInput.cs" />
+    <Compile Include="ScreenManagement\Screens\InputHandler\IGamepadInput.cs" />
     <Compile Include="ScreenManagement\Screens\Stylesheet\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudSpacer.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Hud\HudComponents\HudLabel.cs" />
@@ -176,7 +180,7 @@
     <Compile Include="ScreenManagement\Screens\Gameplay\Background.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Hud.cs" />
     <Compile Include="ScreenManagement\Screens\Elements\Single\HealthEnergyBar.cs" />
-    <Compile Include="ScreenManagement\Screens\Gameplay\InputHandler.cs" />
+    <Compile Include="ScreenManagement\Screens\InputHandler\InputHandler.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Orbits.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Postprocessing.cs" />
     <Compile Include="ScreenManagement\Screens\Gameplay\Radar.cs" />
