@@ -39,6 +39,11 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         List<AGuiElement> _elements;
 
+        /// <summary>
+        /// Holds the background.
+        /// </summary>
+        Background _background;
+
         #endregion
 
         #region Initialization
@@ -55,6 +60,8 @@ namespace Space.ScreenManagement.Screens
             _elements.Add(new Orbits(client));
             _elements.Add(new Radar(client));
 
+            _background = new Background(client);
+
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
         }
@@ -65,6 +72,8 @@ namespace Space.ScreenManagement.Screens
         public override void LoadContent()
         {
             var game = ScreenManager.Game;
+
+            _background.LoadContent(ScreenManager.SpriteBatch, game.Content);
 
             // loop the list of elements and load all of them
             foreach (AGuiElement e in _elements)
@@ -164,6 +173,10 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
+
+            // draw the background first
+            _background.Draw();
+
             // loop the list of elements and load all of them
             foreach (AGuiElement e in _elements)
             {
