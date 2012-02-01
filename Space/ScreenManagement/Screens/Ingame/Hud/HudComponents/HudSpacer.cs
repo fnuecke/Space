@@ -6,7 +6,7 @@ using Space.ScreenManagement.Screens.Ingame.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudSpacer : AHudElement
+    class HudSpacer : AbstractHudElement
     {
 
         #region Constants

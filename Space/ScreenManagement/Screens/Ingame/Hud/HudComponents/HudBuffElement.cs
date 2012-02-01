@@ -8,7 +8,7 @@ using Space.ScreenManagement.Screens.Ingame.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud.HudComponents
 {
-    class HudBuffElement : AHudElement
+    class HudBuffElement : AbstractHudElement
     {
 
         /// <summary>

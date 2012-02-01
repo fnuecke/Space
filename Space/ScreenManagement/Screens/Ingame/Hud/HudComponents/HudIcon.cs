@@ -7,7 +7,7 @@ using Space.ScreenManagement.Screens.Ingame.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud.HudComponents
 {
-    class HudIcon : AHudElement
+    class HudIcon : AbstractHudElement
     {
 
         public enum Mode {

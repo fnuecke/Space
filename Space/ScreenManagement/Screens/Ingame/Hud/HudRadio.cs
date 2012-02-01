@@ -12,7 +12,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
     /// The radio element displays an image of the receiver and the message
     /// as a text.
     /// </summary>
-    class HudRadio : AHudElement
+    class HudRadio : AbstractHudElement
     {
 
         #region Fields

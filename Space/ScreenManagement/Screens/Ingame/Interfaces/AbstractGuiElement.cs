@@ -10,26 +10,75 @@ using Microsoft.Xna.Framework.Content;
 
 namespace Space.ScreenManagement.Screens.Ingame.Interfaces
 {
-    public abstract class AGuiElement
+
+    /// <summary>
+    /// An abstract class to guarantee that all GUI elements have the
+    /// necessary methods and data.
+    /// </summary>
+    public abstract class AbstractGuiElement
     {
 
+        #region Fields
+
+        /// <summary>
+        /// The local client, used to fetch player's position and radar range.
+        /// </summary>
         protected readonly GameClient _client;
 
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Status whether the GUI element is enabled or not.
+        /// </summary>
         public bool Enabled { get; set; }
+
+        /// <summary>
+        /// Status whether the GUI element is displayed or not.
+        /// </summary>
         public bool Visible { get; set; }
 
-        public AGuiElement(GameClient client)
+        #endregion
+
+        #region Initialisation
+
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="client">The local client.</param>
+        public AbstractGuiElement(GameClient client)
         {
             this._client = client;
+
             Enabled = false;
             Visible = false;
         }
 
+        /// <summary>
+        /// Load graphics content for the game.
+        /// </summary>
         public abstract void LoadContent(SpriteBatch spriteBatch, ContentManager content);
-        public abstract void Draw();
+
+        #endregion
+
+        #region Update & Draw
+
+        /// <summary>
+        /// Updates the data of the elements.
+        /// </summary>
         public virtual void Update()
         {
         }
+
+        /// <summary>
+        /// Draws the element.
+        /// </summary>
+        public abstract void Draw();
+
+        #endregion
+
+        #region Mouse, Keyboard and Gameplay Listener
 
         public virtual bool HandleKeyPressed(Keys key)
         {
@@ -65,6 +114,8 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         {
             return false;
         }
+
+        #endregion
 
     }
 }

@@ -21,7 +21,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// the overlay that displays icons for nearby but out-of-screen objects
     /// of interest (ones with a <c>Detectable</c> component).
     /// </summary>
-    sealed class Radar : AGuiElement
+    sealed class Radar : AbstractGuiElement
     {
         #region Types
 

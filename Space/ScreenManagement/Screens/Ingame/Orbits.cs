@@ -16,7 +16,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// Renderer class that's responsible for drawing planet orbits for planets
     /// that are in range of the player's scanners.
     /// </summary>
-    sealed class Orbits : AGuiElement
+    sealed class Orbits : AbstractGuiElement
     {
         #region Constants
 

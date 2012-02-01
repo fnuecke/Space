@@ -12,7 +12,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
     /// <summary>
     /// A HUD element that displayes a list all current players and their health.
     /// </summary>
-    class HudPlayerList : AHudElement
+    class HudPlayerList : AbstractHudElement
     {
 
         #region Constants

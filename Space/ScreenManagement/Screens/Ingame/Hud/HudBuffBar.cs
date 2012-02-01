@@ -13,7 +13,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
     /// 
     /// It is NOT intended to be used in the hud!
     /// </summary>
-    class HudBuffBar : AHudElement
+    class HudBuffBar : AbstractHudElement
     {
 
         #region Fields

@@ -8,7 +8,7 @@ using Nuclex.Input;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudInputHandlerTest : AHudElement
+    class HudInputHandlerTest : AbstractHudElement
     {
 
         public int toggled = 0;

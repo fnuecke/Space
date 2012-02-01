@@ -10,7 +10,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
     /// An abstract class that offers the basic elements and methods that
     /// are necessary for the hud elements.
     /// </summary>
-    public abstract class AHudElement
+    public abstract class AbstractHudElement
     {
 
         #region Fields
@@ -135,7 +135,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// Constructor
         /// </summary>
         /// <param name="client">The general client object.</param>
-        public AHudElement(GameClient client)
+        public AbstractHudElement(GameClient client)
         {
             this._client = client;
         }
