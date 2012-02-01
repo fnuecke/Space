@@ -90,6 +90,7 @@ namespace Space.Control
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
+            
             Controller.Session.JoinResponse -= ConsoleAutoexec;
 
             Controller.Dispose();
