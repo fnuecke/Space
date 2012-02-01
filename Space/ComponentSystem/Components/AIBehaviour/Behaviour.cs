@@ -19,6 +19,9 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
         public AiComponent AiComponent;
 
+        private Vector2 EscapeDir;
+
+        private int counter;
         protected Behaviour(AiComponent entity)
         {
             this.AiComponent = entity;
@@ -64,51 +67,57 @@ namespace Space.ComponentSystem.Components.AIBehaviour
 
         protected Vector2 CalculateEscapeDirection()
         {
-            // Get local player's avatar.
-            var info = AiComponent.Entity.GetComponent<ShipInfo>();
-            var escapeDir = new Vector2(0, 0);
-            // Can't do anything without an avatar.
-            if (info == null)
+            //only recalculate every few seconds
+            if ((counter %= 10) == 0)
             {
-                return escapeDir;
-            }
-
-            var position = info.Position;
-            var mass = info.Mass;
-            var index = AiComponent.Entity.Manager.SystemManager.GetSystem<IndexSystem>();
-            if (index == null) return escapeDir;
-            foreach (var neighbor in index.
-               GetNeighbors(ref position, 7000, Detectable.IndexGroup))
-            {
-                var transform = neighbor.GetComponent<Transform>();
-                if (transform == null) continue;
-
-                var neighborGravitation = neighbor.GetComponent<Gravitation>();
-                var neighborCollisionDamage = neighbor.GetComponent<CollisionDamage>();
-                if (neighborCollisionDamage != null && neighborGravitation != null &&
-                    (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)
+                // Get local player's avatar.
+                var info = AiComponent.Entity.GetComponent<ShipInfo>();
+                EscapeDir = new Vector2(0, 0);
+                // Can't do anything without an avatar.
+                if (info == null)
                 {
-                    var pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborGravitation.Mass / info.MaxAcceleration);
-                    var direction = position - transform.Translation;
-                    if (direction.Length() < pointOfNoReturn * 2)
+                    return EscapeDir;
+                }
+
+                var position = info.Position;
+                var mass = info.Mass;
+                var index = AiComponent.Entity.Manager.SystemManager.GetSystem<IndexSystem>();
+                if (index == null) return EscapeDir;
+                foreach (var neighbor in index.
+                   GetNeighbors(ref position, 7000, Detectable.IndexGroup))
+                {
+                    var transform = neighbor.GetComponent<Transform>();
+                    if (transform == null) continue;
+
+                    var neighborGravitation = neighbor.GetComponent<Gravitation>();
+                    var neighborCollisionDamage = neighbor.GetComponent<CollisionDamage>();
+                    if (neighborCollisionDamage != null && neighborGravitation != null &&
+                        (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)
                     {
-                        if (direction != Vector2.Zero)
-                            direction.Normalize();
-                        escapeDir += direction;
+                        var pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborGravitation.Mass / info.MaxAcceleration);
+                        var direction = position - transform.Translation;
+                        if (direction.Length() < pointOfNoReturn * 2)
+                        {
+                            if (direction != Vector2.Zero)
+                                direction.Normalize();
+                            EscapeDir += direction;
+                        }
                     }
                 }
             }
-            return escapeDir;
+            return EscapeDir;
         }
 
         public virtual Packet Packetize(Packet packet)
         {
-            return packet.Write(direction);
+            return packet.Write(direction)
+                .Write(EscapeDir);
         }
 
         public virtual void Depacketize(Packet packet)
         {
             direction = packet.ReadVector2();
+            EscapeDir = packet.ReadVector2();
         }
 
         public Behaviour DeepCopy()
@@ -125,6 +134,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             if (copy == into)
             {
                 copy.direction = direction;
+                copy.EscapeDir = EscapeDir;
             }
 
             // Must be re-set from outside.

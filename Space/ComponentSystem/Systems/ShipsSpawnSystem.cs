@@ -51,24 +51,29 @@ namespace Space.ComponentSystem.Systems
                 var info = (CellStateChanged)(ValueType)message;
                 if (info.State)
                 {
-                    const int cellSize = CellSystem.CellSize;
-                    var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
-                    var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
-                    var list = new List<int>();
-                    _entities.Add(info.Id, list);
-                    for (var i = -2; i < 2; i++)
+                    if (info.X == 0 && info.Y == 0)
                     {
-                        for (var j = -2; j < 2; j++)
+
+
+                        const int cellSize = CellSystem.CellSize;
+                        var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
+                        var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
+                        var list = new List<int>();
+                        _entities.Add(info.Id, list);
+                        for (var i = -2; i < 2; i++)
                         {
-                            var spawnPoint = new Vector2(center.X + i * (float)cellSize / 5, center.Y - j * (float)cellSize / 5);
-                            var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Guard);
-                            //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
+                            for (var j = -2; j < 2; j++)
+                            {
+                                var spawnPoint = new Vector2(center.X + i * (float)cellSize / 5, center.Y - j * (float)cellSize / 5);
+                                var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Guard);
+                                //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
 
-                            var ship = EntityFactory.CreateAIShip(
-                                ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
-                                cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order);
+                                var ship = EntityFactory.CreateAIShip(
+                                    ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                                    cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order);
 
-                            list.Add(Manager.EntityManager.AddEntity(ship));
+                                list.Add(Manager.EntityManager.AddEntity(ship));
+                            }
                         }
                     }
                 }

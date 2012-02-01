@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
             //to close to enemy
             if (distance < 100)
             {
-                direction += new Vector2(direction.Y, direction.X);
+                direction += new Vector2(-direction.Y, direction.X);
                 direction.Normalize();
             }
             var escapeDir = CalculateEscapeDirection();
