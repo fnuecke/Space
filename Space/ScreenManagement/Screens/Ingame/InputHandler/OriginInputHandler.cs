@@ -9,7 +9,7 @@ using Space.Control;
 using Space.Input;
 using Space.Simulation.Commands;
 using Space.Util;
-using Space.ScreenManagement.Screens.Interfaces;
+using Space.ScreenManagement.Screens.Ingame.Interfaces;
 using System.Collections.Generic;
 
 namespace Space.ScreenManagement.Screens.Gameplay
@@ -17,7 +17,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// <summary>
     /// Handles player input and converts it to simulation commands.
     /// </summary>
-    public sealed class OriginInputHandler : IMouseInput, IKeyboardInput, IGamepadInput
+    public sealed class OriginInputHandler
     {
 
         #region Constants
@@ -164,7 +164,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Player pressed a key.
         /// </summary>
-        void IKeyboardInput.HandleKeyPressed(Keys key)
+        public void HandleKeyPressed(Keys key)
         {
             if (Settings.Instance.GameBindings.ContainsKey(key))
             {
@@ -192,7 +192,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Player released a key.
         /// </summary>
-        void IKeyboardInput.HandleKeyReleased(Keys key)
+        public void HandleKeyReleased(Keys key)
         {
             if (Settings.Instance.GameBindings.ContainsKey(key))
             {
@@ -256,7 +256,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Handle mouse presses.
         /// </summary>
-        void IMouseInput.HandleMousePressed(MouseButtons buttons)
+        public void HandleMousePressed(MouseButtons buttons)
         {
             if (buttons == MouseButtons.Left)
             {
@@ -267,7 +267,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Handle mouse releases.
         /// </summary>
-        void IMouseInput.HandleMouseReleased(MouseButtons buttons)
+        public void HandleMouseReleased(MouseButtons buttons)
         {
             if (buttons == MouseButtons.Left)
             {
@@ -278,7 +278,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Update facing direction on mouse move.
         /// </summary>
-        void IMouseInput.HandleMouseMoved(float x, float y)
+        public void HandleMouseMoved(float x, float y)
         {
             // Get angle to middle of screen (position of our ship), which
             // will be our new target rotation.
@@ -295,7 +295,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Handle game pad button presses.
         /// </summary>
-        void IGamepadInput.HandleGamePadPressed(Buttons buttons)
+        public void HandleGamePadPressed(Buttons buttons)
         {
             switch (buttons)
             {
@@ -312,7 +312,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Handle game pad key releases.
         /// </summary>
-        void IGamepadInput.HandleGamePadReleased(Buttons buttons)
+        public void HandleGamePadReleased(Buttons buttons)
         {
             switch (buttons)
             {

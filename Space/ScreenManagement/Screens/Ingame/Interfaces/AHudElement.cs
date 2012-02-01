@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
 using Space.ScreenManagement.Screens.Helper;
 
-namespace Space.ScreenManagement.Screens.Interfaces
+namespace Space.ScreenManagement.Screens.Ingame.Interfaces
 {
     /// <summary>
     /// An abstract class that offers the basic elements and methods that

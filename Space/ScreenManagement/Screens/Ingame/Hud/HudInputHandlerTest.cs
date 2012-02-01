@@ -3,16 +3,16 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
 using Space.ScreenManagement.Screens.Elements.Hud.HudComponents;
-using Space.ScreenManagement.Screens.Interfaces;
+using Space.ScreenManagement.Screens.Ingame.Interfaces;
 using Nuclex.Input;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
-    class HudInputHandlerTest : AHudElement, IMouseInput
+    class HudInputHandlerTest : AHudElement
     {
 
         public int toggled = 0;
-        private GameplayScreen _gameplayScreen;
+        private IngameScreen _gameplayScreen;
 
         #region Fields
 
@@ -30,7 +30,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
         /// Constructor
         /// </summary>
         /// <param name="client">The general client object.</param>
-        public HudInputHandlerTest(GameClient client, GameplayScreen gameplayScreen)
+        public HudInputHandlerTest(GameClient client, IngameScreen gameplayScreen)
             : base(client)
         {
             _test = new HudBuffElement(client);
@@ -44,9 +44,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             _test.LoadContent(spriteBatch, content);
             _test.SetSize(new Point(44, 44));
             _test.SetMode(HudIcon.Mode.Debuff);
-
-            _gameplayScreen.GetInputHandler().AddMouseListener(this);
-
 
             _gap = StandardGap;
             SetPosition(GetPosition());
@@ -106,25 +103,6 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
             }
 
             _test.Draw();
-        }
-
-        #endregion
-
-        #region Listeners
-
-        void IMouseInput.HandleMousePressed(MouseButtons buttons)
-        {
-            if (buttons == MouseButtons.Left) {
-                toggleIt();            
-            }
-        }
-
-        void IMouseInput.HandleMouseReleased(MouseButtons buttons)
-        {
-        }
-
-        void IMouseInput.HandleMouseMoved(float x, float y)
-        {
         }
 
         #endregion

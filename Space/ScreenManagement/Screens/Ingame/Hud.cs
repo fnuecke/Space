@@ -42,7 +42,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
         #region Constructor
 
-        public Hud(GameClient client, GameplayScreen gameplayScreen)
+        public Hud(GameClient client, IngameScreen gameplayScreen)
         {
             _client = client;
             _healthEnergyBar = new HealthEnergyBar(_client);

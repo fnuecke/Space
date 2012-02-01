@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
-using Space.ScreenManagement.Screens.Interfaces;
+using Space.ScreenManagement.Screens.Ingame.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Elements.Hud
 {
