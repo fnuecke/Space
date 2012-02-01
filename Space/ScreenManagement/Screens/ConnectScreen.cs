@@ -76,7 +76,7 @@ namespace Space.ScreenManagement.Screens
         //Called if the login was handled
         private void HandleLoginSuccess(object sender, JoinResponseEventArgs e)
         {
-            LoadingScreen.Load(ScreenManager, true, new GameplayScreen(_client));
+            LoadingScreen.Load(ScreenManager, true, new IngameScreen(_client));
         }
 
         //Called if the login was handled

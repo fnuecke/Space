@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Control;
+using Space.ScreenManagement.Screens.Ingame.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -15,7 +16,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// Renderer class that's responsible for drawing planet orbits for planets
     /// that are in range of the player's scanners.
     /// </summary>
-    sealed class Orbits
+    sealed class Orbits : AGuiElement
     {
         #region Constants
 
@@ -79,6 +80,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         #region Constructor
 
         public Orbits(GameClient client)
+            : base(client)
         {
             _client = client;
             _orbitEllipse = new Ellipse(client.Game);
@@ -91,7 +93,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Load graphics content for the game.
         /// </summary>
-        public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
             _spriteBatch = spriteBatch;
         }
@@ -104,7 +106,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// Render our local radar system, with whatever detectables are close
         /// enough.
         /// </summary>
-        public void Draw()
+        public override void Draw()
         {
             // Get local player's avatar.
             var info = _client.GetPlayerShipInfo();

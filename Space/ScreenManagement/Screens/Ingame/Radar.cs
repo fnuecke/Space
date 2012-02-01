@@ -11,6 +11,8 @@ using Space.Control;
 using Space.Data;
 using Space.ScreenManagement.Screens.Helper;
 using Space.Util;
+using Space.ScreenManagement.Screens.Ingame.Interfaces;
+using Nuclex.Input;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -19,7 +21,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// the overlay that displays icons for nearby but out-of-screen objects
     /// of interest (ones with a <c>Detectable</c> component).
     /// </summary>
-    sealed class Radar
+    sealed class Radar : AGuiElement
     {
         #region Types
 
@@ -122,6 +124,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         #region Constructor
 
         public Radar(GameClient client)
+            : base(client)
         {
             _client = client;
         }
@@ -129,7 +132,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Load graphics content for the game.
         /// </summary>
-        public void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
             _spriteBatch = spriteBatch;
 
@@ -156,7 +159,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// Render our local radar system, with whatever detectables are close
         /// enough.
         /// </summary>
-        public void Draw()
+        public override void Draw()
         {
             // Get local player's avatar.
             var info = _client.GetPlayerShipInfo();
@@ -468,5 +471,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         }
 
         #endregion
+
     }
 }

@@ -3,14 +3,17 @@ using Microsoft.Xna.Framework;
 using Space.Control;
 using Space.ScreenManagement.Screens.Gameplay;
 using Space.Util;
+using System.Collections.Generic;
+using Space.ScreenManagement.Screens.Ingame.Interfaces;
 
 namespace Space.ScreenManagement.Screens
 {
     /// <summary>
     /// This screen implements the game's GUI.
     /// </summary>
-    sealed class GameplayScreen : GameScreen
+    public sealed class IngameScreen : GameScreen
     {
+
         #region Fields
 
         private float _pauseAlpha;
@@ -26,39 +29,15 @@ namespace Space.ScreenManagement.Screens
         private InputHandler _input;
 
         /// <summary>
-        /// Renderer for overall background.
-        /// </summary>
-        private Background _background;
-
-        /// <summary>
-        /// Renderer for planet orbits (which is logically a part of the
-        /// radar system, but we want it to be behind planets.
-        /// </summary>
-        private Orbits _orbits;
-
-        /// <summary>
-        /// Renderer for radar system.
-        /// </summary>
-        private Radar _radar;
-
-        /// <summary>
-        /// Renderer for the HUD elements.
-        /// </summary>
-        private Hud _hud;
-
-        /// <summary>
         /// The component responsible for post-processing effects.
         /// </summary>
         Postprocessing _postprocessing;
 
-        #endregion
-
-        #region Getter
-
-        public InputHandler GetInputHandler()
-        {
-            return _input;
-        }
+        /// <summary>
+        /// Holds all GUI elements that can be displayed. Remember this list
+        /// also holds the GUI elements that are invisible.
+        /// </summary>
+        List<AGuiElement> _elements;
 
         #endregion
 
@@ -67,18 +46,17 @@ namespace Space.ScreenManagement.Screens
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GameplayScreen(GameClient client)
+        public IngameScreen(GameClient client)
         {
             _client = client;
+            _input = new InputHandler(client, this);
+
+            _elements = new List<AGuiElement>();
+            _elements.Add(new Orbits(client));
+            _elements.Add(new Radar(client));
 
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
-
-            _input = new InputHandler(client);
-            _background = new Background(client);
-            _orbits = new Orbits(client);
-            _radar = new Radar(client);
-            _hud = new Hud(client, this);
         }
 
         /// <summary>
@@ -88,16 +66,14 @@ namespace Space.ScreenManagement.Screens
         {
             var game = ScreenManager.Game;
 
-            _background.LoadContent(ScreenManager.SpriteBatch, game.Content);
-            _radar.LoadContent(ScreenManager.SpriteBatch, game.Content);
-            _hud.LoadContent(ScreenManager.SpriteBatch, game.Content);
-
-            _orbits.LoadContent(ScreenManager.SpriteBatch, game.Content);
+            // loop the list of elements and load all of them
+            foreach (AGuiElement e in _elements)
+            {
+                e.LoadContent(ScreenManager.SpriteBatch, game.Content);
+            }
 
             _postprocessing = new Postprocessing(game);
             ScreenManager.Game.Components.Add(_postprocessing);
-
-            // TODO preload any other ingame content we may need? (ship, planet etc textures)
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that
@@ -113,6 +89,19 @@ namespace Space.ScreenManagement.Screens
             {
                 _postprocessing.Dispose();
             }
+        }
+
+        #endregion
+
+        #region Getter
+
+        /// <summary>
+        /// Returns the list holding all GUI elements.
+        /// </summary>
+        /// <returns>The list holding all GUI elements.</returns>
+        public List<AGuiElement> GetGuiElements()
+        {
+            return _elements;
         }
 
         #endregion
@@ -141,8 +130,6 @@ namespace Space.ScreenManagement.Screens
                     _input.Update();
                 }
 
-                // Always update the HUD.
-                _hud.Update();
             }
             else
             {
@@ -177,11 +164,11 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
-            // Draw overall background (stars).
-            _background.Draw();
-
-            // Render the orbits.
-            _orbits.Draw();
+            // loop the list of elements and load all of them
+            foreach (AGuiElement e in _elements)
+            {
+                e.Draw();
+            }
 
             // Draw world elements.
             _client.Controller.Draw(gameTime);
@@ -192,17 +179,10 @@ namespace Space.ScreenManagement.Screens
                 _postprocessing.Draw();
             }
 
-            // Render the radar.
-            _radar.Draw();
-
-            // Render the life- and energy display.
-            _hud.Draw();
-
             // If the game is transitioning on or off, fade it out to black.
             if (TransitionPosition > 0 || _pauseAlpha > 0)
             {
                 float alpha = MathHelper.Lerp(1f - TransitionAlpha, 1f, _pauseAlpha / 2);
-
                 ScreenManager.FadeBackBufferToBlack(alpha);
             }
         }
