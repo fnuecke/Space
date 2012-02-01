@@ -12,7 +12,7 @@ namespace Space.ScreenManagement.Screens.Elements.Hud
     /// 
     /// It is NOT intended to be used in the hud!
     /// </summary>
-    class HudSample : AHudElement
+    class HudSample : AbstractHudElement
     {
 
         #region Fields

@@ -9,11 +9,10 @@ using Space.ScreenManagement.Screens.Ingame.Interfaces;
 namespace Space.ScreenManagement.Screens
 {
     /// <summary>
-    /// This screen implements the game's GUI.
+    /// This screen implements all the ingame elements of the GUI.
     /// </summary>
     public sealed class IngameScreen : GameScreen
     {
-
         #region Fields
 
         private float _pauseAlpha;
@@ -37,7 +36,7 @@ namespace Space.ScreenManagement.Screens
         /// Holds all GUI elements that can be displayed. Remember this list
         /// also holds the GUI elements that are invisible.
         /// </summary>
-        List<AGuiElement> _elements;
+        List<AbstractGuiElement> _elements;
 
         /// <summary>
         /// Holds the background.
@@ -56,7 +55,7 @@ namespace Space.ScreenManagement.Screens
             _client = client;
             _input = new InputHandler(client, this);
 
-            _elements = new List<AGuiElement>();
+            _elements = new List<AbstractGuiElement>();
             _elements.Add(new Orbits(client));
             _elements.Add(new Radar(client));
 
@@ -76,7 +75,7 @@ namespace Space.ScreenManagement.Screens
             _background.LoadContent(ScreenManager.SpriteBatch, game.Content);
 
             // loop the list of elements and load all of them
-            foreach (AGuiElement e in _elements)
+            foreach (AbstractGuiElement e in _elements)
             {
                 e.LoadContent(ScreenManager.SpriteBatch, game.Content);
             }
@@ -108,7 +107,7 @@ namespace Space.ScreenManagement.Screens
         /// Returns the list holding all GUI elements.
         /// </summary>
         /// <returns>The list holding all GUI elements.</returns>
-        public List<AGuiElement> GetGuiElements()
+        public List<AbstractGuiElement> GetGuiElements()
         {
             return _elements;
         }
@@ -178,7 +177,7 @@ namespace Space.ScreenManagement.Screens
             _background.Draw();
 
             // loop the list of elements and load all of them
-            foreach (AGuiElement e in _elements)
+            foreach (AbstractGuiElement e in _elements)
             {
                 e.Draw();
             }

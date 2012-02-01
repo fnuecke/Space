@@ -109,7 +109,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var elements = _ingameScreen.GetGuiElements();
 
             // loop all keyboard listeners
-            foreach (AGuiElement e in elements)
+            foreach (AbstractGuiElement e in elements)
             {
                 e.HandleKeyPressed(key);
             }
@@ -127,7 +127,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var elements = _ingameScreen.GetGuiElements();
 
             // loop all keyboard listeners
-            foreach (AGuiElement e in elements)
+            foreach (AbstractGuiElement e in elements)
             {
                 e.HandleKeyReleased(key);
             }
@@ -149,7 +149,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var elements = _ingameScreen.GetGuiElements();
 
             // loop all mouse listeners
-            foreach (AGuiElement e in elements)
+            foreach (AbstractGuiElement e in elements)
             {
                 e.HandleMousePressed(buttons);
             }
@@ -167,7 +167,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var elements = _ingameScreen.GetGuiElements();
 
             // loop all mouse listeners
-            foreach (AGuiElement e in elements)
+            foreach (AbstractGuiElement e in elements)
             {
                 e.HandleMouseReleased(buttons);
             }
@@ -185,7 +185,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var elements = _ingameScreen.GetGuiElements();
 
             // loop all mouse listeners
-            foreach (AGuiElement e in elements)
+            foreach (AbstractGuiElement e in elements)
             {
                 e.HandleMouseMoved(x, y);
             }
@@ -207,7 +207,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var elements = _ingameScreen.GetGuiElements();
 
             // loop all gamepad listeners
-            foreach (AGuiElement e in elements)
+            foreach (AbstractGuiElement e in elements)
             {
                 e.HandleGamePadPressed(buttons);
             }
@@ -225,7 +225,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var elements = _ingameScreen.GetGuiElements();
 
             // loop all gamepad listeners
-            foreach (AGuiElement e in elements)
+            foreach (AbstractGuiElement e in elements)
             {
                 e.HandleGamePadReleased(buttons);
             }
