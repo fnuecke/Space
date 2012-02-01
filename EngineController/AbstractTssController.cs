@@ -299,7 +299,9 @@ namespace Engine.Controller
             }
 
             #region Unsupported
-            
+
+            public bool GameLogEnabled { get; set; }
+
             public ISimulation DeepCopy()
             {
                 throw new NotImplementedException();
