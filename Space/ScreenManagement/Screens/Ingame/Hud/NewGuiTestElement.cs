@@ -77,20 +77,20 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             {
                 if (position1) {
                     isSelected = true;
+                    position1 = false;
+                    lastSelected = 1;
+                    return;
                 }
-                position1 = false;
-                lastSelected = 1;
-                return;
             }
             if ((mousePos.X >= 300 && mousePos.X <= 350) && (mousePos.Y >= 400 && mousePos.Y <= 450))
             {
                 if (position2)
                 {
                     isSelected = true;
+                    position2 = false;
+                    lastSelected = 2;
+                    return;
                 }
-                position2 = false;
-                lastSelected = 2;
-                return;
             }
             lastSelected = -1;
             isSelected = false;
