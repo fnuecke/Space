@@ -170,7 +170,7 @@
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudBuffBar.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudInputHandlerTest.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\InputHandler\OriginInputHandler.cs" />
-    <Compile Include="ScreenManagement\Screens\Ingame\Interfaces\AGuiElement.cs" />
+    <Compile Include="ScreenManagement\Screens\Ingame\Interfaces\AbstractGuiElement.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Stylesheet\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudComponents\HudSpacer.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudComponents\HudLabel.cs" />
@@ -185,7 +185,7 @@
     <Compile Include="ScreenManagement\Screens\Ingame\Radar.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\BasicForms.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\SpaceForms.cs" />
-    <Compile Include="ScreenManagement\Screens\Ingame\Interfaces\AHudElement.cs" />
+    <Compile Include="ScreenManagement\Screens\Ingame\Interfaces\AbstractHudElement.cs" />
     <Compile Include="Session\Profile.cs" />
     <Compile Include="Simulation\Commands\AddItemCommand.cs" />
     <Compile Include="Simulation\Commands\EquipCommand.cs" />
