@@ -111,7 +111,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // loop all keyboard listeners
             foreach (AbstractGuiElement e in elements)
             {
-                e.HandleKeyPressed(key);
+                if(e.HandleKeyPressed(key))
+                    return;
             }
 
             //temporal only
@@ -129,7 +130,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // loop all keyboard listeners
             foreach (AbstractGuiElement e in elements)
             {
-                e.HandleKeyReleased(key);
+                if(e.HandleKeyReleased(key))
+                    return;
             }
 
             //temporal only
@@ -151,11 +153,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // loop all mouse listeners
             foreach (AbstractGuiElement e in elements)
             {
-                e.HandleMousePressed(buttons);
+                if(e.HandleMousePressed(buttons))
+                    return;
             }
 
             //temporal only
             _originInputHandler.HandleMousePressed(buttons);
+            
         }
 
         /// <summary>
@@ -169,7 +173,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // loop all mouse listeners
             foreach (AbstractGuiElement e in elements)
             {
-                e.HandleMouseReleased(buttons);
+                if(e.HandleMouseReleased(buttons))
+                    return;
             }
 
             //temporal only
@@ -187,7 +192,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // loop all mouse listeners
             foreach (AbstractGuiElement e in elements)
             {
-                e.HandleMouseMoved(x, y);
+                if(e.HandleMouseMoved(x, y))
+                    return;
             }
 
             //temporal only
@@ -209,7 +215,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // loop all gamepad listeners
             foreach (AbstractGuiElement e in elements)
             {
-                e.HandleGamePadPressed(buttons);
+                if(e.HandleGamePadPressed(buttons))
+                    return;
             }
 
             //temporal only
@@ -227,7 +234,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // loop all gamepad listeners
             foreach (AbstractGuiElement e in elements)
             {
-                e.HandleGamePadReleased(buttons);
+                if(e.HandleGamePadReleased(buttons))
+                    return;
             }
 
             //temporal only

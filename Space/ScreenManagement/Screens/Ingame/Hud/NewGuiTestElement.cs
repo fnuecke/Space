@@ -71,7 +71,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             _spriteBatch.End();
         }
 
-        public override void DoHandleMousePressed(MouseButtons buttons)
+        public override bool DoHandleMousePressed(MouseButtons buttons)
         {
             if ((mousePos.X >= 300 && mousePos.X <= 350) && (mousePos.Y >= 300 && mousePos.Y <= 350))
             {
@@ -79,8 +79,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     isSelected = true;
                     position1 = false;
                     lastSelected = 1;
-                    return;
+                   
                 }
+                return true;
             }
             if ((mousePos.X >= 300 && mousePos.X <= 350) && (mousePos.Y >= 400 && mousePos.Y <= 450))
             {
@@ -89,34 +90,39 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     isSelected = true;
                     position2 = false;
                     lastSelected = 2;
-                    return;
                 }
+                return true;
             }
-            lastSelected = -1;
-            isSelected = false;
-            
+            if (lastSelected != -1 || isSelected == true)
+            {
+                lastSelected = -1;
+                isSelected = false;
+                return true;
+            }
+            return false;
+
         }
 
-        public override void DoHandleMouseReleased(MouseButtons buttons)
+        public override bool DoHandleMouseReleased(MouseButtons buttons)
         {
             isSelected = false;
 
             if (lastSelected == -1)
             {
-                return;
+                return false;
             }
 
             if ((mousePos.X >= 300 && mousePos.X <= 350) && (mousePos.Y >= 300 && mousePos.Y <= 350))
             {
                 position1 = true;
                 lastSelected = 1;
-                return;
+                return true;
             }
             if ((mousePos.X >= 300 && mousePos.X <= 350) && (mousePos.Y >= 400 && mousePos.Y <= 450))
             {
                 position2 = true;
                 lastSelected = 2;
-                return;
+                return true;
             }
 
             if (lastSelected == 1)
@@ -127,12 +133,14 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             {
                 position2 = true;
             }
+            return true;
         }
 
-        public override void DoHandleMouseMoved(float x, float y)
+        public override bool DoHandleMouseMoved(float x, float y)
         {
             mousePos.X = x;
             mousePos.Y = y;
+            return false;
         }
     }
 }

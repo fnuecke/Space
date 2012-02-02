@@ -204,14 +204,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
                 return false;
             }
 
-            DoHandleKeyPressed(key);
+            if (DoHandleKeyPressed(key))
+                return true;
 
             // iterate all child elements and return true afterwards
             foreach (AbstractGuiElement e in _childElements)
             {
-                e.HandleKeyPressed(key);
+                if (e.HandleKeyPressed(key))
+                    return true;
             }
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -230,14 +232,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
                 return false;
             }
 
-            DoHandleKeyReleased(key);
+            if(DoHandleKeyReleased(key))
+                return true;
 
             // iterate all child elements and return true afterwards
             foreach (AbstractGuiElement e in _childElements)
             {
-                e.HandleKeyReleased(key);
+                if(e.HandleKeyReleased(key))
+                    return true;
             }
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -256,14 +260,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
                 return false;
             }
 
-            DoHandleMousePressed(buttons);
+            if (DoHandleMousePressed(buttons))
+                return true;
 
             // iterate all child elements and return true afterwards
             foreach (AbstractGuiElement e in _childElements)
             {
-                e.HandleMousePressed(buttons);
+                if (e.HandleMousePressed(buttons))
+                    return true;
             }
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -282,14 +288,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
                 return false;
             }
 
-            DoHandleMouseReleased(buttons);
+            if(DoHandleMouseReleased(buttons))
+                return true;
 
             // iterate all child elements and return true afterwards
             foreach (AbstractGuiElement e in _childElements)
             {
-                e.HandleMouseReleased(buttons);
+                if(e.HandleMouseReleased(buttons))
+                    return true;
             }
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -308,14 +316,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
                 return false;
             }
 
-            DoHandleMouseMoved(x, y);
+            if(DoHandleMouseMoved(x, y))
+                return true;
 
             // iterate all child elements and return true afterwards
             foreach (AbstractGuiElement e in _childElements)
             {
-                e.HandleMouseMoved(x, y);
+                if(e.HandleMouseMoved(x, y))
+                    return true;
             }
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -334,14 +344,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
                 return false;
             }
 
-            DoHandleGamePadPressed(buttons);
+            if(DoHandleGamePadPressed(buttons))
+                return true;
 
             // iterate all child elements and return true afterwards
             foreach (AbstractGuiElement e in _childElements)
             {
-                e.HandleGamePadPressed(buttons);
+                if(e.HandleGamePadPressed(buttons))
+                    return true;
             }
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -360,14 +372,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
                 return false;
             }
 
-            DoHandleGamePadReleased(buttons);
+            if(DoHandleGamePadReleased(buttons))
+                return true;
 
             // iterate all child elements and return true afterwards
             foreach (AbstractGuiElement e in _childElements)
             {
-                e.HandleGamePadReleased(buttons);
+                if(e.HandleGamePadReleased(buttons))
+                    return true;
             }
-            return true;
+            return false;
         }
 
         #endregion
@@ -379,8 +393,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// Is doing nothing in default, have to be overridden to add action.
         /// </summary>
         /// <param name="key"></param>
-        public virtual void DoHandleKeyPressed(Keys key)
+        public virtual bool DoHandleKeyPressed(Keys key)
         {
+            return false;
         }
 
         /// <summary>
@@ -388,8 +403,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// Is doing nothing in default, have to be overridden to add action.
         /// </summary>
         /// <param name="key"></param>
-        public virtual void DoHandleKeyReleased(Keys key)
+        public virtual bool DoHandleKeyReleased(Keys key)
         {
+            return false;
         }
 
         /// <summary>
@@ -397,8 +413,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// Is doing nothing in default, have to be overridden to add action.
         /// </summary>
         /// <param name="key"></param>
-        public virtual void DoHandleMousePressed(MouseButtons buttons)
+        public virtual bool DoHandleMousePressed(MouseButtons buttons)
         {
+            return false;
         }
 
         /// <summary>
@@ -406,8 +423,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// Is doing nothing in default, have to be overridden to add action.
         /// </summary>
         /// <param name="key"></param>
-        public virtual void DoHandleMouseReleased(MouseButtons buttons)
+        public virtual bool DoHandleMouseReleased(MouseButtons buttons)
         {
+            return false;
         }
 
         /// <summary>
@@ -415,8 +433,20 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// Is doing nothing in default, have to be overridden to add action.
         /// </summary>
         /// <param name="key"></param>
-        public virtual void DoHandleMouseMoved(float x, float y)
+        public virtual bool DoHandleMouseMoved(float x, float y)
         {
+            return false;
+        }
+
+
+        /// <summary>
+        /// Holds the action that is done when the input handler is active.
+        /// Is doing nothing in default, have to be overridden to add action.
+        /// </summary>
+        /// <param name="key"></param>
+        public virtual bool DoHandleGamePadPressed(Buttons buttons)
+        {
+            return false;
         }
 
         /// <summary>
@@ -424,17 +454,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// Is doing nothing in default, have to be overridden to add action.
         /// </summary>
         /// <param name="key"></param>
-        public virtual void DoHandleGamePadPressed(Buttons buttons)
+        public virtual bool DoHandleGamePadReleased(Buttons buttons)
         {
-        }
-
-        /// <summary>
-        /// Holds the action that is done when the input handler is active.
-        /// Is doing nothing in default, have to be overridden to add action.
-        /// </summary>
-        /// <param name="key"></param>
-        public virtual void DoHandleGamePadReleased(Buttons buttons)
-        {
+            return false;
         }
 
         #endregion
