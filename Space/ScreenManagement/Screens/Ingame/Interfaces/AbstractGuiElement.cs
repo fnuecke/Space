@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Space.Control;
-using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
-using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace Space.ScreenManagement.Screens.Ingame.Interfaces
 {
@@ -29,6 +30,21 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// Holds all GUI elements that are child elements of this element.
         /// </summary>
         private List<AbstractGuiElement> _childElements;
+
+        /// <summary>
+        /// Holds the x- and y-position of the GUI element.
+        /// </summary>
+        private Vector2 _position;
+
+        /// <summary>
+        /// The width of the element.
+        /// </summary>
+        private float _width;
+
+        /// <summary>
+        /// The height of the element.
+        /// </summary>
+        private float _height;
 
         #endregion
 
@@ -56,15 +72,88 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         {
             _client = client;
             _childElements = new List<AbstractGuiElement>();
-
-            Enabled = false;
-            Visible = false;
         }
 
         /// <summary>
         /// Load graphics content for the game.
         /// </summary>
-        public abstract void LoadContent(SpriteBatch spriteBatch, ContentManager content);
+        public virtual void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        {
+            // set some standard settings for the elements
+            _position = new Vector2(0, 0);
+            _width = 0;
+            _height = 0;
+            Enabled = false;
+            Visible = false;
+        }
+
+        #endregion
+
+        #region Getter / Setter
+
+        /// <summary>
+        /// Get the x- and y-position of the current element.
+        /// </summary>
+        /// <returns>The x- and y-position of the current element</returns>
+        public virtual Vector2 GetPosition()
+        {
+            return _position;
+        }
+
+        /// <summary>
+        /// Set the x- and y-position of the current element.
+        /// </summary>
+        /// <param name="position">The x- and y-position of the current element</returns>
+        public virtual void SetPosition(Vector2 position)
+        {
+            _position = position;
+        }
+
+        /// <summary>
+        /// Set the x- and y-position of the current element.
+        /// </summary>
+        /// <param name="x">The x-position of the current element</returns>
+        /// <param name="y">The y-position of the current element</returns>
+        public void SetPosition(float x, float y)
+        {
+            SetPosition(new Vector2(x, y));
+        }
+
+        /// <summary>
+        /// Get the width of the current element.
+        /// </summary>
+        /// <returns>The width of the current element</returns>
+        public virtual float GetWidth()
+        {
+            return _width;
+        }
+
+        /// <summary>
+        /// Set the width of the current element.
+        /// </summary>
+        /// <param name="width">The width of the current element</returns>
+        public virtual void SetWidth(float width)
+        {
+            _width = width;
+        }
+
+        /// <summary>
+        /// Get the height of the current element.
+        /// </summary>
+        /// <returns>The height of the current element</returns>
+        public virtual float GetHeight()
+        {
+            return _height;
+        }
+
+        /// <summary>
+        /// Set the height of the current element.
+        /// </summary>
+        /// <param name="height">The height of the current element</returns>
+        public virtual void SetHeight(float height)
+        {
+            _height = height;
+        }
 
         #endregion
 
