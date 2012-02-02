@@ -106,7 +106,7 @@ namespace Space.ComponentSystem.Components
                 var tranform = Entity.GetComponent<Transform>();
                 foreach (var target in _targets)
                 {
-                   shipSpawnSystem.CreateAttackingShip(ref tranform.Translation, target, faction.Value);
+                  // shipSpawnSystem.CreateAttackingShip(ref tranform.Translation, target, faction.Value);
                 }
             }
         }
