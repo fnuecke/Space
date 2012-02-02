@@ -27,6 +27,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         protected readonly GameClient _client;
 
         /// <summary>
+        /// The current content manager.
+        /// </summary>
+        protected ContentManager _content;
+
+        /// <summary>
+        /// Sprite batch used for rendering.
+        /// </summary>
+        protected SpriteBatch _spriteBatch;
+
+        /// <summary>
         /// Holds all GUI elements that are child elements of this element.
         /// </summary>
         private List<AbstractGuiElement> _childElements;
@@ -79,6 +89,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// </summary>
         public virtual void LoadContent(SpriteBatch spriteBatch, ContentManager content)
         {
+            _spriteBatch = spriteBatch;
+            _content = content;
+
             // set some standard settings for the elements
             _position = new Vector2(0, 0);
             _width = 0;

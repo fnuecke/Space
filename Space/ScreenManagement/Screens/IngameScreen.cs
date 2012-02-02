@@ -5,6 +5,7 @@ using Space.ScreenManagement.Screens.Gameplay;
 using Space.Util;
 using System.Collections.Generic;
 using Space.ScreenManagement.Screens.Ingame.Interfaces;
+using Space.ScreenManagement.Screens.Ingame.Hud;
 
 namespace Space.ScreenManagement.Screens
 {
@@ -58,6 +59,7 @@ namespace Space.ScreenManagement.Screens
             _elements = new List<AbstractGuiElement>();
             _elements.Add(new Orbits(client));
             _elements.Add(new Radar(client));
+            _elements.Add(new NewGuiTestElement(client));
 
             _background = new Background(client);
 
@@ -176,12 +178,6 @@ namespace Space.ScreenManagement.Screens
             // draw the background first
             _background.Draw();
 
-            // loop the list of elements and load all of them
-            foreach (AbstractGuiElement e in _elements)
-            {
-                e.Draw();
-            }
-
             // Draw world elements.
             _client.Controller.Draw(gameTime);
 
@@ -189,6 +185,12 @@ namespace Space.ScreenManagement.Screens
             if (Settings.Instance.PostProcessing)
             {
                 _postprocessing.Draw();
+            }
+
+            // loop the list of elements and load all of them
+            foreach (AbstractGuiElement e in _elements)
+            {
+                e.Draw();
             }
 
             // If the game is transitioning on or off, fade it out to black.
