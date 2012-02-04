@@ -46,16 +46,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         #region Fields
 
         /// <summary>
-        /// The local client, used to fetch player's position and radar range.
-        /// </summary>
-        private readonly GameClient _client;
-
-        /// <summary>
-        /// Sprite batch used for rendering.
-        /// </summary>
-        private SpriteBatch _spriteBatch;
-
-        /// <summary>
         /// Used to draw orbits.
         /// </summary>
         private Ellipse _orbitEllipse;
@@ -82,7 +72,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public Orbits(GameClient client)
             : base(client)
         {
-            _client = client;
             _orbitEllipse = new Ellipse(client.Game);
             _orbitEllipse.SetThickness(_orbitThickness);
             _deadZoneEllipse = new FilledEllipse(_client.Game);

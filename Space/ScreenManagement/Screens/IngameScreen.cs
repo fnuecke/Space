@@ -6,6 +6,8 @@ using Space.Util;
 using System.Collections.Generic;
 using Space.ScreenManagement.Screens.Ingame.Interfaces;
 using Space.ScreenManagement.Screens.Ingame.Hud;
+using Space.ScreenManagement.Screens.Ingame;
+using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
 
 namespace Space.ScreenManagement.Screens
 {
@@ -29,6 +31,11 @@ namespace Space.ScreenManagement.Screens
         private InputHandler _input;
 
         /// <summary>
+        /// The item manager for ingame items.
+        /// </summary>
+        private ItemSelectionManager _itemManager;
+
+        /// <summary>
         /// The component responsible for post-processing effects.
         /// </summary>
         Postprocessing _postprocessing;
@@ -44,6 +51,8 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         Background _background;
 
+        InventoryTest _inventory;
+
         #endregion
 
         #region Initialization
@@ -55,11 +64,16 @@ namespace Space.ScreenManagement.Screens
         {
             _client = client;
             _input = new InputHandler(client, this);
+            _itemManager = new ItemSelectionManager();
 
             _elements = new List<AbstractGuiElement>();
             _elements.Add(new Orbits(client));
             _elements.Add(new Radar(client));
-            _elements.Add(new NewGuiTestElement(client));
+
+            _inventory = new InventoryTest(client, _itemManager);
+            _elements.Add(_inventory);
+
+            _elements.Add(new MouseLayer(client, _itemManager));
 
             _background = new Background(client);
 
@@ -81,6 +95,8 @@ namespace Space.ScreenManagement.Screens
             {
                 e.LoadContent(ScreenManager.SpriteBatch, game.Content);
             }
+
+            _inventory.SetPosition(200, 200);
 
             _postprocessing = new Postprocessing(game);
             ScreenManager.Game.Components.Add(_postprocessing);

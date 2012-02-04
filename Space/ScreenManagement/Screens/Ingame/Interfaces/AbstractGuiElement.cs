@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Space.ScreenManagement.Screens.Helper;
 
 namespace Space.ScreenManagement.Screens.Ingame.Interfaces
 {
@@ -56,6 +57,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// </summary>
         private float _height;
 
+        /// <summary>
+        /// Helper object to draw simple elements.
+        /// </summary>
+        protected BasicForms _basicForms;
+
+        /// <summary>
+        /// Helper object to draw Space specific elements.
+        /// </summary>
+        protected SpaceForms _spaceForms;
+
         #endregion
 
         #region Properties
@@ -91,6 +102,8 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         {
             _spriteBatch = spriteBatch;
             _content = content;
+            _basicForms = new BasicForms(spriteBatch, _client);
+            _spaceForms = new SpaceForms(spriteBatch);
 
             // set some standard settings for the elements
             _position = new Vector2(0, 0);

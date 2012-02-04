@@ -76,16 +76,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         #region Fields
 
         /// <summary>
-        /// The local client, used to fetch player's position and radar range.
-        /// </summary>
-        private readonly GameClient _client;
-
-        /// <summary>
-        /// Sprite batch used for rendering.
-        /// </summary>
-        private SpriteBatch _spriteBatch;
-
-        /// <summary>
         /// Background image for radar icons.
         /// </summary>
         private Texture2D[] _radarDirection = new Texture2D[8];
@@ -105,11 +95,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// </summary>
         private SpriteFont _distanceFont;
 
-        /// <summary>
-        /// Helper class for drawing basic forms.
-        /// </summary>
-        private BasicForms _basicForms;
-
         #endregion
 
         #region Single-Allocation
@@ -126,7 +111,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
         public Radar(GameClient client)
             : base(client)
         {
-            _client = client;
         }
 
         /// <summary>

@@ -161,7 +161,10 @@
     <Compile Include="ComponentSystem\Systems\ShipsSpawnSystem.cs" />
     <Compile Include="ComponentSystem\Systems\UniverseSystem.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
-    <Compile Include="ScreenManagement\Screens\Ingame\Hud\NewGuiTestElement.cs" />
+    <Compile Include="ScreenManagement\Screens\Ingame\GuiElementManager\IItem.cs" />
+    <Compile Include="ScreenManagement\Screens\Ingame\GuiElementManager\ItemSelectionManager.cs" />
+    <Compile Include="ScreenManagement\Screens\Ingame\Hud\InventoryManagerTest.cs" />
+    <Compile Include="ScreenManagement\Screens\Ingame\Hud\InventoryTest.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudComponents\HudBuffElement.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudComponents\HudIcon.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudComponents\HudSingleLabel.cs" />
@@ -172,6 +175,7 @@
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudInputHandlerTest.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\InputHandler\OriginInputHandler.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Interfaces\AbstractGuiElement.cs" />
+    <Compile Include="ScreenManagement\Screens\Ingame\MouseLayer.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Stylesheet\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudComponents\HudSpacer.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudComponents\HudLabel.cs" />
