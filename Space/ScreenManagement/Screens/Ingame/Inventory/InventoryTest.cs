@@ -14,7 +14,8 @@ using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
 
 namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
-    class InventoryTest : AbstractGuiElement
+
+   class InventoryTest : AbstractGuiElement
     {
         InventoryManagerTest _manager;
         ItemSelectionManager _itemSelection;
@@ -43,6 +44,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             _spriteBatch.Begin();
             _basicForms.FillRectangle((int)GetPosition().X, (int)GetPosition().Y, (int)GetWidth(), (int)GetHeight(), Color.Black * 0.6f);
             _spriteBatch.End();
+
             _list.Draw();
         }
 

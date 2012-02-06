@@ -38,6 +38,11 @@ namespace Space.ScreenManagement.Screens.Ingame.GuiElementManager
         public bool ItemIsSelected { get; private set; }
 
         /// <summary>
+        /// Holds the status if drag 'n drop mode is currently active.
+        /// </summary>
+        public bool DragNDropMode { get; set; }
+
+        /// <summary>
         /// Holds the icon object of the displayed icon.
         /// </summary>
         public Texture2D SelectedIcon { get; private set; }
@@ -52,6 +57,7 @@ namespace Space.ScreenManagement.Screens.Ingame.GuiElementManager
         public ItemSelectionManager()
         {
             RemoveSelection();
+            DragNDropMode = false;
         }
 
         #endregion
