@@ -129,20 +129,11 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// <summary>
         /// Set the x- and y-position of the current element.
         /// </summary>
-        /// <param name="position">The x- and y-position of the current element</returns>
-        public virtual void SetPosition(Vector2 position)
-        {
-            _position = position;
-        }
-
-        /// <summary>
-        /// Set the x- and y-position of the current element.
-        /// </summary>
         /// <param name="x">The x-position of the current element</returns>
         /// <param name="y">The y-position of the current element</returns>
-        public void SetPosition(float x, float y)
+        public virtual void SetPosition(float x, float y)
         {
-            SetPosition(new Vector2(x, y));
+            _position = new Vector2(x, y);
         }
 
         /// <summary>

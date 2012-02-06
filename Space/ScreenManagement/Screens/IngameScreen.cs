@@ -96,10 +96,13 @@ namespace Space.ScreenManagement.Screens
                 e.LoadContent(ScreenManager.SpriteBatch, game.Content);
             }
 
-            _inventory.SetPosition(200, 200);
-
             _postprocessing = new Postprocessing(game);
             ScreenManager.Game.Components.Add(_postprocessing);
+
+            // do individual settings for the GUI objects here
+            _inventory.SetWidth(300);
+            _inventory.SetHeight(500);
+            _inventory.SetPosition(100, 150);
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that
