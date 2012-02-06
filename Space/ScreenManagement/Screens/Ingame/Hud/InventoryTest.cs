@@ -70,11 +70,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
             for (int i = 0; i < 4; i++)
             {
+                // if the mouse click is within the item dimension
                 if (Mouse.GetState().X >= GetPosition().X + (i + 1) * 52 && Mouse.GetState().X <= GetPosition().X + (i + 1) * 52 + 50 && Mouse.GetState().Y >= GetPosition().Y + 52 && Mouse.GetState().Y <= GetPosition().Y + 52 + 50)
                 {
                     var image = _manager.GetImage(i);
+
                     if (_itemSelection.ItemIsSelected)
                     {
+                        var previousId = _itemSelection.SelectedId;
+                        _manager.SetImage(_itemSelection.SelectedIcon, i);
+                        _manager.SetImage(image, previousId);
                         _itemSelection.RemoveSelection();
                     }
                     else
