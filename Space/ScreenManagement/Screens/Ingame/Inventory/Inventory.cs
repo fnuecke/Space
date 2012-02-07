@@ -59,7 +59,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         {
             Console.WriteLine(">>> SetPosition <<<");
             base.SetPosition(x, y);
-            _list.SetPosition(x, y);
+            _list.SetPosition(x + 5, y + 5);
         }
 
         #region Listener

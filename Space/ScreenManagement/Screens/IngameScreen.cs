@@ -103,7 +103,7 @@ namespace Space.ScreenManagement.Screens
             ScreenManager.Game.Components.Add(_postprocessing);
 
             // do individual settings for the GUI objects here
-            _inventory.SetWidth(1000);
+            _inventory.SetWidth(195);
             _inventory.SetHeight(300);
             _inventory.SetPosition(100, 150);
 

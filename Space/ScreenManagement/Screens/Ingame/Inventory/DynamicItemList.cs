@@ -34,6 +34,11 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         public int Margin { get; set; }
 
         /// <summary>
+        /// The number of icons that are displayed each row.
+        /// </summary>
+        public int ElementsEachRow { get; set; }
+
+        /// <summary>
         /// Constructor
         /// </summary>
         public DynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
@@ -42,8 +47,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             _textureManager = textureManager;
             _itemSelection = itemSelection;
 
-            IconSize = 50;
-            Margin = 10;
+            IconSize = 35;
+            Margin = 2;
+            ElementsEachRow = 5;
         }
 
         public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
@@ -61,7 +67,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             for (int i = 0; i < inventar.Count(); i++)
             {
                 // draw the background that is visible if no icon is displayed
-                _basicForms.FillRectangle((int)GetPosition().X + i * (IconSize + Margin), (int)GetPosition().Y, IconSize, IconSize, Color.White * 0.2f);
+                _basicForms.FillRectangle(WestX(i), NorthY(i), IconSize, IconSize, Color.White * 0.2f);
+
+                // load the image of the icon that is saved in this slot
                 string imagePath = null;
                 var invItem = inventar[i];
                 if (invItem != null)
@@ -72,13 +80,12 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         imagePath = item.Texture();
                     }
                 }
-                // load the image of the icon that is saved in this slot
                 var image = _textureManager.Get(imagePath);
 
                 // draw the current item if a) an item is available for this slot and b) the item is currently not selected
                 if (imagePath != null && !(_itemSelection.SelectedId == i && _itemSelection.SelectedClass == this))
                 {
-                    _spriteBatch.Draw(image, new Rectangle((int)GetPosition().X + i * (IconSize + Margin), (int)GetPosition().Y, IconSize, IconSize), Color.White);
+                    _spriteBatch.Draw(image, new Rectangle(WestX(i), NorthY(i), IconSize, IconSize), Color.White);
                 }
             }
 
@@ -221,10 +228,51 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// <returns>The status if the mouse cursor is currently over the icon with a specific id</returns>
         private bool IsMousePositionOnIcon(int id)
         {
-            return Mouse.GetState().X >= GetPosition().X + id * (IconSize + Margin)
-                && Mouse.GetState().X <= GetPosition().X + id * (IconSize + Margin) + IconSize
-                && Mouse.GetState().Y >= GetPosition().Y
-                && Mouse.GetState().Y <= GetPosition().Y + IconSize;
+            return Mouse.GetState().X >= WestX(id)
+                && Mouse.GetState().X <= EastX(id)
+                && Mouse.GetState().Y >= NorthY(id)
+                && Mouse.GetState().Y <= SouthY(id);
         }
+
+        /// <summary>
+        /// Calculates the western X position of any icon which is determine by the slot id.
+        /// </summary>
+        /// <param name="id">The id of the slot.</param>
+        /// <returns>The western X position of the slot.</returns>
+        private int WestX(int id)
+        {
+            return (int)GetPosition().X + (id % ElementsEachRow) * (IconSize + Margin);
+        }
+
+        /// <summary>
+        /// Calculates the northern Y position of any icon which is determine by the slot id.
+        /// </summary>
+        /// <param name="id">The id of the slot.</param>
+        /// <returns>The northern Y position of the slot.</returns>
+        private int NorthY(int id)
+        {
+            return (int)GetPosition().Y + (id / ElementsEachRow) * (IconSize + Margin);
+        }
+
+        /// <summary>
+        /// Calculates the eastern X position of any icon which is determine by the slot id.
+        /// </summary>
+        /// <param name="id">The id of the slot.</param>
+        /// <returns>The eastern X position of the slot.</returns>
+        private int EastX(int id)
+        {
+            return WestX(id) + IconSize;
+        }
+
+        /// <summary>
+        /// Calculates the southern Y position of any icon which is determine by the slot id.
+        /// </summary>
+        /// <param name="id">The id of the slot.</param>
+        /// <returns>The southern Y position of the slot.</returns>
+        private int SouthY(int id)
+        {
+            return NorthY(id) + IconSize;
+        }
+
     }
 }

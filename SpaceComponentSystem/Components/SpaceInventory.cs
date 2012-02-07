@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Components
         
         public SpaceInventory()
         {
-            _items = new ItemHolder[10];
+            _items = new ItemHolder[25];
         }
         public SpaceInventory(int capacity)
         {

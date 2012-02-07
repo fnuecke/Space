@@ -38,7 +38,7 @@ namespace Space.ScreenManagement.Screens.Ingame
 
             if (_itemManager.SelectedIcon != null)
             {
-                _spriteBatch.Draw(_textureManager.Get(_itemManager.SelectedIcon), new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 50, 50), Color.White);
+                _spriteBatch.Draw(_textureManager.Get(_itemManager.SelectedIcon), new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 35, 35), Color.White);
             }
 
             _spriteBatch.End();
