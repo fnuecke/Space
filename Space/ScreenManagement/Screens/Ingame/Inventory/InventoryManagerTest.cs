@@ -10,20 +10,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
     class InventoryManagerTest
     {
 
-        Texture2D _img0;
-        Texture2D _img1;
-        Texture2D _img2;
-        Texture2D _img3;
+        String _img0 = "Textures/Icons/Buffs/default";
+        String _img1 = "Textures/Icons/Buffs/stabilisator";
+        String _img2 = null;
+        String _img3 = null;
 
-        public InventoryManagerTest(GameClient client)
+        public InventoryManagerTest()
         {
-            _img0 = client.Game.Content.Load<Texture2D>("Textures/Icons/Buffs/default");
-            _img1 = client.Game.Content.Load<Texture2D>("Textures/Icons/Buffs/stabilisator");
-            _img2 = null;
-            _img3 = null;
         }
 
-        public Texture2D GetImage(int id)
+        public String GetImagePath(int id)
         {
             switch (id)
             {
@@ -35,7 +31,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             return null;
         }
 
-        public void SetImage(Texture2D image, int id)
+        public void SetImage(String image, int id)
         {
             switch (id)
             {

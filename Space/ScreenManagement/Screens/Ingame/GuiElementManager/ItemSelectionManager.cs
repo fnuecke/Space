@@ -45,7 +45,7 @@ namespace Space.ScreenManagement.Screens.Ingame.GuiElementManager
         /// <summary>
         /// Holds the icon object of the displayed icon.
         /// </summary>
-        public Texture2D SelectedIcon { get; private set; }
+        public String SelectedIcon { get; private set; }
 
         #endregion
 
@@ -81,7 +81,7 @@ namespace Space.ScreenManagement.Screens.Ingame.GuiElementManager
         /// <param name="SelectedClass">The object of the class that holds the selected item.</param>
         /// <param name="SelectedId">The ID of the selected item.</param>
         /// <param name="SelectedItem">The icon object of the displayed icon.</param>
-        public void SetSelection(IItem SelectedClass, int SelectedId, Texture2D SelectedItem)
+        public void SetSelection(IItem SelectedClass, int SelectedId, String SelectedItem)
         {
             this.SelectedClass = SelectedClass;
             this.SelectedId = SelectedId;

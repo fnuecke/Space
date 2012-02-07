@@ -17,18 +17,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
    class InventoryTest : AbstractGuiElement
     {
-        InventoryManagerTest _manager;
         ItemSelectionManager _itemSelection;
 
         DynamicItemList _list;
 
-        public InventoryTest(GameClient client, ItemSelectionManager itemSelection)
+        public InventoryTest(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
             : base(client)
         {
-            _manager = new InventoryManagerTest(client);
             _itemSelection = itemSelection;
 
-            _list = new DynamicItemList(client, itemSelection);
+            _list = new DynamicItemList(client, itemSelection, textureManager);
         }
 
         public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)

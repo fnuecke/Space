@@ -19,14 +19,17 @@ namespace Space.ScreenManagement.Screens.Ingame
         /// </summary>
         private ItemSelectionManager _itemManager;
 
+        private TextureManager _textureManager;
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="itemManager">The basic item manager.</param>
-        public MouseLayer(GameClient client, ItemSelectionManager itemManager)
+        public MouseLayer(GameClient client, ItemSelectionManager itemManager, TextureManager textureManager)
             : base(client)
         {
             _itemManager = itemManager;
+            _textureManager = textureManager;
         }
 
         public override void Draw()
@@ -35,7 +38,7 @@ namespace Space.ScreenManagement.Screens.Ingame
 
             if (_itemManager.SelectedIcon != null)
             {
-                _spriteBatch.Draw(_itemManager.SelectedIcon, new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 50, 50), Color.White);
+                _spriteBatch.Draw(_textureManager.Get(_itemManager.SelectedIcon), new Rectangle(Mouse.GetState().X, Mouse.GetState().Y, 50, 50), Color.White);
             }
 
             _spriteBatch.End();

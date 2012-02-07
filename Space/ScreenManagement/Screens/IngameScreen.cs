@@ -35,6 +35,8 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         private ItemSelectionManager _itemManager;
 
+        private TextureManager _textureManager;
+
         /// <summary>
         /// The component responsible for post-processing effects.
         /// </summary>
@@ -65,15 +67,16 @@ namespace Space.ScreenManagement.Screens
             _client = client;
             _input = new InputHandler(client, this);
             _itemManager = new ItemSelectionManager();
+            _textureManager = new TextureManager(client);
 
             _elements = new List<AbstractGuiElement>();
             _elements.Add(new Orbits(client));
             _elements.Add(new Radar(client));
 
-            _inventory = new InventoryTest(client, _itemManager);
+            _inventory = new InventoryTest(client, _itemManager, _textureManager);
             _elements.Add(_inventory);
 
-            _elements.Add(new MouseLayer(client, _itemManager));
+            _elements.Add(new MouseLayer(client, _itemManager, _textureManager));
 
             _background = new Background(client);
 

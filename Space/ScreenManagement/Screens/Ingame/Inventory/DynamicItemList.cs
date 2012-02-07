@@ -16,8 +16,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
     class DynamicItemList : AbstractGuiElement, IItem
     {
-        InventoryManagerTest _manager;
-        ItemSelectionManager _itemSelection;
+        private InventoryManagerTest _manager;
+        private ItemSelectionManager _itemSelection;
+        private TextureManager _textureManager;
 
         /// <summary>
         /// The size (height and width) of the icons
@@ -32,10 +33,11 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// <summary>
         /// Constructor
         /// </summary>
-        public DynamicItemList(GameClient client, ItemSelectionManager itemSelection)
+        public DynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
             : base(client)
         {
-            _manager = new InventoryManagerTest(client);
+            _manager = new InventoryManagerTest();
+            _textureManager = textureManager;
             _itemSelection = itemSelection;
 
             IconSize = 50;
@@ -58,12 +60,12 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 _basicForms.FillRectangle((int)GetPosition().X + i * (IconSize + Margin), (int)GetPosition().Y, IconSize, IconSize, Color.White * 0.2f);
 
                 // load the image of the icon that is saved in this slot
-                var image = _manager.GetImage(i);
+                var imagePath = _textureManager.Get(_manager.GetImagePath(i));
 
                 // draw the current item if a) an item is available for this slot and b) the item is currently not selected
-                if (image != null && !(_itemSelection.SelectedId == i && _itemSelection.SelectedClass == this))
+                if (imagePath != null && !(_itemSelection.SelectedId == i && _itemSelection.SelectedClass == this))
                 {
-                    _spriteBatch.Draw(image, new Rectangle((int)GetPosition().X + i * (IconSize + Margin), (int)GetPosition().Y, IconSize, IconSize), Color.White);
+                    _spriteBatch.Draw(imagePath, new Rectangle((int)GetPosition().X + i * (IconSize + Margin), (int)GetPosition().Y, IconSize, IconSize), Color.White);
                 }
             }
 
@@ -79,13 +81,13 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 {
                     if (IsMousePositionOnIcon(i))
                     {
-                        var image = _manager.GetImage(i);
+                        var imagePath = _manager.GetImagePath(i);
                         _itemSelection.DragNDropMode = true;
 
                         // ... set it selected.
-                        if (image != null)
+                        if (imagePath != null)
                         {
-                            _itemSelection.SetSelection(this, i, image);
+                            _itemSelection.SetSelection(this, i, imagePath);
                         }
                     }
                 }
@@ -118,12 +120,12 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         // rest of the method should not be run.
                         else
                         {
-                            var image = _manager.GetImage(i);
+                            var imagePath = _manager.GetImagePath(i);
 
                             // ... tell the manager to swap the items.
                             var previousId = _itemSelection.SelectedId;
                             _manager.SetImage(_itemSelection.SelectedIcon, i);
-                            _manager.SetImage(image, previousId);
+                            _manager.SetImage(imagePath, previousId);
                             _itemSelection.RemoveSelection();
                             _itemSelection.DragNDropMode = false;
                             return true;
@@ -137,7 +139,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 // if the mouse click is within the current item dimension
                 if (IsMousePositionOnIcon(i))
                 {
-                    var image = _manager.GetImage(i);
+                    var imagePath = _manager.GetImagePath(i);
 
                     // if an item is currently selected...
                     if (_itemSelection.ItemIsSelected)
@@ -145,7 +147,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         // ... tell the manager to swap the items.
                         var previousId = _itemSelection.SelectedId;
                         _manager.SetImage(_itemSelection.SelectedIcon, i);
-                        _manager.SetImage(image, previousId);
+                        _manager.SetImage(imagePath, previousId);
                         _itemSelection.RemoveSelection();
                     }
 
@@ -153,9 +155,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     else
                     {
                         // ... set it selected.
-                        if (image != null)
+                        if (imagePath != null)
                         {
-                            _itemSelection.SetSelection(this, i, image);
+                            _itemSelection.SetSelection(this, i, imagePath);
                         }
                         else
                         {
