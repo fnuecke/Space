@@ -103,8 +103,8 @@ namespace Space.ScreenManagement.Screens
             ScreenManager.Game.Components.Add(_postprocessing);
 
             // do individual settings for the GUI objects here
-            _inventory.SetWidth(300);
-            _inventory.SetHeight(500);
+            _inventory.SetWidth(1000);
+            _inventory.SetHeight(300);
             _inventory.SetPosition(100, 150);
 
             // once the load has finished, we use ResetElapsedTime to tell the game's

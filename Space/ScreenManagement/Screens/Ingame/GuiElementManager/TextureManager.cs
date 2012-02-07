@@ -48,6 +48,10 @@ namespace Space.ScreenManagement.Screens.Ingame.GuiElementManager
         /// <returns>The Texture2D object of the image.</returns>
         public Texture2D Get(string path)
         {
+            if (path == null)
+            {
+                return null;
+            }
             if (_dictionary == null)
                 Console.WriteLine("DICTIONARY == NULL");
             if (!_dictionary.ContainsKey(path))

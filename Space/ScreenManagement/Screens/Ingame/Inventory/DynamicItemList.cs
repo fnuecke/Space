@@ -54,7 +54,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         {
             _spriteBatch.Begin();
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < _manager.Elements; i++)
             {
                 // draw the background that is visible if no icon is displayed
                 _basicForms.FillRectangle((int)GetPosition().X + i * (IconSize + Margin), (int)GetPosition().Y, IconSize, IconSize, Color.White * 0.2f);
@@ -77,7 +77,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             // If no item is selected, select the item and enable the drag 'n drop mode...
             if (!_itemSelection.ItemIsSelected)
             {
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < _manager.Elements; i++)
                 {
                     if (IsMousePositionOnIcon(i))
                     {
@@ -104,7 +104,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         {
             if (_itemSelection.DragNDropMode)
             {
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < _manager.Elements; i++)
                 {
                     if (IsMousePositionOnIcon(i))
                     {
@@ -134,7 +134,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 }
             }
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < _manager.Elements; i++)
             {
                 // if the mouse click is within the current item dimension
                 if (IsMousePositionOnIcon(i))
