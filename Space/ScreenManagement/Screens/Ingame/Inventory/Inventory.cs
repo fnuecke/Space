@@ -15,13 +15,22 @@ using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
 namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
 
-   class InventoryTest : AbstractGuiElement
+    class Inventory : AbstractGuiElement
     {
+        /// <summary>
+        /// The global item selection manager.
+        /// </summary>
         ItemSelectionManager _itemSelection;
 
+        /// <summary>
+        /// The dynamic item list object.
+        /// </summary>
         DynamicItemList _list;
 
-        public InventoryTest(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public Inventory(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
             : base(client)
         {
             _itemSelection = itemSelection;
@@ -52,7 +61,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             base.SetPosition(x, y);
             _list.SetPosition(x, y);
         }
-        
+
+        #region Listener
+
         public override bool DoHandleMousePressed(MouseButtons buttons)
         {
             if (!(Mouse.GetState().X >= GetPosition().X && Mouse.GetState().X <= GetPosition().X + GetWidth() && Mouse.GetState().Y >= GetPosition().Y && Mouse.GetState().Y <= GetPosition().Y + GetHeight()))
@@ -72,5 +83,8 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             _list.DoHandleMouseReleased(buttons);
             return true;
         }
+
+        #endregion
+
     }
 }

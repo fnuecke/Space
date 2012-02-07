@@ -39,7 +39,6 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         public DynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
             : base(client)
         {
-            //_manager = new InventoryManagerTest();
             _textureManager = textureManager;
             _itemSelection = itemSelection;
 
@@ -69,7 +68,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 {
                     var item = invItem.GetComponent<Item>();
                     if (item != null)
+                    {
                         imagePath = item.Texture();
+                    }
                 }
                 // load the image of the icon that is saved in this slot
                 var image = _textureManager.Get(imagePath);
@@ -101,7 +102,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         {
                             var item = invItem.GetComponent<Item>();
                             if (item != null)
+                            {
                                 imagePath = item.Texture();
+                            }
                         } 
                         _itemSelection.DragNDropMode = true;
 
@@ -127,7 +130,6 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
             if (_itemSelection.DragNDropMode)
             {
-                
                 for (int i = 0; i < inventar.Count(); i++)
                 {
                     if (IsMousePositionOnIcon(i))
@@ -144,21 +146,24 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         // rest of the method should not be run.
                         else
                         {
-                            
                             string imagePath = null;
                             var invItem = inventar[i];
-                            if (invItem == null)
-                                return true;
-                            
-                            var item = invItem.GetComponent<Item>();
-                            if (item != null)
-                                imagePath = item.Texture();
+
+                            if (invItem != null) {
+                                var item = invItem.GetComponent<Item>();
+                                if (item != null)
+                                {
+                                    imagePath = item.Texture();
+                                }
+                            }
                             
                             // ... tell the manager to swap the items.
                             var previousId = _itemSelection.SelectedId;
-                            inventar.Swap(previousId, i);
-                            _itemSelection.RemoveSelection();
-                            _itemSelection.DragNDropMode = false;
+                            if (previousId != -1) {
+                                inventar.Swap(previousId, i);
+                                _itemSelection.RemoveSelection();
+                                _itemSelection.DragNDropMode = false;
+                            }
                             return true;
                         }
                     }

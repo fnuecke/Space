@@ -101,6 +101,7 @@ namespace Space.ComponentSystem.Components
 
         public void Swap(int previousId, int i)
         {
+            Console.WriteLine("previousId: " + previousId);
             var helper = _items[i];
             _items[i] = _items[previousId];
             _items[previousId] = helper;

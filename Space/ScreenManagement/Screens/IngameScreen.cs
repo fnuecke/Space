@@ -53,7 +53,7 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         Background _background;
 
-        InventoryTest _inventory;
+        Inventory _inventory;
 
         #endregion
 
@@ -73,7 +73,7 @@ namespace Space.ScreenManagement.Screens
             _elements.Add(new Orbits(client));
             _elements.Add(new Radar(client));
 
-            _inventory = new InventoryTest(client, _itemManager, _textureManager);
+            _inventory = new Inventory(client, _itemManager, _textureManager);
             _elements.Add(_inventory);
 
             _elements.Add(new MouseLayer(client, _itemManager, _textureManager));
