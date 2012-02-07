@@ -8,5 +8,12 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Thruster : Item
     {
+
+        public override string Texture()
+        {
+            if (_itemTexture == null)
+                _itemTexture = "Textures/Icons/Buffs/stabilisator";
+            return _itemTexture;
+        }
     }
 }

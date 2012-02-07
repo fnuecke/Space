@@ -11,12 +11,15 @@ using Space.ScreenManagement.Screens.Helper;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
+using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.RPG.Components;
 
 namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
     class DynamicItemList : AbstractGuiElement, IItem
     {
-        private InventoryManagerTest _manager;
+        //private InventoryManagerTest _manager;
         private ItemSelectionManager _itemSelection;
         private TextureManager _textureManager;
 
@@ -36,7 +39,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         public DynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
             : base(client)
         {
-            _manager = new InventoryManagerTest();
+            //_manager = new InventoryManagerTest();
             _textureManager = textureManager;
             _itemSelection = itemSelection;
 
@@ -54,18 +57,27 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         {
             _spriteBatch.Begin();
 
-            for (int i = 0; i < _manager.Elements; i++)
+            var inventar = _client.GetInventory();
+            
+            for (int i = 0; i < inventar.Count(); i++)
             {
                 // draw the background that is visible if no icon is displayed
                 _basicForms.FillRectangle((int)GetPosition().X + i * (IconSize + Margin), (int)GetPosition().Y, IconSize, IconSize, Color.White * 0.2f);
-
+                string imagePath = null;
+                var invItem = inventar[i];
+                if (invItem != null)
+                {
+                    var item = invItem.GetComponent<Item>();
+                    if (item != null)
+                        imagePath = item.Texture();
+                }
                 // load the image of the icon that is saved in this slot
-                var imagePath = _textureManager.Get(_manager.GetImagePath(i));
+                var image = _textureManager.Get(imagePath);
 
                 // draw the current item if a) an item is available for this slot and b) the item is currently not selected
                 if (imagePath != null && !(_itemSelection.SelectedId == i && _itemSelection.SelectedClass == this))
                 {
-                    _spriteBatch.Draw(imagePath, new Rectangle((int)GetPosition().X + i * (IconSize + Margin), (int)GetPosition().Y, IconSize, IconSize), Color.White);
+                    _spriteBatch.Draw(image, new Rectangle((int)GetPosition().X + i * (IconSize + Margin), (int)GetPosition().Y, IconSize, IconSize), Color.White);
                 }
             }
 
@@ -77,11 +89,20 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             // If no item is selected, select the item and enable the drag 'n drop mode...
             if (!_itemSelection.ItemIsSelected)
             {
-                for (int i = 0; i < _manager.Elements; i++)
+                var inventar = _client.GetInventory();
+
+                for (int i = 0; i < inventar.Count(); i++)
                 {
                     if (IsMousePositionOnIcon(i))
                     {
-                        var imagePath = _manager.GetImagePath(i);
+                        string imagePath = null;
+                        var invItem = inventar[i];
+                        if (invItem != null)
+                        {
+                            var item = invItem.GetComponent<Item>();
+                            if (item != null)
+                                imagePath = item.Texture();
+                        } 
                         _itemSelection.DragNDropMode = true;
 
                         // ... set it selected.
@@ -102,9 +123,12 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
         public override bool DoHandleMouseReleased(MouseButtons buttons)
         {
+            var inventar = _client.GetInventory();
+
             if (_itemSelection.DragNDropMode)
             {
-                for (int i = 0; i < _manager.Elements; i++)
+                
+                for (int i = 0; i < inventar.Count(); i++)
                 {
                     if (IsMousePositionOnIcon(i))
                     {
@@ -120,12 +144,19 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         // rest of the method should not be run.
                         else
                         {
-                            var imagePath = _manager.GetImagePath(i);
-
+                            
+                            string imagePath = null;
+                            var invItem = inventar[i];
+                            if (invItem == null)
+                                return true;
+                            
+                            var item = invItem.GetComponent<Item>();
+                            if (item != null)
+                                imagePath = item.Texture();
+                            
                             // ... tell the manager to swap the items.
                             var previousId = _itemSelection.SelectedId;
-                            _manager.SetImage(_itemSelection.SelectedIcon, i);
-                            _manager.SetImage(imagePath, previousId);
+                            inventar.Swap(previousId, i);
                             _itemSelection.RemoveSelection();
                             _itemSelection.DragNDropMode = false;
                             return true;
@@ -134,20 +165,26 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 }
             }
 
-            for (int i = 0; i < _manager.Elements; i++)
+            for (int i = 0; i < inventar.Count(); i++)
             {
                 // if the mouse click is within the current item dimension
                 if (IsMousePositionOnIcon(i))
                 {
-                    var imagePath = _manager.GetImagePath(i);
-
+                    string imagePath = null;
+                    var invItem = inventar[i];
+                    if (invItem != null)
+                    {
+                        var item = invItem.GetComponent<Item>();
+                        if (item != null)
+                            imagePath = item.Texture();
+                    }
+                    
                     // if an item is currently selected...
                     if (_itemSelection.ItemIsSelected)
                     {
                         // ... tell the manager to swap the items.
                         var previousId = _itemSelection.SelectedId;
-                        _manager.SetImage(_itemSelection.SelectedIcon, i);
-                        _manager.SetImage(imagePath, previousId);
+                        inventar.Swap(i, previousId);
                         _itemSelection.RemoveSelection();
                     }
 

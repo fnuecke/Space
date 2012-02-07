@@ -28,7 +28,7 @@ namespace Space.Control
         /// <summary>
         /// The interval in which we save the player's profile to disk.
         /// </summary>
-        private const int _saveInterval = 60;
+        private const int _saveInterval = 10;
 
         #endregion
 
@@ -131,7 +131,19 @@ namespace Space.Control
             }
             return null;
         }
-
+        public SpaceInventory GetInventory()
+        {
+            var avatarSystem = GetSystem<AvatarSystem>();
+            if (avatarSystem != null)
+            {
+                var avatar = avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
+                if (avatar != null)
+                {
+                    return avatar.GetComponent<SpaceInventory>();
+                }
+            }
+            return null;
+        }
         /// <summary>
         /// Get the information facade for the ship of the specified player,
         /// if possible.

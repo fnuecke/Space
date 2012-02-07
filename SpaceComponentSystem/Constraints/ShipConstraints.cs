@@ -203,7 +203,7 @@ namespace Space.ComponentSystem.Constraints
             entity.AddComponent(equipment);
 
             // Give it an inventory as well.
-            entity.AddComponent(new Inventory());
+            entity.AddComponent(new SpaceInventory());
 
             // Add some character!
             entity.AddComponent(new Character<AttributeType>());

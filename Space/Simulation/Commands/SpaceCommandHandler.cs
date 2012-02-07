@@ -170,8 +170,8 @@ def ge(id):
                         var equipCommand = (EquipCommand)command;
                         try
                         {
-                            var inventory = avatar.GetComponent<Inventory>();
-                            var item = avatar.GetComponent<Inventory>()[equipCommand.InventoryIndex];
+                            var inventory = avatar.GetComponent<SpaceInventory>();
+                            var item = avatar.GetComponent<SpaceInventory>()[equipCommand.InventoryIndex];
                             inventory.RemoveAt(equipCommand.InventoryIndex);
                             avatar.GetComponent<Equipment>().Equip(item, equipCommand.Slot);
                         }
@@ -192,7 +192,7 @@ def ge(id):
                         var addCommand = (AddItemCommand)command;
                         var item = addCommand.Item.DeepCopy();
                         manager.AddEntity(item);
-                        avatar.GetComponent<Inventory>().Add(item);
+                        avatar.GetComponent<SpaceInventory>().Add(item);
                     }
                     break;
 
@@ -226,7 +226,7 @@ def ge(id):
                                 globals.SetVariable("avatar", avatar);
 
                                 var character = avatar.GetComponent<Character<Space.Data.AttributeType>>();
-                                var inventory = avatar.GetComponent<Inventory>();
+                                var inventory = avatar.GetComponent<SpaceInventory>();
                                 var equipment = avatar.GetComponent<Equipment>();
                                 globals.SetVariable("character", character);
                                 globals.SetVariable("inventory", inventory);
