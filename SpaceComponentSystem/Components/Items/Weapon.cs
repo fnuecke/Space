@@ -5,6 +5,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Util;
 using Space.Data;
+using System.Collections.Generic;
 
 namespace Space.ComponentSystem.Components
 {
@@ -75,7 +76,27 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
-
+        #region Logic
+        public override List<Attribute<AttributeType>> Attributes()
+        {
+            if (attributes == null)
+            {
+                attributes = new List<Attribute<AttributeType>>();
+                attributes.Add(new Attribute<AttributeType>(new AttributeModifier<AttributeType>(AttributeType.WeaponDamage, Damage)));
+                foreach (var component in Entity.Components)
+                {
+                    if (component is Attribute<AttributeType>)
+                    {
+                        attributes.Add((Attribute<AttributeType>)component);
+                    }
+                }
+                attributes.Add(new Attribute<AttributeType>(new AttributeModifier<AttributeType>(AttributeType.WeaponCooldown,Cooldown)));
+                attributes.Add(new Attribute<AttributeType>(new AttributeModifier<AttributeType>(AttributeType.WeaponEnergyConsumption, EnergyConsumption)));
+                
+            }
+            return attributes;
+        }
+        #endregion
         #region Serialization / Hashing / Cloning
 
         /// <summary>

@@ -34,7 +34,7 @@ namespace Engine.ComponentSystem.RPG.Components
             return _itemTexture;
         }
 
-        public List<Attribute<TAttribute>> Attributes()
+        public virtual  List<Attribute<TAttribute>> Attributes()
         {
             if (attributes == null)
             {

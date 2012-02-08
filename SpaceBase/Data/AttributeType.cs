@@ -80,6 +80,8 @@
         /// <summary>
         /// Radar Distance for an entity.
         /// </summary>
-        SensorRange
+        SensorRange,
+
+        WeaponDamage
     }
 }

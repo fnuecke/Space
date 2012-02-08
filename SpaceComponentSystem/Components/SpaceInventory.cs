@@ -8,8 +8,7 @@ using Engine.Serialization;
 
 namespace Space.ComponentSystem.Components
 {
-    public class SpaceInventory : AbstractComponent
-    {
+    public class SpaceInventory : AbstractComponent{
         #region Fields
         private ItemHolder[] _items;
         #endregion
