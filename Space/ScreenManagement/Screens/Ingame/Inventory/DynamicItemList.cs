@@ -91,6 +91,23 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 }
             }
 
+            for (int i = 0; i < inventar.Count(); i++)
+            {
+                // draw the tooltip
+                if (IsMousePositionOnIcon(i) && inventar[i] != null)
+                {
+                    _basicForms.FillRectangle(WestX(i) + IconSize + 10, NorthY(i), 200, 100, Color.Black * 0.5f);
+
+                    SpriteFont font = _content.Load<SpriteFont>("Fonts/ConsoleFont");
+                    var line = 1;
+                    _spriteBatch.DrawString(font, "Lalala", new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                    line++;
+                    _spriteBatch.DrawString(font, "Lalala", new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                    line++;
+                }
+            }
+
+
             _spriteBatch.End();
         }
 
