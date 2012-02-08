@@ -195,7 +195,12 @@ def ge(id):
                         avatar.GetComponent<SpaceInventory>().Add(item);
                     }
                     break;
-
+                case SpaceCommandType.MoveItem:
+                    {
+                        var moveCommand =(MoveItemCommand)command;
+                        avatar.GetComponent<SpaceInventory>().Swap(moveCommand.Id1, moveCommand.Id2);
+                    }
+                    break;
                 case SpaceCommandType.ScriptCommand:
                     // Script command.
                     {

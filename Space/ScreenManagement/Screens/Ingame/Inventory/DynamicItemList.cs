@@ -14,6 +14,7 @@ using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.ComponentSystem.RPG.Components;
+using Space.Simulation.Commands;
 
 namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
@@ -167,7 +168,8 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                             // ... tell the manager to swap the items.
                             var previousId = _itemSelection.SelectedId;
                             if (previousId != -1) {
-                                inventar.Swap(previousId, i);
+                                _client.Controller.PushLocalCommand(new MoveItemCommand(i,previousId));
+                                _client.Save();
                                 _itemSelection.RemoveSelection();
                                 _itemSelection.DragNDropMode = false;
                             }
@@ -196,7 +198,8 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     {
                         // ... tell the manager to swap the items.
                         var previousId = _itemSelection.SelectedId;
-                        inventar.Swap(i, previousId);
+                        _client.Controller.PushLocalCommand(new MoveItemCommand(i, previousId));
+                        _client.Save();
                         _itemSelection.RemoveSelection();
                     }
 

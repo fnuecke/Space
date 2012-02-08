@@ -28,7 +28,7 @@ namespace Space.Control
         /// <summary>
         /// The interval in which we save the player's profile to disk.
         /// </summary>
-        private const int _saveInterval = 10;
+        private const int _saveInterval = 60;
 
         #endregion
 
@@ -226,7 +226,12 @@ namespace Space.Control
                 _lastSave = DateTime.Now;
             }
         }
-
+        public void Save()
+        {
+            Settings.Instance.CurrentProfile.Capture(GetPlayerShipInfo().Entity);
+            Settings.Instance.CurrentProfile.Save();
+            _lastSave = DateTime.Now;
+        }
         #endregion
 
         #region Event handlers
