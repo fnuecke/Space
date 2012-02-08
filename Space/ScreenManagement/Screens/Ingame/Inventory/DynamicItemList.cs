@@ -100,10 +100,23 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
                     SpriteFont font = _content.Load<SpriteFont>("Fonts/ConsoleFont");
                     var line = 1;
-                    _spriteBatch.DrawString(font, "Lalala", new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
-                    line++;
-                    _spriteBatch.DrawString(font, "Lalala", new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
-                    line++;
+                    var invItem = inventar[i];
+                    if (invItem != null)
+                    {
+                        var item = invItem.GetComponent<Item<AttributeType>>();
+                        if (item != null)
+                        {
+                            _spriteBatch.DrawString(font, item.Name(), new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                            line++;
+                            var attributes = item.Attributes();
+                            foreach (var attribute in attributes)
+                            {
+                                _spriteBatch.DrawString(font, attribute.Modifier.Type+" "+attribute.Modifier.Value, new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                                line++;
+                            }
+                        }
+                    }
+                    
                 }
             }
 
