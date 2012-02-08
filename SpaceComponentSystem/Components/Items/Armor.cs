@@ -9,5 +9,13 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Armor : Item<AttributeType>
     {
+        public Armor()
+        {
+            
+        }
+        public Armor(string name)
+        {
+            _name = name;
+        }
     }
 }

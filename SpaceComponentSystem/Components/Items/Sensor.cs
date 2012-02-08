@@ -8,5 +8,13 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Sensor : Item<AttributeType>
     {
+        public Sensor()
+        {
+            
+        }
+        public Sensor(string name)
+        {
+            _name = name;
+        }
     }
 }

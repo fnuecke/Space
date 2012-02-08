@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using Engine.ComponentSystem.RPG.Components;
+using Engine.Serialization;
 namespace Engine.ComponentSystem.RPG.Components
 {
     /// <summary>
@@ -12,8 +13,8 @@ namespace Engine.ComponentSystem.RPG.Components
 
         where TAttribute : struct
     {
-        protected string _itemTexture;
-        protected string _name;
+        protected string _itemTexture = "Textures/Icons/Buffs/default";
+        protected string _name = "Test Name";
         protected List<Attribute<TAttribute>> attributes;
        
         public string Name()
@@ -47,6 +48,31 @@ namespace Engine.ComponentSystem.RPG.Components
                 }
             }
             return attributes;
+        }
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Packet Packetize(Packet packet)
+        {
+            return base.Packetize(packet)
+                .Write(_itemTexture)
+                .Write(_name);
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+
+            _itemTexture = packet.ReadString();
+            _name = packet.ReadString();
         }
     }
 }

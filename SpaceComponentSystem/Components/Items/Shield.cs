@@ -8,5 +8,13 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Shield : Item<AttributeType>
     {
+        public Shield()
+        {
+           
+        }
+        public Shield(string name)
+        {
+            _name = name;
+        }
     }
 }

@@ -614,7 +614,7 @@ namespace Space.Session
             {
                 _data.Write(1); // Number of items.
                 _data.Write(0); // Slot number.
-                _data.Write(item.Sample(null)); // Actual item.
+                _data.Write(item.Sample(item.Name,null)); // Actual item.
             }
         }
         /// <summary>
@@ -633,7 +633,7 @@ namespace Space.Session
             {
                 
                 _data.Write(1); // number.
-                _data.Write(item.Sample(null)); // Actual item.
+                _data.Write(item.Sample(item.Name,null)); // Actual item.
             }
         }
         #endregion

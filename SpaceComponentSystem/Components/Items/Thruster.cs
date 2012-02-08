@@ -9,7 +9,14 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Thruster : Item<AttributeType>
     {
-
+        public Thruster()
+        {
+          
+        }
+        public Thruster(string name)
+        {
+            _name = name;
+        }
         public override string Texture()
         {
             if (_itemTexture == null)

@@ -49,6 +49,16 @@ namespace Space.ComponentSystem.Components
 
         #region Constructor
 
+        public Weapon(string texture, string sound, float cooldown, float energyConsumption, float damage, ProjectileConstraints[] projectiles,string name)
+        {
+            this.Texture = texture;
+            this.Sound = sound;
+            this.Cooldown = cooldown;
+            this.EnergyConsumption = energyConsumption;
+            this.Damage = damage;
+            this.Projectiles = projectiles;
+            _name = name;
+        }
         public Weapon(string texture, string sound, float cooldown, float energyConsumption, float damage, ProjectileConstraints[] projectiles)
         {
             this.Texture = texture;
@@ -57,10 +67,11 @@ namespace Space.ComponentSystem.Components
             this.EnergyConsumption = energyConsumption;
             this.Damage = damage;
             this.Projectiles = projectiles;
+            _name = "Weapon";
         }
-
         public Weapon()
         {
+            
         }
 
         #endregion
