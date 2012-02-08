@@ -43,6 +43,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
         private IngameScreen _ingameScreen;
 
         /// <summary>
+        /// A handler that handles global inputs.
+        /// </summary>
+        private GeneralHandler _generalHandler;
+
+        /// <summary>
         /// The keyboard used for player input.
         /// </summary>
         private IKeyboard _keyboard;
@@ -75,6 +80,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             _client = client;
             _ingameScreen = ingameScreen;
+            _generalHandler = new GeneralHandler(client, ingameScreen);
 
             _keyboard = ((IKeyboard)client.Game.Services.GetService(typeof(IKeyboard)));
             _mouse = ((IMouse)client.Game.Services.GetService(typeof(IMouse)));
@@ -116,6 +122,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 }
             }
 
+            // call the general handler
+            _generalHandler.HandleKeyPressed(key);
+
             //temporal only
             _originInputHandler.HandleKeyPressed(key);
         }
@@ -136,6 +145,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     return;
                 }
             }
+
+            // call the general handler
+            _generalHandler.HandleKeyReleased(key);
 
             //temporal only
             _originInputHandler.HandleKeyReleased(key);
@@ -162,6 +174,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 }
             }
 
+            // call the general handler
+            _generalHandler.HandleMousePressed(buttons);
+
             //temporal only
             _originInputHandler.HandleMousePressed(buttons);
             
@@ -184,6 +199,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 }
             }
 
+            // call the general handler
+            _generalHandler.HandleMouseReleased(buttons);
+
             //temporal only
             _originInputHandler.HandleMouseReleased(buttons);
         }
@@ -204,6 +222,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     return;
                 }
             }
+
+            // call the general handler
+            _generalHandler.HandleMouseMoved(x, y);
 
             //temporal only
             _originInputHandler.HandleMouseMoved(x, y);
@@ -230,6 +251,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 }
             }
 
+            // call the general handler
+            _generalHandler.HandleGamePadPressed(buttons);
+
             //temporal only
             _originInputHandler.HandleGamePadPressed(buttons);
         }
@@ -250,6 +274,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     return;
                 }
             }
+
+            // call the general handler
+            _generalHandler.HandleGamePadReleased(buttons);
 
             //temporal only
             _originInputHandler.HandleGamePadReleased(buttons);

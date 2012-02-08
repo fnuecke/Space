@@ -474,7 +474,20 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// <returns>The status if an user input is allowed for the GUI element.</returns>
         private bool IsInputHandlingAllowed()
         {
-            return Enabled;
+            return Visible && Enabled;
+        }
+
+        /// <summary>
+        /// Calculates if the mouse position is currenty within this element.
+        /// The element is calculated by the element position, its width and height.
+        /// </summary>
+        /// <returns><code>true</code> of the mouse is within this element.</returns>
+        public bool IsMouseClickedInElement()
+        {
+            return Mouse.GetState().X >= GetPosition().X
+                && Mouse.GetState().X <= GetPosition().X + GetWidth()
+                && Mouse.GetState().Y >= GetPosition().Y
+                && Mouse.GetState().Y <= GetPosition().Y + GetHeight();
         }
 
         #endregion

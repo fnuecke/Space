@@ -224,5 +224,34 @@ namespace Space.ScreenManagement.Screens
         }
 
         #endregion
+
+        #region Visibility Getter / Setter
+
+        /// <summary>
+        /// Opens the inventory.
+        /// </summary>
+        public void OpenInventory()
+        {
+            _inventory.Visible = true;
+        }
+
+        /// <summary>
+        /// Closes the inventory.
+        /// </summary>
+        public void CloseInventory()
+        {
+            _inventory.Visible = false;
+        }
+
+        /// <summary>
+        /// Returns if the inventory is visible or not.
+        /// </summary>
+        /// <returns><code>True</code> if the inventory is visible, <code>false</code> else.</returns>
+        public bool IsInventoryVisible()
+        {
+            return _inventory.Visible;
+        }
+
+        #endregion
     }
 }

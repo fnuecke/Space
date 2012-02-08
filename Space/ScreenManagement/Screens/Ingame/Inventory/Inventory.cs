@@ -48,16 +48,17 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
         public override void Draw()
         {
-            _spriteBatch.Begin();
-            _basicForms.FillRectangle((int)GetPosition().X, (int)GetPosition().Y, (int)GetWidth(), (int)GetHeight(), Color.Black * 0.6f);
-            _spriteBatch.End();
+            if (Visible) {
+                _spriteBatch.Begin();
+                _basicForms.FillRectangle((int)GetPosition().X, (int)GetPosition().Y, (int)GetWidth(), (int)GetHeight(), Color.Black * 0.6f);
+                _spriteBatch.End();
 
-            _list.Draw();
+                _list.Draw();
+            }
         }
 
         public override void SetPosition(float x, float y)
         {
-            Console.WriteLine(">>> SetPosition <<<");
             base.SetPosition(x, y);
             _list.SetPosition(x + 5, y + 5);
         }
@@ -66,7 +67,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
         public override bool DoHandleMousePressed(MouseButtons buttons)
         {
-            if (!(Mouse.GetState().X >= GetPosition().X && Mouse.GetState().X <= GetPosition().X + GetWidth() && Mouse.GetState().Y >= GetPosition().Y && Mouse.GetState().Y <= GetPosition().Y + GetHeight()))
+            if (!IsMouseClickedInElement())
             {
                 return false;
             }
@@ -76,7 +77,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
         public override bool DoHandleMouseReleased(MouseButtons buttons)
         {
-            if (!(Mouse.GetState().X >= GetPosition().X && Mouse.GetState().X <= GetPosition().X + GetWidth() && Mouse.GetState().Y >= GetPosition().Y && Mouse.GetState().Y <= GetPosition().Y + GetHeight()))
+            if (!IsMouseClickedInElement())
             {
                 return false;
             }
