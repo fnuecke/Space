@@ -4,6 +4,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using Space.ComponentSystem.Components;
+using Space.Data;
 
 namespace Space.Simulation.Commands
 {
@@ -173,7 +174,9 @@ def ge(id):
                             var inventory = avatar.GetComponent<SpaceInventory>();
                             var item = avatar.GetComponent<SpaceInventory>()[equipCommand.InventoryIndex];
                             inventory.RemoveAt(equipCommand.InventoryIndex);
-                            avatar.GetComponent<Equipment>().Equip(item, equipCommand.Slot);
+                            var itemOld = avatar.GetComponent<Equipment>().Equip<AttributeType>(item, equipCommand.Slot);
+                            if (itemOld > 0)
+                                inventory.AddItem(itemOld, equipCommand.InventoryIndex);
                         }
                         catch (IndexOutOfRangeException ex)
                         {

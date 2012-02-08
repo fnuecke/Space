@@ -75,19 +75,19 @@ namespace Space.ComponentSystem.Entities
 
             var item = ConstraintsLibrary.GetConstraints<ThrusterConstraints>("Level 1 AI Thruster").Sample(random);
             manager.AddEntity(item);
-            equipment.Equip(item, 0);
+            equipment.Equip<AttributeType>(item, 0);
 
             item = ConstraintsLibrary.GetConstraints<ReactorConstraints>("Level 1 AI Reactor").Sample(random);
             manager.AddEntity(item);
-            equipment.Equip(item, 0);
+            equipment.Equip<AttributeType>(item, 0);
 
             item = ConstraintsLibrary.GetConstraints<ArmorConstraints>("Level 1 AI Armor").Sample(random);
             manager.AddEntity(item);
-            equipment.Equip(item, 0);
+            equipment.Equip<AttributeType>(item, 0);
 
             item = ConstraintsLibrary.GetConstraints<WeaponConstraints>("Level 1 AI Weapon").Sample(random);
             manager.AddEntity(item);
-            equipment.Equip(item, 0);
+            equipment.Equip<AttributeType>(item, 0);
 
             return entity;
         }

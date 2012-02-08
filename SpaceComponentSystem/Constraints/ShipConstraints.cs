@@ -194,12 +194,12 @@ namespace Space.ComponentSystem.Constraints
 
             // Create equipment slots.
             var equipment = new Equipment();
-            equipment.SetSlotCount<Sensor>(SensorSlots);
-            equipment.SetSlotCount<Armor>(ArmorSlots);
-            equipment.SetSlotCount<Reactor>(ReactorSlots);
-            equipment.SetSlotCount<Shield>(ShieldSlots);
-            equipment.SetSlotCount<Thruster>(ThrusterSlots);
-            equipment.SetSlotCount<Weapon>(WeaponSlots);
+            equipment.SetSlotCount<Sensor, AttributeType>(SensorSlots);
+            equipment.SetSlotCount<Armor, AttributeType>(ArmorSlots);
+            equipment.SetSlotCount<Reactor, AttributeType>(ReactorSlots);
+            equipment.SetSlotCount<Shield, AttributeType>(ShieldSlots);
+            equipment.SetSlotCount<Thruster, AttributeType>(ThrusterSlots);
+            equipment.SetSlotCount<Weapon, AttributeType>(WeaponSlots);
             entity.AddComponent(equipment);
 
             // Give it an inventory as well.

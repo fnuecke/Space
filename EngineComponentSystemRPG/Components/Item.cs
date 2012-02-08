@@ -8,11 +8,13 @@ namespace Engine.ComponentSystem.RPG.Components
     /// Marks an entity as being an item. This should be extended to add item
     /// specific properties, as necessary.
     /// </summary>
-    public class Item : AbstractComponent
+    public class Item<TAttribute> : AbstractComponent
+
+        where TAttribute : struct
     {
         protected string _itemTexture;
         protected string _name;
-
+        protected List<Attribute<TAttribute>> attributes;
        
         public string Name()
         {
@@ -31,21 +33,20 @@ namespace Engine.ComponentSystem.RPG.Components
             return _itemTexture;
         }
 
-        //public List<Attribute<TAttribute>> Attributes<TAttribute>()
-        //where TAttribute : struct
-        //{
-        //    if (attributes == null)
-        //    {
-        //        attributes = new List<Attribute<TAttribute>>();
-        //        foreach (var component in Entity.Components)
-        //        {
-        //            if (component is Attribute<TAttribute>)
-        //            {
-        //                attributes.Add((Attribute<TAttribute>)component);
-        //            }
-        //        }
-        //    }
-        //    return attributes;
-        //}
+        public List<Attribute<TAttribute>> Attributes()
+        {
+            if (attributes == null)
+            {
+                attributes = new List<Attribute<TAttribute>>();
+                foreach (var component in Entity.Components)
+                {
+                    if (component is Attribute<TAttribute>)
+                    {
+                        attributes.Add((Attribute<TAttribute>)component);
+                    }
+                }
+            }
+            return attributes;
+        }
     }
 }

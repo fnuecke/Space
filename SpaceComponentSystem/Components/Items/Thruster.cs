@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -6,7 +7,7 @@ namespace Space.ComponentSystem.Components
     /// Represents a single thruster item, which is responsible for providing
     /// a base speed for a certain energy drained.
     /// </summary>
-    public sealed class Thruster : Item
+    public sealed class Thruster : Item<AttributeType>
     {
 
         public override string Texture()

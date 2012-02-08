@@ -48,6 +48,12 @@ namespace Space.ComponentSystem.Components
                 _items[index] = new ItemHolder();
             _items[index].AddItem(item.UID);
         }
+        public void AddItem(int item, int index)
+        {
+            if (_items[index] == null)
+                _items[index] = new ItemHolder();
+            _items[index].AddItem(item);
+        }
         public Entity this[int index]
         {
             get

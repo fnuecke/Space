@@ -472,7 +472,7 @@ namespace Space.Session
                 }
 
                 // Set restored slot count.
-                equipment.SetSlotCount(itemType, slotCount);
+                equipment.SetSlotCount < AttributeType>(itemType, slotCount);
 
                 // Read items and equip them.
                 int numItemsOfType = _data.ReadInt32();
@@ -483,7 +483,7 @@ namespace Space.Session
                     // Reset uid, add to our entity manager.
                     item.UID = -1;
                     manager.AddEntity(item);
-                    equipment.Equip(item, slot);
+                    equipment.Equip < AttributeType>(item, slot);
                 }
             }
 

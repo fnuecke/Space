@@ -15,6 +15,7 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Space.Simulation.Commands;
+using Space.Data;
 
 namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
@@ -75,7 +76,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 var invItem = inventar[i];
                 if (invItem != null)
                 {
-                    var item = invItem.GetComponent<Item>();
+                    var item = invItem.GetComponent < Item<AttributeType>>();
                     if (item != null)
                     {
                         imagePath = item.Texture();
@@ -108,7 +109,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         var invItem = inventar[i];
                         if (invItem != null)
                         {
-                            var item = invItem.GetComponent<Item>();
+                            var item = invItem.GetComponent < Item<AttributeType>>();
                             if (item != null)
                             {
                                 imagePath = item.Texture();
@@ -158,7 +159,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                             var invItem = inventar[i];
 
                             if (invItem != null) {
-                                var item = invItem.GetComponent<Item>();
+                                var item = invItem.GetComponent<Item<AttributeType>>();
                                 if (item != null)
                                 {
                                     imagePath = item.Texture();
@@ -188,7 +189,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     var invItem = inventar[i];
                     if (invItem != null)
                     {
-                        var item = invItem.GetComponent<Item>();
+                        var item = invItem.GetComponent < Item<AttributeType>>();
                         if (item != null)
                             imagePath = item.Texture();
                     }

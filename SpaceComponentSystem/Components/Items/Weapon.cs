@@ -4,13 +4,14 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Util;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
     /// <summary>
     /// Represents a single weapon item.
     /// </summary>
-    public sealed class Weapon : Item
+    public sealed class Weapon : Item<AttributeType>
     {
         #region Fields
 
