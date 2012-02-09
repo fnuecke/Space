@@ -2459,7 +2459,7 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
-    <Compile Include="Textures\Icons\Platzhalter\43.PNG">
+    <Compile Include="Textures\Icons\Platzhalter\43.png">
       <Name>43</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>

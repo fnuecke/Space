@@ -251,28 +251,44 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     {
                         imagePath = item.Texture();
                     }
-                    
+
                     // if an item is currently selected...
                     if (_itemSelection.ItemIsSelected)
                     {
                         // ... tell the manager to swap the items.
-                        var previousId = _itemSelection.SelectedId;
-                        _client.Controller.PushLocalCommand(new MoveItemCommand(i, previousId));
-                        _client.Save();
-                        _itemSelection.RemoveSelection();
+                        // but only if the slots are different ones...
+                        if (i != _itemSelection.SelectedId)
+                        {
+                            _client.Controller.PushLocalCommand(new MoveItemCommand(i, _itemSelection.SelectedId));
+                            _client.Save();
+                        }
+                        // ... if they are the same slots just remove the selection and do nothing
+                        else
+                        {
+                            _itemSelection.RemoveSelection();
+                            break;
+                        }
+
+                        // if the item was set into a slot which also holds an item
+                        // then set the item from the slot as a selected one ...
+                        if (ItemAt(i) != null)
+                        {
+                            _itemSelection.SetSelection(this, i, imagePath);
+                        }
+                        // ... but remove the selecten if the slot was empty.
+                        else
+                        {
+                            _itemSelection.RemoveSelection();
+                        }
                     }
 
                     // if no item is selected...
                     else
                     {
                         // ... set it selected.
-                        if (imagePath != null)
+                        if (ItemAt(i) != null)
                         {
                             _itemSelection.SetSelection(this, i, imagePath);
-                        }
-                        else
-                        {
-                            _itemSelection.RemoveSelection();
                         }
                     }
                     break;

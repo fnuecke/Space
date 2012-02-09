@@ -78,15 +78,15 @@ namespace Space.ScreenManagement.Screens.Ingame.GuiElementManager
         /// <summary>
         /// Set a new selection and set all properties.
         /// </summary>
-        /// <param name="SelectedClass">The object of the class that holds the selected item.</param>
-        /// <param name="SelectedId">The ID of the selected item.</param>
-        /// <param name="SelectedItem">The icon object of the displayed icon.</param>
-        public void SetSelection(IItem SelectedClass, int SelectedId, String SelectedItem)
+        /// <param name="selectedClass">The object of the class that holds the selected item.</param>
+        /// <param name="selectedId">The ID of the selected item.</param>
+        /// <param name="selectedItem">The icon object of the displayed icon.</param>
+        public void SetSelection(IItem selectedClass, int selectedId, String selectedItem)
         {
-            this.SelectedClass = SelectedClass;
-            this.SelectedId = SelectedId;
-            this.SelectedIcon = SelectedItem;
-            this.ItemIsSelected = true;
+            SelectedClass = selectedClass;
+            SelectedId = selectedId;
+            SelectedIcon = selectedItem;
+            ItemIsSelected = true;
         }
 
         #endregion
