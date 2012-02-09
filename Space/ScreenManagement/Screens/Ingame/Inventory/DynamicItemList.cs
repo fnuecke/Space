@@ -168,56 +168,14 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
         public override bool DoHandleMousePressed(MouseButtons buttons)
         {
-            // If no item is selected, select the item and enable the drag 'n drop mode...
-            if (!_itemSelection.ItemIsSelected)
+            if (buttons == MouseButtons.Left)
             {
-                for (int i = 0; i < DataCount(); i++)
+                // If no item is selected, select the item and enable the drag 'n drop mode...
+                if (!_itemSelection.ItemIsSelected)
                 {
-                    if (IsMousePositionOnIcon(i))
+                    for (int i = 0; i < DataCount(); i++)
                     {
-                        string imagePath = null;
-                        var item = ItemAt(i);
-                        if (item != null)
-                        {
-                            imagePath = item.Texture();
-                        } 
-                        _itemSelection.DragNDropMode = true;
-
-                        // ... set it selected.
-                        if (imagePath != null)
-                        {
-                            _itemSelection.SetSelection(this, i, imagePath);
-                        }
-                    }
-                }
-            }
-            // otherwise disable the Drag 'n Drop Mode
-            else
-            {
-                _itemSelection.DragNDropMode = false;
-            }
-            return false;
-        }
-
-        public override bool DoHandleMouseReleased(MouseButtons buttons)
-        {
-            if (_itemSelection.DragNDropMode)
-            {
-                for (int i = 0; i < DataCount(); i++)
-                {
-                    if (IsMousePositionOnIcon(i))
-                    {
-                        // if it is the same slot set the variable sameItem to true to signal
-                        // that the rest of the method should be run
-                        if (i == _itemSelection.SelectedId)
-                        {
-                            _itemSelection.RemoveSelection();
-                            _itemSelection.DragNDropMode = false;
-                            break;
-                        }
-                        // if it is _not_ the same icon set the variable sameItem to false. The
-                        // rest of the method should not be run.
-                        else
+                        if (IsMousePositionOnIcon(i))
                         {
                             string imagePath = null;
                             var item = ItemAt(i);
@@ -225,77 +183,125 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                             {
                                 imagePath = item.Texture();
                             }
-                            
-                            // ... tell the manager to swap the items.
-                            var previousId = _itemSelection.SelectedId;
-                            if (previousId != -1) {
-                                _client.Controller.PushLocalCommand(new MoveItemCommand(i,previousId));
-                                _client.Save();
+                            _itemSelection.DragNDropMode = true;
+
+                            // ... set it selected.
+                            if (imagePath != null)
+                            {
+                                _itemSelection.SetSelection(this, i, imagePath);
+                            }
+                        }
+                    }
+                }
+                // otherwise disable the Drag 'n Drop Mode
+                else
+                {
+                    _itemSelection.DragNDropMode = false;
+                }
+            }
+            return false;
+        }
+
+        public override bool DoHandleMouseReleased(MouseButtons buttons)
+        {
+            if (buttons == MouseButtons.Left)
+            {
+                if (_itemSelection.DragNDropMode)
+                {
+                    for (int i = 0; i < DataCount(); i++)
+                    {
+                        if (IsMousePositionOnIcon(i))
+                        {
+                            // if it is the same slot set the variable sameItem to true to signal
+                            // that the rest of the method should be run
+                            if (i == _itemSelection.SelectedId)
+                            {
                                 _itemSelection.RemoveSelection();
                                 _itemSelection.DragNDropMode = false;
+                                break;
                             }
-                            return true;
+                            // if it is _not_ the same icon set the variable sameItem to false. The
+                            // rest of the method should not be run.
+                            else
+                            {
+                                string imagePath = null;
+                                var item = ItemAt(i);
+                                if (item != null)
+                                {
+                                    imagePath = item.Texture();
+                                }
+
+                                // ... tell the manager to swap the items.
+                                var previousId = _itemSelection.SelectedId;
+                                if (previousId != -1)
+                                {
+                                    _client.Controller.PushLocalCommand(new MoveItemCommand(i, previousId));
+                                    _client.Save();
+                                    _itemSelection.RemoveSelection();
+                                    _itemSelection.DragNDropMode = false;
+                                }
+                                return true;
+                            }
                         }
                     }
                 }
-            }
 
-            for (int i = 0; i < DataCount(); i++)
-            {
-                // if the mouse click is within the current item dimension
-                if (IsMousePositionOnIcon(i))
+                for (int i = 0; i < DataCount(); i++)
                 {
-                    string imagePath = null;
-                    var item = ItemAt(i);
-                    if (item != null)
+                    // if the mouse click is within the current item dimension
+                    if (IsMousePositionOnIcon(i))
                     {
-                        imagePath = item.Texture();
-                    }
-
-                    // if an item is currently selected...
-                    if (_itemSelection.ItemIsSelected)
-                    {
-                        // ... tell the manager to swap the items.
-                        // but only if the slots are different ones...
-                        if (i != _itemSelection.SelectedId)
+                        string imagePath = null;
+                        var item = ItemAt(i);
+                        if (item != null)
                         {
-                            _client.Controller.PushLocalCommand(new MoveItemCommand(i, _itemSelection.SelectedId));
-                            _client.Save();
+                            imagePath = item.Texture();
                         }
-                        // ... if they are the same slots just remove the selection and do nothing
+
+                        // if an item is currently selected...
+                        if (_itemSelection.ItemIsSelected)
+                        {
+                            // ... tell the manager to swap the items.
+                            // but only if the slots are different ones...
+                            if (i != _itemSelection.SelectedId)
+                            {
+                                _client.Controller.PushLocalCommand(new MoveItemCommand(i, _itemSelection.SelectedId));
+                                _client.Save();
+                            }
+                            // ... if they are the same slots just remove the selection and do nothing
+                            else
+                            {
+                                _itemSelection.RemoveSelection();
+                                break;
+                            }
+
+                            // if the item was set into a slot which also holds an item
+                            // then set the item from the slot as a selected one ...
+                            if (ItemAt(i) != null)
+                            {
+                                _itemSelection.SetSelection(this, i, imagePath);
+                            }
+                            // ... but remove the selecten if the slot was empty.
+                            else
+                            {
+                                _itemSelection.RemoveSelection();
+                            }
+                        }
+
+                        // if no item is selected...
                         else
                         {
-                            _itemSelection.RemoveSelection();
-                            break;
+                            // ... set it selected.
+                            if (ItemAt(i) != null)
+                            {
+                                _itemSelection.SetSelection(this, i, imagePath);
+                            }
                         }
-
-                        // if the item was set into a slot which also holds an item
-                        // then set the item from the slot as a selected one ...
-                        if (ItemAt(i) != null)
-                        {
-                            _itemSelection.SetSelection(this, i, imagePath);
-                        }
-                        // ... but remove the selecten if the slot was empty.
-                        else
-                        {
-                            _itemSelection.RemoveSelection();
-                        }
+                        break;
                     }
 
-                    // if no item is selected...
-                    else
-                    {
-                        // ... set it selected.
-                        if (ItemAt(i) != null)
-                        {
-                            _itemSelection.SetSelection(this, i, imagePath);
-                        }
-                    }
-                    break;
                 }
-
             }
-
             return true;
         }
 
