@@ -35,7 +35,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         {
             _itemSelection = itemSelection;
 
-            _list = new DynamicItemList(client, itemSelection, textureManager);
+            _list = new DynamicItemList(client, itemSelection, textureManager, DynamicItemList.Modes.Inventory);
         }
 
         public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)

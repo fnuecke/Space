@@ -16,14 +16,48 @@ using Engine.ComponentSystem.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Space.Simulation.Commands;
 using Space.Data;
+using Space.ComponentSystem.Components;
 
 namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
+
+    /// <summary>
+    /// A class that displayed a specific number of item slots.
+    /// 
+    /// By setting new values for the properties the design can be changed.
+    /// Several input handlers and mouse over effects makes it possible to
+    /// move items to different the slots. By using the basic item selection
+    /// manager its also possible to move them to other DynamicItemList objects.
+    /// </summary>
     class DynamicItemList : AbstractGuiElement, IItem
     {
-        //private InventoryManagerTest _manager;
+
+        #region Constants
+
+        /// <summary>
+        /// Enumeration that holds the possible modes. Necessary to get the correct data.
+        /// </summary>
+        public enum Modes {
+            Inventory
+        }
+
+        #endregion
+        
+        #region Fields
+
+        /// <summary>
+        /// The basic item selection manager.
+        /// </summary>
         private ItemSelectionManager _itemSelection;
+
+        /// <summary>
+        /// The basic texture manager.
+        /// </summary>
         private TextureManager _textureManager;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// The size (height and width) of the icons
@@ -41,13 +75,23 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         public int ElementsEachRow { get; set; }
 
         /// <summary>
+        /// The number of icons that are displayed each row.
+        /// </summary>
+        public Modes Mode { get; set; }
+
+        #endregion
+
+        #region Initialisation
+
+        /// <summary>
         /// Constructor
         /// </summary>
-        public DynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
+        public DynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager, Modes mode)
             : base(client)
         {
             _textureManager = textureManager;
             _itemSelection = itemSelection;
+            Mode = mode;
 
             IconSize = 35;
             Margin = 2;
@@ -60,27 +104,25 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             base.Enabled = true;
         }
 
+        #endregion
+
+        #region Draw
+
         public override void Draw()
         {
             _spriteBatch.Begin();
 
-            var inventar = _client.GetInventory();
-            
-            for (int i = 0; i < inventar.Count(); i++)
+            for (int i = 0; i < DataCount(); i++)
             {
                 // draw the background that is visible if no icon is displayed
                 _basicForms.FillRectangle(WestX(i), NorthY(i), IconSize, IconSize, Color.White * 0.2f);
 
                 // load the image of the icon that is saved in this slot
                 string imagePath = null;
-                var invItem = inventar[i];
-                if (invItem != null)
+                var item = ItemAt(i);
+                if (item != null)
                 {
-                    var item = invItem.GetComponent < Item<AttributeType>>();
-                    if (item != null)
-                    {
-                        imagePath = item.Texture();
-                    }
+                    imagePath = item.Texture();
                 }
                 var image = _textureManager.Get(imagePath);
 
@@ -91,29 +133,25 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 }
             }
 
-            for (int i = 0; i < inventar.Count(); i++)
+            for (int i = 0; i < DataCount(); i++)
             {
                 // draw the tooltip
-                if (IsMousePositionOnIcon(i) && inventar[i] != null)
+                if (IsMousePositionOnIcon(i) && ItemAt(i) != null)
                 {
                     _basicForms.FillRectangle(WestX(i) + IconSize + 10, NorthY(i), 200, 100, Color.Black * 0.5f);
 
                     SpriteFont font = _content.Load<SpriteFont>("Fonts/ConsoleFont");
                     var line = 1;
-                    var invItem = inventar[i];
-                    if (invItem != null)
+                    var item = ItemAt(i);
+                    if (item != null)
                     {
-                        var item = invItem.GetComponent<Item<AttributeType>>();
-                        if (item != null)
+                        _spriteBatch.DrawString(font, item.Name(), new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                        line++;
+                        var attributes = item.Attributes();
+                        foreach (var attribute in attributes)
                         {
-                            _spriteBatch.DrawString(font, item.Name(), new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                            _spriteBatch.DrawString(font, attribute.Modifier.Type+" "+attribute.Modifier.Value, new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
                             line++;
-                            var attributes = item.Attributes();
-                            foreach (var attribute in attributes)
-                            {
-                                _spriteBatch.DrawString(font, attribute.Modifier.Type+" "+attribute.Modifier.Value, new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
-                                line++;
-                            }
                         }
                     }
                     
@@ -124,26 +162,24 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             _spriteBatch.End();
         }
 
+        #endregion
+
+        #region Listener
+
         public override bool DoHandleMousePressed(MouseButtons buttons)
         {
             // If no item is selected, select the item and enable the drag 'n drop mode...
             if (!_itemSelection.ItemIsSelected)
             {
-                var inventar = _client.GetInventory();
-
-                for (int i = 0; i < inventar.Count(); i++)
+                for (int i = 0; i < DataCount(); i++)
                 {
                     if (IsMousePositionOnIcon(i))
                     {
                         string imagePath = null;
-                        var invItem = inventar[i];
-                        if (invItem != null)
+                        var item = ItemAt(i);
+                        if (item != null)
                         {
-                            var item = invItem.GetComponent < Item<AttributeType>>();
-                            if (item != null)
-                            {
-                                imagePath = item.Texture();
-                            }
+                            imagePath = item.Texture();
                         } 
                         _itemSelection.DragNDropMode = true;
 
@@ -165,11 +201,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
         public override bool DoHandleMouseReleased(MouseButtons buttons)
         {
-            var inventar = _client.GetInventory();
-
             if (_itemSelection.DragNDropMode)
             {
-                for (int i = 0; i < inventar.Count(); i++)
+                for (int i = 0; i < DataCount(); i++)
                 {
                     if (IsMousePositionOnIcon(i))
                     {
@@ -186,14 +220,10 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         else
                         {
                             string imagePath = null;
-                            var invItem = inventar[i];
-
-                            if (invItem != null) {
-                                var item = invItem.GetComponent<Item<AttributeType>>();
-                                if (item != null)
-                                {
-                                    imagePath = item.Texture();
-                                }
+                            var item = ItemAt(i);
+                            if (item != null)
+                            {
+                                imagePath = item.Texture();
                             }
                             
                             // ... tell the manager to swap the items.
@@ -210,18 +240,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 }
             }
 
-            for (int i = 0; i < inventar.Count(); i++)
+            for (int i = 0; i < DataCount(); i++)
             {
                 // if the mouse click is within the current item dimension
                 if (IsMousePositionOnIcon(i))
                 {
                     string imagePath = null;
-                    var invItem = inventar[i];
-                    if (invItem != null)
+                    var item = ItemAt(i);
+                    if (item != null)
                     {
-                        var item = invItem.GetComponent < Item<AttributeType>>();
-                        if (item != null)
-                            imagePath = item.Texture();
+                        imagePath = item.Texture();
                     }
                     
                     // if an item is currently selected...
@@ -254,6 +282,10 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
             return true;
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns the status if the mouse cursor is currently over the icon with a specific id.
@@ -307,6 +339,42 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         {
             return NorthY(id) + IconSize;
         }
+
+        /// <summary>
+        /// Returns the number of slots that are available.
+        /// </summary>
+        /// <returns>The number of slots that are available.</returns>
+        private int DataCount()
+        {
+            switch (Mode)
+            {
+                case Modes.Inventory:
+                    return _client.GetInventory().Count();
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Returns the item at a specified position.
+        /// </summary>
+        /// <param name="id">The id of the slot of the item.</param>
+        /// <returns>The item.</returns>
+        private Item<AttributeType> ItemAt(int id)
+        {
+            switch (Mode)
+            {
+                case Modes.Inventory:
+                    if (_client.GetInventory()[id] == null) {
+                        return null;
+                    }
+                    return _client.GetInventory()[id].GetComponent<Item<AttributeType>>();
+                default:
+                    return null;
+                }
+            }
+        }
+
+        #endregion
 
     }
 }
