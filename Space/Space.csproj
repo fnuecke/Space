@@ -165,6 +165,7 @@
     <Compile Include="ScreenManagement\Screens\Ingame\GuiElementManager\IItem.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\GuiElementManager\ItemSelectionManager.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\InputHandler\GeneralHandler.cs" />
+    <Compile Include="ScreenManagement\Screens\Ingame\Inventory\TreasureChest.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Inventory\DynamicItemList.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Inventory\Inventory.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudComponents\HudBuffElement.cs" />

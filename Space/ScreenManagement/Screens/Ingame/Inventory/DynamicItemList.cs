@@ -370,7 +370,6 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     return _client.GetInventory()[id].GetComponent<Item<AttributeType>>();
                 default:
                     return null;
-                }
             }
         }
 
