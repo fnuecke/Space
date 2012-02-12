@@ -28,6 +28,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
     /// Several input handlers and mouse over effects makes it possible to
     /// move items to different the slots. By using the basic item selection
     /// manager its also possible to move them to other DynamicItemList objects.
+    /// 
+    /// By using the alignment property it is possible to set the alignment to
+    /// left, center or right.
     /// </summary>
     abstract class AbstractDynamicItemList : AbstractGuiElement, IItem
     {
@@ -35,12 +38,13 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         #region Constants
 
         /// <summary>
-        /// Enumeration that holds the possible modes. Necessary to get the correct data.
+        /// The alignment for this element.
         /// </summary>
-        public enum Modes {
-            Inventory
+        public enum Align
+        {
+            Left, Center, Right
         }
-
+        
         #endregion
         
         #region Fields
@@ -75,9 +79,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         public int ElementsEachRow { get; set; }
 
         /// <summary>
-        /// The number of icons that are displayed each row.
+        /// The current Alignment of the element.
         /// </summary>
-        public Modes Mode { get; set; }
+        public Align Alignment { get; set; }
 
         #endregion
 
@@ -86,16 +90,17 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// <summary>
         /// Constructor
         /// </summary>
-        public AbstractDynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager, Modes mode)
+        public AbstractDynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
             : base(client)
         {
             _textureManager = textureManager;
             _itemSelection = itemSelection;
-            Mode = mode;
 
+            // set some standard values
             IconSize = 35;
             Margin = 2;
             ElementsEachRow = 5;
+            Alignment = Align.Left;
         }
 
         public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
@@ -329,7 +334,26 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// <returns>The western X position of the slot.</returns>
         private int WestX(int id)
         {
-            return (int)GetPosition().X + (id % ElementsEachRow) * (IconSize + Margin);
+            var elementsLastRow = DataCount() % ElementsEachRow;
+            var lastRowId = DataCount() / ElementsEachRow;
+            var elementRow = id / ElementsEachRow;
+
+            var indent = 0;
+
+            if (elementRow == lastRowId)
+            {
+                if (Alignment == Align.Right)
+                {
+                    indent = (elementRow - elementsLastRow + 1) * (IconSize + Margin);
+                }
+                else if (Alignment == Align.Center)
+                {
+                    indent = ((elementRow - elementsLastRow + 1) * (IconSize + Margin)) / 2;
+                }
+
+            }
+
+            return indent + (int)GetPosition().X + (id % ElementsEachRow) * (IconSize + Margin);
         }
 
         /// <summary>
@@ -366,15 +390,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// Returns the number of slots that are available.
         /// </summary>
         /// <returns>The number of slots that are available.</returns>
-        private int DataCount()
-        {
-            switch (Mode)
-            {
-                case Modes.Inventory:
-                    return _client.GetInventory().Count();
-            }
-            return 0;
-        }
+        public abstract int DataCount();
 
         /// <summary>
         /// Returns the item at a specified position.

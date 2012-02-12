@@ -16,9 +16,14 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
         /// <summary>
         /// Constructor
         /// </summary>
-        public InventoryItems(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager, Modes mode)
-            : base(client, itemSelection, textureManager, mode)
+        public InventoryItems(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
+            : base(client, itemSelection, textureManager)
         {
+        }
+
+        public override int DataCount()
+        {
+            return _client.GetInventory().Count();
         }
 
         public override Item<AttributeType> ItemAt(int id)
