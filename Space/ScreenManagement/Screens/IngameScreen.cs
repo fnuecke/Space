@@ -55,7 +55,6 @@ namespace Space.ScreenManagement.Screens
         Background _background;
 
         Inventory _inventory;
-        TreasureChest _treasureChest;
 
         #endregion
 
@@ -77,9 +76,6 @@ namespace Space.ScreenManagement.Screens
 
             _inventory = new Inventory(client, _itemManager, _textureManager);
             _elements.Add(_inventory);
-
-            _treasureChest = new TreasureChest(client, _itemManager, _textureManager);
-            _elements.Add(_treasureChest);
 
             _elements.Add(new MouseLayer(client, _itemManager, _textureManager));
 
@@ -111,9 +107,6 @@ namespace Space.ScreenManagement.Screens
             _inventory.SetWidth(195);
             _inventory.SetHeight(300);
             _inventory.SetPosition(100, 150);
-            _treasureChest.SetWidth(195);
-            _treasureChest.SetHeight(300);
-            _treasureChest.SetPosition(800, 150);
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that
@@ -258,31 +251,6 @@ namespace Space.ScreenManagement.Screens
         public bool IsInventoryVisible()
         {
             return _inventory.Visible;
-        }
-
-        /// <summary>
-        /// Opens the treasure chest.
-        /// </summary>
-        public void OpenTreasureChest()
-        {
-            _treasureChest.Visible = true;
-        }
-
-        /// <summary>
-        /// Closes the treasure chest.
-        /// </summary>
-        public void CloseTresureChest()
-        {
-            _treasureChest.Visible = false;
-        }
-
-        /// <summary>
-        /// Returns if the treasure chest is visible or not.
-        /// </summary>
-        /// <returns><code>True</code> if the inventory is visible, <code>false</code> else.</returns>
-        public bool IsTreasureChestVisible()
-        {
-            return _treasureChest.Visible;
         }
 
         #endregion

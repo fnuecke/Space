@@ -73,17 +73,6 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     _ingameScreen.OpenInventory();
                 }
             }
-            else if (key == Keys.T)
-            {
-                if (_ingameScreen.IsTreasureChestVisible())
-                {
-                    _ingameScreen.CloseTresureChest();
-                }
-                else
-                {
-                    _ingameScreen.OpenTreasureChest();
-                }
-            }
         }
 
         #endregion

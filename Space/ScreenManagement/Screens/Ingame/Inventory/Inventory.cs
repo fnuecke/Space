@@ -11,6 +11,9 @@ using Space.ScreenManagement.Screens.Helper;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
+using Space.ScreenManagement.Screens.Ingame.Inventory;
+using Engine.ComponentSystem.RPG.Components;
+using Space.Data;
 
 namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
@@ -25,7 +28,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// <summary>
         /// The dynamic item list object.
         /// </summary>
-        DynamicItemList _list;
+        InventoryItems _list;
 
         /// <summary>
         /// Constructor
@@ -35,7 +38,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         {
             _itemSelection = itemSelection;
 
-            _list = new DynamicItemList(client, itemSelection, textureManager, DynamicItemList.Modes.Inventory);
+            _list = new InventoryItems(client, itemSelection, textureManager, AbstractDynamicItemList.Modes.Inventory);
         }
 
         public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)

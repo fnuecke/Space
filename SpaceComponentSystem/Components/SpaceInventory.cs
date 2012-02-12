@@ -25,7 +25,6 @@ namespace Space.ComponentSystem.Components
         }
         #endregion
 
-
         #region Logic
         public bool AddItem(Entity item)
         {
@@ -107,13 +106,13 @@ namespace Space.ComponentSystem.Components
         public void Swap(int previousId, int i)
         {
             if (previousId == -1 || i == -1)
+            {
                 return;
-            Console.WriteLine("previousId: " + previousId);
+            }
             var helper = _items[i];
             _items[i] = _items[previousId];
             _items[previousId] = helper;
         }
-
 
         #region Copying
         

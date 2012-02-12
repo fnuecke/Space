@@ -13,10 +13,10 @@ using Microsoft.Xna.Framework.Input;
 using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
-using Engine.ComponentSystem.RPG.Components;
 using Space.Simulation.Commands;
 using Space.Data;
 using Space.ComponentSystem.Components;
+using Engine.ComponentSystem.RPG.Components;
 
 namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
@@ -29,7 +29,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
     /// move items to different the slots. By using the basic item selection
     /// manager its also possible to move them to other DynamicItemList objects.
     /// </summary>
-    class DynamicItemList : AbstractGuiElement, IItem
+    abstract class AbstractDynamicItemList : AbstractGuiElement, IItem
     {
 
         #region Constants
@@ -86,7 +86,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// <summary>
         /// Constructor
         /// </summary>
-        public DynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager, Modes mode)
+        public AbstractDynamicItemList(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager, Modes mode)
             : base(client)
         {
             _textureManager = textureManager;
@@ -381,19 +381,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// </summary>
         /// <param name="id">The id of the slot of the item.</param>
         /// <returns>The item.</returns>
-        private Item<AttributeType> ItemAt(int id)
-        {
-            switch (Mode)
-            {
-                case Modes.Inventory:
-                    if (_client.GetInventory()[id] == null) {
-                        return null;
-                    }
-                    return _client.GetInventory()[id].GetComponent<Item<AttributeType>>();
-                default:
-                    return null;
-            }
-        }
+        public abstract Item<AttributeType> ItemAt(int id);
 
         #endregion
 

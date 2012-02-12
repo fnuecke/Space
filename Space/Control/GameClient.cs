@@ -131,6 +131,7 @@ namespace Space.Control
             }
             return null;
         }
+
         public SpaceInventory GetInventory()
         {
             var avatarSystem = GetSystem<AvatarSystem>();
@@ -144,6 +145,7 @@ namespace Space.Control
             }
             return null;
         }
+
         /// <summary>
         /// Get the information facade for the ship of the specified player,
         /// if possible.
