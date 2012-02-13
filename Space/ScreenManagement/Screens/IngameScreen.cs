@@ -68,6 +68,11 @@ namespace Space.ScreenManagement.Screens
         public Scale Scale { get; private set; }
 
         /// <summary>
+        /// The basic object for dynamic scaling of graphic elements.
+        /// </summary>
+        public Fonts Fonts { get; private set; }
+
+        /// <summary>
         /// Sprite batch used for rendering.
         /// </summary>
         public SpriteBatch SpriteBatch { get; private set; }
@@ -85,6 +90,7 @@ namespace Space.ScreenManagement.Screens
             _input = new InputHandler(client, this);
             _itemManager = new ItemSelectionManager();
             _textureManager = new TextureManager(client);
+            Fonts = new Fonts();
 
             _elements = new List<AbstractGuiElement>();
             _elements.Add(new Orbits(client));
@@ -109,6 +115,7 @@ namespace Space.ScreenManagement.Screens
             var game = ScreenManager.Game;
             SpriteBatch = ScreenManager.SpriteBatch;
             Scale = new Scale(SpriteBatch);
+            Fonts.LoadContent(this, game.Content);
             
             _background.LoadContent(SpriteBatch, game.Content);
 

@@ -67,6 +67,11 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// </summary>
         protected SpaceForms _spaceForms;
 
+        /// <summary>
+        /// Helper object to draw font related elements.
+        /// </summary>
+        protected Fonts _fonts;
+
         public Scale _scale;
 
         #endregion
@@ -104,6 +109,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         {
             _spriteBatch = ingame.SpriteBatch;
             _scale = ingame.Scale;
+            _fonts = ingame.Fonts;
 
             _content = content;
             _basicForms = new BasicForms(_spriteBatch, _client);

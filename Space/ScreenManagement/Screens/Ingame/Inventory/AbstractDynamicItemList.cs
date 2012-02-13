@@ -59,8 +59,6 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// </summary>
         private TextureManager _textureManager;
 
-        private Scale _scale;
-
         #endregion
 
         #region Properties
@@ -149,17 +147,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 {
                     _basicForms.FillRectangle(WestX(i) + IconSize + 10, NorthY(i), 200, 100, Color.Black * 0.5f);
 
-                    SpriteFont font = _content.Load<SpriteFont>("Fonts/ConsoleFont");
                     var line = 1;
                     var item = ItemAt(i);
                     if (item != null)
                     {
-                        _spriteBatch.DrawString(font, item.Name(), new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                        _fonts.DrawString(Fonts.Types.ConsoleFont, item.Name(), new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
                         line++;
                         var attributes = item.Attributes();
                         foreach (var attribute in attributes)
                         {
-                            _spriteBatch.DrawString(font, attribute.Modifier.Type+" "+attribute.Modifier.Value, new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                            _fonts.DrawString(Fonts.Types.ConsoleFont, attribute.Modifier.Type + " " + attribute.Modifier.Value, new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
                             line++;
                         }
                     }
