@@ -8,6 +8,8 @@ using Space.ScreenManagement.Screens.Ingame.Interfaces;
 using Space.ScreenManagement.Screens.Ingame.Hud;
 using Space.ScreenManagement.Screens.Ingame;
 using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
+using Space.ScreenManagement.Screens.Helper;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ScreenManagement.Screens
 {
@@ -58,6 +60,20 @@ namespace Space.ScreenManagement.Screens
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// The basic object for dynamic scaling of graphic elements.
+        /// </summary>
+        public Scale Scale { get; private set; }
+
+        /// <summary>
+        /// Sprite batch used for rendering.
+        /// </summary>
+        public SpriteBatch SpriteBatch { get; private set; }
+
+        #endregion
+
         #region Initialization
 
         /// <summary>
@@ -91,22 +107,26 @@ namespace Space.ScreenManagement.Screens
         public override void LoadContent()
         {
             var game = ScreenManager.Game;
-
-            _background.LoadContent(ScreenManager.SpriteBatch, game.Content);
+            SpriteBatch = ScreenManager.SpriteBatch;
+            Scale = new Scale(SpriteBatch);
+            
+            _background.LoadContent(SpriteBatch, game.Content);
 
             // loop the list of elements and load all of them
             foreach (AbstractGuiElement e in _elements)
             {
-                e.LoadContent(ScreenManager.SpriteBatch, game.Content);
+                e.LoadContent(this, game.Content);
             }
 
             _postprocessing = new Postprocessing(game);
             ScreenManager.Game.Components.Add(_postprocessing);
 
+            var viewport = SpriteBatch.GraphicsDevice.Viewport;
+
             // do individual settings for the GUI objects here
-            _inventory.SetWidth(195);
-            _inventory.SetHeight(300);
-            _inventory.SetPosition(100, 150);
+            _inventory.SetPosition(690, 50);
+            _inventory.SetWidth(540);
+            _inventory.SetHeight(700);
 
             // once the load has finished, we use ResetElapsedTime to tell the game's
             // timing mechanism that we have just finished a very long frame, and that

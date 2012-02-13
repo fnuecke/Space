@@ -161,6 +161,7 @@
     <Compile Include="ComponentSystem\Systems\ShipsSpawnSystem.cs" />
     <Compile Include="ComponentSystem\Systems\UniverseSystem.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
+    <Compile Include="ScreenManagement\Screens\Helper\Scale.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\GuiElementManager\TextureManager.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\GuiElementManager\IItem.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\GuiElementManager\ItemSelectionManager.cs" />

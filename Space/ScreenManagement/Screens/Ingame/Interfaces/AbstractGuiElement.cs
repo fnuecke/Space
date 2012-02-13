@@ -67,6 +67,8 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// </summary>
         protected SpaceForms _spaceForms;
 
+        public Scale _scale;
+
         #endregion
 
         #region Properties
@@ -98,12 +100,14 @@ namespace Space.ScreenManagement.Screens.Ingame.Interfaces
         /// <summary>
         /// Load graphics content for the game.
         /// </summary>
-        public virtual void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public virtual void LoadContent(IngameScreen ingame, ContentManager content)
         {
-            _spriteBatch = spriteBatch;
+            _spriteBatch = ingame.SpriteBatch;
+            _scale = ingame.Scale;
+
             _content = content;
-            _basicForms = new BasicForms(spriteBatch, _client);
-            _spaceForms = new SpaceForms(spriteBatch);
+            _basicForms = new BasicForms(_spriteBatch, _client);
+            _spaceForms = new SpaceForms(_spriteBatch);
 
             // set some standard settings for the elements
             _position = new Vector2(0, 0);

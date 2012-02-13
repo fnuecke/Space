@@ -59,6 +59,8 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// </summary>
         private TextureManager _textureManager;
 
+        private Scale _scale;
+
         #endregion
 
         #region Properties
@@ -103,10 +105,12 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             Alignment = Align.Left;
         }
 
-        public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public override void LoadContent(IngameScreen ingame, ContentManager content)
         {
-            base.LoadContent(spriteBatch, content);
+            base.LoadContent(ingame, content);
             base.Enabled = true;
+
+            _scale = ingame.Scale;
         }
 
         #endregion
@@ -120,7 +124,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             for (int i = 0; i < DataCount(); i++)
             {
                 // draw the background that is visible if no icon is displayed
-                _basicForms.FillRectangle(WestX(i), NorthY(i), IconSize, IconSize, Color.White * 0.2f);
+                _basicForms.FillRectangle(_scale.X(WestX(i)), _scale.Y(NorthY(i)), _scale.X(IconSize), _scale.Y(IconSize), Color.White * 0.2f);
 
                 // load the image of the icon that is saved in this slot
                 string imagePath = null;
@@ -134,7 +138,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 // draw the current item if a) an item is available for this slot and b) the item is currently not selected
                 if (imagePath != null && !(_itemSelection.SelectedId == i && _itemSelection.SelectedClass == this))
                 {
-                    _spriteBatch.Draw(image, new Rectangle(WestX(i), NorthY(i), IconSize, IconSize), Color.White);
+                    _spriteBatch.Draw(image, new Rectangle(_scale.X(WestX(i)), _scale.Y(NorthY(i)), _scale.X(IconSize), _scale.Y(IconSize)), Color.White);
                 }
             }
 

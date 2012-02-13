@@ -82,9 +82,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Load graphics content for the game.
         /// </summary>
-        public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public override void LoadContent(IngameScreen ingame, ContentManager content)
         {
-            _spriteBatch = spriteBatch;
+            _spriteBatch = ingame.SpriteBatch;
         }
 
         #endregion

@@ -41,19 +41,24 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             _list = new InventoryItems(client, itemSelection, textureManager);
         }
 
-        public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public override void LoadContent(IngameScreen ingame, ContentManager content)
         {
-            base.LoadContent(spriteBatch, content);
+            base.LoadContent(ingame, content);
             base.Enabled = true;
 
-            _list.LoadContent(spriteBatch, content);
+            _list.LoadContent(ingame, content);
         }
 
         public override void Draw()
         {
-            if (Visible) {
+
+            if (Visible)
+            {
                 _spriteBatch.Begin();
-                _basicForms.FillRectangle((int)GetPosition().X, (int)GetPosition().Y, (int)GetWidth(), (int)GetHeight(), Color.Black * 0.6f);
+                _basicForms.FillRectangle(_scale.X(GetPosition().X),
+                    _scale.Y(GetPosition().Y),
+                    _scale.X(GetWidth()),
+                    _scale.Y(GetHeight()), Color.Black * 0.6f);
                 _spriteBatch.End();
 
                 _list.Draw();

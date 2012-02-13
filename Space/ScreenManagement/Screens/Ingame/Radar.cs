@@ -116,9 +116,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Load graphics content for the game.
         /// </summary>
-        public override void LoadContent(SpriteBatch spriteBatch, ContentManager content)
+        public override void LoadContent(IngameScreen ingame, ContentManager content)
         {
-            _spriteBatch = spriteBatch;
+            _spriteBatch = ingame.SpriteBatch;
 
             _radarDirection[(int)RadarDirection.Top] = content.Load<Texture2D>("Textures/Radar/top");
             _radarDirection[(int)RadarDirection.Left] = content.Load<Texture2D>("Textures/Radar/left");
