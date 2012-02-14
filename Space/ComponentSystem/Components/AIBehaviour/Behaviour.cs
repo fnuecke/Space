@@ -66,7 +66,7 @@ namespace Space.ComponentSystem.Components.AIBehaviour
         {
             // Get local player's avatar.
             var info = AiComponent.Entity.GetComponent<ShipInfo>();
-            var escapeDir = new Vector2(0, 0);
+            var escapeDir = Vector2.Zero;
             // Can't do anything without an avatar.
             if (info == null)
             {

@@ -16,9 +16,9 @@
     <Item>
       <Name>Level 1 AI Thruster</Name>
       <GuaranteedAttributes>
-        <Item>3.5 AccelerationForce</Item>
-        <Item>1.25 RotationForce</Item>
-        <Item>2.25 ThrusterEnergyConsumption</Item>
+        <Item>3.5 to 4 AccelerationForce</Item>
+        <Item>1.25 to 1.75 RotationForce</Item>
+        <Item>2.25 to 2.75 ThrusterEnergyConsumption</Item>
       </GuaranteedAttributes>
     </Item>
   </Asset>

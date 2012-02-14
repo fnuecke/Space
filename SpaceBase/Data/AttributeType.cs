@@ -1,4 +1,5 @@
-﻿namespace Space.Data
+﻿using System.Collections.Generic;
+namespace Space.Data
 {
     /// <summary>
     /// Types of ship attributes. This is used for grouping attributes for
@@ -81,5 +82,40 @@
         /// Radar Distance for an entity.
         /// </summary>
         SensorRange
+    }
+
+    public static class AttributeTypeExtension
+    {
+        #region Constants
+        
+        private static readonly Dictionary<AttributeType, string> _stringLookup = new Dictionary<AttributeType, string>()
+        {
+            { AttributeType.Health, AttributeStrings.Health },
+            { AttributeType.Energy, AttributeStrings.Energy },
+            { AttributeType.HealthRegeneration, AttributeStrings.HealthRegeneration },
+            { AttributeType.EnergyRegeneration, AttributeStrings.EnergyRegeneration },
+            { AttributeType.Armor, AttributeStrings.Armor },
+            { AttributeType.Mass, AttributeStrings.Mass },
+            { AttributeType.AccelerationForce, AttributeStrings.AccelerationForce },
+            { AttributeType.RotationForce, AttributeStrings.RotationForce },
+            { AttributeType.ThrusterEnergyConsumption, AttributeStrings.ThrusterEnergyConsumption },
+            { AttributeType.ShieldEnergyConsumption, AttributeStrings.ShieldEnergyConsumption },
+            { AttributeType.WeaponEnergyConsumption, AttributeStrings.WeaponEnergyConsumption },
+            { AttributeType.ShieldEfficiency, AttributeStrings.ShieldEfficiency },
+            { AttributeType.WeaponCooldown, AttributeStrings.WeaponCooldown },
+            { AttributeType.SensorRange, AttributeStrings.SensorRange }
+        };
+
+        #endregion
+
+        /// <summary>
+        /// Get the localized display name for a specified attribute type.
+        /// </summary>
+        /// <param name="attributeType">The attribute type.</param>
+        /// <returns>The localized display string.</returns>
+        public static string ToLocalizedString(this AttributeType attributeType)
+        {
+            return _stringLookup[attributeType];
+        }
     }
 }
