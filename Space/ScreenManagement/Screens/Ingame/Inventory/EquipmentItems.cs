@@ -30,11 +30,11 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
 
         public override Item<AttributeType> ItemAt(int id)
         {
-            if (_client.GetCharacterInfo().InventoryItemAt(id).GetComponent<Item<AttributeType>>() == null)
+            if (_client.GetCharacterInfo().EquipmentItemAt<T>(id) == null)
             {
                 return null;
             }
-            return _client.GetCharacterInfo().InventoryItemAt(id).GetComponent<Item<AttributeType>>();
+            return _client.GetCharacterInfo().EquipmentItemAt<T>(id).GetComponent<Item<AttributeType>>();
         }
 
     }

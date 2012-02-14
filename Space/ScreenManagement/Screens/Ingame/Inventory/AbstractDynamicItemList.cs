@@ -145,18 +145,18 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 // draw the tooltip
                 if (IsMousePositionOnIcon(i) && ItemAt(i) != null)
                 {
-                    _basicForms.FillRectangle(WestX(i) + IconSize + 10, NorthY(i), 200, 100, Color.Black * 0.5f);
+                    _basicForms.FillRectangle(_scale.X(WestX(i)) + IconSize + 10, _scale.Y(NorthY(i)), 200, 100, Color.Black * 0.5f);
 
                     var line = 1;
                     var item = ItemAt(i);
                     if (item != null)
                     {
-                        _fonts.DrawString(Fonts.Types.ConsoleFont, item.Name(), new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                        _fonts.DrawString(Fonts.Types.ConsoleFont, item.Name(), new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                         line++;
                         var attributes = item.Attributes();
                         foreach (var attribute in attributes)
                         {
-                            _fonts.DrawString(Fonts.Types.ConsoleFont, attribute.Modifier.Type + " " + attribute.Modifier.Value, new Vector2(WestX(i) + IconSize + 20, NorthY(i) + line * 12), Color.White);
+                            _fonts.DrawString(Fonts.Types.ConsoleFont, attribute.Modifier.Type + " " + attribute.Modifier.Value, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                             line++;
                         }
                     }
@@ -322,10 +322,10 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// <returns>The status if the mouse cursor is currently over the icon with a specific id</returns>
         private bool IsMousePositionOnIcon(int id)
         {
-            return Mouse.GetState().X >= WestX(id)
-                && Mouse.GetState().X <= EastX(id)
-                && Mouse.GetState().Y >= NorthY(id)
-                && Mouse.GetState().Y <= SouthY(id);
+            return Mouse.GetState().X >= _scale.X(WestX(id))
+                && Mouse.GetState().X <= _scale.X(EastX(id))
+                && Mouse.GetState().Y >= _scale.Y(NorthY(id))
+                && Mouse.GetState().Y <= _scale.Y(SouthY(id));
         }
 
         /// <summary>
