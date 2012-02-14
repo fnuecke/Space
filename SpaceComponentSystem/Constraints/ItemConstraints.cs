@@ -24,7 +24,7 @@ namespace Space.ComponentSystem.Constraints
         /// menus and the inventory.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public string Icon = "Textures/Buffs/default";
+        public string Icon = "Textures/Icons/Buffs/default";
 
         /// <summary>
         /// The quality of the item, to give a rough idea of the value.

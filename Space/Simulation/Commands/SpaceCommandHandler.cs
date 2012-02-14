@@ -53,6 +53,7 @@ from Engine.ComponentSystem.Components import *
 from Engine.ComponentSystem.Systems import *
 from Engine.ComponentSystem.RPG.Components import *
 from Space.ComponentSystem.Components import *
+from Space.ComponentSystem.Constraints import *
 from Space.ComponentSystem.Systems import *
 from Space.Data import *
 
