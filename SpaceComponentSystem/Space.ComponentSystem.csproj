@@ -103,13 +103,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\ItemHolder.cs" />
+    <Compile Include="Components\Items\SpaceItem.cs" />
     <Compile Include="Components\Logic\AbstractRegeneratingValue.cs" />
     <Compile Include="Components\Logic\CollisionDamage.cs" />
     <Compile Include="Components\Logic\Death.cs" />
     <Compile Include="Components\PlayerClass.cs" />
-    <Compile Include="Components\SpaceInventory.cs" />
-    <Compile Include="Components\Util\CharacterInfo.cs" />
     <Compile Include="Components\Util\Detectable.cs" />
     <Compile Include="Components\Media\Effect.cs" />
     <Compile Include="Components\Logic\Energy.cs" />

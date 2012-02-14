@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
@@ -350,6 +351,74 @@ namespace Space.ComponentSystem.Components
             {
                 return _radarRange;
             }
+        }
+
+        #endregion
+
+        #region Equipment / Inventory
+
+        /// <summary>
+        /// The current number of items in the ship's inventory.
+        /// </summary>
+        public int InventoryCount
+        {
+            get
+            {
+                var inventory = Entity.GetComponent<Inventory>();
+                if (inventory != null)
+                {
+                    return inventory.Count;
+                }
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// The item at the specified index in the ship's inventory.
+        /// </summary>
+        /// <param name="index">The index of the item.</param>
+        /// <returns>The item at that index.</returns>
+        public Entity InventoryItemAt(int index)
+        {
+            var inventory = Entity.GetComponent<Inventory>();
+            if (inventory != null)
+            {
+                return inventory[index];
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the number of item slots for the specified item type.
+        /// </summary>
+        /// <typeparam name="TItem">The item type to check for.</typeparam>
+        /// <returns></returns>
+        public int EquipmentSlotCount<TItem>()
+            where TItem : SpaceItem
+        {
+            var equipment = Entity.GetComponent<Equipment>();
+            if (equipment != null)
+            {
+                return equipment.GetSlotCount<TItem>();
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Get the equipped item of the specified type in the specified slot.
+        /// </summary>
+        /// <typeparam name="TItem">The type of item to check.</typeparam>
+        /// <param name="index">The slot index from which to get the item.</param>
+        /// <returns>The item at that slot index.</returns>
+        public Entity EquipmentItemAt<TItem>(int index)
+            where TItem : SpaceItem
+        {
+            var equipment = Entity.GetComponent<Equipment>();
+            if (equipment != null)
+            {
+                return equipment.GetItem<TItem>(index);
+            }
+            return null;
         }
 
         #endregion

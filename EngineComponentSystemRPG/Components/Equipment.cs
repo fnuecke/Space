@@ -53,11 +53,11 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Get the number of slots of the specified item type.
         /// </summary>
-        /// <typeparam name="T">The item type.</typeparam>
+        /// <typeparam name="TItem">The item type.</typeparam>
         /// <returns>The number of available slots.</returns>
-        public int GetSlotCount<T, TAttribute>() where T : Item<TAttribute> where TAttribute:struct
+        public int GetSlotCount<TItem>() where TItem : Item
         {
-            return GetSlotCount(typeof(T));
+            return GetSlotCount(typeof(TItem));
         }
 
         /// <summary>
@@ -77,22 +77,21 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Sets the number of available slots for the specified item type.
         /// </summary>
-        /// <typeparam name="T">The item type.</typeparam>
+        /// <typeparam name="TItem">The item type.</typeparam>
         /// <param name="count">The number of available slots.</param>
-        public void SetSlotCount<T, TAttribute>(int count) where T : Item<TAttribute> where TAttribute :struct
+        public void SetSlotCount<TItem>(int count) where TItem : Item
         {
-            SetSlotCount < TAttribute>(typeof(T), count);
+            SetSlotCount(typeof(TItem), count);
         }
-        
+
         /// <summary>
         /// Sets the number of available slots for the specified item type.
         /// </summary>
         /// <param name="type">The item type.</param>
         /// <param name="count">The number of available slots.</param>
-        public void SetSlotCount<TAttribute>(Type type, int count)
-            where TAttribute : struct
+        public void SetSlotCount(Type type, int count)
         {
-            if (!type.IsSubclassOf(typeof(Item<TAttribute>)))
+            if (!type.IsSubclassOf(typeof(Item)))
             {
                 throw new ArgumentException("Invalid item type.", "type");
             }
@@ -139,14 +138,13 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="item">The item to equip.</param>
         /// <param name="slot">The slot to equip it in.</param>
-        public int Equip<TAttribute>(Entity item, int slot)
-            where TAttribute :struct
+        public int Equip(Entity item, int slot)
         {
             if (item.UID < 1)
             {
                 throw new ArgumentException("Invalid item, not part of the simulation.", "item");
             }
-            var itemType = item.GetComponent < Item<TAttribute>>();
+            var itemType = item.GetComponent<Item>();
             if (itemType == null)
             {
                 throw new ArgumentException("Invalid item, does not have a type component.", "item");
@@ -155,7 +153,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
             var slots = _slots[itemType.GetType()];
             int itemInSolt = slots[slot];
-            
 
             slots[slot] = item.UID;
 
@@ -169,15 +166,14 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Gets the item equipped in the specified slot.
         /// </summary>
-        /// <typeparam name="T">The type of the item to get.</typeparam>
+        /// <typeparam name="TItem">The type of the item to get.</typeparam>
         /// <param name="slot">The slot to get the item from.</param>
         /// <returns>The item in that slot, or <c>null</c> if there is no item
         /// in that slot.</returns>
-        public Entity GetItem<T, TAttribute>(int slot)
-            where T : Item<TAttribute>
-            where TAttribute : struct
+        public Entity GetItem<TItem>(int slot)
+            where TItem : Item
         {
-            return GetItem(typeof(T), slot);
+            return GetItem(typeof(TItem), slot);
         }
 
         /// <summary>
@@ -203,14 +199,13 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Unequips an item from the specified slot.
         /// </summary>
-        /// <typeparam name="T">The type of the item to unequip.</typeparam>
+        /// <typeparam name="TItem">The type of the item to unequip.</typeparam>
         /// <param name="slot">The slot to remove the item from.</param>
         /// <returns>The unequipped item.</returns>
-        public Entity Unequip<T, TAttribute>(int slot)
-            where T : Item<TAttribute>
-            where TAttribute : struct
+        public Entity Unequip<TItem>(int slot)
+            where TItem : Item
         {
-            return Unequip(typeof(T), slot);
+            return Unequip(typeof(TItem), slot);
         }
 
         /// <summary>

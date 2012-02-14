@@ -1,4 +1,6 @@
-﻿
+﻿using Engine.ComponentSystem.Entities;
+using Engine.Util;
+
 namespace Space.ComponentSystem.Constraints
 {
     /// <summary>
@@ -6,13 +8,18 @@ namespace Space.ComponentSystem.Constraints
     /// </summary>
     public sealed class ShieldConstraints : ItemConstraints
     {
-        public override Engine.ComponentSystem.Entities.Entity Sample(Engine.Util.IUniformRandom random)
+        #region Sampling
+
+        /// <summary>
+        /// Samples a new shield based on these constraints.
+        /// </summary>
+        /// <param name="random">The randomizer to use.</param>
+        /// <returns>The sampled shield.</returns>
+        public override Entity Sample(IUniformRandom random)
         {
             throw new System.NotImplementedException();
         }
-        public override Engine.ComponentSystem.Entities.Entity Sample(string name,Engine.Util.IUniformRandom random)
-        {
-            throw new System.NotImplementedException();
-        }
+
+        #endregion
     }
 }

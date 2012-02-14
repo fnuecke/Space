@@ -63,9 +63,9 @@ namespace Space.ComponentSystem.Components
 
                 if (character != null && equipment != null && energy != null && faction != null)
                 {
-                    for (int i = 0; i < equipment.GetSlotCount<Weapon,AttributeType>(); i++)
+                    for (int i = 0; i < equipment.GetSlotCount<Weapon>(); i++)
                     {
-                        var weaponEntity = equipment.GetItem<Weapon, AttributeType>(i);
+                        var weaponEntity = equipment.GetItem<Weapon>(i);
                         if (weaponEntity != null)
                         {
                             var weapon = weaponEntity.GetComponent<Weapon>();
@@ -116,7 +116,7 @@ namespace Space.ComponentSystem.Components
             if (message is ItemAdded)
             {
                 var added = (ItemAdded)(ValueType)message;
-                if (added.Item.GetComponent < Item<AttributeType>>() is Weapon)
+                if (added.Item.GetComponent<SpaceItem>() is Weapon)
                 {
                     // Weapon was equipped, track a cooldown for it.
                     _cooldowns.Add(added.Slot, 0);
@@ -125,7 +125,7 @@ namespace Space.ComponentSystem.Components
             else if (message is ItemRemoved)
             {
                 var removed = (ItemRemoved)(ValueType)message;
-                if (removed.Item.GetComponent < Item<AttributeType>>() is Weapon)
+                if (removed.Item.GetComponent<SpaceItem>() is Weapon)
                 {
                     // Weapon was unequipped, stop tracking.
                     _cooldowns.Remove(removed.Slot);
@@ -191,7 +191,7 @@ namespace Space.ComponentSystem.Components
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
-            
+
             hasher.Put(BitConverter.GetBytes(Shooting));
             foreach (var cooldown in _cooldowns.Values)
             {

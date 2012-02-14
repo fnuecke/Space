@@ -4,7 +4,6 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using Space.ComponentSystem.Components;
-using Space.Data;
 
 namespace Space.Simulation.Commands
 {
@@ -14,7 +13,7 @@ namespace Space.Simulation.Commands
     static class SpaceCommandHandler
     {
         #region Logger
-        
+
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
@@ -167,16 +166,19 @@ def ge(id):
                     break;
 
                 case SpaceCommandType.Equip:
+                    // Player should equip an item from his inventory.
                     {
                         var equipCommand = (EquipCommand)command;
                         try
                         {
-                            var inventory = avatar.GetComponent<SpaceInventory>();
-                            var item = avatar.GetComponent<SpaceInventory>()[equipCommand.InventoryIndex];
+                            var inventory = avatar.GetComponent<Inventory>();
+                            var item = avatar.GetComponent<Inventory>()[equipCommand.InventoryIndex];
                             inventory.RemoveAt(equipCommand.InventoryIndex);
-                            var itemOld = avatar.GetComponent<Equipment>().Equip<AttributeType>(item, equipCommand.Slot);
+                            var itemOld = avatar.GetComponent<Equipment>().Equip(item, equipCommand.Slot);
                             if (itemOld > 0)
-                                inventory.AddItem(itemOld, equipCommand.InventoryIndex);
+                            {
+                                inventory.Insert(equipCommand.InventoryIndex, manager.GetEntity(itemOld));
+                            }
                         }
                         catch (IndexOutOfRangeException ex)
                         {
@@ -189,19 +191,28 @@ def ge(id):
                     }
                     break;
 
+                case SpaceCommandType.MoveItem:
+                    // Player wants to move an item in his inventory.
+                    {
+                        var moveCommand = (MoveItemCommand)command;
+                        try
+                        {
+                            avatar.GetComponent<Inventory>().Swap(moveCommand.FirstIndex, moveCommand.SecondIndex);
+                        }
+                        catch (IndexOutOfRangeException ex)
+                        {
+                            logger.ErrorException("Invalid move item command.", ex);
+                        }
+                    }
+                    break;
 #if DEBUG
                 case SpaceCommandType.AddItem:
+                    // Add an item to the player's inventory from the void. It's magic!
                     {
                         var addCommand = (AddItemCommand)command;
                         var item = addCommand.Item.DeepCopy();
                         manager.AddEntity(item);
-                        avatar.GetComponent<SpaceInventory>().Add(item);
-                    }
-                    break;
-                case SpaceCommandType.MoveItem:
-                    {
-                        var moveCommand =(MoveItemCommand)command;
-                        avatar.GetComponent<SpaceInventory>().Swap(moveCommand.Id1, moveCommand.Id2);
+                        avatar.GetComponent<Inventory>().Add(item);
                     }
                     break;
                 case SpaceCommandType.ScriptCommand:
@@ -234,7 +245,7 @@ def ge(id):
                                 globals.SetVariable("avatar", avatar);
 
                                 var character = avatar.GetComponent<Character<Space.Data.AttributeType>>();
-                                var inventory = avatar.GetComponent<SpaceInventory>();
+                                var inventory = avatar.GetComponent<Inventory>();
                                 var equipment = avatar.GetComponent<Equipment>();
                                 globals.SetVariable("character", character);
                                 globals.SetVariable("inventory", inventory);

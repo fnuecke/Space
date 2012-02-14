@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Constraints
         /// <summary>
         /// The texture used to render this weapon.
         /// </summary>
-        public string Texture;
+        public string Model;
 
         /// <summary>
         /// The sound this weapon emits when firing.
@@ -56,23 +56,11 @@ namespace Space.ComponentSystem.Constraints
         {
             var entity = new Entity();
 
-            entity.AddComponent(new Weapon(Texture, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles));
+            entity.AddComponent(new Weapon(Name, Icon, Quality, Model, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles));
 
             return SampleAttributes(entity, random);
         }
-        /// <summary>
-        /// Samples a new weapon based on these constraints.
-        /// </summary>
-        /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled weapon.</returns>
-        public override Entity Sample(string name,IUniformRandom random)
-        {
-            var entity = new Entity();
 
-            entity.AddComponent(new Weapon(Texture, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles,name));
-
-            return SampleAttributes(entity, random);
-        }
         /// <summary>
         /// Samples the cooldown of this weapon.
         /// </summary>

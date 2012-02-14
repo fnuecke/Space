@@ -272,7 +272,7 @@ namespace Space.Session
             var respawn = avatar.GetComponent<Respawn>();
             var character = avatar.GetComponent<Character<AttributeType>>();
             var equipment = avatar.GetComponent<Equipment>();
-            var inventory = avatar.GetComponent<SpaceInventory>();
+            var inventory = avatar.GetComponent<Inventory>();
             var manager = avatar.Manager;
 
             // Check if we have everything we need.
@@ -349,18 +349,10 @@ namespace Space.Session
 
             // And finally, the inventory. Same as with the inventory, we have
             // to serialize the actual items in it.
-            _data.Write(inventory.Count());
-            for (int i = 0; i < inventory.Count(); i++)
+            _data.Write(inventory.Count);
+            foreach (var item in inventory)
             {
-                var itemList = inventory.GetAll(i);
-
-                _data.Write(i);
-                _data.Write(itemList.Count);
-                foreach (var item in itemList)
-                    _data.Write(item);
-
-
-
+                _data.Write(item);
             }
 
             // TODO: extract additional display info, if desired.
@@ -384,11 +376,11 @@ namespace Space.Session
             // OK, start from scratch.
             _data.Reset();
 
-            Entity avatar;
-
             // Check version and use according loader, where possible.
             try
             {
+                Entity avatar;
+
                 switch (_data.ReadInt32())
                 {
                     case 0:
@@ -398,16 +390,16 @@ namespace Space.Session
                     default:
                         throw new InvalidOperationException("Unknown profile version.");
                 }
+
+                // Add the ship to the simulation.
+                manager.AddEntity(avatar);
             }
             catch (Exception ex)
             {
                 logger.ErrorException("Failed restoring profile, using default.", ex);
                 Initialize(PlayerClassType.Fighter);
-                avatar = RestoreCurrent(playerNumber, manager);
+                Restore(playerNumber, manager);
             }
-
-            // Add the ship to the simulation.
-            manager.AddEntity(avatar);
         }
 
         #region Restore implementations
@@ -437,7 +429,7 @@ namespace Space.Session
             // Get the elements we need to save.
             var character = avatar.GetComponent<Character<AttributeType>>();
             var equipment = avatar.GetComponent<Equipment>();
-            var inventory = avatar.GetComponent<SpaceInventory>();
+            var inventory = avatar.GetComponent<Inventory>();
 
             // Check if we have everything we need.
             if (character == null ||
@@ -472,7 +464,7 @@ namespace Space.Session
                 }
 
                 // Set restored slot count.
-                equipment.SetSlotCount < AttributeType>(itemType, slotCount);
+                equipment.SetSlotCount(itemType, slotCount);
 
                 // Read items and equip them.
                 int numItemsOfType = _data.ReadInt32();
@@ -483,17 +475,16 @@ namespace Space.Session
                     // Reset uid, add to our entity manager.
                     item.UID = -1;
                     manager.AddEntity(item);
-                    equipment.Equip < AttributeType>(item, slot);
+                    equipment.Equip(item, slot);
                 }
             }
 
             // Restore inventory, clear it first. As with the equipment, remove
             // any old items, if there were any.
-            while (inventory.ItemCount() > 0)
+            while (inventory.Count > 0)
             {
-                var item = inventory[inventory.Count() - 1];
-                inventory.RemoveAt(inventory.Count() - 1);
-                if(item != null)
+                var item = inventory[inventory.Count - 1];
+                inventory.RemoveAt(inventory.Count - 1);
                 manager.RemoveEntity(item);
             }
 
@@ -501,18 +492,11 @@ namespace Space.Session
             int numInventoryItems = _data.ReadInt32();
             for (int i = 0; i < numInventoryItems; i++)
             {
-                var id = _data.ReadInt32();
-                int count = _data.ReadInt32();
-                for (int j = 0; j < count; j++)
-                {
-                    var item = _data.ReadPacketizable<Entity>();
-                    // Reset id, add to our entity manager.
-                    item.UID = -1;
-                    manager.AddEntity(item);
-
-                    inventory.AddItem(item,id);
-                }
-                
+                var item = _data.ReadPacketizable<Entity>();
+                // Reset id, add to our entity manager.
+                item.UID = -1;
+                manager.AddEntity(item);
+                inventory.Add(item);
             }
 
             return avatar;
@@ -591,11 +575,7 @@ namespace Space.Session
 
             // And finally, the inventory.
             // TODO: empty for now, maybe some healing items or such when we have them.
-            _data.Write(2);
-            _data.Write(0); // Position.
-            InitializeInventory<Thruster>(playerClass);
-            _data.Write(1); // Position.
-            InitializeInventory<Weapon>(playerClass);
+            _data.Write(0);
         }
 
         /// <summary>
@@ -614,28 +594,10 @@ namespace Space.Session
             {
                 _data.Write(1); // Number of items.
                 _data.Write(0); // Slot number.
-                _data.Write(item.Sample(item.Name,null)); // Actual item.
+                _data.Write(item.Sample(null)); // Actual item.
             }
         }
-        /// <summary>
-        /// Utility method for initializing an equipment type.
-        /// </summary>
-        /// <typeparam name="T">The item type to initialize.</typeparam>
-        /// <param name="playerClass">The player class to initialize for.</param>
-        private void InitializeInventory<T>(PlayerClassType playerClass)
-        {
-            var item = playerClass.GetStarterItemConstraints<T>();
-            if (item == null)
-            {
-                _data.Write(0); // Number of items.
-            }
-            else
-            {
-                
-                _data.Write(1); // number.
-                _data.Write(item.Sample(item.Name,null)); // Actual item.
-            }
-        }
+
         #endregion
 
         #region Serialization

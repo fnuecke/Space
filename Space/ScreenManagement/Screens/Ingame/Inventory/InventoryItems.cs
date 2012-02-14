@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Space.ScreenManagement.Screens.Ingame.Hud;
+﻿using Space.ComponentSystem.Components;
 using Space.Control;
 using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
-using Space.Data;
-using Engine.ComponentSystem.RPG.Components;
+using Space.ScreenManagement.Screens.Ingame.Hud;
 
 namespace Space.ScreenManagement.Screens.Ingame.Inventory
 {
@@ -23,16 +18,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
 
         public override int DataCount()
         {
-            return _client.GetCharacterInfo().InventoryCount();
+            return _client.GetPlayerShipInfo().InventoryCount;
         }
 
-        public override Item<AttributeType> ItemAt(int id)
+        public override SpaceItem ItemAt(int id)
         {
-            if (_client.GetCharacterInfo().InventoryItemAt(id) == null)
+            if (_client.GetPlayerShipInfo().InventoryItemAt(id) == null)
             {
                 return null;
             }
-            return _client.GetCharacterInfo().InventoryItemAt(id).GetComponent<Item<AttributeType>>();
+            return _client.GetPlayerShipInfo().InventoryItemAt(id).GetComponent<SpaceItem>();
         }
     }
 }

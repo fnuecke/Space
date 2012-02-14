@@ -9,8 +9,6 @@ using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Util;
-using Engine.ComponentSystem.RPG.Components;
-using Space.ComponentSystem.Components.Util;
 
 namespace Space.Control
 {
@@ -129,34 +127,6 @@ namespace Space.Control
                 if (avatar != null)
                 {
                     return avatar.GetComponent<ShipInfo>();
-                }
-            }
-            return null;
-        }
-
-        public CharacterInfo GetCharacterInfo()
-        {
-            var avatarSystem = GetSystem<AvatarSystem>();
-            if (avatarSystem != null)
-            {
-                var avatar = avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
-                if (avatar != null)
-                {
-                    return avatar.GetComponent<CharacterInfo>();
-                }
-            }
-            return null;
-        }
-
-        public Equipment GetEquipment()
-        {
-            var avatarSystem = GetSystem<AvatarSystem>();
-            if (avatarSystem != null)
-            {
-                var avatar = avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
-                if (avatar != null)
-                {
-                    return avatar.GetComponent<Equipment>();
                 }
             }
             return null;

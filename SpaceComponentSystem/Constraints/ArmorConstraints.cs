@@ -20,23 +20,11 @@ namespace Space.ComponentSystem.Constraints
         {
             var entity = new Entity();
 
-            entity.AddComponent(new Armor());
+            entity.AddComponent(new Armor(Name, Icon, Quality));
 
             return SampleAttributes(entity, random);
         }
-        /// <summary>
-        /// Samples a new armor based on these constraints.
-        /// </summary>
-        /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled armor.</returns>
-        public override Entity Sample(string name,IUniformRandom random)
-        {
-            var entity = new Entity();
 
-            entity.AddComponent(new Armor(name));
-
-            return SampleAttributes(entity, random);
-        }
         #endregion
     }
 }

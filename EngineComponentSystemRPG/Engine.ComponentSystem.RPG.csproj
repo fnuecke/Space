@@ -100,6 +100,7 @@
     <Compile Include="Components\AbstractStatusEffect.cs" />
     <Compile Include="Components\Attribute.cs" />
     <Compile Include="Components\Item.cs" />
+    <Compile Include="Components\ItemInfo.cs" />
     <Compile Include="Constraints\AttributeModifierConstraint.cs" />
     <Compile Include="Messages\CharacterStatsInvalidated.cs" />
     <Compile Include="Messages\ItemAdded.cs" />

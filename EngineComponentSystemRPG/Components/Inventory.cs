@@ -197,6 +197,18 @@ namespace Engine.ComponentSystem.RPG.Components
             return GetEnumerator();
         }
 
+        /// <summary>
+        /// Swap two items in the list.
+        /// </summary>
+        /// <param name="firstIndex">The first index involved.</param>
+        /// <param name="secondIndex">The second index involved.</param>
+        public void Swap(int firstIndex, int secondIndex)
+        {
+            int tmp = _items[firstIndex];
+            _items[firstIndex] = _items[secondIndex];
+            _items[secondIndex] = tmp;
+        }
+
         #endregion
 
         #region Logic

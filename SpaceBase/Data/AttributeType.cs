@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+
 namespace Space.Data
 {
     /// <summary>
@@ -83,6 +84,9 @@ namespace Space.Data
         /// </summary>
         SensorRange,
 
+        /// <summary>
+        /// Modifies the amount of damage all equipped weapons do.
+        /// </summary>
         WeaponDamage
     }
 

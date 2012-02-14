@@ -20,6 +20,13 @@ namespace Space.ComponentSystem.Constraints
         public string Name { get; set; }
 
         /// <summary>
+        /// Asset name of the texture to use for this item type to render it in
+        /// menus and the inventory.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public string Icon = "Textures/Buffs/default";
+
+        /// <summary>
         /// The quality of the item, to give a rough idea of the value.
         /// </summary>
         [ContentSerializer(Optional = true)]
@@ -64,12 +71,6 @@ namespace Space.ComponentSystem.Constraints
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled item.</returns>
         public abstract Entity Sample(IUniformRandom random);
-        /// <summary>
-        /// Samples a new item.
-        /// </summary>
-        /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled item.</returns>
-        public abstract Entity Sample(string name,IUniformRandom random);
 
         /// <summary>
         /// Samples the attributes to apply to the item.

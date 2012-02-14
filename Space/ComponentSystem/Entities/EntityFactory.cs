@@ -10,7 +10,6 @@ using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Constraints;
 using Space.ComponentSystem.Util;
 using Space.Data;
-using Space.ComponentSystem.Components.Util;
 
 namespace Space.ComponentSystem.Entities
 {
@@ -27,7 +26,7 @@ namespace Space.ComponentSystem.Entities
         {
             // Player ships must be 'static', i.e. not have random attributes, so we don't need a randomizer.
             Entity entity = playerClass.GetShipConstraints().SampleShip(playerNumber.ToFaction(), position, null);
-            entity.AddComponent(new CharacterInfo());
+
             // Remember the class.
             entity.AddComponent(new PlayerClass(playerClass));
 
@@ -76,19 +75,19 @@ namespace Space.ComponentSystem.Entities
 
             var item = ConstraintsLibrary.GetConstraints<ThrusterConstraints>("Level 1 AI Thruster").Sample(random);
             manager.AddEntity(item);
-            equipment.Equip<AttributeType>(item, 0);
+            equipment.Equip(item, 0);
 
             item = ConstraintsLibrary.GetConstraints<ReactorConstraints>("Level 1 AI Reactor").Sample(random);
             manager.AddEntity(item);
-            equipment.Equip<AttributeType>(item, 0);
+            equipment.Equip(item, 0);
 
             item = ConstraintsLibrary.GetConstraints<ArmorConstraints>("Level 1 AI Armor").Sample(random);
             manager.AddEntity(item);
-            equipment.Equip<AttributeType>(item, 0);
+            equipment.Equip(item, 0);
 
             item = ConstraintsLibrary.GetConstraints<WeaponConstraints>("Level 1 AI Weapon").Sample(random);
             manager.AddEntity(item);
-            equipment.Equip<AttributeType>(item, 0);
+            equipment.Equip(item, 0);
 
             return entity;
         }

@@ -1,29 +1,42 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Engine.Serialization;
 using Engine.Simulation.Commands;
-using Engine.Serialization;
 
 namespace Space.Simulation.Commands
 {
+    /// <summary>
+    /// Command issued when a player wants to move an item in his inventory.
+    /// </summary>
     public class MoveItemCommand : FrameCommand
     {
+        #region Fields
+        
+        /// <summary>
+        /// The first inventory slot involved.
+        /// </summary>
+        public int FirstIndex;
 
-        public int Id1;
-        public int Id2;
+        /// <summary>
+        /// The second inventory slot involved.
+        /// </summary>
+        public int SecondIndex;
 
-        public MoveItemCommand(int id1, int id2)
-            :base(SpaceCommandType.MoveItem)
+        #endregion
+
+        #region Constructor
+        
+        public MoveItemCommand(int firstIndex, int secondIndex)
+            : base(SpaceCommandType.MoveItem)
         {
-            Id1 = id1;
-            Id2 = id2;
+            this.FirstIndex = firstIndex;
+            this.SecondIndex = secondIndex;
         }
+
         public MoveItemCommand()
-        :this(-1,-1)
+            : this(-1, -1)
         {
-
         }
+
+        #endregion
 
         #region Serialization
 
@@ -37,8 +50,8 @@ namespace Space.Simulation.Commands
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Id1)
-                .Write(Id2);
+                .Write(FirstIndex)
+                .Write(SecondIndex);
         }
 
         /// <summary>
@@ -49,8 +62,8 @@ namespace Space.Simulation.Commands
         {
             base.Depacketize(packet);
 
-            Id1 = packet.ReadInt32();
-            Id2 = packet.ReadInt32();
+            FirstIndex = packet.ReadInt32();
+            SecondIndex = packet.ReadInt32();
         }
 
         #endregion
@@ -66,9 +79,9 @@ namespace Space.Simulation.Commands
         /// </returns>
         public override bool Equals(Command other)
         {
-           return base.Equals(other) &&
-                Id1 == ((MoveItemCommand)other).Id1 &&
-                Id2 == ((MoveItemCommand)other).Id2;
+            return base.Equals(other) &&
+                 FirstIndex == ((MoveItemCommand)other).FirstIndex &&
+                 SecondIndex == ((MoveItemCommand)other).SecondIndex;
         }
 
         #endregion

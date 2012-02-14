@@ -5,14 +5,14 @@
          values (enforced by min an max being equal). -->
     <Item>
       <Name>Starter Weapon</Name>
-      <Texture>Textures/Stolen/Projectiles/shell_small</Texture>
+      <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Sound>laser</Sound>
       <Cooldown>0.5</Cooldown>
       <EnergyConsumption>5</EnergyConsumption>
       <Damage>10</Damage>
       <Projectiles>
         <Item>
-          <Texture>Textures/Stolen/Projectiles/missile_MIRV</Texture>
+          <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
           <InitialVelocity>20</InitialVelocity>
           <InitialDirection>-5 to 5</InitialDirection>
@@ -23,19 +23,19 @@
     <!-- NPC weapons -->
     <Item>
       <Name>Level 1 AI Weapon</Name>
-      <Texture>Textures/Stolen/Projectiles/shell_small</Texture>
+      <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Sound>laser</Sound>
       <Cooldown>0.5 to 0.75</Cooldown>
       <EnergyConsumption>5 to 7.5</EnergyConsumption>
       <Damage>5 to 15</Damage>
       <Projectiles>
         <Item>
-          <Texture>Textures/Stolen/Projectiles/missile_MIRV</Texture>
+          <Model>Textures/Stolen/Projectiles/missile_MIRV</Model>
           <CollisionRadius>8</CollisionRadius>
           <InitialVelocity>15</InitialVelocity>
           <InitialDirection>-15 to 15</InitialDirection>
         </Item>
       </Projectiles>
-    </Item>
+  </Item>
   </Asset>
 </XnaContent>

@@ -20,7 +20,7 @@ namespace Space.ComponentSystem.Util
         /// The texture to use to render the projectile type.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public string Texture = string.Empty;
+        public string Model = string.Empty;
 
         /// <summary>
         /// Name of the particle effect to use for this projectile type.
@@ -152,9 +152,9 @@ namespace Space.ComponentSystem.Util
                 collisionGroup |= Factions.Projectiles.ToCollisionGroup();
             }
             entity.AddComponent(new CollidableSphere(CollisionRadius, collisionGroup));
-            if (!string.IsNullOrWhiteSpace(Texture))
+            if (!string.IsNullOrWhiteSpace(Model))
             {
-                entity.AddComponent(new TransformedRenderer(Texture));
+                entity.AddComponent(new TransformedRenderer(Model));
             }
             if (!string.IsNullOrWhiteSpace(Effect))
             {
@@ -223,7 +223,7 @@ namespace Space.ComponentSystem.Util
         public Packet Packetize(Packet packet)
         {
             return packet
-                .Write(Texture)
+                .Write(Model)
                 .Write(Effect)
                 .Write(CollisionRadius)
                 .Write(CanBeShot)
@@ -245,7 +245,7 @@ namespace Space.ComponentSystem.Util
         /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
-            Texture = packet.ReadString();
+            Model = packet.ReadString();
             Effect = packet.ReadString();
             CollisionRadius = packet.ReadSingle();
             CanBeShot = packet.ReadBoolean();

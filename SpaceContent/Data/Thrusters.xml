@@ -5,6 +5,7 @@
          values (enforced by min an max being equal). -->
     <Item>
       <Name>Starter Thruster</Name>
+      <Icon>Textures/Icons/Buffs/stabilisator</Icon>
       <GuaranteedAttributes>
         <Item>4 AccelerationForce</Item>
         <Item>2 RotationForce</Item>

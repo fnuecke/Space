@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Space.Control;
-using Space.ScreenManagement.Screens.Ingame.Interfaces;
-using Nuclex.Input;
-using Microsoft.Xna.Framework.Graphics;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
-using Space.ScreenManagement.Screens.Helper;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
-using Space.Simulation.Commands;
-using Space.Data;
+using Nuclex.Input;
 using Space.ComponentSystem.Components;
-using Engine.ComponentSystem.RPG.Components;
+using Space.Control;
+using Space.Data;
+using Space.ScreenManagement.Screens.Helper;
+using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
+using Space.ScreenManagement.Screens.Ingame.Interfaces;
+using Space.Simulation.Commands;
 
 namespace Space.ScreenManagement.Screens.Ingame.Hud
 {
@@ -129,7 +121,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 var item = ItemAt(i);
                 if (item != null)
                 {
-                    imagePath = item.Texture();
+                    imagePath = item.IconName;
                 }
                 var image = _textureManager.Get(imagePath);
 
@@ -140,6 +132,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 }
             }
 
+            ItemDescription description = new ItemDescription();
             for (int i = 0; i < DataCount(); i++)
             {
                 // draw the tooltip
@@ -151,12 +144,14 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     var item = ItemAt(i);
                     if (item != null)
                     {
-                        _fonts.DrawString(Fonts.Types.ConsoleFont, item.Name(), new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                        // TODO: item.Name is the id, convert it to a localized display string, ideally taking into account modifiers for prefixes suffixes (stupid armor of the nerd).
+                        _fonts.DrawString(Fonts.Types.ConsoleFont, item.Name, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                         line++;
-                        var attributes = item.Attributes();
+                        item.GetDescription(ref description);
+                        var attributes = description.Attributes;
                         foreach (var attribute in attributes)
                         {
-                            _fonts.DrawString(Fonts.Types.ConsoleFont, attribute.Modifier.Type + " " + attribute.Modifier.Value, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                            _fonts.DrawString(Fonts.Types.ConsoleFont, attribute.Type + " " + attribute.Value, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                             line++;
                         }
                     }
@@ -187,7 +182,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                             var item = ItemAt(i);
                             if (item != null)
                             {
-                                imagePath = item.Texture();
+                                imagePath = item.IconName;
                             }
                             _itemSelection.DragNDropMode = true;
 
@@ -234,7 +229,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                                 var item = ItemAt(i);
                                 if (item != null)
                                 {
-                                    imagePath = item.Texture();
+                                    imagePath = item.IconName;
                                 }
 
                                 // ... tell the manager to swap the items.
@@ -261,7 +256,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         var item = ItemAt(i);
                         if (item != null)
                         {
-                            imagePath = item.Texture();
+                            imagePath = item.IconName;
                         }
 
                         // if an item is currently selected...
@@ -287,7 +282,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                             {
                                 _itemSelection.SetSelection(this, i, imagePath);
                             }
-                            // ... but remove the selecten if the slot was empty.
+                            // ... but remove the selection if the slot was empty.
                             else
                             {
                                 _itemSelection.RemoveSelection();
@@ -398,7 +393,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// </summary>
         /// <param name="id">The id of the slot of the item.</param>
         /// <returns>The item.</returns>
-        public abstract Item<AttributeType> ItemAt(int id);
+        public abstract SpaceItem ItemAt(int id);
 
         #endregion
 
