@@ -4,6 +4,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using Space.ComponentSystem.Components;
+using Space.Data;
 
 namespace Space.Simulation.Commands
 {
@@ -170,10 +171,12 @@ def ge(id):
                         var equipCommand = (EquipCommand)command;
                         try
                         {
-                            var inventory = avatar.GetComponent<Inventory>();
-                            var item = avatar.GetComponent<Inventory>()[equipCommand.InventoryIndex];
+                            var inventory = avatar.GetComponent<SpaceInventory>();
+                            var item = avatar.GetComponent<SpaceInventory>()[equipCommand.InventoryIndex];
                             inventory.RemoveAt(equipCommand.InventoryIndex);
-                            avatar.GetComponent<Equipment>().Equip(item, equipCommand.Slot);
+                            var itemOld = avatar.GetComponent<Equipment>().Equip<AttributeType>(item, equipCommand.Slot);
+                            if (itemOld > 0)
+                                inventory.AddItem(itemOld, equipCommand.InventoryIndex);
                         }
                         catch (IndexOutOfRangeException ex)
                         {
@@ -192,10 +195,15 @@ def ge(id):
                         var addCommand = (AddItemCommand)command;
                         var item = addCommand.Item.DeepCopy();
                         manager.AddEntity(item);
-                        avatar.GetComponent<Inventory>().Add(item);
+                        avatar.GetComponent<SpaceInventory>().Add(item);
                     }
                     break;
-
+                case SpaceCommandType.MoveItem:
+                    {
+                        var moveCommand =(MoveItemCommand)command;
+                        avatar.GetComponent<SpaceInventory>().Swap(moveCommand.Id1, moveCommand.Id2);
+                    }
+                    break;
                 case SpaceCommandType.ScriptCommand:
                     // Script command.
                     {
@@ -226,7 +234,7 @@ def ge(id):
                                 globals.SetVariable("avatar", avatar);
 
                                 var character = avatar.GetComponent<Character<Space.Data.AttributeType>>();
-                                var inventory = avatar.GetComponent<Inventory>();
+                                var inventory = avatar.GetComponent<SpaceInventory>();
                                 var equipment = avatar.GetComponent<Equipment>();
                                 globals.SetVariable("character", character);
                                 globals.SetVariable("inventory", inventory);

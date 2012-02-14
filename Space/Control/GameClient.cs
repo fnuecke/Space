@@ -9,6 +9,8 @@ using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Util;
+using Engine.ComponentSystem.RPG.Components;
+using Space.ComponentSystem.Components.Util;
 
 namespace Space.Control
 {
@@ -132,11 +134,39 @@ namespace Space.Control
             return null;
         }
 
+        public CharacterInfo GetCharacterInfo()
+        {
+            var avatarSystem = GetSystem<AvatarSystem>();
+            if (avatarSystem != null)
+            {
+                var avatar = avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
+                if (avatar != null)
+                {
+                    return avatar.GetComponent<CharacterInfo>();
+                }
+            }
+            return null;
+        }
+
+        public Equipment GetEquipment()
+        {
+            var avatarSystem = GetSystem<AvatarSystem>();
+            if (avatarSystem != null)
+            {
+                var avatar = avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
+                if (avatar != null)
+                {
+                    return avatar.GetComponent<Equipment>();
+                }
+            }
+            return null;
+        }
+
         /// <summary>
         /// Get the information facade for the ship of the specified player,
         /// if possible.
         /// </summary>
-        /// <param name="player">The player to get the info fro.</param>
+        /// <param name="player">The player to get the info from.</param>
         /// <returns>The local player's ship information facade.</returns>
         public ShipInfo GetPlayerShipInfo(Player player)
         {
@@ -214,7 +244,12 @@ namespace Space.Control
                 _lastSave = DateTime.Now;
             }
         }
-
+        public void Save()
+        {
+            Settings.Instance.CurrentProfile.Capture(GetPlayerShipInfo().Entity);
+            Settings.Instance.CurrentProfile.Save();
+            _lastSave = DateTime.Now;
+        }
         #endregion
 
         #region Event handlers

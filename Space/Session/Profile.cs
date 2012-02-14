@@ -22,13 +22,13 @@ namespace Space.Session
     sealed class Profile : IProfile
     {
         #region Logger
-        
+
         private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
         #region Constants
-        
+
         /// <summary>
         /// File version of the saved profiles. In case we change something
         /// fundamentally so that we can handle files differently. This is
@@ -272,7 +272,7 @@ namespace Space.Session
             var respawn = avatar.GetComponent<Respawn>();
             var character = avatar.GetComponent<Character<AttributeType>>();
             var equipment = avatar.GetComponent<Equipment>();
-            var inventory = avatar.GetComponent<Inventory>();
+            var inventory = avatar.GetComponent<SpaceInventory>();
             var manager = avatar.Manager;
 
             // Check if we have everything we need.
@@ -349,10 +349,18 @@ namespace Space.Session
 
             // And finally, the inventory. Same as with the inventory, we have
             // to serialize the actual items in it.
-            _data.Write(inventory.Count);
-            foreach (var item in inventory)
+            _data.Write(inventory.Count());
+            for (int i = 0; i < inventory.Count(); i++)
             {
-                _data.Write(item);
+                var itemList = inventory.GetAll(i);
+
+                _data.Write(i);
+                _data.Write(itemList.Count);
+                foreach (var item in itemList)
+                    _data.Write(item);
+
+
+
             }
 
             // TODO: extract additional display info, if desired.
@@ -429,7 +437,7 @@ namespace Space.Session
             // Get the elements we need to save.
             var character = avatar.GetComponent<Character<AttributeType>>();
             var equipment = avatar.GetComponent<Equipment>();
-            var inventory = avatar.GetComponent<Inventory>();
+            var inventory = avatar.GetComponent<SpaceInventory>();
 
             // Check if we have everything we need.
             if (character == null ||
@@ -464,7 +472,7 @@ namespace Space.Session
                 }
 
                 // Set restored slot count.
-                equipment.SetSlotCount(itemType, slotCount);
+                equipment.SetSlotCount < AttributeType>(itemType, slotCount);
 
                 // Read items and equip them.
                 int numItemsOfType = _data.ReadInt32();
@@ -475,16 +483,17 @@ namespace Space.Session
                     // Reset uid, add to our entity manager.
                     item.UID = -1;
                     manager.AddEntity(item);
-                    equipment.Equip(item, slot);
+                    equipment.Equip < AttributeType>(item, slot);
                 }
             }
 
             // Restore inventory, clear it first. As with the equipment, remove
             // any old items, if there were any.
-            while (inventory.Count > 0)
+            while (inventory.ItemCount() > 0)
             {
-                var item = inventory[inventory.Count - 1];
-                inventory.RemoveAt(inventory.Count - 1);
+                var item = inventory[inventory.Count() - 1];
+                inventory.RemoveAt(inventory.Count() - 1);
+                if(item != null)
                 manager.RemoveEntity(item);
             }
 
@@ -492,11 +501,18 @@ namespace Space.Session
             int numInventoryItems = _data.ReadInt32();
             for (int i = 0; i < numInventoryItems; i++)
             {
-                var item = _data.ReadPacketizable<Entity>();
-                // Reset id, add to our entity manager.
-                item.UID = -1;
-                manager.AddEntity(item);
-                inventory.Add(item);
+                var id = _data.ReadInt32();
+                int count = _data.ReadInt32();
+                for (int j = 0; j < count; j++)
+                {
+                    var item = _data.ReadPacketizable<Entity>();
+                    // Reset id, add to our entity manager.
+                    item.UID = -1;
+                    manager.AddEntity(item);
+
+                    inventory.AddItem(item,id);
+                }
+                
             }
 
             return avatar;
@@ -575,7 +591,11 @@ namespace Space.Session
 
             // And finally, the inventory.
             // TODO: empty for now, maybe some healing items or such when we have them.
-            _data.Write(0);
+            _data.Write(2);
+            _data.Write(0); // Position.
+            InitializeInventory<Thruster>(playerClass);
+            _data.Write(1); // Position.
+            InitializeInventory<Weapon>(playerClass);
         }
 
         /// <summary>
@@ -594,10 +614,28 @@ namespace Space.Session
             {
                 _data.Write(1); // Number of items.
                 _data.Write(0); // Slot number.
-                _data.Write(item.Sample(null)); // Actual item.
+                _data.Write(item.Sample(item.Name,null)); // Actual item.
             }
         }
-
+        /// <summary>
+        /// Utility method for initializing an equipment type.
+        /// </summary>
+        /// <typeparam name="T">The item type to initialize.</typeparam>
+        /// <param name="playerClass">The player class to initialize for.</param>
+        private void InitializeInventory<T>(PlayerClassType playerClass)
+        {
+            var item = playerClass.GetStarterItemConstraints<T>();
+            if (item == null)
+            {
+                _data.Write(0); // Number of items.
+            }
+            else
+            {
+                
+                _data.Write(1); // number.
+                _data.Write(item.Sample(item.Name,null)); // Actual item.
+            }
+        }
         #endregion
 
         #region Serialization

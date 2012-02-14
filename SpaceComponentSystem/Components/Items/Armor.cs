@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
+using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -6,7 +7,15 @@ namespace Space.ComponentSystem.Components
     /// Represents a single armor item, which determines an entity's armor
     /// rating.
     /// </summary>
-    public sealed class Armor : Item
+    public sealed class Armor : Item<AttributeType>
     {
+        public Armor()
+        {
+            
+        }
+        public Armor(string name)
+        {
+            _name = name;
+        }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ScreenManagement.Screens.Helper
 {
-    class SpaceForms
+    public class SpaceForms
     {
 
         /// <summary>

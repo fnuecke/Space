@@ -64,6 +64,12 @@ namespace Space.ComponentSystem.Constraints
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled item.</returns>
         public abstract Entity Sample(IUniformRandom random);
+        /// <summary>
+        /// Samples a new item.
+        /// </summary>
+        /// <param name="random">The randomizer to use.</param>
+        /// <returns>The sampled item.</returns>
+        public abstract Entity Sample(string name,IUniformRandom random);
 
         /// <summary>
         /// Samples the attributes to apply to the item.

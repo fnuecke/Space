@@ -24,7 +24,19 @@ namespace Space.ComponentSystem.Constraints
 
             return SampleAttributes(entity, random);
         }
+        /// <summary>
+        /// Samples a new reactor based on these constraints.
+        /// </summary>
+        /// <param name="random">The randomizer to use.</param>
+        /// <returns>The sampled reactor.</returns>
+        public override Entity Sample(string name,IUniformRandom random)
+        {
+            var entity = new Entity();
 
+            entity.AddComponent(new Reactor(name));
+
+            return SampleAttributes(entity, random);
+        }
         #endregion
     }
 }

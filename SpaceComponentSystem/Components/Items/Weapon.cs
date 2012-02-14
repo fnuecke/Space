@@ -4,13 +4,15 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Util;
+using Space.Data;
+using System.Collections.Generic;
 
 namespace Space.ComponentSystem.Components
 {
     /// <summary>
     /// Represents a single weapon item.
     /// </summary>
-    public sealed class Weapon : Item
+    public sealed class Weapon : Item<AttributeType>
     {
         #region Fields
 
@@ -48,6 +50,16 @@ namespace Space.ComponentSystem.Components
 
         #region Constructor
 
+        public Weapon(string texture, string sound, float cooldown, float energyConsumption, float damage, ProjectileConstraints[] projectiles,string name)
+        {
+            this.Texture = texture;
+            this.Sound = sound;
+            this.Cooldown = cooldown;
+            this.EnergyConsumption = energyConsumption;
+            this.Damage = damage;
+            this.Projectiles = projectiles;
+            _name = name;
+        }
         public Weapon(string texture, string sound, float cooldown, float energyConsumption, float damage, ProjectileConstraints[] projectiles)
         {
             this.Texture = texture;
@@ -56,14 +68,35 @@ namespace Space.ComponentSystem.Components
             this.EnergyConsumption = energyConsumption;
             this.Damage = damage;
             this.Projectiles = projectiles;
+            _name = "Weapon";
         }
-
         public Weapon()
         {
+            
         }
 
         #endregion
-
+        #region Logic
+        public override List<Attribute<AttributeType>> Attributes()
+        {
+            if (attributes == null)
+            {
+                attributes = new List<Attribute<AttributeType>>();
+                attributes.Add(new Attribute<AttributeType>(new AttributeModifier<AttributeType>(AttributeType.WeaponDamage, Damage)));
+                foreach (var component in Entity.Components)
+                {
+                    if (component is Attribute<AttributeType>)
+                    {
+                        attributes.Add((Attribute<AttributeType>)component);
+                    }
+                }
+                attributes.Add(new Attribute<AttributeType>(new AttributeModifier<AttributeType>(AttributeType.WeaponCooldown,Cooldown)));
+                attributes.Add(new Attribute<AttributeType>(new AttributeModifier<AttributeType>(AttributeType.WeaponEnergyConsumption, EnergyConsumption)));
+                
+            }
+            return attributes;
+        }
+        #endregion
         #region Serialization / Hashing / Cloning
 
         /// <summary>

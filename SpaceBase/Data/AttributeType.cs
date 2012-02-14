@@ -81,7 +81,9 @@ namespace Space.Data
         /// <summary>
         /// Radar Distance for an entity.
         /// </summary>
-        SensorRange
+        SensorRange,
+
+        WeaponDamage
     }
 
     public static class AttributeTypeExtension

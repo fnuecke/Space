@@ -10,5 +10,9 @@ namespace Space.ComponentSystem.Constraints
         {
             throw new System.NotImplementedException();
         }
+        public override Engine.ComponentSystem.Entities.Entity Sample(string name,Engine.Util.IUniformRandom random)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

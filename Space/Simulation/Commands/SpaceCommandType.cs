@@ -28,5 +28,10 @@
         /// Add an item to a player's inventory.
         /// </summary>
         AddItem,
+
+        /// <summary>
+        /// 
+        /// </summary>
+        MoveItem
     }
 }
