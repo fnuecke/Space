@@ -7,32 +7,35 @@ using Space.Control;
 using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
 using Space.Data;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.Entities;
 
 namespace Space.ScreenManagement.Screens.Ingame.Inventory
 {
-    class InventoryItems : AbstractDynamicItemList
+    class EquipmentItems<T> : AbstractDynamicItemList
+        where T : Item<AttributeType>
     {
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public InventoryItems(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
+        public EquipmentItems(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
             : base(client, itemSelection, textureManager)
         {
         }
 
         public override int DataCount()
         {
-            return _client.GetCharacterInfo().InventoryCount();
+            return _client.GetCharacterInfo().EquipmentCount<T>();
         }
 
         public override Item<AttributeType> ItemAt(int id)
         {
-            if (_client.GetCharacterInfo().InventoryItemAt(id) == null)
+            if (_client.GetCharacterInfo().InventoryItemAt(id).GetComponent<Item<AttributeType>>() == null)
             {
                 return null;
             }
             return _client.GetCharacterInfo().InventoryItemAt(id).GetComponent<Item<AttributeType>>();
         }
+
     }
 }

@@ -55,10 +55,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
             if (Visible)
             {
                 _spriteBatch.Begin();
+
                 _basicForms.FillRectangle(_scale.X(GetPosition().X),
                     _scale.Y(GetPosition().Y),
                     _scale.X(GetWidth()),
                     _scale.Y(GetHeight()), Color.Black * 0.6f);
+
+                _fonts.DrawString(Fonts.Types.Strasua24, "Inventory", 
+                    new Vector2(_scale.X(GetPosition().X + 5), _scale.Y(GetPosition().Y + 20)),
+                    Color.White, true);
+
                 _spriteBatch.End();
 
                 _list.Draw();
@@ -68,7 +74,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         public override void SetPosition(float x, float y)
         {
             base.SetPosition(x, y);
-            _list.SetPosition(x + 5, y + 5);
+            _list.SetPosition(x + 5, y + 50);
         }
 
         #region Listener

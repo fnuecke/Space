@@ -56,7 +56,7 @@ namespace Space.ScreenManagement.Screens.Helper
         /// <returns>The scaled value</returns>
         public int X(float value)
         {
-            return (int)(value * _actualResolution.X / _standardResolution.X);
+            return (int)(value * GetScaleXValue());
         }
 
         /// <summary>
@@ -66,7 +66,25 @@ namespace Space.ScreenManagement.Screens.Helper
         /// <returns>The scaled value</returns>
         public int Y(float value)
         {
-            return (int)(value * _actualResolution.Y / _standardResolution.Y);
+            return (int)(value * GetScaleYValue());
+        }
+
+        /// <summary>
+        /// Returns the x scaling value.
+        /// </summary>
+        /// <returns></returns>
+        public float GetScaleXValue()
+        {
+            return _actualResolution.X / _standardResolution.X;
+        }
+
+        /// <summary>
+        /// Returns the y scaling value.
+        /// </summary>
+        /// <returns></returns>
+        public float GetScaleYValue()
+        {
+            return _actualResolution.Y / _standardResolution.Y;
         }
 
         #endregion

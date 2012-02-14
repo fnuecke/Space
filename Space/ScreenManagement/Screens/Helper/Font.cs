@@ -30,7 +30,7 @@ namespace Space.ScreenManagement.Screens.Helper
         #region Fields
 
         private ContentManager _content;
-        private IngameScreen _ingame;
+        private Scale _scale;
         private SpriteBatch _spriteBatch;
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Space.ScreenManagement.Screens.Helper
         /// </summary>
         public void LoadContent(IngameScreen ingame, ContentManager content)
         {
-            _ingame = ingame;
+            _scale = ingame.Scale;
             _content = content;
             _spriteBatch = ingame.SpriteBatch;
 
@@ -70,8 +70,22 @@ namespace Space.ScreenManagement.Screens.Helper
 
         public void DrawString(Types font, String text, Vector2 position, Color color)
         {
-            _spriteBatch.DrawString(GetSpriteFont(font), text, position, color);
+            DrawString(font, text, position, color, false);
         }
+
+        public void DrawString(Types font, String text, Vector2 position, Color color, Boolean scale)
+        {
+            if (scale)
+            {
+                _spriteBatch.DrawString(GetSpriteFont(font), text, position, color, 0, new Vector2(0, 0), _scale.GetScaleXValue(), new SpriteEffects(), 0);
+            }
+            else
+            {
+                _spriteBatch.DrawString(GetSpriteFont(font), text, position, color);
+            }
+        }
+
+
 
         #endregion
 

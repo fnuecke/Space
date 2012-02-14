@@ -10,6 +10,7 @@ using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Constraints;
 using Space.ComponentSystem.Util;
 using Space.Data;
+using Space.ComponentSystem.Components.Util;
 
 namespace Space.ComponentSystem.Entities
 {
@@ -26,7 +27,7 @@ namespace Space.ComponentSystem.Entities
         {
             // Player ships must be 'static', i.e. not have random attributes, so we don't need a randomizer.
             Entity entity = playerClass.GetShipConstraints().SampleShip(playerNumber.ToFaction(), position, null);
-
+            entity.AddComponent(new CharacterInfo());
             // Remember the class.
             entity.AddComponent(new PlayerClass(playerClass));
 

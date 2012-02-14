@@ -180,6 +180,7 @@
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudInputHandlerTest.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\InputHandler\OriginInputHandler.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Interfaces\AbstractGuiElement.cs" />
+    <Compile Include="ScreenManagement\Screens\Ingame\Inventory\EquipmentItems.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\MouseLayer.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Stylesheet\HudColors.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Hud\HudComponents\HudSpacer.cs" />
