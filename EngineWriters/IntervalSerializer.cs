@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Engine.Util;
 using Microsoft.Xna.Framework.Content;
@@ -70,7 +71,7 @@ namespace Engine.Serialization
     {
         protected override double Parse(string value)
         {
-            return double.Parse(value);
+            return double.Parse(value, NumberFormatInfo.InvariantInfo);
         }
     }
 
@@ -79,7 +80,7 @@ namespace Engine.Serialization
     {
         protected override float Parse(string value)
         {
-            return float.Parse(value);
+            return float.Parse(value, NumberFormatInfo.InvariantInfo);
         }
     }
 
@@ -88,7 +89,7 @@ namespace Engine.Serialization
     {
         protected override int Parse(string value)
         {
-            return int.Parse(value);
+            return int.Parse(value, NumberFormatInfo.InvariantInfo);
         }
     }
 }
