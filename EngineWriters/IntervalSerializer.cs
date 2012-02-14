@@ -34,11 +34,11 @@ namespace Engine.Serialization
         {
             if (value.Low.Equals(value.High))
             {
-                output.Xml.WriteValue(value.Low);
+                output.Xml.WriteValue(string.Format(NumberFormatInfo.InvariantInfo, "{0}", value.Low));
             }
             else
             {
-                output.Xml.WriteValue(value.Low + " to " + value.High);
+                output.Xml.WriteValue(string.Format(NumberFormatInfo.InvariantInfo, "{0} to {1}", value.Low, value.High));
             }
         }
 
