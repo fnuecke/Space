@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Util;
+using Space.ComponentSystem.Components.Util;
 
 namespace Space.Control
 {
@@ -132,7 +133,7 @@ namespace Space.Control
             return null;
         }
 
-        public SpaceInventory GetInventory()
+        public CharacterInfo GetCharacterInfo()
         {
             var avatarSystem = GetSystem<AvatarSystem>();
             if (avatarSystem != null)
@@ -140,7 +141,7 @@ namespace Space.Control
                 var avatar = avatarSystem.GetAvatar(Controller.Session.LocalPlayer.Number);
                 if (avatar != null)
                 {
-                    return avatar.GetComponent<SpaceInventory>();
+                    return avatar.GetComponent<CharacterInfo>();
                 }
             }
             return null;

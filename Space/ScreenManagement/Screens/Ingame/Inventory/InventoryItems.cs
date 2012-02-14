@@ -23,16 +23,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
 
         public override int DataCount()
         {
-            return _client.GetInventory().Count();
+            return _client.GetCharacterInfo().InventoryCount();
         }
 
         public override Item<AttributeType> ItemAt(int id)
         {
-            if (_client.GetInventory()[id] == null)
+            if (_client.GetCharacterInfo().InventoryItemAt(id) == null)
             {
                 return null;
             }
-            return _client.GetInventory()[id].GetComponent<Item<AttributeType>>();
+            return _client.GetCharacterInfo().InventoryItemAt(id).GetComponent<Item<AttributeType>>();
         }
     }
 }
