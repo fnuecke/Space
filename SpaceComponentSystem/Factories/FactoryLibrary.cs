@@ -65,7 +65,7 @@ namespace Space.ComponentSystem.Factories
         /// <typeparam name="T">The type of constraints to get.</typeparam>
         /// <param name="name">The name of the constraints to get.</param>
         /// <returns>The constraints object.</returns>
-        public static T GetConstraints<T>(string name)
+        public static T GetFactory<T>(string name)
         {
             return (T)_constraints[typeof(T)][name];
         }

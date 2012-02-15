@@ -15,18 +15,18 @@ namespace Space.ComponentSystem.Util
 
         private static readonly Dictionary<PlayerClassType, Func<ShipFactory>> _shipLookup = new Dictionary<PlayerClassType, Func<ShipFactory>>()
         {
-            { PlayerClassType.Fighter, () => FactoryLibrary.GetConstraints<ShipFactory>("Player") }
+            { PlayerClassType.Fighter, () => FactoryLibrary.GetFactory<ShipFactory>("Player") }
         };
 
         private static readonly Dictionary<PlayerClassType, Dictionary<Type, Func<ItemFactory>>> _itemLookup = new Dictionary<PlayerClassType, Dictionary<Type, Func<ItemFactory>>>()
         {
             { PlayerClassType.Fighter, new Dictionary<Type, Func<ItemFactory>>()
                 {
-                    { typeof(Armor), () => FactoryLibrary.GetConstraints<ArmorFactory>("Starter Armor") },
-                    { typeof(Reactor), () => FactoryLibrary.GetConstraints<ReactorFactory>("Starter Reactor") },
-                    { typeof(Sensor), () => FactoryLibrary.GetConstraints<SensorFactory>("Starter Sensor") },
-                    { typeof(Thruster), () => FactoryLibrary.GetConstraints<ThrusterFactory>("Starter Thruster") },
-                    { typeof(Weapon), () => FactoryLibrary.GetConstraints<WeaponFactory>("Starter Weapon") }
+                    { typeof(Armor), () => FactoryLibrary.GetFactory<ArmorFactory>("Starter Armor") },
+                    { typeof(Reactor), () => FactoryLibrary.GetFactory<ReactorFactory>("Starter Reactor") },
+                    { typeof(Sensor), () => FactoryLibrary.GetFactory<SensorFactory>("Starter Sensor") },
+                    { typeof(Thruster), () => FactoryLibrary.GetFactory<ThrusterFactory>("Starter Thruster") },
+                    { typeof(Weapon), () => FactoryLibrary.GetFactory<WeaponFactory>("Starter Weapon") }
                 }
             }
         };
