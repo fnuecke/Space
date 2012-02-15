@@ -7,9 +7,26 @@
       <MaxDrops>1</MaxDrops>
       <Items>
         <Item>
-          <ItemName>StarterWeapon</ItemName>
-          <Dropchance>1</Dropchance>
+          <ItemName>StarterArmor</ItemName>
+          <Dropchance>0.1</Dropchance>
         </Item>
+        <Item>
+          <ItemName>StarterWeapon</ItemName>
+          <Dropchance>0.1</Dropchance>
+        </Item>
+        <Item>
+          <ItemName>StarterReactor</ItemName>
+          <Dropchance>0.1</Dropchance>
+        </Item>
+        <Item>
+          <ItemName>StarterSensor</ItemName>
+          <Dropchance>0.1</Dropchance>
+        </Item>
+        <Item>
+          <ItemName>StarterThruster</ItemName>
+          <Dropchance>0.1</Dropchance>
+        </Item>
+       
       </Items>
     </Item>
   </Asset>
