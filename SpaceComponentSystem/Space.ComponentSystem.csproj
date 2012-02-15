@@ -129,6 +129,7 @@
     <Compile Include="Factories\ConsumableFactory.cs" />
     <Compile Include="Factories\IFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
+    <Compile Include="Factories\ItemPool.cs" />
     <Compile Include="Util\PlayerClassType.cs" />
     <Compile Include="Factories\ReactorFactory.cs" />
     <Compile Include="Factories\SensorFactory.cs" />

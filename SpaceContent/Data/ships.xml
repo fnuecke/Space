@@ -29,7 +29,7 @@
       <Name>L1_AI_Ship</Name>
       <Texture>Textures/Stolen/Ships/broadsword_hftr</Texture>
       <CollisionRadius>24</CollisionRadius>
-
+      <ItemPool>Starter</ItemPool>
       <Attributes>
         <Item>20 Mass</Item>
         <Item>20 to 40 Health</Item>

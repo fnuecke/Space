@@ -5,7 +5,9 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Components.Logic;
 using Space.Data;
 
 namespace Space.ComponentSystem.Factories
@@ -33,6 +35,11 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         public float CollisionRadius;
 
+        /// <summary>
+        /// The Item Pool which is used if the Entity is destroyed
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public string ItemPool;
         /// <summary>
         /// List of basic stats for this ship class.
         /// </summary>
@@ -212,6 +219,12 @@ namespace Space.ComponentSystem.Factories
             health.Value = health.MaxValue;
             energy.Value = energy.MaxValue;
 
+            if (ItemPool != null)
+            {
+               
+                entity.AddComponent(new Drops {ItemPool = ItemPool});
+            }
+                
             return entity;
         }
 

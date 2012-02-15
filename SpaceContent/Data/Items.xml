@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <!-- TODO: replace this Asset with your own XML asset data. -->
+  <Asset Type="Space.ComponentSystem.Factories.ItemPool[]">
+    <Item>
+      <Name>Starter</Name>
+      <MaxDrops>1</MaxDrops>
+      <Items>
+        <Item>
+          <ItemName>StarterWeapon</ItemName>
+          <Dropchance>1</Dropchance>
+        </Item>
+      </Items>
+    </Item>
+  </Asset>
+</XnaContent>
