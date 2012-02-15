@@ -11,16 +11,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// </summary>
     public sealed class Inventory : AbstractComponent, IList<Entity>
     {
-        #region Fields
-        
-        /// <summary>
-        /// A list of items currently in this inventory.
-        /// </summary>
-        private List<int> _items = new List<int>();
-
-        #endregion
-
-        #region List interface
+        #region Properties
 
         /// <summary>
         /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
@@ -30,7 +21,27 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   </returns>
         public int Count
         {
-            get { return _items.Count; }
+            get
+            {
+                if (_isFixed)
+                {
+                    // Get the number of slots that are actually occupied.
+                    int count = 0;
+                    for (int i = 0; i < _items.Count; i++)
+                    {
+                        if (_items[i] > 0)
+                        {
+                            ++count;
+                        }
+                    }
+                    return count;
+                }
+                else
+                {
+                    // Dynamic length, no gaps to use actual count.
+                    return _items.Count;
+                }
+            }
         }
 
         /// <summary>
@@ -38,7 +49,94 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <returns>true if the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only; otherwise, false.
         ///   </returns>
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly { get { return _isFixed; } }
+
+        /// <summary>
+        /// A fixed capacity for this inventory. If set, there may be gaps in
+        /// the list. Disable by setting it to zero.
+        /// </summary>
+        /// <remarks>Important: unlike the <c>List</c>s capacity, e.g., this
+        /// capacity is fixed after it is set (unless it is set to zero).</remarks>
+        public int Capacity
+        {
+            get
+            {
+                return _isFixed ? _items.Count : 0;
+            }
+            set
+            {
+                if (_items.Count > value)
+                {
+                    // Remove items that are out of bounds after fixing.
+                    for (int i = _items.Count - 1; i >= value; --i)
+                    {
+                        var itemUid = _items[i];
+                        if (itemUid > 0)
+                        {
+                            // This will, via messaging, also remove the item
+                            // from the list, so the following capacity change
+                            // is safe.
+                            Entity.Manager.RemoveEntity(itemUid);
+                        }
+                        // If the list was fixed length, remove manually.
+                        if (_isFixed)
+                        {
+                            _items.RemoveAt(i);
+                        }
+                    }
+                }
+
+                // Adjust capacity.
+                _items.Capacity = value;
+
+                // Fill up with zeros.
+                for (int i = _items.Capacity - _items.Count; i > 0; --i)
+                {
+                    _items.Add(0);
+                }
+
+                // Remember our type.
+                _isFixed = value > 0;
+            }
+        }
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// A list of items currently in this inventory.
+        /// </summary>
+        private List<int> _items = new List<int>();
+
+        /// <summary>
+        /// Whether we have a fixed length list.
+        /// </summary>
+        private bool _isFixed;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Creates a new inventory with a fixed capacity.
+        /// </summary>
+        /// <param name="fixedCapacity">The capacity of the inventory.</param>
+        public Inventory(int fixedCapacity)
+        {
+            this.Capacity = fixedCapacity;
+        }
+
+        /// <summary>
+        /// Creates a new inventory with a dynamic size.
+        /// </summary>
+        public Inventory()
+        {
+        }
+
+        #endregion
+
+        #region List interface
 
         /// <summary>
         /// Gets or sets the element at the specified index.
@@ -57,6 +155,12 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             get
             {
+                // Check for null entries (entity manager throws for unknown
+                // values, as it should).
+                if (_isFixed && _items[index] <= 0)
+                {
+                    return null;
+                }
                 return Entity.Manager.GetEntity(_items[index]);
             }
             set
@@ -72,6 +176,9 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <exception cref="T:System.NotSupportedException">
         /// The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
         ///   </exception>
+        /// <exception cref="T:System.InvalidOperationException">
+        /// The fixed length inventory is already full.
+        /// </exception>
         public void Add(Entity item)
         {
             // If the item is stackable, see if we already have a stack we can
@@ -79,24 +186,27 @@ namespace Engine.ComponentSystem.RPG.Components
             var stackable = item.GetComponent<Stackable>();
             if (stackable != null)
             {
-                for (int i = 0; i < Count; i++)
+                for (int i = 0; i < _items.Count; i++)
                 {
-                    var otherStackable = this[i].GetComponent<Stackable>();
-                    if (otherStackable != null &&
-                        otherStackable.GroupId == stackable.GroupId &&
-                        otherStackable.Count < otherStackable.MaxCount)
+                    if (!_isFixed || _items[i] > 0)
                     {
-                        // Found a non-full stack of matching type, add as many
-                        // as possible.
-                        int toAdd = System.Math.Min(otherStackable.MaxCount - otherStackable.Count, stackable.Count);
-                        otherStackable.Count += toAdd;
-                        stackable.Count -= toAdd;
-
-                        // We done yet?
-                        if (stackable.Count == 0)
+                        var otherStackable = this[i].GetComponent<Stackable>();
+                        if (otherStackable != null &&
+                            otherStackable.GroupId == stackable.GroupId &&
+                            otherStackable.Count < otherStackable.MaxCount)
                         {
-                            return;
-                        } // ... else we continue in search of the next stack.
+                            // Found a non-full stack of matching type, add as many
+                            // as possible.
+                            int toAdd = System.Math.Min(otherStackable.MaxCount - otherStackable.Count, stackable.Count);
+                            otherStackable.Count += toAdd;
+                            stackable.Count -= toAdd;
+
+                            // We done yet?
+                            if (stackable.Count == 0)
+                            {
+                                return;
+                            } // ... else we continue in search of the next stack.
+                        }
                     }
                 }
             }
@@ -105,7 +215,26 @@ namespace Engine.ComponentSystem.RPG.Components
             // * item is not stackable, which is the trivial case.
             // * item is stackable but could not be completely distributed to
             //   existing stacks, so we need to add what remains as a new one.
-            _items.Add(item.UID);
+            if (_isFixed)
+            {
+                // Find the first free slot.
+                for (int i = 0; i < _items.Count; ++i)
+                {
+                    if (_items[i] <= 0)
+                    {
+                        _items[i] = item.UID;
+                        return;
+                    }
+                }
+
+                // No free slot found!
+                throw new InvalidOperationException("Inventory full.");
+            }
+            else
+            {
+                // Just append.
+                _items.Add(item.UID);
+            }
         }
 
         /// <summary>
@@ -116,7 +245,16 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   </exception>
         public void Clear()
         {
-            _items.Clear();
+            // Remove all items and destroy them.
+            for (int i = _items.Count - 1; i > 0; --i)
+            {
+                int itemUid = _items[i];
+                if (itemUid > 0)
+                {
+                    // Will remove / clear the slot via messaging.
+                    Entity.Manager.RemoveEntity(itemUid);
+                }
+            }
         }
 
         /// <summary>
@@ -167,8 +305,13 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <exception cref="T:System.NotSupportedException">
         /// The <see cref="T:System.Collections.Generic.IList`1"/> is read-only.
         ///   </exception>
+        /// <exception cref="System.NotSupportedException">If the inventory is of fixed length.</exception>
         public void Insert(int index, Entity item)
         {
+            if (_isFixed)
+            {
+                throw new NotSupportedException("Not supported for fixed length inventories.");
+            }
             _items.Insert(index, item.UID);
         }
 
@@ -184,7 +327,24 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   </exception>
         public bool Remove(Entity item)
         {
-            return _items.Remove(item.UID);
+            if (_isFixed)
+            {
+                // Find where the item sits, then null the entry.
+                int index = IndexOf(item);
+                if (index >= 0)
+                {
+                    _items[index] = 0;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return _items.Remove(item.UID);
+            }
         }
 
         /// <summary>
@@ -199,7 +359,14 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   </exception>
         public void RemoveAt(int index)
         {
-            _items.RemoveAt(index);
+            if (_isFixed)
+            {
+                _items[index] = 0;
+            }
+            else
+            {
+                _items.RemoveAt(index);
+            }
         }
 
         /// <summary>
@@ -210,9 +377,22 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </returns>
         public IEnumerator<Entity> GetEnumerator()
         {
-            for (int i = 0; i < _items.Count; i++)
+            if (_isFixed)
             {
-                yield return Entity.Manager.GetEntity(_items[i]);
+                for (int i = 0; i < _items.Count; i++)
+                {
+                    if (_items[i] > 0)
+                    {
+                        yield return Entity.Manager.GetEntity(_items[i]);
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < _items.Count; i++)
+                {
+                    yield return Entity.Manager.GetEntity(_items[i]);
+                }
             }
         }
 
@@ -278,6 +458,8 @@ namespace Engine.ComponentSystem.RPG.Components
                 packet.Write(_items[i]);
             }
 
+            packet.Write(_isFixed);
+
             return packet;
         }
 
@@ -295,6 +477,8 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 _items.Add(packet.ReadInt32());
             }
+
+            _isFixed = packet.ReadBoolean();
         }
 
         #endregion
@@ -309,6 +493,7 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 copy._items.Clear();
                 copy._items.AddRange(_items);
+                copy._isFixed = _isFixed;
             }
             else
             {

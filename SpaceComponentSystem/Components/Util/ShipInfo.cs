@@ -360,14 +360,14 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The current number of items in the ship's inventory.
         /// </summary>
-        public int InventoryCount
+        public int InventoryCapacity
         {
             get
             {
                 var inventory = Entity.GetComponent<Inventory>();
                 if (inventory != null)
                 {
-                    return inventory.Count;
+                    return inventory.Capacity;
                 }
                 return 0;
             }
