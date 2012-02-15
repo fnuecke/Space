@@ -75,6 +75,37 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   </exception>
         public void Add(Entity item)
         {
+            // If the item is stackable, see if we already have a stack we can
+            // add it on top of.
+            var stackable = item.GetComponent<Stackable>();
+            if (stackable != null)
+            {
+                for (int i = 0; i < Count; i++)
+                {
+                    var otherStackable = this[i].GetComponent<Stackable>();
+                    if (otherStackable != null &&
+                        otherStackable.GroupId == stackable.GroupId &&
+                        otherStackable.Count < otherStackable.MaxCount)
+                    {
+                        // Found a non-full stack of matching type, add as many
+                        // as possible.
+                        int toAdd = System.Math.Min(otherStackable.MaxCount - otherStackable.Count, stackable.Count);
+                        otherStackable.Count += toAdd;
+                        stackable.Count -= toAdd;
+
+                        // We done yet?
+                        if (stackable.Count == 0)
+                        {
+                            return;
+                        } // ... else we continue in search of the next stack.
+                    }
+                }
+            }
+
+            // At this point, just add it normally. We get here via two routes:
+            // * item is not stackable, which is the trivial case.
+            // * item is stackable but could not be completely distributed to
+            //   existing stacks, so we need to add what remains as a new one.
             _items.Add(item.UID);
         }
 
