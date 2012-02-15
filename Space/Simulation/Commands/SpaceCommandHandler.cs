@@ -53,7 +53,7 @@ from Engine.ComponentSystem.Components import *
 from Engine.ComponentSystem.Systems import *
 from Engine.ComponentSystem.RPG.Components import *
 from Space.ComponentSystem.Components import *
-from Space.ComponentSystem.Constraints import *
+from Space.ComponentSystem.Factories import *
 from Space.ComponentSystem.Systems import *
 from Space.Data import *
 
@@ -208,15 +208,6 @@ def ge(id):
                     }
                     break;
 #if DEBUG
-                case SpaceCommandType.AddItem:
-                    // Add an item to the player's inventory from the void. It's magic!
-                    {
-                        var addCommand = (AddItemCommand)command;
-                        var item = addCommand.Item.DeepCopy();
-                        manager.AddEntity(item);
-                        avatar.GetComponent<Inventory>().Add(item);
-                    }
-                    break;
                 case SpaceCommandType.ScriptCommand:
                     // Script command.
                     {
