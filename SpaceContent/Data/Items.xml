@@ -8,7 +8,7 @@
       <Items>
         <Item>
           <ItemName>StarterWeapon</ItemName>
-          <Dropchance>1</Dropchance>
+          <Probability>1</Probability>
         </Item>
       </Items>
     </Item>

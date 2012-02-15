@@ -2,12 +2,22 @@
 using Space.ComponentSystem.Messages;
 using Space.ComponentSystem.Systems;
 
-namespace Space.ComponentSystem.Components.Logic
+namespace Space.ComponentSystem.Components
 {
+    /// <summary>
+    /// Tracks what items a unit may drop on death, via the item pool id to
+    /// draw items from.
+    /// </summary>
     public class Drops : AbstractComponent
     {
         #region Fields
+
+        /// <summary>
+        /// The logical name of the item pool to draw items from when the unit
+        /// dies.
+        /// </summary>
         public string ItemPool;
+
         #endregion
 
         #region Logic
@@ -22,10 +32,13 @@ namespace Space.ComponentSystem.Components.Logic
             if (message is EntityDied)
             {
                 var transform = Entity.GetComponent<Transform>();
-                if(transform == null) return;
-                Entity.Manager.SystemManager.GetSystem<DropSystem>().Drop(ItemPool,ref transform.Translation);
+                if (transform != null)
+                {
+                    Entity.Manager.SystemManager.GetSystem<DropSystem>().Drop(ItemPool, ref transform.Translation);
+                }
             }
         }
+
         #endregion
     }
 }

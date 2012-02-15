@@ -1,38 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Space.ComponentSystem.Factories
 {
-    public class ItemPool
+    public sealed class ItemPool
     {
         /// <summary>
-        /// THe Class holding the Infos about the Drop
+        /// The class holding the information about a single drop.
         /// </summary>
-        public class DropInfo
+        public sealed class DropInfo
         {
             /// <summary>
-            /// The Name of the Item
+            /// The logical name of the item.
             /// </summary>
             public string ItemName;
-            /// <summary>
-            /// The Dropchance of the Item
-            /// </summary>
-            public float Dropchance;
 
-            
+            /// <summary>
+            /// The probability with which the item will be dropped.
+            /// </summary>
+            public float Probability;
         }
+
         /// <summary>
-        /// The Id of the Item Pool
+        /// The logical name of the item pool.
         /// </summary>
         public string Name;
+
         /// <summary>
-        /// The Maximum amount of drops
+        /// The maximum amount of simultaneously dropped items.
         /// </summary>
         public int MaxDrops;
+
         /// <summary>
-        /// A List of Tuples containing the Name of the Item and the Drop Chance
+        /// A list of tuples containing the name of the item and the
+        /// probability the item will be dropped.
         /// </summary>
         public List<DropInfo> Items;
     }

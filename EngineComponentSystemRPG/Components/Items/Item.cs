@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 
 namespace Engine.ComponentSystem.RPG.Components
@@ -9,8 +10,17 @@ namespace Engine.ComponentSystem.RPG.Components
     /// </summary>
     public class Item : AbstractComponent
     {
+        #region Constants
+
+        /// <summary>
+        /// Index group that tracks items
+        /// </summary>
+        public static readonly ulong IndexGroup = 1ul << IndexSystem.GetGroup();
+
+        #endregion
+
         #region Fields
-        
+
         /// <summary>
         /// The base name of this item, i.e. its base type, as set in the XML.
         /// This is essentially an ID and should never be displayed directly,

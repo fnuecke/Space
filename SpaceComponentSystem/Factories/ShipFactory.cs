@@ -7,7 +7,6 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Components.Logic;
 using Space.Data;
 
 namespace Space.ComponentSystem.Factories
@@ -40,6 +39,7 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         public string ItemPool;
+
         /// <summary>
         /// List of basic stats for this ship class.
         /// </summary>
