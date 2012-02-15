@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
@@ -50,22 +51,22 @@ namespace Engine.Serialization
                 case AttributeComputationType.Additive:
                     if (value.Value.Low == value.Value.High)
                     {
-                        valueString = value.Value.Low.ToString();
+                        valueString = string.Format(CultureInfo.InvariantCulture, "{0}", value.Value.Low);
                     }
                     else
                     {
-                        valueString = value.Value.Low.ToString() + " to " + value.Value.High.ToString();
+                        valueString = string.Format(CultureInfo.InvariantCulture, "{0} to {1}", value.Value.Low, value.Value.High);
                     }
                     output.Xml.WriteValue(valueString + " " + Enum.GetName(typeof(TAttribute), value.Type));
                     break;
                 case AttributeComputationType.Multiplicative:
                     if (value.Value.Low == value.Value.High)
                     {
-                        valueString = ((value.Value.Low - 1) * 100).ToString();
+                        valueString = string.Format(CultureInfo.InvariantCulture, "{0}", ((value.Value.Low - 1) * 100));
                     }
                     else
                     {
-                        valueString = ((value.Value.Low - 1) * 100).ToString() + " to " + ((value.Value.High - 1) * 100).ToString();
+                        valueString = string.Format(CultureInfo.InvariantCulture, "{0} to {1}", ((value.Value.Low - 1) * 100), ((value.Value.High - 1) * 100));
                     }
                     output.Xml.WriteValue(valueString + "% " + Enum.GetName(typeof(TAttribute), value.Type));
                     break;
@@ -88,8 +89,8 @@ namespace Engine.Serialization
                 existingInstance.Type = (TAttribute)Enum.Parse(typeof(TAttribute), match.Groups["type"].Value);
 
                 // Now get the numeric value for the attribute.
-                var minValue = float.Parse(match.Groups["minValue"].Value);
-                var maxValue = match.Groups["maxValue"].Success ? float.Parse(match.Groups["maxValue"].Value) : minValue;
+                var minValue = float.Parse(match.Groups["minValue"].Value, CultureInfo.InvariantCulture);
+                var maxValue = match.Groups["maxValue"].Success ? float.Parse(match.Groups["maxValue"].Value, CultureInfo.InvariantCulture) : minValue;
 
                 // Check if it's a percentual value, and if so set mode to multiplicative.
                 var percentual = match.Groups["percentual"];

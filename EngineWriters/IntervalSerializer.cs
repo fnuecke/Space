@@ -34,11 +34,11 @@ namespace Engine.Serialization
         {
             if (value.Low.Equals(value.High))
             {
-                output.Xml.WriteValue(string.Format(NumberFormatInfo.InvariantInfo, "{0}", value.Low));
+                output.Xml.WriteValue(string.Format(CultureInfo.InvariantCulture, "{0}", value.Low));
             }
             else
             {
-                output.Xml.WriteValue(string.Format(NumberFormatInfo.InvariantInfo, "{0} to {1}", value.Low, value.High));
+                output.Xml.WriteValue(string.Format(CultureInfo.InvariantCulture, "{0} to {1}", value.Low, value.High));
             }
         }
 
@@ -71,7 +71,7 @@ namespace Engine.Serialization
     {
         protected override double Parse(string value)
         {
-            return double.Parse(value, NumberFormatInfo.InvariantInfo);
+            return double.Parse(value, CultureInfo.InvariantCulture);
         }
     }
 
@@ -80,7 +80,7 @@ namespace Engine.Serialization
     {
         protected override float Parse(string value)
         {
-            return float.Parse(value, NumberFormatInfo.InvariantInfo);
+            return float.Parse(value, CultureInfo.InvariantCulture);
         }
     }
 
@@ -89,7 +89,7 @@ namespace Engine.Serialization
     {
         protected override int Parse(string value)
         {
-            return int.Parse(value, NumberFormatInfo.InvariantInfo);
+            return int.Parse(value, CultureInfo.InvariantCulture);
         }
     }
 }

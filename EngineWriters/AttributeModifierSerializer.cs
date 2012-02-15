@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Engine.ComponentSystem.RPG.Components;
 using Microsoft.Xna.Framework.Content;
@@ -36,10 +37,10 @@ namespace Engine.Serialization
             switch (value.ComputationType)
             {
                 case AttributeComputationType.Additive:
-                    output.Xml.WriteValue(value.Value.ToString() + " " + Enum.GetName(typeof(TAttribute), value.Type));
+                    output.Xml.WriteValue(string.Format(CultureInfo.InvariantCulture, "{0}", value.Value) + " " + Enum.GetName(typeof(TAttribute), value.Type));
                     break;
                 case AttributeComputationType.Multiplicative:
-                    output.Xml.WriteValue(((value.Value - 1) * 100).ToString() + "% " + Enum.GetName(typeof(TAttribute), value.Type));
+                    output.Xml.WriteValue(string.Format(CultureInfo.InvariantCulture, "{0}", ((value.Value - 1) * 100)) + "% " + Enum.GetName(typeof(TAttribute), value.Type));
                     break;
             }
         }
@@ -56,7 +57,7 @@ namespace Engine.Serialization
                 existingInstance.Type = (TAttribute)Enum.Parse(typeof(TAttribute), match.Groups["type"].Value);
 
                 // Now get the numeric value for the attribute.
-                var value = float.Parse(match.Groups["value"].Value);
+                var value = float.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture);
 
                 // Check if it's a percentual value, and if so set mode to multiplicative.
                 var percentual = match.Groups["percentual"];
