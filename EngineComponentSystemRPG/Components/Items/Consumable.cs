@@ -6,6 +6,29 @@
     /// </summary>
     public abstract class Consumable : Usable
     {
+        #region Constructor
+        
+        /// <summary>
+        /// Creates a new consumable item with the specified parameters.
+        /// </summary>
+        /// <param name="name">The logical base name of the item.</param>
+        /// <param name="iconName">The name of the icon used for the item.</param>
+        public Consumable(string name, string iconName)
+            : base(name, iconName)
+        {
+        }
+
+        /// <summary>
+        /// For deserialization.
+        /// </summary>
+        public Consumable()
+        {
+        }
+
+        #endregion
+
+        #region Logic
+
         /// <summary>
         /// Use the item, have it trigger its logic. Consumes one item of a
         /// stack, destroys the item if only one is left (or it's not
@@ -29,5 +52,7 @@
                 Entity.Manager.RemoveEntity(Entity);
             }
         }
+        
+        #endregion
     }
 }

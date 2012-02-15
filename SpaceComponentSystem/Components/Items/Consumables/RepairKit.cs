@@ -1,50 +1,63 @@
 ﻿using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.RPG.Components.Items;
 using Engine.Serialization;
 
-namespace Engine.ComponentSystem.RPG.Components
+namespace Space.ComponentSystem.Components
 {
     /// <summary>
-    /// Marks an entity as being an item. This should be extended to add item
-    /// specific properties, as necessary.
+    /// A repair kit is a consumable that can be used to restore a certain
+    /// amount of health to the user's ship.
     /// </summary>
-    public class Item : AbstractComponent
+    public sealed class RepairKit : Consumable
     {
         #region Fields
         
         /// <summary>
-        /// The base name of this item, i.e. its base type, as set in the XML.
-        /// This is essentially an ID and should never be displayed directly,
-        /// but instead used to localize the name.
+        /// The amount of health the repair kit restores when used.
         /// </summary>
-        public string Name;
-
-        /// <summary>
-        /// The asset name of the texture to use to display the item in menus
-        /// and the inventory, e.g.
-        /// </summary>
-        public string IconName;
+        public int HealthRestored;
 
         #endregion
 
         #region Constructor
 
         /// <summary>
-        /// Creates a new item with the specified parameters.
+        /// Creates a new repair kit with the specified parameters.
         /// </summary>
         /// <param name="name">The logical base name of the item.</param>
         /// <param name="iconName">The name of the icon used for the item.</param>
-        public Item(string name, string iconName)
+        /// <param name="healthRestored">The amount of health this kit restores.</param>
+        public RepairKit(string name, string iconName, int healthRestored)
+            : base(name, iconName)
         {
-            this.Name = name;
-            this.IconName = iconName;
+            this.HealthRestored = healthRestored;
         }
 
         /// <summary>
         /// For deserialization.
         /// </summary>
-        public Item()
-            : this(string.Empty, string.Empty)
+        public RepairKit()
         {
+        }
+
+        #endregion
+
+        #region Logic
+
+        /// <summary>
+        /// Use the item, have it trigger its logic. Consumes one item of a
+        /// stack, destroys the item if only one is left (or it's not
+        /// stackable, which is equivalent). Restores some health.
+        /// </summary>
+        public override void Use()
+        {
+            base.Use();
+
+            var health = Entity.GetComponent<Health>();
+            if (health != null)
+            {
+                health.Value += HealthRestored;
+            }
         }
 
         #endregion
@@ -61,8 +74,7 @@ namespace Engine.ComponentSystem.RPG.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Name)
-                .Write(IconName);
+                .Write(HealthRestored);
         }
 
         /// <summary>
@@ -73,8 +85,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Depacketize(packet);
 
-            Name = packet.ReadString();
-            IconName = packet.ReadString();
+            HealthRestored = packet.ReadInt32();
         }
 
         #endregion
@@ -83,12 +94,11 @@ namespace Engine.ComponentSystem.RPG.Components
 
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            var copy = (Item)base.DeepCopy(into);
+            var copy = (RepairKit)base.DeepCopy(into);
 
-            if (into == copy)
+            if (copy == into)
             {
-                copy.Name = Name;
-                copy.IconName = IconName;
+                copy.HealthRestored = HealthRestored;
             }
 
             return copy;

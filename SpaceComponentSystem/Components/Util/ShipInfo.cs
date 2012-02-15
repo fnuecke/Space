@@ -394,7 +394,7 @@ namespace Space.ComponentSystem.Components
         /// <typeparam name="TItem">The item type to check for.</typeparam>
         /// <returns></returns>
         public int EquipmentSlotCount<TItem>()
-            where TItem : SpaceItem
+            where TItem : Item
         {
             var equipment = Entity.GetComponent<Equipment>();
             if (equipment != null)
@@ -411,7 +411,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="index">The slot index from which to get the item.</param>
         /// <returns>The item at that slot index.</returns>
         public Entity EquipmentItemAt<TItem>(int index)
-            where TItem : SpaceItem
+            where TItem : Item
         {
             var equipment = Entity.GetComponent<Equipment>();
             if (equipment != null)
