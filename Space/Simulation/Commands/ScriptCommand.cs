@@ -1,8 +1,6 @@
-﻿using Engine.Serialization;
-using Engine.Simulation.Commands;
-
-namespace Space.Simulation.Commands
+﻿namespace Space.Simulation.Commands
 {
+#if DEBUG
     /// <summary>
     /// Used to inject debugging commands into the simulation.
     /// </summary>
@@ -10,7 +8,7 @@ namespace Space.Simulation.Commands
     /// Values must be changed like this from the outside, so as not to mess up
     /// different states in a TSS simulation.
     /// </remarks>
-    sealed class ScriptCommand : FrameCommand
+    sealed class ScriptCommand : Engine.Simulation.Commands.FrameCommand
     {
         #region Fields
 
@@ -55,7 +53,7 @@ namespace Space.Simulation.Commands
         /// <returns>
         /// The packet after writing.
         /// </returns>
-        public override Packet Packetize(Packet packet)
+        public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
         {
             return base.Packetize(packet)
                 .Write(Script);
@@ -65,7 +63,7 @@ namespace Space.Simulation.Commands
         /// Bring the object to the state in the given packet.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
+        public override void Depacketize(Engine.Serialization.Packet packet)
         {
             base.Depacketize(packet);
 
@@ -81,7 +79,7 @@ namespace Space.Simulation.Commands
         /// </summary>
         /// <param name="other">The object to test for equality with.</param>
         /// <returns>Whether this and the specified object are equal.</returns>
-        public override bool Equals(Command other)
+        public override bool Equals(Engine.Simulation.Commands.Command other)
         {
             return other is ScriptCommand &&
                 base.Equals(other) &&
@@ -90,4 +88,5 @@ namespace Space.Simulation.Commands
 
         #endregion
     }
+#endif
 }

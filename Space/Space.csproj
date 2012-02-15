@@ -200,6 +200,7 @@
     <Compile Include="Session\Profile.cs" />
     <Compile Include="Simulation\Commands\EquipCommand.cs" />
     <Compile Include="Simulation\Commands\MoveItemCommand.cs" />
+    <Compile Include="Simulation\Commands\PickUpCommand.cs" />
     <Compile Include="Simulation\Commands\RestoreProfileCommand.cs" />
     <Compile Include="Simulation\Commands\ScriptCommand.cs" />
     <Compile Include="ComponentSystem\Entities\EntityFactory.cs" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
@@ -90,6 +91,12 @@ def ge(id):
         /// </summary>
         private static bool _ignoreScriptOutput;
 #endif
+
+        #endregion
+
+        #region Single allocation
+
+        private static List<Entity> _reusableItemList = new List<Entity>();
 
         #endregion
 
@@ -208,6 +215,22 @@ def ge(id):
                         }
                     }
                     break;
+
+                case SpaceCommandType.PickUp:
+                    // Player wants to pick up items. Need to lock for our reusable list.
+                    lock (_reusableItemList)
+                    {
+                        var inventory = avatar.GetComponent<Inventory>();
+                        var index = manager.SystemManager.GetSystem<IndexSystem>();
+                        foreach (var item in index.GetNeighbors(avatar, 100, 0, _reusableItemList))
+                        {
+                            // Pick the item up.
+                            // TODO: check if the item belongs to the player.
+                            inventory.Add(item);
+                        }
+                    }
+                    break;
+
 #if DEBUG
                 case SpaceCommandType.ScriptCommand:
                     // Script command.

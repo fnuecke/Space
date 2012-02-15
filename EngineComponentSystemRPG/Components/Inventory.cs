@@ -204,6 +204,8 @@ namespace Engine.ComponentSystem.RPG.Components
                             // We done yet?
                             if (stackable.Count == 0)
                             {
+                                // Yes and the stack was used up, delete it.
+                                Entity.Manager.RemoveEntity(item);
                                 return;
                             } // ... else we continue in search of the next stack.
                         }
@@ -222,7 +224,15 @@ namespace Engine.ComponentSystem.RPG.Components
                 {
                     if (_items[i] <= 0)
                     {
+                        // Found one, store it.
                         _items[i] = item.UID;
+
+                        // Disable rendering, if available.
+                        var renderer = item.GetComponent<TransformedRenderer>();
+                        if (renderer != null)
+                        {
+                            renderer.Enabled = false;
+                        }
                         return;
                     }
                 }
@@ -234,6 +244,13 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 // Just append.
                 _items.Add(item.UID);
+
+                // Disable rendering, if available.
+                var renderer = item.GetComponent<TransformedRenderer>();
+                if (renderer != null)
+                {
+                    renderer.Enabled = false;
+                }
             }
         }
 
