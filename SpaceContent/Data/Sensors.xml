@@ -4,7 +4,7 @@
     <!-- The type of sensor each player starts with, which has fixed
          values (enforced by min an max being equal). -->
     <Item>
-      <Name>Starter Sensor</Name>
+      <Name>StarterSensor</Name>
       <GuaranteedAttributes>
         <Item>30000 SensorRange</Item>
       </GuaranteedAttributes>

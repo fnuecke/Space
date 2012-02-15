@@ -146,7 +146,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     if (item != null)
                     {
                         // TODO: item.Name is the id, convert it to a localized display string, ideally taking into account modifiers for prefixes suffixes (stupid armor of the nerd).
-                        _fonts.DrawString(Fonts.Types.ConsoleFont, item.Name, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                        _fonts.DrawString(Fonts.Types.ConsoleFont, ItemNames.ResourceManager.GetString(item.Name), new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                        line++;
+                        _fonts.DrawString(Fonts.Types.ConsoleFont, ItemDescriptions.ResourceManager.GetString(item.Name), new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                         line++;
                         var stackable = item.Entity.GetComponent<Stackable>();
                         if (stackable != null)

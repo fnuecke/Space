@@ -22,11 +22,11 @@ namespace Space.ComponentSystem.Util
         {
             { PlayerClassType.Fighter, new Dictionary<Type, Func<ItemFactory>>()
                 {
-                    { typeof(Armor), () => FactoryLibrary.GetFactory<ArmorFactory>("Starter Armor") },
-                    { typeof(Reactor), () => FactoryLibrary.GetFactory<ReactorFactory>("Starter Reactor") },
-                    { typeof(Sensor), () => FactoryLibrary.GetFactory<SensorFactory>("Starter Sensor") },
-                    { typeof(Thruster), () => FactoryLibrary.GetFactory<ThrusterFactory>("Starter Thruster") },
-                    { typeof(Weapon), () => FactoryLibrary.GetFactory<WeaponFactory>("Starter Weapon") }
+                    { typeof(Armor), () => FactoryLibrary.GetFactory<ArmorFactory>("StarterArmor") },
+                    { typeof(Reactor), () => FactoryLibrary.GetFactory<ReactorFactory>("StarterReactor") },
+                    { typeof(Sensor), () => FactoryLibrary.GetFactory<SensorFactory>("StarterSensor") },
+                    { typeof(Thruster), () => FactoryLibrary.GetFactory<ThrusterFactory>("StarterThruster") },
+                    { typeof(Weapon), () => FactoryLibrary.GetFactory<WeaponFactory>("StarterWeapon") }
                 }
             }
         };

@@ -72,19 +72,19 @@ namespace Space.ComponentSystem.Entities
 
             var equipment = entity.GetComponent<Equipment>();
 
-            var item = FactoryLibrary.GetFactory<ThrusterFactory>("Level 1 AI Thruster").Sample(random);
+            var item = FactoryLibrary.GetFactory<ThrusterFactory>("L1_AI_Thruster").Sample(random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 
-            item = FactoryLibrary.GetFactory<ReactorFactory>("Level 1 AI Reactor").Sample(random);
+            item = FactoryLibrary.GetFactory<ReactorFactory>("L1_AI_Reactor").Sample(random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 
-            item = FactoryLibrary.GetFactory<ArmorFactory>("Level 1 AI Armor").Sample(random);
+            item = FactoryLibrary.GetFactory<ArmorFactory>("L1_AI_Armor").Sample(random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 
-            item = FactoryLibrary.GetFactory<WeaponFactory>("Level 1 AI Weapon").Sample(random);
+            item = FactoryLibrary.GetFactory<WeaponFactory>("L1_AI_Weapon").Sample(random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 

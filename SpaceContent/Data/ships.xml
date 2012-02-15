@@ -26,7 +26,7 @@
 
     <!-- NPC ships -->
     <Item>
-      <Name>Level 1 AI Ship</Name>
+      <Name>L1_AI_Ship</Name>
       <Texture>Textures/Stolen/Ships/broadsword_hftr</Texture>
       <CollisionRadius>24</CollisionRadius>
 

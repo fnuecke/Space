@@ -4,7 +4,7 @@
     <!-- The type of armor each player starts with, which has fixed
          values (enforced by min an max being equal). -->
     <Item>
-      <Name>Starter Armor</Name>
+      <Name>StarterArmor</Name>
       <GuaranteedAttributes>
         <Item>10 Armor</Item>
       </GuaranteedAttributes>
@@ -12,7 +12,7 @@
     
     <!-- NPC armor -->
     <Item>
-      <Name>Level 1 AI Armor</Name>
+      <Name>L1_AI_Armor</Name>
       <GuaranteedAttributes>
         <Item>10 to 15 Armor</Item>
       </GuaranteedAttributes>

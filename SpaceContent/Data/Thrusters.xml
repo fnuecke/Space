@@ -4,7 +4,7 @@
     <!-- The type of thruster each player starts with, which has fixed
          values (enforced by min an max being equal). -->
     <Item>
-      <Name>Starter Thruster</Name>
+      <Name>StarterThruster</Name>
       <Icon>Textures/Icons/Buffs/stabilisator</Icon>
       <GuaranteedAttributes>
         <Item>4 AccelerationForce</Item>
@@ -15,7 +15,7 @@
     
     <!-- NPC thrusters -->
     <Item>
-      <Name>Level 1 AI Thruster</Name>
+      <Name>L1_AI_Thruster</Name>
       <GuaranteedAttributes>
         <Item>3.5 to 4 AccelerationForce</Item>
         <Item>1.25 to 1.75 RotationForce</Item>

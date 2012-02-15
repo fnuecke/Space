@@ -4,7 +4,7 @@
     <!-- The type of reactor each player starts with, which has fixed
          values (enforced by min an max being equal). -->
     <Item>
-      <Name>Starter Reactor</Name>
+      <Name>StarterReactor</Name>
       <GuaranteedAttributes>
         <Item>50 Energy</Item>
         <Item>2.5 EnergyRegeneration</Item>
@@ -13,7 +13,7 @@
 
     <!-- NPC reactors -->
     <Item>
-      <Name>Level 1 AI Reactor</Name>
+      <Name>L1_AI_Reactor</Name>
       <GuaranteedAttributes>
         <Item>50 to 75 Energy</Item>
         <Item>2 to 3 EnergyRegeneration</Item>

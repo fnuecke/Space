@@ -4,7 +4,7 @@
     <!-- The type of weapon each player starts with, which has fixed
          values (enforced by min an max being equal). -->
     <Item>
-      <Name>Starter Weapon</Name>
+      <Name>StarterWeapon</Name>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Sound>laser</Sound>
       <Cooldown>0.5</Cooldown>
@@ -22,7 +22,7 @@
     
     <!-- NPC weapons -->
     <Item>
-      <Name>Level 1 AI Weapon</Name>
+      <Name>L1_AI_Weapon</Name>
       <Model>Textures/Stolen/Projectiles/shell_small</Model>
       <Sound>laser</Sound>
       <Cooldown>0.5 to 0.75</Cooldown>
