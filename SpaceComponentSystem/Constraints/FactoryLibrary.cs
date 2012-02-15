@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Content;
 
-namespace Space.ComponentSystem.Constraints
+namespace Space.ComponentSystem.Factories
 {
     /// <summary>
     /// Allows lookup of constraints by name.
     /// </summary>
-    public static class ConstraintsLibrary
+    public static class FactoryLibrary
     {
         #region Fields
 
@@ -30,13 +30,13 @@ namespace Space.ComponentSystem.Constraints
         {
             if (!_isInitialized)
             {
-                Initialize<ArmorConstraints>("Data/Armor", content);
-                Initialize<ReactorConstraints>("Data/Reactors", content);
-                Initialize<SensorConstraints>("Data/Sensors", content);
-                Initialize<ShieldConstraints>("Data/Shields", content);
-                Initialize<ShipConstraints>("Data/Ships", content);
-                Initialize<ThrusterConstraints>("Data/Thrusters", content);
-                Initialize<WeaponConstraints>("Data/Weapons", content);
+                Initialize<ArmorFactory>("Data/Armor", content);
+                Initialize<ReactorFactory>("Data/Reactors", content);
+                Initialize<SensorFactory>("Data/Sensors", content);
+                Initialize<ShieldFactory>("Data/Shields", content);
+                Initialize<ShipFactory>("Data/Ships", content);
+                Initialize<ThrusterFactory>("Data/Thrusters", content);
+                Initialize<WeaponFactory>("Data/Weapons", content);
 
                 _isInitialized = true;
             }
@@ -46,7 +46,7 @@ namespace Space.ComponentSystem.Constraints
         /// Helper for initializing a specific type.
         /// </summary>
         private static void Initialize<T>(string assetName, ContentManager content)
-            where T : IConstraint
+            where T : IFactory
         {
             _constraints[typeof(T)] = new Dictionary<string, object>();
             foreach (var constraint in content.Load<T[]>(assetName))

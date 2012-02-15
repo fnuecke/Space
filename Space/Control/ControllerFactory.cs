@@ -5,7 +5,7 @@ using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using Space.ComponentSystem.Constraints;
+using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
 using Space.Session;
 using Space.Simulation.Commands;

@@ -1,9 +1,9 @@
-﻿namespace Space.ComponentSystem.Constraints
+﻿namespace Space.ComponentSystem.Factories
 {
     /// <summary>
     /// Interface for constraints (for lookup).
     /// </summary>
-    public interface IConstraint
+    public interface IFactory
     {
         /// <summary>
         /// The unique name of the constraint.

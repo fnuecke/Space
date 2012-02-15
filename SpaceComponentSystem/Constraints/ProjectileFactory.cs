@@ -12,7 +12,7 @@ namespace Space.ComponentSystem.Util
     /// <summary>
     /// Contains data about a single projectile fired by a weapon.
     /// </summary>
-    public sealed class ProjectileConstraints : IPacketizable
+    public sealed class ProjectileFactory : IPacketizable
     {
         #region Fields
 

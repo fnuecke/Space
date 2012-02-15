@@ -7,7 +7,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Constraints;
+using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Util;
 using Space.Data;
 
@@ -61,7 +61,7 @@ namespace Space.ComponentSystem.Entities
         /// <param name="shipData">The ship info to use.</param>
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <returns>The new ship.</returns>
-        public static Entity CreateAIShip(ShipConstraints blueprint, Factions faction, Vector2 position, IEntityManager manager, IUniformRandom random, AiComponent.AiCommand command)
+        public static Entity CreateAIShip(ShipFactory blueprint, Factions faction, Vector2 position, IEntityManager manager, IUniformRandom random, AiComponent.AiCommand command)
         {
             Entity entity = blueprint.SampleShip(faction, position, random);
 
@@ -73,19 +73,19 @@ namespace Space.ComponentSystem.Entities
 
             var equipment = entity.GetComponent<Equipment>();
 
-            var item = ConstraintsLibrary.GetConstraints<ThrusterConstraints>("Level 1 AI Thruster").Sample(random);
+            var item = FactoryLibrary.GetConstraints<ThrusterFactory>("Level 1 AI Thruster").Sample(random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 
-            item = ConstraintsLibrary.GetConstraints<ReactorConstraints>("Level 1 AI Reactor").Sample(random);
+            item = FactoryLibrary.GetConstraints<ReactorFactory>("Level 1 AI Reactor").Sample(random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 
-            item = ConstraintsLibrary.GetConstraints<ArmorConstraints>("Level 1 AI Armor").Sample(random);
+            item = FactoryLibrary.GetConstraints<ArmorFactory>("Level 1 AI Armor").Sample(random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 
-            item = ConstraintsLibrary.GetConstraints<WeaponConstraints>("Level 1 AI Weapon").Sample(random);
+            item = FactoryLibrary.GetConstraints<WeaponFactory>("Level 1 AI Weapon").Sample(random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 

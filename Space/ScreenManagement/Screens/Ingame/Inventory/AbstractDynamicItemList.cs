@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.ComponentSystem.RPG.Components;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
@@ -147,12 +148,15 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         // TODO: item.Name is the id, convert it to a localized display string, ideally taking into account modifiers for prefixes suffixes (stupid armor of the nerd).
                         _fonts.DrawString(Fonts.Types.ConsoleFont, item.Name, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                         line++;
-                        item.GetDescription(ref description);
-                        var attributes = description.Attributes;
-                        foreach (var attribute in attributes)
+                        if (item is SpaceItem)
                         {
-                            _fonts.DrawString(Fonts.Types.ConsoleFont, attribute.Type + " " + attribute.Value, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
-                            line++;
+                            ((SpaceItem)item).GetDescription(ref description);
+                            var attributes = description.Attributes;
+                            foreach (var attribute in attributes)
+                            {
+                                _fonts.DrawString(Fonts.Types.ConsoleFont, attribute.Type + " " + attribute.Value, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                                line++;
+                            }
                         }
                     }
                     
@@ -393,7 +397,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// </summary>
         /// <param name="id">The id of the slot of the item.</param>
         /// <returns>The item.</returns>
-        public abstract SpaceItem ItemAt(int id);
+        public abstract Item ItemAt(int id);
 
         #endregion
 

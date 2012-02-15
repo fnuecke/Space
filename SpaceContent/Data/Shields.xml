@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
-  <Asset Type="Space.ComponentSystem.Constraints.ShieldConstraints[]">
+  <Asset Type="Space.ComponentSystem.Factories.ShieldFactory[]">
   </Asset>
 </XnaContent>

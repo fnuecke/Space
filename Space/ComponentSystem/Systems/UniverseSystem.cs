@@ -6,7 +6,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Constraints;
+using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Messages;
 using Space.Data;

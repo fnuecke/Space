@@ -1,12 +1,12 @@
 ﻿using Engine.ComponentSystem.Entities;
 using Engine.Util;
 
-namespace Space.ComponentSystem.Constraints
+namespace Space.ComponentSystem.Factories
 {
     /// <summary>
     /// Constraints for generating shields.
     /// </summary>
-    public sealed class ShieldConstraints : ItemConstraints
+    public sealed class ShieldFactory : ItemFactory
     {
         #region Sampling
 

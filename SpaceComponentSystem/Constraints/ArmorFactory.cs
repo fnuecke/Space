@@ -2,25 +2,25 @@
 using Engine.Util;
 using Space.ComponentSystem.Components;
 
-namespace Space.ComponentSystem.Constraints
+namespace Space.ComponentSystem.Factories
 {
     /// <summary>
-    /// Constraints for generating thrusters.
+    /// Constraints for generating armor.
     /// </summary>
-    public sealed class ThrusterConstraints : ItemConstraints
+    public sealed class ArmorFactory : ItemFactory
     {
         #region Sampling
 
         /// <summary>
-        /// Samples a new thruster based on these constraints.
+        /// Samples a new armor based on these constraints.
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled thruster.</returns>
+        /// <returns>The sampled armor.</returns>
         public override Entity Sample(IUniformRandom random)
         {
             var entity = new Entity();
 
-            entity.AddComponent(new Thruster(Name, Icon, Quality));
+            entity.AddComponent(new Armor(Name, Icon, Quality));
 
             return SampleAttributes(entity, random);
         }

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
-  <Asset Type="Space.ComponentSystem.Constraints.ShipConstraints[]">
+  <Asset Type="Space.ComponentSystem.Factories.ShipFactory[]">
     <Item>
       <Name>Player</Name>
       <Texture>Textures/ship</Texture>

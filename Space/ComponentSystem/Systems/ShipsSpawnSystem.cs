@@ -8,7 +8,7 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Constraints;
+using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Messages;
 using Space.Data;
@@ -69,7 +69,7 @@ namespace Space.ComponentSystem.Systems
                                 //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
 
                                 var ship = EntityFactory.CreateAIShip(
-                                    ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                                    FactoryLibrary.GetConstraints<ShipFactory>("Level 1 AI Ship"),
                                     cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order);
 
                                 list.Add(Manager.EntityManager.AddEntity(ship));
@@ -126,7 +126,7 @@ namespace Space.ComponentSystem.Systems
                    (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
 
             var ship = EntityFactory.CreateAIShip(
-                ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                FactoryLibrary.GetConstraints<ShipFactory>("Level 1 AI Ship"),
                 faction, startPosition, Manager.EntityManager, _random, aicommand);
 
             _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
@@ -138,7 +138,7 @@ namespace Space.ComponentSystem.Systems
                   (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
 
             var ship = EntityFactory.CreateAIShip(
-                 ConstraintsLibrary.GetConstraints<ShipConstraints>("Level 1 AI Ship"),
+                 FactoryLibrary.GetConstraints<ShipFactory>("Level 1 AI Ship"),
                 faction, startPosition, Manager.EntityManager, _random, aicommand);
 
             _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));

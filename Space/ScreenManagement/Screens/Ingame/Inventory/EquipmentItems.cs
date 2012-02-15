@@ -1,4 +1,5 @@
-﻿using Space.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.RPG.Components;
+using Space.ComponentSystem.Components;
 using Space.Control;
 using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
 using Space.ScreenManagement.Screens.Ingame.Hud;
@@ -22,13 +23,13 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
             return _client.GetPlayerShipInfo().EquipmentSlotCount<T>();
         }
 
-        public override SpaceItem ItemAt(int id)
+        public override Item ItemAt(int id)
         {
             if (_client.GetPlayerShipInfo().EquipmentItemAt<T>(id) == null)
             {
                 return null;
             }
-            return _client.GetPlayerShipInfo().EquipmentItemAt<T>(id).GetComponent<SpaceItem>();
+            return _client.GetPlayerShipInfo().EquipmentItemAt<T>(id).GetComponent<Item>();
         }
 
     }

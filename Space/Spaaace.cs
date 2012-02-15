@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework.Graphics;
 using NLog;
 using Nuclex.Input;
 using Nuclex.Input.Devices;
-using Space.ComponentSystem.Constraints;
+using Space.ComponentSystem.Factories;
 using Space.Control;
 using Space.ScreenManagement;
 using Space.ScreenManagement.Screens;
@@ -311,7 +311,7 @@ namespace Space
             _console.WriteLine("Game Console. Type 'help' for available commands.");
 
             // Load generator constraints.
-            ConstraintsLibrary.Initialize(Content);
+            FactoryLibrary.Initialize(Content);
 
             // Create the profile implementation.
             Settings.Instance.CurrentProfile = new Profile();

@@ -4,12 +4,12 @@ using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Util;
 
-namespace Space.ComponentSystem.Constraints
+namespace Space.ComponentSystem.Factories
 {
     /// <summary>
     /// Constraints for generating weapons.
     /// </summary>
-    public sealed class WeaponConstraints : ItemConstraints
+    public sealed class WeaponFactory : ItemFactory
     {
         #region Fields
 
@@ -41,7 +41,7 @@ namespace Space.ComponentSystem.Constraints
         /// <summary>
         /// Possible projectiles this weapon fires.
         /// </summary>
-        public ProjectileConstraints[] Projectiles;
+        public ProjectileFactory[] Projectiles;
 
         #endregion
 

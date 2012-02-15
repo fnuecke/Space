@@ -5,12 +5,12 @@ using Engine.Util;
 using Microsoft.Xna.Framework.Content;
 using Space.Data;
 
-namespace Space.ComponentSystem.Constraints
+namespace Space.ComponentSystem.Factories
 {
     /// <summary>
     /// Base class for item constraints.
     /// </summary>
-    public abstract class ItemConstraints : IConstraint
+    public abstract class ItemFactory : IFactory
     {
         #region Fields
         

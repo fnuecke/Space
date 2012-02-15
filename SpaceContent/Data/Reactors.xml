@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
-  <Asset Type="Space.ComponentSystem.Constraints.ReactorConstraints[]">
+  <Asset Type="Space.ComponentSystem.Factories.ReactorFactory[]">
     <!-- The type of reactor each player starts with, which has fixed
          values (enforced by min an max being equal). -->
     <Item>

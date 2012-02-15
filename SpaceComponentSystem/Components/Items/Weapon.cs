@@ -42,7 +42,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The projectiles this weapon fires.
         /// </summary>
-        public ProjectileConstraints[] Projectiles;
+        public ProjectileFactory[] Projectiles;
 
         #endregion
 
@@ -65,7 +65,7 @@ namespace Space.ComponentSystem.Components
         public Weapon(string name, string iconName, ItemQuality quality,
             string modelName, string sound,
             float cooldown, float energyConsumption,
-            float damage, ProjectileConstraints[] projectiles)
+            float damage, ProjectileFactory[] projectiles)
             : base(name, iconName, quality)
         {
             this.ModelName = modelName;
@@ -136,7 +136,7 @@ namespace Space.ComponentSystem.Components
             Cooldown = packet.ReadSingle();
             EnergyConsumption = packet.ReadSingle();
             Damage = packet.ReadSingle();
-            Projectiles = packet.ReadPacketizables<ProjectileConstraints>();
+            Projectiles = packet.ReadPacketizables<ProjectileFactory>();
         }
 
         /// <summary>

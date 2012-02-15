@@ -2,25 +2,25 @@
 using Engine.Util;
 using Space.ComponentSystem.Components;
 
-namespace Space.ComponentSystem.Constraints
+namespace Space.ComponentSystem.Factories
 {
     /// <summary>
-    /// Constraints for generating reactors.
+    /// Constraints for generating sensors.
     /// </summary>
-    public sealed class ReactorConstraints : ItemConstraints
+    public sealed class SensorFactory : ItemFactory
     {
         #region Sampling
 
         /// <summary>
-        /// Samples a new reactor based on these constraints.
+        /// Samples a new sensor based on these constraints.
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled reactor.</returns>
+        /// <returns>The sampled sensor.</returns>
         public override Entity Sample(IUniformRandom random)
         {
             var entity = new Entity();
 
-            entity.AddComponent(new Reactor(Name, Icon, Quality));
+            entity.AddComponent(new Sensor(Name, Icon, Quality));
 
             return SampleAttributes(entity, random);
         }

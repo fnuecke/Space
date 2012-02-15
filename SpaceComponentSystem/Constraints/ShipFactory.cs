@@ -8,12 +8,12 @@ using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.Data;
 
-namespace Space.ComponentSystem.Constraints
+namespace Space.ComponentSystem.Factories
 {
     /// <summary>
     /// Basic descriptor for a single ship class.
     /// </summary>
-    public sealed class ShipConstraints : IConstraint
+    public sealed class ShipFactory : IFactory
     {
         #region General
 

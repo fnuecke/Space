@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Constraints;
+using Space.ComponentSystem.Factories;
 using Space.Data;
 
 namespace Space.ComponentSystem.Util
@@ -13,20 +13,20 @@ namespace Space.ComponentSystem.Util
     {
         #region Constants
 
-        private static readonly Dictionary<PlayerClassType, Func<ShipConstraints>> _shipLookup = new Dictionary<PlayerClassType, Func<ShipConstraints>>()
+        private static readonly Dictionary<PlayerClassType, Func<ShipFactory>> _shipLookup = new Dictionary<PlayerClassType, Func<ShipFactory>>()
         {
-            { PlayerClassType.Fighter, () => ConstraintsLibrary.GetConstraints<ShipConstraints>("Player") }
+            { PlayerClassType.Fighter, () => FactoryLibrary.GetConstraints<ShipFactory>("Player") }
         };
 
-        private static readonly Dictionary<PlayerClassType, Dictionary<Type, Func<ItemConstraints>>> _itemLookup = new Dictionary<PlayerClassType, Dictionary<Type, Func<ItemConstraints>>>()
+        private static readonly Dictionary<PlayerClassType, Dictionary<Type, Func<ItemFactory>>> _itemLookup = new Dictionary<PlayerClassType, Dictionary<Type, Func<ItemFactory>>>()
         {
-            { PlayerClassType.Fighter, new Dictionary<Type, Func<ItemConstraints>>()
+            { PlayerClassType.Fighter, new Dictionary<Type, Func<ItemFactory>>()
                 {
-                    { typeof(Armor), () => ConstraintsLibrary.GetConstraints<ArmorConstraints>("Starter Armor") },
-                    { typeof(Reactor), () => ConstraintsLibrary.GetConstraints<ReactorConstraints>("Starter Reactor") },
-                    { typeof(Sensor), () => ConstraintsLibrary.GetConstraints<SensorConstraints>("Starter Sensor") },
-                    { typeof(Thruster), () => ConstraintsLibrary.GetConstraints<ThrusterConstraints>("Starter Thruster") },
-                    { typeof(Weapon), () => ConstraintsLibrary.GetConstraints<WeaponConstraints>("Starter Weapon") }
+                    { typeof(Armor), () => FactoryLibrary.GetConstraints<ArmorFactory>("Starter Armor") },
+                    { typeof(Reactor), () => FactoryLibrary.GetConstraints<ReactorFactory>("Starter Reactor") },
+                    { typeof(Sensor), () => FactoryLibrary.GetConstraints<SensorFactory>("Starter Sensor") },
+                    { typeof(Thruster), () => FactoryLibrary.GetConstraints<ThrusterFactory>("Starter Thruster") },
+                    { typeof(Weapon), () => FactoryLibrary.GetConstraints<WeaponFactory>("Starter Weapon") }
                 }
             }
         };
@@ -41,7 +41,7 @@ namespace Space.ComponentSystem.Util
         /// </summary>
         /// <param name="playerClass">The player class.</param>
         /// <returns>The ship constraints.</returns>
-        public static ShipConstraints GetShipConstraints(this PlayerClassType playerClass)
+        public static ShipFactory GetShipConstraints(this PlayerClassType playerClass)
         {
             return _shipLookup[playerClass]();
         }
@@ -53,7 +53,7 @@ namespace Space.ComponentSystem.Util
         /// <typeparam name="T">The item type.</typeparam>
         /// <param name="playerClass">The player class.</param>
         /// <returns>The item constraints.</returns>
-        public static ItemConstraints GetStarterItemConstraints<T>(this PlayerClassType playerClass)
+        public static ItemFactory GetStarterItemConstraints<T>(this PlayerClassType playerClass)
         {
             if (_itemLookup[playerClass].ContainsKey(typeof(T)))
             {
