@@ -48,18 +48,11 @@ namespace Space.ComponentSystem.Factories
         public AttributeModifierConstraint<AttributeType>[] AdditionalAttributes = new AttributeModifierConstraint<AttributeType>[0];
 
         /// <summary>
-        /// The minimum number of additional attribute modifiers to apply to a
+        /// The number of additional attribute modifiers to apply to a
         /// generated item.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public int MinAdditionalAttributes;
-
-        /// <summary>
-        /// The maximum number of additional attribute modifiers to apply to a
-        /// generated item.
-        /// </summary>
-        [ContentSerializer(Optional = true)]
-        public int MaxAdditionalAttributes;
+        public Interval<int> AdditionalAttributeCount = Interval<int>.Zero;
 
         #endregion
 
@@ -84,8 +77,8 @@ namespace Space.ComponentSystem.Factories
             {
                 item.AddComponent(new Attribute<AttributeType>(attribute.SampleAttributeModifier(random)));
             }
-            var numAdditionalAttributes = (MinAdditionalAttributes == MaxAdditionalAttributes) ? MinAdditionalAttributes
-                : random.NextInt32(MinAdditionalAttributes, MaxAdditionalAttributes);
+            var numAdditionalAttributes = (AdditionalAttributeCount.Low == AdditionalAttributeCount.High) ? AdditionalAttributeCount.Low
+                : random.NextInt32(AdditionalAttributeCount.Low, AdditionalAttributeCount.High);
             for (int i = 0; i < numAdditionalAttributes; i++)
             {
                 item.AddComponent(new Attribute<AttributeType>(AdditionalAttributes[random.NextInt32(AdditionalAttributes.Length)].SampleAttributeModifier(random)));

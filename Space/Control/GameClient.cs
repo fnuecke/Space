@@ -23,7 +23,7 @@ namespace Space.Control
 
         #endregion
 
-        #region Construction
+        #region Constants
 
         /// <summary>
         /// The interval in which we save the player's profile to disk.
@@ -82,6 +82,10 @@ namespace Space.Control
             base.Initialize();
 
             Controller.Session.JoinResponse += ConsoleAutoexec;
+            Controller.Session.Disconnecting += delegate(object sender, EventArgs e)
+            {
+                Save();
+            };
         }
 
         /// <summary>

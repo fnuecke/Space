@@ -420,6 +420,7 @@ namespace Space
         {
             if (Client != null)
             {
+                Client.Controller.Session.Leave();
                 Components.Remove(Client);
             }
             Client = null;

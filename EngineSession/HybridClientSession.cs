@@ -32,6 +32,11 @@ namespace Engine.Session
         public event EventHandler<JoinResponseEventArgs> JoinResponse;
 
         /// <summary>
+        /// Connection to the server shutting down.
+        /// </summary>
+        public event EventHandler<EventArgs> Disconnecting;
+
+        /// <summary>
         /// Connection to the server was lost.
         /// </summary>
         public event EventHandler<EventArgs> Disconnected;
@@ -603,6 +608,8 @@ namespace Engine.Session
             {
                 logger.Debug("Resetting session.");
 
+                OnDisconnecting(EventArgs.Empty);
+
                 _players = null;
                 _localPlayerNumber = -1;
                 NumPlayers = 0;
@@ -642,6 +649,14 @@ namespace Engine.Session
             if (JoinResponse != null)
             {
                 JoinResponse(this, e);
+            }
+        }
+
+        private void OnDisconnecting(EventArgs e)
+        {
+            if (Disconnecting != null)
+            {
+                Disconnecting(this, e);
             }
         }
 

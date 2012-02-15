@@ -32,6 +32,11 @@ namespace Engine.Session
         event EventHandler<JoinResponseEventArgs> JoinResponse;
 
         /// <summary>
+        /// Connection to the server shutting down.
+        /// </summary>
+        event EventHandler<EventArgs> Disconnecting;
+
+        /// <summary>
         /// Connection to the server was lost.
         /// </summary>
         event EventHandler<EventArgs> Disconnected;

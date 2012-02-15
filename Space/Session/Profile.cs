@@ -348,10 +348,10 @@ namespace Space.Session
 
             // And finally, the inventory. Same as with the inventory, we have
             // to serialize the actual items in it.
-            _data.Write(inventory.Count);
-            foreach (var item in inventory)
+            _data.Write(inventory.Capacity);
+            for (int i = 0; i < inventory.Capacity; i++)
             {
-                _data.Write(item);
+                _data.Write(inventory[i]);
             }
 
             // TODO: extract additional display info, if desired.
@@ -480,22 +480,20 @@ namespace Space.Session
 
             // Restore inventory, clear it first. As with the equipment, remove
             // any old items, if there were any.
-            while (inventory.Count > 0)
-            {
-                var item = inventory[inventory.Count - 1];
-                inventory.RemoveAt(inventory.Count - 1);
-                manager.RemoveEntity(item);
-            }
+            inventory.Clear();
 
             // Then read back the stored items.
             int numInventoryItems = _data.ReadInt32();
             for (int i = 0; i < numInventoryItems; i++)
             {
                 var item = _data.ReadPacketizable<Entity>();
-                // Reset id, add to our entity manager.
-                item.UID = -1;
-                manager.AddEntity(item);
-                inventory.Add(item);
+                if (item != null)
+                {
+                    // Reset id, add to our entity manager.
+                    item.UID = -1;
+                    manager.AddEntity(item);
+                    inventory.Insert(i, item);
+                }
             }
 
             return avatar;

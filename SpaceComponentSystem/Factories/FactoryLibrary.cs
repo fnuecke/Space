@@ -14,7 +14,7 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Mapping of types to names to constraints.
         /// </summary>
-        private static readonly Dictionary<Type, Dictionary<string, object>> _constraints = new Dictionary<Type, Dictionary<string, object>>();
+        private static readonly Dictionary<Type, Dictionary<string, object>> _factories = new Dictionary<Type, Dictionary<string, object>>();
 
         private static bool _isInitialized;
 
@@ -48,10 +48,10 @@ namespace Space.ComponentSystem.Factories
         private static void Initialize<T>(string assetName, ContentManager content)
             where T : IFactory
         {
-            _constraints[typeof(T)] = new Dictionary<string, object>();
-            foreach (var constraint in content.Load<T[]>(assetName))
+            _factories[typeof(T)] = new Dictionary<string, object>();
+            foreach (var factory in content.Load<T[]>(assetName))
             {
-                _constraints[typeof(T)][constraint.Name] = constraint;
+                _factories[typeof(T)][factory.Name] = factory;
             }
         }
 
@@ -67,7 +67,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The constraints object.</returns>
         public static T GetFactory<T>(string name)
         {
-            return (T)_constraints[typeof(T)][name];
+            return (T)_factories[typeof(T)][name];
         }
 
         #endregion

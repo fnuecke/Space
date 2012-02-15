@@ -61,7 +61,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             get
             {
-                return _isFixed ? _items.Count : 0;
+                return _items.Count;
             }
             set
             {
@@ -310,9 +310,12 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             if (_isFixed)
             {
-                throw new NotSupportedException("Not supported for fixed length inventories.");
+                this[index] = item;
             }
-            _items.Insert(index, item.UID);
+            else
+            {
+                _items.Insert(index, item.UID);
+            }
         }
 
         /// <summary>

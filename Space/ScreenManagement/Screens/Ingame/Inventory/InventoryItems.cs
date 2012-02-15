@@ -18,7 +18,15 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
 
         public override int DataCount()
         {
-            return _client.GetPlayerShipInfo().InventoryCapacity;
+            var info = _client.GetPlayerShipInfo();
+            if (info != null)
+            {
+                return info.InventoryCapacity;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         public override Item ItemAt(int id)
