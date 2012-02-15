@@ -106,6 +106,11 @@ namespace Space.Util
             Stabilize,
 
             /// <summary>
+            /// Pick up nearby items.
+            /// </summary>
+            PickUp,
+
+            /// <summary>
             /// Untargets whatever we're currently targeting.
             /// </summary>
             ClearTarget,
@@ -220,6 +225,7 @@ namespace Space.Util
             { Keys.Right, GameCommand.Right },
             { Keys.E, GameCommand.Use },
             { Keys.Enter, GameCommand.Use },
+            { Keys.F, GameCommand.PickUp },
             { Keys.LeftShift, GameCommand.Stabilize },
             { Keys.RightShift, GameCommand.Stabilize }
         };

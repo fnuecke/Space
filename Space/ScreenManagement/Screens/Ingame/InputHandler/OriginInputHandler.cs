@@ -9,8 +9,6 @@ using Space.Control;
 using Space.Input;
 using Space.Simulation.Commands;
 using Space.Util;
-using Space.ScreenManagement.Screens.Ingame.Interfaces;
-using System.Collections.Generic;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -181,6 +179,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
                         // Just enable stabilizers.
                         _client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginStabilizing));
                     }
+                }
+                else if (Settings.Instance.GameBindings[key] == Settings.GameCommand.PickUp)
+                {
+                    // Try to pick up nearby items.
+                    _client.Controller.PushLocalCommand(new PickUpCommand());
                 }
                 else
                 {

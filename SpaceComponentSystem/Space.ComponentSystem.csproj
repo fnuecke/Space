@@ -107,6 +107,7 @@
     <Compile Include="Components\Logic\AbstractRegeneratingValue.cs" />
     <Compile Include="Components\Logic\CollisionDamage.cs" />
     <Compile Include="Components\Logic\Death.cs" />
+    <Compile Include="Components\Logic\Drops.cs" />
     <Compile Include="Components\PlayerClass.cs" />
     <Compile Include="Components\Items\Consumables\RepairKit.cs" />
     <Compile Include="Components\Util\Detectable.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="Factories\IFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
+    <Compile Include="Systems\DropSystem.cs" />
     <Compile Include="Util\PlayerClassType.cs" />
     <Compile Include="Factories\ReactorFactory.cs" />
     <Compile Include="Factories\SensorFactory.cs" />

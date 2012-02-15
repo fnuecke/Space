@@ -13,25 +13,27 @@
         /// Player input used to control his ship.
         /// </summary>
         PlayerInput,
-        
+
+        /// <summary>
+        /// Have a player pick up items in his vicinity.
+        /// </summary>
+        PickUp,
+
         /// <summary>
         /// Equip an item from the inventory.
         /// </summary>
         Equip,
 
         /// <summary>
+        /// Move an item in a player's inventory.
+        /// </summary>
+        MoveItem,
+
+#if DEBUG
+        /// <summary>
         /// A debugging command issued by a player.
         /// </summary>
-        ScriptCommand,
-
-        /// <summary>
-        /// Add an item to a player's inventory.
-        /// </summary>
-        AddItem,
-
-        /// <summary>
-        /// 
-        /// </summary>
-        MoveItem
+        ScriptCommand
+#endif
     }
 }
