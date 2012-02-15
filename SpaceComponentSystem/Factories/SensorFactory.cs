@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled sensor.</returns>
         public override Entity Sample(IUniformRandom random)
         {
-            var entity = new Entity();
+            var entity = base.Sample(random);
 
             entity.AddComponent(new Sensor(Name, Icon, Quality));
 

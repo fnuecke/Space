@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.Util;
@@ -25,6 +26,13 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         [ContentSerializer(Optional = true)]
         public string Icon = "Textures/Icons/Buffs/default";
+
+        /// <summary>
+        /// The ingame texture to be displayed for items floating around in
+        /// space.
+        /// </summary>
+        [ContentSerializer(Optional = true)]
+        public string Model = "Textures/Stolen/Projectiles/missile_sabot_empty";
 
         /// <summary>
         /// The quality of the item, to give a rough idea of the value.
@@ -63,7 +71,19 @@ namespace Space.ComponentSystem.Factories
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled item.</returns>
-        public abstract Entity Sample(IUniformRandom random);
+        public virtual Entity Sample(IUniformRandom random)
+        {
+            var entity = new Entity();
+
+            var transform = new Transform();
+            var renderer = new TransformedRenderer(Model);
+            renderer.Enabled = false;
+
+            entity.AddComponent(transform);
+            entity.AddComponent(renderer);
+
+            return entity;
+        }
 
         /// <summary>
         /// Samples the attributes to apply to the item.

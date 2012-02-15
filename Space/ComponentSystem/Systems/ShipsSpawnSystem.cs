@@ -9,7 +9,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Entities;
-using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Messages;
 using Space.Data;
 
@@ -68,8 +67,7 @@ namespace Space.ComponentSystem.Systems
                                 var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Guard);
                                 //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
 
-                                var ship = EntityFactory.CreateAIShip(
-                                    FactoryLibrary.GetFactory<ShipFactory>("L1_AI_Ship"),
+                                var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
                                     cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order);
 
                                 list.Add(Manager.EntityManager.AddEntity(ship));
@@ -125,8 +123,7 @@ namespace Space.ComponentSystem.Systems
             var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
                    (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
 
-            var ship = EntityFactory.CreateAIShip(
-                FactoryLibrary.GetFactory<ShipFactory>("L1_AI_Ship"),
+            var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
                 faction, startPosition, Manager.EntityManager, _random, aicommand);
 
             _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
@@ -137,8 +134,7 @@ namespace Space.ComponentSystem.Systems
             var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
                   (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
 
-            var ship = EntityFactory.CreateAIShip(
-                 FactoryLibrary.GetFactory<ShipFactory>("L1_AI_Ship"),
+            var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
                 faction, startPosition, Manager.EntityManager, _random, aicommand);
 
             _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));

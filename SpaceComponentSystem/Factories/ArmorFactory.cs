@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled armor.</returns>
         public override Entity Sample(IUniformRandom random)
         {
-            var entity = new Entity();
+            var entity = base.Sample(random);
 
             entity.AddComponent(new Armor(Name, Icon, Quality));
 

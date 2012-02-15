@@ -9,6 +9,7 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Entities;
+using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Util;
 using Space.Data;
 using Space.Util;
@@ -537,37 +538,38 @@ namespace Space.Session
             // but this way it'll always be up-to-date.
             var ship = EntityFactory.CreatePlayerShip(playerClass, 0, Vector2.Zero);
             var character = ship.GetComponent<Character<AttributeType>>();
+            var equipment = ship.GetComponent<Equipment>();
             character.PacketizeLocal(_data);
 
             // Store the equipment.
-            var blueprint = playerClass.GetShipConstraints();
+            var blueprint = playerClass.GetShipFactoryName();
 
             // Number of item types.
             _data.Write(6);
 
             // Basic starter outfit for that class.
             _data.Write(typeof(Armor).AssemblyQualifiedName);
-            _data.Write(blueprint.ArmorSlots);
+            _data.Write(equipment.GetSlotCount<Armor>());
             InitializeEquipment<Armor>(playerClass);
 
             _data.Write(typeof(Reactor).AssemblyQualifiedName);
-            _data.Write(blueprint.ReactorSlots);
+            _data.Write(equipment.GetSlotCount<Reactor>());
             InitializeEquipment<Reactor>(playerClass);
 
             _data.Write(typeof(Sensor).AssemblyQualifiedName);
-            _data.Write(blueprint.SensorSlots);
+            _data.Write(equipment.GetSlotCount<Sensor>());
             InitializeEquipment<Sensor>(playerClass);
 
             _data.Write(typeof(Shield).AssemblyQualifiedName);
-            _data.Write(blueprint.ShieldSlots);
+            _data.Write(equipment.GetSlotCount<Shield>());
             InitializeEquipment<Shield>(playerClass);
 
             _data.Write(typeof(Thruster).AssemblyQualifiedName);
-            _data.Write(blueprint.ThrusterSlots);
+            _data.Write(equipment.GetSlotCount<Thruster>());
             InitializeEquipment<Thruster>(playerClass);
 
             _data.Write(typeof(Weapon).AssemblyQualifiedName);
-            _data.Write(blueprint.WeaponSlots);
+            _data.Write(equipment.GetSlotCount<Weapon>());
             InitializeEquipment<Weapon>(playerClass);
 
             // And finally, the inventory.
@@ -582,8 +584,8 @@ namespace Space.Session
         /// <param name="playerClass">The player class to initialize for.</param>
         private void InitializeEquipment<T>(PlayerClassType playerClass)
         {
-            var item = playerClass.GetStarterItemConstraints<T>();
-            if (item == null)
+            var itemName = playerClass.GetStarterItemFactoryName<T>();
+            if (itemName == null)
             {
                 _data.Write(0); // Number of items.
             }
@@ -591,7 +593,7 @@ namespace Space.Session
             {
                 _data.Write(1); // Number of items.
                 _data.Write(0); // Slot number.
-                _data.Write(item.Sample(null)); // Actual item.
+                _data.Write(FactoryLibrary.SampleItem(itemName, null)); // Actual item.
             }
         }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Factories;
 using Space.Data;
 
 namespace Space.ComponentSystem.Util
@@ -13,20 +12,20 @@ namespace Space.ComponentSystem.Util
     {
         #region Constants
 
-        private static readonly Dictionary<PlayerClassType, Func<ShipFactory>> _shipLookup = new Dictionary<PlayerClassType, Func<ShipFactory>>()
+        private static readonly Dictionary<PlayerClassType, string> _shipLookup = new Dictionary<PlayerClassType, string>()
         {
-            { PlayerClassType.Fighter, () => FactoryLibrary.GetFactory<ShipFactory>("Player") }
+            { PlayerClassType.Fighter, "Player" }
         };
 
-        private static readonly Dictionary<PlayerClassType, Dictionary<Type, Func<ItemFactory>>> _itemLookup = new Dictionary<PlayerClassType, Dictionary<Type, Func<ItemFactory>>>()
+        private static readonly Dictionary<PlayerClassType, Dictionary<Type, string>> _itemLookup = new Dictionary<PlayerClassType, Dictionary<Type, string>>()
         {
-            { PlayerClassType.Fighter, new Dictionary<Type, Func<ItemFactory>>()
+            { PlayerClassType.Fighter, new Dictionary<Type, string>()
                 {
-                    { typeof(Armor), () => FactoryLibrary.GetFactory<ArmorFactory>("StarterArmor") },
-                    { typeof(Reactor), () => FactoryLibrary.GetFactory<ReactorFactory>("StarterReactor") },
-                    { typeof(Sensor), () => FactoryLibrary.GetFactory<SensorFactory>("StarterSensor") },
-                    { typeof(Thruster), () => FactoryLibrary.GetFactory<ThrusterFactory>("StarterThruster") },
-                    { typeof(Weapon), () => FactoryLibrary.GetFactory<WeaponFactory>("StarterWeapon") }
+                    { typeof(Armor), "StarterArmor" },
+                    { typeof(Reactor), "StarterReactor" },
+                    { typeof(Sensor), "StarterSensor" },
+                    { typeof(Thruster), "StarterThruster" },
+                    { typeof(Weapon), "StarterWeapon" }
                 }
             }
         };
@@ -41,9 +40,9 @@ namespace Space.ComponentSystem.Util
         /// </summary>
         /// <param name="playerClass">The player class.</param>
         /// <returns>The ship constraints.</returns>
-        public static ShipFactory GetShipConstraints(this PlayerClassType playerClass)
+        public static string GetShipFactoryName(this PlayerClassType playerClass)
         {
-            return _shipLookup[playerClass]();
+            return _shipLookup[playerClass];
         }
 
         /// <summary>
@@ -53,11 +52,11 @@ namespace Space.ComponentSystem.Util
         /// <typeparam name="T">The item type.</typeparam>
         /// <param name="playerClass">The player class.</param>
         /// <returns>The item constraints.</returns>
-        public static ItemFactory GetStarterItemConstraints<T>(this PlayerClassType playerClass)
+        public static string GetStarterItemFactoryName<T>(this PlayerClassType playerClass)
         {
             if (_itemLookup[playerClass].ContainsKey(typeof(T)))
             {
-                return _itemLookup[playerClass][typeof(T)]();
+                return _itemLookup[playerClass][typeof(T)];
             }
             else
             {

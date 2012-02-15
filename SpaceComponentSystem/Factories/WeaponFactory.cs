@@ -14,9 +14,9 @@ namespace Space.ComponentSystem.Factories
         #region Fields
 
         /// <summary>
-        /// The texture used to render this weapon.
+        /// The texture used to render this weapon when equipped on a ship.
         /// </summary>
-        public string Model;
+        public string EquippedModel;
 
         /// <summary>
         /// The sound this weapon emits when firing.
@@ -54,9 +54,9 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled weapon.</returns>
         public override Entity Sample(IUniformRandom random)
         {
-            var entity = new Entity();
+            var entity = base.Sample(random);
 
-            entity.AddComponent(new Weapon(Name, Icon, Quality, Model, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles));
+            entity.AddComponent(new Weapon(Name, Icon, Quality, EquippedModel, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles));
 
             return SampleAttributes(entity, random);
         }

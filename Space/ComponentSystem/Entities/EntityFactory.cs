@@ -24,7 +24,7 @@ namespace Space.ComponentSystem.Entities
         public static Entity CreatePlayerShip(PlayerClassType playerClass, int playerNumber, Vector2 position)
         {
             // Player ships must be 'static', i.e. not have random attributes, so we don't need a randomizer.
-            Entity entity = playerClass.GetShipConstraints().SampleShip(playerNumber.ToFaction(), position, null);
+            Entity entity = FactoryLibrary.SampleShip(playerClass.GetShipFactoryName(), playerNumber.ToFaction(), position, null);
 
             // Remember the class.
             entity.AddComponent(new PlayerClass(playerClass));
@@ -60,9 +60,9 @@ namespace Space.ComponentSystem.Entities
         /// <param name="shipData">The ship info to use.</param>
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <returns>The new ship.</returns>
-        public static Entity CreateAIShip(ShipFactory blueprint, Factions faction, Vector2 position, IEntityManager manager, IUniformRandom random, AiComponent.AiCommand command)
+        public static Entity CreateAIShip(string blueprint, Factions faction, Vector2 position, IEntityManager manager, IUniformRandom random, AiComponent.AiCommand command)
         {
-            Entity entity = blueprint.SampleShip(faction, position, random);
+            Entity entity = FactoryLibrary.SampleShip(blueprint, faction, position, random);
 
             var input = entity.GetComponent<ShipControl>();
             input.Stabilizing = true;
@@ -72,19 +72,19 @@ namespace Space.ComponentSystem.Entities
 
             var equipment = entity.GetComponent<Equipment>();
 
-            var item = FactoryLibrary.GetFactory<ThrusterFactory>("L1_AI_Thruster").Sample(random);
+            var item = FactoryLibrary.SampleItem("L1_AI_Thruster", random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 
-            item = FactoryLibrary.GetFactory<ReactorFactory>("L1_AI_Reactor").Sample(random);
+            item = FactoryLibrary.SampleItem("L1_AI_Reactor", random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 
-            item = FactoryLibrary.GetFactory<ArmorFactory>("L1_AI_Armor").Sample(random);
+            item = FactoryLibrary.SampleItem("L1_AI_Armor", random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 
-            item = FactoryLibrary.GetFactory<WeaponFactory>("L1_AI_Weapon").Sample(random);
+            item = FactoryLibrary.SampleItem("L1_AI_Weapon", random);
             manager.AddEntity(item);
             equipment.Equip(item, 0);
 

@@ -5,7 +5,7 @@
          values (enforced by min an max being equal). -->
     <Item>
       <Name>StarterWeapon</Name>
-      <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <EquippedModel>Textures/Stolen/Projectiles/shell_small</EquippedModel>
       <Sound>laser</Sound>
       <Cooldown>0.5</Cooldown>
       <EnergyConsumption>5</EnergyConsumption>
@@ -23,7 +23,7 @@
     <!-- NPC weapons -->
     <Item>
       <Name>L1_AI_Weapon</Name>
-      <Model>Textures/Stolen/Projectiles/shell_small</Model>
+      <EquippedModel>Textures/Stolen/Projectiles/shell_small</EquippedModel>
       <Sound>laser</Sound>
       <Cooldown>0.5 to 0.75</Cooldown>
       <EnergyConsumption>5 to 7.5</EnergyConsumption>
