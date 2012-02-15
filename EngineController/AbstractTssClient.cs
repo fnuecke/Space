@@ -1,5 +1,5 @@
 ﻿using System;
-using Engine.ComponentSystem.Entities;
+using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;

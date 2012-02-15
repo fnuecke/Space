@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
 using Engine.Util;

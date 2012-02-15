@@ -6,7 +6,7 @@ using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 using Engine.Util;
 
-namespace Engine.ComponentSystem.Entities
+namespace Engine.ComponentSystem
 {
     /// <summary>
     /// Base class for entities, implementing logic for distributing unique ids.

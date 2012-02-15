@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Entities;
 using Engine.Serialization;
 
 namespace Space.Data

@@ -1,5 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
+﻿using Engine.ComponentSystem;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;

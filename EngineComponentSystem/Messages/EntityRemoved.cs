@@ -1,6 +1,4 @@
-﻿using Engine.ComponentSystem.Entities;
-
-namespace Engine.ComponentSystem.Messages
+﻿namespace Engine.ComponentSystem.Messages
 {
     /// <summary>
     /// Sent by entity managers when an entity was removed.

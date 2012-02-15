@@ -1,6 +1,4 @@
-﻿using Engine.ComponentSystem.Entities;
-
-namespace Engine.ComponentSystem.Components.Messages
+﻿namespace Engine.ComponentSystem.Components.Messages
 {
     /// <summary>
     /// Used to indicate a collision occurred. Only sent to collidable objects,

@@ -7,8 +7,15 @@ namespace Engine.Util
     /// <summary>
     /// Signature for command handler functions.
     /// </summary>
-    /// <param name="args">the arguments for the command (space separated strings).</param>
+    /// <param name="args">The arguments for the command (space separated
+    /// strings), where the first one is the name of the command itself.</param>
     public delegate void CommandHandler(string[] args);
+
+    /// <summary>
+    /// Signature for default command handler function.
+    /// </summary>
+    /// <param name="command">The command that should have been executed, but failed.</param>
+    public delegate void DefaultHandler(string command);
 
     #endregion
 
@@ -60,6 +67,15 @@ namespace Engine.Util
         /// <param name="handler">the function that will handle the command.</param>
         /// <param name="help">optional help that may be displayed for this command.</param>
         void AddCommand(string[] names, CommandHandler handler, params string[] help);
+        
+        /// <summary>
+        /// Sets a command handler to be invoked when an unknown command is
+        /// executed. Pass <c>null</c> to unset the default handler, back to
+        /// the default.
+        /// </summary>
+        /// <param name="handler">The command handler to use for unknown
+        /// commands.</param>
+        void SetDefaultCommandHandler(DefaultHandler handler);
 
         /// <summary>
         /// Clears the complete buffer.

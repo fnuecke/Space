@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -10,9 +10,8 @@ using Space.ComponentSystem.Components;
 using Space.Control;
 using Space.Data;
 using Space.ScreenManagement.Screens.Helper;
-using Space.Util;
 using Space.ScreenManagement.Screens.Ingame.Interfaces;
-using Nuclex.Input;
+using Space.Util;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {

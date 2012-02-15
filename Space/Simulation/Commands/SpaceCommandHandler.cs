@@ -49,6 +49,7 @@ namespace Space.Simulation.Commands
                 // Register some macros in our scripting environment.
                 _script.Execute(
     @"
+from Engine.ComponentSystem import *
 from Engine.ComponentSystem.Components import *
 from Engine.ComponentSystem.Systems import *
 from Engine.ComponentSystem.RPG.Components import *

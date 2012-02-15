@@ -131,7 +131,7 @@
     <Compile Include="Components\Transform.cs" />
     <Compile Include="Components\TransformedRenderer.cs" />
     <Compile Include="Components\Velocity.cs" />
-    <Compile Include="Entities\Entity.cs" />
+    <Compile Include="Entity.cs" />
     <Compile Include="Parameterizations\CollisionParameterization.cs" />
     <Compile Include="Parameterizations\RendererUpdateParameterization.cs" />
     <Compile Include="Parameterizations\DefaultLogicParameterization.cs" />

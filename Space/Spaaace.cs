@@ -228,9 +228,9 @@ namespace Space
 
             // Default handler to interpret everything that is not a command
             // as a script.
-            _console.SetDefaultCommandHandler(args =>
+            _console.SetDefaultCommandHandler(command =>
             {
-                Client.Controller.PushLocalCommand(new ScriptCommand(string.Join(" ", args)));
+                Client.Controller.PushLocalCommand(new ScriptCommand(command));
             });
 
             _console.AddCommand("d_renderindex", args =>

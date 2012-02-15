@@ -1,5 +1,4 @@
-﻿using Engine.ComponentSystem.Entities;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Util;
 
 namespace Engine.ComponentSystem

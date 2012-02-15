@@ -148,6 +148,12 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         // TODO: item.Name is the id, convert it to a localized display string, ideally taking into account modifiers for prefixes suffixes (stupid armor of the nerd).
                         _fonts.DrawString(Fonts.Types.ConsoleFont, item.Name, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                         line++;
+                        var stackable = item.Entity.GetComponent<Stackable>();
+                        if (stackable != null)
+                        {
+                            _fonts.DrawString(Fonts.Types.ConsoleFont, stackable.Count + "/" + stackable.MaxCount, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                            line++;
+                        }
                         if (item is SpaceItem)
                         {
                             ((SpaceItem)item).GetDescription(ref description);

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 
 namespace Engine.ComponentSystem.Systems

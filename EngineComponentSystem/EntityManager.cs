@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 using Engine.Util;

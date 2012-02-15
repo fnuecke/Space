@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.Entities;
+﻿using Engine.ComponentSystem;
 using Engine.Util;
 
 namespace Space.ComponentSystem.Factories

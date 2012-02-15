@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;

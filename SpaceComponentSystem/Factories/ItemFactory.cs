@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.Entities;
+﻿using Engine.ComponentSystem;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.Util;

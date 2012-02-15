@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
@@ -76,7 +75,7 @@ namespace Engine.Simulation
         public bool WaitingForSynchronization { get; private set; }
 
         /// <summary>
-        /// Get the trailing simulaton.
+        /// Get the trailing simulation.
         /// </summary>
         private IAuthoritativeSimulation TrailingSimulation { get { return _simulations[_simulations.Length - 1]; } }
 

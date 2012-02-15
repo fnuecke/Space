@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.Entities;
+﻿using Engine.ComponentSystem;
 using Engine.Util;
 using Space.ComponentSystem.Components;
 

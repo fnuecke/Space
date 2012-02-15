@@ -184,7 +184,7 @@ namespace Engine.Util
         /// Default command handler, used when an unknown command is
         /// encountered.
         /// </summary>
-        private CommandHandler _defaultHandler;
+        private DefaultHandler _defaultHandler;
 
         /// <summary>
         /// Input cursor offset.
@@ -512,7 +512,7 @@ namespace Engine.Util
         /// </summary>
         /// <param name="handler">The command handler to use for unknown
         /// commands.</param>
-        public void SetDefaultCommandHandler(CommandHandler handler)
+        public void SetDefaultCommandHandler(DefaultHandler handler)
         {
             _defaultHandler = handler;
         }
@@ -564,16 +564,11 @@ namespace Engine.Util
             }
 
             // Do we know that command?
-            CommandHandler handler = _defaultHandler;
             if (_commands.ContainsKey(args[0]))
-            {
-                handler = _commands[args[0]].handler;
-            }
-            if (handler != null)
             {
                 try
                 {
-                    handler(args.ToArray());
+                    _commands[args[0]].handler(args.ToArray());
                 }
                 catch (Exception e)
                 {
@@ -586,7 +581,16 @@ namespace Engine.Util
             }
             else
             {
-                WriteLine("Error: unknown command '" + args[0] + "'. Try 'help' to see a list of available commands.");
+                // If we have a default handler, use it, else print an error.
+                if (_defaultHandler != null)
+                {
+                    _defaultHandler(command);
+                }
+                else
+                {
+                    WriteLine("Error: unknown command '" + args[0] +
+                        "'. Try 'help' to see a list of available commands.");
+                }
             }
         }
 

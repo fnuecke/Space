@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
 using Engine.Util;

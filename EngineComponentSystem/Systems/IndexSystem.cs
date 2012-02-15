@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Entities;
 using Engine.ComponentSystem.Parameterizations;
 using Microsoft.Xna.Framework;
 
