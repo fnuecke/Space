@@ -850,6 +850,26 @@ namespace Engine.Util
                             ResetTabCompletion();
                         }
                         break;
+                    case Keys.C:
+                        if (IsControlPressed() && _input.Length > 0)
+                        {
+                            // Copy current input buffer to clipboard.
+                            Clipboard.SetText(_input.ToString());
+                        }
+                        break;
+                    case Keys.V:
+                        if (IsControlPressed() && Clipboard.ContainsText())
+                        {
+                            // Insert current clipboard into input buffer.
+                            string text = Clipboard.GetText().Replace("\n", "").Replace("\r", "");
+                            if (!string.IsNullOrWhiteSpace(text))
+                            {
+                                _input.Insert(_cursor, text);
+                                _cursor += text.Length;
+                                ResetTabCompletion();
+                            }
+                        }
+                        break;
                     default:
                         if (key == Hotkey)
                         {
@@ -874,25 +894,16 @@ namespace Engine.Util
         {
             if (IsOpen && !char.IsControl(ch))
             {
+                // Don't take c and v if control is pressed (clipboard commands).
+                if ((ch == 'c' || ch == 'v') && IsControlPressed())
+                {
+                    return;
+                }
+
+                // Else insert the char into our input.
                 _input.Insert(_cursor, ch);
                 ++_cursor;
                 ResetTabCompletion();
-            }
-        }
-
-        /// <summary>
-        /// Handle request to paste from clipboard.
-        /// </summary>
-        private void HandleInsert(object sender, EventArgs e)
-        {
-            if (IsOpen && Clipboard.ContainsText())
-            {
-                string text = Clipboard.GetText().Replace("\n", "").Replace("\r", "");
-                if (!string.IsNullOrWhiteSpace(text))
-                {
-                    _input.Append(text);
-                    _cursor = _input.Length;
-                }
             }
         }
 

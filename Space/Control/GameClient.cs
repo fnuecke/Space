@@ -193,6 +193,16 @@ namespace Space.Control
             }
         }
 
+        /// <summary>
+        /// Saves the current player state (his profile) to disk.
+        /// </summary>
+        public void Save()
+        {
+            Settings.Instance.CurrentProfile.Capture(GetPlayerShipInfo().Entity);
+            Settings.Instance.CurrentProfile.Save();
+            _lastSave = DateTime.Now;
+        }
+
         #endregion
 
         #region Logic
@@ -209,17 +219,10 @@ namespace Space.Control
 
             if ((DateTime.Now - _lastSave).TotalSeconds > _saveInterval)
             {
-                Settings.Instance.CurrentProfile.Capture(GetPlayerShipInfo().Entity);
-                Settings.Instance.CurrentProfile.Save();
-                _lastSave = DateTime.Now;
+                Save();
             }
         }
-        public void Save()
-        {
-            Settings.Instance.CurrentProfile.Capture(GetPlayerShipInfo().Entity);
-            Settings.Instance.CurrentProfile.Save();
-            _lastSave = DateTime.Now;
-        }
+
         #endregion
 
         #region Event handlers

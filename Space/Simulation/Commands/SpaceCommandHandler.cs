@@ -198,7 +198,8 @@ def ge(id):
                         var moveCommand = (MoveItemCommand)command;
                         try
                         {
-                            avatar.GetComponent<Inventory>().Swap(moveCommand.FirstIndex, moveCommand.SecondIndex);
+                            var inventory = avatar.GetComponent<Inventory>();
+                            inventory.Swap(moveCommand.FirstIndex, moveCommand.SecondIndex);
                         }
                         catch (IndexOutOfRangeException ex)
                         {
