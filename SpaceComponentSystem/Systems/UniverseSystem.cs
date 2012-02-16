@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Messages;
 using Space.Data;

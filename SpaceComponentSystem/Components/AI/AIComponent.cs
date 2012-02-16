@@ -6,11 +6,11 @@ using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Components.AIBehaviour;
+using Space.ComponentSystem.Components.Behaviours;
 
 namespace Space.ComponentSystem.Components
 {
-    sealed class AiComponent : AbstractComponent
+    public sealed class AiComponent : AbstractComponent
     {
         #region Types
 

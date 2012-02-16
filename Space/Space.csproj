@@ -148,18 +148,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ComponentSystem\Components\AIBehaviour\AttackBehaviour.cs" />
-    <Compile Include="ComponentSystem\Components\AIBehaviour\Behaviour.cs" />
-    <Compile Include="ComponentSystem\Components\AIBehaviour\MoveBehaviour.cs" />
-    <Compile Include="ComponentSystem\Components\AIBehaviour\PatrolBehaviour.cs" />
-    <Compile Include="ComponentSystem\Components\AIComponent.cs" />
-    <Compile Include="ComponentSystem\Components\CellChangedComponent.cs" />
-    <Compile Include="ComponentSystem\Components\ExplosionEffect.cs" />
-    <Compile Include="ComponentSystem\Components\SpawnComponent.cs" />
-    <Compile Include="ComponentSystem\Components\Target.cs" />
-    <Compile Include="ComponentSystem\Messages\EntityChangedCell.cs" />
-    <Compile Include="ComponentSystem\Systems\ShipsSpawnSystem.cs" />
-    <Compile Include="ComponentSystem\Systems\UniverseSystem.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\Font.cs" />
     <Compile Include="ScreenManagement\Screens\Helper\Scale.cs" />
@@ -203,7 +191,6 @@
     <Compile Include="Simulation\Commands\PickUpCommand.cs" />
     <Compile Include="Simulation\Commands\RestoreProfileCommand.cs" />
     <Compile Include="Simulation\Commands\ScriptCommand.cs" />
-    <Compile Include="ComponentSystem\Entities\EntityFactory.cs" />
     <Compile Include="Control\GameClient.cs" />
     <Compile Include="Control\GameServer.cs" />
     <Compile Include="Simulation\Commands\SpaceCommandType.cs" />

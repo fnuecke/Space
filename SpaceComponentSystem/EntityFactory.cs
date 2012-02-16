@@ -12,7 +12,7 @@ using Space.Data;
 
 namespace Space.ComponentSystem
 {
-    static class EntityFactory
+    public static class EntityFactory
     {
         /// <summary>
         /// Creates a new, player controlled ship.
