@@ -1,4 +1,5 @@
-﻿
+﻿using Engine.ComponentSystem;
+
 namespace Space.ComponentSystem.Messages
 {
     public struct EntityChangedCell
@@ -15,6 +16,6 @@ namespace Space.ComponentSystem.Messages
         /// <summary>
         /// The Id of the Entity which changed Cells
         /// </summary>
-        public int EntityID;
+        public Entity Entity;
     }
 }

@@ -152,7 +152,7 @@ namespace Space.ComponentSystem.Components
             {
                 var died = (EntityDied)(ValueType)message;
 
-                //Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation, (float)size));
+                Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation, 1));
 
                 // Entity died, disable components and wait.
                 foreach (var componentType in ComponentsToDisable)

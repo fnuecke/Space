@@ -10,9 +10,10 @@ using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
-    sealed class AiInfo : ICopyable<AiInfo>
+    public sealed class AiInfo : ICopyable<AiInfo>
     {
         #region Fields
+
         public Vector2 SpawnPoint;
 
         public int RespawnTime;
@@ -39,27 +40,7 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Hash/Copy
-
-        public AiInfo DeepCopy()
-        {
-            return DeepCopy(null);
-        }
-
-        public AiInfo DeepCopy(AiInfo into)
-        {
-            var copy = into ?? (AiInfo)MemberwiseClone();
-
-            if (copy == into)
-            {
-                copy.SpawnPoint = SpawnPoint;
-                copy.RespawnTime = RespawnTime;
-                copy.AiCommand = AiCommand;
-                copy.Faction = Faction;
-            }
-
-            return copy;
-        }
+        #region Serialization / Hashing
 
         public Packet Packetize(Packet packet)
         {
@@ -85,28 +66,49 @@ namespace Space.ComponentSystem.Components
         }
 
         #endregion
+
+        #region Copying
+
+        public AiInfo DeepCopy()
+        {
+            return DeepCopy(null);
+        }
+
+        public AiInfo DeepCopy(AiInfo into)
+        {
+            var copy = into ?? (AiInfo)MemberwiseClone();
+
+            if (copy == into)
+            {
+                copy.SpawnPoint = SpawnPoint;
+                copy.RespawnTime = RespawnTime;
+                copy.AiCommand = AiCommand;
+                copy.Faction = Faction;
+            }
+
+            return copy;
+        }
+
+        #endregion
     }
 
-    sealed class SpawnComponent : AbstractComponent
+    public sealed class SpawnComponent : AbstractComponent
     {
         public List<int> _targets = new List<int>();
 
         public int counter;
-       
 
         public override void Update(object parameterization)
         {
             counter++;
             if (counter % 1000 == 0)
             {
-               
-
                 var shipSpawnSystem = Entity.Manager.SystemManager.GetSystem<ShipsSpawnSystem>();
                 var faction = Entity.GetComponent<Faction>();
                 var tranform = Entity.GetComponent<Transform>();
                 foreach (var target in _targets)
                 {
-                  // shipSpawnSystem.CreateAttackingShip(ref tranform.Translation, target, faction.Value);
+                    // shipSpawnSystem.CreateAttackingShip(ref tranform.Translation, target, faction.Value);
                 }
             }
         }

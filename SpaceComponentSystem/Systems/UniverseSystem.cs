@@ -5,8 +5,6 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Messages;
 using Space.Data;
@@ -24,7 +22,7 @@ namespace Space.ComponentSystem.Systems
     /// re-generated procedurally whenever a cell gets re-activated.
     /// </para>
     /// </summary>
-    sealed class UniverseSystem : AbstractSystem
+    public sealed class UniverseSystem : AbstractSystem
     {
         #region Properties
 

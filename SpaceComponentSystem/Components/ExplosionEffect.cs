@@ -11,7 +11,7 @@
         public ExplosionEffect()
         {
         }
-        
+
         public override void Update(object parameterization)
         {
             base.Update(parameterization);
