@@ -440,6 +440,37 @@ namespace Engine.Collections
             return RangeQuery(ref point, range);
         }
 
+        /// <summary>
+        /// Perform a range query on this tree. This will return all entries
+        /// in the tree that are in contained the specified rectangle.
+        /// </summary>
+        /// <param name="point">The query rectangle.</param>
+        /// <param name="list">The list to put the results into, or null in
+        /// which case a new list will be created and returned.</param>
+        /// <returns>All objects in the query rectangle.</returns>
+        public List<T> RangeQuery(ref Rectangle rectangle, List<T> list = null)
+        {
+            var result = list ?? new List<T>();
+
+            // Recurse through the tree, starting at the root node, to find
+            // nodes intersecting with the range query.
+            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
+                ref rectangle, result);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Perform a range query on this tree. This will return all entries
+        /// in the tree that are in contained the specified rectangle.
+        /// </summary>
+        /// <param name="point">The query rectangle.</param>
+        /// <returns>All objects in the query rectangle.</returns>
+        public List<T> RangeQuery(Rectangle rectangle)
+        {
+            return RangeQuery(ref rectangle);
+        }
+
         #region Internal functionality
 
         /// <summary>
@@ -861,6 +892,65 @@ namespace Engine.Collections
         }
 
         /// <summary>
+        /// Accumulate all entries in range of a rectangular range query to the
+        /// given list. This recurses the tree down inner nodes that intersect
+        /// the query, until it finds a leaf node. Then adds all entries in the
+        /// leaf that are in range.
+        /// </summary>
+        /// <param name="x">The x position of the current node.</param>
+        /// <param name="y">The y position of the current node.</param>
+        /// <param name="size">The size of the current node.</param>
+        /// <param name="node">The current node.</param>
+        /// <param name="point">The query rectangle.</param>
+        /// <param name="list">The result list.</param>
+        private static void Accumulate(int x, int y, int size, Node node, ref Rectangle query, List<T> list)
+        {
+            var intersectionType = ComputeIntersection(ref query, x, y, size);
+            if (intersectionType == IntersectionType.Contained)
+            {
+                // Box completely contained in query, return all points in it,
+                // no need to recurse further.
+                for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
+                {
+                    // No need for a range check at this point.
+                    list.Add(entry.Value.Value);
+                }
+            }
+            else if (intersectionType == IntersectionType.Overlapping)
+            {
+                // Node intersects with the query.
+                if (node.IsLeaf)
+                {
+                    // Add all entries in this node that are in range.
+                    for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
+                    {
+                        if (query.Contains((int)entry.Value.Point.X, (int)entry.Value.Point.Y))
+                        {
+                            list.Add(entry.Value.Value);
+                        }
+                    }
+                }
+                else
+                {
+                    // Recurse into child nodes.
+                    var childSize = size >> 1;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        if (node.Children[i] != null)
+                        {
+                            Accumulate(
+                                x + (((i & 1) == 0) ? 0 : childSize),
+                                y + (((i & 2) == 0) ? 0 : childSize),
+                                childSize, node.Children[i],
+                                ref query, list);
+                        }
+                    }
+                }
+            }
+            // else: No intersection.
+        }
+
+        /// <summary>
         /// Possible intersection types of geometric shapes.
         /// </summary>
         private enum IntersectionType
@@ -939,39 +1029,39 @@ namespace Engine.Collections
                 return IntersectionType.Contained;
             }
         }
+        
+        /// <summary>
+        /// Box / Box intersection test.
+        /// </summary>
+        /// <param name="rectangle">The first box.</param>
+        /// <param name="x">The x position of the second box.</param>
+        /// <param name="y">The y position of the second box.</param>
+        /// <param name="size">The size of the second box.</param>
+        /// <returns>How the two intersect.</returns>
+        private static IntersectionType ComputeIntersection(ref Rectangle rectangle, int x, int y, int size)
+        {
+            Rectangle other;
+            other.X = x;
+            other.Y = y;
+            other.Width = size;
+            other.Height = size;
 
-        ///// <summary>
-        ///// Circle / Box intersection test.
-        ///// </summary>
-        ///// <param name="center">The center of the circle.</param>
-        ///// <param name="radiusSquared">The squared radius of the circle.</param>
-        ///// <param name="x">The x position of the box.</param>
-        ///// <param name="y">The y position of the box.</param>
-        ///// <param name="size">The size of the box.</param>
-        ///// <returns>Whether the two intersect or not.</returns>
-        //private static bool Intersect(ref Vector2 center, float radiusSquared, int x, int y, int size)
-        //{
-        //    Vector2 closest = center;
-        //    if (center.X < x)
-        //    {
-        //        closest.X = x;
-        //    }
-        //    else if (center.X > x + size)
-        //    {
-        //        closest.X = x + size;
-        //    }
-        //    if (center.Y < y)
-        //    {
-        //        closest.Y = y;
-        //    }
-        //    else if (center.Y > y + size)
-        //    {
-        //        closest.Y = y + size;
-        //    }
-        //    float distanceX = closest.X - center.X;
-        //    float distanceY = closest.Y - center.Y;
-        //    return (distanceX * distanceX + distanceY * distanceY) <= radiusSquared;
-        //}
+            bool result;
+            rectangle.Intersects(ref other, out result);
+            if (!result)
+            {
+                return IntersectionType.Separated;
+            }
+            rectangle.Contains(ref other, out result);
+            if (result)
+            {
+                return IntersectionType.Contained;
+            }
+            else
+            {
+                return IntersectionType.Overlapping;
+            }
+        }
 
         #endregion
 
