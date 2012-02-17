@@ -8,23 +8,23 @@
       <Items>
         <Item>
           <ItemName>StarterArmor</ItemName>
-          <Dropchance>0.1</Dropchance>
+          <Probability>0.2</Probability>
         </Item>
         <Item>
           <ItemName>StarterWeapon</ItemName>
-          <Dropchance>0.1</Dropchance>
+          <Probability>0.2</Probability>
         </Item>
         <Item>
           <ItemName>StarterReactor</ItemName>
-          <Dropchance>0.1</Dropchance>
+          <Probability>0.2</Probability>
         </Item>
         <Item>
           <ItemName>StarterSensor</ItemName>
-          <Dropchance>0.1</Dropchance>
+          <Probability>0.2</Probability>
         </Item>
         <Item>
           <ItemName>StarterThruster</ItemName>
-          <Dropchance>0.1</Dropchance>
+          <Probability>0.2</Probability>
         </Item>
        
       </Items>

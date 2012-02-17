@@ -81,6 +81,7 @@ namespace Space.ComponentSystem.Factories
 
             entity.AddComponent(transform);
             entity.AddComponent(renderer);
+            entity.AddComponent(new Index(Item.IndexGroup));
 
             return entity;
         }

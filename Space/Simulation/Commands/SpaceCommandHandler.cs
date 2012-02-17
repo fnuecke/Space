@@ -222,7 +222,7 @@ def ge(id):
                     {
                         var inventory = avatar.GetComponent<Inventory>();
                         var index = manager.SystemManager.GetSystem<IndexSystem>();
-                        foreach (var item in index.GetNeighbors(avatar, 100, 0, _reusableItemList))
+                        foreach (var item in index.GetNeighbors(avatar, 100, Item.IndexGroup, _reusableItemList))
                         {
                             // Pick the item up.
                             // TODO: check if the item belongs to the player.
