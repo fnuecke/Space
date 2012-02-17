@@ -7,6 +7,7 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
+using Space.ComponentSystem.Systems;
 using Space.ComponentSystem.Util;
 using Space.Data;
 
@@ -64,11 +65,14 @@ namespace Space.ComponentSystem
         {
             Entity entity = FactoryLibrary.SampleShip(blueprint, faction, position, random);
 
+            // Add to the index from which entities will automatically removed on cell death.
+            entity.GetComponent<Index>().IndexGroups |=  CellSystem.CellDeathAutoRemoveIndex;
+
             var input = entity.GetComponent<ShipControl>();
             input.Stabilizing = true;
             entity.AddComponent(new AiComponent(command));
             entity.AddComponent(new Death());
-            entity.AddComponent(new CellId());
+            entity.AddComponent(new VoidDeath());
 
             var equipment = entity.GetComponent<Equipment>();
 
@@ -124,7 +128,8 @@ namespace Space.ComponentSystem
 
             entity.AddComponent(new Transform(position));
             entity.AddComponent(new Spin());
-            entity.AddComponent(new Index(Detectable.IndexGroup | Factions.Nature.ToCollisionIndexGroup()));
+            entity.AddComponent(new Index(Detectable.IndexGroup | CellSystem.CellDeathAutoRemoveIndex
+                | Factions.Nature.ToCollisionIndexGroup()));
             entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
 
             entity.AddComponent(new CollidableSphere(radius, Factions.Nature.ToCollisionGroup()));
@@ -178,7 +183,7 @@ namespace Space.ComponentSystem
             entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
             entity.AddComponent(new Spin(rotationSpeed));
             entity.AddComponent(new EllipsePath(center.UID, majorRadius, minorRadius, angle, period, periodOffset));
-            entity.AddComponent(new Index(Detectable.IndexGroup));
+            entity.AddComponent(new Index(Detectable.IndexGroup | CellSystem.CellDeathAutoRemoveIndex));
             if (mass > 0)
             {
                 entity.AddComponent(new Gravitation(Gravitation.GravitationTypes.Attractor, mass));
@@ -217,7 +222,7 @@ namespace Space.ComponentSystem
             entity.AddComponent(new Transform(center.GetComponent<Transform>().Translation));
             entity.AddComponent(new Spin(((float)Math.PI) / period));
             entity.AddComponent(new EllipsePath(center.UID, orbitRadius, orbitRadius, 0, period, 0));
-            entity.AddComponent(new Index(Detectable.IndexGroup));
+            entity.AddComponent(new Index(Detectable.IndexGroup | CellSystem.CellDeathAutoRemoveIndex));
             entity.AddComponent(new Detectable("Textures/Stolen/Ships/sensor_array_dish"));
             entity.AddComponent(new SpawnComponent());
             entity.AddComponent(renderer);

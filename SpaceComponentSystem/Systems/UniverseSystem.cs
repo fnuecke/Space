@@ -42,12 +42,6 @@ namespace Space.ComponentSystem.Systems
         private WorldConstraints _constraints;
 
         /// <summary>
-        /// Tracks currently active entities in active cells, for deletion
-        /// when a cell dies.
-        /// </summary>
-        private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
-
-        /// <summary>
         /// Tracks cell information for active cells and inactive cells that
         /// are in a changed state (deviating from the one that would be
         /// procedurally generated).
@@ -140,6 +134,7 @@ namespace Space.ComponentSystem.Systems
                         // and make sure it's a solar system.
                         CreateSystem(random, ref center, list,
                             _cellInfo[info.Id],
+                            // Seven planets, with their respective number of moons.
                             7, new[] { 0, 0, 1, 2, 4, 2, 1 });
                     }
                     else
@@ -148,73 +143,69 @@ namespace Space.ComponentSystem.Systems
                         CreateSystem(random, ref center, list, _cellInfo[info.Id]);
                     }
 
-                    // Done, store the list of generated entities.
-                    _entities.Add(info.Id, list);
-
-                    var cellsystem = Manager.GetSystem<CellSystem>();
-                    var stationList = _cellInfo[info.Id].Stations;
+                    // Find nearby active cells and the stations in them, mark
+                    // them as possible targets for all station sin this cell,
+                    // and let them know about our existence, as well.
+                    var cellSystem = Manager.GetSystem<CellSystem>();
+                    var stations = _cellInfo[info.Id].Stations;
                     for (int ny = info.Y - 1; ny <= info.Y + 1; ny++)
                     {
                         for (int nx = info.X - 1; nx <= info.X + 1; nx++)
                         {
-                            if((info.X+info.Y+ny+nx)%2 == 1){
-                            var id = CoordinateIds.Combine(nx, ny);
-                            if (_cellInfo.ContainsKey(id)&& (_cellInfo[id].Faction & _cellInfo[info.Id].Faction) == 0)
+                            // Don't fly to cells that are diagonal to
+                            // ourselves, which we do by checking if the
+                            // sum of the coordinates is uneven.
+                            // This becomes more obvious when considering this:
+                            // +-+-+-+-+
+                            // |0|1|0|1|
+                            // +-+-+-+-+
+                            // |1|0|1|0|
+                            // +-+-+-+-+
+                            // |0|1|0|1|
+                            // +-+-+-+-+
+                            // |1|0|1|0|
+                            // +-+-+-+-+
+                            // Where 0 means the sum of the own coordinate is
+                            // even, 1 means it is odd. Then we can see that
+                            // the sum of diagonal pairs of cells is always
+                            // even, and the one of straight neighbors is
+                            // always odd.
+                            if (((info.X + info.Y + ny + nx) & 1) == 0)
                             {
-                                foreach (var station in _cellInfo[id].Stations)
+                                // Get the id, only mark the station if we have
+                                // info on it and it's an enemy cell.
+                                var id = CoordinateIds.Combine(nx, ny);
+                                if (cellSystem.IsCellActive(id) &&
+                                    _cellInfo.ContainsKey(id) &&
+                                    (_cellInfo[id].Faction.IsAlliedTo(_cellInfo[info.Id].Faction)))
                                 {
-                                    var entity = Manager.EntityManager.GetEntity(station);
-                                    var spawn = entity.GetComponent<SpawnComponent>();
-                                    spawn._targets.AddRange(stationList);
+                                    // Tell the other stations.
+                                    foreach (var stationId in _cellInfo[id].Stations)
+                                    {
+                                        var spawn = Manager.EntityManager.GetEntity(stationId).
+                                            GetComponent<SpawnComponent>();
+                                        foreach (var otherStationId in stations)
+                                        {
+                                            spawn.Targets.Add(otherStationId);
+                                        }
+                                    }
+                                    // Tell our own stations.
+                                    foreach (var stationId in stations)
+                                    {
+                                        var spawner = Manager.EntityManager.GetEntity(stationId).
+                                            GetComponent<SpawnComponent>();
+                                        foreach (var otherStationId in _cellInfo[id].Stations)
+                                        {
+                                            spawner.Targets.Add(otherStationId);
+                                        }
+                                    }
                                 }
-                                foreach (var station in stationList)
-                                {
-
-                                    var entity = Manager.EntityManager.GetEntity(station);
-                                    var spawn = entity.GetComponent<SpawnComponent>();
-                                    spawn._targets.AddRange(_cellInfo[id].Stations);
-
-                                }
-                            }
                             }
                         }
                     }
                 }
                 else
                 {
-                    // Kill all entities we spawned.
-                   
-                    var cellsystem = Manager.GetSystem<CellSystem>();
-                    var stationList = _cellInfo[info.Id].Stations;
-                    for (int ny = info.Y - 1; ny <= info.Y + 1; ny++)
-                    {
-                        for (int nx = info.X - 1; nx <= info.X + 1; nx++)
-                        {
-                            var id = CoordinateIds.Combine(nx, ny);
-                            if (cellsystem.IsCellActive(id))
-                            {
-                                foreach (var station in _cellInfo[id].Stations)
-                                {
-                                    var entity = Manager.EntityManager.GetEntity(station);
-                                    var spawn = entity.GetComponent<SpawnComponent>();
-                                    foreach (var station2 in stationList)
-                                    {
-                                        var entity2 = Manager.EntityManager.GetEntity(station2);
-                                        var spawn2 = entity2.GetComponent<SpawnComponent>();
-
-                                        spawn2._targets.Remove(station);
-                                        spawn._targets.Remove(station2);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    foreach (int id in _entities[info.Id])
-                    {
-                        Manager.EntityManager.RemoveEntity(id);
-                    }
-                    _entities.Remove(info.Id);
-
                     // Remove cell info only if it does not deviate from the
                     // procedural values.
                     if (!_cellInfo[info.Id].Dirty)
@@ -242,17 +233,6 @@ namespace Space.ComponentSystem.Systems
         {
             packet.Write(WorldSeed);
 
-            packet.Write(_entities.Count);
-            foreach (var item in _entities)
-            {
-                packet.Write(item.Key);
-                packet.Write(item.Value.Count);
-                foreach (var entityId in item.Value)
-                {
-                    packet.Write(entityId);
-                }
-            }
-
             packet.Write(_cellInfo.Count);
             foreach (var item in _cellInfo)
             {
@@ -271,22 +251,8 @@ namespace Space.ComponentSystem.Systems
         {
             WorldSeed = packet.ReadUInt64();
 
-            _entities.Clear();
-            int numCells = packet.ReadInt32();
-            for (int i = 0; i < numCells; i++)
-            {
-                var key = packet.ReadUInt64();
-                var list = new List<int>();
-                int numEntities = packet.ReadInt32();
-                for (int j = 0; j < numEntities; j++)
-                {
-                    list.Add(packet.ReadInt32());
-                }
-                _entities.Add(key, list);
-            }
-
             _cellInfo.Clear();
-            numCells = packet.ReadInt32();
+            int numCells = packet.ReadInt32();
             for (int i = 0; i < numCells; i++)
             {
                 var key = packet.ReadUInt64();
@@ -302,13 +268,6 @@ namespace Space.ComponentSystem.Systems
         public override void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(WorldSeed));
-            foreach (var entities in _entities.Values)
-            {
-                foreach (var entity in entities)
-                {
-                    hasher.Put(BitConverter.GetBytes(entity));
-                }
-            }
             foreach (var cellInfo in _cellInfo.Values)
             {
                 cellInfo.Hash(hasher);
@@ -322,20 +281,13 @@ namespace Space.ComponentSystem.Systems
             if (copy == into)
             {
                 copy.WorldSeed = WorldSeed;
-                copy._entities.Clear();
                 copy._cellInfo.Clear();
             }
             else
             {
-                copy._entities = new Dictionary<ulong, List<int>>();
                 copy._cellInfo = new Dictionary<ulong, CellInfo>();
             }
 
-            foreach (var item in _entities)
-            {
-                copy._entities.Add(item.Key, new List<int>(item.Value));
-
-            }
             foreach (var cellInfo in _cellInfo)
             {
                 copy._cellInfo.Add(cellInfo.Key, cellInfo.Value.DeepCopy());

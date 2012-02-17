@@ -108,7 +108,7 @@
     <Compile Include="Components\AI\Behaviours\MoveBehaviour.cs" />
     <Compile Include="Components\AI\Behaviours\PatrolBehaviour.cs" />
     <Compile Include="Components\AI\AIComponent.cs" />
-    <Compile Include="Components\Logic\CellId.cs" />
+    <Compile Include="Components\Logic\VoidDeath.cs" />
     <Compile Include="Components\Media\ExplosionEffect.cs" />
     <Compile Include="Components\Items\SpaceItem.cs" />
     <Compile Include="Components\Logic\AbstractRegeneratingValue.cs" />
@@ -141,7 +141,6 @@
     <Compile Include="Factories\IFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
-    <Compile Include="Messages\EntityChangedCell.cs" />
     <Compile Include="Systems\DropSystem.cs" />
     <Compile Include="Systems\ShipsSpawnSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />

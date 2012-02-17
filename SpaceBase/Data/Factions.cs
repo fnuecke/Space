@@ -253,6 +253,17 @@ namespace Space.Data
         }
 
         /// <summary>
+        /// Checks if this faction is allied to the specified faction.
+        /// </summary>
+        /// <param name="factions">The first faction to check.</param>
+        /// <param name="other">The other faction to check.</param>
+        /// <returns>Whether the two factions are allied.</returns>
+        public static bool IsAlliedTo(this Factions factions, Factions other)
+        {
+            return (factions & other) != 0;
+        }
+
+        /// <summary>
         /// Convert the specified player number to the player's faction.
         /// </summary>
         /// <param name="playerNumber">The player number to convert.</param>

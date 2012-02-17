@@ -1,23 +1,21 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
 using Engine.Util;
-using Space.ComponentSystem.Messages;
 using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components
 {
     /// <summary>
-    /// Tracks the cell an entity currently resides in, dispatches messages
-    /// when the cell changes.
+    /// Kills an entity if it wanders into an inactive cell.
     /// </summary>
-    public sealed class CellId : AbstractComponent
+    public sealed class VoidDeath : AbstractComponent
     {
         #region Fields
         
         /// <summary>
         /// The id of the cell the entity is currently in.
         /// </summary>
-        public ulong Value;
+        private ulong _currentCellId;
 
         #endregion
 
@@ -37,18 +35,19 @@ namespace Space.ComponentSystem.Components
                     (int)position.X >> CellSystem.CellSizeShiftAmount,
                     (int)position.Y >> CellSystem.CellSizeShiftAmount);
 
-                // If the cell changed, send a message.
-                if (cellId != Value)
+                // If the cell changed, check if we're out of bounds.
+                if (cellId != _currentCellId)
                 {
-                    // Build our message and send it.
-                    EntityChangedCell changedMessage = new EntityChangedCell();
-                    changedMessage.OldCellID = Value;
-                    changedMessage.NewCellID = cellId;
-                    changedMessage.Entity = Entity;
-                    Entity.Manager.SystemManager.SendMessage(ref changedMessage);
-
-                    // Save the new cell id.
-                    Value = cellId;
+                    if (Entity.Manager.SystemManager.GetSystem<CellSystem>().IsCellActive(cellId))
+                    {
+                        // Save the new cell id.
+                        _currentCellId = cellId;
+                    }
+                    else
+                    {
+                        // Dead space, kill self.
+                        Entity.Manager.RemoveEntity(Entity);
+                    }
                 }
             }
         }

@@ -43,7 +43,7 @@ namespace Engine.Util
     /// <summary>
     /// Pseudo-Random number using the Mersenne-Twister algorithm (MT19937 variant).
     /// </summary>
-    public sealed class MersenneTwister : IUniformRandom, IPacketizable, ICopyable<MersenneTwister>
+    public sealed class MersenneTwister : IUniformRandom, IPacketizable, ICopyable<MersenneTwister>, IHashable
     {
         #region Constants: period parameters
 
@@ -277,8 +277,15 @@ namespace Engine.Util
 
         #endregion
 
-        #region Serializing / Cloning
+        #region Serializing / Hashing
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public Packet Packetize(Packet packet)
         {
             for (int i = 0; i < N; i++)
@@ -288,6 +295,10 @@ namespace Engine.Util
             return packet.Write(_index);
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
             for (int i = 0; i < N; i++)
@@ -296,6 +307,24 @@ namespace Engine.Util
             }
             _index = packet.ReadInt32();
         }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public void Hash(Hasher hasher)
+        {
+            for (int i = 0; i < N; i++)
+            {
+                hasher.Put(BitConverter.GetBytes(_mt[i]));
+            }
+            hasher.Put(BitConverter.GetBytes(_index));
+        }
+
+        #endregion
+
+        #region Copying
 
         public MersenneTwister DeepCopy()
         {

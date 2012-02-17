@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
 using Space.Data;
@@ -20,19 +16,19 @@ namespace Space.ComponentSystem.Systems
     {
         #region Fields
 
-        private Dictionary<ulong, List<int>> _entities = new Dictionary<ulong, List<int>>();
-
-        private ContentManager _content;
-
+        /// <summary>
+        /// Randomizer used for sampling new ships and, when it applies, their
+        /// positions.
+        /// </summary>
         private MersenneTwister _random = new MersenneTwister(0);
 
         #endregion
 
         #region Constructor
 
-        public ShipsSpawnSystem(ContentManager content)
+        public ShipsSpawnSystem()
         {
-            _content = content;
+            // We want to sync our randomizer.
             ShouldSynchronize = true;
         }
 
@@ -40,6 +36,34 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
+        public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
+        {
+            var aicommand = new AiComponent.AiCommand(targetEntity, 2000, AiComponent.Order.Move);
+            var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
+                faction, startPosition, Manager.EntityManager, _random, aicommand);
+
+            Manager.EntityManager.AddEntity(ship);
+        }
+
+        public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
+        {
+            var aicommand = new AiComponent.AiCommand(targetPosition, 2000, AiComponent.Order.Move);
+            var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
+                faction, startPosition, Manager.EntityManager, _random, aicommand);
+
+            Manager.EntityManager.AddEntity(ship);
+        }
+
+        #endregion
+
+        #region Messaging
+
+        /// <summary>
+        /// Checks for cells being activated and spawns some initial ships in
+        /// them, to have some base population.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
         public override void HandleMessage<T>(ref T message)
         {
             if (message is CellStateChanged)
@@ -47,147 +71,70 @@ namespace Space.ComponentSystem.Systems
                 var info = (CellStateChanged)(ValueType)message;
                 if (info.State)
                 {
-                    if (info.X == 0 && info.Y == 0)
+                    const int cellSize = CellSystem.CellSize;
+
+                    // Get cell position to offset spawn positions.
+                    Vector2 cellPosition;
+                    cellPosition.X = cellSize * info.X;
+                    cellPosition.Y = cellSize * info.Y;
+
+                    // Get the cell info to know what faction we're spawning for.
+                    var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
+                    
+                    // Create some ships at random positions.
+                    Vector2 spawnPoint;
+                    for (int i = 0; i < 10; i++)
                     {
-                        const int cellSize = CellSystem.CellSize;
-                        var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
-                        var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
-                        var list = new List<int>();
-                        _entities.Add(info.Id, list);
+                        spawnPoint.X = (float)(_random.NextDouble() * cellSize + cellPosition.X);
+                        spawnPoint.Y = (float)(_random.NextDouble() * cellSize + cellPosition.Y);
+                        var order = new AiComponent.AiCommand(spawnPoint, cellSize >> 1, AiComponent.Order.Guard);
+                        var ship = EntityFactory.CreateAIShip(
+                            "L1_AI_Ship",
+                            cellInfo.Faction,
+                            spawnPoint,
+                            Manager.EntityManager,
+                            _random,
+                            order);
 
-                        for (var i = -2; i < 2; i++)
-                        {
-                            for (var j = -2; j < 2; j++)
-                            {
-                                var spawnPoint = new Vector2(center.X + i * (float)cellSize / 5, center.Y - j * (float)cellSize / 5);
-                                var order = new AiComponent.AiCommand(spawnPoint, cellSize, AiComponent.Order.Guard);
-                                //spawnPoint = new Vector2(center.X + i * (float)cellSize / 5+10000, center.Y - j * (float)cellSize / 5+10000);
-
-                                var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
-                                    cellInfo.Faction, spawnPoint, Manager.EntityManager, _random, order);
-
-                                list.Add(Manager.EntityManager.AddEntity(ship));
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    var Listcopy = new List<int>(_entities[info.Id]);
-                    _entities.Remove(info.Id);
-                    foreach (var entry in Listcopy)
-                    {
-                        Manager.EntityManager.RemoveEntity(entry);
+                        Manager.EntityManager.AddEntity(ship);
                     }
                 }
             }
-            else if (message is EntityRemoved)
-            {
-                var info = (EntityRemoved)(ValueType)message;
-                var transform = info.Entity.GetComponent<Transform>();
-                if (transform != null)
-                {
-                    var position = transform.Translation;
-                    var cellId = CoordinateIds.Combine(
-                       (int)position.X >> CellSystem.CellSizeShiftAmount,
-                       (int)position.Y >> CellSystem.CellSizeShiftAmount);
-
-                    if (_entities.ContainsKey(cellId))
-                    {
-                        _entities[cellId].Remove(info.Entity.UID);
-                    }
-                }
-            }
-            else if (message is EntityChangedCell)
-            {
-                var info = (EntityChangedCell)(ValueType)message;
-                var entityID = info.Entity.UID;
-                _entities[info.OldCellID].Remove(info.Entity.UID);
-                if (Manager.GetSystem<CellSystem>().IsCellActive(info.NewCellID))
-                {
-                    _entities[info.NewCellID].Add(info.Entity.UID);
-                }
-                else
-                {
-                    Manager.EntityManager.RemoveEntity(entityID);
-                }
-
-            }
-        }
-
-        public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
-        {
-            var aicommand = new AiComponent.AiCommand(targetEntity, 2000, AiComponent.Order.Move);
-            var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
-                   (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
-
-            var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
-                faction, startPosition, Manager.EntityManager, _random, aicommand);
-
-            _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
-        }
-        public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
-        {
-            var aicommand = new AiComponent.AiCommand(targetPosition, 2000, AiComponent.Order.Move);
-            var cellID = CoordinateIds.Combine((int)startPosition.X >> CellSystem.CellSizeShiftAmount,
-                  (int)startPosition.Y >> CellSystem.CellSizeShiftAmount);
-
-            var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
-                faction, startPosition, Manager.EntityManager, _random, aicommand);
-
-            _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
         }
 
         #endregion
 
         #region Serialization / Hashing
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
         public override Packet Packetize(Packet packet)
         {
-            packet.Write(_entities.Count);
-            foreach (var item in _entities)
-            {
-                packet.Write(item.Key);
-                packet.Write(item.Value.Count);
-                foreach (var entityId in item.Value)
-                {
-                    packet.Write(entityId);
-                }
-            }
-
-            packet.Write(_random);
-
-            return packet;
+            return packet.Write(_random);
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
-            _entities.Clear();
-            int numCells = packet.ReadInt32();
-            for (int i = 0; i < numCells; i++)
-            {
-                var key = packet.ReadUInt64();
-                var list = new List<int>();
-                int numEntities = packet.ReadInt32();
-                for (int j = 0; j < numEntities; j++)
-                {
-                    list.Add(packet.ReadInt32());
-                }
-                _entities.Add(key, list);
-            }
-
             _random = packet.ReadPacketizableInto(_random);
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
-            foreach (var entities in _entities.Values)
-            {
-                foreach (var entity in entities)
-                {
-                    hasher.Put(BitConverter.GetBytes(entity));
-                }
-            }
+            _random.Hash(hasher);
         }
 
         #endregion
@@ -200,19 +147,11 @@ namespace Space.ComponentSystem.Systems
 
             if (copy == into)
             {
-                copy._content = _content;
-                copy._entities.Clear();
                 copy._random = _random.DeepCopy(_random);
             }
             else
             {
-                copy._entities = new Dictionary<ulong, List<int>>();
                 copy._random = _random.DeepCopy();
-            }
-
-            foreach (var item in _entities)
-            {
-                copy._entities.Add(item.Key, new List<int>(item.Value));
             }
 
             return copy;
