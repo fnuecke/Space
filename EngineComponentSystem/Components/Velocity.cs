@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -15,17 +14,6 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Velocity : AbstractComponent
     {
-        #region Logger
-
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Logger for game log (i.e. steps happening in a simulation).
-        /// </summary>
-        private static NLog.Logger gamelog = NLog.LogManager.GetLogger("GameLog.Velocity");
-#endif
-
-        #endregion
-
         #region Fields
 
         /// <summary>
@@ -45,55 +33,6 @@ namespace Engine.ComponentSystem.Components
         public Velocity()
             : this(Vector2.Zero)
         {
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Updates an objects position based on this velocity.
-        /// </summary>
-        /// <param name="parameterization">The parameterization to use.</param>
-        public override void Update(object parameterization)
-        {
-#if DEBUG && GAMELOG
-            if (float.IsNaN(Value.X) || float.IsNaN(Value.Y))
-            {
-                throw new InvalidOperationException("Invalid value.");
-            }
-#endif
-
-            // Only if a transform is set.
-            var transform = Entity.GetComponent<Transform>();
-            if (transform != null)
-            {
-#if DEBUG && GAMELOG
-                if (Entity.Manager.GameLogEnabled)
-                {
-                    gamelog.Trace("{0}: Velocity = {1}, old Translation = {2}", Entity.UID, Value, transform.Translation);
-                }
-#endif
-
-                transform.AddTranslation(ref Value);
-
-#if DEBUG && GAMELOG
-                if (Entity.Manager.GameLogEnabled)
-                {
-                    gamelog.Trace("new Translation = {0}", transform.Translation);
-                }
-#endif
-            }
-        }
-
-        /// <summary>
-        /// Accepts <c>DefaultLogicParameterization</c>s.
-        /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
-        {
-            return parameterizationType == typeof(DefaultLogicParameterization);
         }
 
         #endregion

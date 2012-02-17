@@ -13,7 +13,7 @@ namespace Engine.ComponentSystem.Components
     /// must invalidate these references when cloning.
     /// </para>
     /// </summary>
-    public abstract class AbstractComponent : ICopyable<AbstractComponent>, IPacketizable, IHashable
+    public abstract class AbstractComponent : ICopyable<AbstractComponent>, IPacketizable, IHashable, IMessageReceiver
     {
         #region Fields
 
@@ -31,73 +31,15 @@ namespace Engine.ComponentSystem.Components
         public int UpdateOrder;
 
         /// <summary>
-        /// This determines in which order this component will be rendered.
-        /// Components with higher values will be drawn later.
-        /// </summary>
-        public int DrawOrder;
-
-        /// <summary>
-        /// Gets the entity this component belongs to.
-        /// </summary>
-        public Entity Entity;
-
-        /// <summary>
         /// Whether the component is enabled or not. Disabled components will
         /// not have their <c>Update()</c> method called.
         /// </summary>
         public bool Enabled = true;
 
-        #endregion
-
-        #region Logic
-
         /// <summary>
-        /// Does nothing on update. In debug mode, checks if the parameterization is valid.
+        /// Gets the entity this component belongs to.
         /// </summary>
-        /// <param name="parameterization">The parameterization to use for this update.</param>
-        public virtual void Update(object parameterization)
-        {
-        }
-
-        /// <summary>
-        /// Does nothing on draw. In debug mode, checks if the parameterization is valid.
-        /// </summary>
-        /// <param name="parameterization">The parameterization to use for this update.</param>
-        public virtual void Draw(object parameterization)
-        {
-        }
-
-        /// <summary>
-        /// Does not support any parameterization per default.
-        /// </summary>
-        /// <param name="parameterizationType">The type of parameterization to check.</param>
-        /// <returns>Whether the parameterization is supported.</returns>
-        public virtual bool SupportsUpdateParameterization(Type parameterizationType)
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Does not support any parameterization per default.
-        /// </summary>
-        /// <param name="parameterizationType">The type of parameterization to check.</param>
-        /// <returns>Whether the parameterization is supported.</returns>
-        public virtual bool SupportsDrawParameterization(Type parameterizationType)
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Inform a component of a message.
-        /// 
-        /// <para>
-        /// Note that components will also receive the messages they send themselves.
-        /// </para>
-        /// </summary>
-        /// <param name="message">The sent message.</param>
-        public virtual void HandleMessage<T>(ref T message) where T : struct
-        {
-        }
+        public Entity Entity;
 
         #endregion
 
@@ -114,7 +56,6 @@ namespace Engine.ComponentSystem.Components
         {
             return packet.Write(UID)
                 .Write(UpdateOrder)
-                .Write(DrawOrder)
                 .Write(Enabled);
         }
 
@@ -126,7 +67,6 @@ namespace Engine.ComponentSystem.Components
         {
             UID = packet.ReadInt32();
             UpdateOrder = packet.ReadInt32();
-            DrawOrder = packet.ReadInt32();
             Enabled = packet.ReadBoolean();
         }
 
@@ -171,7 +111,6 @@ namespace Engine.ComponentSystem.Components
                 // Other instance.
                 copy.UID = UID;
                 copy.UpdateOrder = UpdateOrder;
-                copy.DrawOrder = DrawOrder;
                 copy.Enabled = Enabled;
             }
 

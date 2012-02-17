@@ -1,8 +1,6 @@
 ﻿using System;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -15,17 +13,6 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Friction : AbstractComponent
     {
-        #region Logger
-
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Logger for game log (i.e. steps happening in a simulation).
-        /// </summary>
-        private static NLog.Logger gamelog = NLog.LogManager.GetLogger("GameLog.Friction");
-#endif
-
-        #endregion
-
         #region Fields
 
         /// <summary>
@@ -58,70 +45,6 @@ namespace Engine.ComponentSystem.Components
         public Friction()
             : this(0, 0)
         {
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Updates the velocity based on this friction.
-        /// </summary>
-        /// <param name="parameterization">The parameterization to use.</param>
-        public override void Update(object parameterization)
-        {
-            // Apply friction only if set to a positive value.
-            if (Value > 0)
-            {
-                // Get velocity.
-                var velocity = Entity.GetComponent<Velocity>();
-
-                // Only if a velocity is known.
-                if (velocity != null)
-                {
-#if DEBUG && GAMELOG
-                    if (Entity.Manager.GameLogEnabled)
-                    {
-                        gamelog.Trace("{0}: Friction = {1}, old Velocity = {2}", Entity.UID, Value, velocity.Value);
-                    }
-#endif
-
-                    // Save previous velocity for stop check (due to MinVelocity).
-                    var previousVelocity = velocity.Value.LengthSquared();
-
-                    // Apply friction.
-                    //velocity.Value = velocity.Value * (1 - Value);
-                    velocity.Value.X *= (1 - Value);
-                    velocity.Value.Y *= (1 - Value);
-
-                    // If we're below a certain minimum speed, just stop, otherwise
-                    // it'd be hard to. We only stop if we were faster than the minimum,
-                    // before application of friction. Otherwise we might have problems
-                    // getting moving at all, if the acceleration is too low.
-                    if (previousVelocity >= StopVelocity &&
-                        velocity.Value.LengthSquared() < StopVelocity)
-                    {
-                        velocity.Value = Vector2.Zero;
-                    }
-
-#if DEBUG && GAMELOG
-                    if (Entity.Manager.GameLogEnabled)
-                    {
-                        gamelog.Trace("new Velocity = {0}", velocity.Value);
-                    }
-#endif
-                }
-            }
-        }
-        
-        /// <summary>
-        /// Accepts <c>DefaultLogicParameterization</c>s.
-        /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
-        {
-            return parameterizationType == typeof(DefaultLogicParameterization);
         }
 
         #endregion

@@ -23,7 +23,7 @@ namespace Space.ComponentSystem.Systems
     /// re-generated procedurally whenever a cell gets re-activated.
     /// </para>
     /// </summary>
-    public sealed class UniverseSystem : AbstractSystem
+    public sealed class UniverseSystem : System
     {
         #region Properties
 
@@ -76,7 +76,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void HandleMessage<T>(ref T message)
+        public override void Receive<T>(ref T message)
         {
             if (message is CellStateChanged)
             {

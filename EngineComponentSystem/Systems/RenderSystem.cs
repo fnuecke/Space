@@ -1,92 +1,69 @@
-﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Parameterizations;
+﻿using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Systems
 {
     /// <summary>
-    /// Basic implementation of a render system. This is kept generic to allow
-    /// sub-classing with extended rendering configurations (see the particle
-    /// render system).
+    /// Basic implementation of a render system. Subclasses may override the
+    /// GetTranslation() method to implement camera positioning.
     /// </summary>
-    public class RenderSystem<TUpdateParameterization, TDrawParameterization>
-        : AbstractComponentSystem<TUpdateParameterization, TDrawParameterization>
-        where TUpdateParameterization : RendererUpdateParameterization, new()
-        where TDrawParameterization : RendererDrawParameterization, new()
+    public class RenderSystem : AbstractComponentSystem<TextureData>
     {
         #region Fields
 
         /// <summary>
-        /// The reusable parameterization.
+        /// The content manager used to load textures.
         /// </summary>
-        protected TUpdateParameterization _updateParameterization;
+        private ContentManager _content;
 
         /// <summary>
-        /// The reusable parameterization.
+        /// The sprite batch to render textures into.
         /// </summary>
-        protected TDrawParameterization _drawParameterization;
-
-        #endregion
-
-        #region Single-Allocation
-
-        /// <summary>
-        /// Reused for iterating components.
-        /// </summary>
-        private List<AbstractComponent> _reusableComponentList = new List<AbstractComponent>(1024);
+        private SpriteBatch _spriteBatch;
 
         #endregion
 
         #region Constructor
         
-        public RenderSystem(Game game, SpriteBatch spriteBatch)
+        public RenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
-            _updateParameterization = new TUpdateParameterization();
-            _updateParameterization.Game = game;
-            _updateParameterization.SpriteBatch = spriteBatch;
-
-            _drawParameterization = new TDrawParameterization();
-            _drawParameterization.SpriteBatch = spriteBatch;
-            _drawParameterization.Transform = Matrix.Identity;
+            _content = content;
+            _spriteBatch = spriteBatch;
         }
 
         #endregion
 
         #region Logic
 
-        public override void Update(long frame)
+        protected override void UpdateComponent(GameTime gameTime, long frame, TextureData component)
         {
-            // Set current frame.
-            _updateParameterization.Frame = frame;
-
-            _reusableComponentList.AddRange(UpdateableComponents);
-            foreach (var component in _reusableComponentList)
+            // Load our texture, if it's not set.
+            if (component.Texture == null)
             {
-                if (component.Enabled)
-                {
-                    component.Update(_updateParameterization);
-                }
+                component.Texture = _content.Load<Texture2D>(component.TextureName);
             }
-            _reusableComponentList.Clear();
-        }
 
-        public override void Draw(GameTime gameTime, long frame)
-        {
-            // Get translation, which may be overridden.
-            _drawParameterization.GameTime = gameTime;
-            _drawParameterization.Transform.Translation = GetTranslation();
+            // Get global render translation.
+            var translation = GetTranslation();
 
-            _reusableComponentList.AddRange(DrawableComponents);
-            foreach (var component in _reusableComponentList)
-            {
-                if (component.Enabled)
-                {
-                    component.Draw(_drawParameterization);
-                }
-            }
-            _reusableComponentList.Clear();
+            // Draw the texture based on its position.
+            var transform = component.Entity.GetComponent<Transform>();
+
+            // Get the rectangle at which we'll draw.
+            Vector2 origin;
+            origin.X = component.Texture.Width / 2f;
+            origin.Y = component.Texture.Height / 2f;
+
+            Vector2 position;
+            position.X = transform.Translation.X + translation.X;
+            position.Y = transform.Translation.Y + translation.Y;
+
+            // Draw.
+            _spriteBatch.Begin();
+            _spriteBatch.Draw(component.Texture, position, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
+            _spriteBatch.End();
         }
 
         /// <summary>
@@ -104,11 +81,12 @@ namespace Engine.ComponentSystem.Systems
 
         public override ISystem DeepCopy(ISystem into)
         {
-            var copy = (RenderSystem<TUpdateParameterization, TDrawParameterization>)base.DeepCopy(into);
+            var copy = (RenderSystem)base.DeepCopy(into);
 
-            if (copy != into)
+            if (copy == into)
             {
-                copy._reusableComponentList = new List<AbstractComponent>(1024);
+                copy._content = _content;
+                copy._spriteBatch = _spriteBatch;
             }
 
             return copy;

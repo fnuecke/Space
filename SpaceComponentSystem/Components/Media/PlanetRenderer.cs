@@ -14,7 +14,7 @@ namespace Space.ComponentSystem.Components
     /// Draws its atmosphere and shadow based on the sun it orbits.
     /// </para>
     /// </summary>
-    public sealed class PlanetRenderer : AbstractRenderer
+    public sealed class PlanetRenderer : TextureData
     {
         #region Fields
 
@@ -102,7 +102,7 @@ namespace Space.ComponentSystem.Components
                     _planet.SetCenter(position);
                     _planet.SetRotation(transform.Rotation);
                     _planet.SetSize(Scale * 2);
-                    _planet.SetSurfaceTexture(_texture);
+                    _planet.SetSurfaceTexture(Texture);
                     _planet.SetSurfaceTint(Tint);
                     _planet.SetAtmosphereTint(AtmosphereTint);
                     _planet.SetLightDirection(toSun);

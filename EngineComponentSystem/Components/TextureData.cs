@@ -1,23 +1,21 @@
-﻿using System;
-using Engine.ComponentSystem.Parameterizations;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.ComponentSystem.Components
 {
     /// <summary>
-    /// Base class for components responsible for rendering something. Keeps track of
-    /// a texture to use for rendering.
+    /// Graphics object holding information about a texture and how it should
+    /// base drawn.
     /// </summary>
-    public abstract class AbstractRenderer : AbstractComponent
+    public abstract class TextureData : AbstractComponent
     {
         #region Properties
         
         /// <summary>
         /// The name of the texture to use for rendering the physics object.
         /// </summary>
-        public string TextureName { get { return _textureName; } set { _textureName = value; _texture = null; } }
+        public string TextureName { get { return _textureName; } set { _textureName = value; Texture = null; } }
 
         #endregion
 
@@ -36,7 +34,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// The actual texture with the set name.
         /// </summary>
-        protected Texture2D _texture;
+        public Texture2D Texture;
 
         /// <summary>
         /// Actual texture name. Setter is used to invalidate the actual texture reference,
@@ -48,77 +46,31 @@ namespace Engine.ComponentSystem.Components
 
         #region Constructor
 
-        protected AbstractRenderer(string textureName, Color tint, float scale)
+        protected TextureData(string textureName, Color tint, float scale)
         {
             this.TextureName = textureName;
             this.Tint = tint;
             this.Scale = scale;
         }
         
-        protected AbstractRenderer(string textureName, Color tint)
+        protected TextureData(string textureName, Color tint)
             : this(textureName, tint, 1)
         {
         }
 
-        protected AbstractRenderer(string textureName, float scale)
+        protected TextureData(string textureName, float scale)
             : this(textureName, Color.White, scale)
         {
         }
 
-        protected AbstractRenderer(string textureName)
+        protected TextureData(string textureName)
             : this(textureName, Color.White)
         {
         }
 
-        protected AbstractRenderer()
+        protected TextureData()
             : this(string.Empty)
         {
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Used to load the actual texture.
-        /// </summary>
-        /// <param name="parameterization"></param>
-        public override void Update(object parameterization)
-        {
-            var args = (RendererUpdateParameterization)parameterization;
-
-            // Load our texture, if it's not set.
-            if (_texture == null)
-            {
-                // But only if we have a name, set, else return.
-                if (string.IsNullOrWhiteSpace(TextureName))
-                {
-                    return;
-                }
-                _texture = args.Game.Content.Load<Texture2D>(TextureName);
-            }
-        }
-
-        /// <summary>
-        /// Accepts <c>RendererParameterization</c>s.
-        /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
-        {
-            return parameterizationType == typeof(RendererUpdateParameterization) ||
-                parameterizationType.IsSubclassOf(typeof(RendererUpdateParameterization));
-        }
-
-        /// <summary>
-        /// Accepts <c>RendererParameterization</c>s.
-        /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsDrawParameterization(Type parameterizationType)
-        {
-            return parameterizationType == typeof(RendererDrawParameterization) ||
-                parameterizationType.IsSubclassOf(typeof(RendererDrawParameterization));
         }
 
         #endregion
@@ -172,13 +124,13 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            var copy = (AbstractRenderer)base.DeepCopy(into);
+            var copy = (TextureData)base.DeepCopy(into);
 
             if (copy == into)
             {
                 copy.Tint = Tint;
                 copy.Scale = Scale;
-                copy._texture = _texture;
+                copy.Texture = Texture;
                 copy._textureName = _textureName;
             }
 

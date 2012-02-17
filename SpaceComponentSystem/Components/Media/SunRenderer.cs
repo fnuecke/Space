@@ -5,7 +5,7 @@ using Space.Graphics;
 
 namespace Space.ComponentSystem.Components
 {
-    public sealed class SunRenderer : AbstractRenderer
+    public sealed class SunRenderer : TextureData
     {
         #region Fields
         

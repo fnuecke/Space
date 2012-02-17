@@ -48,7 +48,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Avatar entity tracking
 
-        public override void HandleMessage<T>(ref T message)
+        public override void Receive<T>(ref T message)
         {
             // Check if it was an entity added / removed message. If so, add or
             // remove all components of that entity.
@@ -56,14 +56,20 @@ namespace Engine.ComponentSystem.Systems
             {
                 foreach (var component in ((EntityAdded)(ValueType)message).Entity.Components)
                 {
-                    AddAvatar(component);
+                    if (component is Avatar)
+                    {
+                        AddAvatar((Avatar)component);
+                    }
                 }
             }
             else if (message is EntityRemoved)
             {
                 foreach (var component in ((EntityRemoved)(ValueType)message).Entity.Components)
                 {
-                    RemoveAvatar(component);
+                    if (component is Avatar)
+                    {
+                        RemoveAvatar((Avatar)component);
+                    }
                 }
             }
             else if (message is EntitiesCleared)
@@ -72,29 +78,30 @@ namespace Engine.ComponentSystem.Systems
             }
             else if (message is ComponentAdded)
             {
-                AddAvatar(((ComponentAdded)(ValueType)message).Component);
+                var addedMessage = (ComponentAdded)(ValueType)message;
+                if (addedMessage.Component is Avatar)
+                {
+                    AddAvatar((Avatar)addedMessage.Component);
+                }
             }
             else if (message is ComponentRemoved)
             {
-                RemoveAvatar(((ComponentAdded)(ValueType)message).Component);
+                var removedMessage = (ComponentRemoved)(ValueType)message;
+                if (removedMessage.Component is Avatar)
+                {
+                    RemoveAvatar((Avatar)removedMessage.Component);
+                }
             }
         }
 
-        private void AddAvatar(AbstractComponent component)
+        private void AddAvatar(Avatar avatar)
         {
-            if (component is Avatar)
-            {
-                var avatar = (Avatar)component;
-                _avatars[avatar.PlayerNumber] = avatar.Entity;
-            }
+            _avatars[avatar.PlayerNumber] = avatar.Entity;
         }
 
-        private void RemoveAvatar(AbstractComponent component)
+        private void RemoveAvatar(Avatar avatar)
         {
-            if (component is Avatar)
-            {
-                _avatars.Remove(((Avatar)component).PlayerNumber);
-            }
+            _avatars.Remove(((Avatar)avatar).PlayerNumber);
         }
 
         #endregion

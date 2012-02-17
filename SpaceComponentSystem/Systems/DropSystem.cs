@@ -11,7 +11,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages Item Drops
     /// </summary>
-    public class DropSystem : AbstractSystem
+    public class DropSystem : System
     {
         #region Fields
 

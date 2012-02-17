@@ -12,5 +12,10 @@ namespace Engine.ComponentSystem.Messages
         /// The previous translation.
         /// </summary>
         public Vector2 PreviousPosition;
+
+        /// <summary>
+        /// The entity of which the position changed.
+        /// </summary>
+        public Entity Entity;
     }
 }

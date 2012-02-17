@@ -169,7 +169,7 @@ namespace Engine.ComponentSystem
         {
             foreach (var system in _systems)
             {
-                system.HandleMessage(ref message);
+                system.Receive(ref message);
             }
         }
 

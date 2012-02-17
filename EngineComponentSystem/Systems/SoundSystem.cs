@@ -146,7 +146,7 @@ namespace Engine.ComponentSystem.Systems
             // Get new current frame.
             lock (_recentlyPlayed)
             {
-                _lastFrame[0] = System.Math.Max(frame, _lastFrame[0]);
+                _lastFrame[0] = AbstractSystem.Math.Max(frame, _lastFrame[0]);
 
                 // Remove sound events that are too old, and clean out the
                 // "recently played" list.

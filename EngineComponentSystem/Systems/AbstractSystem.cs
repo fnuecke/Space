@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -15,19 +14,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The component system manager this system is part of.
         /// </summary>
-        public virtual ISystemManager Manager { get; set; }
-
-        /// <summary>
-        /// Tells if this component system should be packetized and sent via
-        /// the network (server to client). This should only be true for logic
-        /// related systems, that affect functionality that has to work exactly
-        /// the same on both server and client.
-        /// 
-        /// <para>
-        /// If the game has no network functionality, this flag is irrelevant.
-        /// </para>
-        /// </summary>
-        public bool ShouldSynchronize { get; protected set; }
+        public ISystemManager Manager { get; set; }
 
         #endregion
 
@@ -36,17 +23,9 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Default implementation does nothing.
         /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public virtual void Update(long frame)
-        {
-        }
-
-        /// <summary>
-        /// Default implementation does nothing.
-        /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public virtual void Draw(GameTime gameTime, long frame)
+        public virtual void Update(GameTime gameTime, long frame)
         {
         }
 
@@ -62,7 +41,7 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <param name="message">The sent message.</param>
-        public virtual void HandleMessage<T>(ref T message) where T : struct
+        public virtual void Receive<T>(ref T message) where T : struct
         {
         }
 
@@ -83,7 +62,7 @@ namespace Engine.ComponentSystem.Systems
         /// </returns>
         public virtual Packet Packetize(Packet packet)
         {
-            throw new NotSupportedException();
+            return packet;
         }
 
         /// <summary>
@@ -96,7 +75,6 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="packet">The packet to read from.</param>
         public virtual void Depacketize(Packet packet)
         {
-            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -151,16 +129,9 @@ namespace Engine.ComponentSystem.Systems
             // No manager at first. Must be re-set (e.g. in cloned manager).
             copy.Manager = null;
 
-            // Copy fields if it's not a clone.
-            if (copy == into)
-            {
-                copy.ShouldSynchronize = ShouldSynchronize;
-            }
-
             return copy;
         }
 
         #endregion
-
     }
 }

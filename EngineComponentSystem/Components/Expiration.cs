@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Parameterizations;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -29,36 +28,6 @@ namespace Engine.ComponentSystem.Components
         public Expiration()
             : this(0)
         {
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Decrements TTL by one and checks if we're past the expiration date.
-        /// </summary>
-        /// <param name="parameterization">Not used.</param>
-        public override void Update(object parameterization)
-        {
-            if (TimeToLive > 0)
-            {
-                --TimeToLive;
-            }
-            else if (Entity != null)
-            {
-                Entity.Manager.RemoveEntity(Entity);
-            }
-        }
-
-        /// <summary>
-        /// Accepts <c>DefaultLogicParameterization</c>s.
-        /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
-        {
-            return parameterizationType == typeof(DefaultLogicParameterization);
         }
 
         #endregion

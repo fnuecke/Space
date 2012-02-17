@@ -21,7 +21,7 @@ namespace Space.ComponentSystem.Systems
     /// neighbor search).
     /// </para>
     /// </summary>
-    public class CellSystem : AbstractSystem
+    public class CellSystem : System
     {
         #region Constants
 

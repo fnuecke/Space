@@ -12,7 +12,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages spawning dynamic objects for cells, such as random ships.
     /// </summary>
-    public sealed class ShipsSpawnSystem : AbstractSystem
+    public sealed class ShipsSpawnSystem : System
     {
         #region Fields
 
@@ -64,7 +64,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The message.</param>
-        public override void HandleMessage<T>(ref T message)
+        public override void Receive<T>(ref T message)
         {
             if (message is CellStateChanged)
             {

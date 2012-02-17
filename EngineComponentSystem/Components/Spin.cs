@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -33,34 +32,6 @@ namespace Engine.ComponentSystem.Components
         public Spin()
             : this(0)
         {
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Updates the rotation based on this spin.
-        /// </summary>
-        /// <param name="parameterization">The parameterization to use.</param>
-        public override void Update(object parameterization)
-        {
-            // Apply rotation if transform is available.
-            var transform = Entity.GetComponent<Transform>();
-            if (transform != null)
-            {
-                transform.AddRotation(Value);
-            }
-        }
-
-        /// <summary>
-        /// Accepts <c>DefaultLogicParameterization</c>s.
-        /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
-        {
-            return parameterizationType == typeof(DefaultLogicParameterization);
         }
 
         #endregion
