@@ -117,7 +117,82 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AccelerationForce" xml:space="preserve">
+    <value>Speedy</value>
+  </data>
+  <data name="Armor" xml:space="preserve">
+    <value>Tenable</value>
+  </data>
+  <data name="BasicArmor" xml:space="preserve">
+    <value>Basic Armor</value>
+  </data>
+  <data name="BasicReactor" xml:space="preserve">
+    <value>Basic Reactor</value>
+  </data>
+  <data name="BasicSensor" xml:space="preserve">
+    <value>Basic Sensor</value>
+  </data>
+  <data name="BasicShield" xml:space="preserve">
+    <value>Basic Shield</value>
+  </data>
+  <data name="BasicThruster" xml:space="preserve">
+    <value>Basic Thruster</value>
+  </data>
+  <data name="BasicWeapon" xml:space="preserve">
+    <value>Basic Weapon</value>
+  </data>
+  <data name="Energy" xml:space="preserve">
+    <value>Energetic</value>
+  </data>
+  <data name="EnergyRegeneration" xml:space="preserve">
+    <value>Enduring</value>
+  </data>
+  <data name="Health" xml:space="preserve">
+    <value>Healthy</value>
+  </data>
+  <data name="HealthRegeneration" xml:space="preserve">
+    <value>Vital</value>
+  </data>
+  <data name="Mass" xml:space="preserve">
+    <value>Heavy</value>
+  </data>
+  <data name="RotationForce" xml:space="preserve">
+    <value>Rotating</value>
+  </data>
+  <data name="SensorRange" xml:space="preserve">
+    <value>Farseeing</value>
+  </data>
+  <data name="ShieldEfficiency" xml:space="preserve">
+    <value>Protective</value>
+  </data>
+  <data name="ShieldEnergyConsumption" xml:space="preserve">
+    <value />
+  </data>
   <data name="StarterArmor" xml:space="preserve">
     <value>Starter Armor</value>
+  </data>
+  <data name="StarterReactor" xml:space="preserve">
+    <value>Starter Reactor</value>
+  </data>
+  <data name="StarterSensor" xml:space="preserve">
+    <value>Starter Sensor</value>
+  </data>
+  <data name="StarterShield" xml:space="preserve">
+    <value>Starter Shield</value>
+  </data>
+  <data name="StarterThruster" xml:space="preserve">
+    <value>Starter Thruster</value>
+  </data>
+  <data name="StarterWeapon" xml:space="preserve">
+    <value>Starter Weapon</value>
+  </data>
+  <data name="ThrusterEnergyConsumption" xml:space="preserve">
+    <value />
+  </data>
+  <data name="WeaponCooldown" xml:space="preserve">
+    <value />
+  </data>
+  <data name="WeaponEnergyConsumption" xml:space="preserve">
+    <value />
   </data>
 </root>

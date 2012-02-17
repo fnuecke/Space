@@ -19,10 +19,6 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public ItemQuality Quality;
 
-        /// <summary>
-        /// The Name of the Item which shall be Displayed
-        /// </summary>
-        public string DisplayName;
         #endregion
 
         #region Constructor
@@ -38,7 +34,7 @@ namespace Space.ComponentSystem.Components
         {
             this.Quality = quality;
         }
-        
+
         /// <summary>
         /// For deserialization.
         /// </summary>
@@ -74,43 +70,35 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Calculates the Name of the Item according to the attributes.
         /// </summary>
-        /// <param name="item"></param>
-        protected void CalculateName()
+        public string GetDisplayName()
         {
-            DisplayName = "";
-            var list = new List<AttributeModifier<AttributeType> >();
-            // Add attributes.
-            foreach (var component in Entity.Components)
+            var DisplayName = "";
+            //unique items dont need prefix
+            if (Quality != ItemQuality.Unique)
             {
-                if (component is Attribute<AttributeType>)
+                var maxValue = float.MinValue;
+                var type = AttributeType.None;
+                // Go throug all Attributes and calculate highest ranking
+                foreach (var component in Entity.Components)
                 {
-                    list.Add(((Attribute<AttributeType>)component).Modifier);
+                    if (component is Attribute<AttributeType>)
+                    {
+
+                        var attribute = (((Attribute<AttributeType>)component).Modifier);
+                        //check if we have a new Max Value
+                        if (attribute.Type.GetValue(attribute.Value) > maxValue)
+                        {
+                            maxValue = attribute.Type.GetValue(attribute.Value);
+                            type = attribute.Type;
+                        }
+                    }
                 }
+                if (type != AttributeType.None)
+                    DisplayName = type.ToNameString() + " ";
             }
-            if (this is Armor)
-            {
-                DisplayName+= ItemNames.StarterArmor
-            }
-            else if (this is Reactor)
-            {
+            DisplayName += ItemNames.ResourceManager.GetString(Name) ?? ("!!" + Name + "!!");
 
-            }
-            else if (this is Sensor)
-            {
-
-            }
-            else if (this is Shield)
-            {
-
-            }
-            else if (this is Thruster)
-            {
-
-            }
-            else if (this is Weapon)
-            {
-
-            }
+            return DisplayName;
         }
         #endregion
 
