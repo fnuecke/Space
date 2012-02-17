@@ -224,7 +224,7 @@ namespace Space.ComponentSystem
             entity.AddComponent(new EllipsePath(center.UID, orbitRadius, orbitRadius, 0, period, 0));
             entity.AddComponent(new Index(Detectable.IndexGroup | CellSystem.CellDeathAutoRemoveIndex));
             entity.AddComponent(new Detectable("Textures/Stolen/Ships/sensor_array_dish"));
-            entity.AddComponent(new SpawnComponent());
+            entity.AddComponent(new ShipSpawner());
             entity.AddComponent(renderer);
 
             return entity;

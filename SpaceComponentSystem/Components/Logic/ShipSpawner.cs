@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Components
     /// Gives an entity the ability to spawn other entities in a regular
     /// interval.
     /// </summary>
-    public sealed class SpawnComponent : AbstractComponent
+    public sealed class ShipSpawner : AbstractComponent
     {
         #region Fields
         
@@ -152,7 +152,7 @@ namespace Space.ComponentSystem.Components
 
         public override AbstractComponent DeepCopy(AbstractComponent into)
         {
-            var copy = (SpawnComponent)base.DeepCopy(into);
+            var copy = (ShipSpawner)base.DeepCopy(into);
 
             if (copy == into)
             {

@@ -183,7 +183,7 @@ namespace Space.ComponentSystem.Systems
                                     foreach (var stationId in _cellInfo[id].Stations)
                                     {
                                         var spawn = Manager.EntityManager.GetEntity(stationId).
-                                            GetComponent<SpawnComponent>();
+                                            GetComponent<ShipSpawner>();
                                         foreach (var otherStationId in stations)
                                         {
                                             spawn.Targets.Add(otherStationId);
@@ -193,7 +193,7 @@ namespace Space.ComponentSystem.Systems
                                     foreach (var stationId in stations)
                                     {
                                         var spawner = Manager.EntityManager.GetEntity(stationId).
-                                            GetComponent<SpawnComponent>();
+                                            GetComponent<ShipSpawner>();
                                         foreach (var otherStationId in _cellInfo[id].Stations)
                                         {
                                             spawner.Targets.Add(otherStationId);

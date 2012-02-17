@@ -79,16 +79,16 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The current behaviour
         /// </summary>
-        private Behaviour _currentbehaviour;
+        private Behaviour _currentBehaviour;
 
-        private Dictionary<Behaviour.Behaviours, Behaviour> behaviours = new Dictionary<Behaviour.Behaviours, Behaviour>();
+        private Dictionary<Behaviour.Behaviours, Behaviour> _behaviours = new Dictionary<Behaviour.Behaviours, Behaviour>();
 
         /// <summary>
         /// A counter used to only update every few milliseconds
         /// </summary>
-        private int counter;
+        private int _counter;
 
-        private bool returning;
+        private bool _returning;
 
         #endregion
 
@@ -96,10 +96,10 @@ namespace Space.ComponentSystem.Components
 
         public AiComponent(AiCommand command)
         {
-            behaviours.Add(Behaviour.Behaviours.Patrol, new PatrolBehaviour(this));
-            behaviours.Add(Behaviour.Behaviours.Move, new MoveBehaviour(this));
-            behaviours.Add(Behaviour.Behaviours.Attack, new AttackBehaviour(this));
             Command = command;
+            _behaviours.Add(Behaviour.Behaviours.Patrol, new PatrolBehaviour(this));
+            _behaviours.Add(Behaviour.Behaviours.Move, new MoveBehaviour(this));
+            _behaviours.Add(Behaviour.Behaviours.Attack, new AttackBehaviour(this));
             SwitchOrder();
         }
 
@@ -113,10 +113,10 @@ namespace Space.ComponentSystem.Components
 
         public override void Update(object parameterization)
         {
-            if (counter % 10 == 0)
+            if (_counter % 10 == 0)
             {
                 CalculateBehaviour();
-                _currentbehaviour.Update();
+                _currentBehaviour.Update();
             }
         }
 
@@ -130,13 +130,13 @@ namespace Space.ComponentSystem.Components
             var position = info.Position;
 
             //check if there are enemys in the erea
-            if (_currentbehaviour is PatrolBehaviour)
+            if (_currentBehaviour is PatrolBehaviour)
             {
                 CheckNeighbours(ref position, ref position);
             }
-            else if (_currentbehaviour is AttackBehaviour)
+            else if (_currentBehaviour is AttackBehaviour)
             {
-                var attack = (AttackBehaviour)_currentbehaviour;
+                var attack = (AttackBehaviour)_currentBehaviour;
                 if (attack.TargetDead)
                 {
                     CheckAndSwitchToMoveBehaviour(ref position);
@@ -165,26 +165,26 @@ namespace Space.ComponentSystem.Components
                     return;
                 }
 
-                if ((position - ((AttackBehaviour)_currentbehaviour).StartPosition).Length() > Command.MaxDistance)
+                if ((position - ((AttackBehaviour)_currentBehaviour).StartPosition).Length() > Command.MaxDistance)
                 {
-                    var move = (MoveBehaviour)behaviours[Behaviour.Behaviours.Move];
+                    var move = (MoveBehaviour)_behaviours[Behaviour.Behaviours.Move];
                     move.Target = 0;
-                    move.TargetPosition = ((AttackBehaviour)_currentbehaviour).StartPosition;
-                    _currentbehaviour = move;
-                    returning = true;
+                    move.TargetPosition = ((AttackBehaviour)_currentBehaviour).StartPosition;
+                    _currentBehaviour = move;
+                    _returning = true;
                     return;
                 }
             }
-            else if (_currentbehaviour is MoveBehaviour)
+            else if (_currentBehaviour is MoveBehaviour)
             {
-                if (returning)
+                if (_returning)
                 {
-                    var target = ((MoveBehaviour)_currentbehaviour).TargetPosition;
+                    var target = ((MoveBehaviour)_currentBehaviour).TargetPosition;
                     if ((target - position).Length() < 200)
                     {
                         SwitchOrder();
-                        if (!(_currentbehaviour is MoveBehaviour))
-                            returning = false;
+                        if (!(_currentBehaviour is MoveBehaviour))
+                            _returning = false;
                     }
 
                     return;
@@ -196,19 +196,19 @@ namespace Space.ComponentSystem.Components
 
         private void CheckAndSwitchToMoveBehaviour(ref Vector2 position)
         {
-            var startposition = ((AttackBehaviour)_currentbehaviour).StartPosition;
+            var startposition = ((AttackBehaviour)_currentBehaviour).StartPosition;
             if (CheckNeighbours(ref position, ref startposition)) return;
 
-            var move = (MoveBehaviour)behaviours[Behaviour.Behaviours.Move];
+            var move = (MoveBehaviour)_behaviours[Behaviour.Behaviours.Move];
             move.TargetPosition = startposition;
             move.Target = 0;
-            _currentbehaviour = move;
+            _currentBehaviour = move;
         }
 
         private bool CheckNeighbours(ref Vector2 position, ref Vector2 startPosition)
         {
             //TODO only check every second or so
-            if ((counter %= 60) == 0)
+            if ((_counter %= 60) == 0)
             {
                 var currentFaction = Entity.GetComponent<Faction>().Value;
                 var index = Entity.Manager.SystemManager.GetSystem<IndexSystem>();
@@ -227,10 +227,10 @@ namespace Space.ComponentSystem.Components
 
                     if ((faction.Value & currentFaction) == 0)
                     {
-                        var attack = (AttackBehaviour)behaviours[Behaviour.Behaviours.Attack];
+                        var attack = (AttackBehaviour)_behaviours[Behaviour.Behaviours.Attack];
                         attack.TargetEntity = neighbor.UID;
                         attack.TargetDead = false;
-                        _currentbehaviour = attack;
+                        _currentBehaviour = attack;
                         attack.StartPosition = startPosition;
                         return true;
                     }
@@ -248,10 +248,10 @@ namespace Space.ComponentSystem.Components
             switch (Command.order)
             {
                 case (Order.Guard):
-                    _currentbehaviour = (PatrolBehaviour)behaviours[Behaviour.Behaviours.Patrol];
+                    _currentBehaviour = (PatrolBehaviour)_behaviours[Behaviour.Behaviours.Patrol];
                     break;
                 case (Order.Move):
-                    var behaviour = (MoveBehaviour)behaviours[Behaviour.Behaviours.Move];
+                    var behaviour = (MoveBehaviour)_behaviours[Behaviour.Behaviours.Move];
                     if (Command.TargetEntity == 0)
                     {
                         behaviour.TargetPosition = Command.Target;
@@ -260,11 +260,11 @@ namespace Space.ComponentSystem.Components
                     {
                         behaviour.Target = Command.TargetEntity;
                     }
-                    _currentbehaviour = behaviour;
+                    _currentBehaviour = behaviour;
                     break;
 
                 default:
-                    _currentbehaviour = (PatrolBehaviour)behaviours[Behaviour.Behaviours.Patrol];
+                    _currentBehaviour = (PatrolBehaviour)_behaviours[Behaviour.Behaviours.Patrol];
                     break;
             }
         }
@@ -273,17 +273,17 @@ namespace Space.ComponentSystem.Components
         {
             if (message is EntityRemoved)
             {
-                if (_currentbehaviour is AttackBehaviour)
+                if (_currentBehaviour is AttackBehaviour)
                 {
-                    var beh = (AttackBehaviour)_currentbehaviour;
+                    var beh = (AttackBehaviour)_currentBehaviour;
                     if (((EntityRemoved)((ValueType)message)).Entity.UID == beh.TargetEntity)
                     {
                         beh.TargetDead = true;
                     }
                 }
-                else if (_currentbehaviour is MoveBehaviour)
+                else if (_currentBehaviour is MoveBehaviour)
                 {
-                    var beh = (MoveBehaviour)_currentbehaviour;
+                    var beh = (MoveBehaviour)_currentBehaviour;
                     if (((EntityRemoved)((ValueType)message)).Entity.UID == beh.Target)
                     {
                         beh.Target = 0;
@@ -322,19 +322,19 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .WriteWithTypeInfo(_currentbehaviour)
+                .WriteWithTypeInfo(_currentBehaviour)
                 .Write(Command)
-                .Write(counter);
+                .Write(_counter);
         }
 
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
 
-            _currentbehaviour = packet.ReadPacketizableWithTypeInfo<Behaviour>();
-            _currentbehaviour.AiComponent = this;
+            _currentBehaviour = packet.ReadPacketizableWithTypeInfo<Behaviour>();
+            _currentBehaviour.AiComponent = this;
             Command = packet.ReadPacketizable<AiCommand>();
-            counter = packet.ReadInt32();
+            _counter = packet.ReadInt32();
         }
 
         public override AbstractComponent DeepCopy(AbstractComponent into)
@@ -344,12 +344,16 @@ namespace Space.ComponentSystem.Components
             if (copy == into)
             {
                 copy.Command = Command;
-                copy._currentbehaviour = _currentbehaviour.DeepCopy(copy._currentbehaviour);
-                copy.counter = counter;
+                copy._currentBehaviour = _currentBehaviour.DeepCopy(copy._currentBehaviour);
+                copy._counter = _counter;
             }
             else
             {
-                copy._currentbehaviour = _currentbehaviour.DeepCopy();
+                copy._currentBehaviour = _currentBehaviour.DeepCopy();
+                copy._behaviours = new Dictionary<Behaviour.Behaviours, Behaviour>();
+                copy._behaviours.Add(Behaviour.Behaviours.Patrol, new PatrolBehaviour(copy));
+                copy._behaviours.Add(Behaviour.Behaviours.Move, new MoveBehaviour(copy));
+                copy._behaviours.Add(Behaviour.Behaviours.Attack, new AttackBehaviour(copy));
             }
 
             return copy;

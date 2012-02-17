@@ -117,7 +117,7 @@
     <Compile Include="Components\Logic\Drops.cs" />
     <Compile Include="Components\Logic\PlayerClass.cs" />
     <Compile Include="Components\Items\Consumables\RepairKit.cs" />
-    <Compile Include="Components\AI\SpawnComponent.cs" />
+    <Compile Include="Components\Logic\ShipSpawner.cs" />
     <Compile Include="Components\Logic\Target.cs" />
     <Compile Include="Components\Util\Detectable.cs" />
     <Compile Include="Components\Media\Effect.cs" />
