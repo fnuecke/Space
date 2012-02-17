@@ -421,7 +421,7 @@ namespace Engine.Collections
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
             Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
-                ref point, range * range, result);
+                ref point, range, result);
 
             return result;
         }
@@ -808,16 +808,28 @@ namespace Engine.Collections
         /// <param name="size">The size of the current node.</param>
         /// <param name="node">The current node.</param>
         /// <param name="point">The query point.</param>
-        /// <param name="rangeSquared">The squared query range.</param>
+        /// <param name="range">The query range.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float rangeSquared, List<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range, List<T> list)
         {
-            if (Intersect(ref point, rangeSquared, x, y, size))
+            var intersectionType = ComputeIntersection(ref point, range, x, y, size);
+            if (intersectionType == IntersectionType.Contained)
+            {
+                // Box completely contained in query, return all points in it,
+                // no need to recurse further.
+                for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
+                {
+                    // No need for a range check at this point.
+                    list.Add(entry.Value.Value);
+                }
+            }
+            else if (intersectionType == IntersectionType.Overlapping)
             {
                 // Node intersects with the query.
                 if (node.IsLeaf)
                 {
                     // Add all entries in this node that are in range.
+                    float rangeSquared = range * range;
                     for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
                     {
                         float distanceX = point.X - entry.Value.Point.X;
@@ -840,11 +852,33 @@ namespace Engine.Collections
                                 x + (((i & 1) == 0) ? 0 : childSize),
                                 y + (((i & 2) == 0) ? 0 : childSize),
                                 childSize, node.Children[i],
-                                ref point, rangeSquared, list);
+                                ref point, range, list);
                         }
                     }
                 }
             }
+            // else: No intersection.
+        }
+
+        /// <summary>
+        /// Possible intersection types of geometric shapes.
+        /// </summary>
+        private enum IntersectionType
+        {
+            /// <summary>
+            /// The shapes are cleanly separated from each other.
+            /// </summary>
+            Separated,
+
+            /// <summary>
+            /// The two shapes are overlapping each other.
+            /// </summary>
+            Overlapping,
+
+            /// <summary>
+            /// One shape is completely contained within the other.
+            /// </summary>
+            Contained
         }
 
         /// <summary>
@@ -855,9 +889,19 @@ namespace Engine.Collections
         /// <param name="x">The x position of the box.</param>
         /// <param name="y">The y position of the box.</param>
         /// <param name="size">The size of the box.</param>
-        /// <returns>Whether the two intersect or not.</returns>
-        private static bool Intersect(ref Vector2 center, float radiusSquared, int x, int y, int size)
+        /// <returns>How the two intersect.</returns>
+        private static IntersectionType ComputeIntersection(ref Vector2 center, float radius, int x, int y, int size)
         {
+            // Check for axis aligned separation.
+            if (x + size < center.X - radius ||
+                y + size < center.Y - radius ||
+                x > center.X + radius ||
+                y > center.Y + radius)
+            {
+                return IntersectionType.Separated;
+            }
+
+            // Check for unaligned separation.
             Vector2 closest = center;
             if (center.X < x)
             {
@@ -877,8 +921,57 @@ namespace Engine.Collections
             }
             float distanceX = closest.X - center.X;
             float distanceY = closest.Y - center.Y;
-            return (distanceX * distanceX + distanceY * distanceY) <= radiusSquared;
+            if ((distanceX * distanceX + distanceY * distanceY) > radius * radius)
+            {
+                return IntersectionType.Separated;
+            }
+
+            // At least intersection, check furthest point to check if the
+            // box is contained within the circle.
+            distanceX = System.Math.Max(center.X - x, x + size - center.X);
+            distanceY = System.Math.Max(center.Y - y, y + size - center.Y);
+            if ((distanceX * distanceX + distanceY * distanceY) > radius * radius)
+            {
+                return IntersectionType.Overlapping;
+            }
+            else
+            {
+                return IntersectionType.Contained;
+            }
         }
+
+        ///// <summary>
+        ///// Circle / Box intersection test.
+        ///// </summary>
+        ///// <param name="center">The center of the circle.</param>
+        ///// <param name="radiusSquared">The squared radius of the circle.</param>
+        ///// <param name="x">The x position of the box.</param>
+        ///// <param name="y">The y position of the box.</param>
+        ///// <param name="size">The size of the box.</param>
+        ///// <returns>Whether the two intersect or not.</returns>
+        //private static bool Intersect(ref Vector2 center, float radiusSquared, int x, int y, int size)
+        //{
+        //    Vector2 closest = center;
+        //    if (center.X < x)
+        //    {
+        //        closest.X = x;
+        //    }
+        //    else if (center.X > x + size)
+        //    {
+        //        closest.X = x + size;
+        //    }
+        //    if (center.Y < y)
+        //    {
+        //        closest.Y = y;
+        //    }
+        //    else if (center.Y > y + size)
+        //    {
+        //        closest.Y = y + size;
+        //    }
+        //    float distanceX = closest.X - center.X;
+        //    float distanceY = closest.Y - center.Y;
+        //    return (distanceX * distanceX + distanceY * distanceY) <= radiusSquared;
+        //}
 
         #endregion
 

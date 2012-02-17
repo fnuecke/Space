@@ -562,5 +562,17 @@ namespace Space
             _spriteBatch.Draw(_scene, GraphicsDevice.PresentationParameters.Bounds, Color.White);
             _spriteBatch.End();
         }
+
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main(string[] args)
+        {
+            using (Spaaace game = new Spaaace())
+            {
+                game.Run();
+            }
+        }
     }
 }

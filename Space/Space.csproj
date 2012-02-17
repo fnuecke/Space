@@ -197,7 +197,6 @@
     <Compile Include="Simulation\Commands\PlayerInputCommand.cs" />
     <Compile Include="Simulation\Commands\SpaceCommandHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Program.cs" />
     <Compile Include="ScreenManagement\GameScreen.cs" />
     <Compile Include="ScreenManagement\InputState.cs" />
     <Compile Include="ScreenManagement\ScreenManager.cs" />
