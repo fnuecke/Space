@@ -6,11 +6,11 @@ using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Components.AIBehaviour;
+using Space.ComponentSystem.Components.Behaviours;
 
 namespace Space.ComponentSystem.Components
 {
-    sealed class AiComponent : AbstractComponent
+    public sealed class AiComponent : AbstractComponent
     {
         #region Types
 
@@ -30,20 +30,24 @@ namespace Space.ComponentSystem.Components
             public Order order;
 
             public int OriginEntity;
+
             public int TargetEntity;
+
             public AiCommand(Vector2 target, int maxDistance, Order order)
             {
                 Target = target;
                 MaxDistance = maxDistance;
                 this.order = order;
             }
-            public AiCommand(int target, int maxDistance, Order order,int origin = 0)
+
+            public AiCommand(int target, int maxDistance, Order order, int origin = 0)
             {
                 TargetEntity = target;
                 MaxDistance = maxDistance;
                 this.order = order;
                 OriginEntity = origin;
             }
+
             public AiCommand()
             {
             }
@@ -78,12 +82,14 @@ namespace Space.ComponentSystem.Components
         private Behaviour _currentbehaviour;
 
         private Dictionary<Behaviour.Behaviours, Behaviour> behaviours = new Dictionary<Behaviour.Behaviours, Behaviour>();
+
         /// <summary>
         /// A counter used to only update every few milliseconds
         /// </summary>
         private int counter;
 
         private bool returning;
+
         #endregion
 
         #region Constructor
@@ -136,13 +142,14 @@ namespace Space.ComponentSystem.Components
                     CheckAndSwitchToMoveBehaviour(ref position);
                     return;
                 }
-                var targetEntity = Entity.Manager.GetEntity(attack.TargetEntity);
 
+                var targetEntity = Entity.Manager.GetEntity(attack.TargetEntity);
                 if (targetEntity == null)
                 {
                     CheckAndSwitchToMoveBehaviour(ref position);
                     return;
                 }
+
                 var health = targetEntity.GetComponent<Health>();
                 var transform = targetEntity.GetComponent<Transform>();
                 if (health == null || health.Value == 0 || transform == null)
@@ -157,16 +164,16 @@ namespace Space.ComponentSystem.Components
                     CheckAndSwitchToMoveBehaviour(ref position);
                     return;
                 }
+
                 if ((position - ((AttackBehaviour)_currentbehaviour).StartPosition).Length() > Command.MaxDistance)
                 {
-                    var move =(MoveBehaviour) behaviours[Behaviour.Behaviours.Move];
+                    var move = (MoveBehaviour)behaviours[Behaviour.Behaviours.Move];
                     move.Target = 0;
-                    move.TargetPosition =((AttackBehaviour)_currentbehaviour).StartPosition;
+                    move.TargetPosition = ((AttackBehaviour)_currentbehaviour).StartPosition;
                     _currentbehaviour = move;
                     returning = true;
                     return;
                 }
-
             }
             else if (_currentbehaviour is MoveBehaviour)
             {
@@ -179,9 +186,10 @@ namespace Space.ComponentSystem.Components
                         if (!(_currentbehaviour is MoveBehaviour))
                             returning = false;
                     }
-                        
+
                     return;
                 }
+
                 CheckNeighbours(ref position, ref position);
             }
         }
@@ -190,9 +198,10 @@ namespace Space.ComponentSystem.Components
         {
             var startposition = ((AttackBehaviour)_currentbehaviour).StartPosition;
             if (CheckNeighbours(ref position, ref startposition)) return;
-           var move =(MoveBehaviour) behaviours[Behaviour.Behaviours.Move];
+
+            var move = (MoveBehaviour)behaviours[Behaviour.Behaviours.Move];
             move.TargetPosition = startposition;
-            move.Target = 0;               
+            move.Target = 0;
             _currentbehaviour = move;
         }
 
@@ -205,14 +214,17 @@ namespace Space.ComponentSystem.Components
                 var index = Entity.Manager.SystemManager.GetSystem<IndexSystem>();
                 if (index == null) return false;
                 foreach (var neighbor in index.
-               GetNeighbors(ref position, 3000, Detectable.IndexGroup))
+                    GetNeighbors(ref position, 3000, Detectable.IndexGroup))
                 {
                     var transform = neighbor.GetComponent<Transform>();
                     if (transform == null) continue;
+
                     var health = neighbor.GetComponent<Health>();
                     if (health == null || health.Value == 0) continue;
+
                     var faction = neighbor.GetComponent<Faction>();
                     if (faction == null) continue;
+
                     if ((faction.Value & currentFaction) == 0)
                     {
                         var attack = (AttackBehaviour)behaviours[Behaviour.Behaviours.Attack];
@@ -236,17 +248,20 @@ namespace Space.ComponentSystem.Components
             switch (Command.order)
             {
                 case (Order.Guard):
-                    _currentbehaviour = (PatrolBehaviour) behaviours[Behaviour.Behaviours.Patrol];
+                    _currentbehaviour = (PatrolBehaviour)behaviours[Behaviour.Behaviours.Patrol];
                     break;
                 case (Order.Move):
                     var behaviour = (MoveBehaviour)behaviours[Behaviour.Behaviours.Move];
                     if (Command.TargetEntity == 0)
+                    {
                         behaviour.TargetPosition = Command.Target;
+                    }
                     else
+                    {
                         behaviour.Target = Command.TargetEntity;
+                    }
                     _currentbehaviour = behaviour;
                     break;
-
 
                 default:
                     _currentbehaviour = (PatrolBehaviour)behaviours[Behaviour.Behaviours.Patrol];
@@ -258,35 +273,34 @@ namespace Space.ComponentSystem.Components
         {
             if (message is EntityRemoved)
             {
-
-
                 if (_currentbehaviour is AttackBehaviour)
                 {
                     var beh = (AttackBehaviour)_currentbehaviour;
                     if (((EntityRemoved)((ValueType)message)).Entity.UID == beh.TargetEntity)
+                    {
                         beh.TargetDead = true;
+                    }
                 }
-                else if (_currentbehaviour is MoveBehaviour )
+                else if (_currentbehaviour is MoveBehaviour)
                 {
                     var beh = (MoveBehaviour)_currentbehaviour;
                     if (((EntityRemoved)((ValueType)message)).Entity.UID == beh.Target)
                     {
                         beh.Target = 0;
                     }
-
-
                 }
                 if (Command.OriginEntity == ((EntityRemoved)((ValueType)message)).Entity.UID)
                     Command.OriginEntity = 0;
                 if (Command.TargetEntity == ((EntityRemoved)((ValueType)message)).Entity.UID)
                 {
                     if (Command.OriginEntity == 0)
+                    {
                         Entity.Manager.RemoveEntity(Entity);
+                    }
                     else
+                    {
                         Command.TargetEntity = Command.OriginEntity;
-                    
-                        
-
+                    }
                 }
             }
         }
@@ -311,7 +325,6 @@ namespace Space.ComponentSystem.Components
                 .WriteWithTypeInfo(_currentbehaviour)
                 .Write(Command)
                 .Write(counter);
-
         }
 
         public override void Depacketize(Packet packet)

@@ -10,9 +10,9 @@ using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Util;
 using Space.Data;
 
-namespace Space.ComponentSystem.Entities
+namespace Space.ComponentSystem
 {
-    static class EntityFactory
+    public static class EntityFactory
     {
         /// <summary>
         /// Creates a new, player controlled ship.
@@ -68,7 +68,7 @@ namespace Space.ComponentSystem.Entities
             input.Stabilizing = true;
             entity.AddComponent(new AiComponent(command));
             entity.AddComponent(new Death());
-            entity.AddComponent(new CellChangedComponent());
+            entity.AddComponent(new CellId());
 
             var equipment = entity.GetComponent<Equipment>();
 

@@ -1,7 +1,12 @@
 ﻿namespace Space.ComponentSystem.Components
 {
-    sealed class ExplosionEffect : Effect
+    /// <summary>
+    /// Used for displaying a single explosion effect.
+    /// </summary>
+    public sealed class ExplosionEffect : Effect
     {
+        #region Constructor
+        
         public ExplosionEffect(float scale = 0)
             : base("Effects/BasicExplosion")
         {
@@ -11,6 +16,10 @@
         public ExplosionEffect()
         {
         }
+
+        #endregion
+
+        #region Logic
         
         public override void Update(object parameterization)
         {
@@ -27,5 +36,7 @@
                 }
             }
         }
+
+        #endregion
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
@@ -18,6 +19,10 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public ItemQuality Quality;
 
+        /// <summary>
+        /// The Name of the Item which shall be Displayed
+        /// </summary>
+        public string DisplayName;
         #endregion
 
         #region Constructor
@@ -66,7 +71,47 @@ namespace Space.ComponentSystem.Components
                 }
             }
         }
+        /// <summary>
+        /// Calculates the Name of the Item according to the attributes.
+        /// </summary>
+        /// <param name="item"></param>
+        protected void CalculateName()
+        {
+            DisplayName = "";
+            var list = new List<AttributeModifier<AttributeType> >();
+            // Add attributes.
+            foreach (var component in Entity.Components)
+            {
+                if (component is Attribute<AttributeType>)
+                {
+                    list.Add(((Attribute<AttributeType>)component).Modifier);
+                }
+            }
+            if (this is Armor)
+            {
+                DisplayName+= ItemNames.StarterArmor
+            }
+            else if (this is Reactor)
+            {
 
+            }
+            else if (this is Sensor)
+            {
+
+            }
+            else if (this is Shield)
+            {
+
+            }
+            else if (this is Thruster)
+            {
+
+            }
+            else if (this is Weapon)
+            {
+
+            }
+        }
         #endregion
 
         #region Serialization

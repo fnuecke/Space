@@ -8,7 +8,6 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Entities;
 using Space.ComponentSystem.Messages;
 using Space.Data;
 
@@ -17,7 +16,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages spawning dynamic objects for cells, such as random ships.
     /// </summary>
-    sealed class ShipsSpawnSystem : AbstractSystem
+    public sealed class ShipsSpawnSystem : AbstractSystem
     {
         #region Fields
 
@@ -41,8 +40,6 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-
-
         public override void HandleMessage<T>(ref T message)
         {
             if (message is CellStateChanged)
@@ -52,13 +49,12 @@ namespace Space.ComponentSystem.Systems
                 {
                     if (info.X == 0 && info.Y == 0)
                     {
-
-
                         const int cellSize = CellSystem.CellSize;
                         var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
                         var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
                         var list = new List<int>();
                         _entities.Add(info.Id, list);
+
                         for (var i = -2; i < 2; i++)
                         {
                             for (var j = -2; j < 2; j++)
@@ -97,17 +93,19 @@ namespace Space.ComponentSystem.Systems
                        (int)position.Y >> CellSystem.CellSizeShiftAmount);
 
                     if (_entities.ContainsKey(cellId))
+                    {
                         _entities[cellId].Remove(info.Entity.UID);
+                    }
                 }
             }
             else if (message is EntityChangedCell)
             {
                 var info = (EntityChangedCell)(ValueType)message;
-                var entityID = info.EntityID;
-                _entities[info.OldCellID].Remove(info.EntityID);
+                var entityID = info.Entity.UID;
+                _entities[info.OldCellID].Remove(info.Entity.UID);
                 if (Manager.GetSystem<CellSystem>().IsCellActive(info.NewCellID))
                 {
-                    _entities[info.NewCellID].Add(info.EntityID);
+                    _entities[info.NewCellID].Add(info.Entity.UID);
                 }
                 else
                 {
@@ -139,6 +137,7 @@ namespace Space.ComponentSystem.Systems
 
             _entities[cellID].Add(Manager.EntityManager.AddEntity(ship));
         }
+
         #endregion
 
         #region Serialization / Hashing
@@ -214,7 +213,6 @@ namespace Space.ComponentSystem.Systems
             foreach (var item in _entities)
             {
                 copy._entities.Add(item.Key, new List<int>(item.Value));
-
             }
 
             return copy;

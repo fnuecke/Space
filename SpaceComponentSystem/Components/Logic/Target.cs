@@ -5,7 +5,12 @@ using Engine.Util;
 
 namespace Space.ComponentSystem.Components
 {
-    sealed class Target : AbstractComponent
+    /// <summary>
+    /// Allows targeting another entity, i.e. storing the target of an entity.
+    /// This can be used for auto targeting weapons (missiles) but may also be
+    /// used to store an AIs current target entity.
+    /// </summary>
+    public sealed class Target : AbstractComponent
     {
         #region Fields
 

@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 
-namespace Space.ComponentSystem.Components.AIBehaviour
+namespace Space.ComponentSystem.Components.Behaviours
 {
     sealed class MoveBehaviour : Behaviour
     {

@@ -15,7 +15,7 @@ namespace Space.ComponentSystem.Components
         {
             if (message is EntityDied)
             {
-                //Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation));
+                Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation));
 
                 Entity.Manager.RemoveEntity(Entity);
             }

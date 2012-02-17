@@ -4,6 +4,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
 using Engine.Util;
 using Microsoft.Xna.Framework.Content;
+using Space.ComponentSystem.Components;
 using Space.Data;
 
 namespace Space.ComponentSystem.Factories
@@ -106,6 +107,8 @@ namespace Space.ComponentSystem.Factories
             }
             return item;
         }
+
+       
 
         #endregion
     }

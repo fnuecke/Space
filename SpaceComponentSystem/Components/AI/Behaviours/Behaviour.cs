@@ -4,7 +4,7 @@ using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
-namespace Space.ComponentSystem.Components.AIBehaviour
+namespace Space.ComponentSystem.Components.Behaviours
 {
     abstract class Behaviour : IPacketizable, ICopyable<Behaviour>
     {

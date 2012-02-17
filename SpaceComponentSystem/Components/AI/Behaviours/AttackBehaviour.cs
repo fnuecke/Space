@@ -3,7 +3,7 @@ using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
-namespace Space.ComponentSystem.Components.AIBehaviour
+namespace Space.ComponentSystem.Components.Behaviours
 {
     sealed class AttackBehaviour : Behaviour
     {

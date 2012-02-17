@@ -103,13 +103,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Components\AI\Behaviours\AttackBehaviour.cs" />
+    <Compile Include="Components\AI\Behaviours\Behaviour.cs" />
+    <Compile Include="Components\AI\Behaviours\MoveBehaviour.cs" />
+    <Compile Include="Components\AI\Behaviours\PatrolBehaviour.cs" />
+    <Compile Include="Components\AI\AIComponent.cs" />
+    <Compile Include="Components\Logic\CellId.cs" />
+    <Compile Include="Components\Media\ExplosionEffect.cs" />
     <Compile Include="Components\Items\SpaceItem.cs" />
     <Compile Include="Components\Logic\AbstractRegeneratingValue.cs" />
     <Compile Include="Components\Logic\CollisionDamage.cs" />
     <Compile Include="Components\Logic\Death.cs" />
     <Compile Include="Components\Logic\Drops.cs" />
-    <Compile Include="Components\PlayerClass.cs" />
+    <Compile Include="Components\Logic\PlayerClass.cs" />
     <Compile Include="Components\Items\Consumables\RepairKit.cs" />
+    <Compile Include="Components\AI\SpawnComponent.cs" />
+    <Compile Include="Components\Logic\Target.cs" />
     <Compile Include="Components\Util\Detectable.cs" />
     <Compile Include="Components\Media\Effect.cs" />
     <Compile Include="Components\Logic\Energy.cs" />
@@ -125,13 +134,17 @@
     <Compile Include="Components\Media\ThrusterEffect.cs" />
     <Compile Include="Components\Logic\WeaponControl.cs" />
     <Compile Include="Components\Media\WeaponSound.cs" />
+    <Compile Include="EntityFactory.cs" />
     <Compile Include="Factories\ArmorFactory.cs" />
     <Compile Include="Factories\FactoryLibrary.cs" />
     <Compile Include="Factories\ConsumableFactory.cs" />
     <Compile Include="Factories\IFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
+    <Compile Include="Messages\EntityChangedCell.cs" />
     <Compile Include="Systems\DropSystem.cs" />
+    <Compile Include="Systems\ShipsSpawnSystem.cs" />
+    <Compile Include="Systems\UniverseSystem.cs" />
     <Compile Include="Util\PlayerClassType.cs" />
     <Compile Include="Factories\ReactorFactory.cs" />
     <Compile Include="Factories\SensorFactory.cs" />
@@ -179,7 +192,6 @@
       <Name>Space.Base</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <!--
