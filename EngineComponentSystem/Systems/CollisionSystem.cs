@@ -94,7 +94,7 @@ namespace Engine.ComponentSystem.Systems
                     // Use the inverse of the collision group, i.e. get
                     // entries from all those entries where we're not in
                     // that group.
-                    foreach (var neighbor in index.GetNeighbors(
+                    foreach (var neighbor in index.RangeQuery(
                         currentCollidable.Entity, _maxCollidableRadius,
                         (ulong)(~currentCollidable.CollisionGroups) << FirstIndexGroup,
                         _reusableNeighborList))

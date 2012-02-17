@@ -233,7 +233,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             // Loop through all our neighbors.
             foreach (var neighbor in index.
-                GetNeighbors(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
+                RangeQuery(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
             {
                 // Get the components we need.
                 var neighborTransform = neighbor.GetComponent<Transform>();

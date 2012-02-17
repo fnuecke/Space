@@ -162,32 +162,28 @@ namespace Engine.ComponentSystem.Systems
         #region Entity lookup
 
         /// <summary>
-        /// Get all entities in the same cell as the query entity, or in a
-        /// neighboring cell in the given cell range (0 = only the same cell,
-        /// 1 = the neighboring, and so on).
+        /// Get all entities in the specified range of the query point.
         /// </summary>
         /// <param name="query">The entity to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <param name="list">The list to use for storing the results.</param>
         /// <returns>All entities in range (including the query entity).</returns>
-        public ICollection<Entity> GetNeighbors(Entity query, float range,
+        public ICollection<Entity> RangeQuery(Entity query, float range,
             ulong groups = DefaultIndexGroupMask, ICollection<Entity> list = null)
         {
-            return GetNeighbors(ref query.GetComponent<Transform>().Translation, range, groups);
+            return RangeQuery(ref query.GetComponent<Transform>().Translation, range, groups, list);
         }
 
         /// <summary>
-        /// Get all entities in the same cell as the query point, or in a
-        /// neighboring cell in the given cell range (0 = only the same cell,
-        /// 1 = the neighboring, and so on).
+        /// Get all entities in the specified range of the query point.
         /// </summary>
         /// <param name="query">The point to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <param name="list">The list to use for storing the results.</param>
         /// <returns>All entities in range.</returns>
-        public ICollection<Entity> GetNeighbors(ref Vector2 query, float range,
+        public ICollection<Entity> RangeQuery(ref Vector2 query, float range,
             ulong groups = DefaultIndexGroupMask, ICollection<Entity> list = null)
         {
             list = list ?? new List<Entity>();
@@ -195,6 +191,33 @@ namespace Engine.ComponentSystem.Systems
             foreach (var tree in TreesForGroups(groups, _reusableTreeList))
             {
                 foreach (var neighborId in tree.RangeQuery(ref query, range, _reusableEntityIdList))
+                {
+                    list.Add(Manager.EntityManager.GetEntity(neighborId));
+                }
+
+                _reusableEntityIdList.Clear();
+            }
+
+            _reusableTreeList.Clear();
+
+            return list;
+        }
+
+        /// <summary>
+        /// Get all entities contained in the specified rectangle.
+        /// </summary>
+        /// <param name="query">The query rectangle.</param>
+        /// <param name="groups">The bitmask representing the groups to check in.</param>
+        /// <param name="list">The list to use for storing the results.</param>
+        /// <returns>All entities in range.</returns>
+        public ICollection<Entity> RangeQuery(ref Rectangle query,
+            ulong groups = DefaultIndexGroupMask, ICollection<Entity> list = null)
+        {
+            list = list ?? new List<Entity>();
+
+            foreach (var tree in TreesForGroups(groups, _reusableTreeList))
+            {
+                foreach (var neighborId in tree.RangeQuery(ref query, _reusableEntityIdList))
                 {
                     list.Add(Manager.EntityManager.GetEntity(neighborId));
                 }

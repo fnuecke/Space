@@ -214,7 +214,7 @@ namespace Space.ComponentSystem.Components
                 var index = Entity.Manager.SystemManager.GetSystem<IndexSystem>();
                 if (index == null) return false;
                 foreach (var neighbor in index.
-                    GetNeighbors(ref position, 3000, Detectable.IndexGroup))
+                    RangeQuery(ref position, 3000, Detectable.IndexGroup))
                 {
                     var transform = neighbor.GetComponent<Transform>();
                     if (transform == null) continue;

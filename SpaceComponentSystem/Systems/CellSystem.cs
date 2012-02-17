@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -34,6 +35,12 @@ namespace Space.ComponentSystem.Systems
         /// The size of a single cell in world units (normally: pixels).
         /// </summary>
         public const int CellSize = 1 << CellSizeShiftAmount;
+
+        /// <summary>
+        /// Index used to track entities that should automatically be removed
+        /// when a cell dies, and they are in that cell.
+        /// </summary>
+        public static readonly ulong CellDeathAutoRemoveIndex = 1ul << IndexSystem.GetGroup();
 
         /// <summary>
         /// The time to wait before actually killing of a cell after it has
@@ -89,6 +96,11 @@ namespace Space.ComponentSystem.Systems
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
         private List<ulong> _pendingCellsIds = new List<ulong>();
+
+        /// <summary>
+        /// Reused for querying entities contained in a dying cell.
+        /// </summary>
+        private List<Entity> _entitiesToKill = new List<Entity>();
 
         #endregion
 
@@ -186,6 +198,7 @@ namespace Space.ComponentSystem.Systems
             _bornCellsIds.Clear();
 
             // Check pending list, kill off old cells, notify systems etc.
+            Rectangle cellBounds;
             _pendingCellsIds.AddRange(_pendingCells.Keys);
             foreach (var cellId in _pendingCellsIds)
             {
@@ -201,6 +214,18 @@ namespace Space.ComponentSystem.Systems
                     changedMessage.Y = xy.Item2;
                     changedMessage.State = false;
                     Manager.SendMessage(ref changedMessage);
+
+                    // Kill any remaining entities in the area covered by the
+                    // cell that just died.
+                    cellBounds.X = xy.Item1;
+                    cellBounds.Y = xy.Item2;
+                    cellBounds.Width = CellSize;
+                    cellBounds.Height = CellSize;
+                    foreach (var entity in Manager.GetSystem<IndexSystem>().RangeQuery(ref cellBounds, CellDeathAutoRemoveIndex, _entitiesToKill))
+                    {
+                        Manager.EntityManager.RemoveEntity(entity);
+                    }
+                    _entitiesToKill.Clear();
                 }
             }
             _pendingCellsIds.Clear();
@@ -315,6 +340,7 @@ namespace Space.ComponentSystem.Systems
                 copy._bornCellsIds = new HashSet<ulong>();
                 copy._deceasedCellsIds = new HashSet<ulong>();
                 copy._pendingCellsIds = new List<ulong>();
+                copy._entitiesToKill = new List<Entity>();
             }
 
             foreach (var item in _pendingCells)
