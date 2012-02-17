@@ -111,7 +111,40 @@ namespace Space.Data
             { AttributeType.WeaponCooldown, AttributeStrings.WeaponCooldown },
             { AttributeType.SensorRange, AttributeStrings.SensorRange }
         };
-
+        private static readonly Dictionary<AttributeType, string> _nameLookup = new Dictionary<AttributeType, string>()
+        {
+            { AttributeType.Health, ItemNames.Health },
+            { AttributeType.Energy, ItemNames.Energy },
+            { AttributeType.HealthRegeneration, ItemNames.HealthRegeneration },
+            { AttributeType.EnergyRegeneration, ItemNames.EnergyRegeneration },
+            { AttributeType.Armor, ItemNames.Armor },
+            { AttributeType.Mass, ItemNames.Mass },
+            { AttributeType.AccelerationForce, ItemNames.AccelerationForce },
+            { AttributeType.RotationForce, ItemNames.RotationForce },
+            { AttributeType.ThrusterEnergyConsumption, ItemNames.ThrusterEnergyConsumption },
+            { AttributeType.ShieldEnergyConsumption, ItemNames.ShieldEnergyConsumption },
+            { AttributeType.WeaponEnergyConsumption, ItemNames.WeaponEnergyConsumption },
+            { AttributeType.ShieldEfficiency, ItemNames.ShieldEfficiency },
+            { AttributeType.WeaponCooldown, ItemNames.WeaponCooldown },
+            { AttributeType.SensorRange, ItemNames.SensorRange }
+        };
+        private static readonly Dictionary<AttributeType, float> _valueLookup = new Dictionary<AttributeType, float>()
+        {
+            { AttributeType.Health,1 },
+            { AttributeType.Energy, 1 },
+            { AttributeType.HealthRegeneration, 50 },
+            { AttributeType.EnergyRegeneration, 50 },
+            { AttributeType.Armor, 1 },
+            { AttributeType.Mass, -0.1f },
+            { AttributeType.AccelerationForce, 50 },
+            { AttributeType.RotationForce, 50 },
+            { AttributeType.ThrusterEnergyConsumption, -50 },
+            { AttributeType.ShieldEnergyConsumption, -60 },
+            { AttributeType.WeaponEnergyConsumption, -70 },
+            { AttributeType.ShieldEfficiency, 5 },
+            { AttributeType.WeaponCooldown, -20 },
+            { AttributeType.SensorRange, 0.1f}
+        };
         #endregion
 
         /// <summary>
@@ -122,6 +155,27 @@ namespace Space.Data
         public static string ToLocalizedString(this AttributeType attributeType)
         {
             return _stringLookup[attributeType];
+        }
+
+        /// <summary>
+        /// Get the value for this Attribute calculated by the value of the Attribute, can be negative.
+        /// </summary>
+        /// <param name="attributeType">The attribute type</param>
+        /// <param name="value">The value of the Attribute</param>
+        /// <returns>The calculated vale</returns>
+        public static float GetValue(this AttributeType attributeType,float value)//,AttributeComputationType modifier )
+        {
+            return _valueLookup[attributeType] * value;
+        }
+
+        /// <summary>
+        /// Get the localized Prefix for the given attribute type
+        /// </summary>
+        /// <param name="attributeType">The attribute type</param>
+        /// <returns>The localized Prefix string</returns>
+        public static string ToNameString(this AttributeType attributeType)
+        {
+            return _nameLookup[attributeType];
         }
     }
 }

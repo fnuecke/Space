@@ -145,24 +145,25 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     var item = ItemAt(i);
                     if (item != null)
                     {
-                        // TODO: item.Name is the id, convert it to a localized display string, ideally taking into account modifiers for prefixes suffixes (stupid armor of the nerd).
-                        var localizedName = ItemNames.ResourceManager.GetString(item.Name) ?? ("!!" + item.Name + "!!");
-                        _fonts.DrawString(Fonts.Types.ConsoleFont, localizedName, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
-                        line++;
-                        var localizedDescription = ItemDescriptions.ResourceManager.GetString(item.Name);
-                        if (localizedDescription != null)
-                        {
-                            _fonts.DrawString(Fonts.Types.ConsoleFont, localizedDescription, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
-                            line++;
-                        }
-                        var stackable = item.Entity.GetComponent<Stackable>();
-                        if (stackable != null)
-                        {
-                            _fonts.DrawString(Fonts.Types.ConsoleFont, stackable.Count + "/" + stackable.MaxCount, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
-                            line++;
-                        }
                         if (item is SpaceItem)
                         {
+                        // TODO: item.Name is the id, convert it to a localized display string, ideally taking into account modifiers for prefixes suffixes (stupid armor of the nerd).
+                            var localizedName = ((SpaceItem)item).GetDisplayName();
+                            _fonts.DrawString(Fonts.Types.ConsoleFont, localizedName, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                            line++;
+                            var localizedDescription = ItemDescriptions.ResourceManager.GetString(item.Name);
+                            if (localizedDescription != null)
+                            {
+                                _fonts.DrawString(Fonts.Types.ConsoleFont, localizedDescription, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                                line++;
+                            }
+                            var stackable = item.Entity.GetComponent<Stackable>();
+                            if (stackable != null)
+                            {
+                                _fonts.DrawString(Fonts.Types.ConsoleFont, stackable.Count + "/" + stackable.MaxCount, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                                line++;
+                            }
+                        
                             ((SpaceItem)item).GetDescription(ref description);
                             var attributes = description.Attributes;
                             foreach (var attribute in attributes)

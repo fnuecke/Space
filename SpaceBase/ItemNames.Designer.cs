@@ -61,11 +61,236 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Speedy.
+        /// </summary>
+        public static string AccelerationForce {
+            get {
+                return ResourceManager.GetString("AccelerationForce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tenable.
+        /// </summary>
+        public static string Armor {
+            get {
+                return ResourceManager.GetString("Armor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Armor.
+        /// </summary>
+        public static string BasicArmor {
+            get {
+                return ResourceManager.GetString("BasicArmor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Reactor.
+        /// </summary>
+        public static string BasicReactor {
+            get {
+                return ResourceManager.GetString("BasicReactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Sensor.
+        /// </summary>
+        public static string BasicSensor {
+            get {
+                return ResourceManager.GetString("BasicSensor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Shield.
+        /// </summary>
+        public static string BasicShield {
+            get {
+                return ResourceManager.GetString("BasicShield", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Thruster.
+        /// </summary>
+        public static string BasicThruster {
+            get {
+                return ResourceManager.GetString("BasicThruster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Weapon.
+        /// </summary>
+        public static string BasicWeapon {
+            get {
+                return ResourceManager.GetString("BasicWeapon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Energetic.
+        /// </summary>
+        public static string Energy {
+            get {
+                return ResourceManager.GetString("Energy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enduring.
+        /// </summary>
+        public static string EnergyRegeneration {
+            get {
+                return ResourceManager.GetString("EnergyRegeneration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Healthy.
+        /// </summary>
+        public static string Health {
+            get {
+                return ResourceManager.GetString("Health", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Vital.
+        /// </summary>
+        public static string HealthRegeneration {
+            get {
+                return ResourceManager.GetString("HealthRegeneration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Heavy.
+        /// </summary>
+        public static string Mass {
+            get {
+                return ResourceManager.GetString("Mass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Rotating.
+        /// </summary>
+        public static string RotationForce {
+            get {
+                return ResourceManager.GetString("RotationForce", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Farseeing.
+        /// </summary>
+        public static string SensorRange {
+            get {
+                return ResourceManager.GetString("SensorRange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Protective.
+        /// </summary>
+        public static string ShieldEfficiency {
+            get {
+                return ResourceManager.GetString("ShieldEfficiency", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string ShieldEnergyConsumption {
+            get {
+                return ResourceManager.GetString("ShieldEnergyConsumption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Starter Armor.
         /// </summary>
         public static string StarterArmor {
             get {
                 return ResourceManager.GetString("StarterArmor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starter Reactor.
+        /// </summary>
+        public static string StarterReactor {
+            get {
+                return ResourceManager.GetString("StarterReactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starter Sensor.
+        /// </summary>
+        public static string StarterSensor {
+            get {
+                return ResourceManager.GetString("StarterSensor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starter Shield.
+        /// </summary>
+        public static string StarterShield {
+            get {
+                return ResourceManager.GetString("StarterShield", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starter Thruster.
+        /// </summary>
+        public static string StarterThruster {
+            get {
+                return ResourceManager.GetString("StarterThruster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Starter Weapon.
+        /// </summary>
+        public static string StarterWeapon {
+            get {
+                return ResourceManager.GetString("StarterWeapon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string ThrusterEnergyConsumption {
+            get {
+                return ResourceManager.GetString("ThrusterEnergyConsumption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string WeaponCooldown {
+            get {
+                return ResourceManager.GetString("WeaponCooldown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string WeaponEnergyConsumption {
+            get {
+                return ResourceManager.GetString("WeaponEnergyConsumption", resourceCulture);
             }
         }
     }

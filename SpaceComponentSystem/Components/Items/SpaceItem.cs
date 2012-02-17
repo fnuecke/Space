@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
@@ -33,7 +34,7 @@ namespace Space.ComponentSystem.Components
         {
             this.Quality = quality;
         }
-        
+
         /// <summary>
         /// For deserialization.
         /// </summary>
@@ -66,7 +67,39 @@ namespace Space.ComponentSystem.Components
                 }
             }
         }
+        /// <summary>
+        /// Calculates the Name of the Item according to the attributes.
+        /// </summary>
+        public string GetDisplayName()
+        {
+            var DisplayName = "";
+            //unique items dont need prefix
+            if (Quality != ItemQuality.Unique)
+            {
+                var maxValue = float.MinValue;
+                var type = AttributeType.None;
+                // Go throug all Attributes and calculate highest ranking
+                foreach (var component in Entity.Components)
+                {
+                    if (component is Attribute<AttributeType>)
+                    {
 
+                        var attribute = (((Attribute<AttributeType>)component).Modifier);
+                        //check if we have a new Max Value
+                        if (attribute.Type.GetValue(attribute.Value) > maxValue)
+                        {
+                            maxValue = attribute.Type.GetValue(attribute.Value);
+                            type = attribute.Type;
+                        }
+                    }
+                }
+                if (type != AttributeType.None)
+                    DisplayName = type.ToNameString() + " ";
+            }
+            DisplayName += ItemNames.ResourceManager.GetString(Name) ?? ("!!" + Name + "!!");
+
+            return DisplayName;
+        }
         #endregion
 
         #region Serialization

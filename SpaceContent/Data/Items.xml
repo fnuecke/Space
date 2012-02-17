@@ -7,9 +7,26 @@
       <MaxDrops>1</MaxDrops>
       <Items>
         <Item>
-          <ItemName>StarterWeapon</ItemName>
-          <Probability>1</Probability>
+          <ItemName>StarterArmor</ItemName>
+          <Probability>0.2</Probability>
         </Item>
+        <Item>
+          <ItemName>StarterWeapon</ItemName>
+          <Probability>0.2</Probability>
+        </Item>
+        <Item>
+          <ItemName>StarterReactor</ItemName>
+          <Probability>0.2</Probability>
+        </Item>
+        <Item>
+          <ItemName>StarterSensor</ItemName>
+          <Probability>0.2</Probability>
+        </Item>
+        <Item>
+          <ItemName>StarterThruster</ItemName>
+          <Probability>0.2</Probability>
+        </Item>
+       
       </Items>
     </Item>
   </Asset>
