@@ -67,25 +67,27 @@ namespace Space.ComponentSystem.Components
                 }
             }
         }
+
         /// <summary>
         /// Calculates the Name of the Item according to the attributes.
         /// </summary>
         public string GetDisplayName()
         {
-            var DisplayName = "";
-            //unique items dont need prefix
+            var displayName = ItemNames.ResourceManager.GetString(Name) ?? ("!!" + Name + "!!");
+
+            // Unique items don't need prefix.
             if (Quality != ItemQuality.Unique)
             {
                 var maxValue = float.MinValue;
                 var type = AttributeType.None;
-                // Go throug all Attributes and calculate highest ranking
+
+                // Go through all attributes and calculate highest ranking.
                 foreach (var component in Entity.Components)
                 {
                     if (component is Attribute<AttributeType>)
                     {
-
                         var attribute = (((Attribute<AttributeType>)component).Modifier);
-                        //check if we have a new Max Value
+                        // Check if we have a new max value.
                         if (attribute.Type.GetValue(attribute.Value) > maxValue)
                         {
                             maxValue = attribute.Type.GetValue(attribute.Value);
@@ -94,12 +96,14 @@ namespace Space.ComponentSystem.Components
                     }
                 }
                 if (type != AttributeType.None)
-                    DisplayName = type.ToNameString() + " ";
+                {
+                    return type.ToNameString() + " " + displayName;
+                }
             }
-            DisplayName += ItemNames.ResourceManager.GetString(Name) ?? ("!!" + Name + "!!");
 
-            return DisplayName;
+            return displayName;
         }
+
         #endregion
 
         #region Serialization
