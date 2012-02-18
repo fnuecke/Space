@@ -59,6 +59,16 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
+        #region Logic
+         /// <summary>
+        /// Calculates the Name of the Item according to the attributes.
+        /// </summary>
+        public virtual string GetDisplayName()
+         {
+             return Name;
+         }
+        #endregion
+
         #region Serialization
 
         /// <summary>

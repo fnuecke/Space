@@ -71,7 +71,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Calculates the Name of the Item according to the attributes.
         /// </summary>
-        public string GetDisplayName()
+        public override string GetDisplayName()
         {
             var displayName = ItemNames.ResourceManager.GetString(Name) ?? ("!!" + Name + "!!");
 

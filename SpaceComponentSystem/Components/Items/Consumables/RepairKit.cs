@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.RPG.Components.Items;
 using Engine.Serialization;
 
-namespace Space.ComponentSystem.Components
+namespace Space.ComponentSystem.Components.Items.Consumables
 {
     /// <summary>
     /// A repair kit is a consumable that can be used to restore a certain

@@ -81,22 +81,21 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
 
         public override bool DoHandleMousePressed(MouseButtons buttons)
         {
-            if (!IsMouseClickedInElement())
+            if (!IsMouseClickedInElement()&&!_itemSelection.ItemIsSelected)
             {
                 return false;
             }
-            _list.DoHandleMousePressed(buttons);
-            return true;
+            return _list.DoHandleMousePressed(buttons);
+            
         }
 
         public override bool DoHandleMouseReleased(MouseButtons buttons)
         {
-            if (!IsMouseClickedInElement())
+            if (!IsMouseClickedInElement()&&!_itemSelection.ItemIsSelected)
             {
                 return false;
             }
-            _list.DoHandleMouseReleased(buttons);
-            return true;
+            return _list.DoHandleMouseReleased(buttons);
         }
 
         #endregion

@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Components.Items.Consumables;
 
 namespace Space.ComponentSystem.Factories
 {

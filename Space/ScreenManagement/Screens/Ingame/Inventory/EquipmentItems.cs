@@ -3,6 +3,7 @@ using Space.ComponentSystem.Components;
 using Space.Control;
 using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
 using Space.ScreenManagement.Screens.Ingame.Hud;
+using Space.Simulation.Commands;
 
 namespace Space.ScreenManagement.Screens.Ingame.Inventory
 {
@@ -16,6 +17,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
         public EquipmentItems(GameClient client, ItemSelectionManager itemSelection, TextureManager textureManager)
             : base(client, itemSelection, textureManager)
         {
+            Source = Source.Equipment;
         }
 
         public override int DataCount()
