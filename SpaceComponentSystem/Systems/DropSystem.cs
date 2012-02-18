@@ -91,8 +91,10 @@ namespace Space.ComponentSystem.Systems
                 // Give the item a chance to be dropped.
                 if (item.Probability > _random.NextDouble())
                 {
+                    //move a bit away from ship
+                    var positionvariance = new Vector2(_random.NextInt32(-10, 10), _random.NextInt32(-10, 10));
                     // Random roll succeeded, drop the item.
-                    Manager.EntityManager.AddEntity(FactoryLibrary.SampleItem(item.ItemName, position, _random));
+                    Manager.EntityManager.AddEntity(FactoryLibrary.SampleItem(item.ItemName, position + positionvariance, _random));
 
                     // Did a drop, check if we're done.
                     dropCount++;
