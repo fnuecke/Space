@@ -15,17 +15,17 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The sound bank we use to get actual sounds for our cue names.
         /// </summary>
-        private SoundBank _soundBank;
+        private readonly SoundBank _soundBank;
 
         /// <summary>
         /// The sound listener to use for relative position.
         /// </summary>
-        private AudioListener _listener = new AudioListener();
+        private readonly AudioListener _listener = new AudioListener();
 
         /// <summary>
         /// The sound emitter to use for emitted sound positioning.
         /// </summary>
-        private AudioEmitter _emitter = new AudioEmitter();
+        private readonly AudioEmitter _emitter = new AudioEmitter();
 
         /// <summary>
         /// Whether this is the sound system thats doing the actual "rendering"
@@ -41,7 +41,7 @@ namespace Engine.ComponentSystem.Systems
 
         public SoundSystem(SoundBank soundBank)
         {
-            this._soundBank = soundBank;
+            _soundBank = soundBank;
         }
 
         #endregion

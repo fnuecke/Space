@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.RPG.Components;
+﻿using System;
+using Engine.ComponentSystem.RPG.Components;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -47,11 +48,11 @@ namespace Engine.ComponentSystem.RPG.Constraints
         public AttributeModifier<TAttribute> SampleAttributeModifier(IUniformRandom random)
         {
             // Only randomize if necessary.
-            var value = (Value.Low == Value.High) ? Value.Low
+            var value = (random == null) ? Value.Low
                 : MathHelper.Lerp(Value.Low, Value.High, (float)random.NextDouble());
             if (Round)
             {
-                value = (float)System.Math.Round(value);
+                value = (float)Math.Round(value);
             }
             return new AttributeModifier<TAttribute>(Type, value, ComputationType);
         }

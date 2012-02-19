@@ -5,5 +5,9 @@
     /// </summary>
     public struct CharacterStatsInvalidated
     {
+        /// <summary>
+        /// The entity for which the stats were invalidated.
+        /// </summary>
+        public int Entity;
     }
 }

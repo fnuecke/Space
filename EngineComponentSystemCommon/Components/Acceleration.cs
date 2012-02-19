@@ -42,7 +42,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="acceleration">The acceleration.</param>
         public void Initialize(Vector2 acceleration)
         {
-            this.Value = acceleration;
+            Value = acceleration;
         }
 
         /// <summary>

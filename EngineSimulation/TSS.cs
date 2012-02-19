@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using Engine.ComponentSystem;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
@@ -21,7 +21,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Logger for general purpose logging.
         /// </summary>
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
 #if DEBUG && GAMELOG
         /// <summary>
@@ -67,7 +67,7 @@ namespace Engine.Simulation
         /// <summary>
         /// The component system manager in use in this simulation.
         /// </summary>
-        public IEntityManager EntityManager { get; private set; }
+        public IManager Manager { get; private set; }
 
         /// <summary>
         /// Tells if the state is currently waiting to be synchronized.
@@ -91,7 +91,7 @@ namespace Engine.Simulation
         /// <summary>
         /// The delays of the individual simulations.
         /// </summary>
-        private uint[] _delays;
+        private readonly uint[] _delays;
 
 #if TSS_THREADING
         /// <summary>
@@ -105,25 +105,19 @@ namespace Engine.Simulation
         /// delay, i.e. the state at slot 0 is the leading one, 1 is the next
         /// newest, and so on.
         /// </summary>
-        private IAuthoritativeSimulation[] _simulations;
-
-        /// <summary>
-        /// List of objects to add to delayed simulations when they reach the
-        /// given frame.
-        /// </summary>
-        private Dictionary<long, List<Entity>> _adds = new Dictionary<long, List<Entity>>();
+        private readonly IAuthoritativeSimulation[] _simulations;
 
         /// <summary>
         /// List of object ids to remove from delayed simulations when they
         /// reach the given frame.
         /// </summary>
-        private Dictionary<long, List<int>> _removes = new Dictionary<long, List<int>>();
+        private readonly Dictionary<long, List<int>> _removes = new Dictionary<long, List<int>>();
 
         /// <summary>
         /// List of commands to push in delayed simulations when they reach the
         /// given frame.
         /// </summary>
-        private Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
+        private readonly Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
 
         #endregion
 
@@ -151,7 +145,7 @@ namespace Engine.Simulation
 
             // Our pass-through component manager, which allows adding and
             // removing only in the first frame (i.e. before the first update).
-            EntityManager = new TSSEntityManager(this);
+            Manager = new TSSEntityManager(this);
 
             // Mark us for need of sync.
             WaitingForSynchronization = true;
@@ -256,10 +250,11 @@ namespace Engine.Simulation
         /// Advance leading simulation to <c>CurrentFrame + 1</c> and update
         /// all trailing simulations accordingly.
         /// </summary>
-        public void Update()
+        /// <param name="gameTime">The elapsed time since the last call to Update.</param>
+        public void Update(GameTime gameTime)
         {
             // Advance the simulation.
-            FastForward(++CurrentFrame);
+            FastForward(gameTime, ++CurrentFrame);
         }
 
         #endregion
@@ -267,65 +262,24 @@ namespace Engine.Simulation
         #region Time specific adding / removal of entities
 
         /// <summary>
-        /// Add an object in a specific time frame. This will roll back, if
-        /// necessary, to insert the object, meaning it can trigger invalidation.
-        /// </summary>
-        /// <param name="entity">the object to insert.</param>
-        /// <param name="frame">the frame to insert it at.</param>
-        public void AddEntity(Entity entity, long frame)
-        {
-            // Store it to be inserted in trailing simulations.
-            if (!_adds.ContainsKey(frame))
-            {
-                _adds.Add(frame, new List<Entity>());
-            }
-            else if (_adds[frame].Contains(entity))
-            {
-                // Don't insert the same add to the list twice.
-                return;
-            }
-            else if (_removes.ContainsKey(frame) && _removes[frame].Contains(entity.UID))
-            {
-                // Do not allow removal and adding of the same object in the same
-                // frame, as this can lead to unexpected behavior (may not happen
-                // in the intended order!)
-                throw new InvalidOperationException("Cannot add an object in the same frame as it will be removed.");
-            }
-            _adds[frame].Add(entity.DeepCopy());
-
-            // Rewind to the frame to retroactively apply changes.
-            if (frame < CurrentFrame)
-            {
-                Rewind(frame);
-            }
-        }
-
-        /// <summary>
         /// Remove an object in a specific time frame. This will roll back, if
         /// necessary, to remove the object, meaning it can trigger invalidation.
         /// </summary>
-        /// <param name="entityId">the id of the object to remove.</param>
-        /// <param name="frame">the frame to remove it at.</param>
-        public void RemoveEntity(int entityUid, long frame)
+        /// <param name="entity">The id of the object to remove.</param>
+        /// <param name="frame">The frame to remove it at.</param>
+        public void RemoveEntity(int entity, long frame)
         {
             // Store it to be removed in trailing simulations.
             if (!_removes.ContainsKey(frame))
             {
                 _removes.Add(frame, new List<int>());
             }
-            else if (_removes[frame].Contains(entityUid))
+            else if (_removes[frame].Contains(entity))
             {
                 // Don't insert the same remove to the list twice.
                 return;
             }
-            else if (_adds.ContainsKey(frame) && _adds[frame].Find(a => a.UID == entityUid) != null)
-            {
-                // Do not allow removal and adding of the same object in the same
-                // frame, as this can lead to unexpected behavior (may not happen
-                // in the intended order!)
-                throw new InvalidOperationException("Cannot remove an object in the same frame as it was added.");
-            }
-            _removes[frame].Add(entityUid);
+            _removes[frame].Add(entity);
 
             // Rewind to the frame to retroactively apply changes.
             if (frame < CurrentFrame)
@@ -344,8 +298,9 @@ namespace Engine.Simulation
         /// means that no adds/removes/commands/update will be applied to that
         /// actual frame just yet.
         /// </summary>
+        /// <param name="gameTime">The elapsed time since the last call to Update.</param>
         /// <param name="frame">the frame to run to.</param>
-        public void RunToFrame(long frame)
+        public void RunToFrame(GameTime gameTime, long frame)
         {
             // Do not allow changes while waiting for synchronization.
             if (WaitingForSynchronization)
@@ -356,7 +311,7 @@ namespace Engine.Simulation
             if (frame >= CurrentFrame)
             {
                 // Moving forward, just run.
-                FastForward(frame);
+                FastForward(gameTime, frame);
             }
             else
             {
@@ -377,14 +332,7 @@ namespace Engine.Simulation
         public Packet Packetize(Packet packet)
         {
             packet.Write(CurrentFrame)
-                .Write(_simulations[_simulations.Length - 1])
-
-                .Write(_adds.Count);
-            foreach (var add in _adds)
-            {
-                packet.Write(add.Key);
-                packet.Write(add.Value);
-            }
+                .Write(_simulations[_simulations.Length - 1]);
 
             packet.Write(_removes.Count);
             foreach (var remove in _removes)
@@ -423,19 +371,7 @@ namespace Engine.Simulation
             // Find adds / removes / commands that our out of date now, but keep newer ones.
             PrunePastEvents();
 
-            // Continue with reading the list of adds.
-            int numAdds = packet.ReadInt32();
-            for (int addIdx = 0; addIdx < numAdds; ++addIdx)
-            {
-                long key = packet.ReadInt64();
-                if (!_adds.ContainsKey(key))
-                {
-                    _adds.Add(key, new List<Entity>());
-                }
-                _adds[key].AddRange(packet.ReadPacketizables<Entity>());
-            }
-
-            // Then the removes.
+            // Continue with reading the list of removes.
             int numRemoves = packet.ReadInt32();
             for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
             {
@@ -514,8 +450,9 @@ namespace Engine.Simulation
         /// be applied to the given frame, and its <c>Update()</c> method will
         /// *not* be called once it reaches the given frame).
         /// </summary>
-        /// <param name="frame">the frame up to which to run.</param>
-        private void FastForward(long frame)
+        /// <param name="gameTime">The time that elapsed since the last call.</param>
+        /// <param name="frame">The frame up to which to run.</param>
+        private void FastForward(GameTime gameTime, long frame)
         {
 #if DEBUG && GAMELOG
             if (GameLogEnabled)
@@ -555,7 +492,7 @@ namespace Engine.Simulation
                 }
 
                 // Do the actual stepping for the state.
-                TrailingSimulation.Update();
+                TrailingSimulation.Update(gameTime);
             }
 
 #if TSS_THREADING
@@ -580,7 +517,7 @@ namespace Engine.Simulation
             // Check if we had trailing tentative commands.
             if (needsRewind)
             {
-                logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
+                Logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
                 MirrorSimulation(TrailingSimulation, _simulations.Length - 2);
             }
 
@@ -591,7 +528,7 @@ namespace Engine.Simulation
                 while (_simulations[i].CurrentFrame < frame - _delays[i])
                 {
                     PrepareForUpdate(_simulations[i]);
-                    _simulations[i].Update();
+                    _simulations[i].Update(gameTime);
                 }
             }
 
@@ -610,23 +547,13 @@ namespace Engine.Simulation
             // The frame the state is now in, and that will be executed.
             long frame = simulation.CurrentFrame;
 
-            // Check if we need to add objects.
-            if (_adds.ContainsKey(frame))
-            {
-                // Add a copy of it.
-                foreach (var entity in _adds[frame])
-                {
-                    simulation.EntityManager.AddEntity(entity.DeepCopy());
-                }
-            }
-
             // Check if we need to remove objects.
             if (_removes.ContainsKey(frame))
             {
                 // Add a copy of it.
                 foreach (var entityUid in _removes[frame])
                 {
-                    simulation.EntityManager.RemoveEntity(entityUid);
+                    simulation.Manager.RemoveEntity(entityUid);
                 }
             }
 
@@ -728,20 +655,7 @@ namespace Engine.Simulation
         {
             // Remove adds / removes from the to-add list that have been added
             // to the state trailing furthest behind at this point.
-            List<long> deprecated = new List<long>();
-            foreach (var key in _adds.Keys)
-            {
-                if (key < TrailingFrame)
-                {
-                    deprecated.Add(key);
-                }
-            }
-            foreach (var key in deprecated)
-            {
-                _adds.Remove(key);
-            }
-
-            deprecated.Clear();
+            var deprecated = new List<long>();
             foreach (var key in _removes.Keys)
             {
                 if (key < TrailingFrame)
@@ -794,22 +708,18 @@ namespace Engine.Simulation
 
         #region Manager-Wrappers
 
-        private class TSSEntityManager : IEntityManager
+        /// <summary>
+        /// Managed wrapper for TSS to interface to the leading state for read
+        /// operations, and inject commands for modifying operations.
+        /// </summary>
+        private sealed class TSSEntityManager : IManager
         {
-            #region Properties
-
-            public ISystemManager SystemManager { get { return _systemManager; } set { throw new NotSupportedException(); } }
-
-            #endregion
-
             #region Fields
 
             /// <summary>
             /// The TSS this wrapper is associated to.
             /// </summary>
-            private TSS _tss;
-
-            private ISystemManager _systemManager;
+            private readonly TSS _tss;
 
             #endregion
 
@@ -817,131 +727,43 @@ namespace Engine.Simulation
 
             public TSSEntityManager(TSS tss)
             {
-                this._tss = tss;
-                this._systemManager = new TSSComponentSystemManager(_tss);
+                _tss = tss;
             }
 
             #endregion
 
-            #region Entities
-
-            public int AddEntity(Entity entity)
-            {
-                _tss.AddEntity(entity, _tss.CurrentFrame);
-                return -1;
-            }
-
-            public Entity RemoveEntity(int entityUid)
-            {
-                _tss.RemoveEntity(entityUid, _tss.CurrentFrame);
-                return null;
-            }
-
-            public Entity GetEntity(int entityUid)
-            {
-                return _tss.LeadingSimulation.EntityManager.GetEntity(entityUid);
-            }
-
-            public bool Contains(int entityUid)
-            {
-                return _tss.LeadingSimulation.EntityManager.Contains(entityUid);
-            }
-
-            #endregion
-
-            #region Unsupported
-
-            public ReadOnlyCollection<Entity> Entities { get { throw new NotSupportedException(); } }
-
-#if DEBUG && GAMELOG
-            public bool GameLogEnabled
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-                set
-                {
-                    throw new NotImplementedException();
-                }
-            }
-#endif
-
-            public void RemoveEntity(Entity entity)
+            #region Logic
+            
+            /// <summary>
+            /// Update all registered systems.
+            /// </summary>
+            /// <param name="gameTime">Time elapsed since the last call to Update.</param>
+            /// <param name="frame">The frame in which the update is applied.</param>
+            public void Update(GameTime gameTime, long frame)
             {
                 throw new NotSupportedException();
             }
-
-            public Packet Packetize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
-
-            public void Depacketize(Packet packet)
-            {
-                throw new NotSupportedException();
-            }
-
-            public void Hash(Hasher hasher)
-            {
-                throw new NotSupportedException();
-            }
-
-            public IEntityManager DeepCopy()
-            {
-                throw new NotSupportedException();
-            }
-
-            public IEntityManager DeepCopy(IEntityManager into)
-            {
-                throw new NotSupportedException();
-            }
-
-            public void SendMessage<T>(ref T message) where T : struct
-            {
-                throw new NotImplementedException();
-            }
-
-            #endregion
-        }
-
-        /// <summary>
-        /// Helper for system initialization and accessing systems of the leading state.
-        /// </summary>
-        private class TSSComponentSystemManager : ISystemManager
-        {
-            #region Fields
 
             /// <summary>
-            /// The TSS this wrapper is associated to.
+            /// Renders all registered systems.
             /// </summary>
-            private TSS _tss;
-
-            #endregion
-
-            #region Constructor
-
-            public TSSComponentSystemManager(TSS tss)
-            {
-                this._tss = tss;
-            }
-
-            #endregion
-
-            #region Interfaces
-
-            /// <summary>
-            /// Draw the leading simulation.
-            /// </summary>
+            /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
+            /// <param name="frame">The frame to render.</param>
             public void Draw(GameTime gameTime, long frame)
             {
-                _tss.LeadingSimulation.EntityManager.SystemManager.Draw(gameTime, frame);
+                _tss.LeadingSimulation.Manager.Draw(gameTime, frame);
             }
 
+            #endregion
+
+            #region Systems
+            
             /// <summary>
-            /// Add a system to all sub-simulations.
+            /// Add the specified system to this manager.
             /// </summary>
-            public ISystemManager AddSystem(ISystem system)
+            /// <param name="system">The system to add.</param>
+            /// <returns>This manager, for chaining.</returns>
+            public IManager AddSystem(AbstractSystem system)
             {
                 if (_tss.CurrentFrame > 0)
                 {
@@ -950,13 +772,17 @@ namespace Engine.Simulation
 
                 foreach (var state in _tss._simulations)
                 {
-                    state.EntityManager.SystemManager.AddSystem(system.DeepCopy());
+                    state.Manager.AddSystem(system.DeepCopy());
                 }
 
                 return this;
             }
 
-            public void AddSystems(IEnumerable<ISystem> systems)
+            /// <summary>
+            /// Add multiple systems to this manager.
+            /// </summary>
+            /// <param name="systems">The systems to add.</param>
+            public void AddSystems(IEnumerable<AbstractSystem> systems)
             {
                 foreach (var system in systems)
                 {
@@ -964,59 +790,184 @@ namespace Engine.Simulation
                 }
             }
 
-            public T GetSystem<T>() where T : ISystem
+            /// <summary>
+            /// Removes the specified system from this manager.
+            /// </summary>
+            /// <param name="system">The system to remove.</param>
+            /// <returns>Whether the system was successfully removed.</returns>
+            public bool RemoveSystem(AbstractSystem system)
             {
-                return _tss.LeadingSimulation.EntityManager.SystemManager.GetSystem<T>();
+                throw new NotSupportedException();
+            }
+
+            /// <summary>
+            /// Get a system of the specified type.
+            /// </summary>
+            /// <typeparam name="T">The type of the system to get.</typeparam>
+            /// <returns>The system with the specified type.</returns>
+            public T GetSystem<T>() where T : AbstractSystem
+            {
+                return _tss.LeadingSimulation.Manager.GetSystem<T>();
             }
 
             #endregion
 
-            #region Unsupported
+            #region Entities and Components
 
-            public ReadOnlyCollection<ISystem> Systems { get { throw new NotSupportedException(); } }
-
-            public IEntityManager EntityManager
-            {
-                get { throw new NotSupportedException(); }
-                set { throw new NotSupportedException(); }
-            }
-
-            public void Update(long frame)
+            /// <summary>
+            /// Creates a new entity and returns its ID.
+            /// </summary>
+            /// <returns>The id of the new entity.</returns>
+            public int AddEntity()
             {
                 throw new NotSupportedException();
             }
 
-            public void RemoveSystem(ISystem system)
+            /// <summary>
+            /// Test whether the specified entity exists.
+            /// </summary>
+            /// <param name="entity">The entity to check for.</param>
+            /// <returns>Whether the manager contains the entity or not.</returns>
+            public bool HasEntity(int entity)
+            {
+                return _tss.LeadingSimulation.Manager.HasEntity(entity);
+            }
+
+            /// <summary>
+            /// Removes an entity and all its components from the system.
+            /// </summary>
+            /// <param name="entity">The entity to remove.</param>
+            public void RemoveEntity(int entity)
+            {
+                _tss.RemoveEntity(entity, _tss.CurrentFrame);
+            }
+
+            /// <summary>
+            /// Creates a new component for the specified entity.
+            /// </summary>
+            /// <typeparam name="T">The type of component to create.</typeparam>
+            /// <param name="entity">The entity to attach the component to.</param>
+            /// <returns>The new component.</returns>
+            public Component AddComponent<T>(int entity) where T : Component, new()
             {
                 throw new NotSupportedException();
             }
 
+            /// <summary>
+            /// Test whether the component with the specified id exists.
+            /// </summary>
+            /// <param name="componentId">The id of the component to check for.</param>
+            /// <returns>Whether the manager contains the component or not.</returns>
+            public bool HasComponent(int componentId)
+            {
+                return _tss.LeadingSimulation.Manager.HasComponent(componentId);
+            }
+
+            /// <summary>
+            /// Removes the specified component from the system.
+            /// </summary>
+            /// <param name="component">The component to remove.</param>
+            public void RemoveComponent(Component component)
+            {
+                throw new NotSupportedException();
+            }
+
+            /// <summary>
+            /// Gets the component of the specified type for an entity.
+            /// </summary>
+            /// <typeparam name="T">The type of component to get.</typeparam>
+            /// <param name="entity">The entity to get the component of.</param>
+            /// <returns>The component.</returns>
+            public T GetComponent<T>(int entity) where T : Component
+            {
+                return _tss.LeadingSimulation.Manager.GetComponent<T>(entity);
+            }
+
+            /// <summary>
+            /// Get a component by its id.
+            /// </summary>
+            /// <param name="componentId">The if of the component to retrieve.</param>
+            /// <returns>The component with the specified id.</returns>
+            public Component GetComponentById(int componentId)
+            {
+                return _tss.LeadingSimulation.Manager.GetComponentById(componentId);
+            }
+
+            /// <summary>
+            /// Allows enumerating over all components of the specified entity.
+            /// </summary>
+            /// <param name="entity">The entity for which to get the components.</param>
+            /// <returns>An enumerable listing all components of that entity.</returns>
+            public IEnumerable<Component> GetComponents(int entity)
+            {
+                return _tss.LeadingSimulation.Manager.GetComponents(entity);
+            }
+
+            #endregion
+
+            #region Messaging
+
+            /// <summary>
+            /// Inform all interested systems of a message.
+            /// </summary>
+            /// <param name="message">The sent message.</param>
             public void SendMessage<T>(ref T message) where T : struct
             {
                 throw new NotSupportedException();
             }
 
+            #endregion
+
+            #region Serialization / Hashing
+
+            /// <summary>
+            /// Write the object's state to the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to write the data to.</param>
+            /// <returns>The packet after writing.</returns>
             public Packet Packetize(Packet packet)
             {
                 throw new NotSupportedException();
             }
 
+            /// <summary>
+            /// Bring the object to the state in the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to read from.</param>
             public void Depacketize(Packet packet)
             {
                 throw new NotSupportedException();
             }
 
+            /// <summary>
+            /// Push some unique data of the object to the given hasher,
+            /// to contribute to the generated hash.
+            /// </summary>
+            /// <param name="hasher">The hasher to push data to.</param>
             public void Hash(Hasher hasher)
             {
                 throw new NotSupportedException();
             }
 
-            public ISystemManager DeepCopy()
+            #endregion
+
+            #region Copying
+
+            /// <summary>
+            /// Creates a deep copy of the object.
+            /// </summary>
+            /// <returns>The copy.</returns>
+            public IManager DeepCopy()
             {
                 throw new NotSupportedException();
             }
 
-            public ISystemManager DeepCopy(ISystemManager into)
+            /// <summary>
+            /// Creates a deep copy of the object, reusing the given object.
+            /// </summary>
+            /// <param name="into">The object to copy into.</param>
+            /// <returns>The copy.</returns>
+            public IManager DeepCopy(IManager into)
             {
                 throw new NotSupportedException();
             }

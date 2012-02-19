@@ -7,7 +7,7 @@ namespace Engine.Controller
     /// <summary>
     /// Defines public functionality of a game controller.
     /// </summary>
-    public interface IController<TSession> : IDisposable
+    public interface IController<out TSession> : IDisposable
         where TSession : ISession
     {
         /// <summary>

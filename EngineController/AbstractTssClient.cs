@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
@@ -13,14 +12,12 @@ namespace Engine.Controller
     /// This takes care of synchronizing the game states between server and
     /// client, and getting the run speed synchronized as well.
     /// </summary>
-    /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
-    /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
     public abstract class AbstractTssClient
         : AbstractTssController<IClientSession>, IClientController<FrameCommand>
     {
         #region Logger
 
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -40,14 +37,14 @@ namespace Engine.Controller
         /// <summary>
         /// Last time we sent a sync command to the server.
         /// </summary>
-        private long _lastSyncTime = 0;
+        private long _lastSyncTime;
 
         /// <summary>
         /// Difference in current frame to server, as determined by the
         /// last few syncs. This is used to ignore outliers (extreme delays,
         /// caused e.g. by resent TCP packets).
         /// </summary>
-        private IntSampling _frameDiff = new IntSampling(5);
+        private readonly IntSampling _frameDiff = new IntSampling(5);
 
         /// <summary>
         /// The last frame we know the server's state hash of.
@@ -66,17 +63,15 @@ namespace Engine.Controller
         /// <summary>
         /// Initialize session and base classes.
         /// </summary>
-        /// <param name="game">the game this belongs to.</param>
-        /// <param name="port">the port to listen on.</param>
-        /// <param name="header">the protocol header.</param>
-        public AbstractTssClient(IClientSession session)
-            : base(session, new uint[] {
-                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds), //< Expected case.
-                (uint)System.Math.Ceiling(500 / _targetElapsedMilliseconds) //< High, to avoid resyncs.
+        /// <param name="session">The session used.</param>
+        protected AbstractTssClient(IClientSession session)
+            : base(session, new[] {
+                (uint)Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
+                (uint)Math.Ceiling(500 / TargetElapsedMilliseconds) //< High, to avoid resyncs.
             })
         {
             Session.JoinResponse += HandleJoinResponse;
-            _tss.Invalidated += HandleSimulationInvalidated;
+            Tss.Invalidated += HandleSimulationInvalidated;
         }
 
         /// <summary>
@@ -87,7 +82,7 @@ namespace Engine.Controller
             if (disposing)
             {
                 Session.JoinResponse -= HandleJoinResponse;
-                _tss.Invalidated -= HandleSimulationInvalidated;
+                Tss.Invalidated -= HandleSimulationInvalidated;
             }
 
             base.Dispose(disposing);
@@ -105,20 +100,20 @@ namespace Engine.Controller
         /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         public override void Update(GameTime gameTime)
         {
-            if (Session.ConnectionState == ClientState.Connected && !_tss.WaitingForSynchronization)
+            if (Session.ConnectionState == ClientState.Connected && !Tss.WaitingForSynchronization)
             {
                 // Drive game logic.
-                UpdateSimulation(gameTime, _adjustedSpeed);
+                UpdateSimulation(gameTime, AdjustedSpeed);
 
                 // Hash test.
-                if (_tss.TrailingFrame == _hashFrame)
+                if (Tss.TrailingFrame == _hashFrame)
                 {
-                    Hasher hasher = new Hasher();
-                    _tss.Hash(hasher);
+                    var hasher = new Hasher();
+                    Tss.Hash(hasher);
                     if (hasher.Value != _hashValue)
                     {
-                        logger.Debug("Hash mismatch: {0} != {1} ", _hashValue, hasher.Value);
-                        _tss.Invalidate();
+                        Logger.Debug("Hash mismatch: {0} != {1} ", _hashValue, hasher.Value);
+                        Tss.Invalidate();
                     }
                 }
 
@@ -131,7 +126,7 @@ namespace Engine.Controller
                     {
                         Session.Send(packet
                             .Write((byte)TssControllerMessage.Synchronize)
-                            .Write(_tss.CurrentFrame)
+                            .Write(Tss.CurrentFrame)
                             .Write((float)SafeLoad));
                     }
                 }
@@ -150,7 +145,7 @@ namespace Engine.Controller
         public void PushLocalCommand(FrameCommand command)
         {
             command.PlayerNumber = Session.LocalPlayer.Number;
-            command.Frame = _tss.CurrentFrame + 1;
+            command.Frame = Tss.CurrentFrame + 1;
             Apply(command);
         }
 
@@ -168,7 +163,7 @@ namespace Engine.Controller
             {
                 // If we're waiting for a snapshot, don't continue spamming commands for
                 // the very frame we're stuck in.
-                if (_tss.WaitingForSynchronization)
+                if (Tss.WaitingForSynchronization)
                 {
                     return;
                 }
@@ -176,7 +171,7 @@ namespace Engine.Controller
                 // Send command to host.
                 Send(command);
             }
-            else if (_tss.WaitingForSynchronization && command.Frame <= _tss.TrailingFrame)
+            else if (Tss.WaitingForSynchronization && command.Frame <= Tss.TrailingFrame)
             {
                 // We're waiting for a sync, and our trailing frame wasn't enough, so
                 // we just skip any commands whatsoever that are from before it.
@@ -194,11 +189,11 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="sender">the underlying session.</param>
         /// <param name="e">information of the type <c>JoinResponseEventArgs</c>.</param>
-        protected virtual void HandleJoinResponse(object sender, JoinResponseEventArgs e)
+        private void HandleJoinResponse(object sender, JoinResponseEventArgs e)
         {
             // OK, we were allowed to join, invalidate our simulation to request
             // the current state.
-            _tss.Invalidate();
+            Tss.Invalidate();
         }
 
         #endregion
@@ -225,30 +220,30 @@ namespace Engine.Controller
                     // Answer to a synchronization request.
                     // Only accept these when they come from the server, and disregard if
                     // we're waiting for a snapshot of the simulation.
-                    if (args.IsAuthoritative && !_tss.WaitingForSynchronization)
+                    if (args.IsAuthoritative && !Tss.WaitingForSynchronization)
                     {
                         // This calculation follows algorithm described here:
                         // http://www.mine-control.com/zack/timesync/timesync.html
-                        long sentFrame = args.Data.ReadInt64();
-                        long serverFrame = args.Data.ReadInt64();
+                        var sentFrame = args.Data.ReadInt64();
+                        var serverFrame = args.Data.ReadInt64();
 
                         // We also adjust the game speed to accommodate slow
                         // machines. That's the speed we get in this step.
-                        _adjustedSpeed = args.Data.ReadSingle();
+                        AdjustedSpeed = args.Data.ReadSingle();
 
-                        long latency = (_tss.CurrentFrame - sentFrame) / 2;
-                        long clientServerDelta = (serverFrame - _tss.CurrentFrame);
-                        long frameDelta = clientServerDelta + latency / 2;
+                        var latency = (Tss.CurrentFrame - sentFrame) / 2;
+                        var clientServerDelta = (serverFrame - Tss.CurrentFrame);
+                        var frameDelta = clientServerDelta + latency / 2;
 
                         _frameDiff.Put((int)frameDelta);
-                        int median = _frameDiff.Median();
-                        double stdDev = _frameDiff.StandardDeviation();
+                        var median = _frameDiff.Median();
+                        var stdDev = _frameDiff.StandardDeviation();
 
-                        if (System.Math.Abs(frameDelta) > 1 && frameDelta < (int)(median + stdDev))
+                        if (Math.Abs(frameDelta) > 1 && frameDelta < (int)(median + stdDev))
                         {
-                            logger.Debug("Correcting for {0} frames.", frameDelta);
+                            Logger.Debug("Correcting for {0} frames.", frameDelta);
                             // Adjust the current frame of the simulation.
-                            _tss.RunToFrame(_tss.CurrentFrame + frameDelta);
+                            Tss.RunToFrame(new GameTime(), Tss.CurrentFrame + frameDelta);
                         }
                     }
                     break;
@@ -269,24 +264,14 @@ namespace Engine.Controller
                     if (args.IsAuthoritative)
                     {
                         var serverHash = args.Data.ReadInt32();
-                        args.Data.ReadPacketizableInto(_tss);
+                        args.Data.ReadPacketizableInto(Tss);
                         var hasher = new Hasher();
-                        _tss.Hash(hasher);
+                        Tss.Hash(hasher);
                         if (hasher.Value != serverHash)
                         {
-                            logger.Error("Hash mismatch after deserialization.");
+                            Logger.Error("Hash mismatch after deserialization.");
                             Session.Leave();
                         }
-                    }
-                    break;
-
-                case TssControllerMessage.AddGameObject:
-                    // Only accept these when they come from the server.
-                    if (args.IsAuthoritative)
-                    {
-                        long addFrame = args.Data.ReadInt64();
-                        Entity entity = args.Data.ReadPacketizable<Entity>();
-                        _tss.AddEntity(entity, addFrame);
                     }
                     break;
 
@@ -294,14 +279,10 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
-                        long removeFrame = args.Data.ReadInt64();
-                        int entityUid = args.Data.ReadInt32();
-                        _tss.RemoveEntity(entityUid, removeFrame);
+                        var removeFrame = args.Data.ReadInt64();
+                        var entityUid = args.Data.ReadInt32();
+                        Tss.RemoveEntity(entityUid, removeFrame);
                     }
-                    break;
-
-                // Everything else is unhandled on the client.
-                default:
                     break;
             }
             return null;
@@ -318,7 +299,7 @@ namespace Engine.Controller
         private void HandleSimulationInvalidated(object sender, EventArgs e)
         {
             // So we request it.
-            logger.Debug("Simulation invalidated, requesting server state.");
+            Logger.Debug("Simulation invalidated, requesting server state.");
             using (var packet = new Packet())
             {
                 Session.Send(packet.Write((byte)TssControllerMessage.GameStateRequest));

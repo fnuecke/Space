@@ -6,23 +6,26 @@ using Engine.Serialization;
 namespace Engine.ComponentSystem.RPG.Components
 {
     /// <summary>
-    /// Represents a player's inventory, with a list of items in it.
+    ///   Represents a player's inventory, with a list of items in it.
     /// </summary>
-    public sealed class Inventory : Component, IList<Entity>
+    public sealed class Inventory : Component, IList<int>
     {
         #region Properties
 
         /// <summary>
-        /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        ///   Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" /> .
         /// </summary>
-        /// <returns>
-        /// The number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
-        ///   </returns>
+        /// <returns> The number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1" /> . </returns>
         public int Count
         {
             get
             {
-                if (_isFixed)
+                if (!_isFixed)
+                {
+                    // Dynamic length, no gaps to use actual count.
+                    return _items.Count;
+                }
+                else
                 {
                     // Get the number of slots that are actually occupied.
                     int count = 0;
@@ -35,33 +38,27 @@ namespace Engine.ComponentSystem.RPG.Components
                     }
                     return count;
                 }
-                else
-                {
-                    // Dynamic length, no gaps to use actual count.
-                    return _items.Count;
-                }
             }
         }
 
         /// <summary>
-        /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
+        ///   Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only.
         /// </summary>
-        /// <returns>true if the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only; otherwise, false.
-        ///   </returns>
-        public bool IsReadOnly { get { return _isFixed; } }
+        /// <returns> true if the <see cref="T:System.Collections.Generic.ICollection`1" /> is read-only; otherwise, false. </returns>
+        public bool IsReadOnly
+        {
+            get { return _isFixed; }
+        }
 
         /// <summary>
-        /// A fixed capacity for this inventory. If set, there may be gaps in
-        /// the list. Disable by setting it to zero.
+        ///   A fixed capacity for this inventory. If set, there may be gaps in the list. Disable by setting it to zero.
         /// </summary>
-        /// <remarks>Important: unlike the <c>List</c>s capacity, e.g., this
-        /// capacity is fixed after it is set (unless it is set to zero).</remarks>
+        /// <remarks>
+        ///   Important: unlike the <c>List</c> s capacity, e.g., this capacity is fixed after it is set (unless it is set to zero).
+        /// </remarks>
         public int Capacity
         {
-            get
-            {
-                return _items.Count;
-            }
+            get { return _items.Count; }
             set
             {
                 if (_items.Count > value)
@@ -75,7 +72,7 @@ namespace Engine.ComponentSystem.RPG.Components
                             // This will, via messaging, also remove the item
                             // from the list, so the following capacity change
                             // is safe.
-                            Entity.Manager.RemoveEntity(itemUid);
+                            Manager.RemoveEntity(itemUid);
                         }
                         // If the list was fixed length, remove manually.
                         if (_isFixed)
@@ -104,33 +101,50 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>
-        /// A list of items currently in this inventory.
+        ///   A list of items currently in this inventory.
         /// </summary>
-        private List<int> _items = new List<int>();
+        private readonly List<int> _items = new List<int>();
 
         /// <summary>
-        /// Whether we have a fixed length list.
+        ///   Whether we have a fixed length list.
         /// </summary>
         private bool _isFixed;
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
         /// <summary>
-        /// Creates a new inventory with a fixed capacity.
+        ///   Initialize the component by using another instance of its type.
         /// </summary>
-        /// <param name="fixedCapacity">The capacity of the inventory.</param>
-        public Inventory(int fixedCapacity)
+        /// <param name="other"> The component to copy the values from. </param>
+        public override void Initialize(Component other)
         {
-            this.Capacity = fixedCapacity;
+            base.Initialize(other);
+
+            var otherInventory = (Inventory) other;
+            _items.AddRange(otherInventory._items);
+            _isFixed = otherInventory._isFixed;
         }
 
         /// <summary>
-        /// Creates a new inventory with a dynamic size.
+        ///   Initialize with a fixed capacity.
         /// </summary>
-        public Inventory()
+        /// <param name="fixedCapacity"> The capacity of the inventory. </param>
+        public void Initialize(int fixedCapacity)
         {
+            Capacity = fixedCapacity;
+        }
+
+        /// <summary>
+        ///   Reset the component to its initial state, so that it may be reused without side effects.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            _items.Clear();
+            _isFixed = false;
         }
 
         #endregion
@@ -138,19 +152,18 @@ namespace Engine.ComponentSystem.RPG.Components
         #region List interface
 
         /// <summary>
-        /// Gets or sets the element at the specified index.
+        ///   Gets or sets the element at the specified index.
         /// </summary>
-        /// <returns>
-        /// The element at the specified index.
-        ///   </returns>
-        ///   
-        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.
-        ///   </exception>
-        ///   
-        /// <exception cref="T:System.NotSupportedException">
-        /// The property is set and the <see cref="T:System.Collections.Generic.IList`1"/> is read-only.
-        ///   </exception>
-        public Entity this[int index]
+        /// <returns> The element at the specified index. </returns>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        ///   <paramref name="index" />
+        ///   is not a valid index in the
+        ///   <see cref="T:System.Collections.Generic.IList`1" />
+        ///   .</exception>
+        /// <exception cref="T:System.NotSupportedException">The property is set and the
+        ///   <see cref="T:System.Collections.Generic.IList`1" />
+        ///   is read-only.</exception>
+        public int this[int index]
         {
             get
             {
@@ -158,45 +171,48 @@ namespace Engine.ComponentSystem.RPG.Components
                 // values, as it should).
                 if (_isFixed && _items[index] <= 0)
                 {
-                    return null;
+                    return 0;
                 }
-                return Entity.Manager.GetEntity(_items[index]);
+                return _items[index];
             }
-            set
-            {
-                _items[index] = value.UID;
-            }
+            set { _items[index] = value; }
         }
 
         /// <summary>
-        /// Adds an item to the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        ///   Adds an item to the <see cref="T:System.Collections.Generic.ICollection`1" /> .
         /// </summary>
-        /// <param name="item">The object to add to the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
-        /// <exception cref="T:System.NotSupportedException">
-        /// The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
-        ///   </exception>
-        /// <exception cref="T:System.InvalidOperationException">
-        /// The fixed length inventory is already full.
-        /// </exception>
-        public void Add(Entity item)
+        /// <param name="item"> The object to add to the <see cref="T:System.Collections.Generic.ICollection`1" /> . </param>
+        /// <exception cref="T:System.NotSupportedException">The
+        ///   <see cref="T:System.Collections.Generic.ICollection`1" />
+        ///   is read-only.</exception>
+        /// <exception cref="T:System.InvalidOperationException">The fixed length inventory is already full.</exception>
+        public void Add(int item)
         {
+            // Check if its really an item.
+            var itemType = Manager.GetComponent<Item>(item);
+            if (itemType == null)
+            {
+                throw new ArgumentException("Entity does not have an Item component.", "item");
+            }
+
             // If the item is stackable, see if we already have a stack we can
             // add it on top of.
-            var stackable = item.GetComponent<Stackable>();
+            var stackable = Manager.GetComponent<Stackable>(item);
             if (stackable != null)
             {
                 for (int i = 0; i < _items.Count; i++)
                 {
                     if (!_isFixed || _items[i] > 0)
                     {
-                        var otherStackable = this[i].GetComponent<Stackable>();
+                        var otherItemType = Manager.GetComponent<Item>(this[i]);
+                        var otherStackable = Manager.GetComponent<Stackable>(this[i]);
                         if (otherStackable != null &&
-                            otherStackable.GroupId == stackable.GroupId &&
+                            otherItemType.Name.Equals(itemType.Name) &&
                             otherStackable.Count < otherStackable.MaxCount)
                         {
                             // Found a non-full stack of matching type, add as many
                             // as possible.
-                            int toAdd = System.Math.Min(otherStackable.MaxCount - otherStackable.Count, stackable.Count);
+                            int toAdd = Math.Min(otherStackable.MaxCount - otherStackable.Count, stackable.Count);
                             otherStackable.Count += toAdd;
                             stackable.Count -= toAdd;
 
@@ -204,7 +220,7 @@ namespace Engine.ComponentSystem.RPG.Components
                             if (stackable.Count == 0)
                             {
                                 // Yes and the stack was used up, delete it.
-                                Entity.Manager.RemoveEntity(item);
+                                Manager.RemoveEntity(item);
                                 return;
                             } // ... else we continue in search of the next stack.
                         }
@@ -224,10 +240,10 @@ namespace Engine.ComponentSystem.RPG.Components
                     if (_items[i] <= 0)
                     {
                         // Found one, store it.
-                        _items[i] = item.UID;
+                        _items[i] = item;
 
                         // Disable rendering, if available.
-                        var renderer = item.GetComponent<TextureData>();
+                        var renderer = Manager.GetComponent<TextureData>(item);
                         if (renderer != null)
                         {
                             renderer.Enabled = false;
@@ -242,10 +258,10 @@ namespace Engine.ComponentSystem.RPG.Components
             else
             {
                 // Just append.
-                _items.Add(item.UID);
+                _items.Add(item);
 
                 // Disable rendering, if available.
-                var renderer = item.GetComponent<TextureData>();
+                var renderer = Manager.GetComponent<TextureData>(item);
                 if (renderer != null)
                 {
                     renderer.Enabled = false;
@@ -254,75 +270,61 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>
-        /// Removes all items from the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        ///   Removes all items from the <see cref="T:System.Collections.Generic.ICollection`1" /> .
         /// </summary>
-        /// <exception cref="T:System.NotSupportedException">
-        /// The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
-        ///   </exception>
+        /// <exception cref="T:System.NotSupportedException">The
+        ///   <see cref="T:System.Collections.Generic.ICollection`1" />
+        ///   is read-only.</exception>
         public void Clear()
         {
-            // Remove all items and destroy them.
-            for (int i = _items.Count - 1; i > 0; --i)
-            {
-                int itemUid = _items[i];
-                if (itemUid > 0)
-                {
-                    // Will remove / clear the slot via messaging.
-                    Entity.Manager.RemoveEntity(itemUid);
-                }
-            }
+            _items.Clear();
         }
 
         /// <summary>
-        /// Determines whether the <see cref="T:System.Collections.Generic.ICollection`1"/> contains a specific value.
+        ///   Determines whether the <see cref="T:System.Collections.Generic.ICollection`1" /> contains a specific value.
         /// </summary>
-        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
-        /// <returns>
-        /// true if <paramref name="item"/> is found in the <see cref="T:System.Collections.Generic.ICollection`1"/>; otherwise, false.
-        /// </returns>
-        public bool Contains(Entity item)
+        /// <param name="item"> The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1" /> . </param>
+        /// <returns> true if <paramref name="item" /> is found in the <see cref="T:System.Collections.Generic.ICollection`1" /> ; otherwise, false. </returns>
+        public bool Contains(int item)
         {
-            return _items.Contains(item.UID);
+            return _items.Contains(item);
         }
 
         /// <summary>
-        /// Copies to.
+        ///   Copies to.
         /// </summary>
-        /// <param name="array">The array.</param>
-        /// <param name="arrayIndex">Index of the array.</param>
-        public void CopyTo(Entity[] array, int arrayIndex)
+        /// <param name="array"> The array. </param>
+        /// <param name="arrayIndex"> Index of the array. </param>
+        public void CopyTo(int[] array, int arrayIndex)
         {
-            for (int i = 0; i < _items.Count; i++)
-            {
-                array[arrayIndex + i] = Entity.Manager.GetEntity(_items[i]);
-            }
+            _items.CopyTo(array, arrayIndex);
         }
 
         /// <summary>
-        /// Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        ///   Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1" /> .
         /// </summary>
-        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList`1"/>.</param>
-        /// <returns>
-        /// The index of <paramref name="item"/> if found in the list; otherwise, -1.
-        /// </returns>
-        public int IndexOf(Entity item)
+        /// <param name="item"> The object to locate in the <see cref="T:System.Collections.Generic.IList`1" /> . </param>
+        /// <returns> The index of <paramref name="item" /> if found in the list; otherwise, -1. </returns>
+        public int IndexOf(int item)
         {
-            return _items.IndexOf(item.UID);
+            return _items.IndexOf(item);
         }
 
         /// <summary>
-        /// Inserts an item to the <see cref="T:System.Collections.Generic.IList`1"/> at the specified index.
+        ///   Inserts an item to the <see cref="T:System.Collections.Generic.IList`1" /> at the specified index.
         /// </summary>
-        /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
-        /// <param name="item">The object to insert into the <see cref="T:System.Collections.Generic.IList`1"/>.</param>
-        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.
-        ///   </exception>
-        ///   
-        /// <exception cref="T:System.NotSupportedException">
-        /// The <see cref="T:System.Collections.Generic.IList`1"/> is read-only.
-        ///   </exception>
+        /// <param name="index"> The zero-based index at which <paramref name="item" /> should be inserted. </param>
+        /// <param name="item"> The object to insert into the <see cref="T:System.Collections.Generic.IList`1" /> . </param>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        ///   <paramref name="index" />
+        ///   is not a valid index in the
+        ///   <see cref="T:System.Collections.Generic.IList`1" />
+        ///   .</exception>
+        /// <exception cref="T:System.NotSupportedException">The
+        ///   <see cref="T:System.Collections.Generic.IList`1" />
+        ///   is read-only.</exception>
         /// <exception cref="System.NotSupportedException">If the inventory is of fixed length.</exception>
-        public void Insert(int index, Entity item)
+        public void Insert(int index, int item)
         {
             if (_isFixed)
             {
@@ -330,21 +332,21 @@ namespace Engine.ComponentSystem.RPG.Components
             }
             else
             {
-                _items.Insert(index, item.UID);
+                _items.Insert(index, item);
             }
         }
 
         /// <summary>
-        /// Removes the first occurrence of a specific object from the <see cref="T:System.Collections.Generic.ICollection`1"/>.
+        ///   Removes the first occurrence of a specific object from the <see cref="T:System.Collections.Generic.ICollection`1" /> .
         /// </summary>
-        /// <param name="item">The object to remove from the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
-        /// <returns>
-        /// true if <paramref name="item"/> was successfully removed from the <see cref="T:System.Collections.Generic.ICollection`1"/>; otherwise, false. This method also returns false if <paramref name="item"/> is not found in the original <see cref="T:System.Collections.Generic.ICollection`1"/>.
-        /// </returns>
-        /// <exception cref="T:System.NotSupportedException">
-        /// The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
-        ///   </exception>
-        public bool Remove(Entity item)
+        /// <param name="item"> The object to remove from the <see cref="T:System.Collections.Generic.ICollection`1" /> . </param>
+        /// <returns> true if <paramref name="item" /> was successfully removed from the <see
+        ///    cref="T:System.Collections.Generic.ICollection`1" /> ; otherwise, false. This method also returns false if <paramref
+        ///    name="item" /> is not found in the original <see cref="T:System.Collections.Generic.ICollection`1" /> . </returns>
+        /// <exception cref="T:System.NotSupportedException">The
+        ///   <see cref="T:System.Collections.Generic.ICollection`1" />
+        ///   is read-only.</exception>
+        public bool Remove(int item)
         {
             if (_isFixed)
             {
@@ -362,20 +364,22 @@ namespace Engine.ComponentSystem.RPG.Components
             }
             else
             {
-                return _items.Remove(item.UID);
+                return _items.Remove(item);
             }
         }
 
         /// <summary>
-        /// Removes the <see cref="T:System.Collections.Generic.IList`1"/> item at the specified index.
+        ///   Removes the <see cref="T:System.Collections.Generic.IList`1" /> item at the specified index.
         /// </summary>
-        /// <param name="index">The zero-based index of the item to remove.</param>
-        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.
-        ///   </exception>
-        ///   
-        /// <exception cref="T:System.NotSupportedException">
-        /// The <see cref="T:System.Collections.Generic.IList`1"/> is read-only.
-        ///   </exception>
+        /// <param name="index"> The zero-based index of the item to remove. </param>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">
+        ///   <paramref name="index" />
+        ///   is not a valid index in the
+        ///   <see cref="T:System.Collections.Generic.IList`1" />
+        ///   .</exception>
+        /// <exception cref="T:System.NotSupportedException">The
+        ///   <see cref="T:System.Collections.Generic.IList`1" />
+        ///   is read-only.</exception>
         public void RemoveAt(int index)
         {
             if (_isFixed)
@@ -389,12 +393,10 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through the collection.
+        ///   Returns an enumerator that iterates through the collection.
         /// </summary>
-        /// <returns>
-        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
-        /// </returns>
-        public IEnumerator<Entity> GetEnumerator()
+        /// <returns> A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection. </returns>
+        public IEnumerator<int> GetEnumerator()
         {
             if (_isFixed)
             {
@@ -402,7 +404,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 {
                     if (_items[i] > 0)
                     {
-                        yield return Entity.Manager.GetEntity(_items[i]);
+                        yield return _items[i];
                     }
                 }
             }
@@ -410,27 +412,25 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 for (int i = 0; i < _items.Count; i++)
                 {
-                    yield return Entity.Manager.GetEntity(_items[i]);
+                    yield return _items[i];
                 }
             }
         }
 
         /// <summary>
-        /// Returns an enumerator that iterates through a collection.
+        ///   Returns an enumerator that iterates through a collection.
         /// </summary>
-        /// <returns>
-        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
-        /// </returns>
+        /// <returns> An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection. </returns>
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
 
         /// <summary>
-        /// Swap two items in the list.
+        ///   Swap two items in the list.
         /// </summary>
-        /// <param name="firstIndex">The first index involved.</param>
-        /// <param name="secondIndex">The second index involved.</param>
+        /// <param name="firstIndex"> The first index involved. </param>
+        /// <param name="secondIndex"> The second index involved. </param>
         public void Swap(int firstIndex, int secondIndex)
         {
             int tmp = _items[firstIndex];
@@ -443,12 +443,10 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Serialization
 
         /// <summary>
-        /// Write the object's state to the given packet.
+        ///   Write the object's state to the given packet.
         /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
+        /// <param name="packet"> The packet to write the data to. </param>
+        /// <returns> The packet after writing. </returns>
         public override Packet Packetize(Packet packet)
         {
             base.Packetize(packet);
@@ -465,9 +463,9 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>
-        /// Bring the object to the state in the given packet.
+        ///   Bring the object to the state in the given packet.
         /// </summary>
-        /// <param name="packet">The packet to read from.</param>
+        /// <param name="packet"> The packet to read from. </param>
         public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
@@ -480,28 +478,6 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             _isFixed = packet.ReadBoolean();
-        }
-
-        #endregion
-
-        #region Copying
-
-        public override Component DeepCopy(Component into)
-        {
-            var copy = (Inventory)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy._items.Clear();
-                copy._items.AddRange(_items);
-                copy._isFixed = _isFixed;
-            }
-            else
-            {
-                copy._items = new List<int>(_items);
-            }
-
-            return copy;
         }
 
         #endregion

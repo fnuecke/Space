@@ -1,6 +1,7 @@
 ﻿using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
@@ -27,7 +28,7 @@ namespace Engine.Controller
         {
             var simulation = new DefaultSimulation();
             simulation.Command += commandHandler;
-            _tss.Initialize(simulation);
+            Tss.Initialize(simulation);
         }
 
         /// <summary>
@@ -52,7 +53,7 @@ namespace Engine.Controller
         /// Update session and self.
         /// </summary>
         /// <param name="gameTime"></param>
-        public override void Update(Microsoft.Xna.Framework.GameTime gameTime)
+        public override void Update(GameTime gameTime)
         {
             Session.Update();
             

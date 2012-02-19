@@ -1,6 +1,6 @@
 ﻿using System;
-using Engine.ComponentSystem;
 using Engine.Simulation.Commands;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Simulation
 {
@@ -34,24 +34,9 @@ namespace Engine.Simulation
         /// <summary>
         /// Run the simulation to the given frame, which may be in the past.
         /// </summary>
+        /// <param name="gameTime">The elapsed time since the last call.</param>
         /// <param name="frame">the frame to run to.</param>
-        void RunToFrame(long frame);
-
-        /// <summary>
-        /// Add an object in a specific time frame. This will roll back, if
-        /// necessary, to insert the object, meaning it can trigger desyncs.
-        /// </summary>
-        /// <param name="entity">the object to insert.</param>
-        /// <param name="frame">the frame to insert it at.</param>
-        void AddEntity(Entity entity, long frame);
-
-        /// <summary>
-        /// Remove an object in a specific time frame. This will roll back, if
-        /// necessary, to remove the object, meaning it can trigger desyncs.
-        /// </summary>
-        /// <param name="entityUid">the id of the object to remove.</param>
-        /// <param name="frame">the frame to remove it at.</param>
-        void RemoveEntity(int entityUid, long frame);
+        void RunToFrame(GameTime gameTime, long frame);
 
         /// <summary>
         /// Push a command to be executed at the given frame.  This will roll

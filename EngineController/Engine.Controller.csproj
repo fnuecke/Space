@@ -97,7 +97,6 @@
     <Compile Include="AbstractTssClient.cs" />
     <Compile Include="AbstractTssController.cs" />
     <Compile Include="AbstractTssServer.cs" />
-    <Compile Include="CommandEmitterEventArgs.cs" />
     <Compile Include="IClientController.cs" />
     <Compile Include="IController.cs" />
     <Compile Include="ISimulationController.cs" />

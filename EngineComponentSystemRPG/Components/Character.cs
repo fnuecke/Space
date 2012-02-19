@@ -35,12 +35,12 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Base values for attributes.
         /// </summary>
-        private Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
+        private readonly Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
 
         /// <summary>
         /// Modified values, based on equipment and status effects.
         /// </summary>
-        private Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
+        private readonly Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
 
         #endregion
 
@@ -49,12 +49,44 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Reusable list for modifier computation.
         /// </summary>
-        private List<AttributeModifier<TAttribute>> _reusableAdditiveList = new List<AttributeModifier<TAttribute>>();
+        private readonly List<AttributeModifier<TAttribute>> _reusableAdditiveList = new List<AttributeModifier<TAttribute>>();
 
         /// <summary>
         /// Reusable list for modifier computation.
         /// </summary>
-        private List<AttributeModifier<TAttribute>> _reusableMultiplicativeList = new List<AttributeModifier<TAttribute>>();
+        private readonly List<AttributeModifier<TAttribute>> _reusableMultiplicativeList = new List<AttributeModifier<TAttribute>>();
+
+        #endregion
+
+        #region Initialization
+
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherCharacter = (Character<TAttribute>)other;
+            foreach (var baseAttribute in otherCharacter._baseAttributes)
+            {
+                _baseAttributes.Add(baseAttribute.Key, baseAttribute.Value);
+            }
+            RecomputeAttributes();
+        }
+
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            _baseAttributes.Clear();
+            _modifiedAttributes.Clear();
+        }
 
         #endregion
 
@@ -119,7 +151,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Recomputes the modified values of all attributes.
         /// </summary>
-        private void RecomputeAttributes()
+        public void RecomputeAttributes()
         {
             // Find all additive and multiplicative modifiers.
 
@@ -130,12 +162,12 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             // Parse all items.
-            var equipment = Entity.GetComponent<Equipment>();
+            var equipment = Manager.GetComponent<Equipment>(Entity);
             if (equipment != null)
             {
                 foreach (var item in equipment.AllItems)
                 {
-                    foreach (var component in item.Components)
+                    foreach (var component in Manager.GetComponents(item))
                     {
                         if (component is Attribute<TAttribute>)
                         {
@@ -156,7 +188,7 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             // Parse all status effects.
-            foreach (var component in Entity.Components)
+            foreach (var component in Manager.GetComponents(Entity))
             {
                 if (component is AttributeStatusEffect<TAttribute>)
                 {
@@ -182,7 +214,7 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 if (!_modifiedAttributes.ContainsKey(modifier.Type))
                 {
-                    _modifiedAttributes[modifier.Type] = new float[] { modifier.Value, 1f };
+                    _modifiedAttributes[modifier.Type] = new[] { modifier.Value, 1f };
                 }
                 else
                 {
@@ -203,7 +235,8 @@ namespace Engine.ComponentSystem.RPG.Components
 
             // Send message.
             CharacterStatsInvalidated message;
-            Entity.SendMessage(ref message);
+            message.Entity = Entity;
+            Manager.SendMessage(ref message);
         }
         
         #endregion
@@ -283,43 +316,6 @@ namespace Engine.ComponentSystem.RPG.Components
                 hasher.Put(BitConverter.GetBytes(attribute.Value[0]));
                 hasher.Put(BitConverter.GetBytes(attribute.Value[1]));
             }
-        }
-
-        #endregion
-
-        #region Copying
-
-        public override Component DeepCopy(Component into)
-        {
-            var copy = (Character<TAttribute>)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy._baseAttributes.Clear();
-                foreach (var attribute in _baseAttributes)
-                {
-                    copy._baseAttributes[attribute.Key] = attribute.Value;
-                }
-                copy._modifiedAttributes.Clear();
-            }
-            else
-            {
-                copy._baseAttributes = new Dictionary<TAttribute, float>(_baseAttributes);
-                copy._modifiedAttributes = new Dictionary<TAttribute, float[]>();
-
-                // For multi-threading.
-                copy._reusableAdditiveList = new List<AttributeModifier<TAttribute>>();
-                copy._reusableMultiplicativeList = new List<AttributeModifier<TAttribute>>();
-            }
-
-            foreach (var attribute in _modifiedAttributes)
-            {
-                var value = new float[attribute.Value.Length];
-                attribute.Value.CopyTo(value, 0);
-                copy._modifiedAttributes[attribute.Key] = value;
-            }
-
-            return copy;
         }
 
         #endregion

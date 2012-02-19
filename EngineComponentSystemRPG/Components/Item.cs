@@ -36,25 +36,42 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
         /// <summary>
-        /// Creates a new item with the specified parameters.
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherItem = (Item)other;
+            Name = otherItem.Name;
+            IconName = otherItem.IconName;
+        }
+
+        /// <summary>
+        /// Initialize with the specified parameters.
         /// </summary>
         /// <param name="name">The logical base name of the item.</param>
         /// <param name="iconName">The name of the icon used for the item.</param>
-        public Item(string name, string iconName)
+        public void Initialize(string name, string iconName)
         {
             this.Name = name;
             this.IconName = iconName;
         }
 
         /// <summary>
-        /// For deserialization.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        public Item()
-            : this(string.Empty, string.Empty)
+        public override void Reset()
         {
+            base.Reset();
+
+            Name = null;
+            IconName = null;
         }
 
         #endregion
@@ -89,19 +106,17 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Copying
+        #region ToString
 
-        public override Component DeepCopy(Component into)
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
         {
-            var copy = (Item)base.DeepCopy(into);
-
-            if (into == copy)
-            {
-                copy.Name = Name;
-                copy.IconName = IconName;
-            }
-
-            return copy;
+            return base.ToString() + ", Name = " + Name + ", IconName = " + IconName;
         }
 
         #endregion

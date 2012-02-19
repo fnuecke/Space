@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 
 namespace Engine.ComponentSystem.RPG.Components
@@ -12,12 +13,6 @@ namespace Engine.ComponentSystem.RPG.Components
         #region Fields
 
         /// <summary>
-        /// The stackable group id used to check if two stacks can be merged
-        /// into one larger stack.
-        /// </summary>
-        public int GroupId;
-
-        /// <summary>
         /// The current number of items in the stack.
         /// </summary>
         public int Count;
@@ -29,26 +24,42 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
         /// <summary>
-        /// Creates a new stack of size one from the specified parameters.
+        /// Initialize the component by using another instance of its type.
         /// </summary>
-        /// <param name="groupId">The group id for this stackable.</param>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherStackable = (Stackable)other;
+            Count = otherStackable.Count;
+            MaxCount = otherStackable.MaxCount;
+        }
+
+        /// <summary>
+        /// Initialize with the specified parameters.
+        /// </summary>
         /// <param name="maxCount">The maximum number of items that can be
         /// merged into a single stack.</param>
-        public Stackable(int groupId, int maxCount)
+        public void Initialize(int maxCount)
         {
-            this.GroupId = groupId;
             this.Count = 1;
             this.MaxCount = maxCount;
         }
 
         /// <summary>
-        /// For deserialization.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        public Stackable()
+        public override void Reset()
         {
+            base.Reset();
+
+            Count = 0;
+            MaxCount = 0;
         }
 
         #endregion
@@ -65,7 +76,6 @@ namespace Engine.ComponentSystem.RPG.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(GroupId)
                 .Write(Count)
                 .Write(MaxCount);
         }
@@ -78,27 +88,36 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Depacketize(packet);
 
-            GroupId = packet.ReadInt32();
             Count = packet.ReadInt32();
             MaxCount = packet.ReadInt32();
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Util.Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put(BitConverter.GetBytes(Count));
+            hasher.Put(BitConverter.GetBytes(MaxCount));
+        }
+
         #endregion
 
-        #region Copying
+        #region ToString
 
-        public override Component DeepCopy(Component into)
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
         {
-            var copy = (Stackable)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.GroupId = GroupId;
-                copy.Count = Count;
-                copy.MaxCount = MaxCount;
-            }
-
-            return copy;
+            return base.ToString() + ", Count = " + Count + ", MaxCount = " + MaxCount;
         }
 
         #endregion

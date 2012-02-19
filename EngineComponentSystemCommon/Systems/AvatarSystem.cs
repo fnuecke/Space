@@ -31,7 +31,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Fetch the avatar of the specified player.
         /// </summary>
-        /// <param name="player">The player to fetch the avatar for.</param>
+        /// <param name="playerNumber">The player to fetch the avatar for.</param>
         /// <returns>The avatar entity, or <c>0</c> if none is known for this player.</returns>
         public int GetAvatar(int playerNumber)
         {

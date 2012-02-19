@@ -151,11 +151,11 @@ namespace Engine.ComponentSystem.RPG.Components
             switch (ComputationType)
             {
                 case AttributeComputationType.Additive:
-                    return Value + " " + Type.ToString();
+                    return Value + " " + Type;
                 case AttributeComputationType.Multiplicative:
-                default:
-                    return (1 - Value) + "% " + Type.ToString();
+                    return (1 - Value) + "% " + Type;
             }
+            throw new InvalidOperationException("Unhandled attribute computation type.");
         }
 
         #endregion

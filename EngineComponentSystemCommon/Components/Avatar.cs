@@ -37,7 +37,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="playerNumber">The player number.</param>
         public void Initialize(int playerNumber)
         {
-            this.PlayerNumber = playerNumber;
+            PlayerNumber = playerNumber;
         }
 
         #endregion
@@ -92,7 +92,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", PlayerNumber = " + PlayerNumber.ToString();
+            return base.ToString() + ", PlayerNumber = " + PlayerNumber;
         }
 
         #endregion

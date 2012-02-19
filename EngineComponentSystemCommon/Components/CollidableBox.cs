@@ -47,7 +47,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Initialize(groups);
 
-            this.Size = size;
+            Size = size;
         }
 
         /// <summary>

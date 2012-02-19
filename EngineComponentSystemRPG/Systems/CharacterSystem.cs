@@ -1,10 +1,14 @@
 ﻿using System;
-using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Components;
+using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 
 namespace Engine.ComponentSystem.RPG.Systems
 {
+    /// <summary>
+    /// Handles keeping modified character attributes up-to-date.
+    /// </summary>
+    /// <typeparam name="TAttribute">Possible attribute values.</typeparam>
     public sealed class CharacterSystem<TAttribute> : AbstractComponentSystem<Character<TAttribute>>
         where TAttribute : struct
     {
@@ -18,47 +22,29 @@ namespace Engine.ComponentSystem.RPG.Systems
         {
             base.Receive(ref message);
             
-            if (message is EntityAdded && ((EntityAdded)(ValueType)message).Entity == Entity)
+            if (message is ItemAdded)
             {
-                RecomputeAttributes();
+                // Recompute if an item with attribute modifiers was added.
+                var added = (ItemAdded)(ValueType)message;
+                if (Manager.GetComponent<Attribute<TAttribute>>(added.Item) != null)
+                {
+                    var character = Manager.GetComponent<Character<TAttribute>>(added.Entity);
+                    if (character != null)
+                    {
+                        character.RecomputeAttributes();
+                    }
+                }
             }
-            // Only handle local commands if we're part of the system.
-            else if (Entity.Manager != null)
+            else if (message is ItemRemoved)
             {
-                if (message is ItemAdded)
+                // Recompute if an item with attribute modifiers was removed.
+                var removed = (ItemRemoved)(ValueType)message;
+                if (Manager.GetComponent<Attribute<TAttribute>>(removed.Item) != null)
                 {
-                    // Recompute if an item with attribute modifiers was added.
-                    var added = (ItemAdded)(ValueType)message;
-                    if (added.Item.GetComponent<Attribute<TAttribute>>() != null)
+                    var character = Manager.GetComponent<Character<TAttribute>>(removed.Entity);
+                    if (character != null)
                     {
-                        RecomputeAttributes();
-                    }
-                }
-                else if (message is ItemRemoved)
-                {
-                    // Recompute if an item with attribute modifiers was removed.
-                    var removed = (ItemRemoved)(ValueType)message;
-                    if (removed.Item.GetComponent<Attribute<TAttribute>>() != null)
-                    {
-                        RecomputeAttributes();
-                    }
-                }
-                else if (message is ComponentAdded)
-                {
-                    // Recompute if a status effect with attribute modifiers was added.
-                    var added = (ComponentAdded)(ValueType)message;
-                    if (added.Component is AttributeStatusEffect<TAttribute> || added.Component == this)
-                    {
-                        RecomputeAttributes();
-                    }
-                }
-                else if (message is ComponentRemoved)
-                {
-                    // Recompute if a status effect with attribute modifiers was removed.
-                    var removed = (ComponentRemoved)(ValueType)message;
-                    if (removed.Component is AttributeStatusEffect<TAttribute>)
-                    {
-                        RecomputeAttributes();
+                        character.RecomputeAttributes();   
                     }
                 }
             }

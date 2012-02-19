@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
@@ -45,11 +46,6 @@ namespace Engine.Controller
             GameStateResponse,
 
             /// <summary>
-            /// Server tells players about a new object to insert into the simulation.
-            /// </summary>
-            AddGameObject,
-
-            /// <summary>
             /// Server tells players to remove an object from the simulation.
             /// </summary>
             RemoveGameObject,
@@ -68,14 +64,14 @@ namespace Engine.Controller
         /// <summary>
         /// The number of milliseconds a single update should take.
         /// </summary>
-        protected const double _targetElapsedMilliseconds = 1000.0 / 60.0;
+        protected const double TargetElapsedMilliseconds = 1000.0 / 60.0;
 
         /// <summary>
         /// The actual load is multiplied with this factor to provide a little
         /// buffer, allowing server/clients to react to slow downs before the
         /// game becomes unresponsive.
         /// </summary>
-        protected const double _loadBufferFactor = 1.8;
+        private const double LoadBufferFactor = 1.8;
 
         #endregion
 
@@ -100,13 +96,13 @@ namespace Engine.Controller
         /// The current actual game speed, based on possible slow-downs due
         /// to the server or other clients.
         /// </summary>
-        public double ActualSpeed { get { return _adjustedSpeed; } }
+        public double ActualSpeed { get { return AdjustedSpeed; } }
 
         /// <summary>
         /// Adjusted load value to allow reacting to slow downs of server or
         /// clients before the game becomes unresponsive.
         /// </summary>
-        protected double SafeLoad { get { return CurrentLoad * _loadBufferFactor; } }
+        protected double SafeLoad { get { return CurrentLoad * LoadBufferFactor; } }
 
         #endregion
 
@@ -117,18 +113,18 @@ namespace Engine.Controller
         /// discouraged, as it will lead to clients having to resynchronize
         /// themselves by getting a snapshot of the complete simulation.
         /// </summary>
-        protected TSS _tss;
+        protected readonly TSS Tss;
 
         /// <summary>
         /// The adjusted speed we're currently running at, based on how well
         /// other clients (and the server) currently fare.
         /// </summary>
-        protected double _adjustedSpeed = 1.0;
+        protected double AdjustedSpeed = 1.0;
 
         /// <summary>
         /// Wrapper to restrict interaction with TSS.
         /// </summary>
-        private SimulationWrapper _simulation;
+        private readonly SimulationWrapper _simulation;
 
         /// <summary>
         /// The remainder of time we did not update last frame, which we'll add to the
@@ -140,7 +136,7 @@ namespace Engine.Controller
         /// Used to sample how long it takes for us to perform our simulation
         /// updates in relation to the available time.
         /// </summary>
-        private DoubleSampling _updateLoad = new DoubleSampling(30);
+        private readonly DoubleSampling _updateLoad = new DoubleSampling(30);
 
         #endregion
 
@@ -149,14 +145,13 @@ namespace Engine.Controller
         /// <summary>
         /// Initialize session and base classes.
         /// </summary>
-        /// <param name="game">the game this belongs to.</param>
-        /// <param name="port">the port to listen on.</param>
-        /// <param name="header">the protocol header.</param>
-        public AbstractTssController(TSession session, uint[] delays)
+        /// <param name="session">The session.</param>
+        /// <param name="delays">The delays.</param>
+        protected AbstractTssController(TSession session, uint[] delays)
             : base(session)
         {
-            _tss = new TSS(delays);
-            _simulation = new SimulationWrapper(_tss, this);
+            Tss = new TSS(delays);
+            _simulation = new SimulationWrapper(this);
         }
 
         #endregion
@@ -169,6 +164,7 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="gameTime">the game time information for the current
         /// update.</param>
+        /// <param name="targetSpeed">The target speed.</param>
         protected void UpdateSimulation(GameTime gameTime, double targetSpeed = 1.0)
         {
             // We can run at least one frame, so do the update(s).
@@ -182,13 +178,13 @@ namespace Engine.Controller
 
             // Compensate for dynamic time step.
             double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder;
-            double targetFrequency = _targetElapsedMilliseconds / targetSpeed;
+            double targetFrequency = TargetElapsedMilliseconds / targetSpeed;
             if (elapsed < targetFrequency)
             {
                 // If we can't actually run to the next frame, at least update
                 // back to the current frame in case rollbacks were made to
                 // accommodate player commands.
-                _tss.RunToFrame(_tss.CurrentFrame);
+                Tss.RunToFrame(gameTime, Tss.CurrentFrame);
 
                 // Track how much time we spent in this update.
                 timePassed = new TimeSpan(DateTime.Now.Ticks - begin).TotalMilliseconds;
@@ -206,7 +202,7 @@ namespace Engine.Controller
                 // Do as many updates as we can.
                 while (remainingTime >= targetFrequency && timePassed < targetFrequency)
                 {
-                    _tss.Update();
+                    Tss.Update(gameTime);
 
                     // One less to do.
                     remainingTime -= targetFrequency;
@@ -218,7 +214,7 @@ namespace Engine.Controller
                 // Keep a carry for the next update. But never try to catch up
                 // on frames while we took too long, as this'll lead to the
                 // simulation running to fast when catching up.
-                _lastUpdateRemainder = System.Math.Min(remainingTime, targetFrequency);
+                _lastUpdateRemainder = Math.Min(remainingTime, targetFrequency);
             }
 
             // Track our load, but ignore idle rounds (this is for unlocked
@@ -226,7 +222,7 @@ namespace Engine.Controller
             // otherwise).
             if (timePassed > 1 && timePassed < 128)
             {
-                _updateLoad.Put(timePassed / _targetElapsedMilliseconds);
+                _updateLoad.Put(timePassed / TargetElapsedMilliseconds);
             }
         }
 
@@ -240,7 +236,7 @@ namespace Engine.Controller
         /// <param name="command">The command to push.</param>
         protected virtual void Apply(FrameCommand command)
         {
-            _tss.PushCommand(command, command.Frame);
+            Tss.PushCommand(command, command.Frame);
         }
 
         #endregion
@@ -272,59 +268,118 @@ namespace Engine.Controller
 
         #region Simulation wrapper
 
-        private class SimulationWrapper : ISimulation
+        private sealed class SimulationWrapper : ISimulation
         {
-            public long CurrentFrame { get { return _tss.CurrentFrame; } }
+            #region Properties
 
-            public ComponentSystem.IEntityManager EntityManager { get { return _tss.EntityManager; } }
+            /// <summary>
+            /// The current frame of the simulation the state represents.
+            /// </summary>
+            public long CurrentFrame { get { return _controller.Tss.CurrentFrame; } }
 
-            private TSS _tss;
+            /// <summary>
+            /// The component system manager in use in this simulation.
+            /// </summary>
+            public IManager Manager { get { return _controller.Tss.Manager; } }
 
-            private AbstractTssController<TSession> _controller;
+            #endregion
 
-            public SimulationWrapper(TSS tss, AbstractTssController<TSession> controller)
+            #region Fields
+            
+            /// <summary>
+            /// The controller this managed wrapper belongs to.
+            /// </summary>
+            private readonly AbstractTssController<TSession> _controller;
+
+            #endregion
+
+            #region Constructor
+            
+            /// <summary>
+            /// Creates a new wrapper for the specified controller.
+            /// </summary>
+            /// <param name="controller">The controller.</param>
+            public SimulationWrapper(AbstractTssController<TSession> controller)
             {
-                _tss = tss;
                 _controller = controller;
             }
 
-            public void Update()
+            #endregion
+
+            #region Logic
+            
+            /// <summary>
+            /// Advance the simulation by one frame.
+            /// </summary>
+            /// <param name="gameTime">The elapsed time since the last call to Update.</param>
+            public void Update(GameTime gameTime)
             {
-                _tss.Update();
+                _controller.Tss.Update(gameTime);
             }
 
+            /// <summary>
+            /// Apply a given command to the simulation state.
+            /// </summary>
+            /// <param name="command">the command to apply.</param>
             public void PushCommand(Command command)
             {
                 _controller.Apply((FrameCommand)command);
             }
 
-            #region Unsupported
+            #endregion
 
-            public bool GameLogEnabled { get; set; }
+            #region Serialization / Hashing
 
-            public ISimulation DeepCopy()
-            {
-                throw new NotImplementedException();
-            }
-
-            public ISimulation DeepCopy(ISimulation into)
-            {
-                throw new NotImplementedException();
-            }
-
+            /// <summary>
+            /// Write the object's state to the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to write the data to.</param>
+            /// <returns>The packet after writing.</returns>
             public Packet Packetize(Packet packet)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
 
+            /// <summary>
+            /// Bring the object to the state in the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to read from.</param>
             public void Depacketize(Packet packet)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
 
+            /// <summary>
+            /// Push some unique data of the object to the given hasher,
+            /// to contribute to the generated hash.
+            /// </summary>
+            /// <param name="hasher">The hasher to push data to.</param>
             public void Hash(Hasher hasher)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
+            }
+
+            #endregion
+
+            #region Copying
+            
+            /// <summary>
+            /// Creates a deep copy of the object.
+            /// </summary>
+            /// <returns>The copy.</returns>
+            public ISimulation DeepCopy()
+            {
+                throw new NotSupportedException();
+            }
+
+            /// <summary>
+            /// Creates a deep copy of the object, reusing the given object.
+            /// </summary>
+            /// <param name="into">The object to copy into.</param>
+            /// <returns>The copy.</returns>
+            public ISimulation DeepCopy(ISimulation into)
+            {
+                throw new NotSupportedException();
             }
 
             #endregion

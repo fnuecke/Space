@@ -128,7 +128,7 @@ namespace Engine.ComponentSystem.Systems
         {
             // Get something to start with.
             var copy = (AbstractSystem)
-                ((into != null && into.GetType() == this.GetType())
+                ((into != null && into.GetType() == GetType())
                 ? into
                 : MemberwiseClone());
 

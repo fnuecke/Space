@@ -370,7 +370,7 @@ namespace Space.Session
         {
             if (manager == null)
             {
-                throw new ArgumentNullException("EntityManager must not be null.", "manager");
+                throw new ArgumentNullException("Manager must not be null.", "manager");
             }
 
             // OK, start from scratch.

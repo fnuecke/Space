@@ -4,6 +4,10 @@ using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.RPG.Systems
 {
+    /// <summary>
+    /// Handles updating status effects to make them expire, by removing the
+    /// status effect component once it has run out.
+    /// </summary>
     public sealed class StatusEffectSystem : AbstractComponentSystem<StatusEffect>
     {
         protected override void UpdateComponent(GameTime gameTime, long frame, StatusEffect component)

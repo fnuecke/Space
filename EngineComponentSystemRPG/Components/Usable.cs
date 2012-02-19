@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+
 namespace Engine.ComponentSystem.RPG.Components
 {
     /// <summary>
@@ -21,22 +22,37 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
         /// <summary>
-        /// Creates a new usable item with the specified parameters.
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            Response = ((Usable<TResponse>)other).Response;
+        }
+
+        /// <summary>
+        /// Initialize with the specified parameters.
         /// </summary>
         /// <param name="response">The response triggered when activated.</param>
-        public Usable(TResponse response)
+        public virtual void Initialize(TResponse response)
         {
             this.Response = response;
         }
 
         /// <summary>
-        /// For deserialization.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        public Usable()
+        public override void Reset()
         {
+            base.Reset();
+
+            Response = default(TResponse);
         }
 
         #endregion
@@ -65,22 +81,6 @@ namespace Engine.ComponentSystem.RPG.Components
             base.Depacketize(packet);
 
             Response = (TResponse)Enum.Parse(typeof(TResponse), packet.ReadString());
-        }
-
-        #endregion
-
-        #region Copying
-
-        public override Component DeepCopy(Component into)
-        {
-            var copy = (Usable<TResponse>)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.Response = Response;
-            }
-
-            return copy;
         }
 
         #endregion

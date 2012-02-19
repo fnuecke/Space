@@ -5,6 +5,10 @@ using Engine.ComponentSystem.Systems;
 
 namespace Engine.ComponentSystem.RPG.Systems
 {
+    /// <summary>
+    /// Handles removing entities from inventories when they are removed from
+    /// the system.
+    /// </summary>
     public sealed class InventorySystem : AbstractComponentSystem<Inventory>
     {
         /// <summary>
@@ -16,12 +20,15 @@ namespace Engine.ComponentSystem.RPG.Systems
 
             if (message is EntityRemoved)
             {
-                // If an entity was removed from the game and it was in this
-                // inventory, remove it here, too.
+                // If an entity was removed from the game and it was an item
+                // remove it from all known inventories.
                 var removed = (EntityRemoved)(ValueType)message;
-                foreach (var component in Components)
+                if (Manager.GetComponent<Item>(removed.Entity) != null)
                 {
-                    component.Remove(removed.Entity);
+                    foreach (var component in Components)
+                    {
+                        component.Remove(removed.Entity);
+                    }
                 }
             }
         }

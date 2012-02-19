@@ -87,7 +87,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Maximum entries per node in our index to use.
         /// </summary>
-        private const int _maxEntriesPerNode = 50;
+        private const int MaxEntriesPerNode = 50;
 
         #endregion
 
@@ -114,7 +114,7 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>The start of the range of reserved group numbers.</returns>
         public static byte GetGroups(byte range)
         {
-            if ((int)range + (int)_nextGroup > 0xFF)
+            if (range + _nextGroup > 0xFF)
             {
                 throw new InvalidOperationException("No more index groups available.");
             }
@@ -246,14 +246,14 @@ namespace Engine.ComponentSystem.Systems
             {
                 if ((groups & 1) == 1 && _trees[index] == null)
                 {
-                    _trees[index] = new QuadTree<int>(_maxEntriesPerNode, MinimumNodeSize);
+                    _trees[index] = new QuadTree<int>(MaxEntriesPerNode, MinimumNodeSize);
                 }
                 groups = groups >> 1;
                 ++index;
             }
         }
 
-        private List<QuadTree<int>> TreesForGroups(ulong groups)
+        private IEnumerable<QuadTree<int>> TreesForGroups(ulong groups)
         {
             _reusableTreeList.Clear();
             byte index = 0;
@@ -280,7 +280,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="message">The message.</param>
         public override void Receive<T>(ref T message)
         {
-            base.Receive<T>(ref message);
+            base.Receive(ref message);
 
             if (message is TranslationChanged)
             {
@@ -296,12 +296,12 @@ namespace Engine.ComponentSystem.Systems
 
                 // Check if the actual index cell we're in might have changed.
                 var previousCellId = CoordinateIds.Combine(
-                    (int)translationChanged.PreviousPosition.X >> IndexSystem.MinimumNodeSizeShift,
-                    (int)translationChanged.PreviousPosition.Y >> IndexSystem.MinimumNodeSizeShift);
+                    (int)translationChanged.PreviousPosition.X >> MinimumNodeSizeShift,
+                    (int)translationChanged.PreviousPosition.Y >> MinimumNodeSizeShift);
 
                 var newCellId = CoordinateIds.Combine(
-                    (int)translationChanged.CurrentPosition.X >> IndexSystem.MinimumNodeSizeShift,
-                    (int)translationChanged.CurrentPosition.Y >> IndexSystem.MinimumNodeSizeShift);
+                    (int)translationChanged.CurrentPosition.X >> MinimumNodeSizeShift,
+                    (int)translationChanged.CurrentPosition.Y >> MinimumNodeSizeShift);
 
                 if (newCellId != previousCellId)
                 {

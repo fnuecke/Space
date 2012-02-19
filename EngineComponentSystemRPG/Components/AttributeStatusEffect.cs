@@ -39,7 +39,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="value">The value.</param>
         public void Initialize(IList<AttributeModifier<TAttribute>> value)
         {
-            this.Modifiers = value;
+            Modifiers = value;
         }
 
         /// <summary>
@@ -107,35 +107,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Copying
-
-        public override Component DeepCopy(Component into)
-        {
-            var copy = (AttributeStatusEffect<TAttribute>)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                if (copy.Modifiers.Count != Modifiers.Count)
-                {
-                    copy.Modifiers = new AttributeModifier<TAttribute>[Modifiers.Count];
-                }
-            }
-            else
-            {
-                copy.Modifiers = new AttributeModifier<TAttribute>[Modifiers.Count];
-            }
-
-            for (int i = 0; i < Modifiers.Count; i++)
-            {
-                copy.Modifiers[i] = Modifiers[i].DeepCopy(copy.Modifiers[i]);
-            }
-
-            return copy;
-        }
-
-        #endregion
-
-        #region Overrides
+        #region ToString
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.

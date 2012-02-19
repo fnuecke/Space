@@ -51,7 +51,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="groups">The groups.</param>
         protected void Initialize(uint groups)
         {
-            this.CollisionGroups = groups;
+            CollisionGroups = groups;
         }
 
         /// <summary>
@@ -137,7 +137,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", CollisionGroups = " + CollisionGroups.ToString() + ", PreviousPosition = " + PreviousPosition.ToString();
+            return base.ToString() + ", CollisionGroups = " + CollisionGroups + ", PreviousPosition = " + PreviousPosition;
         }
 
         #endregion

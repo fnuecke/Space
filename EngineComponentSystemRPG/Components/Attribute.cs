@@ -40,7 +40,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="value">The value.</param>
         public void Initialize(AttributeModifier<TAttribute> value)
         {
-            this.Modifier = value;
+            Modifier = value;
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value = " + Modifier.ToString();
+            return base.ToString() + ", Value = " + Modifier;
         }
 
         #endregion

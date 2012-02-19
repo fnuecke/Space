@@ -16,12 +16,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The content manager used to load textures.
         /// </summary>
-        private ContentManager _content;
+        private readonly ContentManager _content;
 
         /// <summary>
         /// The sprite batch to render textures into.
         /// </summary>
-        private SpriteBatch _spriteBatch;
+        private readonly SpriteBatch _spriteBatch;
 
         #endregion
 
@@ -76,23 +76,6 @@ namespace Engine.ComponentSystem.Systems
         protected virtual Vector3 GetTranslation()
         {
             return Vector3.Zero;
-        }
-
-        #endregion
-
-        #region Copying
-
-        public override AbstractSystem DeepCopy(AbstractSystem into)
-        {
-            var copy = (RenderSystem)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy._content = _content;
-                copy._spriteBatch = _spriteBatch;
-            }
-
-            return copy;
         }
 
         #endregion

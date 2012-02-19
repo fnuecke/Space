@@ -39,8 +39,8 @@ namespace Engine.Controller
         /// <summary>
         /// Initialize the controller.
         /// </summary>
-        /// <param name="game">the game this belongs to.</param>
-        public AbstractController(TSession session)
+        /// <param name="session">The session to use.</param>
+        protected AbstractController(TSession session)
         {
             this.Session = session;
             Session.Data += HandlePlayerData;
@@ -110,7 +110,8 @@ namespace Engine.Controller
         /// }
         /// </code>
         /// </summary>
-        /// <param name="command">the command to wrap.</param>
+        /// <param name="command">The command to wrap.</param>
+        /// <param name="packet">The packet to wrap into.</param>
         /// <returns>the given packet, after writing.</returns>
         protected virtual Packet WrapDataForSend(TCommand command, Packet packet)
         {

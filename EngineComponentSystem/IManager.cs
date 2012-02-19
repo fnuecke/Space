@@ -10,7 +10,7 @@ namespace Engine.ComponentSystem
     /// <summary>
     /// Interface for component system managers.
     /// </summary>
-    public interface IManager : ICopyable<IManager>, IPacketizable, IHashable
+    public interface IManager : IPacketizable, IHashable, ICopyable<IManager>
     {
         #region Logic
 

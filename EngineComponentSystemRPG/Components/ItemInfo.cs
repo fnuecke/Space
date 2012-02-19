@@ -16,14 +16,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         public string Name
         {
-            get
-            {
-                if (_name == null)
-                {
-                    _name = ComputeName();
-                }
-                return _name;
-            }
+            get { return _name ?? (_name = ComputeName()); }
         }
 
         /// <summary>
@@ -32,14 +25,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         public string IconName
         {
-            get
-            {
-                if (_iconName == null)
-                {
-                    _iconName = Entity.GetComponent<Item>().IconName;
-                }
-                return _iconName;
-            }
+            get { return _iconName ?? (_iconName = Manager.GetComponent<Item>(Entity).IconName); }
         }
 
         #endregion
@@ -61,6 +47,22 @@ namespace Engine.ComponentSystem.RPG.Components
         /// A cached string describing the item.
         /// </summary>
         //protected List<string> _description;
+
+        #endregion
+
+        #region Initialization
+
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            _name = null;
+            _iconName = null;
+        }
 
         #endregion
 

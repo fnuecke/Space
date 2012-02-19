@@ -3,6 +3,7 @@ using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Simulation
 {
@@ -34,13 +35,12 @@ namespace Engine.Simulation
         /// <summary>
         /// The current frame of the simulation the state represents.
         /// </summary>
-        public long CurrentFrame { get; protected set; }
+        public long CurrentFrame { get; private set; }
 
-        /// <summary>
         /// <summary>
         /// All entities registered with this manager.
         /// </summary>
-        public IEntityManager EntityManager { get; private set; }
+        public IManager Manager { get; private set; }
 
 #if DEBUG && GAMELOG
         /// <summary>
@@ -58,7 +58,7 @@ namespace Engine.Simulation
         /// <summary>
         /// List of queued commands to execute in the next step.
         /// </summary>
-        protected List<Command> commands = new List<Command>();
+        protected List<Command> Commands = new List<Command>();
 
         #endregion
 
@@ -66,7 +66,7 @@ namespace Engine.Simulation
 
         protected AbstractSimulation()
         {
-            this.EntityManager = new EntityManager();
+            this.Manager = new Manager();
         }
 
         #endregion
@@ -80,20 +80,20 @@ namespace Engine.Simulation
         public virtual void PushCommand(Command command)
         {
             // There's a chance we have that command in a tentative version. Let's check.
-            int index = commands.FindIndex(x => x.Equals(command));
+            int index = Commands.FindIndex(x => x.Equals(command));
             if (index >= 0)
             {
                 // Already there! Use the authoritative one (or if neither is do nothing).
-                if (!commands[index].IsAuthoritative && command.IsAuthoritative)
+                if (!Commands[index].IsAuthoritative && command.IsAuthoritative)
                 {
-                    commands.RemoveAt(index);
-                    commands.Insert(index, command);
+                    Commands.RemoveAt(index);
+                    Commands.Insert(index, command);
                 }
             }
             else
             {
                 // New one, append.
-                commands.Add(command);
+                Commands.Add(command);
             }
         }
 
@@ -104,7 +104,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Advance the simulation by one frame.
         /// </summary>
-        public void Update()
+        public void Update(GameTime gameTime)
         {
             // Increment frame number.
             ++CurrentFrame;
@@ -117,7 +117,7 @@ namespace Engine.Simulation
 #endif
 
             // Execute any commands for the current frame.
-            foreach (var command in commands)
+            foreach (var command in Commands)
             {
 #if DEBUG && GAMELOG
                 if (GameLogEnabled)
@@ -127,10 +127,10 @@ namespace Engine.Simulation
 #endif
                 HandleCommand(command);
             }
-            commands.Clear();
+            Commands.Clear();
 
             // Update all systems.
-            EntityManager.SystemManager.Update(CurrentFrame);
+            Manager.Update(gameTime, CurrentFrame);
         }
 
         /// <summary>
@@ -159,10 +159,10 @@ namespace Engine.Simulation
             packet.Write(CurrentFrame);
 
             // Write entities.
-            packet.Write(EntityManager);
+            packet.Write(Manager);
 
             // Then serialize all pending commands for the next frame.
-            packet.WriteWithTypeInfo(commands);
+            packet.WriteWithTypeInfo(Commands);
 
             return packet;
         }
@@ -182,10 +182,10 @@ namespace Engine.Simulation
             CurrentFrame = packet.ReadInt64();
 
             // Get entities.
-            packet.ReadPacketizableInto(EntityManager);
+            packet.ReadPacketizableInto(Manager);
 
             // Continue with reading the list of commands.
-            commands.Clear();
+            Commands.Clear();
             foreach (var command in packet.ReadPacketizablesWithTypeInfo<Command>())
             {
                 PushCommand(command);
@@ -199,7 +199,7 @@ namespace Engine.Simulation
         /// <param name="hasher">the hasher to push data to.</param>
         public virtual void Hash(Hasher hasher)
         {
-            EntityManager.Hash(hasher);
+            Manager.Hash(hasher);
         }
 
         /// <summary>
@@ -227,16 +227,16 @@ namespace Engine.Simulation
             {
                 copy.CurrentFrame = CurrentFrame;
                 // Clone system manager.
-                copy.EntityManager = EntityManager.DeepCopy(copy.EntityManager);
-                copy.commands.Clear();
-                copy.commands.AddRange(commands);
+                copy.Manager = Manager.DeepCopy(copy.Manager);
+                copy.Commands.Clear();
+                copy.Commands.AddRange(Commands);
             }
             else
             {
                 // Clone system manager.
-                copy.EntityManager = EntityManager.DeepCopy();
+                copy.Manager = Manager.DeepCopy();
                 // Copy commands directly (they are immutable).
-                copy.commands = new List<Command>(commands);
+                copy.Commands = new List<Command>(Commands);
             }
 
             return copy;
