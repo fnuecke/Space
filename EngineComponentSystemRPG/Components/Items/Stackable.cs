@@ -7,7 +7,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// Makes an item stackable. Items with the same group id can be merged
     /// into a single stack.
     /// </summary>
-    public sealed class Stackable : AbstractComponent
+    public sealed class Stackable : Component
     {
         #region Fields
 
@@ -87,7 +87,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Copying
 
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Stackable)base.DeepCopy(into);
 

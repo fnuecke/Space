@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 
 namespace Engine.ComponentSystem.RPG.Components
@@ -9,7 +8,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// <summary>
     /// Represents a player's inventory, with a list of items in it.
     /// </summary>
-    public sealed class Inventory : AbstractComponent, IList<Entity>
+    public sealed class Inventory : Component, IList<Entity>
     {
         #region Properties
 
@@ -228,7 +227,7 @@ namespace Engine.ComponentSystem.RPG.Components
                         _items[i] = item.UID;
 
                         // Disable rendering, if available.
-                        var renderer = item.GetComponent<TransformedRenderer>();
+                        var renderer = item.GetComponent<TextureData>();
                         if (renderer != null)
                         {
                             renderer.Enabled = false;
@@ -246,7 +245,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 _items.Add(item.UID);
 
                 // Disable rendering, if available.
-                var renderer = item.GetComponent<TransformedRenderer>();
+                var renderer = item.GetComponent<TextureData>();
                 if (renderer != null)
                 {
                     renderer.Enabled = false;
@@ -441,24 +440,6 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Logic
-
-        /// <summary>
-        /// Check for removed entities.
-        /// </summary>
-        public override void HandleMessage<T>(ref T message)
-        {
-            if (message is EntityRemoved)
-            {
-                // If an entity was removed from the game and it was in this
-                // inventory, remove it here, too.
-                var removed = (EntityRemoved)(ValueType)message;
-                Remove(removed.Entity);
-            }
-        }
-
-        #endregion
-
         #region Serialization
 
         /// <summary>
@@ -505,7 +486,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Copying
 
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Inventory)base.DeepCopy(into);
 

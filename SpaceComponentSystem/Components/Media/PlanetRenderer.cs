@@ -159,7 +159,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (PlanetRenderer)base.DeepCopy(into);
 

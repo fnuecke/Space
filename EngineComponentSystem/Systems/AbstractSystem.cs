@@ -7,14 +7,14 @@ namespace Engine.ComponentSystem.Systems
     /// <summary>
     /// Base class for systems, implementing default basic functionality.
     /// </summary>
-    public abstract class AbstractSystem : ISystem
+    public abstract class AbstractSystem : ICopyable<AbstractSystem>, IPacketizable, IHashable
     {
         #region Properties
 
         /// <summary>
         /// The component system manager this system is part of.
         /// </summary>
-        public ISystemManager Manager { get; set; }
+        public IManager Manager { get; internal set; }
 
         #endregion
 
@@ -29,18 +29,24 @@ namespace Engine.ComponentSystem.Systems
         {
         }
 
+        /// <summary>
+        /// Default implementation does nothing.
+        /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
+        /// <param name="frame">The frame that should be rendered.</param>
+        public virtual void Draw(GameTime gameTime, long frame)
+        {
+        }
+
         #endregion
 
         #region Messaging
 
         /// <summary>
-        /// Inform a system of a message that was sent by another system.
-        /// 
-        /// <para>
-        /// Note that systems will also receive the messages they send themselves.
-        /// </para>
+        /// Handle a message of the specified type.
         /// </summary>
-        /// <param name="message">The sent message.</param>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
         public virtual void Receive<T>(ref T message) where T : struct
         {
         }
@@ -101,7 +107,7 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A deep, with a semi-cleared copy of this system.</returns>
-        public ISystem DeepCopy()
+        public AbstractSystem DeepCopy()
         {
             return DeepCopy(null);
         }
@@ -118,7 +124,7 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A deep, with a semi-cleared copy of this system.</returns>
-        public virtual ISystem DeepCopy(ISystem into)
+        public virtual AbstractSystem DeepCopy(AbstractSystem into)
         {
             // Get something to start with.
             var copy = (AbstractSystem)

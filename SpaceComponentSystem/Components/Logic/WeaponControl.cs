@@ -14,7 +14,7 @@ namespace Space.ComponentSystem.Components
     /// <summary>
     /// Controls whether weapons on an entity should be shooting.
     /// </summary>
-    public class WeaponControl : AbstractComponent
+    public class WeaponControl : Component
     {
         #region Fields
 
@@ -211,7 +211,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (WeaponControl)base.DeepCopy(into);
 

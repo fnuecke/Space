@@ -10,7 +10,7 @@ using Space.ComponentSystem.Components.Behaviours;
 
 namespace Space.ComponentSystem.Components
 {
-    public sealed class AiComponent : AbstractComponent
+    public sealed class AiComponent : Component
     {
         #region Types
 
@@ -337,7 +337,7 @@ namespace Space.ComponentSystem.Components
             _counter = packet.ReadInt32();
         }
 
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (AiComponent)base.DeepCopy(into);
 

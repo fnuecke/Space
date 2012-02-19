@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Components
     /// facade to centralize common tasks for retrieving information on
     /// ships.
     /// </summary>
-    public sealed class ShipInfo : AbstractComponent
+    public sealed class ShipInfo : Component
     {
         #region Fields
 
@@ -503,7 +503,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (ShipInfo)base.DeepCopy(into);
 

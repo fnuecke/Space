@@ -14,7 +14,7 @@ namespace Space.ComponentSystem.Components
     /// Component that takes care of entities working in a gravitational
     /// environment.
     /// </summary>
-    public class Gravitation : AbstractComponent
+    public class Gravitation : Component
     {
         #region Logger
 
@@ -307,7 +307,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Gravitation)base.DeepCopy(into);
 

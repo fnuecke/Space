@@ -414,7 +414,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the neighborhood of the query point.</returns>
-        public List<T> RangeQuery(ref Vector2 point, float range, List<T> list = null)
+        public ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null)
         {
             var result = list ?? new List<T>();
 
@@ -435,7 +435,7 @@ namespace Engine.Collections
         /// <param name="range">The maximum distance an entry may be away
         /// from the query point to be returned.</param>
         /// <returns></returns>
-        public List<T> RangeQuery(Vector2 point, float range)
+        public ICollection<T> RangeQuery(Vector2 point, float range)
         {
             return RangeQuery(ref point, range);
         }
@@ -448,7 +448,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the query rectangle.</returns>
-        public List<T> RangeQuery(ref Rectangle rectangle, List<T> list = null)
+        public ICollection<T> RangeQuery(ref Rectangle rectangle, ICollection<T> list = null)
         {
             var result = list ?? new List<T>();
 
@@ -466,7 +466,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="point">The query rectangle.</param>
         /// <returns>All objects in the query rectangle.</returns>
-        public List<T> RangeQuery(Rectangle rectangle)
+        public ICollection<T> RangeQuery(Rectangle rectangle)
         {
             return RangeQuery(ref rectangle);
         }
@@ -841,7 +841,7 @@ namespace Engine.Collections
         /// <param name="point">The query point.</param>
         /// <param name="range">The query range.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range, List<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range, ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref point, range, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -903,7 +903,7 @@ namespace Engine.Collections
         /// <param name="node">The current node.</param>
         /// <param name="point">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Rectangle query, List<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Rectangle query, ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref query, x, y, size);
             if (intersectionType == IntersectionType.Contained)

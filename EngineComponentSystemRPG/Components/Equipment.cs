@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// entities having a certain <c>ItemType</c>.
     /// </summary>
     /// <typeparam name="TItem">The enum with possible item types.</typeparam>
-    public sealed class Equipment : AbstractComponent
+    public sealed class Equipment : Component
     {
         #region Properties
 
@@ -327,7 +327,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Copying
 
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Equipment)base.DeepCopy(into);
 

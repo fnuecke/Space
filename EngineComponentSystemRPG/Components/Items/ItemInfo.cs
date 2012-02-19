@@ -6,7 +6,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// A facade and caching class used to make it easier to query information
     /// about an item.
     /// </summary>
-    public sealed class ItemInfo : AbstractComponent
+    public sealed class ItemInfo : Component
     {
         #region Properties
 

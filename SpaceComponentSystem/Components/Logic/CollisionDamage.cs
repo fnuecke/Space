@@ -18,7 +18,7 @@ namespace Space.ComponentSystem.Components
     /// frequency (controlled via the <c>Cooldown</c>).
     /// </para>
     /// </summary>
-    public sealed class CollisionDamage : AbstractComponent
+    public sealed class CollisionDamage : Component
     {
         #region Fields
 
@@ -238,7 +238,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (CollisionDamage)base.DeepCopy(into);
 

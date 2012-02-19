@@ -8,7 +8,7 @@ namespace Space.ComponentSystem.Components
     /// <summary>
     /// Kills an entity if it wanders into an inactive cell.
     /// </summary>
-    public sealed class VoidDeath : AbstractComponent
+    public sealed class VoidDeath : Component
     {
         #region Fields
         

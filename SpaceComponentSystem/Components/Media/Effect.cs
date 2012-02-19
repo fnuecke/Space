@@ -15,7 +15,7 @@ namespace Space.ComponentSystem.Components
     /// Requires: <c>Transform</c>.
     /// </para>
     /// </summary>
-    public class Effect : AbstractComponent
+    public class Effect : Component
     {
         #region Fields
 
@@ -207,7 +207,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Effect)base.DeepCopy(into);
 

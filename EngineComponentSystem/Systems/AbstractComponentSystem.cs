@@ -20,7 +20,7 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     /// <typeparam name="TUpdateParameterization">the type of parameterization used in this system</typeparam>
     public abstract class AbstractComponentSystem<TComponent> : AbstractSystem
-        where TComponent : AbstractComponent
+        where TComponent : Component
     {
         #region Properties
 
@@ -53,18 +53,36 @@ namespace Engine.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Default implementation loops over all components and calls <c>UpdateComponent()</c>.
+        /// Loops over all components and calls <c>UpdateComponent()</c>.
         /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public sealed void Update(GameTime gameTime, long frame)
+        public sealed override void Update(GameTime gameTime, long frame)
         {
             _updatingComponents.AddRange(_components);
             foreach (var component in _updatingComponents)
             {
-                if (component.Enabled && component.Entity.Manager != null)
+                if (component.Enabled)
                 {
                     UpdateComponent(gameTime, frame, component);
+                }
+            }
+            _updatingComponents.Clear();
+        }
+
+        /// <summary>
+        /// Loops over all components and calls <c>DrawComponent()</c>.
+        /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
+        /// <param name="frame">The frame in which the update is applied.</param>
+        public sealed override void Draw(GameTime gameTime, long frame)
+        {
+            _updatingComponents.AddRange(_components);
+            foreach (var component in _updatingComponents)
+            {
+                if (component.Enabled)
+                {
+                    DrawComponent(gameTime, frame, component);
                 }
             }
             _updatingComponents.Clear();
@@ -79,41 +97,26 @@ namespace Engine.ComponentSystem.Systems
         {
         }
 
+        /// <summary>
+        /// Applies the system's rendering to the specified component.
+        /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
+        /// <param name="frame">The frame in which the update is applied.</param>
+        protected virtual void DrawComponent(GameTime gameTime, long frame, TComponent component)
+        {
+        }
+
         #endregion
 
         #region Messaging
 
         /// <summary>
-        /// Inform a system of a message that was sent by another system.
-        /// 
-        /// <para>
-        /// Note that systems will also receive the messages they send themselves.
-        /// </para>
-        /// </summary>
+        /// Checks for added and removed components, and stores / forgets them
+        /// if they are of the type handled in this system.
         /// <param name="message">The sent message.</param>
         public override void Receive<T>(ref T message)
         {
-            // Check if it was an entity added / removed message. If so, add or
-            // remove all components of that entity.
-            if (message is EntityAdded)
-            {
-                foreach (var component in ((EntityAdded)(ValueType)message).Entity.Components)
-                {
-                    TryAdd(component);
-                }
-            }
-            else if (message is EntityRemoved)
-            {
-                foreach (var component in ((EntityRemoved)(ValueType)message).Entity.Components)
-                {
-                    TryRemove(((ComponentRemoved)(ValueType)message).Component);
-                }
-            }
-            else if (message is EntitiesCleared)
-            {
-                _components.Clear();
-            }
-            else if (message is ComponentAdded)
+            if (message is ComponentAdded)
             {
                 TryAdd(((ComponentAdded)(ValueType)message).Component);
             }
@@ -121,9 +124,20 @@ namespace Engine.ComponentSystem.Systems
             {
                 TryRemove(((ComponentRemoved)(ValueType)message).Component);
             }
+            else if (message is EntityRemoved)
+            {
+                foreach (var component in Manager.GetComponents(((EntityRemoved)(ValueType)message).Entity))
+                {
+                    TryRemove(component);
+                }
+            }
         }
 
-        private void TryAdd(AbstractComponent component)
+        /// <summary>
+        /// Adds the specified component only if its of the correct type.
+        /// </summary>
+        /// <param name="component">The component to add.</param>
+        private void TryAdd(Component component)
         {
             // Check if the component is of the right type.
             if (component is TComponent)
@@ -150,12 +164,16 @@ namespace Engine.ComponentSystem.Systems
                     _components.Insert(index, typedComponent);
 
                     // Tell subclasses.
-                    HandleComponentAdded(typedComponent);
+                    OnComponentAdded(typedComponent);
                 }
             }
         }
 
-        private void TryRemove(AbstractComponent component)
+        /// <summary>
+        /// Removes the specified component if its of the correct type.
+        /// </summary>
+        /// <param name="component">The component.</param>
+        private void TryRemove(Component component)
         {
             // Check if the component is of the right type.
             if (component is TComponent)
@@ -164,7 +182,7 @@ namespace Engine.ComponentSystem.Systems
 
                 if (_components.Remove(typedComponent))
                 {
-                    HandleComponentRemoved(typedComponent);
+                    OnComponentRemoved(typedComponent);
                 }
             }
         }
@@ -177,7 +195,7 @@ namespace Engine.ComponentSystem.Systems
         /// Perform actions for newly added components.
         /// </summary>
         /// <param name="component">The component that was added.</param>
-        protected virtual void HandleComponentAdded(TComponent component)
+        protected virtual void OnComponentAdded(TComponent component)
         {
         }
 
@@ -185,7 +203,7 @@ namespace Engine.ComponentSystem.Systems
         /// Perform actions for removed components.
         /// </summary>
         /// <param name="component">The component that was removed.</param>
-        protected virtual void HandleComponentRemoved(TComponent component)
+        protected virtual void OnComponentRemoved(TComponent component)
         {
         }
 
@@ -205,7 +223,7 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A deep, with a semi-cleared copy of this system.</returns>
-        public override ISystem DeepCopy(ISystem into)
+        public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             // Get something to start with.
             var copy = (AbstractComponentSystem<TComponent>)base.DeepCopy(into);
@@ -215,7 +233,7 @@ namespace Engine.ComponentSystem.Systems
                 copy._components.Clear();
             }
             else
-            {
+            { 
                 copy._components = new List<TComponent>();
             }
 
@@ -229,11 +247,11 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Comparer used for inserting / removal.
         /// </summary>
-        private sealed class UpdateOrderComparer : IComparer<AbstractComponent>
+        private sealed class UpdateOrderComparer : IComparer<Component>
         {
             public static readonly UpdateOrderComparer Default = new UpdateOrderComparer();
 
-            public int Compare(AbstractComponent x, AbstractComponent y)
+            public int Compare(Component x, Component y)
             {
                 if ((x == null) && (y == null))
                 {

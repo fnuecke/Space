@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Components
     /// <summary>
     /// Base class for modules that represent regenerating values.
     /// </summary>
-    public abstract class AbstractRegeneratingValue : AbstractComponent
+    public abstract class AbstractRegeneratingValue : Component
     {
         #region Properties
 
@@ -184,7 +184,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (AbstractRegeneratingValue)base.DeepCopy(into);
 

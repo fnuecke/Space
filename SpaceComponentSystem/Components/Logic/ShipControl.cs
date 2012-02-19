@@ -16,7 +16,7 @@ namespace Space.ComponentSystem.Components
     /// Requires: <c>Transform</c>, <c>Spin</c>, <c>Acceleration</c>, <c>MovementProperties</c>.
     /// </para>
     /// </summary>
-    public class ShipControl : AbstractComponent
+    public class ShipControl : Component
     {
         #region Fields
 
@@ -319,7 +319,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (ShipControl)base.DeepCopy(into);
 

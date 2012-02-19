@@ -12,7 +12,7 @@ namespace Space.ComponentSystem.Components
     /// Allows a timed death for entities, meaning they will respawn
     /// automatically after a specified timeout.
     /// </summary>
-    public sealed class Respawn : AbstractComponent
+    public sealed class Respawn : Component
     {
         #region Properties
 
@@ -241,7 +241,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Respawn)base.DeepCopy(into);
 

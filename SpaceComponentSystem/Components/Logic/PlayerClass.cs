@@ -7,7 +7,7 @@ namespace Space.ComponentSystem.Components
     /// <summary>
     /// Tells the player class via a player's ship.
     /// </summary>
-    public sealed class PlayerClass : AbstractComponent
+    public sealed class PlayerClass : Component
     {
         #region Fields
 
@@ -64,7 +64,7 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (PlayerClass)base.DeepCopy(into);
 

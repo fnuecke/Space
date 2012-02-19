@@ -138,7 +138,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Overrides
+        #region ToString
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.

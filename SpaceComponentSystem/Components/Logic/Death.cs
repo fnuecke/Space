@@ -7,7 +7,7 @@ namespace Space.ComponentSystem.Components
     /// Represents a final death, i.e. when health reaches zero the entity will
     /// be removed from the simulation.
     /// </summary>
-    public sealed class Death : AbstractComponent
+    public sealed class Death : Component
     {
         #region Logic
 

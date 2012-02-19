@@ -8,7 +8,7 @@ namespace Space.ComponentSystem.Components
     /// Tracks what items a unit may drop on death, via the item pool id to
     /// draw items from.
     /// </summary>
-    public class Drops : AbstractComponent
+    public class Drops : Component
     {
         #region Fields
 

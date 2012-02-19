@@ -156,7 +156,7 @@ namespace Space.ComponentSystem.Components
 
         #region Copying
 
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Weapon)base.DeepCopy(into);
 

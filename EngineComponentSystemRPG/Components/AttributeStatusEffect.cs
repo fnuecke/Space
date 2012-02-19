@@ -8,7 +8,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// <summary>
     /// A status effect that modifies attributes.
     /// </summary>
-    public sealed class AttributeStatusEffect<TAttribute> : AbstractStatusEffect
+    public sealed class AttributeStatusEffect<TAttribute> : StatusEffect
         where TAttribute : struct
     {
         #region Fields
@@ -20,20 +20,46 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
         
-        #region Constructor
+        #region Initialization
 
-        public AttributeStatusEffect(IList<AttributeModifier<TAttribute>> value)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            Modifiers = ((AttributeStatusEffect<TAttribute>)other).Modifiers;
+        }
+
+        /// <summary>
+        /// Initialize with the specified modifiers.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void Initialize(IList<AttributeModifier<TAttribute>> value)
         {
             this.Modifiers = value;
         }
 
-        public AttributeStatusEffect(AttributeModifier<TAttribute> value)
-            : this(new[] { value })
+        /// <summary>
+        /// Initialize with the specified modifier.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void Initialize(AttributeModifier<TAttribute> value)
         {
+            Initialize(new[] { value });
         }
 
-        public AttributeStatusEffect()
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
         {
+            base.Reset();
+
+            Modifiers = null;
         }
 
         #endregion
@@ -83,7 +109,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Copying
 
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (AttributeStatusEffect<TAttribute>)base.DeepCopy(into);
 

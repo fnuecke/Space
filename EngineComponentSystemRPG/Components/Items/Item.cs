@@ -8,7 +8,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// Marks an entity as being an item. This should be extended to add item
     /// specific properties, as necessary.
     /// </summary>
-    public class Item : AbstractComponent
+    public class Item : Component
     {
         #region Constants
 
@@ -91,7 +91,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Copying
 
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Item)base.DeepCopy(into);
 

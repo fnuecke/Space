@@ -10,7 +10,7 @@ namespace Space.ComponentSystem.Components
     /// This can be used for auto targeting weapons (missiles) but may also be
     /// used to store an AIs current target entity.
     /// </summary>
-    public sealed class Target : AbstractComponent
+    public sealed class Target : Component
     {
         #region Fields
 
@@ -86,7 +86,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Target)base.DeepCopy(into);
 

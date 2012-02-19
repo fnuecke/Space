@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Components
 {
-    public class Detectable : AbstractComponent
+    public class Detectable : Component
     {
         #region Constants
 
@@ -129,7 +129,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>
         /// An independent (deep) clone of this instance.
         /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        public override Component DeepCopy(Component into)
         {
             var copy = (Detectable)base.DeepCopy(into);
 
