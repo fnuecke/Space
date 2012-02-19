@@ -11,7 +11,7 @@
           <Probability>0.2</Probability>
         </Item>
         <Item>
-          <ItemName>CommonBasicArmor</ItemName>
+          <ItemName>BasicArmor</ItemName>
           <Probability>0.05</Probability>
         </Item>
         <Item>
@@ -27,7 +27,7 @@
           <Probability>0.2</Probability>
         </Item>
         <Item>
-          <ItemName>CommonBasicWeapon</ItemName>
+          <ItemName>BasicWeapon</ItemName>
           <Probability>0.05</Probability>
         </Item>
         <Item>
@@ -43,7 +43,7 @@
           <Probability>0.2</Probability>
         </Item>
         <Item>
-          <ItemName>CommonBasicReactor</ItemName>
+          <ItemName>BasicReactor</ItemName>
           <Probability>0.05</Probability>
         </Item>
         <Item>
@@ -59,7 +59,7 @@
           <Probability>0.2</Probability>
         </Item>
         <Item>
-          <ItemName>CommonBasicSensor</ItemName>
+          <ItemName>BasicSensor</ItemName>
           <Probability>0.05</Probability>
         </Item>
         <Item>
@@ -75,7 +75,7 @@
           <Probability>0.2</Probability>
         </Item>
         <Item>
-          <ItemName>CommonBasicThruster</ItemName>
+          <ItemName>BasicThruster</ItemName>
           <Probability>0.05</Probability>
         </Item>
         <Item>

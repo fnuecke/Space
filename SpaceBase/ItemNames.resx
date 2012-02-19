@@ -141,11 +141,35 @@
   <data name="BasicWeapon" xml:space="preserve">
     <value>Basic Weapon</value>
   </data>
+  <data name="Common" xml:space="preserve">
+    <value>Coomon</value>
+  </data>
+  <data name="CommonBasicArmor" xml:space="preserve">
+    <value>Basic Armor</value>
+  </data>
+  <data name="CommonBasicReactor" xml:space="preserve">
+    <value>Basic Reactor</value>
+  </data>
+  <data name="CommonBasicSensor" xml:space="preserve">
+    <value>Basic Sensor</value>
+  </data>
+  <data name="CommonBasicShield" xml:space="preserve">
+    <value>Basic Shield</value>
+  </data>
+  <data name="CommonBasicThruster" xml:space="preserve">
+    <value>Basic Thruster</value>
+  </data>
+  <data name="CommonBasicWeapon" xml:space="preserve">
+    <value>Basic Weapon</value>
+  </data>
   <data name="Energy" xml:space="preserve">
     <value>Energetic</value>
   </data>
   <data name="EnergyRegeneration" xml:space="preserve">
     <value>Enduring</value>
+  </data>
+  <data name="Epic" xml:space="preserve">
+    <value>Master</value>
   </data>
   <data name="Health" xml:space="preserve">
     <value>Healthy</value>
@@ -155,6 +179,48 @@
   </data>
   <data name="Mass" xml:space="preserve">
     <value>Heavy</value>
+  </data>
+  <data name="Poor" xml:space="preserve">
+    <value>Poor</value>
+  </data>
+  <data name="PoorBasicArmor" xml:space="preserve">
+    <value>Basic Armor</value>
+  </data>
+  <data name="PoorBasicReactor" xml:space="preserve">
+    <value>Basic Reactor</value>
+  </data>
+  <data name="PoorBasicSensor" xml:space="preserve">
+    <value>Basic Sensor</value>
+  </data>
+  <data name="PoorBasicShield" xml:space="preserve">
+    <value>Basic Shield</value>
+  </data>
+  <data name="PoorBasicThruster" xml:space="preserve">
+    <value>Basic Thruster</value>
+  </data>
+  <data name="PoorBasicWeapon" xml:space="preserve">
+    <value>Basic Weapon</value>
+  </data>
+  <data name="Rare" xml:space="preserve">
+    <value>Very Special</value>
+  </data>
+  <data name="RareBasicArmor" xml:space="preserve">
+    <value>Basic Armor</value>
+  </data>
+  <data name="RareBasicReactor" xml:space="preserve">
+    <value>Basic Reactor</value>
+  </data>
+  <data name="RareBasicSensor" xml:space="preserve">
+    <value>Basic Sensor</value>
+  </data>
+  <data name="RareBasicShield" xml:space="preserve">
+    <value>Basic Shield</value>
+  </data>
+  <data name="RareBasicThruster" xml:space="preserve">
+    <value>Basic Thruster</value>
+  </data>
+  <data name="RareBasicWeapon" xml:space="preserve">
+    <value>Basic Weapon</value>
   </data>
   <data name="RotationForce" xml:space="preserve">
     <value>Rotating</value>
@@ -188,6 +254,27 @@
   </data>
   <data name="ThrusterEnergyConsumption" xml:space="preserve">
     <value />
+  </data>
+  <data name="Uncommon" xml:space="preserve">
+    <value>Spezial</value>
+  </data>
+  <data name="UncommonBasicArmor" xml:space="preserve">
+    <value>Basic Armor</value>
+  </data>
+  <data name="UncommonBasicReactor" xml:space="preserve">
+    <value>Basic Reactor</value>
+  </data>
+  <data name="UncommonBasicSensor" xml:space="preserve">
+    <value>Basic Sensor</value>
+  </data>
+  <data name="UncommonBasicShield" xml:space="preserve">
+    <value>Basic Shield</value>
+  </data>
+  <data name="UncommonBasicThruster" xml:space="preserve">
+    <value>Basic Thruster</value>
+  </data>
+  <data name="UncommonBasicWeapon" xml:space="preserve">
+    <value>Basic Weapon</value>
   </data>
   <data name="WeaponCooldown" xml:space="preserve">
     <value />

@@ -156,6 +156,9 @@
   <data name="WeaponCooldown" xml:space="preserve">
     <value>Fire rate</value>
   </data>
+  <data name="WeaponDamage" xml:space="preserve">
+    <value>Damage</value>
+  </data>
   <data name="WeaponEnergyConsumption" xml:space="preserve">
     <value>Weapon energy consumption</value>
   </data>

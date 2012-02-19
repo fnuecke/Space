@@ -52,9 +52,10 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
                     {
                         if (IsMousePositionOnIcon(i))
                         {
-                            _client.Controller.PushLocalCommand(new UseCommand(i));
+                           _client.Controller.PushLocalCommand(new UseCommand(i));
+                           return true;
                         }
-                        return true;
+                        
                     }
                 }
             }

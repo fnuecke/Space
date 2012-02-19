@@ -168,6 +168,11 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                         {
                             spaceItem.GetDescription(ref description);
                             var attributes = description.Attributes;
+                            if (description.IsWeapon)
+                            {
+                                _fonts.DrawString(Fonts.Types.ConsoleFont, AttributeType.WeaponDamage.ToLocalizedString() + " " + description.WeaponDamage, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                                line++;
+                            }
                             foreach (var attribute in attributes)
                             {
                                 _fonts.DrawString(Fonts.Types.ConsoleFont, attribute.Type + " " + attribute.Value, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);

@@ -152,7 +152,13 @@ namespace Engine.ComponentSystem.RPG.Components
 
             var slots = _slots[itemType.GetType()];
             int itemInSolt = slots[slot];
-
+            if (itemInSolt > 0)
+            {
+                ItemRemoved message1;
+                message1.Slot = slot;
+                message1.Item = Entity.Manager.GetEntity(itemInSolt);
+                Entity.SendMessage(ref message1);
+            }
             slots[slot] = item.UID;
 
             ItemAdded message;

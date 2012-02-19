@@ -97,7 +97,7 @@ namespace Space.ComponentSystem.Components
                 }
                 if (type != AttributeType.None)
                 {
-                    return type.ToNameString() + " " + displayName;
+                    return ItemNames.ResourceManager.GetString(Quality.ToString())+" "+ type.ToNameString() + " " + displayName;
                 }
             }
 

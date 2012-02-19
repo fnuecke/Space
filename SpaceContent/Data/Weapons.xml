@@ -52,6 +52,7 @@
         </Item>
       </Projectiles>
     </Item>
+    
     <Item>
       <Name>BasicWeapon</Name>
       <!--<Icon>Textures/Icons/Buffs/stabilisator</Icon>-->

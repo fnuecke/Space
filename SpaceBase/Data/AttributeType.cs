@@ -109,7 +109,8 @@ namespace Space.Data
             { AttributeType.WeaponEnergyConsumption, AttributeStrings.WeaponEnergyConsumption },
             { AttributeType.ShieldEfficiency, AttributeStrings.ShieldEfficiency },
             { AttributeType.WeaponCooldown, AttributeStrings.WeaponCooldown },
-            { AttributeType.SensorRange, AttributeStrings.SensorRange }
+            { AttributeType.SensorRange, AttributeStrings.SensorRange },
+            {AttributeType.WeaponDamage, AttributeStrings.WeaponDamage}
         };
         private static readonly Dictionary<AttributeType, string> _nameLookup = new Dictionary<AttributeType, string>()
         {
