@@ -99,7 +99,7 @@ namespace Space.ComponentSystem
         /// Creates a new explosion effect at the specified position.
         /// </summary>
         /// <param name="position">The position at which to show the explosion.</param>
-        /// <param name="scale">The Scale of the Explosion</param>
+        /// <param name="scale">The Diameter of the Explosion</param>
         /// <returns>The entity representing the explosion.</returns>
         public static Entity CreateExplosion(Vector2 position,float scale = 0)
         {

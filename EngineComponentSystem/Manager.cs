@@ -303,7 +303,7 @@ namespace Engine.ComponentSystem
             // Make sure that component exists.
             if (!HasComponent(componentId))
             {
-                throw new ArgumentException("No such component in the system.", "component");
+                throw new ArgumentException("No such component in the system.", "componentId");
             }
 
             return _components[componentId];
@@ -386,7 +386,12 @@ namespace Engine.ComponentSystem
             int numSystems = packet.ReadInt32();
             for (int i = 0; i < numSystems; i++)
             {
-                var type = Type.GetType(packet.ReadString());
+                var typeName = packet.ReadString();
+                var type = Type.GetType(typeName);
+                if (type == null)
+                {
+                    throw new PacketException(string.Format("Invalid system type, not known locally: {0}.", typeName));
+                }
                 packet.ReadPacketizableInto(_systems[type]);
                 _systems[type].Manager = this;
             }
@@ -409,7 +414,7 @@ namespace Engine.ComponentSystem
             for (int i = 0; i < numComponents; i++)
             {
                 var type = Type.GetType(packet.ReadString());
-                var component = packet.ReadPacketizableInto<Component>(GetInstance(type));
+                var component = packet.ReadPacketizableInto(GetInstance(type));
                 component.Manager = this;
                 if (!_entities.ContainsKey(component.Entity))
                 {
@@ -446,28 +451,59 @@ namespace Engine.ComponentSystem
         {
             var copy = (Manager)((into is Manager) ? into : new Manager());
 
-            // Copy systems.
-            foreach (var item in _systems)
+            if (copy == into)
             {
-                if (copy._systems.ContainsKey(item.Key))
+                // Copy systems.
+                foreach (var item in _systems)
                 {
                     item.Value.DeepCopy(copy._systems[item.Key]);
                 }
-                else
+
+                // Free entities.
+                foreach (var mapping in copy._entities.Values)
+                {
+                    ReleaseMapping(mapping);
+                }
+                copy._entities.Clear();
+
+                // Copy components, free components.
+                foreach (var component in copy._components.Values)
+                {
+                    ReleaseInstance(component);
+                }
+                copy._components.Clear();
+
+                // Copy id managers.
+                copy._entityIds = _entityIds.DeepCopy(copy._entityIds);
+                copy._componentIds = _componentIds.DeepCopy(copy._componentIds);
+            }
+            else
+            {
+                copy._systems = new Dictionary<Type, AbstractSystem>();
+                copy._entities = new Dictionary<int, Dictionary<Type, Component>>();
+                copy._components = new Dictionary<int, Component>();
+
+                // Copy systems.
+                foreach (var item in _systems)
                 {
                     copy._systems.Add(item.Key, item.Value.DeepCopy());
                 }
+
+                // Copy id managers.
+                copy._entityIds = _entityIds.DeepCopy();
+                copy._componentIds = _componentIds.DeepCopy();
             }
 
             // Copy components.
             foreach (var component in _components.Values)
             {
-
+                if (!copy._entities.ContainsKey(component.Entity))
+                {
+                    copy._entities.Add(component.Entity, GetMapping());
+                }
+                copy._entities[component.Id].Add(component.GetType(), component);
+                copy._components.Add(component.Id, component);
             }
-
-            // Copy id managers.
-            _entityIds.DeepCopy(copy._entityIds);
-            _componentIds.DeepCopy(copy._componentIds);
 
             return copy;
         }
@@ -482,17 +518,17 @@ namespace Engine.ComponentSystem
         /// components that might still be referenced in running system update
         /// loops.
         /// </summary>
-        private Dictionary<Type, Stack<Component>> _dirtyPool = new Dictionary<Type, Stack<Component>>();
+        private readonly Dictionary<Type, Stack<Component>> _dirtyPool = new Dictionary<Type, Stack<Component>>();
 
         /// <summary>
         /// Object pool for reusable instances.
         /// </summary>
-        private static Dictionary<Type, Stack<Component>> _pool = new Dictionary<Type, Stack<Component>>();
+        private static readonly Dictionary<Type, Stack<Component>> Pool = new Dictionary<Type, Stack<Component>>();
 
         /// <summary>
         /// Pool for component mappings (used in component list).
         /// </summary>
-        private static Stack<Dictionary<Type, Component>> _mapPool = new Stack<Dictionary<Type, Component>>();
+        private static readonly Stack<Dictionary<Type, Component>> MapPool = new Stack<Dictionary<Type, Component>>();
 
         /// <summary>
         /// Try fetching an instance from the pool, if that fails, create a new one.
@@ -502,11 +538,11 @@ namespace Engine.ComponentSystem
         private static T GetInstance<T>() where T : Component, new()
         {
             var type = typeof(T);
-            lock (_pool)
+            lock (Pool)
             {
-                if (_pool.ContainsKey(type) && _pool[type].Count > 0)
+                if (Pool.ContainsKey(type) && Pool[type].Count > 0)
                 {
-                    return (T)_pool[type].Pop();
+                    return (T)Pool[type].Pop();
                 }
             }
             return new T();
@@ -519,11 +555,11 @@ namespace Engine.ComponentSystem
         /// <returns>A new component of the specified type.</returns>
         private static Component GetInstance(Type type)
         {
-            lock (_pool)
+            lock (Pool)
             {
-                if (_pool.ContainsKey(type) && _pool[type].Count > 0)
+                if (Pool.ContainsKey(type) && Pool[type].Count > 0)
                 {
-                    return _pool[type].Pop();
+                    return Pool[type].Pop();
                 }
             }
             return (Component)Activator.CreateInstance(type);
@@ -551,17 +587,17 @@ namespace Engine.ComponentSystem
         /// </summary>
         private void ReleaseDirty()
         {
-            lock (_pool)
+            lock (Pool)
             {
                 foreach (var type in _dirtyPool)
                 {
-                    if (!_pool.ContainsKey(type.Key))
+                    if (!Pool.ContainsKey(type.Key))
                     {
-                        _pool.Add(type.Key, new Stack<Component>());
+                        Pool.Add(type.Key, new Stack<Component>());
                     }
                     foreach (var instance in type.Value)
                     {
-                        _pool[type.Key].Push(instance);
+                        Pool[type.Key].Push(instance);
                     }
                 }
             }
@@ -573,11 +609,11 @@ namespace Engine.ComponentSystem
         /// <returns>A new component mapping.</returns>
         private static Dictionary<Type, Component> GetMapping()
         {
-            lock (_mapPool)
+            lock (MapPool)
             {
-                if (_mapPool.Count > 0)
+                if (MapPool.Count > 0)
                 {
-                    return _mapPool.Pop();
+                    return MapPool.Pop();
                 }
             }
             return new Dictionary<Type, Component>();
@@ -590,9 +626,9 @@ namespace Engine.ComponentSystem
         private static void ReleaseMapping(Dictionary<Type, Component> mapping)
         {
             mapping.Clear();
-            lock (_mapPool)
+            lock (MapPool)
             {
-                _mapPool.Push(mapping);
+                MapPool.Push(mapping);
             }
         }
 

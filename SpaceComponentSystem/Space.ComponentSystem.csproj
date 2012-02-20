@@ -108,12 +108,11 @@
     <Compile Include="Components\AI\Behaviours\MoveBehaviour.cs" />
     <Compile Include="Components\AI\Behaviours\PatrolBehaviour.cs" />
     <Compile Include="Components\AI\AIComponent.cs" />
-    <Compile Include="Components\Logic\VoidDeath.cs" />
+    <Compile Include="Components\Items\ItemInfo.cs" />
     <Compile Include="Components\Media\ExplosionEffect.cs" />
     <Compile Include="Components\Items\SpaceItem.cs" />
     <Compile Include="Components\Logic\AbstractRegeneratingValue.cs" />
     <Compile Include="Components\Logic\CollisionDamage.cs" />
-    <Compile Include="Components\Logic\Death.cs" />
     <Compile Include="Components\Logic\Drops.cs" />
     <Compile Include="Components\Logic\PlayerClass.cs" />
     <Compile Include="Components\Items\Consumables\RepairKit.cs" />
@@ -133,7 +132,6 @@
     <Compile Include="Components\Media\SunRenderer.cs" />
     <Compile Include="Components\Media\ThrusterEffect.cs" />
     <Compile Include="Components\Logic\WeaponControl.cs" />
-    <Compile Include="Components\Media\WeaponSound.cs" />
     <Compile Include="EntityFactory.cs" />
     <Compile Include="Factories\ArmorFactory.cs" />
     <Compile Include="Factories\FactoryLibrary.cs" />
@@ -141,8 +139,17 @@
     <Compile Include="Factories\IFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
+    <Compile Include="Systems\CameraSystem.cs" />
+    <Compile Include="Systems\CollisionDamageSystem.cs" />
+    <Compile Include="Systems\DeathSystem.cs" />
+    <Compile Include="Systems\DetectableSystem.cs" />
     <Compile Include="Systems\DropSystem.cs" />
+    <Compile Include="Systems\GravitationSystem.cs" />
+    <Compile Include="Systems\PlanetRenderSystem.cs" />
+    <Compile Include="Systems\RegeneratingValueSystem.cs" />
+    <Compile Include="Systems\ShipInfoSystem.cs" />
     <Compile Include="Systems\ShipsSpawnSystem.cs" />
+    <Compile Include="Systems\SunRenderSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />
     <Compile Include="Util\PlayerClassType.cs" />
     <Compile Include="Factories\ReactorFactory.cs" />
@@ -166,13 +173,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\CellSystem.cs" />
     <Compile Include="Systems\ParticleSystem.cs" />
-    <Compile Include="Systems\PlayerCenteredRenderSystem.cs" />
+    <Compile Include="Systems\CameraCenteredTextureRenderSystem.cs" />
     <Compile Include="Systems\PlayerCenteredSoundSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
+      <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
+      <Name>Engine.ComponentSystem.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>

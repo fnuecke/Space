@@ -11,7 +11,7 @@ namespace Space.ComponentSystem.Systems
     /// Controls the particle components in a game, passing them some
     /// information about how to render themselves.
     /// </summary>
-    public class ParticleSystem : RenderSystem<RendererUpdateParameterization, ParticleParameterization>
+    public class ParticleSystem : TextureRenderSystem
     {
         #region Constructor
         

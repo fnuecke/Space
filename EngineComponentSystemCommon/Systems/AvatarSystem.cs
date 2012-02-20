@@ -33,13 +33,13 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="playerNumber">The player to fetch the avatar for.</param>
         /// <returns>The avatar entity, or <c>0</c> if none is known for this player.</returns>
-        public int GetAvatar(int playerNumber)
+        public int? GetAvatar(int playerNumber)
         {
             if (_avatars.ContainsKey(playerNumber))
             {
                 return _avatars[playerNumber];
             }
-            return 0;
+            return null;
         }
 
         #endregion

@@ -50,7 +50,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public sealed override void Update(GameTime gameTime, long frame)
+        public override void Update(GameTime gameTime, long frame)
         {
             _updatingComponents.AddRange(_components);
             foreach (var component in _updatingComponents)
@@ -68,7 +68,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public sealed override void Draw(GameTime gameTime, long frame)
+        public override void Draw(GameTime gameTime, long frame)
         {
             _updatingComponents.AddRange(_components);
             foreach (var component in _updatingComponents)

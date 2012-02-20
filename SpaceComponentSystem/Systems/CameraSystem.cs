@@ -1,8 +1,8 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input.Devices;
 using Space.Input;
 using Space.Util;
@@ -10,14 +10,15 @@ using Space.Util;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
-    /// Defines a render system which always translates the view to be centered to the local player's avatar.
+    /// Tracks camera position, either based on player's position and input
+    /// state, or via a set position.
     /// </summary>
-    public class PlayerCenteredRenderSystem : ParticleSystem
+    public sealed class CameraSystem : AbstractSystem
     {
         #region Properties
 
         /// <summary>
-        /// The current camera position used in this renderer.
+        /// The current camera position.
         /// </summary>
         public Vector2 CameraPositon
         { 
@@ -36,24 +37,14 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
+        /// The game this system belongs to.
+        /// </summary>
+        private readonly Game _game;
+
+        /// <summary>
         /// The session this system belongs to, for fetching the local player.
         /// </summary>
-        private IClientSession _session;
-
-        /// <summary>
-        /// The graphics device (used to look up the current viewport).
-        /// </summary>
-        private GraphicsDevice _graphicsDevice;
-
-        /// <summary>
-        /// Used for dynamic camera offset.
-        /// </summary>
-        private IMouse _mouse;
-
-        /// <summary>
-        /// Used for dynamic camera offset.
-        /// </summary>
-        private IGamePad _gamePad;
+        private readonly IClientSession _session;
 
         /// <summary>
         /// The last frame we updated our camera offset (interpolated). We need
@@ -80,14 +71,39 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        public PlayerCenteredRenderSystem(Game game, SpriteBatch spriteBatch, IGraphicsDeviceService graphics, IClientSession session)
-            : base(game, spriteBatch, graphics)
+        #region Constructor
+        #endregion
+
+        public CameraSystem(Game game, IClientSession session)
         {
+            _game = game;
             _session = session;
-            _graphicsDevice = game.GraphicsDevice;
-            _mouse = (IMouse)game.Services.GetService(typeof(IMouse));
-            _gamePad = (IGamePad)game.Services.GetService(typeof(IGamePad));
         }
+
+        #region Accessors
+
+        /// <summary>
+        /// Returns a translation, that when applied to world objects will
+        /// make them appear relative in a way as if the camera were centered
+        /// on the screen.
+        /// </summary>
+        /// <returns>The offset to apply to objects when rendering them.</returns>
+        public Vector2 GetTranslation()
+        {
+            // Get viewport, to center objects around the camera position.
+            var viewport = _game.GraphicsDevice.Viewport;
+            var cameraPosition = Manager.GetSystem<CameraSystem>().CameraPositon;
+
+            // Return the *negative* camera position, because that's the
+            // actual amount we need to translate game objects to be drawn
+            // at the correct position.
+            Vector2 result;
+            result.X = viewport.Width / 2f - cameraPosition.X;
+            result.Y = viewport.Height / 2f - cameraPosition.Y;
+            return result;
+        }
+
+        #endregion
 
         #region Logic
 
@@ -96,21 +112,23 @@ namespace Space.ComponentSystem.Systems
         /// to make sure it's up-to-date before *anything* else is drawn,
         /// especially stuff outside the simulation, to avoid "lagging".
         /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame the update applies to.</param>
-        public override void Update(long frame)
+        public override void Update(GameTime gameTime, long frame)
         {
             // Only update the offset if we didn't roll-back.
             if (frame > _lastFrame)
             {
-                if (!_customCameraPosition.HasValue && _session.ConnectionState == ClientState.Connected)
+                if (!_customCameraPosition.HasValue &&
+                    _session.ConnectionState == ClientState.Connected)
                 {
                     var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
-                    if (avatar != null)
+                    if (avatar.HasValue)
                     {
                         // Non-fixed camera, update our offset based on the game pad
                         // or mouse position, relative to the ship.
-                        Vector2 currentOffset = GetInputInducedOffset();
-                        var avatarPosition = avatar.GetComponent<Transform>().Translation;
+                        var currentOffset = GetInputInducedOffset();
+                        var avatarPosition = Manager.GetComponent<Transform>(avatar.Value).Translation;
 
                         // The interpolate to our new offset, slowly to make the
                         // effect less brain-melting.
@@ -127,9 +145,14 @@ namespace Space.ComponentSystem.Systems
                 _lastFrame = frame;
             }
 
-            base.Update(frame);
+            base.Update(gameTime, frame);
         }
 
+        /// <summary>
+        /// Gets the input induced camera offset, based on mouse position or
+        /// game pad state.
+        /// </summary>
+        /// <returns>The offset based on player input.</returns>
         private Vector2 GetInputInducedOffset()
         {
             Vector2 offset;
@@ -137,18 +160,21 @@ namespace Space.ComponentSystem.Systems
             offset.Y = 0;
 
             // Get viewport, for mouse position scaling and offset scaling.
-            var viewport = _graphicsDevice.Viewport;
-            float offsetScale = (float)(System.Math.Sqrt(viewport.Width * viewport.Width + viewport.Height * viewport.Height) / 6.0);
+            var viewport = _game.GraphicsDevice.Viewport;
+            var offsetScale = (float)(Math.Sqrt(viewport.Width * viewport.Width + viewport.Height * viewport.Height) / 6.0);
+
+            var mouse = (IMouse)_game.Services.GetService(typeof(IMouse));
+            var gamePad = (IGamePad)_game.Services.GetService(typeof(IGamePad));
 
             // If we have a game pad attached, get the stick tilt.
-            if (Settings.Instance.EnableGamepad && _gamePad != null)
+            if (Settings.Instance.EnableGamepad && gamePad != null)
             {
-                offset = GamePadHelper.GetLook(_gamePad);
+                offset = GamePadHelper.GetLook(gamePad);
             }
-            else if (_mouse != null)
+            else if (mouse != null)
             {
                 // Otherwise use the mouse.
-                var state = _mouse.GetState();
+                var state = mouse.GetState();
                 
                 // Get the relative position of the mouse to the ship and
                 // apply some factoring to it (so that the maximum distance
@@ -170,36 +196,16 @@ namespace Space.ComponentSystem.Systems
             return offset * offsetScale;
         }
 
-        /// <summary>
-        /// Returns a translation that is the negative player avatar position, making the local player centered.
-        /// </summary>
-        protected override Vector3 GetTranslation()
-        {
-            // Get viewport, to center objects around the camera position.
-            var viewport = _graphicsDevice.Viewport;
-
-            // Return the *negative* camera position, because that's the
-            // actual amount we need to translate game objects to be drawn
-            // at the correct position.
-            Vector3 result;
-            result.X = -_cameraPosition.X + viewport.Width / 2f;
-            result.Y = -_cameraPosition.Y + viewport.Height / 2f;
-            result.Z = 0;
-            return result;
-        }
-
         #endregion
 
         #region Copying
 
-        public override ISystem DeepCopy(ISystem into)
+        public override AbstractSystem DeepCopy(AbstractSystem into)
         {
-            var copy = (PlayerCenteredRenderSystem)base.DeepCopy(into);
+            var copy = (CameraSystem)base.DeepCopy(into);
 
             if (copy == into)
             {
-                copy._session = _session;
-                copy._graphicsDevice = _graphicsDevice;
                 copy._previousOffset = _previousOffset;
                 copy._cameraPosition = _cameraPosition;
                 copy._customCameraPosition = _customCameraPosition;

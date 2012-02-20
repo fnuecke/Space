@@ -168,7 +168,7 @@ namespace Space.Control
         /// <returns></returns>
         public Vector2 GetCameraPosition()
         {
-            var system = GetSystem<PlayerCenteredRenderSystem>();
+            var system = GetSystem<CameraCenteredTextureRenderSystem>();
             if (system != null)
             {
                 return system.CameraPositon;

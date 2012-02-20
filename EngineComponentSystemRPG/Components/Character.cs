@@ -124,7 +124,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="type">The attribute type.</param>
         /// <param name="baseValue">The base value to use.</param>
         /// <returns>The base value for that type.</returns>
-        public float GetValue(TAttribute type, float baseValue)
+        public float GetValue(TAttribute type, float baseValue = 0)
         {
             if (!_modifiedAttributes.ContainsKey(type))
             {
@@ -132,16 +132,6 @@ namespace Engine.ComponentSystem.RPG.Components
             }
             var modifiers = _modifiedAttributes[type];
             return (modifiers[0] + baseValue) * modifiers[1];
-        }
-
-        /// <summary>
-        /// Gets the modified value for the specified attribute type.
-        /// </summary>
-        /// <param name="type">The attribute type.</param>
-        /// <returns>The base value for that type.</returns>
-        public float GetValue(TAttribute type)
-        {
-            return GetValue(type, 0);
         }
 
         #endregion

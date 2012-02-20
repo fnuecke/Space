@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.Systems
     /// Basic implementation of a render system. Subclasses may override the
     /// GetTranslation() method to implement camera positioning.
     /// </summary>
-    public class RenderSystem : AbstractComponentSystem<TextureData>
+    public class TextureRenderSystem : AbstractComponentSystem<TextureRenderer>
     {
         #region Fields
 
@@ -27,7 +27,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Constructor
         
-        public RenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        public TextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
             _content = content;
             _spriteBatch = spriteBatch;
@@ -37,7 +37,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Logic
 
-        protected override void UpdateComponent(GameTime gameTime, long frame, TextureData component)
+        protected override void UpdateComponent(GameTime gameTime, long frame, TextureRenderer component)
         {
             // Load our texture, if it's not set.
             if (component.Texture == null)
@@ -46,7 +46,7 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        protected override void DrawComponent(GameTime gameTime, long frame, TextureData component)
+        protected override void DrawComponent(GameTime gameTime, long frame, TextureRenderer component)
         {
             // Get global render translation.
             var translation = GetTranslation();

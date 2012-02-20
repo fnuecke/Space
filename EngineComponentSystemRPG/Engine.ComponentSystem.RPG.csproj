@@ -100,7 +100,6 @@
     <Compile Include="Components\StatusEffect.cs" />
     <Compile Include="Components\Attribute.cs" />
     <Compile Include="Components\Item.cs" />
-    <Compile Include="Components\ItemInfo.cs" />
     <Compile Include="Components\Stackable.cs" />
     <Compile Include="Components\Usable.cs" />
     <Compile Include="Constraints\AttributeModifierConstraint.cs" />

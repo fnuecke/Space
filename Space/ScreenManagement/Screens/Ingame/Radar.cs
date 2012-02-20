@@ -294,7 +294,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 if (iconPosition.X > center.X || iconPosition.X < -center.X)
                 {
                     // Out of screen on the X axis. Guaranteed to be in bound
-                    // for Y axis, though. Scale down.
+                    // for Y axis, though. Diameter down.
                     var scale = center.X / System.Math.Abs(iconPosition.X);
                     iconPosition.X *= scale;
                     iconPosition.Y *= scale;
@@ -302,7 +302,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 else if (iconPosition.Y > center.Y || iconPosition.Y < -center.Y)
                 {
                     // Out of screen on the Y axis. Guaranteed to be in bound
-                    // for X axis, though. Scale down.
+                    // for X axis, though. Diameter down.
                     var scale = center.Y / System.Math.Abs(iconPosition.Y);
                     iconPosition.X *= scale;
                     iconPosition.Y *= scale;

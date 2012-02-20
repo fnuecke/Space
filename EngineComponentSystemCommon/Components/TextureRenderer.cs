@@ -8,7 +8,7 @@ namespace Engine.ComponentSystem.Components
     /// Graphics object holding information about a texture and how it should
     /// base drawn.
     /// </summary>
-    public abstract class TextureData : Component
+    public abstract class TextureRenderer : Component
     {
         #region Properties
         
@@ -54,7 +54,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            var otherTexture = (TextureData)other;
+            var otherTexture = (TextureRenderer)other;
             Tint = otherTexture.Tint;
             Scale = otherTexture.Scale;
             Texture = otherTexture.Texture;
@@ -67,21 +67,11 @@ namespace Engine.ComponentSystem.Components
         /// <param name="textureName">Name of the texture.</param>
         /// <param name="tint">The tint.</param>
         /// <param name="scale">The scale.</param>
-        protected void Initialize(string textureName, Color tint, float scale)
+        protected void Initialize(string textureName, Color tint, float scale = 1)
         {
             this.TextureName = textureName;
             this.Tint = tint;
             this.Scale = scale;
-        }
-
-        /// <summary>
-        /// Initialize with the specified values.
-        /// </summary>
-        /// <param name="textureName">Name of the texture.</param>
-        /// <param name="tint">The tint.</param>
-        protected void Initialize(string textureName, Color tint)
-        {
-            Initialize(textureName, tint, 1);
         }
 
         /// <summary>
@@ -148,8 +138,7 @@ namespace Engine.ComponentSystem.Components
             TextureName = packet.ReadString();
 
             // Properties of value types don't allow changing properties...
-            var color = new Color();
-            color.PackedValue = packet.ReadUInt32();
+            var color = new Color { PackedValue = packet.ReadUInt32() };
             Tint = color;
 
             Scale = packet.ReadSingle();

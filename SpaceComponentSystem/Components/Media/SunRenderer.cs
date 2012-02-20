@@ -1,82 +1,81 @@
 ﻿using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Parameterizations;
-using Microsoft.Xna.Framework;
-using Space.Graphics;
+using Engine.Serialization;
 
 namespace Space.ComponentSystem.Components
 {
-    public sealed class SunRenderer : TextureData
+    /// <summary>
+    /// Represents sun visuals.
+    /// </summary>
+    public sealed class SunRenderer : Component
     {
         #region Fields
-        
+
         /// <summary>
-        /// The sun renderer we use. We just use the same one for all suns,
-        /// because we'll never have more than one sun in the screen, at
-        /// least for now.
+        /// The size of the sun.
         /// </summary>
-        private static Sun _sun;
+        public float Radius;
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
-        public SunRenderer(float radius)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
         {
-            Scale = 2 * radius;
+            base.Initialize(other);
+
+            Radius = ((SunRenderer)other).Radius;
         }
 
-        public SunRenderer()
+        /// <summary>
+        /// Initialize with the specified radius.
+        /// </summary>
+        /// <param name="radius">The radius of the sun.</param>
+        public void Initialize(float radius)
         {
+            Radius = radius;
+        }
+
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            Radius = 0;
         }
 
         #endregion
 
-        #region Logic
+        #region Serialization
 
-        public override void Update(object parameterization)
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Packet Packetize(Packet packet)
         {
-            base.Update(parameterization);
-
-            // Get parameterization in proper type.
-            var args = (RendererUpdateParameterization)parameterization;
-
-            // Get the effect, if we don't have it yet.
-            if (_sun == null)
-            {
-                _sun = new Sun(args.Game);
-                _sun.LoadContent(args.SpriteBatch, args.Game.Content);
-            }
+            return base.Packetize(packet)
+                .Write(Radius);
         }
 
-        public override void Draw(object parameterization)
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Packet packet)
         {
-            // The position and orientation we're rendering at and in.
-            var transform = Entity.GetComponent<Transform>();
+            base.Depacketize(packet);
 
-            // Draw the texture based on our physics component.
-            if (transform != null)
-            {
-                // Get parameterization in proper type.
-                var args = (RendererDrawParameterization)parameterization;
-
-                // Check if we need to draw (in bounds of view port). Use a
-                // large bounding rectangle to account for the glow, so that
-                // doesn't suddenly pop up.
-                Rectangle sunBounds;
-                sunBounds.Width = (int)(Scale * 2);
-                sunBounds.Height = (int)(Scale * 2);
-                sunBounds.X = (int)(transform.Translation.X - Scale + args.Transform.Translation.X);
-                sunBounds.Y = (int)(transform.Translation.Y - Scale + args.Transform.Translation.Y);
-
-                if (sunBounds.Intersects(args.SpriteBatch.GraphicsDevice.Viewport.Bounds))
-                {
-                    _sun.SetGameTime(args.GameTime);
-                    _sun.SetSize(Scale);
-                    _sun.SetCenter(transform.Translation.X + args.Transform.Translation.X,
-                                   transform.Translation.Y + args.Transform.Translation.Y);
-                    _sun.Draw();
-                }
-            }
+            Radius = packet.ReadInt32();
         }
 
         #endregion

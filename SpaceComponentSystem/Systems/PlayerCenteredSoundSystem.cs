@@ -1,8 +1,10 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
+using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -17,7 +19,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// The session this system belongs to, for fetching the local player.
         /// </summary>
-        IClientSession _session;
+        private readonly IClientSession _session;
 
         #endregion
 
@@ -26,7 +28,7 @@ namespace Space.ComponentSystem.Systems
         public PlayerCenteredSoundSystem(SoundBank soundbank, IClientSession session)
             : base(soundbank)
         {
-            this._session = session;
+            _session = session;
         }
 
         #endregion
@@ -34,16 +36,26 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
+        /// Reacts to messages to fire sounds.
+        /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
+        /// <param name="message">The message.</param>
+        public override void Receive<T>(ref T message)
+        {
+            if (message is WeaponFired)
+            {
+                var weaponMessage = (WeaponFired)(ValueType)message;
+                Play(weaponMessage.Weapon.Sound, weaponMessage.Weapon.Entity);
+            }
+        }
+
+        /// <summary>
         /// Returns the position of the local player's avatar.
         /// </summary>
         protected override Vector2 GetListenerPosition()
         {
             var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
-            if (avatar != null)
-            {
-                return avatar.GetComponent<Transform>().Translation;
-            }
-            return Vector2.Zero;
+            return avatar.HasValue ? Manager.GetComponent<Transform>(avatar.Value).Translation : Vector2.Zero;
         }
 
         /// <summary>
@@ -52,11 +64,7 @@ namespace Space.ComponentSystem.Systems
         protected override Vector2 GetListenerVelocity()
         {
             var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
-            if (avatar != null)
-            {
-                return avatar.GetComponent<Velocity>().Value;
-            }
-            return Vector2.Zero;
+            return avatar.HasValue ? Manager.GetComponent<Velocity>(avatar.Value).Value : Vector2.Zero;
         }
 
         #endregion

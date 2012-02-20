@@ -58,7 +58,7 @@ namespace Engine.ComponentSystem
         /// </summary>
         /// <typeparam name="T">The type of the system to get.</typeparam>
         /// <returns>The system with the specified type.</returns>
-        T GetSystem<T>();
+        T GetSystem<T>() where T : AbstractSystem;
         
         #endregion
 

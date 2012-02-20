@@ -214,7 +214,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                         _orbitEllipse.SetMinorRadius(ellipse.MinorRadius);
                         _orbitEllipse.SetRotation(ellipse.Angle);
 
-                        // Scale the opacity based on our distance to the
+                        // Diameter the opacity based on our distance to the
                         // actual object. Apply a exponential fall-off, and
                         // make it cap a little early to get the 100% alpha
                         // when nearby, not only when exactly on top of the

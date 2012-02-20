@@ -249,7 +249,7 @@ namespace Engine.ComponentSystem.RPG.Components
                         _items[i] = item;
 
                         // Disable rendering, if available.
-                        var renderer = Manager.GetComponent<TextureData>(item.Value);
+                        var renderer = Manager.GetComponent<TextureRenderer>(item.Value);
                         if (renderer != null)
                         {
                             renderer.Enabled = false;
@@ -267,7 +267,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 _items.Add(item);
 
                 // Disable rendering, if available.
-                var renderer = Manager.GetComponent<TextureData>(item.Value);
+                var renderer = Manager.GetComponent<TextureRenderer>(item.Value);
                 if (renderer != null)
                 {
                     renderer.Enabled = false;

@@ -71,7 +71,7 @@ namespace Space.Control
                     new ShipsSpawnSystem(),                    
                     new DropSystem(game.Content),
 
-                    new PlayerCenteredRenderSystem(game,
+                    new CameraCenteredTextureRenderSystem(game,
                         (SpriteBatch)game.Services.GetService(typeof(SpriteBatch)),
                         ((Spaaace)game).GraphicsDeviceManager, controller.Session)
                 });
@@ -101,12 +101,12 @@ namespace Space.Control
 
             // Check if the server has all the services we need (enough to
             // check for one, because we only add all at once -- here).
-            if (server.Simulation.EntityManager.SystemManager.GetSystem<PlayerCenteredRenderSystem>() == null)
+            if (server.Simulation.EntityManager.SystemManager.GetSystem<CameraCenteredTextureRenderSystem>() == null)
             {
                 // Needed by some systems. Add all systems we need in
                 // *addition* to the ones the server already has.
                 server.Simulation.EntityManager.SystemManager.AddSystem(
-                    new PlayerCenteredRenderSystem(game,
+                    new CameraCenteredTextureRenderSystem(game,
                         (SpriteBatch)game.Services.GetService(typeof(SpriteBatch)),
                         ((Spaaace)game).GraphicsDeviceManager, controller.Session));
 

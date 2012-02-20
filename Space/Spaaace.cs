@@ -523,7 +523,7 @@ namespace Space
                         sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
 
                         var index = systemManager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
-                        var renderer = systemManager.GetSystem<ComponentSystem.Systems.PlayerCenteredRenderSystem>();
+                        var renderer = systemManager.GetSystem<ComponentSystem.Systems.CameraCenteredTextureRenderSystem>();
                         if (index != null)
                         {
                             if (_indexGroup >= 0)
