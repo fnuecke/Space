@@ -273,13 +273,24 @@ namespace Engine.ComponentSystem
         /// <returns>The component.</returns>
         public T GetComponent<T>(int entity) where T : Component
         {
+            return (T)GetComponent(entity, typeof(T));
+        }
+
+        /// <summary>
+        /// Gets the component of the specified type for an entity.
+        /// </summary>
+        /// <param name="entity">The entity to get the component of.</param>
+        /// <param name="type">The type of the component to get.</param>
+        /// <returns>The component.</returns>
+        public Component GetComponent(int entity, Type type)
+        {
             // Make sure that entity exists.
             if (!HasEntity(entity))
             {
                 throw new ArgumentException("No such entity in the system.", "entity");
             }
 
-            return (T)_entities[entity][typeof(T)];
+            return _entities[entity][type];
         }
 
         /// <summary>

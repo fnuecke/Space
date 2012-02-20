@@ -26,9 +26,9 @@ namespace Engine.ComponentSystem.RPG.Components
                 {
                     for (var i = 0; i < slots.Length; i++)
                     {
-                        if (slots[i] > 0)
+                        if (slots[i].HasValue)
                         {
-                            yield return slots[i];
+                            yield return slots[i].Value;
                         }
                     }
                 }
@@ -42,7 +42,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// The list of currently equipped items, in form of their entity id.
         /// </summary>
-        private readonly Dictionary<Type, int[]> _slots = new Dictionary<Type, int[]>();
+        private readonly Dictionary<Type, int?[]> _slots = new Dictionary<Type, int?[]>();
 
         #endregion
 
@@ -58,7 +58,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
             foreach (var item in ((Equipment)other)._slots)
             {
-                var slots = new int[item.Value.Length];
+                var slots = new int?[item.Value.Length];
                 item.Value.CopyTo(slots, 0);
                 _slots.Add(item.Key, slots);
             }
@@ -129,7 +129,7 @@ namespace Engine.ComponentSystem.RPG.Components
                     return;
                 }
 
-                var slots = new int[count];
+                var slots = new int?[count];
                 if (slots.Length < _slots[type].Length)
                 {
                     // Less space than before, unequip stuff in removed slots.
@@ -150,7 +150,7 @@ namespace Engine.ComponentSystem.RPG.Components
             else
             {
                 // Don't have that yet, create new array.
-                _slots[type] = new int[count];
+                _slots[type] = new int?[count];
             }
         }
 
@@ -163,7 +163,8 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="item">The item to equip.</param>
         /// <param name="slot">The slot to equip it in.</param>
-        public int Equip(int item, int slot)
+        /// <returns>The item previously in that slot.</returns>
+        public int? Equip(int item, int slot)
         {
             // Check if its really an item.
             var itemType = Manager.GetComponent<Item>(item);
@@ -194,7 +195,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="slot">The slot to get the item from.</param>
         /// <returns>The item in that slot, or <c>null</c> if there is no item
         /// in that slot.</returns>
-        public int GetItem<TItem>(int slot)
+        public int? GetItem<TItem>(int slot)
             where TItem : Item
         {
             return GetItem(typeof(TItem), slot);
@@ -207,12 +208,12 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="slot">The slot to get the item from.</param>
         /// <returns>The item in that slot, or <c>null</c> if there is no item
         /// in that slot.</returns>
-        public int GetItem(Type type, int slot)
+        public int? GetItem(Type type, int slot)
         {
             Validate(type, slot);
 
             var slots = _slots[type];
-            return slots[slot] <= 0 ? 0 : slots[slot];
+            return slots[slot] <= 0 ? null : slots[slot];
         }
 
         /// <summary>
@@ -221,7 +222,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <typeparam name="TItem">The type of the item to unequip.</typeparam>
         /// <param name="slot">The slot to remove the item from.</param>
         /// <returns>The unequipped item.</returns>
-        public int Unequip<TItem>(int slot)
+        public int? Unequip<TItem>(int slot)
             where TItem : Item
         {
             return Unequip(typeof(TItem), slot);
@@ -234,7 +235,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="slot">The slot to remove the item from.</param>
         /// <returns>The unequipped item, or <c>null</c> if there was no item
         /// in that slot.</returns>
-        public int Unequip(Type type, int slot)
+        public int? Unequip(Type type, int slot)
         {
             Validate(type, slot);
 
@@ -245,13 +246,16 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             var item = slots[slot];
-            slots[slot] = 0;
+            slots[slot] = null;
 
-            ItemRemoved message;
-            message.Entity = Entity;
-            message.Item = item;
-            message.Slot = slot;
-            Manager.SendMessage(ref message);
+            if (item.HasValue)
+            {
+                ItemRemoved message;
+                message.Entity = Entity;
+                message.Item = item.Value;
+                message.Slot = slot;
+                Manager.SendMessage(ref message);
+            }
 
             return item;
         }
@@ -292,11 +296,32 @@ namespace Engine.ComponentSystem.RPG.Components
             packet.Write(_slots.Count);
             foreach (var type in _slots)
             {
+                var slots = _slots[type.Key];
+
+                // Write slot type and number of available slots.
                 packet.Write(type.Key.AssemblyQualifiedName);
-                packet.Write(_slots[type.Key].Length);
-                for (var i = 0; i < _slots[type.Key].Length; i++)
+                packet.Write(slots.Length);
+
+                // Write number of actually occupied slots.
+                int count = 0;
+                for (int i = 0; i < slots.Length; i++)
                 {
-                    packet.Write(_slots[type.Key][i]);
+                    if (slots[i].HasValue)
+                    {
+                        ++count;
+                    }
+                }
+                packet.Write(count);
+
+                // Write the items in the occupied slots with the slot they're
+                // equipped in.
+                for (int i = 0; i < slots.Length; i++)
+                {
+                    if (slots[i].HasValue)
+                    {
+                        packet.Write(i);
+                        packet.Write(slots[i].Value);
+                    }
                 }
             }
 
@@ -315,14 +340,16 @@ namespace Engine.ComponentSystem.RPG.Components
             var numSlotTypes = packet.ReadInt32();
             for (var i = 0; i < numSlotTypes; i++)
             {
-                var typeName = packet.ReadString();
+                var type = Type.GetType(packet.ReadString());
                 var numSlots = packet.ReadInt32();
-                var slots = new int[numSlots];
-                for (int j = 0; j < numSlots; j++)
+                var slots = new int?[numSlots];
+                var numOccupied = packet.ReadInt32();
+                for (int j = 0; j < numOccupied; j++)
                 {
-                    slots[j] = packet.ReadInt32();
+                    int index = packet.ReadInt32();
+                    slots[index] = packet.ReadInt32();
                 }
-                _slots.Add(Type.GetType(typeName), slots);
+                _slots.Add(type, slots);
             }
         }
 
@@ -335,12 +362,9 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Hash(hasher);
 
-            foreach (var slots in _slots.Values)
+            foreach (var item in AllItems)
             {
-                for (var i = 0; i < slots.Length; i++)
-                {
-                    hasher.Put(BitConverter.GetBytes(slots[i]));
-                }
+                hasher.Put(BitConverter.GetBytes(item));
             }
         }
 

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Components.Messages;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -41,107 +39,60 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Cooldown before doing damage to an entity (maps entity id to cd).
         /// </summary>
-        /// <remarks>
-        /// Kept <c>null</c> as long as possible, because the most frequent use
-        /// of this class will be projectiles, which don't need this.
-        /// </remarks>
-        private Dictionary<int, int> _cooldowns;
+        internal Dictionary<int, int> Cooldowns = new Dictionary<int, int>();
 
         #endregion
 
         #region Constructor
 
-        public CollisionDamage(int cooldown, float damage)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherCollisionDamage = (CollisionDamage)other;
+            Cooldown = otherCollisionDamage.Cooldown;
+            Damage = otherCollisionDamage.Damage;
+            foreach (var item in otherCollisionDamage.Cooldowns)
+            {
+                Cooldowns.Add(item.Key, item.Value);
+            }
+        }
+
+        /// <summary>
+        /// Initialize with the specified parameters.
+        /// </summary>
+        /// <param name="cooldown">The cooldown.</param>
+        /// <param name="damage">The damage.</param>
+        public void Initialize(int cooldown, float damage)
         {
             this.Cooldown = cooldown;
             this.Damage = damage;
         }
 
-        public CollisionDamage(float damage)
-            : this(0, damage)
-        {
-        }
-
-        public CollisionDamage()
-            : this(0, 0)
-        {
-        }
-
-        #endregion
-
-        #region Logic
-
         /// <summary>
-        /// Reduces damage cooldowns, if there are any..
+        /// Initialize with the specified damage.
         /// </summary>
-        /// <param name="parameterization"></param>
-        public override void Update(object parameterization)
+        /// <param name="damage">The damage.</param>
+        public void Initialize(float damage)
         {
-            if (_cooldowns != null)
-            {
-                // Decrement, remove if run out.
-                foreach (var entityId in new List<int>(_cooldowns.Keys))
-                {
-                    if (--_cooldowns[entityId] <= 0)
-                    {
-                        _cooldowns.Remove(entityId);
-                    }
-                }
-            }
+            Initialize(0, damage);
         }
 
         /// <summary>
-        /// Supports <c>DefaultLogicParameterization</c>.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        /// <param name="parameterizationType">The parameterization to check.</param>
-        /// <returns>Whether its supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
+        public override void Reset()
         {
-            return parameterizationType == typeof(DefaultLogicParameterization);
-        }
+            base.Reset();
 
-        /// <summary>
-        /// Handles collision messages to apply damage.
-        /// </summary>
-        /// <param name="message"></param>
-        public override void HandleMessage<T>(ref T message)
-        {
-            // Only handle collisions, and only if we weren't removed yet.
-            // This can happen if we collide with two things in one frame
-            // but are a oneshot.
-            if (message is Collision && Entity.Manager != null)
-            {
-                var entity = ((Collision)(ValueType)message).OtherEntity;
-
-                // On cooldown?
-                if (_cooldowns != null && _cooldowns.ContainsKey(entity.UID))
-                {
-                    // Yes.
-                    return;
-                }
-
-                // Apply damage if we can.
-                var health = entity.GetComponent<Health>();
-                if (health != null)
-                {
-                    health.Value -= Damage;
-                }
-
-                // Oneshot?
-                if (Cooldown == 0)
-                {
-                    Entity.Manager.RemoveEntity(Entity);
-                }
-                // No, keep cooldown for this one - if it had any health.
-                else if (health != null)
-                {
-                    if (_cooldowns == null)
-                    {
-                        _cooldowns = new Dictionary<int, int>();
-                    }
-                    _cooldowns.Add(entity.UID, Cooldown);
-                }
-            }
+            Cooldown = 0;
+            Damage = 0;
+            Cooldowns.Clear();
         }
 
         #endregion
@@ -161,14 +112,14 @@ namespace Space.ComponentSystem.Components
 
             packet.Write(Cooldown);
             packet.Write(Damage);
-            if (_cooldowns == null)
+            if (Cooldowns == null)
             {
-                packet.Write((int)0);
+                packet.Write(0);
             }
             else
             {
-                packet.Write(_cooldowns.Count);
-                foreach (var item in _cooldowns)
+                packet.Write(Cooldowns.Count);
+                foreach (var item in Cooldowns)
                 {
                     packet.Write(item.Key);
                     packet.Write(item.Value);
@@ -192,24 +143,24 @@ namespace Space.ComponentSystem.Components
             int numCooldowns = packet.ReadInt32();
             if (numCooldowns > 0)
             {
-                if (_cooldowns != null)
+                if (Cooldowns != null)
                 {
-                    _cooldowns.Clear();
+                    Cooldowns.Clear();
                 }
                 else
                 {
-                    _cooldowns = new Dictionary<int, int>();
+                    Cooldowns = new Dictionary<int, int>();
                 }
                 for (int i = 0; i < numCooldowns; i++)
                 {
                     var key = packet.ReadInt32();
                     var value = packet.ReadInt32();
-                    _cooldowns.Add(key, value);
+                    Cooldowns.Add(key, value);
                 }
             }
             else
             {
-                _cooldowns = null;
+                Cooldowns = null;
             }
         }
 
@@ -228,57 +179,6 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of this instance by reusing the specified
-        /// instance, if possible.
-        /// </summary>
-        /// <param name="into"></param>
-        /// <returns>
-        /// An independent (deep) clone of this instance.
-        /// </returns>
-        public override Component DeepCopy(Component into)
-        {
-            var copy = (CollisionDamage)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.Cooldown = Cooldown;
-                copy.Damage = Damage;
-                if (_cooldowns != null)
-                {
-                    if (copy._cooldowns != null)
-                    {
-                        copy._cooldowns.Clear();
-                        foreach (var item in _cooldowns)
-                        {
-                            copy._cooldowns.Add(item.Key, item.Value);
-                        }
-                    }
-                    else
-                    {
-                        copy._cooldowns = new Dictionary<int, int>(_cooldowns);
-                    }
-                }
-                else
-                {
-                    copy._cooldowns = null;
-                }
-            }
-            else
-            {
-                if (_cooldowns != null)
-                {
-                    copy._cooldowns = new Dictionary<int, int>(_cooldowns);
-                }
-            }
-
-            return copy;
-        }
-
-        #endregion
-
         #region ToString
 
         /// <summary>
@@ -289,7 +189,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Cooldown = " + Cooldown.ToString() + ", Damage = " + Damage.ToString();
+            return base.ToString() + ", Cooldown = " + Cooldown + ", Damage = " + Damage;
         }
 
         #endregion

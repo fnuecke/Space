@@ -169,11 +169,11 @@ namespace Space.Data
         }
 
         /// <summary>
-        /// Get the localized Prefix for the given attribute type
+        /// Get the localized prefix for the given attribute type.
         /// </summary>
         /// <param name="attributeType">The attribute type</param>
-        /// <returns>The localized Prefix string</returns>
-        public static string ToNameString(this AttributeType attributeType)
+        /// <returns>The localized prefix string.</returns>
+        public static string ToLocalizedPrefixString(this AttributeType attributeType)
         {
             return _nameLookup[attributeType];
         }

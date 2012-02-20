@@ -8,30 +8,15 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Energy : AbstractRegeneratingValue
     {
-        #region Constructor
-
-        /// <summary>
-        /// Creates a new energy component.
-        /// </summary>
-        /// <param name="timeout">The number of ticks to wait after using
-        /// energy before starting to regenerate energy again.</param>
-        public Energy(int timeout)
-            : base(timeout)
-        {
-        }
-
-        public Energy()
-        {
-        }
-
-        #endregion
-
         #region Logic
 
-        protected override void RecomputeValues()
+        /// <summary>
+        /// Recomputes the maximum value and regeneration speed.
+        /// </summary>
+        internal sealed override void RecomputeValues()
         {
             // Recompute our values.
-            var character = Entity.GetComponent<Character<AttributeType>>();
+            var character = Manager.GetComponent<Character<AttributeType>>(Entity);
 
             // Remember current relative value. Set to full if it was zero
             // before, because that means we're initializing for the first

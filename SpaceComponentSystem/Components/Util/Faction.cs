@@ -19,16 +19,37 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
-        public Faction(Factions factions)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            Value = ((Faction)other).Value;
+        }
+
+        /// <summary>
+        /// Initialize with the specified faction.
+        /// </summary>
+        /// <param name="factions">The factions.</param>
+        public void Initialize(Factions factions)
         {
             this.Value = factions;
         }
 
-        public Faction()
-            : this(Factions.Nature)
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
         {
+            base.Reset();
+
+            Value = Factions.Nature;
         }
 
         #endregion
@@ -73,30 +94,6 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of this instance by reusing the specified
-        /// instance, if possible.
-        /// </summary>
-        /// <param name="into"></param>
-        /// <returns>
-        /// An independent (deep) clone of this instance.
-        /// </returns>
-        public override Component DeepCopy(Component into)
-        {
-            var copy = (Faction)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.Value = Value;
-            }
-
-            return copy;
-        }
-
-        #endregion
-
         #region ToString
 
         /// <summary>
@@ -107,7 +104,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value = " + Value.ToString();
+            return base.ToString() + ", Value = " + Value;
         }
 
         #endregion

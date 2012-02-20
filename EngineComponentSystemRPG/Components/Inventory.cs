@@ -8,7 +8,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// <summary>
     ///   Represents a player's inventory, with a list of items in it.
     /// </summary>
-    public sealed class Inventory : Component, IList<int>
+    public sealed class Inventory : Component, IList<int?>
     {
         #region Properties
 
@@ -67,12 +67,12 @@ namespace Engine.ComponentSystem.RPG.Components
                     for (int i = _items.Count - 1; i >= value; --i)
                     {
                         var itemUid = _items[i];
-                        if (itemUid > 0)
+                        if (itemUid.HasValue)
                         {
                             // This will, via messaging, also remove the item
                             // from the list, so the following capacity change
                             // is safe.
-                            Manager.RemoveEntity(itemUid);
+                            Manager.RemoveEntity(itemUid.Value);
                         }
                         // If the list was fixed length, remove manually.
                         if (_isFixed)
@@ -103,7 +103,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         ///   A list of items currently in this inventory.
         /// </summary>
-        private readonly List<int> _items = new List<int>();
+        private readonly List<int?> _items = new List<int?>();
 
         /// <summary>
         ///   Whether we have a fixed length list.
@@ -163,7 +163,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <exception cref="T:System.NotSupportedException">The property is set and the
         ///   <see cref="T:System.Collections.Generic.IList`1" />
         ///   is read-only.</exception>
-        public int this[int index]
+        public int? this[int index]
         {
             get
             {
@@ -186,10 +186,16 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   <see cref="T:System.Collections.Generic.ICollection`1" />
         ///   is read-only.</exception>
         /// <exception cref="T:System.InvalidOperationException">The fixed length inventory is already full.</exception>
-        public void Add(int item)
+        public void Add(int? item)
         {
+            // Check if the given id is valid.
+            if (!item.HasValue)
+            {
+                throw new ArgumentNullException("item", "Item must not be null.");
+            }
+
             // Check if its really an item.
-            var itemType = Manager.GetComponent<Item>(item);
+            var itemType = Manager.GetComponent<Item>(item.Value);
             if (itemType == null)
             {
                 throw new ArgumentException("Entity does not have an Item component.", "item");
@@ -197,15 +203,15 @@ namespace Engine.ComponentSystem.RPG.Components
 
             // If the item is stackable, see if we already have a stack we can
             // add it on top of.
-            var stackable = Manager.GetComponent<Stackable>(item);
+            var stackable = Manager.GetComponent<Stackable>(item.Value);
             if (stackable != null)
             {
                 for (int i = 0; i < _items.Count; i++)
                 {
-                    if (!_isFixed || _items[i] > 0)
+                    if (!_isFixed || _items[i].HasValue)
                     {
-                        var otherItemType = Manager.GetComponent<Item>(this[i]);
-                        var otherStackable = Manager.GetComponent<Stackable>(this[i]);
+                        var otherItemType = Manager.GetComponent<Item>(this[i].Value);
+                        var otherStackable = Manager.GetComponent<Stackable>(this[i].Value);
                         if (otherStackable != null &&
                             otherItemType.Name.Equals(itemType.Name) &&
                             otherStackable.Count < otherStackable.MaxCount)
@@ -220,7 +226,7 @@ namespace Engine.ComponentSystem.RPG.Components
                             if (stackable.Count == 0)
                             {
                                 // Yes and the stack was used up, delete it.
-                                Manager.RemoveEntity(item);
+                                Manager.RemoveEntity(item.Value);
                                 return;
                             } // ... else we continue in search of the next stack.
                         }
@@ -243,7 +249,7 @@ namespace Engine.ComponentSystem.RPG.Components
                         _items[i] = item;
 
                         // Disable rendering, if available.
-                        var renderer = Manager.GetComponent<TextureData>(item);
+                        var renderer = Manager.GetComponent<TextureData>(item.Value);
                         if (renderer != null)
                         {
                             renderer.Enabled = false;
@@ -261,7 +267,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 _items.Add(item);
 
                 // Disable rendering, if available.
-                var renderer = Manager.GetComponent<TextureData>(item);
+                var renderer = Manager.GetComponent<TextureData>(item.Value);
                 if (renderer != null)
                 {
                     renderer.Enabled = false;
@@ -285,7 +291,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="item"> The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1" /> . </param>
         /// <returns> true if <paramref name="item" /> is found in the <see cref="T:System.Collections.Generic.ICollection`1" /> ; otherwise, false. </returns>
-        public bool Contains(int item)
+        public bool Contains(int? item)
         {
             return _items.Contains(item);
         }
@@ -295,7 +301,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="array"> The array. </param>
         /// <param name="arrayIndex"> Index of the array. </param>
-        public void CopyTo(int[] array, int arrayIndex)
+        public void CopyTo(int?[] array, int arrayIndex)
         {
             _items.CopyTo(array, arrayIndex);
         }
@@ -305,7 +311,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="item"> The object to locate in the <see cref="T:System.Collections.Generic.IList`1" /> . </param>
         /// <returns> The index of <paramref name="item" /> if found in the list; otherwise, -1. </returns>
-        public int IndexOf(int item)
+        public int IndexOf(int? item)
         {
             return _items.IndexOf(item);
         }
@@ -324,7 +330,7 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   <see cref="T:System.Collections.Generic.IList`1" />
         ///   is read-only.</exception>
         /// <exception cref="System.NotSupportedException">If the inventory is of fixed length.</exception>
-        public void Insert(int index, int item)
+        public void Insert(int index, int? item)
         {
             if (_isFixed)
             {
@@ -346,8 +352,14 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <exception cref="T:System.NotSupportedException">The
         ///   <see cref="T:System.Collections.Generic.ICollection`1" />
         ///   is read-only.</exception>
-        public bool Remove(int item)
+        public bool Remove(int? item)
         {
+            // Avoid null.
+            if (!item.HasValue)
+            {
+                throw new ArgumentNullException("item", "Item must not be null.");
+            }
+
             if (_isFixed)
             {
                 // Find where the item sits, then null the entry.
@@ -396,7 +408,7 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns> A <see cref="T:System.Collections.Generic.IEnumerator`1" /> that can be used to iterate through the collection. </returns>
-        public IEnumerator<int> GetEnumerator()
+        public IEnumerator<int?> GetEnumerator()
         {
             if (_isFixed)
             {
@@ -433,7 +445,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="secondIndex"> The second index involved. </param>
         public void Swap(int firstIndex, int secondIndex)
         {
-            int tmp = _items[firstIndex];
+            var tmp = _items[firstIndex];
             _items[firstIndex] = _items[secondIndex];
             _items[secondIndex] = tmp;
         }
@@ -451,10 +463,28 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Packetize(packet);
 
+            // Write total capacity.
             packet.Write(_items.Count);
+
+            // Write number of actual items.
+            var count = 0;
             for (int i = 0; i < _items.Count; i++)
             {
-                packet.Write(_items[i]);
+                if (_items[i].HasValue)
+                {
+                    ++count;
+                }
+            }
+            packet.Write(count);
+
+            // Write actual item ids with their positions.
+            for (int i = 0; i < _items.Count; i++)
+            {
+                if (_items[i].HasValue)
+                {
+                    packet.Write(i);
+                    packet.Write(_items[i].Value);
+                }
             }
 
             packet.Write(_isFixed);
@@ -471,10 +501,18 @@ namespace Engine.ComponentSystem.RPG.Components
             base.Depacketize(packet);
 
             _items.Clear();
+            int capacity = packet.ReadInt32();
+            _items.Capacity = capacity;
+            for (int i = 0; i < capacity; i++)
+            {
+                _items[i] = null;
+            }
+
             int numItems = packet.ReadInt32();
             for (int i = 0; i < numItems; i++)
             {
-                _items.Add(packet.ReadInt32());
+                int index = packet.ReadInt32();
+                _items[index] = packet.ReadInt32();
             }
 
             _isFixed = packet.ReadBoolean();

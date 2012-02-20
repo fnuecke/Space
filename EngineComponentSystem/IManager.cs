@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -57,7 +58,7 @@ namespace Engine.ComponentSystem
         /// </summary>
         /// <typeparam name="T">The type of the system to get.</typeparam>
         /// <returns>The system with the specified type.</returns>
-        T GetSystem<T>() where T : AbstractSystem;
+        T GetSystem<T>();
         
         #endregion
 
@@ -110,7 +111,15 @@ namespace Engine.ComponentSystem
         /// <param name="entity">The entity to get the component of.</param>
         /// <returns>The component.</returns>
         T GetComponent<T>(int entity) where T : Component;
-        
+
+        /// <summary>
+        /// Gets the component of the specified type for an entity.
+        /// </summary>
+        /// <param name="entity">The entity to get the component of.</param>
+        /// <param name="type">The type of the component to get.</param>
+        /// <returns>The component.</returns>
+        Component GetComponent(int entity, Type type);
+
         /// <summary>
         /// Get a component by its id.
         /// </summary>

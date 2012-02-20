@@ -18,20 +18,32 @@ namespace Space.ComponentSystem.Components
         /// The ID of the entity that's being targeted. Negative values mean
         /// that there is no current target.
         /// </summary>
-        public int Value;
+        public int? Value;
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
-        public Target(int target)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
         {
-            this.Value = target;
+            base.Initialize(other);
+
+            Value = ((Target)other).Value;
         }
 
-        public Target()
-            : this(-1)
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
         {
+            base.Reset();
+
+            Value = null;
         }
 
         #endregion
@@ -48,7 +60,7 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Value);
+                .Write(Value.HasValue ? Value.Value : 0);
         }
 
         /// <summary>
@@ -60,6 +72,10 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Value = packet.ReadInt32();
+            if (Value == 0)
+            {
+                Value = null;
+            }
         }
 
         /// <summary>
@@ -71,31 +87,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Value));
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of this instance by reusing the specified
-        /// instance, if possible.
-        /// </summary>
-        /// <param name="into"></param>
-        /// <returns>
-        /// An independent (deep) clone of this instance.
-        /// </returns>
-        public override Component DeepCopy(Component into)
-        {
-            var copy = (Target)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.Value = Value;
-            }
-
-            return copy;
+            hasher.Put(BitConverter.GetBytes(Value.HasValue ? Value.Value : 0));
         }
 
         #endregion
@@ -110,7 +102,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value = " + Value.ToString();
+            return base.ToString() + ", Value = " + Value;
         }
 
         #endregion

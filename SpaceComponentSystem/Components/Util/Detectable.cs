@@ -1,6 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Parameterizations;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework.Graphics;
@@ -42,51 +40,39 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
-        public Detectable(string textureName)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override void Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherDetectalbe = (Detectable)other;
+            Texture = otherDetectalbe.Texture;
+            _textureName = otherDetectalbe._textureName;
+        }
+
+        /// <summary>
+        /// Initialize with the specified texture name.
+        /// </summary>
+        /// <param name="textureName">Name of the texture.</param>
+        public void Initialize(string textureName)
         {
             TextureName = textureName;
         }
 
-        public Detectable()
-            : this(string.Empty)
-        {
-        }
-
-        #endregion
-
-        #region Logic
-
         /// <summary>
-        /// Used to load the actual texture.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        /// <param name="parameterization"></param>
-        public override void Update(object parameterization)
+        public override void Reset()
         {
-            var args = (RendererUpdateParameterization)parameterization;
+            base.Reset();
 
-            // Load our texture, if it's not set.
-            if (Texture == null)
-            {
-                // But only if we have a name, set, else return.
-                if (string.IsNullOrWhiteSpace(TextureName))
-                {
-                    return;
-                }
-                Texture = args.Game.Content.Load<Texture2D>(TextureName);
-            }
-        }
-
-        /// <summary>
-        /// Accepts <c>RendererParameterization</c>s.
-        /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
-        {
-            return parameterizationType == typeof(RendererUpdateParameterization) ||
-                parameterizationType.IsSubclassOf(typeof(RendererUpdateParameterization));
+            _textureName = null;
         }
 
         #endregion
@@ -115,46 +101,6 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             TextureName = packet.ReadString();
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of this instance by reusing the specified
-        /// instance, if possible.
-        /// </summary>
-        /// <param name="into"></param>
-        /// <returns>
-        /// An independent (deep) clone of this instance.
-        /// </returns>
-        public override Component DeepCopy(Component into)
-        {
-            var copy = (Detectable)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.Texture = (copy._textureName.Equals(_textureName) ? (copy.Texture ?? Texture) : Texture);
-                copy._textureName = _textureName;
-            }
-
-            return copy;
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", TextureName = " + _textureName;
         }
 
         #endregion

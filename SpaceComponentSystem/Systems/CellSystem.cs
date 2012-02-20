@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -21,7 +20,7 @@ namespace Space.ComponentSystem.Systems
     /// neighbor search).
     /// </para>
     /// </summary>
-    public class CellSystem : System
+    public sealed class CellSystem : AbstractSystem
     {
         #region Constants
 
@@ -48,7 +47,7 @@ namespace Space.ComponentSystem.Systems
         /// and over again, if a player flies along a cell border or keeps
         /// flying back and forth over it.
         /// </summary>
-        private const int _cellDeathDelay = 5;
+        private const int CellDeathDelay = 5;
 
         #endregion
 
@@ -80,36 +79,27 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private HashSet<ulong> _newCells = new HashSet<ulong>();
+        private HashSet<ulong> _reusableNewCellIds = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private HashSet<ulong> _bornCellsIds = new HashSet<ulong>();
+        private HashSet<ulong> _reusableBornCellsIds = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private HashSet<ulong> _deceasedCellsIds = new HashSet<ulong>();
+        private HashSet<ulong> _reusableDeceasedCellsIds = new HashSet<ulong>();
 
         /// <summary>
         /// Reused each update, avoids memory re-allocation.
         /// </summary>
-        private List<ulong> _pendingCellsIds = new List<ulong>();
+        private List<ulong> _reusablePendingList = new List<ulong>();
 
         /// <summary>
         /// Reused for querying entities contained in a dying cell.
         /// </summary>
-        private List<Entity> _entitiesToKill = new List<Entity>();
-
-        #endregion
-
-        #region Constructor
-
-        public CellSystem()
-        {
-            this.ShouldSynchronize = true;
-        }
+        private List<int> _reusableEntityList = new List<int>();
 
         #endregion
 
@@ -154,34 +144,26 @@ namespace Space.ComponentSystem.Systems
         /// Checks all players' positions to determine which cells are active
         /// and which are not. Sends messages if a cell's state changes.
         /// </summary>
-        /// <param name="updateType">The update type.</param>
+        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame the update applies to.</param>
-        public override void Update(long frame)
+        public override void Update(GameTime gameTime, long frame)
         {
             // Check the positions of all avatars to check which cells
             // should live, and which should die / stay dead.
             var avatarSystem = Manager.GetSystem<AvatarSystem>();
-            if (avatarSystem == null)
-            {
-                return;
-            }
-
             foreach (var avatar in avatarSystem.Avatars)
             {
-                var transform = avatar.GetComponent<Transform>();
-                if (transform != null)
-                {
-                    int x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
-                    int y = ((int)transform.Translation.Y) >> CellSizeShiftAmount;
-                    AddCellAndNeighbors(x, y, _newCells);
-                }
+                var transform = Manager.GetComponent<Transform>(avatar);
+                int x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
+                int y = ((int)transform.Translation.Y) >> CellSizeShiftAmount;
+                AddCellAndNeighbors(x, y, _reusableNewCellIds);
             }
 
             // Get the cells that became alive, notify systems and components.
-            _bornCellsIds.UnionWith(_newCells);
-            _bornCellsIds.ExceptWith(_livingCells);
+            _reusableBornCellsIds.UnionWith(_reusableNewCellIds);
+            _reusableBornCellsIds.ExceptWith(_livingCells);
             CellStateChanged changedMessage;
-            foreach (var cellId in _bornCellsIds)
+            foreach (var cellId in _reusableBornCellsIds)
             {
                 // If its in there, remove it from the pending list.
                 if (!_pendingCells.Remove(cellId))
@@ -195,56 +177,59 @@ namespace Space.ComponentSystem.Systems
                     Manager.SendMessage(ref changedMessage);
                 }
             }
-            _bornCellsIds.Clear();
+            _reusableBornCellsIds.Clear();
 
             // Check pending list, kill off old cells, notify systems etc.
-            Rectangle cellBounds;
-            _pendingCellsIds.AddRange(_pendingCells.Keys);
-            foreach (var cellId in _pendingCellsIds)
+            _reusablePendingList.AddRange(_pendingCells.Keys);
+            foreach (var cellId in _reusablePendingList)
             {
-                if ((DateTime.Now - _pendingCells[cellId]).TotalSeconds > _cellDeathDelay)
+                // Are we still delaying?
+                if ((DateTime.Now - _pendingCells[cellId]).TotalSeconds <= CellDeathDelay)
                 {
-                    // Timed out, kill it for good.
-                    _pendingCells.Remove(cellId);
-
-                    // Notify.
-                    var xy = CoordinateIds.Split(cellId);
-                    changedMessage.Id = cellId;
-                    changedMessage.X = xy.Item1;
-                    changedMessage.Y = xy.Item2;
-                    changedMessage.State = false;
-                    Manager.SendMessage(ref changedMessage);
-
-                    // Kill any remaining entities in the area covered by the
-                    // cell that just died.
-                    cellBounds.X = xy.Item1;
-                    cellBounds.Y = xy.Item2;
-                    cellBounds.Width = CellSize;
-                    cellBounds.Height = CellSize;
-                    foreach (var entity in Manager.GetSystem<IndexSystem>().RangeQuery(ref cellBounds, CellDeathAutoRemoveIndex, _entitiesToKill))
-                    {
-                        Manager.EntityManager.RemoveEntity(entity);
-                    }
-                    _entitiesToKill.Clear();
+                    continue;
                 }
+
+                // Timed out, kill it for good.
+                _pendingCells.Remove(cellId);
+
+                // Notify.
+                var xy = CoordinateIds.Split(cellId);
+                changedMessage.Id = cellId;
+                changedMessage.X = xy.Item1;
+                changedMessage.Y = xy.Item2;
+                changedMessage.State = false;
+                Manager.SendMessage(ref changedMessage);
+
+                // Kill any remaining entities in the area covered by the
+                // cell that just died.
+                Rectangle cellBounds;
+                cellBounds.X = xy.Item1;
+                cellBounds.Y = xy.Item2;
+                cellBounds.Width = CellSize;
+                cellBounds.Height = CellSize;
+                foreach (var entity in Manager.GetSystem<IndexSystem>().RangeQuery(ref cellBounds, CellDeathAutoRemoveIndex, _reusableEntityList))
+                {
+                    Manager.RemoveEntity(entity);
+                }
+                _reusableEntityList.Clear();
             }
-            _pendingCellsIds.Clear();
+            _reusablePendingList.Clear();
 
             // Get the cells that died, put to pending list.
-            _deceasedCellsIds.UnionWith(_livingCells);
-            _deceasedCellsIds.ExceptWith(_newCells);
+            _reusableDeceasedCellsIds.UnionWith(_livingCells);
+            _reusableDeceasedCellsIds.ExceptWith(_reusableNewCellIds);
             var now = DateTime.Now;
-            foreach (var cellId in _deceasedCellsIds)
+            foreach (var cellId in _reusableDeceasedCellsIds)
             {
                 // Add it to the pending list.
                 _pendingCells.Add(cellId, now);
             }
-            _deceasedCellsIds.Clear();
+            _reusableDeceasedCellsIds.Clear();
 
             _livingCells.Clear();
-            _livingCells.UnionWith(_newCells);
+            _livingCells.UnionWith(_reusableNewCellIds);
 
-            _newCells.Clear();
+            _reusableNewCellIds.Clear();
         }
 
         #endregion
@@ -258,7 +243,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="x">The x coordinate of the main cell.</param>
         /// <param name="y">The y coordinate of the main cell.</param>
         /// <param name="cells">The set of cells to add to.</param>
-        private void AddCellAndNeighbors(int x, int y, HashSet<ulong> cells)
+        private static void AddCellAndNeighbors(int x, int y, ISet<ulong> cells)
         {
             for (int ny = y - 1; ny <= y + 1; ny++)
             {
@@ -322,7 +307,7 @@ namespace Space.ComponentSystem.Systems
         /// Creates a deep copy of this system.
         /// </summary>
         /// <returns>A deep copy of this system.</returns>
-        public override ISystem DeepCopy(ISystem into)
+        public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (CellSystem)base.DeepCopy(into);
 
@@ -336,11 +321,11 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._livingCells = new HashSet<ulong>(_livingCells);
                 copy._pendingCells = new Dictionary<ulong, DateTime>();
-                copy._newCells = new HashSet<ulong>();
-                copy._bornCellsIds = new HashSet<ulong>();
-                copy._deceasedCellsIds = new HashSet<ulong>();
-                copy._pendingCellsIds = new List<ulong>();
-                copy._entitiesToKill = new List<Entity>();
+                copy._reusableNewCellIds = new HashSet<ulong>();
+                copy._reusableBornCellsIds = new HashSet<ulong>();
+                copy._reusableDeceasedCellsIds = new HashSet<ulong>();
+                copy._reusablePendingList = new List<ulong>();
+                copy._reusableEntityList = new List<int>();
             }
 
             foreach (var item in _pendingCells)

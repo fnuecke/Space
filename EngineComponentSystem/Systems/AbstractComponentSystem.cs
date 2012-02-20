@@ -10,15 +10,8 @@ namespace Engine.ComponentSystem.Systems
     /// <summary>
     /// Base class for component systems, pre-implementing adding / removal
     /// of components.
-    /// 
-    /// <para>
-    /// Subclasses should take note that when cloning they must take care of
-    /// duplicating reference types, to complete the deep-copy of the object.
-    /// Caches, i.e. lists / dictionaries / etc. to quickly look up components
-    /// should be reset.
-    /// </para>
     /// </summary>
-    /// <typeparam name="TUpdateParameterization">the type of parameterization used in this system</typeparam>
+    /// <typeparam name="TComponent">The type of component handled in this system.</typeparam>
     public abstract class AbstractComponentSystem<TComponent> : AbstractSystem
         where TComponent : Component
     {
@@ -93,6 +86,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
+        /// <param name="component">The component to update.</param>
         protected virtual void UpdateComponent(GameTime gameTime, long frame, TComponent component)
         {
         }
@@ -102,6 +96,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
+        /// <param name="component">The component to draw.</param>
         protected virtual void DrawComponent(GameTime gameTime, long frame, TComponent component)
         {
         }
@@ -113,6 +108,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Checks for added and removed components, and stores / forgets them
         /// if they are of the type handled in this system.
+        /// </summary>
         /// <param name="message">The sent message.</param>
         public override void Receive<T>(ref T message)
         {
@@ -235,6 +231,7 @@ namespace Engine.ComponentSystem.Systems
             else
             { 
                 copy._components = new List<TComponent>();
+                copy._updatingComponents = new List<TComponent>();
             }
 
             return copy;
