@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
@@ -345,6 +346,7 @@ namespace Engine.ComponentSystem.RPG.Components
             for (var i = 0; i < numSlotTypes; i++)
             {
                 var type = Type.GetType(packet.ReadString());
+                Debug.Assert(type != null, "Got an invalid equipment type.");
                 var numSlots = packet.ReadInt32();
                 var slots = new int?[numSlots];
                 var numOccupied = packet.ReadInt32();

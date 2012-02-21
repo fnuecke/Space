@@ -72,8 +72,8 @@ namespace Space.ComponentSystem.Systems
             {
                 var entity = ((EntityDied)(ValueType)message).Entity;
 
-                // TODO: reimplement using better particle system (which should offer a method for one shot effects)
-                //Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation));
+                // Play explosion effect at point of death.
+                Manager.GetSystem<ParticleSystem>().Play("Effects/BasicExplosion", entity);
 
                 // See if the entity respawns.
                 var respawn = Manager.GetComponent<Respawn>(entity);

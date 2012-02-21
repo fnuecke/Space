@@ -77,11 +77,11 @@ namespace Space.ComponentSystem.Components
         /// <returns>The localized complete item name.</returns>
         private string ComputeName()
         {
-            var item = Manager.GetComponent<SpaceItem>(Entity);
-            var displayName = ItemNames.ResourceManager.GetString(item.Name) ?? ("!!" + item.Name + "!!");
+            var item = Manager.GetComponent<Item>(Entity);
+            var displayName = ItemNames.ResourceManager.GetString(item.Name) ?? ("!!ItemNames:" + item.Name + "!!");
 
-            // Unique items don't need prefix.
-            if (item.Quality != ItemQuality.Unique)
+            // Non-space and unique items don't need prefix.
+            if ((item is SpaceItem) && ((SpaceItem)item).Quality != ItemQuality.Unique)
             {
                 var maxValue = float.MinValue;
                 var type = AttributeType.None;
@@ -89,20 +89,22 @@ namespace Space.ComponentSystem.Components
                 // Go through all attributes and calculate highest ranking.
                 foreach (var component in Manager.GetComponents(Entity))
                 {
-                    if (component is Attribute<AttributeType>)
+                    if (!(component is Attribute<AttributeType>))
                     {
-                        var attribute = ((Attribute<AttributeType>)component).Modifier;
-                        // Check if we have a new max value.
-                        if (attribute.Type.GetValue(attribute.Value) > maxValue)
-                        {
-                            maxValue = attribute.Type.GetValue(attribute.Value);
-                            type = attribute.Type;
-                        }
+                        continue;
+                    }
+
+                    // Check if we have a new max value.
+                    var attribute = ((Attribute<AttributeType>)component).Modifier;
+                    if (attribute.Type.GetValue(attribute.Value) > maxValue)
+                    {
+                        maxValue = attribute.Type.GetValue(attribute.Value);
+                        type = attribute.Type;
                     }
                 }
                 if (type != AttributeType.None)
                 {
-                    return ItemNames.ResourceManager.GetString(item.Quality.ToString()) + " " + type.ToLocalizedPrefixString() + " " + displayName;
+                    return type.ToLocalizedPrefixString() + " " + displayName;
                 }
             }
 

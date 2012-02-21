@@ -54,7 +54,7 @@ namespace Space.Data
         /// <summary>
         /// Lookup table for colors.
         /// </summary>
-        private static readonly Dictionary<ItemQuality, Color> _colorLookup = new Dictionary<ItemQuality, Color>()
+        private static readonly Dictionary<ItemQuality, Color> ColorLookup = new Dictionary<ItemQuality, Color>()
         {
             { ItemQuality.Poor, new Color(0x9D, 0x9D, 0x9D) },
             { ItemQuality.Common, new Color(0xFF, 0xFF, 0xFF) },
@@ -76,7 +76,7 @@ namespace Space.Data
         /// <returns>The color for that quality.</returns>
         public static Color ToColor(this ItemQuality quality)
         {
-            return _colorLookup[quality];
+            return ColorLookup[quality];
         }
 
         #endregion

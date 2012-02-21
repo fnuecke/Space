@@ -117,112 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="BasicArmor" xml:space="preserve">
-    <value>Basic Armor</value>
+  <data name="Common" xml:space="preserve">
+    <value>Common</value>
   </data>
-  <data name="BasicReactor" xml:space="preserve">
-    <value>Basic Reactor</value>
+  <data name="Epic" xml:space="preserve">
+    <value>Epic</value>
   </data>
-  <data name="BasicSensor" xml:space="preserve">
-    <value>Basic Sensor</value>
+  <data name="Poor" xml:space="preserve">
+    <value>Poor</value>
   </data>
-  <data name="BasicShield" xml:space="preserve">
-    <value>Basic Shield</value>
+  <data name="Rare" xml:space="preserve">
+    <value>Rare</value>
   </data>
-  <data name="BasicThruster" xml:space="preserve">
-    <value>Basic Thruster</value>
-  </data>
-  <data name="BasicWeapon" xml:space="preserve">
-    <value>Basic Weapon</value>
-  </data>
-  <data name="CommonBasicArmor" xml:space="preserve">
-    <value>Basic Armor</value>
-  </data>
-  <data name="CommonBasicReactor" xml:space="preserve">
-    <value>Basic Reactor</value>
-  </data>
-  <data name="CommonBasicSensor" xml:space="preserve">
-    <value>Basic Sensor</value>
-  </data>
-  <data name="CommonBasicShield" xml:space="preserve">
-    <value>Basic Shield</value>
-  </data>
-  <data name="CommonBasicThruster" xml:space="preserve">
-    <value>Basic Thruster</value>
-  </data>
-  <data name="CommonBasicWeapon" xml:space="preserve">
-    <value>Basic Weapon</value>
-  </data>
-  <data name="PoorBasicArmor" xml:space="preserve">
-    <value>Basic Armor</value>
-  </data>
-  <data name="PoorBasicReactor" xml:space="preserve">
-    <value>Basic Reactor</value>
-  </data>
-  <data name="PoorBasicSensor" xml:space="preserve">
-    <value>Basic Sensor</value>
-  </data>
-  <data name="PoorBasicShield" xml:space="preserve">
-    <value>Basic Shield</value>
-  </data>
-  <data name="PoorBasicThruster" xml:space="preserve">
-    <value>Basic Thruster</value>
-  </data>
-  <data name="PoorBasicWeapon" xml:space="preserve">
-    <value>Basic Weapon</value>
-  </data>
-  <data name="RareBasicArmor" xml:space="preserve">
-    <value>Basic Armor</value>
-  </data>
-  <data name="RareBasicReactor" xml:space="preserve">
-    <value>Basic Reactor</value>
-  </data>
-  <data name="RareBasicSensor" xml:space="preserve">
-    <value>Basic Sensor</value>
-  </data>
-  <data name="RareBasicShield" xml:space="preserve">
-    <value>Basic Shield</value>
-  </data>
-  <data name="RareBasicThruster" xml:space="preserve">
-    <value>Basic Thruster</value>
-  </data>
-  <data name="RareBasicWeapon" xml:space="preserve">
-    <value>Basic Weapon</value>
-  </data>
-  <data name="StarterArmor" xml:space="preserve">
-    <value>Starter Armor</value>
-  </data>
-  <data name="StarterReactor" xml:space="preserve">
-    <value>Starter Reactor</value>
-  </data>
-  <data name="StarterSensor" xml:space="preserve">
-    <value>Starter Sensor</value>
-  </data>
-  <data name="StarterShield" xml:space="preserve">
-    <value>Starter Shield</value>
-  </data>
-  <data name="StarterThruster" xml:space="preserve">
-    <value>Starter Thruster</value>
-  </data>
-  <data name="StarterWeapon" xml:space="preserve">
-    <value>Starter Weapon</value>
-  </data>
-  <data name="UncommonBasicArmor" xml:space="preserve">
-    <value>Basic Armor</value>
-  </data>
-  <data name="UncommonBasicReactor" xml:space="preserve">
-    <value>Basic Reactor</value>
-  </data>
-  <data name="UncommonBasicSensor" xml:space="preserve">
-    <value>Basic Sensor</value>
-  </data>
-  <data name="UncommonBasicShield" xml:space="preserve">
-    <value>Basic Shield</value>
-  </data>
-  <data name="UncommonBasicThruster" xml:space="preserve">
-    <value>Basic Thruster</value>
-  </data>
-  <data name="UncommonBasicWeapon" xml:space="preserve">
-    <value>Basic Weapon</value>
+  <data name="Uncommon" xml:space="preserve">
+    <value>Uncommon</value>
   </data>
 </root>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Space.Data
 {
@@ -94,44 +95,8 @@ namespace Space.Data
     {
         #region Constants
         
-        private static readonly Dictionary<AttributeType, string> _stringLookup = new Dictionary<AttributeType, string>()
-        {
-            { AttributeType.Health, AttributeStrings.Health },
-            { AttributeType.Energy, AttributeStrings.Energy },
-            { AttributeType.HealthRegeneration, AttributeStrings.HealthRegeneration },
-            { AttributeType.EnergyRegeneration, AttributeStrings.EnergyRegeneration },
-            { AttributeType.Armor, AttributeStrings.Armor },
-            { AttributeType.Mass, AttributeStrings.Mass },
-            { AttributeType.AccelerationForce, AttributeStrings.AccelerationForce },
-            { AttributeType.RotationForce, AttributeStrings.RotationForce },
-            { AttributeType.ThrusterEnergyConsumption, AttributeStrings.ThrusterEnergyConsumption },
-            { AttributeType.ShieldEnergyConsumption, AttributeStrings.ShieldEnergyConsumption },
-            { AttributeType.WeaponEnergyConsumption, AttributeStrings.WeaponEnergyConsumption },
-            { AttributeType.ShieldEfficiency, AttributeStrings.ShieldEfficiency },
-            { AttributeType.WeaponCooldown, AttributeStrings.WeaponCooldown },
-            { AttributeType.SensorRange, AttributeStrings.SensorRange },
-            {AttributeType.WeaponDamage, AttributeStrings.WeaponDamage}
-        };
-        private static readonly Dictionary<AttributeType, string> _nameLookup = new Dictionary<AttributeType, string>()
-        {
-            { AttributeType.Health, ItemNames.Health },
-            { AttributeType.Energy, ItemNames.Energy },
-            { AttributeType.HealthRegeneration, ItemNames.HealthRegeneration },
-            { AttributeType.EnergyRegeneration, ItemNames.EnergyRegeneration },
-            { AttributeType.Armor, ItemNames.Armor },
-            { AttributeType.Mass, ItemNames.Mass },
-            { AttributeType.AccelerationForce, ItemNames.AccelerationForce },
-            { AttributeType.RotationForce, ItemNames.RotationForce },
-            { AttributeType.ThrusterEnergyConsumption, ItemNames.ThrusterEnergyConsumption },
-            { AttributeType.ShieldEnergyConsumption, ItemNames.ShieldEnergyConsumption },
-            { AttributeType.WeaponEnergyConsumption, ItemNames.WeaponEnergyConsumption },
-            { AttributeType.ShieldEfficiency, ItemNames.ShieldEfficiency },
-            { AttributeType.WeaponCooldown, ItemNames.WeaponCooldown },
-            { AttributeType.SensorRange, ItemNames.SensorRange }
-        };
-        private static readonly Dictionary<AttributeType, float> _valueLookup = new Dictionary<AttributeType, float>()
-        {
-            { AttributeType.Health,1 },
+        private static readonly Dictionary<AttributeType, float> ValueLookup = new Dictionary<AttributeType, float> {
+            { AttributeType.Health, 1 },
             { AttributeType.Energy, 1 },
             { AttributeType.HealthRegeneration, 50 },
             { AttributeType.EnergyRegeneration, 50 },
@@ -155,7 +120,21 @@ namespace Space.Data
         /// <returns>The localized display string.</returns>
         public static string ToLocalizedString(this AttributeType attributeType)
         {
-            return _stringLookup[attributeType];
+            var name = Enum.GetName(typeof(AttributeType), attributeType);
+            return AttributeNames.ResourceManager.GetString(name)
+                ?? "!!AttributeNames:" + name + "!!";
+        }
+
+        /// <summary>
+        /// Get the localized prefix for the given attribute type.
+        /// </summary>
+        /// <param name="attributeType">The attribute type</param>
+        /// <returns>The localized prefix string.</returns>
+        public static string ToLocalizedPrefixString(this AttributeType attributeType)
+        {
+            var name = Enum.GetName(typeof(AttributeType), attributeType);
+            return AttributePrefixes.ResourceManager.GetString(name)
+                ?? "!!AttributePrefixes:" + name + "!!";
         }
 
         /// <summary>
@@ -166,17 +145,7 @@ namespace Space.Data
         /// <returns>The calculated vale</returns>
         public static float GetValue(this AttributeType attributeType,float value)//,AttributeComputationType modifier )
         {
-            return _valueLookup[attributeType] * value;
-        }
-
-        /// <summary>
-        /// Get the localized prefix for the given attribute type.
-        /// </summary>
-        /// <param name="attributeType">The attribute type</param>
-        /// <returns>The localized prefix string.</returns>
-        public static string ToLocalizedPrefixString(this AttributeType attributeType)
-        {
-            return _nameLookup[attributeType];
+            return ValueLookup[attributeType] * value;
         }
     }
 }
