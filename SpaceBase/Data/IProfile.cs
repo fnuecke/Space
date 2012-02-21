@@ -40,12 +40,13 @@ namespace Space.Data
         /// Stores the profile to disk, under the specified profile name.
         /// </summary>
         void Save();
-        
+
         /// <summary>
         /// Take a snapshot of a character's current state in a running game.
         /// </summary>
+        /// <param name="manager">The component system manager.</param>
         /// <param name="avatar">The avatar to take a snapshot of.</param>
-        void Capture(Entity avatar);
+        void Capture(IManager manager, int avatar);
 
         /// <summary>
         /// Restores a character snapshot stored in this profile.
@@ -54,7 +55,6 @@ namespace Space.Data
         /// he is restored to.</param>
         /// <param name="manager">The entity manager to add the restored
         /// entities to.</param>
-        /// <returns>The restored avatar.</returns>
-        void Restore(int playerNumber, IEntityManager manager);
+        void Restore(int playerNumber, IManager manager);
     }
 }

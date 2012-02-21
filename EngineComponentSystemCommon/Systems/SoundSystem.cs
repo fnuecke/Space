@@ -69,7 +69,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
         /// <param name="velocity">The velocity of the sound's emitter.</param>
-        public void Play(string soundCue, Vector2 position, Vector2 velocity)
+        public void Play(string soundCue, ref Vector2 position, ref Vector2 velocity)
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
@@ -82,12 +82,14 @@ namespace Engine.ComponentSystem.Systems
             // some events from the past, where we were somewhere else, but
             // using that old position would be just as wrong, so this
             // wrong is simpler ;)
-            _listener.Position = ToV3(GetListenerPosition());
-            _listener.Velocity = ToV3(GetListenerVelocity());
+            var tmp = GetListenerPosition();
+            _listener.Position = ToV3(ref tmp);
+            tmp = GetListenerVelocity();
+            _listener.Velocity = ToV3(ref tmp);
 
             // Get position and velocity of emitter.
-            _emitter.Position = ToV3(position);
-            _emitter.Velocity = ToV3(velocity);
+            _emitter.Position = ToV3(ref position);
+            _emitter.Velocity = ToV3(ref velocity);
 
             // Let there be sound!
             _soundBank.PlayCue(soundCue, _listener, _emitter);
@@ -98,9 +100,10 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
-        public void Play(string soundCue, Vector2 position)
+        public void Play(string soundCue, ref Vector2 position)
         {
-            Play(soundCue, position, Vector2.Zero);
+            var zero = Vector2.Zero;
+            Play(soundCue, ref  position, ref zero);
         }
 
         /// <summary>
@@ -122,7 +125,7 @@ namespace Engine.ComponentSystem.Systems
             {
                 velocity = velocityComponent.Value;
             }
-            Play(soundCue, position, velocity);
+            Play(soundCue, ref position, ref velocity);
         }
 
         #endregion
@@ -156,7 +159,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="v2">The vector to convert.</param>
         /// <returns>The converted vector.</returns>
-        private static Vector3 ToV3(Vector2 v2)
+        private static Vector3 ToV3(ref Vector2 v2)
         {
             Vector3 result;
             result.X = v2.X;

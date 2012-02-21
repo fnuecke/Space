@@ -1,10 +1,6 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Parameterizations;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using ProjectMercury;
-using Space.ComponentSystem.Parameterizations;
 
 namespace Space.ComponentSystem.Components
 {
@@ -25,144 +21,53 @@ namespace Space.ComponentSystem.Components
         public string EffectName;
 
         /// <summary>
-        /// Whether we're currently allowed to emit particles or not.
+        /// Offset of the effect relative to the entity's center.
         /// </summary>
-        public bool Emitting;
-
-        /// <summary>
-        /// The actual instance of the effect we're using. As a "pointer", so
-        /// we can set it from any related copy of this effect.
-        /// </summary>
-        protected ParticleEffect[] _effect = new ParticleEffect[1];
-
-        /// <summary>
-        /// Checks if we're the instance that's used to draw. If so, we will
-        /// do updates, otherwise we won't.
-        /// </summary>
-        protected bool _isDrawingInstance;
-
-        /// <summary>
-        /// The scale to apply to the effect.
-        /// </summary>
-        protected float Scale = 1;
+        public Vector2 Offset;
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
-        public Effect(string effectName)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        /// <returns></returns>
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherEffect = (Effect)other;
+            EffectName = otherEffect.EffectName;
+            Offset = otherEffect.Offset;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Initialize with the specified effect name.
+        /// </summary>
+        /// <param name="effectName">Name of the effect.</param>
+        /// <param name="offset">The offset.</param>
+        /// <returns></returns>
+        public Effect Initialize(string effectName, Vector2 offset)
         {
             this.EffectName = effectName;
-            Emitting = true;
-        }
+            this.Offset = offset;
 
-        public Effect()
-            : this(string.Empty)
-        {
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Updates our particle effect, but won't spawn new particles while
-        /// this component is disabled.
-        /// </summary>
-        /// <param name="parameterization"></param>
-        public override void Update(object parameterization)
-        {
-            if (!_isDrawingInstance) return;
-
-            var args = (RendererUpdateParameterization)parameterization;
-
-            // If we have an effect make sure its loaded and trigger it.
-            if (_effect[0] == null && !string.IsNullOrWhiteSpace(EffectName))
-            {
-                // Always create a deep copy, because this will always
-                // return the same instance.
-                _effect[0] = args.Game.Content.Load<ParticleEffect>(EffectName).DeepCopy();
-                _effect[0].Initialise();
-                _effect[0].LoadContent(args.Game.Content);
-
-                if (Scale != 1)
-                {
-                    foreach (var effect in _effect[0])
-                    {
-                        effect.ReleaseScale *= Scale;
-                    }
-                }
-            }
-
-            // Logic, we need a transform to do the positioning.
-            if (_effect[0] != null && _isDrawingInstance)
-            {
-                // Always update, to allow existing particles to disappear.
-                _effect[0].Update(1f / 60f);
-
-                // Only trigger new particles while we're enabled.
-                if (Emitting)
-                {
-                    var transform = Entity.GetComponent<Transform>();
-                    if (transform != null)
-                    {
-                        _effect[0].Trigger(ref transform.Translation);
-                    }
-                }
-            }
-        }
-
-        public override void Draw(object parameterization)
-        {
-            var args = (ParticleParameterization)parameterization;
-
-            // Render if we have our effect.
-            if (_effect[0] != null)
-            {
-                // Only render effects whose emitter is near or inside the
-                // visible bounds (performance), where possible.
-                var transform = Entity.GetComponent<Transform>();
-                if (transform != null)
-                {
-                    var extendedView = args.SpriteBatch.GraphicsDevice.ScissorRectangle;
-                    extendedView.Inflate(1024, 1024);
-                    Point point;
-                    point.X = (int)(transform.Translation.X + args.Transform.Translation.X);
-                    point.Y = (int)(transform.Translation.Y + args.Transform.Translation.Y);
-                    if (extendedView.Contains(point))
-                    {
-                        args.Renderer.RenderEffect(_effect[0], ref args.Transform);
-                    }
-                }
-                else
-                {
-                    args.Renderer.RenderEffect(_effect[0], ref args.Transform);
-                }
-            }
-
-            // We're the instance on which draw is called.
-            _isDrawingInstance = true;
+            return this;
         }
 
         /// <summary>
-        /// Accepts <c>ParticleParameterization</c> and <c>DefaultLogicParameterization</c>.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
+        public override void Reset()
         {
-            return parameterizationType == typeof(RendererUpdateParameterization) ||
-                parameterizationType.IsSubclassOf(typeof(RendererUpdateParameterization));
-        }
+            base.Reset();
 
-        /// <summary>
-        /// Accepts <c>ParticleParameterization</c>s.
-        /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsDrawParameterization(Type parameterizationType)
-        {
-            return parameterizationType == typeof(ParticleParameterization);
+            EffectName = null;
         }
 
         #endregion
@@ -179,7 +84,8 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(EffectName);
+                .Write(EffectName)
+                .Write(Offset);
         }
 
         /// <summary>
@@ -191,35 +97,7 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             EffectName = packet.ReadString();
-            _effect[0] = null;
-            _isDrawingInstance = false;
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of this instance by reusing the specified
-        /// instance, if possible.
-        /// </summary>
-        /// <param name="into"></param>
-        /// <returns>
-        /// An independent (deep) clone of this instance.
-        /// </returns>
-        public override Component DeepCopy(Component into)
-        {
-            var copy = (Effect)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.EffectName = EffectName;
-                copy.Emitting = Emitting;
-                copy._effect = _effect;
-            }
-            copy._isDrawingInstance = false;
-
-            return copy;
+            Offset = packet.ReadVector2();
         }
 
         #endregion
@@ -234,7 +112,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", EffectName = " + EffectName + ", Emitting = " + Emitting.ToString();
+            return base.ToString() + ", EffectName = " + EffectName + ", Offset = " + Offset;
         }
 
         #endregion

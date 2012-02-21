@@ -1,4 +1,6 @@
 ﻿using System;
+using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
@@ -12,7 +14,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages spawning dynamic objects for cells, such as random ships.
     /// </summary>
-    public sealed class ShipsSpawnSystem : AbstractSystem
+    public sealed class ShipSpawnSystem : AbstractComponentSystem<ShipSpawner>
     {
         #region Fields
 
@@ -25,6 +27,25 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
+
+        protected override void UpdateComponent(GameTime gameTime, long frame, ShipSpawner component)
+        {
+            if (component.Cooldown > 0)
+            {
+                --component.Cooldown;
+            }
+            else
+            {
+                var faction = Manager.GetComponent<Faction>(component.Entity);
+                var translation = Manager.GetComponent<Transform>(component.Entity).Translation;
+                foreach (var target in component.Targets)
+                {
+                    CreateAttackingShip(ref translation, target, faction.Value);
+                }
+
+                component.Cooldown = component.SpawnInterval;
+            }
+        }
 
         public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
         {
@@ -68,9 +89,9 @@ namespace Space.ComponentSystem.Systems
                     var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
                     
                     // Create some ships at random positions.
-                    Vector2 spawnPoint;
                     for (int i = 0; i < 10; i++)
                     {
+                        Vector2 spawnPoint;
                         spawnPoint.X = (float)(_random.NextDouble() * cellSize + cellPosition.X);
                         spawnPoint.Y = (float)(_random.NextDouble() * cellSize + cellPosition.Y);
                         var order = new AiComponent.AiCommand(spawnPoint, cellSize >> 1, AiComponent.Order.Guard);
@@ -82,6 +103,14 @@ namespace Space.ComponentSystem.Systems
                             _random,
                             order);
                     }
+                }
+            }
+            else if (message is EntityRemoved)
+            {
+                var entity = ((EntityRemoved)(ValueType)message).Entity;
+                foreach (var shipSpawner in Components)
+                {
+                    shipSpawner.Targets.Remove(entity);   
                 }
             }
         }
@@ -127,7 +156,7 @@ namespace Space.ComponentSystem.Systems
 
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
-            var copy = (ShipsSpawnSystem)base.DeepCopy(into);
+            var copy = (ShipSpawnSystem)base.DeepCopy(into);
 
             if (copy == into)
             {

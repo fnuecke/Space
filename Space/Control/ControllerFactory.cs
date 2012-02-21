@@ -39,7 +39,7 @@ namespace Space.Control
                     new CellSystem(),
 
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
-                    new ShipsSpawnSystem(),
+                    new ShipSpawnSystem(),
                     new DropSystem(game.Content)
                 });
 
@@ -68,7 +68,7 @@ namespace Space.Control
                     new CellSystem(),
 
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
-                    new ShipsSpawnSystem(),                    
+                    new ShipSpawnSystem(),                    
                     new DropSystem(game.Content),
 
                     new CameraCenteredTextureRenderSystem(game,

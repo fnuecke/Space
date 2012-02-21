@@ -147,7 +147,7 @@
     <Compile Include="Systems\RegeneratingValueSystem.cs" />
     <Compile Include="Systems\ShipControlSystem.cs" />
     <Compile Include="Systems\ShipInfoSystem.cs" />
-    <Compile Include="Systems\ShipsSpawnSystem.cs" />
+    <Compile Include="Systems\ShipSpawnSystem.cs" />
     <Compile Include="Systems\SunRenderSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />
     <Compile Include="Systems\WeaponControlSystem.cs" />
