@@ -29,6 +29,16 @@
         /// </summary>
         MoveItem,
 
+        /// <summary>
+        /// Drop an Item
+        /// </summary>
+        DropItem,
+
+        /// <summary>
+        /// Use an Item
+        /// </summary>
+        UseItem,
+
 #if DEBUG
         /// <summary>
         /// A debugging command issued by a player.

@@ -45,13 +45,14 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// <summary>
         /// The basic item selection manager.
         /// </summary>
-        private ItemSelectionManager _itemSelection;
+        protected ItemSelectionManager _itemSelection;
 
         /// <summary>
         /// The basic texture manager.
         /// </summary>
-        private TextureManager _textureManager;
+        protected TextureManager _textureManager;
 
+        protected Source Source;
         #endregion
 
         #region Properties
@@ -133,7 +134,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 }
             }
 
-            ItemDescription description = new ItemDescription();
+            var description = new ItemDescription();
             for (int i = 0; i < DataCount(); i++)
             {
                 // draw the tooltip
@@ -145,10 +146,9 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     var item = ItemAt(i);
                     if (item != null)
                     {
-                        if (item is SpaceItem)
-                        {
+                        
                         // TODO: item.Name is the id, convert it to a localized display string, ideally taking into account modifiers for prefixes suffixes (stupid armor of the nerd).
-                            var localizedName = ((SpaceItem)item).GetDisplayName();
+                            var localizedName = item.GetDisplayName();
                             _fonts.DrawString(Fonts.Types.ConsoleFont, localizedName, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                             line++;
                             var localizedDescription = ItemDescriptions.ResourceManager.GetString(item.Name);
@@ -163,9 +163,16 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                                 _fonts.DrawString(Fonts.Types.ConsoleFont, stackable.Count + "/" + stackable.MaxCount, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                                 line++;
                             }
-                        
-                            ((SpaceItem)item).GetDescription(ref description);
+                        var spaceItem = item as SpaceItem;
+                        if (spaceItem != null)
+                        {
+                            spaceItem.GetDescription(ref description);
                             var attributes = description.Attributes;
+                            if (description.IsWeapon)
+                            {
+                                _fonts.DrawString(Fonts.Types.ConsoleFont, AttributeType.WeaponDamage.ToLocalizedString() + " " + description.WeaponDamage, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                                line++;
+                            }
                             foreach (var attribute in attributes)
                             {
                                 _fonts.DrawString(Fonts.Types.ConsoleFont, attribute.Type + " " + attribute.Value, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
@@ -209,6 +216,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                             {
                                 _itemSelection.SetSelection(this, i, imagePath);
                             }
+                            return true;
                         }
                     }
                 }
@@ -216,6 +224,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                 else
                 {
                     _itemSelection.DragNDropMode = false;
+                    return true;
                 }
             }
             return false;
@@ -316,12 +325,20 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                                 _itemSelection.SetSelection(this, i, imagePath);
                             }
                         }
-                        break;
+                        return true;
                     }
 
                 }
+
+                //mouse not over item and release somewhere drop item
+                if (_itemSelection.ItemIsSelected)
+                {
+                    _client.Controller.PushLocalCommand(new DropCommand(_itemSelection.SelectedId,Source));
+                    _itemSelection.RemoveSelection();
+                    return true;
+                }
             }
-            return true;
+            return false;
         }
 
         #endregion
@@ -333,7 +350,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// </summary>
         /// <param name="id">The id of the icon to check.</param>
         /// <returns>The status if the mouse cursor is currently over the icon with a specific id</returns>
-        private bool IsMousePositionOnIcon(int id)
+        protected bool IsMousePositionOnIcon(int id)
         {
             return Mouse.GetState().X >= _scale.X(WestX(id))
                 && Mouse.GetState().X <= _scale.X(EastX(id))
@@ -346,7 +363,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// </summary>
         /// <param name="id">The id of the slot.</param>
         /// <returns>The western X position of the slot.</returns>
-        private int WestX(int id)
+        protected int WestX(int id)
         {
             var elementsLastRow = DataCount() % ElementsEachRow;
             var lastRowId = DataCount() / ElementsEachRow;
@@ -375,7 +392,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// </summary>
         /// <param name="id">The id of the slot.</param>
         /// <returns>The northern Y position of the slot.</returns>
-        private int NorthY(int id)
+        protected int NorthY(int id)
         {
             return (int)GetPosition().Y + (id / ElementsEachRow) * (IconSize + Margin);
         }
@@ -385,7 +402,7 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
         /// </summary>
         /// <param name="id">The id of the slot.</param>
         /// <returns>The eastern X position of the slot.</returns>
-        private int EastX(int id)
+        protected int EastX(int id)
         {
             return WestX(id) + IconSize;
         }

@@ -178,6 +178,15 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Damage.
+        /// </summary>
+        public static string WeaponDamage {
+            get {
+                return ResourceManager.GetString("WeaponDamage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Weapon energy consumption.
         /// </summary>
         public static string WeaponEnergyConsumption {

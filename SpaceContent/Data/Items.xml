@@ -4,27 +4,87 @@
   <Asset Type="Space.ComponentSystem.Factories.ItemPool[]">
     <Item>
       <Name>Starter</Name>
-      <MaxDrops>1</MaxDrops>
+      <MaxDrops>3</MaxDrops>
       <Items>
         <Item>
-          <ItemName>StarterArmor</ItemName>
+          <ItemName>PoorBasicArmor</ItemName>
           <Probability>0.2</Probability>
         </Item>
         <Item>
-          <ItemName>StarterWeapon</ItemName>
+          <ItemName>BasicArmor</ItemName>
+          <Probability>0.05</Probability>
+        </Item>
+        <Item>
+          <ItemName>UncommonBasicArmor</ItemName>
+          <Probability>0.01</Probability>
+        </Item>
+        <Item>
+          <ItemName>RarBasicArmor</ItemName>
+          <Probability>0.001</Probability>
+        </Item>
+        <Item>
+          <ItemName>PoorBasicWeapon</ItemName>
           <Probability>0.2</Probability>
         </Item>
         <Item>
-          <ItemName>StarterReactor</ItemName>
+          <ItemName>BasicWeapon</ItemName>
+          <Probability>0.05</Probability>
+        </Item>
+        <Item>
+          <ItemName>UncommonBasicWeapon</ItemName>
+          <Probability>0.01</Probability>
+        </Item>
+        <Item>
+          <ItemName>RarBasicWeapon</ItemName>
+          <Probability>0.001</Probability>
+        </Item>
+        <Item>
+          <ItemName>PoorBasicReactor</ItemName>
           <Probability>0.2</Probability>
         </Item>
         <Item>
-          <ItemName>StarterSensor</ItemName>
+          <ItemName>BasicReactor</ItemName>
+          <Probability>0.05</Probability>
+        </Item>
+        <Item>
+          <ItemName>UncommonBasicReactor</ItemName>
+          <Probability>0.01</Probability>
+        </Item>
+        <Item>
+          <ItemName>RarBasicReactor</ItemName>
+          <Probability>0.001</Probability>
+        </Item>
+        <Item>
+          <ItemName>PoorBasicSensor</ItemName>
           <Probability>0.2</Probability>
         </Item>
         <Item>
-          <ItemName>StarterThruster</ItemName>
+          <ItemName>BasicSensor</ItemName>
+          <Probability>0.05</Probability>
+        </Item>
+        <Item>
+          <ItemName>UncommonBasicSensor</ItemName>
+          <Probability>0.01</Probability>
+        </Item>
+        <Item>
+          <ItemName>RarBasicSensor</ItemName>
+          <Probability>0.001</Probability>
+        </Item>
+        <Item>
+          <ItemName>PoorBasicThruster</ItemName>
           <Probability>0.2</Probability>
+        </Item>
+        <Item>
+          <ItemName>BasicThruster</ItemName>
+          <Probability>0.05</Probability>
+        </Item>
+        <Item>
+          <ItemName>UncommonBasicThruster</ItemName>
+          <Probability>0.01</Probability>
+        </Item>
+        <Item>
+          <ItemName>RarBasicThruster</ItemName>
+          <Probability>0.001</Probability>
         </Item>
        
       </Items>

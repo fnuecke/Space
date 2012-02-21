@@ -133,6 +133,69 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Coomon.
+        /// </summary>
+        public static string Common {
+            get {
+                return ResourceManager.GetString("Common", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Armor.
+        /// </summary>
+        public static string CommonBasicArmor {
+            get {
+                return ResourceManager.GetString("CommonBasicArmor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Reactor.
+        /// </summary>
+        public static string CommonBasicReactor {
+            get {
+                return ResourceManager.GetString("CommonBasicReactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Sensor.
+        /// </summary>
+        public static string CommonBasicSensor {
+            get {
+                return ResourceManager.GetString("CommonBasicSensor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Shield.
+        /// </summary>
+        public static string CommonBasicShield {
+            get {
+                return ResourceManager.GetString("CommonBasicShield", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Thruster.
+        /// </summary>
+        public static string CommonBasicThruster {
+            get {
+                return ResourceManager.GetString("CommonBasicThruster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Weapon.
+        /// </summary>
+        public static string CommonBasicWeapon {
+            get {
+                return ResourceManager.GetString("CommonBasicWeapon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Energetic.
         /// </summary>
         public static string Energy {
@@ -147,6 +210,15 @@ namespace Space {
         public static string EnergyRegeneration {
             get {
                 return ResourceManager.GetString("EnergyRegeneration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Master.
+        /// </summary>
+        public static string Epic {
+            get {
+                return ResourceManager.GetString("Epic", resourceCulture);
             }
         }
         
@@ -174,6 +246,132 @@ namespace Space {
         public static string Mass {
             get {
                 return ResourceManager.GetString("Mass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Poor.
+        /// </summary>
+        public static string Poor {
+            get {
+                return ResourceManager.GetString("Poor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Armor.
+        /// </summary>
+        public static string PoorBasicArmor {
+            get {
+                return ResourceManager.GetString("PoorBasicArmor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Reactor.
+        /// </summary>
+        public static string PoorBasicReactor {
+            get {
+                return ResourceManager.GetString("PoorBasicReactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Sensor.
+        /// </summary>
+        public static string PoorBasicSensor {
+            get {
+                return ResourceManager.GetString("PoorBasicSensor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Shield.
+        /// </summary>
+        public static string PoorBasicShield {
+            get {
+                return ResourceManager.GetString("PoorBasicShield", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Thruster.
+        /// </summary>
+        public static string PoorBasicThruster {
+            get {
+                return ResourceManager.GetString("PoorBasicThruster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Weapon.
+        /// </summary>
+        public static string PoorBasicWeapon {
+            get {
+                return ResourceManager.GetString("PoorBasicWeapon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Very Special.
+        /// </summary>
+        public static string Rare {
+            get {
+                return ResourceManager.GetString("Rare", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Armor.
+        /// </summary>
+        public static string RareBasicArmor {
+            get {
+                return ResourceManager.GetString("RareBasicArmor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Reactor.
+        /// </summary>
+        public static string RareBasicReactor {
+            get {
+                return ResourceManager.GetString("RareBasicReactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Sensor.
+        /// </summary>
+        public static string RareBasicSensor {
+            get {
+                return ResourceManager.GetString("RareBasicSensor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Shield.
+        /// </summary>
+        public static string RareBasicShield {
+            get {
+                return ResourceManager.GetString("RareBasicShield", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Thruster.
+        /// </summary>
+        public static string RareBasicThruster {
+            get {
+                return ResourceManager.GetString("RareBasicThruster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Weapon.
+        /// </summary>
+        public static string RareBasicWeapon {
+            get {
+                return ResourceManager.GetString("RareBasicWeapon", resourceCulture);
             }
         }
         
@@ -273,6 +471,69 @@ namespace Space {
         public static string ThrusterEnergyConsumption {
             get {
                 return ResourceManager.GetString("ThrusterEnergyConsumption", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Spezial.
+        /// </summary>
+        public static string Uncommon {
+            get {
+                return ResourceManager.GetString("Uncommon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Armor.
+        /// </summary>
+        public static string UncommonBasicArmor {
+            get {
+                return ResourceManager.GetString("UncommonBasicArmor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Reactor.
+        /// </summary>
+        public static string UncommonBasicReactor {
+            get {
+                return ResourceManager.GetString("UncommonBasicReactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Sensor.
+        /// </summary>
+        public static string UncommonBasicSensor {
+            get {
+                return ResourceManager.GetString("UncommonBasicSensor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Shield.
+        /// </summary>
+        public static string UncommonBasicShield {
+            get {
+                return ResourceManager.GetString("UncommonBasicShield", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Thruster.
+        /// </summary>
+        public static string UncommonBasicThruster {
+            get {
+                return ResourceManager.GetString("UncommonBasicThruster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Basic Weapon.
+        /// </summary>
+        public static string UncommonBasicWeapon {
+            get {
+                return ResourceManager.GetString("UncommonBasicWeapon", resourceCulture);
             }
         }
         

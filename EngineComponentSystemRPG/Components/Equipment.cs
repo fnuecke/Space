@@ -169,18 +169,20 @@ namespace Engine.ComponentSystem.RPG.Components
         public int? Equip(int item, int slot)
         {
             // Check if its really an item.
-            var itemType = Manager.GetComponent<Item>(item);
-            if (itemType == null)
+            var itemComponent = Manager.GetComponent<Item>(item);
+            if (itemComponent == null)
             {
                 throw new ArgumentException("Entity does not have an Item component.", "item");
             }
-            Validate(itemType.GetType(), slot);
+            var itemType = itemComponent.GetType();
+            Validate(itemType, slot);
 
-            var slots = _slots[itemType.GetType()];
-            var itemInSlot = slots[slot];
-
+            // Get whatever was in there before by unequipping.
+            var itemInSlot = Unequip(itemType, slot);
+            var slots = _slots[itemType];
             slots[slot] = item;
 
+            // Send the message that a new item was equipped.
             ItemAdded message;
             message.Entity = Entity;
             message.Item = item;

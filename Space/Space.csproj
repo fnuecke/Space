@@ -186,6 +186,8 @@
     <Compile Include="ScreenManagement\Screens\Helper\SpaceForms.cs" />
     <Compile Include="ScreenManagement\Screens\Ingame\Interfaces\AbstractHudElement.cs" />
     <Compile Include="Session\Profile.cs" />
+    <Compile Include="Simulation\Commands\CommandSource.cs" />
+    <Compile Include="Simulation\Commands\DropCommand.cs" />
     <Compile Include="Simulation\Commands\EquipCommand.cs" />
     <Compile Include="Simulation\Commands\MoveItemCommand.cs" />
     <Compile Include="Simulation\Commands\PickUpCommand.cs" />
@@ -211,6 +213,7 @@
     <Compile Include="ScreenManagement\Screens\MessageBoxScreen.cs" />
     <Compile Include="ScreenManagement\Screens\OptionsMenuScreen.cs" />
     <Compile Include="ScreenManagement\Screens\PauseMenuScreen.cs" />
+    <Compile Include="Simulation\Commands\UseCommand.cs" />
     <Compile Include="Spaaace.cs" />
     <Compile Include="MenuStrings.Designer.cs">
       <AutoGen>True</AutoGen>

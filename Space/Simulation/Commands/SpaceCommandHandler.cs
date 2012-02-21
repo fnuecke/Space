@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
@@ -226,11 +227,96 @@ def ge(id):
                         {
                             // Pick the item up.
                             // TODO: check if the item belongs to the player.
-                            inventory.Add(item);
+                            try
+                            {
+                                if (!inventory.Contains(item))
+                                    inventory.Add(item);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+
+                            }
                         }
                     }
                     break;
 
+                    //item shall be droped
+                case SpaceCommandType.DropItem:
+                    {
+                        var dropCommand = (DropCommand)command;
+                        switch (dropCommand.Source)
+                        {
+                            case Source.Inventory:
+                                {
+                                    var inventory = avatar.GetComponent<Inventory>();
+                                    var item = inventory[dropCommand.InventoryIndex];
+                                    inventory.RemoveAt(dropCommand.InventoryIndex);
+
+                                    var transform = item.GetComponent<Transform>();
+                                    if (transform != null)
+                                    {
+                                        transform.SetTranslation(avatar.GetComponent<Transform>().Translation);
+                                        var renderer = item.GetComponent<TransformedRenderer>();
+                                        if (renderer != null)
+                                        {
+                                            renderer.Enabled = true;
+                                        }
+                                    }
+                                }
+                                break;
+                            case Source.Equipment:
+                                {
+                                    //var equipment = avatar.GetComponent<Equipment>();
+                                    //var item = equipment[dropCommand.InventoryIndex];
+                                    //equipment.RemoveAt(dropCommand.InventoryIndex);
+
+                                    //var transform = item.GetComponent<Transform>();
+                                    //if (transform != null)
+                                    //{
+                                    //    transform.Translation = avatar.GetComponent<Transform>().Translation;
+                                    //    var renderer = item.GetComponent<TransformedRenderer>();
+                                    //    if (renderer != null)
+                                    //    {
+                                    //        renderer.Enabled = true;
+                                    //    }
+                                    //}
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                    //user wants to use item
+                case SpaceCommandType.UseItem:
+                    {
+                        var useCommand = (UseCommand) command;
+                        var inventory = avatar.GetComponent<Inventory>();
+                        var entity = inventory[useCommand.Slot];
+                        var usable = entity.GetComponent<Usable>();
+                        //if item is usable use it
+                        if (usable != null)
+                        {
+                            usable.Use();
+                        }
+                        else
+                        {//not usable try to equipt
+                            var item = entity.GetComponent<Item>();
+                            if (item is SpaceItem)
+                            {
+                                
+                                
+                                inventory.RemoveAt(useCommand.Slot);
+                                var itemOld = avatar.GetComponent<Equipment>().Equip(entity, 0);
+                                if (itemOld > 0)
+                                {
+                                    inventory.Insert(useCommand.Slot, manager.GetEntity(itemOld));
+                                }
+                            }
+                        }
+                            
+                    }
+                    break;
 #if DEBUG
                 case SpaceCommandType.ScriptCommand:
                     // Script command.

@@ -91,7 +91,7 @@ namespace Space.ComponentSystem.Components
                 {
                     if (component is Attribute<AttributeType>)
                     {
-                        var attribute = (((Attribute<AttributeType>)component).Modifier);
+                        var attribute = ((Attribute<AttributeType>)component).Modifier;
                         // Check if we have a new max value.
                         if (attribute.Type.GetValue(attribute.Value) > maxValue)
                         {
@@ -102,7 +102,7 @@ namespace Space.ComponentSystem.Components
                 }
                 if (type != AttributeType.None)
                 {
-                    return type.ToLocalizedPrefixString() + " " + displayName;
+                    return ItemNames.ResourceManager.GetString(item.Quality.ToString()) + " " + type.ToLocalizedPrefixString() + " " + displayName;
                 }
             }
 

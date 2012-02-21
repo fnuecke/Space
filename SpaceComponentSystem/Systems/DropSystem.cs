@@ -124,6 +124,11 @@ namespace Space.ComponentSystem.Systems
                 var translation = Manager.GetComponent<Transform>(entity).Translation;
                 var drops = Manager.GetComponent<Drops>(entity);
 
+                // Don't drop exactly at the location of the entity that died,
+                // but move it off to the side a bit.
+                translation.X += _random.NextInt32(-10, 10);
+                translation.Y += _random.NextInt32(-10, 10);
+
                 Drop(drops.ItemPool, ref translation);
             }
         }
