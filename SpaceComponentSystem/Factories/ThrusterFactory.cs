@@ -14,15 +14,18 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new thruster based on these constraints.
         /// </summary>
+        /// <param name="manager"></param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled thruster.</returns>
-        public override Entity Sample(IUniformRandom random)
+        /// <returns>
+        /// The sampled thruster.
+        /// </returns>
+        public override int Sample(IManager manager, IUniformRandom random)
         {
-            var entity = base.Sample(random);
+            var entity = base.Sample(manager, random);
 
-            entity.AddComponent(new Thruster(Name, Icon, Quality));
+            manager.AddComponent<Thruster>(entity).Initialize(Name, Icon, Quality);
 
-            return SampleAttributes(entity, random);
+            return SampleAttributes(manager, entity, random);
         }
 
         #endregion

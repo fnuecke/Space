@@ -50,7 +50,7 @@ namespace Space.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -60,15 +60,19 @@ namespace Space.ComponentSystem.Components
             Timeout = otherRegeneratingValue.Timeout;
             Value = otherRegeneratingValue.Value;
             TimeToWait = otherRegeneratingValue.TimeToWait;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified timeout.
         /// </summary>
         /// <param name="timeout">The timeout.</param>
-        protected void Initialize(int timeout)
+        public AbstractRegeneratingValue Initialize(int timeout)
         {
             this.Timeout = timeout;
+
+            return this;
         }
 
         /// <summary>

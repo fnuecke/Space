@@ -52,7 +52,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -62,6 +62,8 @@ namespace Engine.ComponentSystem.RPG.Components
                 item.Value.CopyTo(slots, 0);
                 _slots.Add(item.Key, slots);
             }
+
+            return this;
         }
 
         /// <summary>

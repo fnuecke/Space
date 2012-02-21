@@ -28,20 +28,24 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             Response = ((Usable<TResponse>)other).Response;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified parameters.
         /// </summary>
         /// <param name="response">The response triggered when activated.</param>
-        public virtual void Initialize(TResponse response)
+        public virtual Usable<TResponse> Initialize(TResponse response)
         {
             this.Response = response;
+
+            return this;
         }
 
         /// <summary>

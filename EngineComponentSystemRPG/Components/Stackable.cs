@@ -30,13 +30,15 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             var otherStackable = (Stackable)other;
             Count = otherStackable.Count;
             MaxCount = otherStackable.MaxCount;
+
+            return this;
         }
 
         /// <summary>
@@ -44,10 +46,12 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="maxCount">The maximum number of items that can be
         /// merged into a single stack.</param>
-        public void Initialize(int maxCount)
+        public Stackable Initialize(int maxCount)
         {
             this.Count = 1;
             this.MaxCount = maxCount;
+
+            return this;
         }
 
         /// <summary>

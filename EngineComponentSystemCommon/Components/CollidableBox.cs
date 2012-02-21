@@ -31,11 +31,13 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             Size = ((CollidableBox)other).Size;
+
+            return this;
         }
 
         /// <summary>
@@ -43,11 +45,13 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="size">The size.</param>
         /// <param name="groups">The collision groups.</param>
-        public void Initialize(Vector2 size, uint groups)
+        public CollidableBox Initialize(Vector2 size, uint groups)
         {
-            base.Initialize(groups);
+            Initialize(groups);
 
             Size = size;
+
+            return this;
         }
 
         /// <summary>

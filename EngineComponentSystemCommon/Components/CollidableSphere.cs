@@ -31,11 +31,13 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             Radius = ((CollidableSphere)other).Radius;
+
+            return this;
         }
 
         /// <summary>
@@ -43,11 +45,13 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="radius">The radius.</param>
         /// <param name="groups">The collision groups.</param>
-        public void Initialize(float radius, uint groups)
+        public CollidableSphere Initialize(float radius, uint groups)
         {
-            base.Initialize(groups);
-            
+            Initialize(groups);
+
             this.Radius = radius;
+
+            return this;
         }
 
         /// <summary>

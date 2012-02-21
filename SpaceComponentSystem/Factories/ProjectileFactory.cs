@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem;
+﻿using System;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -7,7 +8,7 @@ using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.Data;
 
-namespace Space.ComponentSystem.Util
+namespace Space.ComponentSystem.Factories
 {
     /// <summary>
     /// Contains data about a single projectile fired by a weapon.
@@ -39,7 +40,7 @@ namespace Space.ComponentSystem.Util
         /// interact).
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public bool CanBeShot = false;
+        public bool CanBeShot;
 
         /// <summary>
         /// The range allowed for initial velocity of the projectile. This is
@@ -76,7 +77,7 @@ namespace Space.ComponentSystem.Util
         /// The friction used to slow the projectile down.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public float Friction = 0;
+        public float Friction;
 
         /// <summary>
         /// The time this projectile will stay alive before disappearing,
@@ -92,43 +93,48 @@ namespace Space.ComponentSystem.Util
         /// <summary>
         /// Samples a new projectile.
         /// </summary>
+        /// <param name="manager">The manager.</param>
         /// <param name="emitter">The emitter that the projectile comes from.</param>
+        /// <param name="weapon">The weapon.</param>
         /// <param name="faction">The faction the projectile belongs to.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>A new projectile.</returns>
-        public Entity SampleProjectile(Entity emitter, Weapon weapon, Factions faction, IUniformRandom random)
+        /// <returns>
+        /// A new projectile.
+        /// </returns>
+        public int SampleProjectile(IManager manager, int emitter, Weapon weapon, Factions faction, IUniformRandom random)
         {
-            var entity = new Entity();
+            var entity = manager.AddEntity();
 
-            var emitterTransform = emitter.GetComponent<Transform>();
-            var emitterVelocity = emitter.GetComponent<Velocity>();
+            var emitterTransform = manager.GetComponent<Transform>(emitter);
+            var emitterVelocity = manager.GetComponent<Velocity>(emitter);
 
             var initialRotation = emitterTransform.Rotation + SampleInitialRotation(random);
-            var transform = new Transform(emitterTransform.Translation, initialRotation);
-            entity.AddComponent(transform);
 
-            var velocity = new Velocity(SampleInitialDirectedVelocity(transform.Rotation, random));
+            var transform = manager.AddComponent<Transform>(entity)
+                .Initialize(emitterTransform.Translation, initialRotation);
+
+            var velocity = manager.AddComponent<Velocity>(entity)
+                .Initialize(SampleInitialDirectedVelocity(transform.Rotation, random));
             if (emitterVelocity != null)
             {
                 velocity.Value += emitterVelocity.Value;
             }
-            entity.AddComponent(velocity);
             var accelerationForce = SampleAccelerationForce(initialRotation, random);
             if (accelerationForce != Vector2.Zero)
             {
-                entity.AddComponent(new Acceleration(accelerationForce));
+                manager.AddComponent<Acceleration>(entity).Initialize(accelerationForce);
             }
             if (Friction > 0)
             {
-                entity.AddComponent(new Friction(Friction));
+                manager.AddComponent<Friction>(entity).Initialize(Friction);
             }
             if (TimeToLive > 0)
             {
-                entity.AddComponent(new Expiration((int)(TimeToLive * 60f)));
+                manager.AddComponent<Expiration>(entity).Initialize((int)(TimeToLive * 60));
             }
-            if (weapon.Damage != 0)
+            if (Math.Abs(weapon.Damage) > 0.001f)
             {
-                entity.AddComponent(new CollisionDamage(weapon.Damage));
+                manager.AddComponent<CollisionDamage>(entity).Initialize(weapon.Damage);
             }
 
             ulong collisionIndexGroup = 0;
@@ -145,16 +151,16 @@ namespace Space.ComponentSystem.Util
                 // Negative damage = healing -> collide will all our allies.
                 collisionIndexGroup |= faction.Inverse().ToCollisionIndexGroup();
             }
-            entity.AddComponent(new Index(collisionIndexGroup));
+            manager.AddComponent<Index>(entity).Initialize(collisionIndexGroup);
             uint collisionGroup = faction.ToCollisionGroup();
             if (!CanBeShot)
             {
                 collisionGroup |= Factions.Projectiles.ToCollisionGroup();
             }
-            entity.AddComponent(new CollidableSphere(CollisionRadius, collisionGroup));
+            manager.AddComponent<CollidableSphere>(entity).Initialize(CollisionRadius, collisionGroup);
             if (!string.IsNullOrWhiteSpace(Model))
             {
-                entity.AddComponent(new TransformedRenderer(Model));
+                manager.AddComponent<TextureRenderer>(entity).Initialize(Model);
             }
             if (!string.IsNullOrWhiteSpace(Effect))
             {
@@ -171,7 +177,7 @@ namespace Space.ComponentSystem.Util
         /// <returns>The sampled rotation.</returns>
         private float SampleInitialRotation(IUniformRandom random)
         {
-            return MathHelper.ToRadians((InitialRotation.Low == InitialRotation.High) ? InitialRotation.Low
+            return MathHelper.ToRadians((random == null) ? InitialRotation.Low
                 : MathHelper.Lerp(InitialRotation.Low, InitialRotation.High, (float)random.NextDouble()));
         }
 
@@ -183,11 +189,11 @@ namespace Space.ComponentSystem.Util
         /// <returns>The sampled velocity.</returns>
         private Vector2 SampleInitialDirectedVelocity(float baseRotation, IUniformRandom random)
         {
-            Vector2 velocity = Vector2.UnitX;
-            Matrix rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(InitialDirection.Low, InitialDirection.High, (float)random.NextDouble())));
+            var velocity = Vector2.UnitX;
+            var rotation = Matrix.CreateRotationZ(baseRotation + MathHelper.ToRadians(MathHelper.Lerp(InitialDirection.Low, InitialDirection.High, (random == null) ? 0 : (float)random.NextDouble())));
             Vector2.Transform(ref velocity, ref rotation, out velocity);
             velocity.Normalize();
-            velocity *= (InitialVelocity.Low == InitialVelocity.High) ? InitialVelocity.Low
+            velocity *= (random == null) ? InitialVelocity.Low
                 : MathHelper.Lerp(InitialVelocity.Low, InitialVelocity.High, (float)random.NextDouble());
             return velocity;
         }
@@ -204,7 +210,7 @@ namespace Space.ComponentSystem.Util
             Matrix rotation = Matrix.CreateRotationZ(baseRotation);
             Vector2.Transform(ref acceleration, ref rotation, out acceleration);
             acceleration.Normalize();
-            acceleration *= (AccelerationForce.Low == AccelerationForce.High) ? AccelerationForce.Low
+            acceleration *= (random == null) ? AccelerationForce.Low
                 : MathHelper.Lerp(AccelerationForce.Low, AccelerationForce.High, (float)random.NextDouble());
             return acceleration;
         }
@@ -250,10 +256,8 @@ namespace Space.ComponentSystem.Util
             CollisionRadius = packet.ReadSingle();
             CanBeShot = packet.ReadBoolean();
 
-            float low, high;
-
-            low = packet.ReadSingle();
-            high = packet.ReadSingle();
+            float low = packet.ReadSingle();
+            float high = packet.ReadSingle();
             InitialVelocity = new Interval<float>(low, high);
 
             low = packet.ReadSingle();

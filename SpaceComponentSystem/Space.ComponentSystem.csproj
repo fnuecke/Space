@@ -115,7 +115,6 @@
     <Compile Include="Components\Logic\CollisionDamage.cs" />
     <Compile Include="Components\Logic\Drops.cs" />
     <Compile Include="Components\Logic\PlayerClass.cs" />
-    <Compile Include="Components\Items\Consumables\RepairKit.cs" />
     <Compile Include="Components\Logic\ShipSpawner.cs" />
     <Compile Include="Components\Logic\Target.cs" />
     <Compile Include="Components\Util\Detectable.cs" />
@@ -127,7 +126,6 @@
     <Compile Include="Components\Media\PlanetRenderer.cs" />
     <Compile Include="Components\Logic\Respawn.cs" />
     <Compile Include="Components\Logic\ShipControl.cs" />
-    <Compile Include="Components\Logic\ShipGravitation.cs" />
     <Compile Include="Components\Util\ShipInfo.cs" />
     <Compile Include="Components\Media\SunRenderer.cs" />
     <Compile Include="Components\Media\ThrusterEffect.cs" />
@@ -135,7 +133,6 @@
     <Compile Include="EntityFactory.cs" />
     <Compile Include="Factories\ArmorFactory.cs" />
     <Compile Include="Factories\FactoryLibrary.cs" />
-    <Compile Include="Factories\ConsumableFactory.cs" />
     <Compile Include="Factories\IFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
@@ -146,11 +143,14 @@
     <Compile Include="Systems\DropSystem.cs" />
     <Compile Include="Systems\GravitationSystem.cs" />
     <Compile Include="Systems\PlanetRenderSystem.cs" />
+    <Compile Include="Systems\PlayerMassSystem.cs" />
     <Compile Include="Systems\RegeneratingValueSystem.cs" />
+    <Compile Include="Systems\ShipControlSystem.cs" />
     <Compile Include="Systems\ShipInfoSystem.cs" />
     <Compile Include="Systems\ShipsSpawnSystem.cs" />
     <Compile Include="Systems\SunRenderSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />
+    <Compile Include="Systems\WeaponControlSystem.cs" />
     <Compile Include="Util\PlayerClassType.cs" />
     <Compile Include="Factories\ReactorFactory.cs" />
     <Compile Include="Factories\SensorFactory.cs" />
@@ -169,7 +169,6 @@
     <Compile Include="Messages\CellStateChanged.cs" />
     <Compile Include="Messages\EntityDied.cs" />
     <Compile Include="Messages\WeaponFired.cs" />
-    <Compile Include="Parameterizations\ParticleParameterization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\CellSystem.cs" />
     <Compile Include="Systems\ParticleSystem.cs" />

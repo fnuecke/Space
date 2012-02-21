@@ -65,7 +65,7 @@ namespace Space.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -79,6 +79,8 @@ namespace Space.ComponentSystem.Components
             RelativeHealth = otherRespawn.RelativeHealth;
             RelativeEnergy = otherRespawn.RelativeEnergy;
             TimeToRespawn = otherRespawn.TimeToRespawn;
+
+            return this;
         }
 
         /// <summary>
@@ -89,7 +91,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="position">The position.</param>
         /// <param name="relativeHealth">The relative health.</param>
         /// <param name="relativeEnergy">The relative energy.</param>
-        public void Initialize(int delay, IEnumerable<Type> disableComponents, Vector2 position, float relativeHealth = 1f, float relativeEnergy = 1f)
+        public Respawn Initialize(int delay, IEnumerable<Type> disableComponents, Vector2 position, float relativeHealth = 1f, float relativeEnergy = 1f)
         {
             this.Delay = delay;
             this.Position = position;
@@ -102,6 +104,8 @@ namespace Space.ComponentSystem.Components
             }
             this.RelativeHealth = relativeHealth;
             this.RelativeEnergy = relativeEnergy;
+
+            return this;
         }
 
         /// <summary>
@@ -109,9 +113,9 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="delay">The delay.</param>
         /// <param name="disableComponents">The disable components.</param>
-        public void Initialize(int delay = 0, IEnumerable<Type> disableComponents = null)
+        public Respawn Initialize(int delay = 0, IEnumerable<Type> disableComponents = null)
         {
-            Initialize(delay, disableComponents, Vector2.Zero);
+            return Initialize(delay, disableComponents, Vector2.Zero);
         }
 
         /// <summary>

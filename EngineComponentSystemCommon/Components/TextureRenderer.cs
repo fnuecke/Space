@@ -8,7 +8,7 @@ namespace Engine.ComponentSystem.Components
     /// Graphics object holding information about a texture and how it should
     /// base drawn.
     /// </summary>
-    public abstract class TextureRenderer : Component
+    public sealed class TextureRenderer : Component
     {
         #region Properties
         
@@ -50,7 +50,7 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -59,6 +59,8 @@ namespace Engine.ComponentSystem.Components
             Scale = otherTexture.Scale;
             Texture = otherTexture.Texture;
             _textureName = otherTexture._textureName;
+
+            return this;
         }
 
         /// <summary>
@@ -67,11 +69,13 @@ namespace Engine.ComponentSystem.Components
         /// <param name="textureName">Name of the texture.</param>
         /// <param name="tint">The tint.</param>
         /// <param name="scale">The scale.</param>
-        protected void Initialize(string textureName, Color tint, float scale = 1)
+        public TextureRenderer Initialize(string textureName, Color tint, float scale = 1)
         {
             this.TextureName = textureName;
             this.Tint = tint;
             this.Scale = scale;
+
+            return this;
         }
 
         /// <summary>
@@ -79,18 +83,22 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="textureName">Name of the texture.</param>
         /// <param name="scale">The scale.</param>
-        protected void Initialize(string textureName, float scale)
+        public TextureRenderer Initialize(string textureName, float scale)
         {
             Initialize(textureName, Color.White, scale);
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified values.
         /// </summary>
         /// <param name="textureName">Name of the texture.</param>
-        protected void Initialize(string textureName)
+        public TextureRenderer Initialize(string textureName)
         {
             Initialize(textureName, Color.White);
+
+            return this;
         }
 
         /// <summary>

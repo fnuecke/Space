@@ -18,12 +18,12 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Mapping of types to names to item factories.
         /// </summary>
-        private static readonly Dictionary<string, ItemFactory> _itemFactories = new Dictionary<string, ItemFactory>();
+        private static readonly Dictionary<string, ItemFactory> ItemFactories = new Dictionary<string, ItemFactory>();
 
         /// <summary>
         /// Mapping of types to names to ship factories.
         /// </summary>
-        private static readonly Dictionary<string, ShipFactory> _shipFactories = new Dictionary<string, ShipFactory>();
+        private static readonly Dictionary<string, ShipFactory> ShipFactories = new Dictionary<string, ShipFactory>();
 
         private static bool _isInitialized;
 
@@ -37,28 +37,30 @@ namespace Space.ComponentSystem.Factories
         /// <param name="content">The content manager to use to load constraints.</param>
         public static void Initialize(ContentManager content)
         {
-            if (!_isInitialized)
+            if (_isInitialized)
             {
-                Initialize<ArmorFactory, ItemFactory>(_itemFactories, "Data/Armor", content);
-                Initialize<ReactorFactory, ItemFactory>(_itemFactories, "Data/Reactors", content);
-                Initialize<SensorFactory, ItemFactory>(_itemFactories, "Data/Sensors", content);
-                Initialize<ShieldFactory, ItemFactory>(_itemFactories, "Data/Shields", content);
-                Initialize<ThrusterFactory, ItemFactory>(_itemFactories, "Data/Thrusters", content);
-                Initialize<WeaponFactory, ItemFactory>(_itemFactories, "Data/Weapons", content);
-
-                Initialize<ShipFactory, ShipFactory>(_shipFactories, "Data/Ships", content);
-
-                _isInitialized = true;
+                return;
             }
+
+            Initialize<ArmorFactory, ItemFactory>(ItemFactories, "Data/Armor", content);
+            Initialize<ReactorFactory, ItemFactory>(ItemFactories, "Data/Reactors", content);
+            Initialize<SensorFactory, ItemFactory>(ItemFactories, "Data/Sensors", content);
+            Initialize<ShieldFactory, ItemFactory>(ItemFactories, "Data/Shields", content);
+            Initialize<ThrusterFactory, ItemFactory>(ItemFactories, "Data/Thrusters", content);
+            Initialize<WeaponFactory, ItemFactory>(ItemFactories, "Data/Weapons", content);
+
+            Initialize<ShipFactory, ShipFactory>(ShipFactories, "Data/Ships", content);
+
+            _isInitialized = true;
         }
 
         /// <summary>
         /// Helper for initializing a specific type.
         /// </summary>
-        private static void Initialize<T, F>(Dictionary<string, F> factories, string assetName, ContentManager content)
-            where T : IFactory, F
+        private static void Initialize<TFactory, TBase>(Dictionary<string, TBase> factories, string assetName, ContentManager content)
+            where TFactory : IFactory, TBase
         {
-            foreach (var factory in content.Load<T[]>(assetName))
+            foreach (var factory in content.Load<TFactory[]>(assetName))
             {
                 factories[factory.Name] = factory;
             }
@@ -71,30 +73,36 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new item with the specified name.
         /// </summary>
+        /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the item to sample.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled item.</returns>
-        public static Entity SampleItem(string name, IUniformRandom random)
+        /// <returns>
+        /// The sampled item.
+        /// </returns>
+        public static int SampleItem(IManager manager, string name, IUniformRandom random)
         {
-            return _itemFactories[name].Sample(random);
+            return ItemFactories[name].Sample(manager, random);
         }
 
         /// <summary>
         /// Samples a new item with the specified name at the specified position.
         /// </summary>
+        /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the item to sample.</param>
         /// <param name="position">The position at which to spawn the item.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled item.</returns>
-        public static Entity SampleItem(string name, Vector2 position, IUniformRandom random)
+        /// <returns>
+        /// The sampled item.
+        /// </returns>
+        public static int SampleItem(IManager manager, string name, Vector2 position, IUniformRandom random)
         {
-            var item = _itemFactories[name].Sample(random);
-            var transform = item.GetComponent<Transform>();
+            var item = ItemFactories[name].Sample(manager, random);
+            var transform = manager.GetComponent<Transform>(item);
             if (transform != null)
             {
-                transform.Translation = position;
+                transform.SetTranslation(position);
             }
-            var renderer = item.GetComponent<TransformedRenderer>();
+            var renderer = manager.GetComponent<TextureRenderer>(item);
             if (renderer != null)
             {
                 renderer.Enabled = true;
@@ -105,14 +113,17 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new ship with the specified name.
         /// </summary>
+        /// <param name="manager">The manager.</param>
         /// <param name="name">The logical name of the ship to sample.</param>
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <param name="position">The initial position of the ship.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled ship.</returns>
-        public static Entity SampleShip(string name, Factions faction, Vector2 position, IUniformRandom random)
+        /// <returns>
+        /// The sampled ship.
+        /// </returns>
+        public static int SampleShip(IManager manager, string name, Factions faction, Vector2 position, IUniformRandom random)
         {
-            return _shipFactories[name].SampleShip(faction, position, random);
+            return ShipFactories[name].SampleShip(manager, faction, position, random);
         }
 
         #endregion

@@ -59,7 +59,7 @@ namespace Space.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -69,6 +69,8 @@ namespace Space.ComponentSystem.Components
             PlanetTint = otherPlanet.PlanetTint;
             AtmosphereTint = otherPlanet.AtmosphereTint;
             _textureName = otherPlanet._textureName;
+
+            return this;
         }
 
         /// <summary>
@@ -78,13 +80,15 @@ namespace Space.ComponentSystem.Components
         /// <param name="planetTint">The planet tint.</param>
         /// <param name="planetRadius">The planet radius.</param>
         /// <param name="atmosphereTint">The atmosphere tint.</param>
-        public void Initialize(string planetTexture, Color planetTint,
+        public PlanetRenderer Initialize(string planetTexture, Color planetTint,
             float planetRadius, Color atmosphereTint)
         {
             Radius = planetRadius;
             PlanetTint = planetTint;
             AtmosphereTint = atmosphereTint;
             _textureName = planetTexture;
+
+            return this;
         }
 
         /// <summary>

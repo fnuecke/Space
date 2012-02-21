@@ -28,20 +28,24 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             Value = ((Spin)other).Value;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified spin.
         /// </summary>
         /// <param name="spin">The spin.</param>
-        public void Initialize(float spin)
+        public Spin Initialize(float spin)
         {
             this.Value = spin;
+
+            return this;
         }
 
         /// <summary>
@@ -107,7 +111,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Spin = " + Value.ToString();
+            return base.ToString() + ", Spin = " + Value;
         }
 
         #endregion

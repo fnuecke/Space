@@ -43,13 +43,13 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
         /// <summary>
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -60,6 +60,8 @@ namespace Space.ComponentSystem.Components
             {
                 Cooldowns.Add(item.Key, item.Value);
             }
+
+            return this;
         }
 
         /// <summary>
@@ -67,19 +69,21 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="cooldown">The cooldown.</param>
         /// <param name="damage">The damage.</param>
-        public void Initialize(int cooldown, float damage)
+        public CollisionDamage Initialize(int cooldown, float damage)
         {
             this.Cooldown = cooldown;
             this.Damage = damage;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified damage.
         /// </summary>
         /// <param name="damage">The damage.</param>
-        public void Initialize(float damage)
+        public CollisionDamage Initialize(float damage)
         {
-            Initialize(0, damage);
+            return Initialize(0, damage);
         }
 
         /// <summary>

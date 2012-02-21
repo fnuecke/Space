@@ -24,20 +24,24 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             TimeToLive = ((Expiration)other).TimeToLive;
+
+            return this;
         }
 
         /// <summary>
         /// Initializes the component with the specified TTL.
         /// </summary>
         /// <param name="ttl">The time the object has to live.</param>
-        public void Initialize(int ttl)
+        public Expiration Initialize(int ttl)
         {
             this.TimeToLive = ttl;
+
+            return this;
         }
 
         /// <summary>
@@ -103,7 +107,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", TimeToLive = " + TimeToLive.ToString();
+            return base.ToString() + ", TimeToLive = " + TimeToLive;
         }
 
         #endregion

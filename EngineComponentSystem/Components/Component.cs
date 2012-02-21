@@ -58,7 +58,7 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public virtual void Initialize(Component other)
+        public virtual Component Initialize(Component other)
         {
             // Check if the component is of the correct type.
             if (other.GetType() != GetType())
@@ -70,6 +70,8 @@ namespace Engine.ComponentSystem.Components
             Entity = other.Entity;
             UpdateOrder = other.UpdateOrder;
             Enabled = other.Enabled;
+
+            return this;
         }
 
         /// <summary>
@@ -142,7 +144,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return GetType().Name + ": Id = " + Id.ToString() + ", UpdateOrder = " + UpdateOrder.ToString() + ", Enabled = " + Enabled.ToString();
+            return GetType().Name + ": Id = " + Id + ", UpdateOrder = " + UpdateOrder + ", Enabled = " + Enabled;
         }
 
         #endregion

@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Components
     /// Requires: <c>Transform</c>, <c>Spin</c>, <c>Acceleration</c>, <c>MovementProperties</c>.
     /// </para>
     /// </summary>
-    public class ShipControl : Component
+    public sealed class ShipControl : Component
     {
         #region Fields
 
@@ -56,7 +56,7 @@ namespace Space.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -67,6 +67,8 @@ namespace Space.ComponentSystem.Components
             TargetRotationChanged = otherControl.TargetRotationChanged;
             PreviousRotation = otherControl.PreviousRotation;
             Shooting = otherControl.Shooting;
+
+            return this;
         }
 
         /// <summary>

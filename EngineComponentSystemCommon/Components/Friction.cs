@@ -35,13 +35,15 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             var otherFriction = (Friction)other;
             Value = otherFriction.Value;
             StopVelocity = otherFriction.StopVelocity;
+
+            return this;
         }
 
         /// <summary>
@@ -49,19 +51,23 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="value">The friction.</param>
         /// <param name="stopVelocity">The stop velocity.</param>
-        public void Initialize(float value, float stopVelocity)
+        public Friction Initialize(float value, float stopVelocity)
         {
             this.Value = value;
             this.StopVelocity = stopVelocity;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified friction.
         /// </summary>
         /// <param name="value">The friction.</param>
-        public void Initialize(float value)
+        public Friction Initialize(float value)
         {
             Initialize(value, 0);
+
+            return this;
         }
 
         /// <summary>
@@ -131,7 +137,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", " + Value.ToString() + ", " + StopVelocity.ToString();
+            return base.ToString() + ", " + Value + ", " + StopVelocity;
         }
 
         #endregion

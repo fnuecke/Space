@@ -50,15 +50,18 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new weapon based on these constraints.
         /// </summary>
+        /// <param name="manager"></param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled weapon.</returns>
-        public override Entity Sample(IUniformRandom random)
+        /// <returns>
+        /// The sampled weapon.
+        /// </returns>
+        public override int Sample(IManager manager, IUniformRandom random)
         {
-            var entity = base.Sample(random);
+            var entity = base.Sample(manager, random);
 
-            entity.AddComponent(new Weapon(Name, Icon, Quality, EquippedModel, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles));
+            manager.AddComponent<Weapon>(entity).Initialize(Name, Icon, Quality, EquippedModel, Sound, SampleCooldown(random), SampleEnergyConsumption(random), SampleDamage(random), Projectiles);
 
-            return SampleAttributes(entity, random);
+            return SampleAttributes(manager, entity, random);
         }
 
         /// <summary>
@@ -68,7 +71,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled cooldown.</returns>
         private float SampleCooldown(IUniformRandom random)
         {
-            return (Cooldown.Low == Cooldown.High) ? Cooldown.Low
+            return (random == null) ? Cooldown.Low
                 : MathHelper.Lerp(Cooldown.Low, Cooldown.High, (float)random.NextDouble());
         }
 
@@ -79,7 +82,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled energy consumption.</returns>
         private float SampleEnergyConsumption(IUniformRandom random)
         {
-            return (EnergyConsumption.Low == EnergyConsumption.High) ? EnergyConsumption.Low
+            return (random == null) ? EnergyConsumption.Low
                 : MathHelper.Lerp(EnergyConsumption.Low, EnergyConsumption.High, (float)random.NextDouble());
         }
 
@@ -90,7 +93,7 @@ namespace Space.ComponentSystem.Factories
         /// <returns>The sampled damage.</returns>
         private float SampleDamage(IUniformRandom random)
         {
-            return (Damage.Low == Damage.High) ? Damage.Low
+            return (random == null) ? Damage.Low
                 : MathHelper.Lerp(Damage.Low, Damage.High, (float)random.NextDouble());
         }
 

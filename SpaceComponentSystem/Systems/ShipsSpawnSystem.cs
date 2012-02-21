@@ -12,7 +12,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages spawning dynamic objects for cells, such as random ships.
     /// </summary>
-    public sealed class ShipsSpawnSystem : System
+    public sealed class ShipsSpawnSystem : AbstractSystem
     {
         #region Fields
 
@@ -24,34 +24,20 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Constructor
-
-        public ShipsSpawnSystem()
-        {
-            // We want to sync our randomizer.
-            ShouldSynchronize = true;
-        }
-
-        #endregion
-
         #region Logic
 
         public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
         {
             var aicommand = new AiComponent.AiCommand(targetEntity, 2000, AiComponent.Order.Move);
-            var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
-                faction, startPosition, Manager.EntityManager, _random, aicommand);
-
-            Manager.EntityManager.AddEntity(ship);
+            EntityFactory.CreateAIShip(Manager, "L1_AI_Ship",
+                faction, startPosition, _random, aicommand);
         }
 
         public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
         {
             var aicommand = new AiComponent.AiCommand(targetPosition, 2000, AiComponent.Order.Move);
-            var ship = EntityFactory.CreateAIShip("L1_AI_Ship",
-                faction, startPosition, Manager.EntityManager, _random, aicommand);
-
-            Manager.EntityManager.AddEntity(ship);
+            EntityFactory.CreateAIShip(Manager, "L1_AI_Ship",
+                faction, startPosition, _random, aicommand);
         }
 
         #endregion
@@ -88,15 +74,13 @@ namespace Space.ComponentSystem.Systems
                         spawnPoint.X = (float)(_random.NextDouble() * cellSize + cellPosition.X);
                         spawnPoint.Y = (float)(_random.NextDouble() * cellSize + cellPosition.Y);
                         var order = new AiComponent.AiCommand(spawnPoint, cellSize >> 1, AiComponent.Order.Guard);
-                        var ship = EntityFactory.CreateAIShip(
+                        EntityFactory.CreateAIShip(
+                            Manager,
                             "L1_AI_Ship",
                             cellInfo.Faction,
                             spawnPoint,
-                            Manager.EntityManager,
                             _random,
                             order);
-
-                        Manager.EntityManager.AddEntity(ship);
                     }
                 }
             }
@@ -141,7 +125,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
-        public override ISystem DeepCopy(ISystem into)
+        public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (ShipsSpawnSystem)base.DeepCopy(into);
 

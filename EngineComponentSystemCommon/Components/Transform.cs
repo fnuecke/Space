@@ -51,13 +51,15 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             var otherTransform = (Transform)other;
             _translation = otherTransform.Translation;
             _rotation = otherTransform.Rotation;
+
+            return this;
         }
 
         /// <summary>
@@ -65,28 +67,34 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         /// <param name="translation">The translation.</param>
         /// <param name="rotation">The rotation.</param>
-        public void Initialize(Vector2 translation, float rotation)
+        public Transform Initialize(Vector2 translation, float rotation)
         {
             SetTranslation(translation);
             SetRotation(rotation);
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified translation.
         /// </summary>
         /// <param name="translation">The translation.</param>
-        public void Initialize(Vector2 translation)
+        public Transform Initialize(Vector2 translation)
         {
             Initialize(translation, 0);
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified rotation.
         /// </summary>
         /// <param name="rotation">The rotation.</param>
-        public void Initialize(float rotation)
+        public Transform Initialize(float rotation)
         {
             Initialize(Vector2.Zero, rotation);
+
+            return this;
         }
 
         /// <summary>
@@ -255,7 +263,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Translation = " + Translation.ToString() + ", Rotation = " + Rotation.ToString();
+            return base.ToString() + ", Translation = " + Translation + ", Rotation = " + Rotation;
         }
 
         #endregion

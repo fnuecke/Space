@@ -20,8 +20,8 @@ namespace Engine.ComponentSystem.Systems
 
             // Compute the current position and set it.
             Manager.GetComponent<Transform>(component.Entity).SetTranslation(
-                center.X + component.precomputedA + component.precomputedB * cosT - component.precomputedC * sinT,
-                center.Y + component.precomputedD + component.precomputedE * cosT + component.precomputedF * sinT
+                center.X + component.PrecomputedA + component.PrecomputedB * cosT - component.PrecomputedC * sinT,
+                center.Y + component.PrecomputedD + component.PrecomputedE * cosT + component.PrecomputedF * sinT
             );
         }
     }

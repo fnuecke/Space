@@ -25,20 +25,24 @@ namespace Space.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             Value = ((Faction)other).Value;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified faction.
         /// </summary>
         /// <param name="factions">The factions.</param>
-        public void Initialize(Factions factions)
+        public Faction Initialize(Factions factions)
         {
             this.Value = factions;
+
+            return this;
         }
 
         /// <summary>

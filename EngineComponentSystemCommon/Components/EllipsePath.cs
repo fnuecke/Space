@@ -96,37 +96,37 @@ namespace Engine.ComponentSystem.Components
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
-        internal float precomputedA;
+        internal float PrecomputedA;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
-        internal float precomputedB;
+        internal float PrecomputedB;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
-        internal float precomputedC;
+        internal float PrecomputedC;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
-        internal float precomputedD;
+        internal float PrecomputedD;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
-        internal float precomputedE;
+        internal float PrecomputedE;
 
         /// <summary>
         /// Precomputed for position calculation.
         /// </summary>
         /// <remarks>Do not change manually.</remarks>
-        internal float precomputedF;
+        internal float PrecomputedF;
 
         /// <summary>
         /// Actual value of the angle.
@@ -151,7 +151,7 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -162,6 +162,8 @@ namespace Engine.ComponentSystem.Components
             CenterEntityId = otherEllipsePath.CenterEntityId;
             Period = otherEllipsePath.Period;
             PeriodOffset = otherEllipsePath.PeriodOffset;
+
+            return this;
         }
 
         /// <summary>
@@ -173,7 +175,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="angle">The angle.</param>
         /// <param name="period">The period.</param>
         /// <param name="periodOffset">The period offset.</param>
-        public void Initialize(int centerEntityId, float majorRadius, float minorRadius,
+        public EllipsePath Initialize(int centerEntityId, float majorRadius, float minorRadius,
             float angle, float period, float periodOffset)
         {
             this.CenterEntityId = centerEntityId;
@@ -190,6 +192,8 @@ namespace Engine.ComponentSystem.Components
             this.Angle = angle;
             this.Period = period;
             this.PeriodOffset = periodOffset;
+
+            return this;
         }
 
         /// <summary>
@@ -218,17 +222,17 @@ namespace Engine.ComponentSystem.Components
         private void Precompute()
         {
             // If our angle changed, recompute our sine and cosine.
-            var SinPhi = (float)System.Math.Sin(_angle);
-            var CosPhi = (float)System.Math.Cos(_angle);
-            var F = (float)System.Math.Sqrt(System.Math.Abs(
+            var sinPhi = (float)Math.Sin(_angle);
+            var cosPhi = (float)Math.Cos(_angle);
+            var f = (float)Math.Sqrt(Math.Abs(
                 _minorRadius * _minorRadius - _majorRadius * _majorRadius));
             
-            precomputedA = F * CosPhi;
-            precomputedB = MajorRadius * CosPhi;
-            precomputedC = MinorRadius * SinPhi;
-            precomputedD = F * SinPhi;
-            precomputedE = MajorRadius * SinPhi;
-            precomputedF = MinorRadius * CosPhi;
+            PrecomputedA = f * cosPhi;
+            PrecomputedB = MajorRadius * cosPhi;
+            PrecomputedC = MinorRadius * sinPhi;
+            PrecomputedD = f * sinPhi;
+            PrecomputedE = MajorRadius * sinPhi;
+            PrecomputedF = MinorRadius * cosPhi;
         }
 
         #endregion
@@ -298,7 +302,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", CenterEntityId = " + CenterEntityId.ToString() + ", MajorRadius = " + MajorRadius.ToString() + ", MinorRadius = " + MinorRadius.ToString() + ", Angle = " + Angle.ToString() + ", Period = " + Period.ToString() + ", PeriodOffset = " + PeriodOffset.ToString();
+            return base.ToString() + ", CenterEntityId = " + CenterEntityId + ", MajorRadius = " + MajorRadius + ", MinorRadius = " + MinorRadius + ", Angle = " + Angle + ", Period = " + Period + ", PeriodOffset = " + PeriodOffset;
         }
 
         #endregion

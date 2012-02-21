@@ -69,13 +69,15 @@ namespace Space.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             var otherGravitation = (Gravitation)other;
             GravitationType = otherGravitation.GravitationType;
             Mass = otherGravitation.Mass;
+
+            return this;
         }
 
         /// <summary>
@@ -83,10 +85,12 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="type">The type.</param>
         /// <param name="mass">The mass.</param>
-        public void Initialize(GravitationTypes type = GravitationTypes.Attractee, float mass = 1)
+        public Gravitation Initialize(GravitationTypes type = GravitationTypes.Attractee, float mass = 1)
         {
             this.GravitationType = type;
             this.Mass = mass;
+
+            return this;
         }
 
         /// <summary>

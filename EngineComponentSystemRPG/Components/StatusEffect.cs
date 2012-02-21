@@ -26,20 +26,24 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             Remaining = ((StatusEffect)other).Remaining;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified duration.
         /// </summary>
         /// <param name="duration">The duration.</param>
-        protected void Initialize(int duration)
+        protected StatusEffect Initialize(int duration)
         {
             Remaining = duration;
+
+            return this;
         }
 
         /// <summary>

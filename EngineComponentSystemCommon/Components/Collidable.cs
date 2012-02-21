@@ -36,22 +36,26 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             var otherCollidable = (Collidable)other;
             CollisionGroups = otherCollidable.CollisionGroups;
             PreviousPosition = otherCollidable.PreviousPosition;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize the component with specified collision groups.
         /// </summary>
         /// <param name="groups">The groups.</param>
-        protected void Initialize(uint groups)
+        protected Collidable Initialize(uint groups)
         {
             CollisionGroups = groups;
+
+            return this;
         }
 
         /// <summary>

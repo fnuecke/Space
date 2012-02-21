@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
@@ -23,14 +22,14 @@ namespace Space.ComponentSystem.Systems
     /// re-generated procedurally whenever a cell gets re-activated.
     /// </para>
     /// </summary>
-    public sealed class UniverseSystem : System
+    public sealed class UniverseSystem : AbstractSystem
     {
         #region Properties
 
         /// <summary>
         /// The base seed for the current game world.
         /// </summary>
-        public ulong WorldSeed { get; private set; }
+        public ulong WorldSeed { get; set; }
 
         #endregion
 
@@ -39,7 +38,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Some constraints used for generating procedural content.
         /// </summary>
-        private WorldConstraints _constraints;
+        private readonly WorldConstraints _constraints;
 
         /// <summary>
         /// Tracks cell information for active cells and inactive cells that
@@ -55,7 +54,6 @@ namespace Space.ComponentSystem.Systems
         public UniverseSystem(WorldConstraints constaits)
         {
             _constraints = constaits;
-            ShouldSynchronize = true;
         }
 
         #endregion
@@ -87,9 +85,6 @@ namespace Space.ComponentSystem.Systems
                     // Get random generator based on world seed and cell location.
                     var random = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
 
-                    // List to accumulate entities we created for this system in.
-                    List<int> list = new List<int>();
-
                     // Check if we have a changed cell info.
                     if (!_cellInfo.ContainsKey(info.Id))
                     {
@@ -109,7 +104,6 @@ namespace Space.ComponentSystem.Systems
                             case 1:
                                 faction = Factions.NpcFactionB;
                                 break;
-                            case 2:
                             default:
                                 faction = Factions.NpcFactionC;
                                 break;
@@ -117,14 +111,14 @@ namespace Space.ComponentSystem.Systems
 
                         // Figure out our tech level.
                         // TODO make dependent on distance to center / start system.
-                        int techLevel = independentRandom.NextInt32(3);
+                        var techLevel = independentRandom.NextInt32(3);
 
                         // Create the cell and push it.
                         _cellInfo.Add(info.Id, new CellInfo(faction, techLevel));
                     }
 
                     // Get center of our cell.
-                    var cellSize = CellSystem.CellSize;
+                    const int cellSize = CellSystem.CellSize;
                     var center = new Vector2(cellSize * info.X + (cellSize >> 1), cellSize * info.Y + (cellSize >> 1));
 
                     // Check if it's the start system or not.
@@ -132,7 +126,7 @@ namespace Space.ComponentSystem.Systems
                     {
                         // It is, use a predefined number of planets and moons,
                         // and make sure it's a solar system.
-                        CreateSystem(random, ref center, list,
+                        CreateSystem(random, ref center,
                             _cellInfo[info.Id],
                             // Seven planets, with their respective number of moons.
                             7, new[] { 0, 0, 1, 2, 4, 2, 1 });
@@ -140,7 +134,7 @@ namespace Space.ComponentSystem.Systems
                     else
                     {
                         // It isn't, randomize.
-                        CreateSystem(random, ref center, list, _cellInfo[info.Id]);
+                        CreateSystem(random, ref center, _cellInfo[info.Id]);
                     }
 
                     // Find nearby active cells and the stations in them, mark
@@ -182,8 +176,7 @@ namespace Space.ComponentSystem.Systems
                                     // Tell the other stations.
                                     foreach (var stationId in _cellInfo[id].Stations)
                                     {
-                                        var spawn = Manager.EntityManager.GetEntity(stationId).
-                                            GetComponent<ShipSpawner>();
+                                        var spawn = Manager.GetComponent<ShipSpawner>(stationId);
                                         foreach (var otherStationId in stations)
                                         {
                                             spawn.Targets.Add(otherStationId);
@@ -192,8 +185,7 @@ namespace Space.ComponentSystem.Systems
                                     // Tell our own stations.
                                     foreach (var stationId in stations)
                                     {
-                                        var spawner = Manager.EntityManager.GetEntity(stationId).
-                                            GetComponent<ShipSpawner>();
+                                        var spawner = Manager.GetComponent<ShipSpawner>(stationId);
                                         foreach (var otherStationId in _cellInfo[id].Stations)
                                         {
                                             spawner.Targets.Add(otherStationId);
@@ -222,7 +214,7 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Cloning
+        #region Serialization
 
         /// <summary>
         /// Packetizes the specified packet.
@@ -274,7 +266,11 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
-        public override ISystem DeepCopy(ISystem into)
+        #endregion
+
+        #region Copying
+
+        public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (UniverseSystem)base.DeepCopy(into);
 
@@ -308,31 +304,26 @@ namespace Space.ComponentSystem.Systems
         private void CreateSystem(
             IUniformRandom random,
             ref Vector2 center,
-            List<int> list,
             CellInfo cellInfo,
             int numPlanets = -1,
-            int[] numsMoons = null)
+            IList<int> numsMoons = null)
         {
             // Get our gaussian distributed randomizer.
             var gaussian = new Ziggurat(random);
 
             // Create our sun.
-            float sunRadius = _constraints.SampleSunRadius(gaussian);
-            float sunMass = _constraints.SunMassFactor * 4f / 3f * (float)System.Math.PI * sunRadius * sunRadius * sunRadius; ;
-            Entity sun = EntityFactory.CreateSun(
-                radius: sunRadius,
-                position: center,
-                mass: sunMass);
-            list.Add(Manager.EntityManager.AddEntity(sun));
+            var sunRadius = _constraints.SampleSunRadius(gaussian);
+            var sunMass = _constraints.SunMassFactor * 4f / 3f * MathHelper.Pi * sunRadius * sunRadius * sunRadius;
+            var sun = EntityFactory.CreateSun(Manager, sunRadius, center, sunMass);
 
             // Get a dominant angle for orbits in our system. This is to avoid
             // planets' orbits to intersect, because we don't want to handle
             // planet collisions ;)
-            float dominantPlanetOrbitAngle = (float)(2 * System.Math.PI * random.NextDouble());
+            var dominantPlanetOrbitAngle = (float)(2 * Math.PI * random.NextDouble());
 
             // Keep track of the last orbit major radius, to incrementally
             // increase the radii.
-            float previousPlanetOrbit = _constraints.PlanetOrbitMean - _constraints.PlanetOrbitStdDev;
+            var previousPlanetOrbit = _constraints.PlanetOrbitMean - _constraints.PlanetOrbitStdDev;
 
             // Generate as many as we sample.
             if (numPlanets == -1)
@@ -342,7 +333,7 @@ namespace Space.ComponentSystem.Systems
             for (int i = 0; i < numPlanets; i++)
             {
                 int numMoons;
-                if (numsMoons != null && numsMoons.Length > i)
+                if (numsMoons != null && numsMoons.Count > i)
                 {
                     numMoons = numsMoons[i];
                 }
@@ -350,7 +341,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     numMoons = _constraints.SampleMoons(gaussian);
                 }
-                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, list, cellInfo);
+                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, cellInfo);
             }
         }
 
@@ -360,56 +351,52 @@ namespace Space.ComponentSystem.Systems
         private float CreatePlanet(
             IUniformRandom random,
             IGaussianRandom gaussian,
-            Entity sun,
+            int sun,
             float sunMass,
             float previousOrbitRadius,
             float dominantOrbitAngle,
             int numMoons,
-            List<int> list,
             CellInfo cellInfo)
         {
             // Sample planet properties.
-            float planetRadius = _constraints.SamplePlanetRadius(gaussian);
-            float planetOrbitMajorRadius = previousOrbitRadius + _constraints.SamplePlanetOrbit(gaussian);
-            float planetOrbitEccentricity = _constraints.SamplePlanetOrbitEccentricity(gaussian);
-            float planetOrbitMinorRadius = (float)System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * (1 - planetOrbitEccentricity * planetOrbitEccentricity));
-            float planetOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constraints.SamplePlanetOrbitAngleDeviation(gaussian));
-            float planetPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * planetOrbitMajorRadius * 3 /* < slowing factor */ / sunMass));
-            float planetMass = _constraints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * planetRadius * planetRadius * planetRadius;
+            var planetRadius = _constraints.SamplePlanetRadius(gaussian);
+            var planetOrbitMajorRadius = previousOrbitRadius + _constraints.SamplePlanetOrbit(gaussian);
+            var planetOrbitEccentricity = _constraints.SamplePlanetOrbitEccentricity(gaussian);
+            var planetOrbitMinorRadius = (float)Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * (1 - planetOrbitEccentricity * planetOrbitEccentricity));
+            var planetOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constraints.SamplePlanetOrbitAngleDeviation(gaussian));
+            var planetPeriod = (float)(2 * Math.PI * Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * planetOrbitMajorRadius * 3 /* < slowing factor */ / sunMass));
+            var planetMass = _constraints.PlanetMassFactor * 4f / 3f * MathHelper.Pi * planetRadius * planetRadius * planetRadius;
 
             var planet = EntityFactory.CreateOrbitingAstronomicalObject(
+                Manager,
                 texture: "Textures/Planets/rock_07",
                 planetTint: Color.Lerp(Color.DarkOliveGreen, Color.White, 0.5f),
                 radius: planetRadius,
                 atmosphereTint: Color.LightSkyBlue,
-                rotationSpeed: (float)gaussian.NextSampleClamped(System.Math.PI / 6000, 0.0000125) * System.Math.Sign(random.NextDouble() - 0.5),
+                rotationSpeed: (float)gaussian.NextSampleClamped(Math.PI / 6000, 0.0000125) * Math.Sign(random.NextDouble() - 0.5),
                 center: sun,
                 majorRadius: planetOrbitMajorRadius,
                 minorRadius: planetOrbitMinorRadius,
                 angle: planetOrbitAngle,
                 period: planetPeriod,
-                periodOffset: (float)(2 * System.Math.PI * random.NextDouble()),
+                periodOffset: (float)(2 * Math.PI * random.NextDouble()),
                 mass: planetMass);
-
-            list.Add(Manager.EntityManager.AddEntity(planet));
 
             // Create some moons, so our planet doesn't feel so ronery.
 
             // Again, fetch a dominant angle.
-            float dominantMoonOrbitAngle = (float)(random.NextDouble() * Math.PI * 2);
+            var dominantMoonOrbitAngle = (float)(random.NextDouble() * Math.PI * 2);
 
             // And track the radii. Start outside our planet.
-            float previousMoonOrbit = (_constraints.PlanetRadiusMean + _constraints.PlanetRadiusStdDev) * 1.5f;
+            var previousMoonOrbit = (_constraints.PlanetRadiusMean + _constraints.PlanetRadiusStdDev) * 1.5f;
             if (_constraints.SampleStation(random))
             {
-                CreateStation(random, gaussian, planet, planetMass, planetRadius, list
-                    , cellInfo
-                    );
+                CreateStation(gaussian, planet, planetMass, planetRadius, cellInfo);
             }
             // The create as many as we sample.
             for (int j = 0; j < numMoons; j++)
             {
-                previousMoonOrbit = CreateMoon(random, gaussian, planet, planetMass, previousMoonOrbit, dominantMoonOrbitAngle, list);
+                previousMoonOrbit = CreateMoon(random, gaussian, planet, planetMass, previousMoonOrbit, dominantMoonOrbitAngle);
             }
 
             return planetOrbitMajorRadius;
@@ -421,36 +408,33 @@ namespace Space.ComponentSystem.Systems
         private float CreateMoon(
             IUniformRandom random,
             IGaussianRandom gaussian,
-            Entity planet,
+            int planet,
             float planetMass,
             float previousOrbitRadius,
-            float dominantOrbitAngle,
-            List<int> list)
+            float dominantOrbitAngle)
         {
             // Sample moon properties.
-            float moonRadius = _constraints.SampleMoonRadius(gaussian);
-            float moonOrbitMajorRadius = previousOrbitRadius + _constraints.SampleMoonOrbit(gaussian);
-            float moonOrbitEccentricity = _constraints.SampleMoonOrbitEccentricity(gaussian);
-            float moonOrbitMinorRadius = (float)System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * (1 - moonOrbitEccentricity * moonOrbitEccentricity));
-            float moonOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constraints.SampleMoonOrbitAngleDeviation(gaussian));
-            float moonPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * moonOrbitMajorRadius / planetMass));
-            float moonMass = _constraints.PlanetMassFactor * 4f / 3f * (float)System.Math.PI * moonRadius * moonRadius * moonRadius;
+            var moonRadius = _constraints.SampleMoonRadius(gaussian);
+            var moonOrbitMajorRadius = previousOrbitRadius + _constraints.SampleMoonOrbit(gaussian);
+            var moonOrbitEccentricity = _constraints.SampleMoonOrbitEccentricity(gaussian);
+            var moonOrbitMinorRadius = (float)Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * (1 - moonOrbitEccentricity * moonOrbitEccentricity));
+            var moonOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constraints.SampleMoonOrbitAngleDeviation(gaussian));
+            var moonPeriod = (float)(2 * Math.PI * Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * moonOrbitMajorRadius / planetMass));
+            var moonMass = _constraints.PlanetMassFactor * 4f / 3f * MathHelper.Pi * moonRadius * moonRadius * moonRadius;
 
-            var moon = EntityFactory.CreateOrbitingAstronomicalObject(
+            EntityFactory.CreateOrbitingAstronomicalObject(Manager,
                 texture: "Textures/Planets/rock_02",
                 planetTint: Color.White,
                 radius: moonRadius,
                 atmosphereTint: Color.Transparent,
-                rotationSpeed: (float)gaussian.NextSampleClamped(System.Math.PI / 20000, 0.0000025) * System.Math.Sign(random.NextDouble() - 0.5),
+                rotationSpeed: (float)gaussian.NextSampleClamped(Math.PI / 20000, 0.0000025) * Math.Sign(random.NextDouble() - 0.5),
                 center: planet,
                 majorRadius: moonOrbitMajorRadius,
                 minorRadius: moonOrbitMinorRadius,
                 angle: moonOrbitAngle,
                 period: moonPeriod,
-                periodOffset: (float)(2 * System.Math.PI * random.NextDouble()),
+                periodOffset: (float)(2 * Math.PI * random.NextDouble()),
                 mass: /*moonMass*/ 0);
-
-            list.Add(Manager.EntityManager.AddEntity(moon));
 
             return moonOrbitMajorRadius;
         }
@@ -461,46 +445,23 @@ namespace Space.ComponentSystem.Systems
         /// Creates a new space station, orbiting another object (planet, moon).
         /// </summary>
         private void CreateStation(
-            IUniformRandom random,
             IGaussianRandom gaussian,
-            Entity center,
+            int center,
             float centerMass,
             float centerRadius,
-            List<int> list,
             CellInfo cellInfo)
         {
             var stationOrbit = centerRadius + _constraints.SampleStationOrbit(gaussian);
-            var stationPeriod = (float)(2 * System.Math.PI * System.Math.Sqrt(stationOrbit * stationOrbit * stationOrbit / centerMass));
+            var stationPeriod = (float)(2 * Math.PI * Math.Sqrt(stationOrbit * stationOrbit * stationOrbit / centerMass));
             var station = EntityFactory.CreateStation(
+                Manager,
                 texture: "Textures/Stolen/Ships/sensor_array",
                 center: center,
                 orbitRadius: stationOrbit,
                 period: stationPeriod,
                 faction: cellInfo.Faction);
 
-            list.Add(Manager.EntityManager.AddEntity(station));
-            cellInfo.Stations.Add(station.UID);
-        }
-
-        private List<int> CreateAsteroidBelt()
-        {
-            List<int> list = new List<int>();
-
-            return list;
-        }
-
-        private List<int> CreateNebula()
-        {
-            List<int> list = new List<int>();
-
-            return list;
-        }
-
-        private List<int> CreateSpecialSystem()
-        {
-            List<int> list = new List<int>();
-
-            return list;
+            cellInfo.Stations.Add(station);
         }
 
         #endregion
@@ -510,7 +471,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Class used to track persistent information on a single cell.
         /// </summary>
-        public class CellInfo : IPacketizable, IHashable, ICopyable<CellInfo>
+        public sealed class CellInfo : IPacketizable, IHashable, ICopyable<CellInfo>
         {
             #region Properties
 
@@ -567,7 +528,7 @@ namespace Space.ComponentSystem.Systems
             /// <summary>
             /// Actual value for tech level.
             /// </summary>
-            private int _techLevel = 0;
+            private int _techLevel;
 
             #endregion
 
@@ -645,6 +606,10 @@ namespace Space.ComponentSystem.Systems
                     copy.Dirty = Dirty;
                     copy._faction = _faction;
                     copy._techLevel = _techLevel;
+                }
+                else
+                {
+                    Stations = new List<int>();
                 }
 
                 return copy;

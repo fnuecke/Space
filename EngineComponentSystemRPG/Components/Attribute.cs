@@ -27,20 +27,24 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             Modifier = ((Attribute<TAttribute>)other).Modifier;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified modifier.
         /// </summary>
         /// <param name="value">The value.</param>
-        public void Initialize(AttributeModifier<TAttribute> value)
+        public Attribute<TAttribute> Initialize(AttributeModifier<TAttribute> value)
         {
             Modifier = value;
+
+            return this;
         }
 
         /// <summary>

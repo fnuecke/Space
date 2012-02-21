@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
-using Space.ComponentSystem.Util;
+using Space.ComponentSystem.Factories;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -63,6 +63,8 @@ namespace Space.ComponentSystem.Components
             EnergyConsumption = otherWeapon.EnergyConsumption;
             Damage = otherWeapon.Damage;
             Projectiles = otherWeapon.Projectiles;
+
+            return this;
         }
 
         /// <summary>
@@ -79,12 +81,12 @@ namespace Space.ComponentSystem.Components
         /// shot</param>
         /// <param name="damage">The amount of damage a single projectile does.</param>
         /// <param name="projectiles">The info on projectiles being shot.</param>
-        public void Initialize(string name, string iconName, ItemQuality quality,
+        public Weapon Initialize(string name, string iconName, ItemQuality quality,
             string modelName, string sound,
             float cooldown, float energyConsumption,
             float damage, ProjectileFactory[] projectiles)
         {
-            base.Initialize(name, iconName, quality);
+            Initialize(name, iconName, quality);
 
             this.ModelName = modelName;
             this.Sound = sound;
@@ -92,6 +94,8 @@ namespace Space.ComponentSystem.Components
             this.EnergyConsumption = energyConsumption;
             this.Damage = damage;
             this.Projectiles = projectiles;
+
+            return this;
         }
 
         /// <summary>

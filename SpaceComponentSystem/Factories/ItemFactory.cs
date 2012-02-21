@@ -69,19 +69,19 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new item.
         /// </summary>
+        /// <param name="manager">The manager.</param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled item.</returns>
-        public virtual Entity Sample(IUniformRandom random)
+        /// <returns>
+        /// The sampled item.
+        /// </returns>
+        public virtual int Sample(IManager manager, IUniformRandom random)
         {
-            var entity = new Entity();
+            var entity = manager.AddEntity();
 
-            var transform = new Transform();
-            var renderer = new TransformedRenderer(Model);
+            manager.AddComponent<Transform>(entity);
+            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(Model);
             renderer.Enabled = false;
-
-            entity.AddComponent(transform);
-            entity.AddComponent(renderer);
-            entity.AddComponent(new Index(Item.IndexGroup));
+            manager.AddComponent<Index>(entity).Initialize(Item.IndexGroup);
 
             return entity;
         }
@@ -89,20 +89,22 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples the attributes to apply to the item.
         /// </summary>
+        /// <param name="manager">The manager.</param>
         /// <param name="item">The item.</param>
         /// <param name="random">The randomizer to use.</param>
+        /// <returns></returns>
         /// <return>The entity with the attributes applied.</return>
-        protected Entity SampleAttributes(Entity item, IUniformRandom random)
+        protected int SampleAttributes(IManager manager, int item, IUniformRandom random)
         {
             foreach (var attribute in GuaranteedAttributes)
             {
-                item.AddComponent(new Attribute<AttributeType>(attribute.SampleAttributeModifier(random)));
+                manager.AddComponent<Attribute<AttributeType>>(item).Initialize(attribute.SampleAttributeModifier(random));
             }
             var numAdditionalAttributes = (AdditionalAttributeCount.Low == AdditionalAttributeCount.High) ? AdditionalAttributeCount.Low
                 : random.NextInt32(AdditionalAttributeCount.Low, AdditionalAttributeCount.High);
             for (int i = 0; i < numAdditionalAttributes; i++)
             {
-                item.AddComponent(new Attribute<AttributeType>(AdditionalAttributes[random.NextInt32(AdditionalAttributes.Length)].SampleAttributeModifier(random)));
+                manager.AddComponent<Attribute<AttributeType>>(item).Initialize(AdditionalAttributes[random.NextInt32(AdditionalAttributes.Length)].SampleAttributeModifier(random));
             }
             return item;
         }

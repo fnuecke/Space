@@ -64,7 +64,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
@@ -74,6 +74,8 @@ namespace Engine.ComponentSystem.RPG.Components
                 _baseAttributes.Add(baseAttribute.Key, baseAttribute.Value);
             }
             RecomputeAttributes();
+
+            return this;
         }
 
         /// <summary>

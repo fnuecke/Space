@@ -29,20 +29,24 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             Value = ((Velocity)other).Value;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified velocity.
         /// </summary>
         /// <param name="velocity">The velocity.</param>
-        public void Initialize(Vector2 velocity)
+        public Velocity Initialize(Vector2 velocity)
         {
             this.Value = velocity;
+
+            return this;
         }
 
         /// <summary>

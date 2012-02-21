@@ -89,7 +89,7 @@ namespace Engine.ComponentSystem
         /// <typeparam name="T">The type of component to create.</typeparam>
         /// <param name="entity">The entity to attach the component to.</param>
         /// <returns>The new component.</returns>
-        Component AddComponent<T>(int entity) where T : Component, new();
+        T AddComponent<T>(int entity) where T : Component, new();
         
         /// <summary>
         /// Test whether the component with the specified id exists.

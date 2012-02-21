@@ -848,7 +848,7 @@ namespace Engine.Simulation
             /// <typeparam name="T">The type of component to create.</typeparam>
             /// <param name="entity">The entity to attach the component to.</param>
             /// <returns>The new component.</returns>
-            public Component AddComponent<T>(int entity) where T : Component, new()
+            T IManager.AddComponent<T>(int entity)
             {
                 throw new NotSupportedException();
             }
@@ -881,6 +881,17 @@ namespace Engine.Simulation
             public T GetComponent<T>(int entity) where T : Component
             {
                 return _tss.LeadingSimulation.Manager.GetComponent<T>(entity);
+            }
+
+            /// <summary>
+            /// Gets the component of the specified type for an entity.
+            /// </summary>
+            /// <param name="entity">The entity to get the component of.</param>
+            /// <param name="type">The type of the component to get.</param>
+            /// <returns>The component.</returns>
+            public Component GetComponent(int entity, Type type)
+            {
+                return _tss.LeadingSimulation.Manager.GetComponent(entity, type);
             }
 
             /// <summary>

@@ -27,20 +27,24 @@ namespace Engine.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             IndexGroups = ((Index)other).IndexGroups;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified index groups.
         /// </summary>
         /// <param name="groups">The index groups.</param>
-        public void Initialize(ulong groups)
+        public Index Initialize(ulong groups)
         {
             this.IndexGroups = groups;
+
+            return this;
         }
 
         /// <summary>
@@ -106,7 +110,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", IndexGroups = " + IndexGroups.ToString();
+            return base.ToString() + ", IndexGroups = " + IndexGroups;
         }
 
         #endregion

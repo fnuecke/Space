@@ -46,22 +46,26 @@ namespace Space.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             var otherDetectalbe = (Detectable)other;
             Texture = otherDetectalbe.Texture;
             _textureName = otherDetectalbe._textureName;
+
+            return this;
         }
 
         /// <summary>
         /// Initialize with the specified texture name.
         /// </summary>
         /// <param name="textureName">Name of the texture.</param>
-        public void Initialize(string textureName)
+        public Detectable Initialize(string textureName)
         {
             TextureName = textureName;
+
+            return this;
         }
 
         /// <summary>

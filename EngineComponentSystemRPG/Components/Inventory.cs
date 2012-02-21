@@ -118,22 +118,26 @@ namespace Engine.ComponentSystem.RPG.Components
         ///   Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other"> The component to copy the values from. </param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             var otherInventory = (Inventory) other;
             _items.AddRange(otherInventory._items);
             _isFixed = otherInventory._isFixed;
+
+            return this;
         }
 
         /// <summary>
         ///   Initialize with a fixed capacity.
         /// </summary>
         /// <param name="fixedCapacity"> The capacity of the inventory. </param>
-        public void Initialize(int fixedCapacity)
+        public Inventory Initialize(int fixedCapacity)
         {
             Capacity = fixedCapacity;
+
+            return this;
         }
 
         /// <summary>
@@ -208,10 +212,10 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 for (int i = 0; i < _items.Count; i++)
                 {
-                    if (!_isFixed || _items[i].HasValue)
+                    if (_items[i].HasValue)
                     {
-                        var otherItemType = Manager.GetComponent<Item>(this[i].Value);
-                        var otherStackable = Manager.GetComponent<Stackable>(this[i].Value);
+                        var otherItemType = Manager.GetComponent<Item>(_items[i].Value);
+                        var otherStackable = Manager.GetComponent<Stackable>(_items[i].Value);
                         if (otherStackable != null &&
                             otherItemType.Name.Equals(itemType.Name) &&
                             otherStackable.Count < otherStackable.MaxCount)

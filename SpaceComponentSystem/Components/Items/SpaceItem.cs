@@ -25,11 +25,13 @@ namespace Space.ComponentSystem.Components
         /// Initialize the component by using another instance of its type.
         /// </summary>
         /// <param name="other">The component to copy the values from.</param>
-        public override void Initialize(Component other)
+        public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
             Quality = ((SpaceItem)other).Quality;
+
+            return this;
         }
 
         /// <summary>
@@ -38,11 +40,13 @@ namespace Space.ComponentSystem.Components
         /// <param name="name">The logical base name of the item.</param>
         /// <param name="iconName">The name of the icon used for the item.</param>
         /// <param name="quality">The quality level of the item.</param>
-        public void Initialize(string name, string iconName, ItemQuality quality)
+        public SpaceItem Initialize(string name, string iconName, ItemQuality quality)
         {
             base.Initialize(name, iconName);
 
             this.Quality = quality;
+
+            return this;
         }
 
         /// <summary>
