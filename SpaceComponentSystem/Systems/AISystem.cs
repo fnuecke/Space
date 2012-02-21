@@ -8,9 +8,9 @@ using Space.ComponentSystem.Components.Behaviours;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class AISystem : AbstractComponentSystem<AiComponent>
+    public sealed class AISystem : AbstractComponentSystem<ArtificialIntelligence>
     {
-        protected override void UpdateComponent(Microsoft.Xna.Framework.GameTime gameTime, long frame, AiComponent component)
+        protected override void UpdateComponent(Microsoft.Xna.Framework.GameTime gameTime, long frame, ArtificialIntelligence component)
         {
             if (_counter % 10 == 0)
             {
@@ -31,13 +31,13 @@ namespace Space.ComponentSystem.Systems
             var position = info.Position;
 
             //check if there are enemys in the erea
-            if (_currentBehaviour is PatrolBehaviour)
+            if (_currentBehaviour is PatrolBehavior)
             {
                 CheckNeighbours(ref position, ref position);
             }
-            else if (_currentBehaviour is AttackBehaviour)
+            else if (_currentBehaviour is AttackBehavior)
             {
-                var attack = (AttackBehaviour)_currentBehaviour;
+                var attack = (AttackBehavior)_currentBehaviour;
                 if (attack.TargetDead)
                 {
                     CheckAndSwitchToMoveBehaviour(ref position);
@@ -66,25 +66,25 @@ namespace Space.ComponentSystem.Systems
                     return;
                 }
 
-                if ((position - ((AttackBehaviour)_currentBehaviour).StartPosition).Length() > Command.MaxDistance)
+                if ((position - ((AttackBehavior)_currentBehaviour).StartPosition).Length() > Command.MaxDistance)
                 {
-                    var move = (MoveBehaviour)_behaviours[Behaviour.Behaviours.Move];
+                    var move = (MoveBehavior)_behaviours[Behavior.BehaviorType.Move];
                     move.Target = 0;
-                    move.TargetPosition = ((AttackBehaviour)_currentBehaviour).StartPosition;
+                    move.TargetPosition = ((AttackBehavior)_currentBehaviour).StartPosition;
                     _currentBehaviour = move;
                     _returning = true;
                     return;
                 }
             }
-            else if (_currentBehaviour is MoveBehaviour)
+            else if (_currentBehaviour is MoveBehavior)
             {
                 if (_returning)
                 {
-                    var target = ((MoveBehaviour)_currentBehaviour).TargetPosition;
+                    var target = ((MoveBehavior)_currentBehaviour).TargetPosition;
                     if ((target - position).Length() < 200)
                     {
                         SwitchOrder();
-                        if (!(_currentBehaviour is MoveBehaviour))
+                        if (!(_currentBehaviour is MoveBehavior))
                             _returning = false;
                     }
 
@@ -97,10 +97,10 @@ namespace Space.ComponentSystem.Systems
 
         private void CheckAndSwitchToMoveBehaviour(ref Vector2 position)
         {
-            var startposition = ((AttackBehaviour)_currentBehaviour).StartPosition;
+            var startposition = ((AttackBehavior)_currentBehaviour).StartPosition;
             if (CheckNeighbours(ref position, ref startposition)) return;
 
-            var move = (MoveBehaviour)_behaviours[Behaviour.Behaviours.Move];
+            var move = (MoveBehavior)_behaviours[Behavior.BehaviorType.Move];
             move.TargetPosition = startposition;
             move.Target = 0;
             _currentBehaviour = move;
@@ -128,7 +128,7 @@ namespace Space.ComponentSystem.Systems
 
                     if ((faction.Value & currentFaction) == 0)
                     {
-                        var attack = (AttackBehaviour)_behaviours[Behaviour.Behaviours.Attack];
+                        var attack = (AttackBehavior)_behaviours[Behavior.BehaviorType.Attack];
                         attack.TargetEntity = neighbor.UID;
                         attack.TargetDead = false;
                         _currentBehaviour = attack;
@@ -142,17 +142,17 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Calculates the Current Behaviour according to the given command
+        /// Calculates the Current Behavior according to the given command
         /// </summary>
         private void SwitchOrder()
         {
             switch (Command.Order)
             {
-                case (AiComponent.Order.Guard):
-                    _currentBehaviour = (PatrolBehaviour)_behaviours[Behaviour.Behaviours.Patrol];
+                case (ArtificialIntelligence.Order.Guard):
+                    _currentBehaviour = (PatrolBehavior)_behaviours[Behavior.BehaviorType.Patrol];
                     break;
-                case (AiComponent.Order.Move):
-                    var behaviour = (MoveBehaviour)_behaviours[Behaviour.Behaviours.Move];
+                case (ArtificialIntelligence.Order.Move):
+                    var behaviour = (MoveBehavior)_behaviours[Behavior.BehaviorType.Move];
                     if (Command.TargetEntity == 0)
                     {
                         behaviour.TargetPosition = Command.Target;
@@ -165,7 +165,7 @@ namespace Space.ComponentSystem.Systems
                     break;
 
                 default:
-                    _currentBehaviour = (PatrolBehaviour)_behaviours[Behaviour.Behaviours.Patrol];
+                    _currentBehaviour = (PatrolBehavior)_behaviours[Behavior.BehaviorType.Patrol];
                     break;
             }
         }
@@ -174,17 +174,17 @@ namespace Space.ComponentSystem.Systems
         {
             if (message is EntityRemoved)
             {
-                if (_currentBehaviour is AttackBehaviour)
+                if (_currentBehaviour is AttackBehavior)
                 {
-                    var beh = (AttackBehaviour)_currentBehaviour;
+                    var beh = (AttackBehavior)_currentBehaviour;
                     if (((EntityRemoved)((ValueType)message)).Entity.UID == beh.TargetEntity)
                     {
                         beh.TargetDead = true;
                     }
                 }
-                else if (_currentBehaviour is MoveBehaviour)
+                else if (_currentBehaviour is MoveBehavior)
                 {
-                    var beh = (MoveBehaviour)_currentBehaviour;
+                    var beh = (MoveBehavior)_currentBehaviour;
                     if (((EntityRemoved)((ValueType)message)).Entity.UID == beh.Target)
                     {
                         beh.Target = 0;

@@ -1,5 +1,4 @@
-﻿using Engine.ComponentSystem;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
@@ -28,6 +27,7 @@ namespace Space.ComponentSystem.Components
             MaxSpeed = otherShipInfo.MaxSpeed;
             Mass = otherShipInfo.Mass;
             RadarRange = otherShipInfo.RadarRange;
+            WeaponRange = otherShipInfo.WeaponRange;
 
             return this;
         }
@@ -44,6 +44,7 @@ namespace Space.ComponentSystem.Components
             MaxSpeed = 0;
             Mass = 0;
             RadarRange = 0;
+            WeaponRange = 0;
         }
 
         #endregion
@@ -246,6 +247,11 @@ namespace Space.ComponentSystem.Components
         /// Get the ship's overall radar range.
         /// </summary>
         public float RadarRange { get; internal set; }
+
+        /// <summary>
+        /// The distance our highest range weapon can shoot.
+        /// </summary>
+        public double WeaponRange { get; internal set; }
 
         #endregion
 

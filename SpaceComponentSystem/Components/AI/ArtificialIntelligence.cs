@@ -6,7 +6,7 @@ using Space.ComponentSystem.Components.Behaviours;
 
 namespace Space.ComponentSystem.Components
 {
-    public sealed class AiComponent : Component
+    public sealed class ArtificialIntelligence : Component
     {
         #region Types
 
@@ -75,9 +75,9 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The current behaviour
         /// </summary>
-        private Behaviour.Behaviours _currentBehaviour;
+        private Behavior.BehaviorType _currentBehaviorType;
 
-        private Dictionary<Behaviour.Behaviours, Behaviour> _behaviours = new Dictionary<Behaviour.Behaviours, Behaviour>();
+        private Dictionary<Behavior.BehaviorType, Behavior> _behaviours = new Dictionary<Behavior.BehaviorType, Behavior>();
 
         /// <summary>
         /// A counter used to only update every few milliseconds
@@ -90,20 +90,25 @@ namespace Space.ComponentSystem.Components
 
         #region Initialization
 
-        public AiComponent()
+        public ArtificialIntelligence()
         {
-            _behaviours.Add(Behaviour.Behaviours.Patrol, new PatrolBehaviour(this));
-            _behaviours.Add(Behaviour.Behaviours.Move, new MoveBehaviour(this));
-            _behaviours.Add(Behaviour.Behaviours.Attack, new AttackBehaviour(this));
+            _behaviours.Add(Behavior.BehaviorType.Patrol, new PatrolBehavior(this));
+            _behaviours.Add(Behavior.BehaviorType.Move, new MoveBehavior(this));
+            _behaviours.Add(Behavior.BehaviorType.Attack, new AttackBehavior(this));
         }
 
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        /// <returns></returns>
         public override Component Initialize(Component other)
         {
             base.Initialize(other);
 
-            var otherAI = (AiComponent)other;
+            var otherAI = (AI)other;
             Command = otherAI.Command;
-            _currentBehaviour = otherAI._currentBehaviour;
+            _currentBehaviorType = otherAI._currentBehaviorType;
             _counter = otherAI._counter;
             foreach (var behaviour in otherAI._behaviours)
             {
@@ -113,25 +118,17 @@ namespace Space.ComponentSystem.Components
             return this;
         }
 
-        public override Component DeepCopy(Component into)
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
         {
-            var copy = (AiComponent)base.DeepCopy(into);
+            base.Reset();
 
-            if (copy == into)
-            {
-                copy.Command = Command;
-                copy._counter = _counter;
-            }
-            else
-            {
-                copy._currentBehaviour = _currentBehaviour.DeepCopy();
-                copy._behaviours = new Dictionary<Behaviour.Behaviours, Behaviour>();
-                copy._behaviours.Add(Behaviour.Behaviours.Patrol, new PatrolBehaviour(copy));
-                copy._behaviours.Add(Behaviour.Behaviours.Move, new MoveBehaviour(copy));
-                copy._behaviours.Add(Behaviour.Behaviours.Attack, new AttackBehaviour(copy));
-            }
-
-            return copy;
+            Command = null;
+            _currentBehaviorType = Behavior.BehaviorType.None;
+            _counter = 0;
         }
 
         #endregion
@@ -140,8 +137,7 @@ namespace Space.ComponentSystem.Components
 
         public override Packet Packetize(Packet packet)
         {
-            return base.Packetize(packet)
-                .WriteWithTypeInfo(_currentBehaviour)
+            return base.Packetize(packet).WriteWithTypeInfo((IPacketizable)_currentBehaviorType)
                 .Write(Command)
                 .Write(_counter);
         }
@@ -150,8 +146,8 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            _currentBehaviour = packet.ReadPacketizableWithTypeInfo<Behaviour>();
-            _currentBehaviour.AiComponent = this;
+            _currentBehaviorType = packet.ReadPacketizableWithTypeInfo<Behavior>();
+            _currentBehaviorType.AiComponent = this;
             Command = packet.ReadPacketizable<AiCommand>();
             _counter = packet.ReadInt32();
         }

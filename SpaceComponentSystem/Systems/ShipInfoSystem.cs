@@ -47,6 +47,9 @@ namespace Space.ComponentSystem.Systems
 
                 // Figure out the overall range of our radar system.
                 shipInfo.RadarRange = character.GetValue(AttributeType.SensorRange);
+
+                // TODO: compute actual range
+                shipInfo.WeaponRange = 1000;
             }
         }
 

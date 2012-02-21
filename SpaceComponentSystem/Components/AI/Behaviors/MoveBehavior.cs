@@ -2,46 +2,45 @@
 using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 
-namespace Space.ComponentSystem.Components.Behaviours
+namespace Space.ComponentSystem.Components.AI.Behaviors
 {
-    sealed class MoveBehaviour : Behaviour
+    sealed class MoveBehavior : Behavior
     {
 
-        public MoveBehaviour(AiComponent component)
+        public Vector2 TargetPosition;
+
+        public int Target;
+
+        public MoveBehavior(AI component)
             : base(component)
         {
 
         }
-        public MoveBehaviour()
-        {
 
-        }
-        public Vector2 TargetPosition;
-        public int Target;
         public override void Update()
         {
-            var info = AiComponent.Entity.GetComponent<ShipInfo>();
-            var input = AiComponent.Entity.GetComponent<ShipControl>();
+            var info = AI.Entity.GetComponent<ShipInfo>();
+            var input = AI.Entity.GetComponent<ShipControl>();
 
             var position = info.Position;
             if (Target == 0)
-                direction = TargetPosition - position;
+                Direction = TargetPosition - position;
             else
             {
-                var target = AiComponent.Entity.Manager.GetEntity(Target);
+                var target = AI.Entity.Manager.GetEntity(Target);
                 var transform = target.GetComponent<Transform>();
-                direction = transform.Translation - position;
+                Direction = transform.Translation - position;
             }
-            if(direction != Vector2.Zero)
-                direction.Normalize();
+            if(Direction != Vector2.Zero)
+                Direction.Normalize();
 
             //look to flight direction
-            input.SetTargetRotation((float)Math.Atan2(direction.Y, direction.X));
+            input.SetTargetRotation((float)Math.Atan2(Direction.Y, Direction.X));
 
             var escapeDir = CalculateEscapeDirection();
-            direction += 2 * escapeDir;
+            Direction += 2 * escapeDir;
             
-            input.SetAcceleration(direction);
+            input.SetAcceleration(Direction);
         }
 
         public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
@@ -59,9 +58,9 @@ namespace Space.ComponentSystem.Components.Behaviours
             Target = packet.ReadInt32();
         }
 
-        public override Behaviour DeepCopy(Behaviour into)
+        public override Behavior DeepCopy(Behavior into)
         {
-            var copy = (MoveBehaviour)base.DeepCopy(into);
+            var copy = (MoveBehavior)base.DeepCopy(into);
 
             if (copy == into)
             {

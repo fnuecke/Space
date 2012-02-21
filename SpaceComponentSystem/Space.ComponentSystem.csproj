@@ -103,13 +103,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\AI\Behaviours\AttackBehaviour.cs" />
-    <Compile Include="Components\AI\Behaviours\Behaviour.cs" />
-    <Compile Include="Components\AI\Behaviours\MoveBehaviour.cs" />
-    <Compile Include="Components\AI\Behaviours\PatrolBehaviour.cs" />
-    <Compile Include="Components\AI\AIComponent.cs" />
+    <Compile Include="Components\AI\Behaviours\AttackBehavior.cs" />
+    <Compile Include="Components\AI\Behaviours\Behavior.cs" />
+    <Compile Include="Components\AI\Behaviours\MoveBehavior.cs" />
+    <Compile Include="Components\AI\Behaviours\PatrolBehavior.cs" />
+    <Compile Include="Components\AI\ArtificialIntelligence.cs" />
     <Compile Include="Components\Items\ItemInfo.cs" />
-    <Compile Include="Components\Media\ExplosionEffect.cs" />
     <Compile Include="Components\Items\SpaceItem.cs" />
     <Compile Include="Components\Logic\AbstractRegeneratingValue.cs" />
     <Compile Include="Components\Logic\CollisionDamage.cs" />
