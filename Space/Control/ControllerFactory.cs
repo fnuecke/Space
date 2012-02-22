@@ -32,8 +32,6 @@ namespace Space.Control
             var controller = new SimpleServerController<Profile>(7777, 12, SpaceCommandHandler.HandleCommand);
 
             // Add all systems we need in our game as a server.
-            AddCommonSystems(controller.Simulation.Manager);
-            AddRPGSystems(controller.Simulation.Manager);
             AddSpaceServerSystems(controller.Simulation.Manager, game);
 
             // Done.
@@ -51,8 +49,6 @@ namespace Space.Control
             var controller = new SimpleClientController<Profile>(SpaceCommandHandler.HandleCommand);
 
             // Needed by some systems. Add all systems we need in our game as a client.
-            AddCommonSystems(controller.Simulation.Manager);
-            AddRPGSystems(controller.Simulation.Manager);
             AddSpaceServerSystems(controller.Simulation.Manager, game);
             AddSpaceClientSystems(controller.Simulation.Manager, game, controller.Session);
 
@@ -80,37 +76,9 @@ namespace Space.Control
                 // *addition* to the ones the server already has.
                 AddSpaceClientSystems(server.Simulation.Manager, game, controller.Session);
             }
-            
+
             // Done.
             return controller;
-        }
-
-        private static void AddCommonSystems(IManager manager)
-        {
-            manager.AddSystems(
-                new AbstractSystem[]
-                {
-                    new AccelerationSystem(),
-                    new AvatarSystem(),
-                    new CollisionSystem(1024),
-                    new EllipsePathSystem(),
-                    new ExpirationSystem(),
-                    new FrictionSystem(),
-                    new IndexSystem(),
-                    new SpinSystem(),
-                    new VelocitySystem()
-                });
-        }
-
-        private static void AddRPGSystems(IManager manager)
-        {
-            manager.AddSystems(
-                new AbstractSystem[]
-                {
-                    new CharacterSystem<AttributeType>(),
-                    new InventorySystem(), 
-                    new StatusEffectSystem()
-                });
         }
 
         private static void AddSpaceServerSystems(IManager manager, Game game)
@@ -118,21 +86,78 @@ namespace Space.Control
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    new AISystem(),
-                    new CellSystem(),
+                    // These systems have to be updated in a specific order to
+                    // function as intended.
+
+                    // Get rid of expired components as soon as we can.
+                    new ExpirationSystem(),
+                    
+                    // Damager should react first when a collision happened.
                     new CollisionDamageSystem(),
-                    new DeathSystem(),
+
+                    // Purely reactive systems (only do stuff when receiving
+                    // messages), but make sure we run them relatively early,
+                    // because other systems may need their updates.
+                    new AvatarSystem(),
+                    new IndexSystem(),
+                    new CharacterSystem<AttributeType>(),
+                    new InventorySystem(), 
+                    new StatusEffectSystem(),
+                    new PlayerMassSystem(),
+                    new ShipInfoSystem(),
                     new DetectableSystem(game.Content),
                     new DropSystem(game.Content),
-                    new GravitationSystem(),
-                    new PlayerMassSystem(),
-                    new RegeneratingValueSystem(),
-                    new ShipControlSystem(),
-                    new ShipInfoSystem(),
-                    new ShipSpawnSystem(),
                     new SpaceUsablesSystem(),
+                    
+                    // Update our universe before our spawn system, to give
+                    // it a chance to generate cell information.
                     new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
-                    new WeaponControlSystem()
+                    new ShipSpawnSystem(),
+
+                    // Friction has to be updated before acceleration is, to allow
+                    // maximum speed to be reached.
+                    new FrictionSystem(),
+
+                    // Apply gravitation before ship control, to allow it to
+                    // compensate for the gravitation.
+                    new GravitationSystem(),
+
+                    // Ship control must come first, but after stuff like gravitation,
+                    // to be able to compute the stabilizer acceleration.
+                    new ShipControlSystem(),
+
+                    // Acceleration must come after ship control, due to it setting
+                    // its value.
+                    new AccelerationSystem(),
+
+                    // Velocity must come after acceleration, so that all other forces
+                    // already have been applied (gravitation).
+                    new VelocitySystem(),
+                    new SpinSystem(),
+                    new EllipsePathSystem(),
+
+                    // Check for collisions after positions have been updated.
+                    new CollisionSystem(1024),
+                    
+                    // Check which cells are active after updating positions.
+                    new CellSystem(),
+                    
+                    // Update this system after updating the cell system, to
+                    // make sure we give cells a chance to 'activate' before
+                    // checking if there are entities inside them.
+                    new DeathSystem(),
+
+                    // Run weapon control after velocity, to spawn projectiles at the
+                    // correct position.
+                    new WeaponControlSystem(),
+
+                    // Energy should be update after it was used, to give it a chance
+                    // to regenerate (e.g. if we're using less than we produce this
+                    // avoids always displaying slightly less than max). Same for health.
+                    new RegeneratingValueSystem(),
+                    
+                    // AI should react after everything else had its turn.
+                    new AISystem(),
                 });
         }
 
@@ -145,12 +170,14 @@ namespace Space.Control
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    new CameraCenteredTextureRenderSystem(game, spriteBatch), 
                     new CameraSystem(game, session),
-                    new ParticleEffectSystem(game, graphicsDevice),
-                    new PlanetRenderSystem(game), 
-                    new PlayerCenteredSoundSystem(soundBank, session), 
-                    new SunRenderSystem(game, spriteBatch)
+
+                    new PlanetRenderSystem(game),
+                    new SunRenderSystem(game, spriteBatch),
+                    new CameraCenteredTextureRenderSystem(game, spriteBatch), // After Planet and Sun (on top).
+                    new ParticleEffectSystem(game, graphicsDevice), // After other RenderSystems (on top).
+
+                    new PlayerCenteredSoundSystem(soundBank, session)
                 });
         }
     }

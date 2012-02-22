@@ -113,7 +113,7 @@ namespace Space.ComponentSystem.Systems
                 if (!Manager.GetSystem<CellSystem>().IsCellActive(cellId))
                 {
                     // Dead space, kill it.
-                    Manager.RemoveEntity(changedMessage.Entity);
+                    //Manager.RemoveEntity(changedMessage.Entity);
                 }
             }
         }

@@ -184,9 +184,10 @@ namespace Engine.ComponentSystem
 
             // Remove all of the components attached to that entity and free up
             // the entity object itself, and release the id.
-            foreach (var component in _entities[entity].Components)
+            var components = _entities[entity].Components;
+            while (components.Count > 0)
             {
-                RemoveComponent(component);
+                RemoveComponent(components[components.Count - 1]);
             }
             ReleaseEntity(_entities[entity]);
             _entities.Remove(entity);
@@ -358,6 +359,10 @@ namespace Engine.ComponentSystem
         /// <param name="message">The sent message.</param>
         public void SendMessage<T>(ref T message) where T : struct
         {
+            foreach (var system in _systems.Values)
+            {
+                system.Receive(ref message);
+            }
         }
 
         #endregion
@@ -787,6 +792,23 @@ namespace Engine.ComponentSystem
             }
 
             /// <summary>
+            /// Gets the first component of the specified type.
+            /// </summary>
+            /// <param name="type">The type.</param>
+            /// <returns>The first component of that type.</returns>
+            public Component GetComponent(Type type)
+            {
+                BuildCache(type);
+                if (TypeCache[type].Count > 0)
+                {
+                    return TypeCache[type][0];
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            /// <summary>
             /// Gets the components of the specified type.
             /// </summary>
             /// <param name="type">The type.</param>
@@ -825,24 +847,6 @@ namespace Engine.ComponentSystem
             }
 
             #endregion
-
-            /// <summary>
-            /// Gets the first component of the specified type.
-            /// </summary>
-            /// <param name="type">The type.</param>
-            /// <returns>The first component of that type.</returns>
-            internal Component GetComponent(Type type)
-            {
-                BuildCache(type);
-                if (TypeCache[type].Count > 0)
-                {
-                    return TypeCache[type][0];
-                }
-                else
-                {
-                    return null;
-                }
-            }
         }
 
         #endregion

@@ -107,6 +107,12 @@ namespace Space.ComponentSystem.Factories
                 character.SetBaseValue(modifier.Type, modifier.Value);
             }
 
+            // Fill up our values.
+            var health = manager.GetComponent<Health>(entity);
+            var energy = manager.GetComponent<Energy>(entity);
+            health.Value = health.MaxValue;
+            energy.Value = energy.MaxValue;
+
             return entity;
         }
 
@@ -121,57 +127,29 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = manager.AddEntity();
 
-            // Draw ships above everything else.
-            var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(Texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
-            renderer.UpdateOrder = 50;
-
-            // Friction has to be updated before acceleration is, to allow
-            // maximum speed to be reached.
-            var friction = manager.AddComponent<Friction>(entity).Initialize(0.01f, 0.02f);
-            friction.UpdateOrder = 10;
-
-            // These components have to be updated in a specific order to
-            // function as intended.
-            // Ship control must come first, but after stuff like gravitation,
-            // to be able to compute the stabilizer acceleration.
-            var shipControl = manager.AddComponent<ShipControl>(entity);
-            shipControl.UpdateOrder = 11;
-
-            // Acceleration must come after ship control, due to it setting
-            // its value.
-            var acceleration = manager.AddComponent<Acceleration>(entity);
-            acceleration.UpdateOrder = 12;
-
-            // Velocity must come after acceleration, so that all other forces
-            // already have been applied (gravitation).
-            var velocity = manager.AddComponent<Velocity>(entity);
-            velocity.UpdateOrder = 13;
-
-            // Run weapon control after velocity, to spawn projectiles at the
-            // correct position.
-            var weaponControl = manager.AddComponent<WeaponControl>(entity);
-            weaponControl.UpdateOrder = 14;
-
-            // Energy should be update after it was used, to give it a chance
-            // to regenerate (e.g. if we're using less than we produce this
-            // avoids always displaying slightly less than max).
-            var energy = manager.AddComponent<Energy>(entity);
-            energy.UpdateOrder = 15;
-
-            // Same for health.
-            var health = manager.AddComponent<Health>(entity).Initialize(120);
-            health.UpdateOrder = 15;
-
-            // Physics related components.
             manager.AddComponent<Transform>(entity).Initialize(position);
+            manager.AddComponent<Friction>(entity).Initialize(0.01f, 0.02f);
+            manager.AddComponent<Acceleration>(entity);
+            manager.AddComponent<Gravitation>(entity);
+            manager.AddComponent<Velocity>(entity);
             manager.AddComponent<Spin>(entity);
+            manager.AddComponent<ShipControl>(entity);
+            manager.AddComponent<WeaponControl>(entity);
+            manager.AddComponent<Energy>(entity);
+            manager.AddComponent<Health>(entity).Initialize(120);
+            manager.AddComponent<TextureRenderer>(entity).Initialize(Texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
+            manager.AddComponent<ParticleEffects>(entity);
 
             // Index component, to register with indexes used for other
             // components.
-            manager.AddComponent<Index>(entity).Initialize(Gravitation.IndexGroup | Detectable.IndexGroup | faction.ToCollisionIndexGroup());
+            manager.AddComponent<Index>(entity).Initialize(
+                Gravitation.IndexGroup |
+                Detectable.IndexGroup |
+                faction.ToCollisionIndexGroup());
 
             // Collision component, to allow colliding with other entities.
-            manager.AddComponent<CollidableSphere>(entity).Initialize(CollisionRadius, faction.ToCollisionGroup());
+            manager.AddComponent<CollidableSphere>(entity)
+                .Initialize(CollisionRadius, faction.ToCollisionGroup());
 
             // Faction component, which allows checking which group the ship
             // belongs to.
@@ -198,10 +176,6 @@ namespace Space.ComponentSystem.Factories
             // Add some character!
             manager.AddComponent<Character<AttributeType>>(entity);
             
-            // Fill up our values.
-            health.SetValue(health.MaxValue);
-            energy.SetValue(energy.MaxValue);
-
             // Do we drop stuff?
             if (ItemPool != null)
             {

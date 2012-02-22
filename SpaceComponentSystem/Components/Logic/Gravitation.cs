@@ -102,7 +102,7 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             GravitationType = GravitationTypes.None;
-            Mass = 0;
+            Mass = 1;
         }
 
         #endregion

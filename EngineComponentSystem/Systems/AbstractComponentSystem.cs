@@ -140,25 +140,9 @@ namespace Engine.ComponentSystem.Systems
             if (component is TComponent)
             {
                 var typedComponent = (TComponent)component;
-
-                // Yes, find the index to insert at.
-                int index = _components.BinarySearch(typedComponent, UpdateOrderComparer.Default);
-                if (index < 0)
+                if (!_components.Contains(typedComponent))
                 {
-                    // Not in list yet, so the complement is the index to
-                    // insert at.
-                    index = ~index;
-
-                    // But place it at the end of components with the same
-                    // priority, so that elements that were added later will
-                    // be updated last.
-                    while ((index < _components.Count) && (_components[index].UpdateOrder == component.UpdateOrder))
-                    {
-                        index++;
-                    }
-
-                    // Got our index, insert.
-                    _components.Insert(index, typedComponent);
+                    _components.Add(typedComponent);
 
                     // Tell subclasses.
                     OnComponentAdded(typedComponent);
@@ -236,42 +220,6 @@ namespace Engine.ComponentSystem.Systems
             }
 
             return copy;
-        }
-
-        #endregion
-
-        #region Comparer
-
-        /// <summary>
-        /// Comparer used for inserting / removal.
-        /// </summary>
-        private sealed class UpdateOrderComparer : IComparer<Component>
-        {
-            public static readonly UpdateOrderComparer Default = new UpdateOrderComparer();
-
-            public int Compare(Component x, Component y)
-            {
-                if ((x == null) && (y == null))
-                {
-                    return 0;
-                }
-                if (x != null)
-                {
-                    if (y == null)
-                    {
-                        return -1;
-                    }
-                    if (x.Equals(y))
-                    {
-                        return 0;
-                    }
-                    if (x.UpdateOrder < y.UpdateOrder)
-                    {
-                        return -1;
-                    }
-                }
-                return 1;
-            }
         }
 
         #endregion

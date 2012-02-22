@@ -85,10 +85,10 @@ namespace Engine.ComponentSystem.RPG.Components
                 // Adjust capacity.
                 _items.Capacity = value;
 
-                // Fill up with zeros.
-                for (int i = _items.Capacity - _items.Count; i > 0; --i)
+                // Fill up with empty slots.
+                while (_items.Capacity > _items.Count)
                 {
-                    _items.Add(0);
+                    _items.Add(null);
                 }
 
                 // Remember our type.

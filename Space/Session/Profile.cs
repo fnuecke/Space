@@ -331,7 +331,10 @@ namespace Space.Session
             }
 
             // Make the actual snapshot via serialization.
-            _data.Dispose();
+            if (_data != null)
+            {
+                _data.Dispose();
+            }
             _data = new Packet();
 
             // Write file version.

@@ -39,12 +39,6 @@ namespace Engine.ComponentSystem.Components
         #region Fields
 
         /// <summary>
-        /// This determines in which order this component will be rendered.
-        /// Components with higher values will be drawn later.
-        /// </summary>
-        public int UpdateOrder;
-
-        /// <summary>
         /// Whether the component is enabled or not. Disabled components will
         /// not be handled in the component's system's <c>Update()</c> method.
         /// </summary>
@@ -68,7 +62,6 @@ namespace Engine.ComponentSystem.Components
 
             Id = other.Id;
             Entity = other.Entity;
-            UpdateOrder = other.UpdateOrder;
             Enabled = other.Enabled;
 
             return this;
@@ -83,7 +76,6 @@ namespace Engine.ComponentSystem.Components
             Manager = null;
             Id = 0;
             Entity = 0;
-            UpdateOrder = 0;
             Enabled = false;
         }
 
@@ -102,7 +94,6 @@ namespace Engine.ComponentSystem.Components
         {
             return packet.Write(Id)
                 .Write(Entity)
-                .Write(UpdateOrder)
                 .Write(Enabled);
         }
 
@@ -115,7 +106,6 @@ namespace Engine.ComponentSystem.Components
             Manager = null;
             Id = packet.ReadInt32();
             Entity = packet.ReadInt32();
-            UpdateOrder = packet.ReadInt32();
             Enabled = packet.ReadBoolean();
         }
 
@@ -128,7 +118,6 @@ namespace Engine.ComponentSystem.Components
         {
             hasher.Put(BitConverter.GetBytes(Id));
             hasher.Put(BitConverter.GetBytes(Entity));
-            hasher.Put(BitConverter.GetBytes(UpdateOrder));
             hasher.Put(BitConverter.GetBytes(Enabled));
         }
 
@@ -144,7 +133,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return GetType().Name + ": Id = " + Id + ", UpdateOrder = " + UpdateOrder + ", Enabled = " + Enabled;
+            return GetType().Name + ": Id = " + Id + ", Enabled = " + Enabled;
         }
 
         #endregion

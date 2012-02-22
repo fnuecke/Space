@@ -15,7 +15,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The current value.
         /// </summary>
-        public float Value { get; protected set; }
+        public float Value { get; set; }
 
         #endregion
 
