@@ -164,10 +164,10 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Equip an item in the specified slot.
         /// </summary>
-        /// <param name="item">The item to equip.</param>
         /// <param name="slot">The slot to equip it in.</param>
+        /// <param name="item">The item to equip.</param>
         /// <returns>The item previously in that slot.</returns>
-        public int? Equip(int item, int slot)
+        public int? Equip(int slot, int item)
         {
             // Check if its really an item.
             var itemComponent = Manager.GetComponent<Item>(item);
@@ -322,10 +322,11 @@ namespace Engine.ComponentSystem.RPG.Components
                 // equipped in.
                 for (int i = 0; i < slots.Length; i++)
                 {
-                    if (slots[i].HasValue)
+                    var item = slots[i];
+                    if (item.HasValue)
                     {
                         packet.Write(i);
-                        packet.Write(slots[i].Value);
+                        packet.Write(item.Value);
                     }
                 }
             }

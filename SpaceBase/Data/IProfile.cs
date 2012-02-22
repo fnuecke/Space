@@ -19,7 +19,7 @@ namespace Space.Data
         /// The profile name. This is equal to the profile's file name.
         /// </summary>
         string Name { get; }
-        
+
         /// <summary>
         /// Creates a new profile with the specified name and the specified
         /// player class.
@@ -33,6 +33,7 @@ namespace Space.Data
         /// Loads this profile from disk. If loading fails this will default to
         /// a new profile with the fall-back character class.
         /// </summary>
+        /// <param name="name">The name.</param>
         /// <exception cref="ArgumentException">profile name is invalid.</exception>
         void Load(string name);
 
@@ -44,9 +45,9 @@ namespace Space.Data
         /// <summary>
         /// Take a snapshot of a character's current state in a running game.
         /// </summary>
-        /// <param name="manager">The component system manager.</param>
         /// <param name="avatar">The avatar to take a snapshot of.</param>
-        void Capture(IManager manager, int avatar);
+        /// <param name="manager">The component system manager.</param>
+        void Capture(int avatar, IManager manager);
 
         /// <summary>
         /// Restores a character snapshot stored in this profile.
@@ -55,6 +56,7 @@ namespace Space.Data
         /// he is restored to.</param>
         /// <param name="manager">The entity manager to add the restored
         /// entities to.</param>
-        void Restore(int playerNumber, IManager manager);
+        /// <returns>The restored avatar.</returns>
+        int Restore(int playerNumber, IManager manager);
     }
 }

@@ -171,5 +171,41 @@ namespace Engine.ComponentSystem
         void SendMessage<T>(ref T message) where T : struct;
         
         #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// Write a complete entity, meaning all its components, to the
+        /// specified packet. Entities saved this way can be restored using
+        /// the <c>ReadEntity()</c> method.
+        /// <para/>
+        /// This uses the components' <c>Packetize</c> facilities.
+        /// </summary>
+        /// <param name="entity">The entity to write.</param>
+        /// <param name="packet">The packet to write to.</param>
+        /// <returns>
+        /// The packet after writing the entity's components.
+        /// </returns>
+        Packet PacketizeEntity(int entity, Packet packet);
+
+        /// <summary>
+        /// Reads an entity from the specified packet, meaning all its
+        /// components. This will create a new entity, with an id that
+        /// may differ from the id the entity had when it was written.
+        /// <para/>
+        /// In particular, all re-created components will likely have different
+        /// different ids as well, so this method is not suited for storing
+        /// components that reference other components, even if just by their
+        /// ID.
+        /// <para/>
+        /// This uses the components' <c>Depacketize</c> facilities.
+        /// </summary>
+        /// <param name="packet">The packet to read the entity from.</param>
+        /// <returns>
+        /// The id of the read entity.
+        /// </returns>
+        int DepacketizeEntity(Packet packet);
+
+        #endregion
     }
 }

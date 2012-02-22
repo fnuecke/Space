@@ -260,7 +260,7 @@ def ge(id):
             // See if there's an item equipped there, currently.
             var equipped = equipment.Unequip(itemType, command.Slot);
             inventory.RemoveAt(command.InventoryIndex);
-            equipment.Equip(item.Value, command.Slot);
+            equipment.Equip(command.Slot, item.Value);
             if (equipped.HasValue)
             {
                 // We unequipped something in the process, add it to the index
@@ -452,7 +452,7 @@ def ge(id):
                         if (!equipment.GetItem(itemType.GetType(), i).HasValue)
                         {
                             // Free slot found, equip it there.
-                            equipment.Equip(item.Value, i);
+                            equipment.Equip(i, item.Value);
                             return;
                         }
                     }
@@ -460,7 +460,7 @@ def ge(id):
                     // No free slot found, swap with the first slot.
                     var equipped = equipment.Unequip(itemType.GetType(), 0);
                     inventory.Insert(command.InventoryIndex, equipped.Value);
-                    equipment.Equip(item.Value, 0);
+                    equipment.Equip(0, item.Value);
                 }
             }
         }

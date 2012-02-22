@@ -82,16 +82,16 @@ namespace Space.ComponentSystem
             var equipment = manager.GetComponent<Equipment>(entity);
 
             var item = FactoryLibrary.SampleItem(manager, "L1_AI_Thruster", random);
-            equipment.Equip(item, 0);
+            equipment.Equip(0, item);
 
             item = FactoryLibrary.SampleItem(manager, "L1_AI_Reactor", random);
-            equipment.Equip(item, 0);
+            equipment.Equip(0, item);
 
             item = FactoryLibrary.SampleItem(manager, "L1_AI_Armor", random);
-            equipment.Equip(item, 0);
+            equipment.Equip(0, item);
 
             item = FactoryLibrary.SampleItem(manager, "L1_AI_Weapon", random);
-            equipment.Equip(item, 0);
+            equipment.Equip(0, item);
 
             return entity;
         }
