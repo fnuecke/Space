@@ -49,16 +49,16 @@ namespace Space.ComponentSystem.Systems
 
         public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
         {
-            var aicommand = new ArtificialIntelligence.AiCommand(targetEntity, 2000, ArtificialIntelligence.Order.Move);
-            EntityFactory.CreateAIShip(Manager, "L1_AI_Ship",
-                faction, startPosition, _random, aicommand);
+            var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
+            var ai = Manager.GetComponent<ArtificialIntelligence>(ship);
+            ai.Attack(targetEntity);
         }
 
         public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
         {
-            var aicommand = new ArtificialIntelligence.AiCommand(targetPosition, 2000, ArtificialIntelligence.Order.Move);
-            EntityFactory.CreateAIShip(Manager, "L1_AI_Ship",
-                faction, startPosition, _random, aicommand);
+            var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
+            var ai = Manager.GetComponent<ArtificialIntelligence>(ship);
+            ai.AttackMove(ref targetPosition);
         }
 
         #endregion
@@ -78,30 +78,26 @@ namespace Space.ComponentSystem.Systems
                 var info = (CellStateChanged)(ValueType)message;
                 if (info.State)
                 {
-                    const int cellSize = CellSystem.CellSize;
-
-                    // Get cell position to offset spawn positions.
-                    Vector2 cellPosition;
-                    cellPosition.X = cellSize * info.X;
-                    cellPosition.Y = cellSize * info.Y;
-
                     // Get the cell info to know what faction we're spawning for.
                     var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
                     
+                    // The area covered by the cell.
+                    Rectangle cellArea;
+                    cellArea.X = CellSystem.CellSize * info.X;
+                    cellArea.Y = CellSystem.CellSize * info.Y;
+                    cellArea.Width = CellSystem.CellSize;
+                    cellArea.Height = CellSystem.CellSize;
+
                     // Create some ships at random positions.
                     for (int i = 0; i < 10; i++)
                     {
                         Vector2 spawnPoint;
-                        spawnPoint.X = (float)(_random.NextDouble() * cellSize + cellPosition.X);
-                        spawnPoint.Y = (float)(_random.NextDouble() * cellSize + cellPosition.Y);
-                        var order = new ArtificialIntelligence.AiCommand(spawnPoint, cellSize >> 1, ArtificialIntelligence.Order.Guard);
-                        EntityFactory.CreateAIShip(
-                            Manager,
-                            "L1_AI_Ship",
-                            cellInfo.Faction,
-                            spawnPoint,
-                            _random,
-                            order);
+                        spawnPoint.X = _random.NextInt32(cellArea.Left, cellArea.Right);
+                        spawnPoint.Y = _random.NextInt32(cellArea.Top, cellArea.Bottom);
+                        var ship = EntityFactory.CreateAIShip(
+                            Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
+                        var ai = Manager.GetComponent<ArtificialIntelligence>(ship);
+                        ai.Roam(ref cellArea);
                     }
                 }
             }

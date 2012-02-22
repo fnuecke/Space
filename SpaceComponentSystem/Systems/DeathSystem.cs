@@ -73,7 +73,7 @@ namespace Space.ComponentSystem.Systems
                 var entity = ((EntityDied)(ValueType)message).Entity;
 
                 // Play explosion effect at point of death.
-                Manager.GetSystem<ParticleSystem>().Play("Effects/BasicExplosion", entity);
+                Manager.GetSystem<ParticleEffectSystem>().Play("Effects/BasicExplosion", entity);
 
                 // See if the entity respawns.
                 var respawn = Manager.GetComponent<Respawn>(entity);

@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Systems
     /// Controls the particle components in a game, passing them some
     /// information about how to render themselves.
     /// </summary>
-    public class ParticleSystem : AbstractComponentSystem<Components.Effect>
+    public class ParticleEffectSystem : AbstractComponentSystem<Components.ParticleEffects>
     {
         #region Fields
 
@@ -46,11 +46,11 @@ namespace Space.ComponentSystem.Systems
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ParticleSystem"/> class.
+        /// Initializes a new instance of the <see cref="ParticleEffectSystem"/> class.
         /// </summary>
         /// <param name="game">The game.</param>
         /// <param name="graphics">The graphics.</param>
-        public ParticleSystem(Game game, IGraphicsDeviceService graphics)
+        public ParticleEffectSystem(Game game, IGraphicsDeviceService graphics)
         {
             _content = game.Content;
             _renderer = new SpriteBatchRenderer();
@@ -110,9 +110,13 @@ namespace Space.ComponentSystem.Systems
         /// <param name="gameTime"></param>
         /// <param name="frame"></param>
         /// <param name="component"></param>
-        protected override void UpdateComponent(GameTime gameTime, long frame, Components.Effect component)
+        protected override void UpdateComponent(GameTime gameTime, long frame, Components.ParticleEffects component)
         {
-            Play(component.EffectName, component.Entity, ref component.Offset);
+            foreach (var effect in component.Effects)
+            {
+                var offset = effect.Item2;
+                Play(effect.Item1, component.Entity, ref offset);
+            }
         }
 
         /// <summary>
@@ -156,6 +160,7 @@ namespace Space.ComponentSystem.Systems
 
             // Let there be sound!
             var effect = GetEffect(effectName);
+            
             effect.Trigger(position);
         }
 
@@ -171,7 +176,10 @@ namespace Space.ComponentSystem.Systems
         /// </remarks>
         public void Play(string effect, int entity, ref Vector2 offset)
         {
-            var position = Manager.GetComponent<Transform>(entity).Translation + offset;
+            var transform = Manager.GetComponent<Transform>(entity);
+            var position = transform.Translation + offset;
+            var rotation = transform.Rotation + MathHelper.Pi;
+
             Play(effect, ref position);
         }
 
@@ -219,7 +227,7 @@ namespace Space.ComponentSystem.Systems
 
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
-            var copy = (ParticleSystem)base.DeepCopy(into);
+            var copy = (ParticleEffectSystem)base.DeepCopy(into);
 
             // Mark as secondary system.
             copy._isDrawingInstance = false;

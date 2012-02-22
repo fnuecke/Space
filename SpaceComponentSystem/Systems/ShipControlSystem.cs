@@ -26,6 +26,7 @@ namespace Space.ComponentSystem.Systems
             var info = Manager.GetComponent<ShipInfo>(component.Entity);
             var weaponControl = Manager.GetComponent<WeaponControl>(component.Entity);
             var acceleration = Manager.GetComponent<Acceleration>(component.Entity);
+            var effects = Manager.GetComponent<ParticleEffects>(component.Entity);
 
             // Get the mass of the ship.
             float mass = info.Mass;
@@ -82,13 +83,35 @@ namespace Space.ComponentSystem.Systems
                 // Get modified acceleration, adjust by our mass.
                 accelerationForce = character.GetValue(AttributeType.AccelerationForce, accelerationForce) / mass;
 
+                // Adjust thruster PFX based on acceleration, if it just started.
+                if (acceleration.Value == Vector2.Zero)
+                {
+                    var numThrusters = info.EquipmentSlotCount<Thruster>();
+                    for (int i = 0; i < numThrusters; i++)
+                    {
+                        var thrusterId = info.EquipmentItemAt<Thruster>(i);
+                        if (thrusterId.HasValue)
+                        {
+                            // TODO: get offset for that item slot and use it
+                            effects.TryAdd("Effects/thruster", Vector2.Zero);
+                        }
+                    }
+                }
+
                 // Apply our acceleration. Use the min to our desired
                 // acceleration so we don't exceed our target.
                 acceleration.Value = accelerationDirection * Math.Min(desiredAcceleration, accelerationForce);
+
             }
             else
             {
-                // Not accelerating.
+                // Not accelerating. Disable thruster effects if we were accelerating before.
+                if (acceleration.Value != Vector2.Zero)
+                {
+                    effects.Remove("Effects/thruster");
+                }
+
+                // Adjust acceleration value.
                 acceleration.Value = Vector2.Zero;
             }
 

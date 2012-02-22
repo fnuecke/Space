@@ -162,11 +162,6 @@ namespace Space.ComponentSystem.Factories
             var health = manager.AddComponent<Health>(entity).Initialize(120);
             health.UpdateOrder = 15;
 
-            // Update effects last, because they are spawned based on the
-            // position.
-            var thruster = manager.AddComponent<ThrusterEffect>(entity).Initialize("Effects/thruster");
-            thruster.UpdateOrder = 16;
-
             // Physics related components.
             manager.AddComponent<Transform>(entity).Initialize(position);
             manager.AddComponent<Spin>(entity);

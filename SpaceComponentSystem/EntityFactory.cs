@@ -48,7 +48,7 @@ namespace Space.ComponentSystem
                 typeof(Gravitation),
                 // Hide it.
                 typeof(TextureRenderer),
-                typeof(ThrusterEffect),
+                typeof(ParticleEffects),
                 // And don't regenerate.
                 typeof(Health),
                 typeof(Energy)

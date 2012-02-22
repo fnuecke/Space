@@ -19,7 +19,7 @@ namespace Space.ComponentSystem.Systems
             }
             else
             {
-                component.Value = Math.Min(component.MaxValue, component.Value + component.Regeneration);
+                component.SetValue(component.Value + component.Regeneration);
             }
         }
 

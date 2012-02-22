@@ -119,7 +119,7 @@
     <Compile Include="Components\Logic\ShipSpawner.cs" />
     <Compile Include="Components\Logic\Target.cs" />
     <Compile Include="Components\Util\Detectable.cs" />
-    <Compile Include="Components\Media\Effect.cs" />
+    <Compile Include="Components\Media\ParticleEffects.cs" />
     <Compile Include="Components\Logic\Energy.cs" />
     <Compile Include="Components\Util\Faction.cs" />
     <Compile Include="Components\Logic\Gravitation.cs" />
@@ -129,7 +129,6 @@
     <Compile Include="Components\Logic\ShipControl.cs" />
     <Compile Include="Components\Util\ShipInfo.cs" />
     <Compile Include="Components\Media\SunRenderer.cs" />
-    <Compile Include="Components\Media\ThrusterEffect.cs" />
     <Compile Include="Components\Logic\WeaponControl.cs" />
     <Compile Include="EntityFactory.cs" />
     <Compile Include="Factories\ArmorFactory.cs" />
@@ -173,7 +172,7 @@
     <Compile Include="Messages\WeaponFired.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\CellSystem.cs" />
-    <Compile Include="Systems\ParticleSystem.cs" />
+    <Compile Include="Systems\ParticleEffectSystem.cs" />
     <Compile Include="Systems\CameraCenteredTextureRenderSystem.cs" />
     <Compile Include="Systems\PlayerCenteredSoundSystem.cs" />
   </ItemGroup>
