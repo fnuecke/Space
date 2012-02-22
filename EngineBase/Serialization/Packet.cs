@@ -15,12 +15,6 @@ namespace Engine.Serialization
     /// </summary>
     public sealed class Packet : IDisposable, IEquatable<Packet>
     {
-        #region
-
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -61,7 +55,7 @@ namespace Engine.Serialization
         /// <param name="data">The data to initialize the packet with.</param>
         public Packet(byte[] data)
         {
-            _stream = new MemoryStream((data == null) ? new byte[0] : data, false);
+            _stream = new MemoryStream(data ?? new byte[0], false);
         }
 
         /// <summary>
@@ -110,7 +104,7 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(bool data)
         {
-            byte[] bytes = BitConverter.GetBytes(data);
+            var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
@@ -133,7 +127,7 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(double data)
         {
-            byte[] bytes = BitConverter.GetBytes(data);
+            var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
@@ -159,13 +153,23 @@ namespace Engine.Serialization
         }
 
         /// <summary>
+        /// Writes the specified rectangle value.
+        /// </summary>
+        /// <param name="data">The value to write.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Write(Rectangle data)
+        {
+            return Write(data.X).Write(data.Y).Write(data.Width).Write(data.Height);
+        }
+
+        /// <summary>
         /// Writes the specified single value.
         /// </summary>
         /// <param name="data">The value to write.</param>
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(float data)
         {
-            byte[] bytes = BitConverter.GetBytes(data);
+            var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
@@ -177,7 +181,7 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(int data)
         {
-            byte[] bytes = BitConverter.GetBytes(data);
+            var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
@@ -189,7 +193,7 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(long data)
         {
-            byte[] bytes = BitConverter.GetBytes(data);
+            var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
@@ -201,7 +205,7 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(short data)
         {
-            byte[] bytes = BitConverter.GetBytes(data);
+            var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
@@ -213,7 +217,7 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(uint data)
         {
-            byte[] bytes = BitConverter.GetBytes(data);
+            var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
@@ -225,7 +229,7 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(ulong data)
         {
-            byte[] bytes = BitConverter.GetBytes(data);
+            var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
@@ -237,7 +241,7 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(ushort data)
         {
-            byte[] bytes = BitConverter.GetBytes(data);
+            var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
         }
@@ -253,30 +257,25 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(byte[] data)
         {
-            if (data == null)
-            {
-                return Write((int)(-1));
-            }
-            else
-            {
-                return Write(data, data.Length);
-            }
+            return data == null ? Write(-1) : Write(data, data.Length);
         }
 
         /// <summary>
         /// Writes the specified length from the specified byte array.
-        /// 
         /// <para>
         /// May be <c>null</c>.
         /// </para>
         /// </summary>
         /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
+        /// <param name="length">The number of bytes to write.</param>
+        /// <returns>
+        /// This packet, for call chaining.
+        /// </returns>
         public Packet Write(byte[] data, int length)
         {
             if (data == null)
             {
-                return Write((int)(-1));
+                return Write(-1);
             }
             else
             {
@@ -314,7 +313,7 @@ namespace Engine.Serialization
         /// Writes the specified object.
         /// 
         /// <para>
-        /// Must be read back using one of the <see cref="ReadPacketizable()"/>
+        /// Must be read back using one of the <see cref="ReadPacketizable{T}"/>
         /// overloads.
         /// </para>
         /// 
@@ -344,7 +343,7 @@ namespace Engine.Serialization
         /// know the actual underlying type is not necessary for reading.
         /// 
         /// <para>
-        /// Must byte read back using <see cref="ReadPacketizableWithTypeInfo()"/>.
+        /// Must byte read back using <see cref="ReadPacketizableWithTypeInfo{T}"/>.
         /// </para>
         /// 
         /// <para>
@@ -376,7 +375,7 @@ namespace Engine.Serialization
         {
             if (data == null)
             {
-                return Write((int)(-1));
+                return Write(-1);
             }
             else
             {
@@ -394,7 +393,7 @@ namespace Engine.Serialization
         /// </summary>
         /// 
         /// <para>
-        /// Must byte read back using <see cref="ReadPacketizablesWithTypeInfo()"/>.
+        /// Must byte read back using <see cref="ReadPacketizablesWithTypeInfo{T}"/>.
         /// </para>
         /// 
         /// <para>
@@ -407,7 +406,7 @@ namespace Engine.Serialization
         {
             if (data == null)
             {
-                return Write((int)(-1));
+                return Write(-1);
             }
             else
             {
@@ -436,7 +435,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read boolean.");
             }
-            byte[] bytes = new byte[sizeof(bool)];
+            var bytes = new byte[sizeof(bool)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToBoolean(bytes, 0);
         }
@@ -468,7 +467,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read single.");
             }
-            byte[] bytes = new byte[sizeof(float)];
+            var bytes = new byte[sizeof(float)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToSingle(bytes, 0);
         }
@@ -485,7 +484,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read double.");
             }
-            byte[] bytes = new byte[sizeof(double)];
+            var bytes = new byte[sizeof(double)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToDouble(bytes, 0);
         }
@@ -520,6 +519,22 @@ namespace Engine.Serialization
         }
 
         /// <summary>
+        /// Reads a rectangle value.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        public Rectangle ReadRectangle()
+        {
+            Rectangle result;
+            result.X = ReadInt32();
+            result.Y = ReadInt32();
+            result.Width = ReadInt32();
+            result.Height = ReadInt32();
+            return result;
+        }
+
+        /// <summary>
         /// Reads an int16 value.
         /// </summary>
         /// <returns>The read value.</returns>
@@ -531,7 +546,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read int16.");
             }
-            byte[] bytes = new byte[sizeof(short)];
+            var bytes = new byte[sizeof(short)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToInt16(bytes, 0);
         }
@@ -548,7 +563,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read int32.");
             }
-            byte[] bytes = new byte[sizeof(int)];
+            var bytes = new byte[sizeof(int)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToInt32(bytes, 0);
         }
@@ -565,7 +580,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read int64.");
             }
-            byte[] bytes = new byte[sizeof(long)];
+            var bytes = new byte[sizeof(long)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToInt64(bytes, 0);
         }
@@ -582,7 +597,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read uint16.");
             }
-            byte[] bytes = new byte[sizeof(ushort)];
+            var bytes = new byte[sizeof(ushort)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToUInt16(bytes, 0);
         }
@@ -599,7 +614,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read uint32.");
             }
-            byte[] bytes = new byte[sizeof(uint)];
+            var bytes = new byte[sizeof(uint)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToUInt32(bytes, 0);
         }
@@ -616,7 +631,7 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read uint64.");
             }
-            byte[] bytes = new byte[sizeof(ulong)];
+            var bytes = new byte[sizeof(ulong)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToUInt64(bytes, 0);
         }
@@ -637,14 +652,14 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read byte[].");
             }
-            int length = ReadInt32();
+            var length = ReadInt32();
             if (length < 0)
             {
                 return null;
             }
             else
             {
-                byte[] bytes = new byte[length];
+                var bytes = new byte[length];
                 _stream.Read(bytes, 0, bytes.Length);
                 return bytes;
             }
@@ -744,7 +759,7 @@ namespace Engine.Serialization
         public T ReadPacketizableWithTypeInfo<T>()
             where T : IPacketizable
         {
-            string type = ReadString();
+            var type = ReadString();
             return ReadPacketizableInto((T)Activator.CreateInstance(Type.GetType(type)));
         }
 
@@ -793,14 +808,14 @@ namespace Engine.Serialization
         private T[] ReadPacketizables<T>(Func<T> reader)
             where T : IPacketizable
         {
-            int numPacketizables = ReadInt32();
+            var numPacketizables = ReadInt32();
             if (numPacketizables < 0)
             {
                 return null;
             }
             else
             {
-                T[] result = new T[numPacketizables];
+                var result = new T[numPacketizables];
                 for (int i = 0; i < numPacketizables; i++)
                 {
                     result[i] = reader();
@@ -815,7 +830,7 @@ namespace Engine.Serialization
 
         public bool PeekBoolean()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadBoolean();
             _stream.Position = position;
             return result;
@@ -823,7 +838,7 @@ namespace Engine.Serialization
 
         public byte PeekByte()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadByte();
             _stream.Position = position;
             return result;
@@ -831,7 +846,7 @@ namespace Engine.Serialization
 
         public float PeekSingle()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadSingle();
             _stream.Position = position;
             return result;
@@ -839,7 +854,7 @@ namespace Engine.Serialization
 
         public double PeekDouble()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadDouble();
             _stream.Position = position;
             return result;
@@ -847,7 +862,7 @@ namespace Engine.Serialization
 
         public short PeekInt16()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadInt16();
             _stream.Position = position;
             return result;
@@ -855,7 +870,7 @@ namespace Engine.Serialization
 
         public int PeekInt32()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadInt32();
             _stream.Position = position;
             return result;
@@ -863,7 +878,7 @@ namespace Engine.Serialization
 
         public long PeekInt64()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadInt64();
             _stream.Position = position;
             return result;
@@ -879,7 +894,7 @@ namespace Engine.Serialization
 
         public uint PeekUInt32()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadUInt32();
             _stream.Position = position;
             return result;
@@ -887,7 +902,7 @@ namespace Engine.Serialization
 
         public ulong PeekUInt64()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadUInt64();
             _stream.Position = position;
             return result;
@@ -895,7 +910,7 @@ namespace Engine.Serialization
 
         public byte[] PeekByteArray()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadByteArray();
             _stream.Position = position;
             return result;
@@ -903,7 +918,7 @@ namespace Engine.Serialization
 
         public Packet PeekPacket()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadPacket();
             _stream.Position = position;
             return result;
@@ -911,7 +926,7 @@ namespace Engine.Serialization
 
         public string PeekString()
         {
-            long position = _stream.Position;
+            var position = _stream.Position;
             var result = ReadString();
             _stream.Position = position;
             return result;
@@ -995,11 +1010,6 @@ namespace Engine.Serialization
             return HasByteArray();
         }
 
-        public bool HasFPoint()
-        {
-            return Available >= (sizeof(long) * 2);
-        }
-
         #endregion
 
         #region Casting
@@ -1034,14 +1044,7 @@ namespace Engine.Serialization
         /// or <c>null</c> if the packet itself was <c>null</c>.</returns>
         public static explicit operator Packet(byte[] value)
         {
-            if (value == null)
-            {
-                return null;
-            }
-            else
-            {
-                return new Packet(value);
-            }
+            return value == null ? null : new Packet(value);
         }
 
         #endregion

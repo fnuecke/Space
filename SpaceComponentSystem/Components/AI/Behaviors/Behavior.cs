@@ -13,7 +13,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
     /// of the AI. For example, it tries to keep the AI away from danger,
     /// and 'automatically' navigates to a desired destination.
     /// </summary>
-    internal abstract class Behavior : IPacketizable, IHashable
+    internal abstract class Behavior : IPacketizable, IHashable, ICopyable<Behavior>
     {
         #region Types
         
@@ -24,18 +24,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         {
             /// <summary>
             /// No behavior at all. Note that this does not mean the AI will
-            /// stop, but that it simply won't change its state anymore. As a
-            /// result of the update method it means we don't want to change
-            /// our state.
+            /// stop, but that it simply won't change its state anymore.
             /// </summary>
             None,
-
-            /// <summary>
-            /// Only used as a result of the update method. Indicates that the
-            /// current behavior has run its course and should be popped from
-            /// the behavior stack.
-            /// </summary>
-            Pop,
 
             /// <summary>
             /// Makes an AI patrol to the nearest friendly station and then
@@ -71,7 +62,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             /// AI moves to a specified point, but checks if it gets in range
             /// of enemy ships it will then attack.
             /// </summary>
-            Patrol,
+            AttackMove,
 
             /// <summary>
             /// AI follows a specified aiComponent and tries to protect it by
@@ -154,13 +145,12 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Behavior"/> class.
-        /// Per default we update roughly every two seconds.
         /// </summary>
-        /// <param name="aiComponent">The ai component.</param>
+        /// <param name="ai">The AI component.</param>
         /// <param name="pollRate">The poll rate.</param>
-        protected Behavior(ArtificialIntelligence aiComponent, int pollRate = 120)
+        protected Behavior(ArtificialIntelligence ai, int pollRate)
         {
-            this.AI = aiComponent;
+            this.AI = ai;
             _pollRate = pollRate;
         }
 
@@ -171,10 +161,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <summary>
         /// Updates the behavior and returns the behavior type to switch to.
         /// </summary>
-        /// <returns>
-        /// The behavior to transition to.
-        /// </returns>
-        public BehaviorType Update()
+        public void Update()
         {
             // Don't update more often than we have to. For example, patrol
             // behaviors should require way fewer updates than attack
@@ -182,15 +169,14 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             if (_ticksToWait > 0)
             {
                 --_ticksToWait;
-                return BehaviorType.None;
+                return;
             }
 
             // Do the behavior specific update.
-            var result = UpdateInternal();
-            if (result != BehaviorType.None)
+            if (!UpdateInternal())
             {
-                // Behavior change, skip this update.
-                return result;
+                // Skip if we don't have to do the rest (e.g. popped self).
+                return;
             }
 
             // No change, wait a bit with the next update.
@@ -223,9 +209,6 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var shipControl = AI.Manager.GetComponent<ShipControl>(AI.Entity);
             shipControl.SetAcceleration(direction);
             shipControl.SetTargetRotation(GetTargetRotation(ref direction));
-
-            // We came here, so nothing changed.
-            return BehaviorType.None;
         }
 
         #endregion
@@ -236,9 +219,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// Behavior specific update logic, e.g. checking for nearby enemies.
         /// </summary>
         /// <returns>
-        /// The behavior to change to.
+        /// Whether to do the rest of the update.
         /// </returns>
-        protected abstract BehaviorType UpdateInternal();
+        protected abstract bool UpdateInternal();
 
         /// <summary>
         /// Figure out where we want to go.
@@ -441,6 +424,36 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         public void Hash(Hasher hasher)
         {
             hasher.Put(BitConverter.GetBytes(_ticksToWait));
+        }
+
+        #endregion
+
+        #region Copying
+        
+        /// <summary>
+        /// Creates a deep copy of the object.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public Behavior DeepCopy()
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public virtual Behavior DeepCopy(Behavior into)
+        {
+            if (into.GetType() != GetType())
+            {
+                throw new ArgumentException("Invalid instance, type mismatch.", "into");
+            }
+
+            into._ticksToWait = _ticksToWait;
+
+            return into;
         }
 
         #endregion

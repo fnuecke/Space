@@ -56,14 +56,19 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// Behavior specific update logic, e.g. checking for nearby enemies.
         /// </summary>
         /// <returns>
-        /// The behavior to change to.
+        /// Whether to do the rest of the update.
         /// </returns>
-        protected override BehaviorType UpdateInternal()
+        protected override bool UpdateInternal()
         {
+            // Get our ship control.
+            var control = AI.Manager.GetComponent<ShipControl>(AI.Entity);
+
             // If our target died, we're done here.
             if (!AI.Manager.HasEntity(Target))
             {
-                return BehaviorType.Pop;
+                control.Shooting = false;
+                AI.PopBehavior();
+                return false;
             }
 
             // Get our position.
@@ -76,7 +81,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                 {
                     // Yeah, that's it, let's give up and return to what we
                     // were doing before.
-                    return BehaviorType.Pop;
+                    control.Shooting = false;
+                    AI.PopBehavior();
+                    return false;
                 }
             }
             else
@@ -87,7 +94,6 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
 
             // Get our ship info.
             var info = AI.Manager.GetComponent<ShipInfo>(AI.Entity);
-            var control = AI.Manager.GetComponent<ShipControl>(AI.Entity);
 
             // Target still lives, see how far away it is.
             var targetPosition = AI.Manager.GetComponent<Transform>(Target).Translation;
@@ -97,8 +103,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var weaponRange = info.WeaponRange + WeaponRangeEpsilon;
             control.Shooting = (toTarget.LengthSquared() < weaponRange * weaponRange);
 
-            // Target's not dead yet, so no change.
-            return BehaviorType.None;
+            // All OK.
+            return true;
         }
 
         #endregion

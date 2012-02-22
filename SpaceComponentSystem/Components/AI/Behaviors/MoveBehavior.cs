@@ -1,74 +1,116 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors
 {
-    sealed class MoveBehavior : Behavior
+    /// <summary>
+    /// Makes an AI move to a specified location without letting itself be
+    /// interrupted.
+    /// </summary>
+    internal class MoveBehavior : Behavior
     {
+        #region Constants
 
-        public Vector2 TargetPosition;
+        /// <summary>
+        /// Consider our target reached when we're in an epsilon range with
+        /// this radius of the target position.
+        /// </summary>
+        private const float ReachedEpsilon = 100;
 
-        public int Target;
+        #endregion
 
-        public MoveBehavior(AI component)
-            : base(component)
+        #region Fields
+
+        /// <summary>
+        /// The position to move to.
+        /// </summary>
+        public Vector2 Target;
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MoveBehavior"/> class.
+        /// </summary>
+        /// <param name="ai">The ai.</param>
+        public MoveBehavior(ArtificialIntelligence ai)
+            : base(ai, 180)
         {
-
         }
 
-        public override void Update()
-        {
-            var info = AI.Entity.GetComponent<ShipInfo>();
-            var input = AI.Entity.GetComponent<ShipControl>();
+        #endregion
 
-            var position = info.Position;
-            if (Target == 0)
-                Direction = TargetPosition - position;
-            else
+        #region Logic
+
+        /// <summary>
+        /// Check if we reached our target.
+        /// </summary>
+        /// <returns>
+        /// Whether to do the rest of the update.
+        /// </returns>
+        protected override bool UpdateInternal()
+        {
+            var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
+            if ((Target - position).LengthSquared() < ReachedEpsilon * ReachedEpsilon)
             {
-                var target = AI.Entity.Manager.GetEntity(Target);
-                var transform = target.GetComponent<Transform>();
-                Direction = transform.Translation - position;
+                // We have reached our target, pop self.
+                AI.PopBehavior();
+                return false;
             }
-            if(Direction != Vector2.Zero)
-                Direction.Normalize();
 
-            //look to flight direction
-            input.SetTargetRotation((float)Math.Atan2(Direction.Y, Direction.X));
-
-            var escapeDir = CalculateEscapeDirection();
-            Direction += 2 * escapeDir;
-            
-            input.SetAcceleration(Direction);
+            return true;
         }
 
-        public override Engine.Serialization.Packet Packetize(Engine.Serialization.Packet packet)
+        #endregion
+
+        #region Serialization
+        
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(TargetPosition)
                 .Write(Target);
         }
 
-        public override void Depacketize(Engine.Serialization.Packet packet)
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Packet packet)
         {
             base.Depacketize(packet);
 
-            TargetPosition = packet.ReadVector2();
-            Target = packet.ReadInt32();
+            Target = packet.ReadVector2();
         }
 
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>
+        /// The copy.
+        /// </returns>
         public override Behavior DeepCopy(Behavior into)
         {
-            var copy = (MoveBehavior)base.DeepCopy(into);
+            base.DeepCopy(into);
 
-            if (copy == into)
-            {
-                copy.TargetPosition = TargetPosition;
-                copy.Target = Target;
-            }
+            ((MoveBehavior)into).Target = Target;
 
-            return copy;
+            return into;
         }
+
+        #endregion
     }
 }

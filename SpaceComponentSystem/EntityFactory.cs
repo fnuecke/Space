@@ -65,11 +65,10 @@ namespace Space.ComponentSystem
         /// <param name="faction">The faction the ship will belong to.</param>
         /// <param name="position">The position.</param>
         /// <param name="random">The random.</param>
-        /// <param name="command">The command.</param>
         /// <returns>
         /// The new ship.
         /// </returns>
-        public static int CreateAIShip(IManager manager, string blueprint, Factions faction, Vector2 position, IUniformRandom random, ArtificialIntelligence.AiCommand command)
+        public static int CreateAIShip(IManager manager, string blueprint, Factions faction, Vector2 position, IUniformRandom random)
         {
             var entity = FactoryLibrary.SampleShip(manager, blueprint, faction, position, random);
 
@@ -78,7 +77,7 @@ namespace Space.ComponentSystem
 
             var input = manager.GetComponent<ShipControl>(entity);
             input.Stabilizing = true;
-            manager.AddComponent<ArtificialIntelligence>(entity).Initialize(command);
+            manager.AddComponent<ArtificialIntelligence>(entity);
 
             var equipment = manager.GetComponent<Equipment>(entity);
 
