@@ -268,11 +268,11 @@ namespace Space.Session
             }
 
             // Get the elements we need to save.
-            var playerClass = avatar.GetComponent<PlayerClass>();
-            var respawn = avatar.GetComponent<Respawn>();
-            var character = avatar.GetComponent<Character<AttributeType>>();
-            var equipment = avatar.GetComponent<Equipment>();
-            var inventory = avatar.GetComponent<Inventory>();
+            var playerClass = avatar.GetComponents<PlayerClass>();
+            var respawn = avatar.GetComponents<Respawn>();
+            var character = avatar.GetComponents<Character<AttributeType>>();
+            var equipment = avatar.GetComponents<Equipment>();
+            var inventory = avatar.GetComponents<Inventory>();
             var manager = avatar.Manager;
 
             // Check if we have everything we need.

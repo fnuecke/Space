@@ -37,7 +37,9 @@ namespace Engine.ComponentSystem
         /// Add the specified system to this manager.
         /// </summary>
         /// <param name="system">The system to add.</param>
-        /// <returns>This manager, for chaining.</returns>
+        /// <returns>
+        /// This manager, for chaining.
+        /// </returns>
         IManager AddSystem(AbstractSystem system);
 
         /// <summary>
@@ -50,14 +52,18 @@ namespace Engine.ComponentSystem
         /// Removes the specified system from this manager.
         /// </summary>
         /// <param name="system">The system to remove.</param>
-        /// <returns>Whether the system was successfully removed.</returns>
+        /// <returns>
+        /// Whether the system was successfully removed.
+        /// </returns>
         bool RemoveSystem(AbstractSystem system);
 
         /// <summary>
         /// Get a system of the specified type.
         /// </summary>
         /// <typeparam name="T">The type of the system to get.</typeparam>
-        /// <returns>The system with the specified type.</returns>
+        /// <returns>
+        /// The system with the specified type.
+        /// </returns>
         T GetSystem<T>() where T : AbstractSystem;
         
         #endregion
@@ -67,14 +73,18 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Creates a new entity and returns its ID.
         /// </summary>
-        /// <returns>The id of the new entity.</returns>
+        /// <returns>
+        /// The id of the new entity.
+        /// </returns>
         int AddEntity();
 
         /// <summary>
         /// Test whether the specified entity exists.
         /// </summary>
         /// <param name="entity">The entity to check for.</param>
-        /// <returns>Whether the manager contains the entity or not.</returns>
+        /// <returns>
+        /// Whether the manager contains the entity or not.
+        /// </returns>
         bool HasEntity(int entity);
 
         /// <summary>
@@ -88,14 +98,18 @@ namespace Engine.ComponentSystem
         /// </summary>
         /// <typeparam name="T">The type of component to create.</typeparam>
         /// <param name="entity">The entity to attach the component to.</param>
-        /// <returns>The new component.</returns>
+        /// <returns>
+        /// The new component.
+        /// </returns>
         T AddComponent<T>(int entity) where T : Component, new();
-        
+
         /// <summary>
         /// Test whether the component with the specified id exists.
         /// </summary>
         /// <param name="componentId">The id of the component to check for.</param>
-        /// <returns>Whether the manager contains the component or not.</returns>
+        /// <returns>
+        /// Whether the manager contains the component or not.
+        /// </returns>
         bool HasComponent(int componentId);
 
         /// <summary>
@@ -109,30 +123,41 @@ namespace Engine.ComponentSystem
         /// </summary>
         /// <typeparam name="T">The type of component to get.</typeparam>
         /// <param name="entity">The entity to get the component of.</param>
-        /// <returns>The component.</returns>
+        /// <returns>
+        /// The component.
+        /// </returns>
         T GetComponent<T>(int entity) where T : Component;
 
         /// <summary>
-        /// Gets the component of the specified type for an entity.
+        /// Gets a component of the specified type for an entity. If there are
+        /// multiple components of the same type attached to the entity, use
+        /// the <c>index</c> parameter to select which one to get.
         /// </summary>
         /// <param name="entity">The entity to get the component of.</param>
         /// <param name="type">The type of the component to get.</param>
-        /// <returns>The component.</returns>
+        /// <returns>
+        /// The component.
+        /// </returns>
         Component GetComponent(int entity, Type type);
 
         /// <summary>
         /// Get a component by its id.
         /// </summary>
         /// <param name="componentId">The if of the component to retrieve.</param>
-        /// <returns>The component with the specified id.</returns>
+        /// <returns>
+        /// The component with the specified id.
+        /// </returns>
         Component GetComponentById(int componentId);
 
         /// <summary>
         /// Allows enumerating over all components of the specified entity.
         /// </summary>
+        /// <typeparam name="T">The type of component to iterate.</typeparam>
         /// <param name="entity">The entity for which to get the components.</param>
-        /// <returns>An enumerable listing all components of that entity.</returns>
-        IEnumerable<Component> GetComponents(int entity);
+        /// <returns>
+        /// An enumerable listing all components of that type of that entity.
+        /// </returns>
+        IEnumerable<T> GetComponents<T>(int entity) where T : Component;
         
         #endregion
 
@@ -141,6 +166,7 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Inform all interested systems of a message.
         /// </summary>
+        /// <typeparam name="T">The type of the message.</typeparam>
         /// <param name="message">The sent message.</param>
         void SendMessage<T>(ref T message) where T : struct;
         

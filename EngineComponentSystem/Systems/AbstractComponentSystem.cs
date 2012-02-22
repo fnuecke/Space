@@ -122,7 +122,8 @@ namespace Engine.ComponentSystem.Systems
             }
             else if (message is EntityRemoved)
             {
-                foreach (var component in Manager.GetComponents(((EntityRemoved)(ValueType)message).Entity))
+                var entity = ((EntityRemoved)(ValueType)message).Entity;
+                foreach (var component in Manager.GetComponents<TComponent>(entity))
                 {
                     TryRemove(component);
                 }
@@ -223,13 +224,13 @@ namespace Engine.ComponentSystem.Systems
         {
             // Get something to start with.
             var copy = (AbstractComponentSystem<TComponent>)base.DeepCopy(into);
-            
+
             if (copy == into)
             {
                 copy._components.Clear();
             }
             else
-            { 
+            {
                 copy._components = new List<TComponent>();
                 copy._updatingComponents = new List<TComponent>();
             }

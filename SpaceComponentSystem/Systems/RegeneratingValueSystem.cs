@@ -29,12 +29,10 @@ namespace Space.ComponentSystem.Systems
 
             if (message is CharacterStatsInvalidated)
             {
-                foreach (var component in Manager.GetComponents(((CharacterStatsInvalidated)(ValueType)message).Entity))
+                var entity = ((CharacterStatsInvalidated)(ValueType)message).Entity;
+                foreach (var component in Manager.GetComponents<AbstractRegeneratingValue>(entity))
                 {
-                    if (component is AbstractRegeneratingValue)
-                    {
-                        ((AbstractRegeneratingValue)component).RecomputeValues();
-                    }
+                    component.RecomputeValues();
                 }
             }
         }

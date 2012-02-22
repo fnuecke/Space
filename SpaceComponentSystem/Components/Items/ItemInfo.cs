@@ -87,19 +87,14 @@ namespace Space.ComponentSystem.Components
                 var type = AttributeType.None;
 
                 // Go through all attributes and calculate highest ranking.
-                foreach (var component in Manager.GetComponents(Entity))
+                foreach (var component in Manager.GetComponents<Attribute<AttributeType>>(Entity))
                 {
-                    if (!(component is Attribute<AttributeType>))
-                    {
-                        continue;
-                    }
-
                     // Check if we have a new max value.
-                    var attribute = ((Attribute<AttributeType>)component).Modifier;
-                    if (attribute.Type.GetValue(attribute.Value) > maxValue)
+                    var modifier = component.Modifier;
+                    if (modifier.Type.GetValue(modifier.Value) > maxValue)
                     {
-                        maxValue = attribute.Type.GetValue(attribute.Value);
-                        type = attribute.Type;
+                        maxValue = modifier.Type.GetValue(modifier.Value);
+                        type = modifier.Type;
                     }
                 }
                 if (type != AttributeType.None)
@@ -121,12 +116,9 @@ namespace Space.ComponentSystem.Components
             // Add attributes.
             descripton.Attributes = descripton.Attributes ?? new List<AttributeModifier<AttributeType>>();
             descripton.Attributes.Clear();
-            foreach (var component in Manager.GetComponents(Entity))
+            foreach (var component in Manager.GetComponents<Attribute<AttributeType>>(Entity))
             {
-                if (component is Attribute<AttributeType>)
-                {
-                    descripton.Attributes.Add(((Attribute<AttributeType>)component).Modifier);
-                }
+                descripton.Attributes.Add(component.Modifier);
             }
 
             // If it's a weapon, flag that and add info.

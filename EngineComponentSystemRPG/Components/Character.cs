@@ -159,43 +159,37 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 foreach (var item in equipment.AllItems)
                 {
-                    foreach (var component in Manager.GetComponents(item))
+                    foreach (var component in Manager.GetComponents<Attribute<TAttribute>>(item))
                     {
-                        if (component is Attribute<TAttribute>)
+                        var modifier = component.Modifier;
+                        switch (modifier.ComputationType)
                         {
-                            var attribute = ((Attribute<TAttribute>)component).Modifier;
-                            switch (attribute.ComputationType)
-                            {
-                                case AttributeComputationType.Additive:
-                                    _reusableAdditiveList.Add(attribute);
-                                    break;
+                            case AttributeComputationType.Additive:
+                                _reusableAdditiveList.Add(modifier);
+                                break;
 
-                                case AttributeComputationType.Multiplicative:
-                                    _reusableMultiplicativeList.Add(attribute);
-                                    break;
-                            }
+                            case AttributeComputationType.Multiplicative:
+                                _reusableMultiplicativeList.Add(modifier);
+                                break;
                         }
                     }
                 }
             }
 
             // Parse all status effects.
-            foreach (var component in Manager.GetComponents(Entity))
+            foreach (var component in Manager.GetComponents<AttributeStatusEffect<TAttribute>>(Entity))
             {
-                if (component is AttributeStatusEffect<TAttribute>)
+                foreach (var modifier in component.Modifiers)
                 {
-                    foreach (var attribute in ((AttributeStatusEffect<TAttribute>)component).Modifiers)
+                    switch (modifier.ComputationType)
                     {
-                        switch (attribute.ComputationType)
-                        {
-                            case AttributeComputationType.Additive:
-                                _reusableAdditiveList.Add(attribute);
-                                break;
+                        case AttributeComputationType.Additive:
+                            _reusableAdditiveList.Add(modifier);
+                            break;
 
-                            case AttributeComputationType.Multiplicative:
-                                _reusableMultiplicativeList.Add(attribute);
-                                break;
-                        }
+                        case AttributeComputationType.Multiplicative:
+                            _reusableMultiplicativeList.Add(modifier);
+                            break;
                     }
                 }
             }
