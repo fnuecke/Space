@@ -16,7 +16,7 @@ namespace Space.Control
     /// <summary>
     /// The game server, handling everything client logic related.
     /// </summary>
-    public class GameClient : GameComponent
+    public sealed class GameClient : GameComponent
     {
         #region Logger
         
@@ -222,7 +222,11 @@ namespace Space.Control
         /// </summary>
         public void Save()
         {
-            Settings.Instance.CurrentProfile.Capture(Controller.Simulation.Manager, GetPlayerShipInfo().Entity);
+            var avatar = GetPlayerShipInfo();
+            if (avatar != null)
+            {
+                Settings.Instance.CurrentProfile.Capture(avatar.Entity, Controller.Simulation.Manager);
+            }
             Settings.Instance.CurrentProfile.Save();
             _lastSave = DateTime.Now;
         }

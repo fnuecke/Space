@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using System.Text;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -29,7 +28,7 @@ namespace Space
     {
         #region Logger
 
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -69,24 +68,24 @@ namespace Space
 
         #region Fields
 
-        private List<IGameComponent> _componentsToDispose = new List<IGameComponent>();
+        private readonly List<IGameComponent> _componentsToDispose = new List<IGameComponent>();
 
         /// <summary>
         /// The input manager used throughout this game.
         /// </summary>
-        private InputManager _inputManager;
+        private readonly InputManager _inputManager;
 
         private RenderTarget2D _scene;
         private SpriteBatch _spriteBatch;
-        private ScreenManager _screenManager;
-        private GameConsole _console;
-        private GameConsoleTarget _consoleLoggerTarget;
+        private readonly ScreenManager _screenManager;
+        private readonly GameConsole _console;
+        private readonly GameConsoleTarget _consoleLoggerTarget;
 
         private AudioEngine _audioEngine;
         private WaveBank _waveBank;
         private SoundBank _soundBank;
 
-        private DoubleSampling _fps = new DoubleSampling(30);
+        private readonly DoubleSampling _fps = new DoubleSampling(30);
 
         #endregion
 
@@ -94,26 +93,25 @@ namespace Space
 
         public Spaaace()
         {
-            logger.Info("Starting up program...");
+            Logger.Info("Starting up program...");
 
             // Load settings. Save on exit.
             Settings.Load(SettingsFile);
-            Exiting += (object sender, EventArgs e) =>
+            Exiting += (sender, e) =>
             {
-                logger.Info("Shutting down program...");
+                Logger.Info("Shutting down program...");
                 Settings.Save(SettingsFile);
             };
 
             // Set up display.
-            GraphicsDeviceManager = new GraphicsDeviceManager(this);
-            GraphicsDeviceManager.PreferredBackBufferWidth = Settings.Instance.ScreenWidth;
-            GraphicsDeviceManager.PreferredBackBufferHeight = Settings.Instance.ScreenHeight;
-            GraphicsDeviceManager.IsFullScreen = Settings.Instance.Fullscreen;
+            GraphicsDeviceManager = new GraphicsDeviceManager(this)
+                                    {
+                                        PreferredBackBufferWidth = Settings.Instance.ScreenWidth,
+                                        PreferredBackBufferHeight = Settings.Instance.ScreenHeight,
+                                        IsFullScreen = Settings.Instance.Fullscreen,
+                                        SynchronizeWithVerticalRetrace = true
+                                    };
 
-            // We really want to do this, because it keeps the game from running at one billion
-            // frames per second -- which sounds fun, but isn't, because game states won't update
-            // properly anymore (because elapsed time since last step will always appear to be zero).
-            GraphicsDeviceManager.SynchronizeWithVerticalRetrace = true;
 
             // XNAs fixed time step implementation doesn't suit us, to be gentle.
             // So we let it be dynamic and adjust for it as necessary, leading
@@ -121,10 +119,12 @@ namespace Space
             IsFixedTimeStep = false;
 
             // Create our own, localized content manager.
-            Content = new LocalizedContentManager(Services);
+            Content = new LocalizedContentManager(Services)
+                      {
+                          RootDirectory = "data"
+                      };
 
             // Remember to keep this in sync with the content project.
-            Content.RootDirectory = "data";
 
             // Get locale for localized content.
             CultureInfo culture;
@@ -144,14 +144,13 @@ namespace Space
             Window.Title = "Space. The Game. Seriously.";
             IsMouseVisible = true;
 
-            Components.ComponentRemoved += delegate(object sender, GameComponentCollectionEventArgs e)
-            {
-                _componentsToDispose.Add(e.GameComponent);
-            };
+            Components.ComponentRemoved += (sender, e) => _componentsToDispose.Add(e.GameComponent);
 
             // Initialize input.
-            _inputManager = new InputManager(Services, Window.Handle);
-            _inputManager.UpdateOrder = 0;
+            _inputManager = new InputManager(Services, Window.Handle)
+                            {
+                                UpdateOrder = 0
+                            };
             Components.Add(_inputManager);
 
             // Get our input devices.
@@ -185,9 +184,11 @@ namespace Space
             Components.Add(_console);
 
             // Create the screen manager component.
-            _screenManager = new ScreenManager(this);
-            // Update after input manager.
-            _screenManager.UpdateOrder = 10;
+            _screenManager = new ScreenManager(this)
+                             {
+                                 // Update after input manager.
+                                 UpdateOrder = 10
+                             };
             Components.Add(_screenManager);
 
             // Activate the first screens.
@@ -254,16 +255,11 @@ namespace Space
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
             // the game has crashed.
-            _console.LineWritten += delegate(object sender, EventArgs e)
-            {
-                Console.WriteLine(((LineWrittenEventArgs)e).Message);
-            };
+            _console.LineWritten += (sender, e) => Console.WriteLine(((LineWrittenEventArgs)e).Message);
         }
 
         protected override void Dispose(bool disposing)
         {
-            base.Dispose(disposing);
-
             if (disposing)
             {
                 _inputManager.Dispose();
@@ -293,6 +289,8 @@ namespace Space
                     _scene.Dispose();
                 }
             }
+
+            base.Dispose(disposing);
         }
 
         /// <summary>
@@ -342,7 +340,7 @@ namespace Space
             }
             catch (InvalidOperationException ex)
             {
-                logger.ErrorException("Failed initializing AudioEngine.", ex);
+                Logger.ErrorException("Failed initializing AudioEngine.", ex);
             }
 
             // Set up the render target into which we'll draw everything (to
@@ -495,10 +493,9 @@ namespace Space
                     }
 
                     var session = client.Controller.Session;
-                    var entityManager = client.Controller.Simulation.EntityManager;
-                    var systemManager = entityManager.SystemManager;
+                    var manager = client.Controller.Simulation.Manager;
 
-                    StringBuilder sb = new System.Text.StringBuilder();
+                    var sb = new System.Text.StringBuilder();
 
                     // Draw session info and netgraph.
                     var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 240, GraphicsDevice.Viewport.Height - 180);
@@ -518,17 +515,15 @@ namespace Space
                         var cellY = ((int)position.Y) >> Space.ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
                         sb.AppendFormat("Position: ({0:f}, {1:f}), Cell: ({2}, {3})\n", position.X, position.Y, cellX, cellY);
 
-                        var cellId = CoordinateIds.Combine(cellX, cellY);
-
                         sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
 
-                        var index = systemManager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
-                        var renderer = systemManager.GetSystem<ComponentSystem.Systems.CameraCenteredTextureRenderSystem>();
+                        var index = manager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
+                        var camera = manager.GetSystem<ComponentSystem.Systems.CameraSystem>();
                         if (index != null)
                         {
                             if (_indexGroup >= 0)
                             {
-                                index.DEBUG_DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2) - renderer.CameraPositon);
+                                index.DEBUG_DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon);
                             }
                             sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
                         }
@@ -569,7 +564,7 @@ namespace Space
         [STAThread]
         static void Main(string[] args)
         {
-            using (Spaaace game = new Spaaace())
+            using (var game = new Spaaace())
             {
                 game.Run();
             }

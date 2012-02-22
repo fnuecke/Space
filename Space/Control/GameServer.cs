@@ -10,14 +10,14 @@ namespace Space.Control
     /// <summary>
     /// The game server, handling everything server logic related.
     /// </summary>
-    public class GameServer : GameComponent
+    public sealed class GameServer : GameComponent
     {
         #region Properties
         
         /// <summary>
         /// The controller in use by this game server.
         /// </summary>
-        public ISimulationController<IServerSession> Controller { get; set; }
+        public ISimulationController<IServerSession> Controller { get; private set; }
 
         #endregion
 
@@ -91,9 +91,12 @@ namespace Space.Control
         private void HandlePlayerLeft(object sender, PlayerEventArgs e)
         {
             // Player left the game, remove his ship.
-            var avatarSystem = Controller.Simulation.EntityManager.SystemManager.GetSystem<AvatarSystem>();
+            var avatarSystem = Controller.Simulation.Manager.GetSystem<AvatarSystem>();
             var ship = avatarSystem.GetAvatar(e.Player.Number);
-            Controller.Simulation.EntityManager.RemoveEntity(ship.UID);
+            if (ship.HasValue)
+            {
+                Controller.Simulation.Manager.RemoveEntity(ship.Value);
+            }
         }
         
         /// <summary>

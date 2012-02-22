@@ -27,11 +27,12 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
 
         public override Item ItemAt(int id)
         {
-            if (_client.GetPlayerShipInfo().EquipmentItemAt<T>(id) == null)
+            var item = _client.GetPlayerShipInfo().EquipmentItemAt<T>(id);
+            if (!item.HasValue)
             {
                 return null;
             }
-            return _client.GetPlayerShipInfo().EquipmentItemAt<T>(id).GetComponent<Item>();
+            return _client.GetComponent<Item>(item.Value);
         }
 
     }

@@ -674,7 +674,10 @@ namespace Space.Session
         {
             Name = packet.ReadString();
             PlayerClass = (PlayerClassType)packet.ReadByte();
-            _data.Dispose();
+            if (_data != null)
+            {
+                _data.Dispose();
+            }
             _data = packet.ReadPacket();
         }
 

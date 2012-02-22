@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
@@ -15,7 +16,7 @@ namespace Engine.ComponentSystem
     public sealed class Manager : IManager
     {
         #region Fields
-        
+
         /// <summary>
         /// Lookup table for quick access to component by type.
         /// </summary>
@@ -75,7 +76,7 @@ namespace Engine.ComponentSystem
                 system.Draw(gameTime, frame);
             }
         }
-        
+
         #endregion
 
         #region Systems
@@ -135,7 +136,8 @@ namespace Engine.ComponentSystem
         /// </returns>
         public T GetSystem<T>() where T : AbstractSystem
         {
-            return (T)_systems[typeof(T)];
+            var type = typeof(T);
+            return _systems.ContainsKey(type) ? (T)_systems[type] : null;
         }
 
         #endregion
@@ -222,7 +224,7 @@ namespace Engine.ComponentSystem
 
             // Add to entity index.
             _entities[entity].Add(component);
-            
+
             // Send a message to all interested systems.
             ComponentAdded message;
             message.Component = component;
@@ -307,8 +309,7 @@ namespace Engine.ComponentSystem
                 throw new ArgumentException("No such entity in the system.", "entity");
             }
 
-            var components = _entities[entity].GetComponents(type);
-            return components.Count > 0 ? components[0] : null;
+            return _entities[entity].GetComponent(type);
         }
 
         /// <summary>
@@ -343,9 +344,9 @@ namespace Engine.ComponentSystem
                 throw new ArgumentException("No such entity in the system.", "entity");
             }
 
-            return (IEnumerable<T>)_entities[entity].GetComponents(typeof(T));
+            return _entities[entity].GetComponents<T>();
         }
-        
+
         #endregion
 
         #region Messaging
@@ -737,7 +738,7 @@ namespace Engine.ComponentSystem
         private sealed class Entity
         {
             #region Fields
-            
+
             /// <summary>
             /// List of all components attached to this entity.
             /// </summary>
@@ -751,7 +752,7 @@ namespace Engine.ComponentSystem
             #endregion
 
             #region Accessors
-            
+
             /// <summary>
             /// Adds the specified component.
             /// </summary>
@@ -790,10 +791,11 @@ namespace Engine.ComponentSystem
             /// </summary>
             /// <param name="type">The type.</param>
             /// <returns></returns>
-            public List<Component> GetComponents(Type type)
+            public IEnumerable<T> GetComponents<T>() where T : Component
             {
+                var type = typeof(T);
                 BuildCache(type);
-                return TypeCache[type];
+                return TypeCache[type].Cast<T>();
             }
 
             #endregion
@@ -823,6 +825,24 @@ namespace Engine.ComponentSystem
             }
 
             #endregion
+
+            /// <summary>
+            /// Gets the first component of the specified type.
+            /// </summary>
+            /// <param name="type">The type.</param>
+            /// <returns>The first component of that type.</returns>
+            internal Component GetComponent(Type type)
+            {
+                BuildCache(type);
+                if (TypeCache[type].Count > 0)
+                {
+                    return TypeCache[type][0];
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         #endregion

@@ -146,27 +146,27 @@ namespace Space.ScreenManagement.Screens.Ingame.Hud
                     var item = ItemAt(i);
                     if (item != null)
                     {
-                        
+                        var itemInfo = _client.GetComponent<ItemInfo>(item.Entity);
                         // TODO: item.Name is the id, convert it to a localized display string, ideally taking into account modifiers for prefixes suffixes (stupid armor of the nerd).
-                            var localizedName = item.GetDisplayName();
-                            _fonts.DrawString(Fonts.Types.ConsoleFont, localizedName, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                        var localizedName = itemInfo.Name;
+                        _fonts.DrawString(Fonts.Types.ConsoleFont, localizedName, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                        line++;
+                        var localizedDescription = ItemDescriptions.ResourceManager.GetString(item.Name);
+                        if (localizedDescription != null)
+                        {
+                            _fonts.DrawString(Fonts.Types.ConsoleFont, localizedDescription, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
                             line++;
-                            var localizedDescription = ItemDescriptions.ResourceManager.GetString(item.Name);
-                            if (localizedDescription != null)
-                            {
-                                _fonts.DrawString(Fonts.Types.ConsoleFont, localizedDescription, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
-                                line++;
-                            }
-                            var stackable = item.Entity.GetComponent<Stackable>();
-                            if (stackable != null)
-                            {
-                                _fonts.DrawString(Fonts.Types.ConsoleFont, stackable.Count + "/" + stackable.MaxCount, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
-                                line++;
-                            }
+                        }
+                        var stackable = _client.GetComponent<Stackable>(item.Entity);
+                        if (stackable != null)
+                        {
+                            _fonts.DrawString(Fonts.Types.ConsoleFont, stackable.Count + "/" + stackable.MaxCount, new Vector2(_scale.X(WestX(i)) + IconSize + 20, _scale.Y(NorthY(i)) + line * 12), Color.White);
+                            line++;
+                        }
                         var spaceItem = item as SpaceItem;
                         if (spaceItem != null)
                         {
-                            spaceItem.GetDescription(ref description);
+                            itemInfo.GetDescription(ref description);
                             var attributes = description.Attributes;
                             if (description.IsWeapon)
                             {

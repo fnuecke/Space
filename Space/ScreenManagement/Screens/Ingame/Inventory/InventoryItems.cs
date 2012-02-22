@@ -34,11 +34,12 @@ namespace Space.ScreenManagement.Screens.Ingame.Inventory
 
         public override Item ItemAt(int id)
         {
-            if (_client.GetPlayerShipInfo().InventoryItemAt(id) == null)
+            var item = _client.GetPlayerShipInfo().InventoryItemAt(id);
+            if (!item.HasValue)
             {
                 return null;
             }
-            return _client.GetPlayerShipInfo().InventoryItemAt(id).GetComponent<Item>();
+            return _client.GetComponent<Item>(item.Value);
         }
 
         public override bool DoHandleMousePressed(MouseButtons buttons)

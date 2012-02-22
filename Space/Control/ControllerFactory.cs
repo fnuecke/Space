@@ -1,4 +1,6 @@
-﻿using Engine.ComponentSystem.Systems;
+﻿using Engine.ComponentSystem;
+using Engine.ComponentSystem.RPG.Systems;
+using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Engine.Simulation.Commands;
@@ -7,6 +9,7 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
+using Space.Data;
 using Space.Session;
 using Space.Simulation.Commands;
 using Space.Util;
@@ -29,19 +32,9 @@ namespace Space.Control
             var controller = new SimpleServerController<Profile>(7777, 12, SpaceCommandHandler.HandleCommand);
 
             // Add all systems we need in our game as a server.
-            controller.Simulation.EntityManager.SystemManager.AddSystems(
-                new ISystem[]
-                {
-                    new DefaultLogicSystem(),
-                    new IndexSystem(),
-                    new CollisionSystem(1024),
-                    new AvatarSystem(),
-                    new CellSystem(),
-
-                    new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
-                    new ShipSpawnSystem(),
-                    new DropSystem(game.Content)
-                });
+            AddCommonSystems(controller.Simulation.Manager);
+            AddRPGSystems(controller.Simulation.Manager);
+            AddSpaceServerSystems(controller.Simulation.Manager, game);
 
             // Done.
             return controller;
@@ -58,30 +51,10 @@ namespace Space.Control
             var controller = new SimpleClientController<Profile>(SpaceCommandHandler.HandleCommand);
 
             // Needed by some systems. Add all systems we need in our game as a client.
-            controller.Simulation.EntityManager.SystemManager.AddSystems(
-                new ISystem[]
-                {
-                    new DefaultLogicSystem(),
-                    new IndexSystem(),
-                    new CollisionSystem(1024),
-                    new AvatarSystem(),
-                    new CellSystem(),
-
-                    new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
-                    new ShipSpawnSystem(),                    
-                    new DropSystem(game.Content),
-
-                    new CameraCenteredTextureRenderSystem(game,
-                        (SpriteBatch)game.Services.GetService(typeof(SpriteBatch)),
-                        ((Spaaace)game).GraphicsDeviceManager, controller.Session)
-                });
-
-            var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
-            if (soundBank != null)
-            {
-                controller.Simulation.EntityManager.SystemManager.AddSystem(
-                    new PlayerCenteredSoundSystem(soundBank, controller.Session));
-            }
+            AddCommonSystems(controller.Simulation.Manager);
+            AddRPGSystems(controller.Simulation.Manager);
+            AddSpaceServerSystems(controller.Simulation.Manager, game);
+            AddSpaceClientSystems(controller.Simulation.Manager, game, controller.Session);
 
             // Done.
             return controller;
@@ -101,25 +74,84 @@ namespace Space.Control
 
             // Check if the server has all the services we need (enough to
             // check for one, because we only add all at once -- here).
-            if (server.Simulation.EntityManager.SystemManager.GetSystem<CameraCenteredTextureRenderSystem>() == null)
+            if (server.Simulation.Manager.GetSystem<CameraCenteredTextureRenderSystem>() == null)
             {
                 // Needed by some systems. Add all systems we need in
                 // *addition* to the ones the server already has.
-                server.Simulation.EntityManager.SystemManager.AddSystem(
-                    new CameraCenteredTextureRenderSystem(game,
-                        (SpriteBatch)game.Services.GetService(typeof(SpriteBatch)),
-                        ((Spaaace)game).GraphicsDeviceManager, controller.Session));
-
-                var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
-                if (soundBank != null)
-                {
-                    server.Simulation.EntityManager.SystemManager.AddSystem(
-                        new PlayerCenteredSoundSystem(soundBank, controller.Session));
-                }
+                AddSpaceClientSystems(server.Simulation.Manager, game, controller.Session);
             }
             
             // Done.
             return controller;
+        }
+
+        private static void AddCommonSystems(IManager manager)
+        {
+            manager.AddSystems(
+                new AbstractSystem[]
+                {
+                    new AccelerationSystem(),
+                    new AvatarSystem(),
+                    new CollisionSystem(1024),
+                    new EllipsePathSystem(),
+                    new ExpirationSystem(),
+                    new FrictionSystem(),
+                    new IndexSystem(),
+                    new SpinSystem(),
+                    new VelocitySystem()
+                });
+        }
+
+        private static void AddRPGSystems(IManager manager)
+        {
+            manager.AddSystems(
+                new AbstractSystem[]
+                {
+                    new CharacterSystem<AttributeType>(),
+                    new InventorySystem(), 
+                    new StatusEffectSystem()
+                });
+        }
+
+        private static void AddSpaceServerSystems(IManager manager, Game game)
+        {
+            manager.AddSystems(
+                new AbstractSystem[]
+                {
+                    new AISystem(),
+                    new CellSystem(),
+                    new CollisionDamageSystem(),
+                    new DeathSystem(),
+                    new DetectableSystem(game.Content),
+                    new DropSystem(game.Content),
+                    new GravitationSystem(),
+                    new PlayerMassSystem(),
+                    new RegeneratingValueSystem(),
+                    new ShipControlSystem(),
+                    new ShipInfoSystem(),
+                    new ShipSpawnSystem(),
+                    new SpaceUsablesSystem(),
+                    new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
+                    new WeaponControlSystem()
+                });
+        }
+
+        private static void AddSpaceClientSystems(IManager manager, Game game, IClientSession session)
+        {
+            var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
+            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
+            var graphicsDevice = ((Spaaace)game).GraphicsDeviceManager;
+
+            manager.AddSystems(
+                new AbstractSystem[]
+                {
+                    new CameraCenteredTextureRenderSystem(game, spriteBatch), 
+                    new CameraSystem(game, session),
+                    new ParticleEffectSystem(game, graphicsDevice),
+                    new PlanetRenderSystem(game), 
+                    new PlayerCenteredSoundSystem(soundBank, session), 
+                    new SunRenderSystem(game, spriteBatch)
+                });
         }
     }
 }
