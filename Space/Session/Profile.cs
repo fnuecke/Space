@@ -366,7 +366,7 @@ namespace Space.Session
         /// <param name="manager">The entity manager to add the restored
         /// entities to.</param>
         /// <returns>The restored avatar.</returns>
-        public void Restore(int playerNumber, IEntityManager manager)
+        public void Restore(int playerNumber, IManager manager)
         {
             if (manager == null)
             {
@@ -407,7 +407,7 @@ namespace Space.Session
         /// <summary>
         /// Always points to current restore implementation.
         /// </summary>
-        private Entity RestoreCurrent(int playerNumber, IEntityManager manager)
+        private Entity RestoreCurrent(int playerNumber, IManager manager)
         {
             return Restore0(playerNumber, manager);
         }
