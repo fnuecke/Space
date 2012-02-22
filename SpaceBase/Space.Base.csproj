@@ -114,6 +114,7 @@
     <Compile Include="Data\IProfile.cs" />
     <Compile Include="Data\ItemDescription.cs" />
     <Compile Include="Data\PlayerClassType.cs" />
+    <Compile Include="Data\UsableResponse.cs" />
     <Compile Include="Graphics\Planet.cs" />
     <Compile Include="Graphics\Sun.cs" />
     <Compile Include="Input\GamePadHelper.cs" />

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
@@ -46,29 +45,29 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Width of a single radar icon.
         /// </summary>
-        private const int _radarIconWidth = 48;
+        private const int RadarIconWidth = 48;
 
         /// <summary>
         /// Height of a single radar icon.
         /// </summary>
-        private const int _radarIconHeight = 48;
+        private const int RadarIconHeight = 48;
 
         /// <summary>
         /// Vertical offset of the distance number display relative to the
         /// center of the radar icons.
         /// </summary>
-        private const int _distanceOffset = 5;
+        private const int DistanceOffset = 5;
 
         /// <summary>
         /// Size of the radar border in pixel.
         /// </summary>
-        private const int _radarBorderSize = 50;
+        private const int RadarBorderSize = 50;
 
         /// <summary>
         /// Percentage value when the health indicator within the radar frame
         /// should start displaying low health in red color.
         /// </summary>
-        private const float _healthIndicatorThreshold = 0.5f;
+        private const float HealthIndicatorThreshold = 0.5f;
 
         #endregion
 
@@ -77,7 +76,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Background image for radar icons.
         /// </summary>
-        private Texture2D[] _radarDirection = new Texture2D[8];
+        private readonly Texture2D[] _radarDirection = new Texture2D[8];
 
         /// <summary>
         /// Background for rendering the distance to a target.
@@ -101,7 +100,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
+        private readonly List<int> _reusableNeighborList = new List<int>();
 
         #endregion
 
@@ -169,10 +168,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var position = _client.GetCameraPosition();
 
             // Figure out the overall range of our radar system.
-            float radarRange = info.RadarRange;
-
-            // Our mass.
-            float mass = info.Mass;
+            var radarRange = info.RadarRange;
 
             // Get bounds in which to display the icon.
             var screenBounds = _spriteBatch.GraphicsDevice.Viewport.Bounds;
@@ -186,8 +182,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
             // Get the texture origin (middle of the texture).
             Vector2 backgroundOrigin;
-            backgroundOrigin.X = _radarIconWidth / 2.0f;
-            backgroundOrigin.Y = _radarIconHeight / 2.0f;
+            backgroundOrigin.X = RadarIconWidth / 2.0f;
+            backgroundOrigin.Y = RadarIconHeight / 2.0f;
 
             // Get the inner bounds in which to display the icon, i.e. minus
             // half the size of the icon, so deflate by that.
@@ -201,34 +197,31 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // Because the only four points where this'll actually be in screen
             // space will be the four corners, we'll map them down to the edges
             // again. See below for that.
-            float a = center.X - backgroundOrigin.X;
-            float b = center.Y - backgroundOrigin.Y;
-            float radius = (float)System.Math.Sqrt(a * a + b * b);
-
-            // Precomputed for the loop.
-            float radarRangeSquared = radarRange * radarRange;
+            var a = center.X - backgroundOrigin.X;
+            var b = center.Y - backgroundOrigin.Y;
+            var radius = (float)Math.Sqrt(a * a + b * b);
 
             // Begin drawing.
             _spriteBatch.Begin();
 
             // Make the background of the radar a bit darker...
-            _basicForms.FillRectangle(0, 0, _radarBorderSize, screenBounds.Height, Color.Black * 0.15f);
-            _basicForms.FillRectangle(screenBounds.Width - _radarBorderSize, 0, _radarBorderSize, screenBounds.Height, Color.Black * 0.15f);
-            _basicForms.FillRectangle(_radarBorderSize, 0, screenBounds.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
-            _basicForms.FillRectangle(_radarBorderSize, screenBounds.Height - _radarBorderSize, screenBounds.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Black * 0.15f);
+            _basicForms.FillRectangle(0, 0, RadarBorderSize, screenBounds.Height, Color.Black * 0.15f);
+            _basicForms.FillRectangle(screenBounds.Width - RadarBorderSize, 0, RadarBorderSize, screenBounds.Height, Color.Black * 0.15f);
+            _basicForms.FillRectangle(RadarBorderSize, 0, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Black * 0.15f);
+            _basicForms.FillRectangle(RadarBorderSize, screenBounds.Height - RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Black * 0.15f);
 
             // ... and the border of the radar a bit lighter.
-            _basicForms.DrawRectangle(_radarBorderSize, _radarBorderSize, screenBounds.Width - 2 * _radarBorderSize, screenBounds.Height - 2 * _radarBorderSize, Color.White * 0.1f);
+            _basicForms.DrawRectangle(RadarBorderSize, RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, screenBounds.Height - 2 * RadarBorderSize, Color.White * 0.1f);
 
             // Color the background of the radar red if health is low...
             float healthPercent = info.RelativeHealth;
-            if (info.RelativeHealth < _healthIndicatorThreshold)
+            if (info.RelativeHealth < HealthIndicatorThreshold)
             {
-                float redAlpha = (1 - healthPercent / _healthIndicatorThreshold) / 2;
-                _basicForms.FillRectangle(0, 0, _radarBorderSize, screenBounds.Height, Color.Red * redAlpha);
-                _basicForms.FillRectangle(screenBounds.Width - _radarBorderSize, 0, _radarBorderSize, screenBounds.Height, Color.Red * redAlpha);
-                _basicForms.FillRectangle(_radarBorderSize, 0, screenBounds.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Red * redAlpha);
-                _basicForms.FillRectangle(_radarBorderSize, screenBounds.Height - _radarBorderSize, screenBounds.Width - 2 * _radarBorderSize, _radarBorderSize, Color.Red * redAlpha);
+                float redAlpha = (1 - healthPercent / HealthIndicatorThreshold) / 2;
+                _basicForms.FillRectangle(0, 0, RadarBorderSize, screenBounds.Height, Color.Red * redAlpha);
+                _basicForms.FillRectangle(screenBounds.Width - RadarBorderSize, 0, RadarBorderSize, screenBounds.Height, Color.Red * redAlpha);
+                _basicForms.FillRectangle(RadarBorderSize, 0, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
+                _basicForms.FillRectangle(RadarBorderSize, screenBounds.Height - RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
             }
 
             // Loop through all our neighbors.
@@ -236,9 +229,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 RangeQuery(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
             {
                 // Get the components we need.
-                var neighborTransform = neighbor.GetComponent<Transform>();
-                var neighborDetectable = neighbor.GetComponent<Detectable>();
-                var faction = neighbor.GetComponent<Faction>();
+                var neighborTransform = _client.GetComponent<Transform>(neighbor);
+                var neighborDetectable = _client.GetComponent<Detectable>(neighbor);
+                var faction = _client.GetComponent<Faction>(neighbor);
 
                 // Bail if we're missing something.
                 if (neighborTransform == null || neighborDetectable.Texture == null)
@@ -268,11 +261,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
                 // We'll make stuff far away a little less opaque. First get
                 // the linear relative distance.
-                float ld = distance / radarRange;
+                var ld = distance / radarRange;
                 // Then apply a exponential fall-off, and make it cap a little
                 // early to get the 100% alpha when nearby, not only when
                 // exactly on top of the object ;)
-                ld = System.Math.Min(1, (1.1f - ld * ld * ld) * 1.1f);
+                ld = Math.Min(1, (1.1f - ld * ld * ld) * 1.1f);
 
                 // Make stuff far away a little less opaque.
                 color *= ld;
@@ -295,7 +288,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 {
                     // Out of screen on the X axis. Guaranteed to be in bound
                     // for Y axis, though. Diameter down.
-                    var scale = center.X / System.Math.Abs(iconPosition.X);
+                    var scale = center.X / Math.Abs(iconPosition.X);
                     iconPosition.X *= scale;
                     iconPosition.Y *= scale;
                 }
@@ -303,7 +296,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 {
                     // Out of screen on the Y axis. Guaranteed to be in bound
                     // for X axis, though. Diameter down.
-                    var scale = center.Y / System.Math.Abs(iconPosition.Y);
+                    var scale = center.Y / Math.Abs(iconPosition.Y);
                     iconPosition.X *= scale;
                     iconPosition.Y *= scale;
                 }
@@ -347,7 +340,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
                 string formattedDistance = FormatDistance(distance);
                 origin.X = _distanceFont.MeasureString(formattedDistance).X / 2f;
-                origin.Y = -_distanceOffset;
+                origin.Y = -DistanceOffset;
                 _spriteBatch.DrawString(_distanceFont, formattedDistance, iconPosition,
                     Color.White * ld, 0, origin, ld, SpriteEffects.None, 0);
             }
@@ -366,15 +359,15 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <param name="position">The icon's position.</param>
         /// <param name="bounds">The bounds.</param>
         /// <returns>The direction of the border contact of the icon.</returns>
-        private RadarDirection GetRadarDirection(ref Vector2 position, ref Rectangle bounds)
+        private static RadarDirection GetRadarDirection(ref Vector2 position, ref Rectangle bounds)
         {
-            if (position.X == bounds.Left)
+            if (Math.Abs(position.X - bounds.Left) < 0.001f)
             {
-                if (position.Y == bounds.Top)
+                if (Math.Abs(position.Y - bounds.Top) < 0.001f)
                 {
                     return RadarDirection.TopLeft;
                 }
-                else if (position.Y == bounds.Bottom)
+                else if (Math.Abs(position.Y - bounds.Bottom) < 0.001f)
                 {
                     return RadarDirection.BottomLeft;
                 }
@@ -383,13 +376,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
                     return RadarDirection.Left;
                 }
             }
-            else if (position.X == bounds.Right)
+            else if (Math.Abs(position.X - bounds.Right) < 0.001f)
             {
-                if (position.Y == bounds.Top)
+                if (Math.Abs(position.Y - bounds.Top) < 0.001f)
                 {
                     return RadarDirection.TopRight;
                 }
-                else if (position.Y == bounds.Bottom)
+                else if (Math.Abs(position.Y - bounds.Bottom) < 0.001f)
                 {
                     return RadarDirection.BottomRight;
                 }
@@ -400,11 +393,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
             }
             else
             {
-                if (position.Y == bounds.Top)
+                if (Math.Abs(position.Y - bounds.Top) < 0.001f)
                 {
                     return RadarDirection.Top;
                 }
-                else if (position.Y == bounds.Bottom)
+                else if (Math.Abs(position.Y - bounds.Bottom) < 0.001f)
                 {
                     return RadarDirection.Bottom;
                 }
@@ -419,7 +412,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// List of SI units, used for distance formatting.
         /// </summary>
-        private static readonly string[] _unitNames = new[] { "", "k", "m", "g", "t", "p", "e", "z", "y" };
+        private static readonly string[] UnitNames = new[] { "", "k", "m", "g", "t", "p", "e", "z", "y" };
 
         /// <summary>
         /// Formats a distance to a string to be displayed in a radar icon.
@@ -430,27 +423,22 @@ namespace Space.ScreenManagement.Screens.Gameplay
         {
             // Divide by thousand until we're blow it, and count the number
             // of divisions to get the unit.
-            int unit = 0;
+            var unit = 0;
             while (distance > 1000)
             {
                 ++unit;
                 distance /= 1000;
             }
-            string unitName = "?";
-            if (unit < _unitNames.Length)
+            var unitName = "?";
+            if (unit < UnitNames.Length)
             {
-                unitName = _unitNames[unit];
+                unitName = UnitNames[unit];
             }
             // Don't show the post-comma digit if we're above 100 of the
             // current unit.
-            if (distance > 100)
-            {
-                return string.Format("{0:f0}{1}", distance, unitName);
-            }
-            else
-            {
-                return string.Format("{0:f1}{1}", distance, unitName);
-            }
+            return distance > 100
+                       ? string.Format("{0:f0}{1}", distance, unitName)
+                       : string.Format("{0:f1}{1}", distance, unitName);
         }
 
         #endregion

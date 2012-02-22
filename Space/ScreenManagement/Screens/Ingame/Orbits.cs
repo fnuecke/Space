@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
@@ -22,23 +21,23 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Thickness of the rendered orbit ellipses.
         /// </summary>
-        private const int _orbitThickness = 6;
+        private const int OrbitThickness = 6;
 
         /// <summary>
         /// Diffuse area of the dead zone (no immediate cutoff but fade to
         /// red).
         /// </summary>
-        private const int _deadZoneDiffuseWidth = 100;
+        private const int DeadZoneDiffuseWidth = 100;
 
         /// <summary>
         /// Color to paint orbits in.
         /// </summary>
-        private static readonly Color _orbitColor = Color.Turquoise * 0.3f;
+        private static readonly Color OrbitColor = Color.Turquoise * 0.3f;
 
         /// <summary>
         /// Color to paint the dead zone around gravitational attractors in.
         /// </summary>
-        private static readonly Color _deadZoneColor = Color.DarkRed * 0.2f;
+        private static readonly Color DeadZoneColor = Color.DarkRed * 0.2f;
 
         #endregion
 
@@ -47,13 +46,13 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Used to draw orbits.
         /// </summary>
-        private Ellipse _orbitEllipse;
+        private readonly Ellipse _orbitEllipse;
 
         /// <summary>
         /// Used to draw areas where gravitation force is stronger than ship's
         /// thrusters' force.
         /// </summary>
-        private FilledEllipse _deadZoneEllipse;
+        private readonly FilledEllipse _deadZoneEllipse;
 
         #endregion
 
@@ -62,7 +61,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private readonly List<Entity> _reusableNeighborList = new List<Entity>(64);
+        private readonly List<int> _reusableNeighborList = new List<int>();
 
         #endregion
         
@@ -72,10 +71,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
             : base(client)
         {
             _orbitEllipse = new Ellipse(client.Game);
-            _orbitEllipse.SetThickness(_orbitThickness);
+            _orbitEllipse.SetThickness(OrbitThickness);
             _deadZoneEllipse = new FilledEllipse(_client.Game);
-            _deadZoneEllipse.SetGradient(_deadZoneDiffuseWidth);
-            _deadZoneEllipse.SetColor(_deadZoneColor);
+            _deadZoneEllipse.SetGradient(DeadZoneDiffuseWidth);
+            _deadZoneEllipse.SetColor(DeadZoneColor);
         }
 
         /// <summary>
@@ -116,10 +115,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
             }
 
             // Figure out the overall range of our radar system.
-            float radarRange = info.RadarRange;
+            var radarRange = info.RadarRange;
 
             // Our mass.
-            float mass = info.Mass;
+            var mass = info.Mass;
 
             // Get our viewport.
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
@@ -131,14 +130,11 @@ namespace Space.ScreenManagement.Screens.Gameplay
             center.X = viewport.Width / 2f;
             center.Y = viewport.Height / 2f;
 
-            // Get bounds in which to display the icon.
-            var screenBounds = viewport.Bounds;
-
             // Precomputed for the loop.
-            float radarRangeSquared = radarRange * radarRange;
+            var radarRangeSquared = radarRange * radarRange;
 
             // Get the radius of the minimal bounding sphere of our viewport.
-            float radius = (float)System.Math.Sqrt(center.X * center.X + center.Y * center.Y);
+            var radius = (float)System.Math.Sqrt(center.X * center.X + center.Y * center.Y);
 
             // Begin drawing.
             _spriteBatch.Begin();
@@ -148,9 +144,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 RangeQuery(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
             {
                 // Get the components we need.
-                var neighborTransform = neighbor.GetComponent<Transform>();
-                var neighborDetectable = neighbor.GetComponent<Detectable>();
-                var faction = neighbor.GetComponent<Faction>();
+                var neighborTransform = _client.GetComponent<Transform>(neighbor);
+                var neighborDetectable = _client.GetComponent<Detectable>(neighbor);
 
                 // Bail if we're missing something.
                 if (neighborTransform == null || neighborDetectable.Texture == null)
@@ -173,18 +168,18 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
                 // If it's an astronomical object, check if its orbit is
                 // potentially in our screen space, if so draw it.
-                var ellipse = neighbor.GetComponent<EllipsePath>();
+                var ellipse = _client.GetComponent<EllipsePath>(neighbor);
                 if (ellipse != null)
                 {
                     // The entity we're orbiting around is at one of the two
                     // foci of the ellipse. We want the center, though.
 
                     // Get the current position of the entity we're orbiting.
-                    var focusTransform = _client.Controller.Simulation.EntityManager.GetEntity(ellipse.CenterEntityId).GetComponent<Transform>().Translation;
+                    var focusTransform = _client.GetComponent<Transform>(ellipse.CenterEntityId).Translation;
 
                     // Compute the distance of the ellipse's foci to the center
                     // of the ellipse.
-                    float ellipseFocusDistance = (float)System.Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
+                    var ellipseFocusDistance = (float)System.Math.Sqrt(ellipse.MajorRadius * ellipse.MajorRadius - ellipse.MinorRadius * ellipse.MinorRadius);
                     Vector2 ellipseCenter;
                     ellipseCenter.X = ellipseFocusDistance;
                     ellipseCenter.Y = 0;
@@ -219,7 +214,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
                         // make it cap a little early to get the 100% alpha
                         // when nearby, not only when exactly on top of the
                         // object ;)
-                        _orbitEllipse.SetColor(_orbitColor * ld);
+                        _orbitEllipse.SetColor(OrbitColor * ld);
 
                         // And draw it!
                         _orbitEllipse.Draw();
@@ -229,25 +224,27 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // If the neighbor does collision damage and is an attractor,
                 // show the "dead zone" (i.e. the area beyond the point of no
                 // return).
-                var neighborGravitation = neighbor.GetComponent<Gravitation>();
-                var neighborCollisionDamage = neighbor.GetComponent<CollisionDamage>();
-                if (neighborCollisionDamage != null && neighborGravitation != null &&
-                    (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)
+                var neighborGravitation = _client.GetComponent<Gravitation>(neighbor);
+                var neighborCollisionDamage = _client.GetComponent<CollisionDamage>(neighbor);
+                if (neighborCollisionDamage == null || neighborGravitation == null ||
+                    (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) == 0)
                 {
-                    // The point of no return is the distance at which the
-                    // gravitation is stronger than our maximum thruster
-                    // output.
-                    float maxAcceleration = info.MaxAcceleration;
-                    float neighborMass = neighborGravitation.Mass;
-                    float pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborMass / maxAcceleration);
-                    _deadZoneEllipse.SetCenter(neighborTransform.Translation - position + center);
-                    // Add the complete diffuse width, not just the half (which
-                    // would be the exact point), because it's unlikely someone
-                    // will exactly hit that point, so give them some fair
-                    // warning.
-                    _deadZoneEllipse.SetRadius(pointOfNoReturn + _deadZoneDiffuseWidth);
-                    _deadZoneEllipse.Draw();
+                    continue;
                 }
+
+                // The point of no return is the distance at which the
+                // gravitation is stronger than our maximum thruster
+                // output.
+                var maxAcceleration = info.MaxAcceleration;
+                var neighborMass = neighborGravitation.Mass;
+                var pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborMass / maxAcceleration);
+                _deadZoneEllipse.SetCenter(neighborTransform.Translation - position + center);
+                // Add the complete diffuse width, not just the half (which
+                // would be the exact point), because it's unlikely someone
+                // will exactly hit that point, so give them some fair
+                // warning.
+                _deadZoneEllipse.SetRadius(pointOfNoReturn + DeadZoneDiffuseWidth);
+                _deadZoneEllipse.Draw();
             }
 
             // Clear the list for the next run.

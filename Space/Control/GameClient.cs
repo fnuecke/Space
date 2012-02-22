@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
 using Engine.Session;
@@ -19,7 +20,7 @@ namespace Space.Control
     {
         #region Logger
         
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -28,7 +29,7 @@ namespace Space.Control
         /// <summary>
         /// The interval in which we save the player's profile to disk.
         /// </summary>
-        private const int _saveInterval = 60;
+        private const int SaveInterval = 60;
 
         #endregion
 
@@ -82,10 +83,7 @@ namespace Space.Control
             base.Initialize();
 
             Controller.Session.JoinResponse += ConsoleAutoexec;
-            Controller.Session.Disconnecting += delegate(object sender, EventArgs e)
-            {
-                Save();
-            };
+            Controller.Session.Disconnecting += (sender, e) => Save();
         }
 
         /// <summary>
@@ -94,10 +92,12 @@ namespace Space.Control
         /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
-            
-            Controller.Session.JoinResponse -= ConsoleAutoexec;
+            if (disposing)
+            {
+                Controller.Session.JoinResponse -= ConsoleAutoexec;
 
-            Controller.Dispose();
+                Controller.Dispose();
+            }
 
             base.Dispose(disposing);
         }
@@ -128,9 +128,9 @@ namespace Space.Control
             if (avatarSystem != null)
             {
                 var avatar = avatarSystem.GetAvatar(playerNumber);
-                if (avatar != null)
+                if (avatar.HasValue)
                 {
-                    return avatar.GetComponent<ShipInfo>();
+                    return GetComponent<ShipInfo>(avatar.Value);
                 }
             }
             return null;
@@ -168,7 +168,7 @@ namespace Space.Control
         /// <returns></returns>
         public Vector2 GetCameraPosition()
         {
-            var system = GetSystem<CameraCenteredTextureRenderSystem>();
+            var system = GetSystem<CameraSystem>();
             if (system != null)
             {
                 return system.CameraPositon;
@@ -185,11 +185,11 @@ namespace Space.Control
         /// </summary>
         /// <typeparam name="T">The type of the component system to get.</typeparam>
         /// <returns>The component system of that type, or <c>null</c></returns>
-        public T GetSystem<T>() where T : ISystem
+        public T GetSystem<T>() where T : AbstractSystem
         {
             if (IsRunning())
             {
-                return Controller.Simulation.EntityManager.SystemManager.GetSystem<T>();
+                return Controller.Simulation.Manager.GetSystem<T>();
             }
             else
             {
@@ -198,11 +198,31 @@ namespace Space.Control
         }
 
         /// <summary>
+        /// Gets the component of the specified type for the specified entity.
+        /// </summary>
+        /// <typeparam name="T">The type of the component.</typeparam>
+        /// <param name="entity">The entity.</param>
+        /// <returns>
+        /// The component.
+        /// </returns>
+        public T GetComponent<T>(int entity) where T : Component
+        {
+            if (IsRunning())
+            {
+                return Controller.Simulation.Manager.GetComponent<T>(entity);
+            }
+            else
+            {
+                return default(T);
+            }
+        } 
+
+        /// <summary>
         /// Saves the current player state (his profile) to disk.
         /// </summary>
         public void Save()
         {
-            Settings.Instance.CurrentProfile.Capture(GetPlayerShipInfo().Entity);
+            Settings.Instance.CurrentProfile.Capture(Controller.Simulation.Manager, GetPlayerShipInfo().Entity);
             Settings.Instance.CurrentProfile.Save();
             _lastSave = DateTime.Now;
         }
@@ -221,7 +241,7 @@ namespace Space.Control
 
             Controller.Update(gameTime);
 
-            if ((DateTime.Now - _lastSave).TotalSeconds > _saveInterval)
+            if ((DateTime.Now - _lastSave).TotalSeconds > SaveInterval)
             {
                 Save();
             }
@@ -241,7 +261,7 @@ namespace Space.Control
             {
                 if (File.Exists(Settings.Instance.AutoexecFilename))
                 {
-                    logger.Info("Found autoexec file at '{0}', running it now...", Settings.Instance.AutoexecFilename);
+                    Logger.Info("Found autoexec file at '{0}', running it now...", Settings.Instance.AutoexecFilename);
                     try
                     {
                         using (var reader = new StreamReader(File.OpenRead(Settings.Instance.AutoexecFilename)))
@@ -257,16 +277,16 @@ namespace Space.Control
                                 }
                             }
                         }
-                        logger.Info("Done running autoexec file.");
+                        Logger.Info("Done running autoexec file.");
                     }
                     catch (IOException)
                     {
-                        logger.Info("Failed reading autoexec file, skipping.");
+                        Logger.Info("Failed reading autoexec file, skipping.");
                     }
                 }
                 else
                 {
-                    logger.Info("No autoexec file found, skipping.");
+                    Logger.Info("No autoexec file found, skipping.");
                 }
             }
         }
