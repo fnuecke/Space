@@ -130,11 +130,11 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var separationIntercept = 1 - FlockingSeparation * FlockingSeparation / toTarget.LengthSquared();
             Vector2 separationPosition;
             Vector2.Lerp(ref position, ref targetPosition, separationIntercept, out separationPosition);
-            if (toTarget != Vector2.Zero && separationIntercept < 0.25f)
+            if (toTarget != Vector2.Zero && separationIntercept > 0 && separationIntercept < 0.7f)
             {
                 toTarget.Normalize();
-                separationPosition.X += toTarget.Y * 50;
-                separationPosition.Y -= toTarget.X * 50;
+                separationPosition.X += toTarget.Y * 50 / separationIntercept;
+                separationPosition.Y -= toTarget.X * 50 / separationIntercept;
             }
 
             return separationPosition;

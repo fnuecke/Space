@@ -63,6 +63,17 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             return true;
         }
 
+        /// <summary>
+        /// Figure out where we want to go.
+        /// </summary>
+        /// <returns>
+        /// The coordinate we want to fly to.
+        /// </returns>
+        protected override Vector2 GetTargetPosition()
+        {
+            return Target;
+        }
+
         #endregion
 
         #region Serialization

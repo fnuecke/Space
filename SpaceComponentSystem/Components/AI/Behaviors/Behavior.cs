@@ -118,7 +118,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// it's 50:50 with other behavior input, 0 means it's only other
         /// behavioral input.
         /// </summary>
-        private const float VegetativeWeight = 3;
+        private const float VegetativeWeight = 2;
 
         #endregion
 
@@ -311,22 +311,18 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                     var pointOfNoReturnSquared = mass * neighborGravitation.Mass / info.MaxAcceleration;
                     if (toNeighbor.LengthSquared() < pointOfNoReturnSquared * MinMultipleOfPointOfNoReturn * MinMultipleOfPointOfNoReturn)
                     {
-                        // We're too close, let's pull out. Use a Manhattan
-                        // distance to compute the direction we want to go to
-                        // because it's much more efficient, and good enough.
-                        // (This will make the AI evade around a bounding
-                        // rectangle of the damager, instead of a sphere, but
-                        // that should really not be that noticeable).
-                        direction.X -= MinMultipleOfPointOfNoReturn * pointOfNoReturnSquared / toNeighbor.X;
-                        direction.Y -= MinMultipleOfPointOfNoReturn * pointOfNoReturnSquared / toNeighbor.Y;
+                        // We're too close, let's pull out. Just use the square
+                        // of the point of no return so it's really urgent.
+                        toNeighbor.Normalize();
+                        direction += MinMultipleOfPointOfNoReturn * pointOfNoReturnSquared * toNeighbor;
                     }
                 }
                 else
                 {
                     // OK, just a damager, but doesn't pull us in. Scale
                     // to make us reach a certain minimum distance.
-                    direction.X -= MinDistanceToDamagers * MinDistanceToDamagers / toNeighbor.X;
-                    direction.Y -= MinDistanceToDamagers * MinDistanceToDamagers / toNeighbor.Y;
+                    toNeighbor.Normalize();
+                    direction += MinDistanceToDamagers * toNeighbor;
                 }
             }
             
@@ -350,14 +346,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                     if (toNeighbor.LengthSquared() > 0)
                     {
                         // Somewhere outside the other object (which should
-                        // really be the normal case). This is not an exact
-                        // calculation, as it uses a Manhattan distance instead
-                        // of a euclidean one, but it should be good enough.
-                        // Note that FlockingSeparation / X|Y will be some
-                        // value between one and infinity. We multiply this by
-                        // the separation distance again, to get away quicker.
-                        direction.X += 0.5f * FlockingSeparation * FlockingSeparation / toNeighbor.X;
-                        direction.Y += 0.5f * FlockingSeparation * FlockingSeparation / toNeighbor.Y;
+                        // really be the normal case).
+                        toNeighbor.Normalize();
+                        direction += FlockingSeparation * toNeighbor;
                     }
                     // Else we're exactly inside the other object... this
                     // is so unlikely that we just won't bother handling it.
