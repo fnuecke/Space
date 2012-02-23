@@ -107,6 +107,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\IIndex.cs" />
     <Compile Include="Collections\QuadTree.cs" />
     <Compile Include="Graphics\AbstractEllipse.cs" />
     <Compile Include="Graphics\AbstractShape.cs" />

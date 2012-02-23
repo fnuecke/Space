@@ -24,7 +24,7 @@ namespace Engine.Collections
     /// </summary>
     /// <typeparam name="T">The type of the values stored in this tree.</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class QuadTree<T> : IEnumerable<T>
+    public sealed class QuadTree<T> : IIndex<T>
     {
         #region Properties
 
@@ -106,6 +106,8 @@ namespace Engine.Collections
         }
 
         #endregion
+
+        #region Accessors
 
         /// <summary>
         /// Add a new entry to the tree, at the specified position, with the
@@ -334,16 +336,21 @@ namespace Engine.Collections
         }
         
         /// <summary>
-        /// Test whether this tree contains the specified value at the
-        /// specified point.
+        /// Test whether this tree contains the specified value.
         /// </summary>
-        /// <param name="point">The point at which to look for.</param>
         /// <param name="value">The value to look for.</param>
         /// <returns><c>true</c> if the tree contains the value at the
         /// specified point.</returns>
-        public bool Contains(Vector2 point, T value)
+        public bool Contains(T value)
         {
-            return Contains(ref point, value);
+            foreach (var entry in _entries)
+            {
+                if (entry.Value.Equals(value))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -404,7 +411,7 @@ namespace Engine.Collections
         /// Perform a range query on this tree. This will return all entries
         /// in the tree that are in contained the specified rectangle.
         /// </summary>
-        /// <param name="point">The query rectangle.</param>
+        /// <param name="rectangle">The query rectangle.</param>
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the query rectangle.</returns>
@@ -424,12 +431,14 @@ namespace Engine.Collections
         /// Perform a range query on this tree. This will return all entries
         /// in the tree that are in contained the specified rectangle.
         /// </summary>
-        /// <param name="point">The query rectangle.</param>
+        /// <param name="rectangle">The query rectangle.</param>
         /// <returns>All objects in the query rectangle.</returns>
         public ICollection<T> RangeQuery(Rectangle rectangle)
         {
             return RangeQuery(ref rectangle);
         }
+
+        #endregion
 
         #region Internal functionality
 

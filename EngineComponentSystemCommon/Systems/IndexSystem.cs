@@ -55,7 +55,10 @@ namespace Engine.ComponentSystem.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-                tree.Draw(shape, translation);   
+                if (tree is QuadTree<int>)
+                {
+                    ((QuadTree<int>)tree).Draw(shape, translation);
+                }
             }
         }
 
@@ -132,7 +135,7 @@ namespace Engine.ComponentSystem.Systems
         /// The actual indexes we're using, mapping entity positions to the
         /// entities, allowing faster range queries.
         /// </summary>
-        private QuadTree<int>[] _trees = new QuadTree<int>[sizeof(ulong) * 8];
+        private IIndex<int>[] _trees = new IIndex<int>[sizeof(ulong) * 8];
 
         #endregion
 
@@ -141,7 +144,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Reused for iteration.
         /// </summary>
-        private List<QuadTree<int>> _reusableTreeList = new List<QuadTree<int>>();
+        private List<IIndex<int>> _reusableTreeList = new List<IIndex<int>>();
 
         #endregion
 
@@ -221,7 +224,7 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        private IEnumerable<QuadTree<int>> TreesForGroups(ulong groups)
+        private IEnumerable<IIndex<int>> TreesForGroups(ulong groups)
         {
             _reusableTreeList.Clear();
             byte index = 0;
@@ -347,8 +350,8 @@ namespace Engine.ComponentSystem.Systems
             }
             else
             {
-                copy._trees = new QuadTree<int>[sizeof(ulong) * 8];
-                copy._reusableTreeList = new List<QuadTree<int>>();
+                copy._trees = new IIndex<int>[sizeof(ulong) * 8];
+                copy._reusableTreeList = new List<IIndex<int>>();
             }
 
             for (int i = 0; i < _trees.Length; i++)
