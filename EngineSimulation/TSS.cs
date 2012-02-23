@@ -97,7 +97,7 @@ namespace Engine.Simulation
         /// <summary>
         /// The parameterization for the different threads.
         /// </summary>
-        private ThreadData[] _threadData;
+        private readonly ThreadData[] _threadData;
 #endif
 
         /// <summary>
@@ -466,8 +466,9 @@ namespace Engine.Simulation
             var tasks = new System.Threading.Tasks.Task[_threadData.Length];
             for (int i = 0; i < _threadData.Length; i++)
             {
-                _threadData[i].simulation = _simulations[i];
-                _threadData[i].frame = frame - _delays[i];
+                _threadData[i].Simulation = _simulations[i];
+                _threadData[i].Frame = frame - _delays[i];
+                _threadData[i].GameTime = gameTime;
                 tasks[i] = TaskStarter(_threadData[i]);
             }
 #endif
@@ -502,11 +503,11 @@ namespace Engine.Simulation
             // Check if we had trailing tentative commands.
             if (needsRewind)
             {
-                logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
+                Logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
                 MirrorSimulation(TrailingSimulation, _simulations.Length - 2);
 
                 // Update the other states once more.
-                FastForward(frame);
+                FastForward(gameTime, frame);
             }
             else
             {
@@ -588,15 +589,15 @@ namespace Engine.Simulation
 
             try
             {
-                while (info.simulation.CurrentFrame < info.frame)
+                while (info.Simulation.CurrentFrame < info.Frame)
                 {
-                    PrepareForUpdate(info.simulation);
-                    info.simulation.Update();
+                    PrepareForUpdate(info.Simulation);
+                    info.Simulation.Update(info.GameTime);
                 }
             }
             catch (Exception ex)
             {
-                logger.WarnException("Error in threaded update.", ex);
+                Logger.WarnException("Error in threaded update.", ex);
                 throw;
             }
         }
@@ -693,12 +694,17 @@ namespace Engine.Simulation
             /// <summary>
             /// The simulation to update.
             /// </summary>
-            public IAuthoritativeSimulation simulation;
+            public IAuthoritativeSimulation Simulation;
 
             /// <summary>
             /// The frame to run to.
             /// </summary>
-            public long frame;
+            public long Frame;
+
+            /// <summary>
+            /// The current game time.
+            /// </summary>
+            public GameTime GameTime;
         }
 
         #endregion
