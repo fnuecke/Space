@@ -403,7 +403,6 @@ namespace Space.Session
 
             // And finally, the inventory. Same as with the inventory, we have
             // to serialize the actual items in it.
-            _data.Write(inventory.Capacity);
             for (int i = 0; i < inventory.Capacity; i++)
             {
                 var item = inventory[i];

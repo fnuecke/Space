@@ -167,7 +167,10 @@ def ge(id):
             }
             else
             {
-                command.Profile.Restore(command.PlayerNumber, manager);
+                lock (command.Profile)
+                {
+                    command.Profile.Restore(command.PlayerNumber, manager);
+                }
             }
         }
 
