@@ -108,7 +108,7 @@ float4 PlanetShaderFunction(VertexShaderData input) : COLOR0
 
         // Actual color at position.
         float4 color = tex2D(textureSampler, uvSphere / TextureScale) * SurfaceTint;
-
+        
         // Emboss effect.
         float4 relief = float4(0.5, 0.5, 0.5, 1);
         relief.rgb -= tex2D(textureSampler, (uvSphere + LightDirection * EmbossScale) / TextureScale).rgb * 2;
@@ -134,7 +134,7 @@ float4 PlanetShaderFunction(VertexShaderData input) : COLOR0
         color.rgb *= saturate(rOffset);
 
         // Alpha for smoother border.
-        float alpha = clamp((1 - rInner) * RenderRadius, 0, 1);
+        float alpha = 1; //clamp((1 - rInner) * RenderRadius, 0, 1);
         return color * alpha;
     }
 }
@@ -192,12 +192,13 @@ technique Planet
 {
     pass Surface
     {
-        AlphaBlendEnable = True;
+        DestBlend = InvSrcAlpha;
         VertexShader = compile vs_2_0 VertexShaderFunction();
         PixelShader = compile ps_2_0 PlanetShaderFunction();
     }
     pass Atmosphere
     {
+        DestBlend = One;
         PixelShader = compile ps_2_0 AtmosphereShaderFunction();
     }
 }
