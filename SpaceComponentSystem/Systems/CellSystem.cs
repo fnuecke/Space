@@ -99,7 +99,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Reused for querying entities contained in a dying cell.
         /// </summary>
-        private List<int> _reusableEntityList = new List<int>();
+        private HashSet<int> _reusableEntityList = new HashSet<int>();
 
         #endregion
 
@@ -207,7 +207,8 @@ namespace Space.ComponentSystem.Systems
                 cellBounds.Y = xy.Item2;
                 cellBounds.Width = CellSize;
                 cellBounds.Height = CellSize;
-                foreach (var entity in Manager.GetSystem<IndexSystem>().RangeQuery(ref cellBounds, CellDeathAutoRemoveIndex, _reusableEntityList))
+                foreach (var entity in Manager.GetSystem<IndexSystem>().
+                    RangeQuery(ref cellBounds, CellDeathAutoRemoveIndex, _reusableEntityList))
                 {
                     Manager.RemoveEntity(entity);
                 }
@@ -325,7 +326,7 @@ namespace Space.ComponentSystem.Systems
                 copy._reusableBornCellsIds = new HashSet<ulong>();
                 copy._reusableDeceasedCellsIds = new HashSet<ulong>();
                 copy._reusablePendingList = new List<ulong>();
-                copy._reusableEntityList = new List<int>();
+                copy._reusableEntityList = new HashSet<int>();
             }
 
             foreach (var item in _pendingCells)

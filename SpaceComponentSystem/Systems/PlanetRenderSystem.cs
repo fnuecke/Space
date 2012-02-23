@@ -1,6 +1,8 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Graphics;
 
@@ -18,6 +20,11 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private static Planet _planet;
 
+        /// <summary>
+        /// The content manager used to load textures.
+        /// </summary>
+        private readonly ContentManager _content;
+
         #endregion
 
         #region Constructor
@@ -28,6 +35,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="game">The game the system belongs to.</param>
         public PlanetRenderSystem(Game game)
         {
+            _content = game.Content;
             if (_planet == null)
             {
                 _planet = new Planet(game);
@@ -37,6 +45,20 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
+
+        /// <summary>
+        /// Load surface texture if necessary.
+        /// </summary>
+        /// <param name="gameTime">The game time.</param>
+        /// <param name="frame">The frame.</param>
+        /// <param name="component">The component.</param>
+        protected override void UpdateComponent(GameTime gameTime, long frame, PlanetRenderer component)
+        {
+            if (component.Texture == null)
+            {
+                component.Texture = _content.Load<Texture2D>(component.TextureName);
+            }
+        }
 
         /// <summary>
         /// Draws the component.

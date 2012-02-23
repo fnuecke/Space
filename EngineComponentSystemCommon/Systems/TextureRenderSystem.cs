@@ -37,15 +37,27 @@ namespace Engine.ComponentSystem.Systems
 
         #region Logic
 
+        /// <summary>
+        /// Loads texture, if it's not set.
+        /// </summary>
+        /// <param name="gameTime">The game time.</param>
+        /// <param name="frame">The frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(GameTime gameTime, long frame, TextureRenderer component)
         {
-            // Load our texture, if it's not set.
+            // 
             if (component.Texture == null)
             {
                 component.Texture = _content.Load<Texture2D>(component.TextureName);
             }
         }
 
+        /// <summary>
+        /// Draws the component.
+        /// </summary>
+        /// <param name="gameTime">The game time.</param>
+        /// <param name="frame">The frame.</param>
+        /// <param name="component">The component.</param>
         protected override void DrawComponent(GameTime gameTime, long frame, TextureRenderer component)
         {
             // Get global render translation.
@@ -70,12 +82,14 @@ namespace Engine.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Override in subclasses for specific translation of the view.
+        /// Returns the <em>translation</em> for offsetting rendered content.
         /// </summary>
-        /// <returns>the translation of the view to use when rendering.</returns>
-        protected virtual Vector3 GetTranslation()
+        /// <returns>
+        /// The translation.
+        /// </returns>
+        protected virtual Vector2 GetTranslation()
         {
-            return Vector3.Zero;
+            return Vector2.Zero;
         }
 
         #endregion

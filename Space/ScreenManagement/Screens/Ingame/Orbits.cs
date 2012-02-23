@@ -61,7 +61,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private readonly List<int> _reusableNeighborList = new List<int>();
+        private readonly HashSet<int> _reusableNeighborList = new HashSet<int>();
 
         #endregion
         

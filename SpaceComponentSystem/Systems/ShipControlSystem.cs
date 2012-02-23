@@ -81,7 +81,7 @@ namespace Space.ComponentSystem.Systems
                 energy.SetValue(energy.Value - energyConsumption);
 
                 // Get modified acceleration, adjust by our mass.
-                accelerationForce = character.GetValue(AttributeType.AccelerationForce, accelerationForce) / mass;
+                accelerationForce /= mass;
 
                 // Adjust thruster PFX based on acceleration, if it just started.
                 if (acceleration.Value == Vector2.Zero)
@@ -101,7 +101,6 @@ namespace Space.ComponentSystem.Systems
                 // Apply our acceleration. Use the min to our desired
                 // acceleration so we don't exceed our target.
                 acceleration.Value = accelerationDirection * Math.Min(desiredAcceleration, accelerationForce);
-
             }
             else
             {

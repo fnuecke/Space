@@ -81,6 +81,11 @@ namespace Space.Control
             return controller;
         }
 
+        /// <summary>
+        /// Adds systems used by the server and the client.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="game">The game.</param>
         private static void AddSpaceServerSystems(IManager manager, Game game)
         {
             manager.AddSystems(
@@ -157,10 +162,16 @@ namespace Space.Control
                     new RegeneratingValueSystem(),
                     
                     // AI should react after everything else had its turn.
-                    new AISystem(),
+                    new AISystem()
                 });
         }
 
+        /// <summary>
+        /// Adds systems only used by the client.
+        /// </summary>
+        /// <param name="manager">The manager.</param>
+        /// <param name="game">The game.</param>
+        /// <param name="session">The session.</param>
         private static void AddSpaceClientSystems(IManager manager, Game game, IClientSession session)
         {
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
@@ -172,12 +183,13 @@ namespace Space.Control
                 {
                     new CameraSystem(game, session),
 
+                    // Planets below suns below normal objects below particle effects.
                     new PlanetRenderSystem(game),
                     new SunRenderSystem(game, spriteBatch),
-                    new CameraCenteredTextureRenderSystem(game, spriteBatch), // After Planet and Sun (on top).
-                    new ParticleEffectSystem(game, graphicsDevice), // After other RenderSystems (on top).
+                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
+                    new CameraCenteredParticleEffectSystem(game, graphicsDevice),
 
-                    new PlayerCenteredSoundSystem(soundBank, session)
+                    new CameraCenteredSoundSystem(soundBank, session)
                 });
         }
     }

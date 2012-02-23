@@ -44,7 +44,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         #region Constructor
         
         public AttackBehavior(ArtificialIntelligence ai)
-            : base(ai, 30)
+            : base(ai, 10)
         {
         }
 
@@ -67,6 +67,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             if (!AI.Manager.HasEntity(Target))
             {
                 control.Shooting = false;
+                _start = null;
                 AI.PopBehavior();
                 return false;
             }
@@ -82,6 +83,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                     // Yeah, that's it, let's give up and return to what we
                     // were doing before.
                     control.Shooting = false;
+                    _start = null;
                     AI.PopBehavior();
                     return false;
                 }
@@ -119,7 +121,23 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </returns>
         protected override Vector2 GetTargetPosition()
         {
-            return AI.Manager.GetComponent<Transform>(Target).Translation;
+            // Don't fly directly towards the enemy, but to a point slightly
+            // offset, and at something slightly above the flocking separation.
+            // This will lead to a circling effect.
+            var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
+            var targetPosition = AI.Manager.GetComponent<Transform>(Target).Translation;
+            var toTarget = position - targetPosition;
+            var separationIntercept = 1 - FlockingSeparation * FlockingSeparation / toTarget.LengthSquared();
+            Vector2 separationPosition;
+            Vector2.Lerp(ref position, ref targetPosition, separationIntercept, out separationPosition);
+            if (toTarget != Vector2.Zero && separationIntercept < 0.25f)
+            {
+                toTarget.Normalize();
+                separationPosition.X += toTarget.Y * 50;
+                separationPosition.Y -= toTarget.X * 50;
+            }
+
+            return separationPosition;
         }
 
         /// <summary>
@@ -133,7 +151,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         {
             var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
             var targetPosition = AI.Manager.GetComponent<Transform>(Target).Translation;
-            var toTarget = position - targetPosition;
+            var toTarget = targetPosition - position;
             return (float)Math.Atan2(toTarget.Y, toTarget.X);
         }
 
@@ -160,15 +178,15 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             // shoot instead.
             if (info.RelativeEnergy < 0.1f)
             {
-                thrusterPower = 0;
+                thrusterPower = 0.3f;
             }
             else if (info.RelativeEnergy < 0.25f)
             {
-                thrusterPower *= 0.25f;
+                thrusterPower *= 0.5f;
             }
             else if (info.RelativeEnergy < 0.5f)
             {
-                thrusterPower *= 0.5f;
+                thrusterPower *= 0.8f;
             }
 
             return thrusterPower;

@@ -64,13 +64,13 @@ namespace Engine.Collections
         /// adding an entry to a leaf node, keeping the pointers to the segment
         /// of an inner intact.
         /// </summary>
-        private LinkedList<Entry> _entries = new LinkedList<Entry>();
+        private readonly LinkedList<Entry> _entries = new LinkedList<Entry>();
 
         /// <summary>
         /// Reused list when splitting nodes and so on (not re-allocating each
         /// run).
         /// </summary>
-        private List<LinkedListNode<Entry>> _reusableEntryList;
+        private readonly List<LinkedListNode<Entry>> _reusableEntryList;
 
         #endregion
 
@@ -201,15 +201,36 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Update a single entry by changing its position.
+        /// Update a single entry by changing its position. If the entry is not
+        /// already in the tree, it will be added.
         /// </summary>
-        /// <param name="oldPoint">The old position of the entry.</param>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
         /// <exception cref="ArgumentException">If there is no such value in
         /// the tree at the specified old position.</exception>
-        public void Update(ref Vector2 oldPoint, ref Vector2 newPoint, T value)
+        public void Update(ref Vector2 newPoint, T value)
         {
+            // Find the current position for that value, by finding the value
+            // in our list of entries.
+            Vector2 oldPoint = Vector2.Zero;
+            bool success = false;
+            foreach (var entry in _entries)
+            {
+                if (entry.Value.Equals(value))
+                {
+                    oldPoint = entry.Point;
+                    success = true;
+                    break;
+                }
+            }
+
+            // If we have no such entry, add it instead.
+            if (!success)
+            {
+                Add(ref newPoint, value);
+                return;
+            }
+
             // Handle dynamic growth.
             EnsureCapacity(ref newPoint);
 
@@ -237,7 +258,7 @@ namespace Engine.Collections
                         else
                         {
                             // Different node, re-insert.
-                            Remove(ref oldPoint, value);
+                            RemoveEntry(ref oldPoint, value);
                             Add(ref newPoint, value);
                         }
 
@@ -250,95 +271,34 @@ namespace Engine.Collections
         }
         
         /// <summary>
-        /// Update a single entry by changing its position.
+        /// Update a single entry by changing its position. If the entry is not
+        /// already in the tree, it will be added.
         /// </summary>
-        /// <param name="oldPoint">The old position of the entry.</param>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
         /// <exception cref="ArgumentException">If there is no such value in
         /// the tree at the specified old position.</exception>
-        public void Update(Vector2 oldPoint, Vector2 newPoint, T value)
+        public void Update(Vector2 newPoint, T value)
         {
-            Update(ref oldPoint, ref newPoint, value);
+            Update(ref newPoint, value);
         }
 
         /// <summary>
-        /// Remove the specified value at the specified point from the tree.
+        /// Remove the specified value from the tree.
         /// </summary>
-        /// <param name="point">The position to remove the value at.</param>
         /// <param name="value">The value to remove.</param>
-        /// <returns><c>true</c> if the specified pair of point and value was
-        /// in the tree, <c>false</c> otherwise.</returns>
-        public bool Remove(ref Vector2 point, T value)
+        public bool Remove(T value)
         {
-            // Get the node the entry would be in.
-            int nodeX, nodeY, nodeSize;
-            var removalNode = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
-
-            // Is the node a leaf node? If not we don't have that entry.
-            if (removalNode.IsLeaf)
+            // See if we have that entry.
+            foreach (var entry in _entries)
             {
-                // Check if we have that entry.
-                for (var entry = removalNode.LowEntry; entry != null && entry != removalNode.HighEntry.Next; entry = entry.Next)
+                if (entry.Value.Equals(value))
                 {
-                    if (entry.Value.Point.Equals(point) &&
-                        entry.Value.Value.Equals(value))
-                    {
-                        // Found it! If it's our low or high state adjust them
-                        // accordingly.
-                        var node = removalNode;
-                        while (node != null)
-                        {
-                            if (node.LowEntry == node.HighEntry)
-                            {
-                                // Only one left, clear the node.
-                                node.LowEntry = null;
-                                node.HighEntry = null;
-                            }
-                            else if (node.LowEntry == entry)
-                            {
-                                // It's the low node, adjust accordingly.
-                                node.LowEntry = node.LowEntry.Next;
-                            }
-                            else if (node.HighEntry == entry)
-                            {
-                                // It's the high node, adjust accordingly.
-                                node.HighEntry = node.HighEntry.Previous;
-                            }
-
-                            // Adjust entry count.
-                            --node.EntryCount;
-
-                            // Continue checking in our parent.
-                            node = node.Parent;
-                        }
-
-                        // Remove the entry from the list of entries.
-                        _entries.Remove(entry);
-                        FreeListNode(entry);
-
-                        // See if we can compact the node's parent. This has to
-                        // be done in a post-processing step because the entry
-                        // has to be removed first (to update entry counts).
-                        CleanNode(removalNode);
-
-                        return true;
-                    }
+                    RemoveEntry(ref entry.Point, entry.Value);
+                    return true;
                 }
             }
             return false;
-        }
-        
-        /// <summary>
-        /// Remove the specified value at the specified point from the tree.
-        /// </summary>
-        /// <param name="point">The position to remove the value at.</param>
-        /// <param name="value">The value to remove.</param>
-        /// <returns><c>true</c> if the specified pair of point and value was
-        /// in the tree, <c>false</c> otherwise.</returns>
-        public bool Remove(Vector2 point, T value)
-        {
-            return Remove(ref point, value);
         }
 
         /// <summary>
@@ -414,9 +374,9 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the neighborhood of the query point.</returns>
-        public ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null)
+        public ICollection<T> RangeQuery(ref Vector2 point, float range, ISet<T> list = null)
         {
-            var result = list ?? new List<T>();
+            var result = list ?? new HashSet<T>();
 
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
@@ -520,6 +480,71 @@ namespace Engine.Collections
 
         #region Restructuring
 
+        /// <summary>
+        /// Remove the specified value at the specified point from the tree.
+        /// </summary>
+        /// <param name="point">The position to remove the value at.</param>
+        /// <param name="value">The value to remove.</param>
+        private void RemoveEntry(ref Vector2 point, T value)
+        {
+            // Get the node the entry would be in.
+            int nodeX, nodeY, nodeSize;
+            var removalNode = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
+
+            // Is the node a leaf node? If not we don't have that entry.
+            if (removalNode.IsLeaf)
+            {
+                // Check if we have that entry.
+                for (var entry = removalNode.LowEntry; entry != null && entry != removalNode.HighEntry.Next; entry = entry.Next)
+                {
+                    if (entry.Value.Point.Equals(point) &&
+                        entry.Value.Value.Equals(value))
+                    {
+                        // Found it! If it's our low or high state adjust them
+                        // accordingly.
+                        var node = removalNode;
+                        while (node != null)
+                        {
+                            if (node.LowEntry == node.HighEntry)
+                            {
+                                // Only one left, clear the node.
+                                node.LowEntry = null;
+                                node.HighEntry = null;
+                            }
+                            else if (node.LowEntry == entry)
+                            {
+                                // It's the low node, adjust accordingly.
+                                node.LowEntry = node.LowEntry.Next;
+                            }
+                            else if (node.HighEntry == entry)
+                            {
+                                // It's the high node, adjust accordingly.
+                                node.HighEntry = node.HighEntry.Previous;
+                            }
+
+                            // Adjust entry count.
+                            --node.EntryCount;
+
+                            // Continue checking in our parent.
+                            node = node.Parent;
+                        }
+
+                        // Remove the entry from the list of entries.
+                        _entries.Remove(entry);
+                        FreeListNode(entry);
+
+                        // See if we can compact the node's parent. This has to
+                        // be done in a post-processing step because the entry
+                        // has to be removed first (to update entry counts).
+                        CleanNode(removalNode);
+
+                        // Aaaand... we're done.
+                        return;
+                    }
+                }
+            }
+        }
+        
         /// <summary>
         /// Try to clean up a node and its parents. This walks the tree towards
         /// the root, removing child nodes where possible.

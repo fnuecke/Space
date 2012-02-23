@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -10,14 +11,37 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public sealed class Index : Component
     {
-        #region Fields
+        #region Properties
 
         /// <summary>
         /// The bit mask of the index group this component will belong to.
         /// There are a total of 64 separate groups, via the 64 bits in a
         /// ulong.
         /// </summary>
-        public ulong IndexGroups;
+        public ulong IndexGroups
+        {
+            get { return _indexGroups; }
+            set
+            {
+                if (value != _indexGroups)
+                {
+                    // Figure out which groups are new.
+                    IndexGroupsChanged message;
+                    message.Entity = Entity;
+                    message.AddedIndexGroups = value & ~_indexGroups;
+                    message.RemovedIndexGroups = _indexGroups & ~value;
+                    _indexGroups = value;
+
+                    Manager.SendMessage(ref message);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Fields
+
+        private ulong _indexGroups;
 
         #endregion
 
@@ -31,7 +55,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            IndexGroups = ((Index)other).IndexGroups;
+            _indexGroups = ((Index)other).IndexGroups;
 
             return this;
         }
@@ -55,7 +79,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Reset();
 
-            IndexGroups = 0;
+            _indexGroups = 0;
         }
 
         #endregion
@@ -72,7 +96,7 @@ namespace Engine.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(IndexGroups);
+                .Write(_indexGroups);
         }
 
         /// <summary>
@@ -83,7 +107,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            IndexGroups = packet.ReadUInt64();
+            _indexGroups = packet.ReadUInt64();
         }
 
         /// <summary>
@@ -95,7 +119,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(IndexGroups));
+            hasher.Put(BitConverter.GetBytes(_indexGroups));
         }
 
         #endregion
@@ -110,7 +134,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", IndexGroups = " + IndexGroups;
+            return base.ToString() + ", IndexGroups = " + _indexGroups;
         }
 
         #endregion

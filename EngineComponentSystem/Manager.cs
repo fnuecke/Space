@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
@@ -189,9 +190,10 @@ namespace Engine.ComponentSystem
             {
                 RemoveComponent(components[components.Count - 1]);
             }
-            ReleaseEntity(_entities[entity]);
+            var instance = _entities[entity];
             _entities.Remove(entity);
             _entityIds.ReleaseId(entity);
+            ReleaseEntity(instance);
 
             // Send a message to all interested systems.
             EntityRemoved message;
@@ -216,7 +218,7 @@ namespace Engine.ComponentSystem
             }
 
             // The create the component and set it up.
-            var component = GetInstance<T>();
+            var component = (T)AllocateComponent(typeof(T));
             component.Manager = this;
             component.Id = _componentIds.GetId();
             component.Entity = entity;
@@ -558,7 +560,7 @@ namespace Engine.ComponentSystem
                 copy._entities.Clear();
                 foreach (var component in copy._components.Values)
                 {
-                    ReleaseComponent(component);
+                    copy.ReleaseComponent(component);
                 }
                 copy._components.Clear();
 
@@ -571,6 +573,7 @@ namespace Engine.ComponentSystem
                 copy._systems = new Dictionary<Type, AbstractSystem>();
                 copy._entities = new Dictionary<int, Entity>();
                 copy._components = new Dictionary<int, Component>();
+                copy._dirtyPool = new Dictionary<Type, Stack<Component>>();
 
                 // Copy systems.
                 foreach (var item in _systems)
@@ -607,7 +610,7 @@ namespace Engine.ComponentSystem
         /// components that might still be referenced in running system update
         /// loops.
         /// </summary>
-        private readonly Dictionary<Type, Stack<Component>> _dirtyPool = new Dictionary<Type, Stack<Component>>();
+        private Dictionary<Type, Stack<Component>> _dirtyPool = new Dictionary<Type, Stack<Component>>();
 
         /// <summary>
         /// Object pool for reusable instances.
@@ -618,26 +621,6 @@ namespace Engine.ComponentSystem
         /// Pool for entities (index structure only, used for faster component queries).
         /// </summary>
         private static readonly Stack<Entity> EntityPool = new Stack<Entity>();
-
-        /// <summary>
-        /// Try fetching an instance from the pool, if that fails, create a new one.
-        /// </summary>
-        /// <typeparam name="T">The type of component to get.</typeparam>
-        /// <returns>
-        /// A new component of the specified type.
-        /// </returns>
-        private static T GetInstance<T>() where T : Component, new()
-        {
-            var type = typeof(T);
-            lock (ComponentPool)
-            {
-                if (ComponentPool.ContainsKey(type) && ComponentPool[type].Count > 0)
-                {
-                    return (T)ComponentPool[type].Pop();
-                }
-            }
-            return new T();
-        }
 
         /// <summary>
         /// Try fetching an instance from the pool, if that fails, create a new one.
@@ -664,12 +647,14 @@ namespace Engine.ComponentSystem
         /// <param name="component">The component to release.</param>
         private void ReleaseComponent(Component component)
         {
+            Debug.Assert(!_components.ContainsValue(component));
             component.Reset();
             var type = component.GetType();
             if (!_dirtyPool.ContainsKey(type))
             {
                 _dirtyPool.Add(type, new Stack<Component>());
             }
+            Debug.Assert(!_dirtyPool[type].Contains(component));
             _dirtyPool[type].Push(component);
         }
 
@@ -690,8 +675,10 @@ namespace Engine.ComponentSystem
                     }
                     foreach (var instance in type.Value)
                     {
+                        Debug.Assert(!ComponentPool[type.Key].Contains(instance));  
                         ComponentPool[type.Key].Push(instance);
                     }
+                    _dirtyPool[type.Key].Clear();
                 }
             }
         }
@@ -716,8 +703,9 @@ namespace Engine.ComponentSystem
         /// Releases the entity for later reuse.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        private static void ReleaseEntity(Entity entity)
+        private void ReleaseEntity(Entity entity)
         {
+            Debug.Assert(!_entities.ContainsValue(entity));
             entity.Components.Clear();
             foreach (var cache in entity.TypeCache.Values)
             {
@@ -811,8 +799,8 @@ namespace Engine.ComponentSystem
             /// <summary>
             /// Gets the components of the specified type.
             /// </summary>
-            /// <param name="type">The type.</param>
-            /// <returns></returns>
+            /// <typeparam name="T">The type of the components to get.</typeparam>
+            /// <returns>The components of that type.</returns>
             public IEnumerable<T> GetComponents<T>() where T : Component
             {
                 var type = typeof(T);

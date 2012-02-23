@@ -120,7 +120,7 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Gets the translation to use for rendering effects.
+        /// Returns the <em>translation</em> for offsetting rendered content.
         /// </summary>
         /// <returns>
         /// The translation.
@@ -139,7 +139,8 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="effectName">The effect.</param>
         /// <param name="position">The position.</param>
-        public void Play(string effectName, ref Vector2 position)
+        /// <param name="scale">The scale.</param>
+        public void Play(string effectName, ref Vector2 position, float scale = 1f)
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
@@ -148,25 +149,22 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
 
-            // Get current translation, only trigger effects that are in
-            // visible range.
-            var translation = GetTranslation();
+            var translation = position + GetTranslation();
             var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
-            bounds.Inflate(256, 256);
+            bounds.Inflate((int)(256 * scale), (int)(256 * scale));
             if (!bounds.Contains((int)translation.X, (int)translation.Y))
             {
                 return;
             }
 
-            // Let there be sound!
+            // Let there be graphics!
             var effect = GetEffect(effectName);
-            
             effect.Trigger(position);
         }
 
         /// <summary>
-        /// Plays a sound cue with the specified name as if it were emitted by
-        /// the specified entity.
+        /// Plays an effect with the specified name as if it were emitted by
+        /// the specified entity, at an offset to the entity's center.
         /// </summary>
         /// <param name="effect">The name of the effect to play.</param>
         /// <param name="entity">The entity that emits the effect.</param>
@@ -180,11 +178,11 @@ namespace Space.ComponentSystem.Systems
             var position = transform.Translation + offset;
             var rotation = transform.Rotation + MathHelper.Pi;
 
-            Play(effect, ref position);
+            Play(effect, ref position, rotation);
         }
 
         /// <summary>
-        /// Plays a sound cue with the specified name as if it were emitted by
+        /// Plays an effect with the specified name as if it were emitted by
         /// the specified entity.
         /// </summary>
         /// <param name="effect">The name of the effect to play.</param>
@@ -216,7 +214,10 @@ namespace Space.ComponentSystem.Systems
             // called from the rendering instance.
             if (!_effects.ContainsKey(effectName))
             {
-                _effects.Add(effectName, _content.Load<ParticleEffect>(effectName));
+                var effect = _content.Load<ParticleEffect>(effectName);
+                effect.LoadContent(_content);
+                effect.Initialise();
+                _effects.Add(effectName, effect);
             }
             return _effects[effectName];
         }

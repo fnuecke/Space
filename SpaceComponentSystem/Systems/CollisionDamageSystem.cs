@@ -62,55 +62,78 @@ namespace Space.ComponentSystem.Systems
                 var firstEntity = damageMessage.FirstEntity;
                 var secondEntity = damageMessage.SecondEntity;
 
-                ApplyDamage(firstEntity, secondEntity);
-                ApplyDamage(secondEntity, firstEntity);
-            }
-        }
+                // Get damage component of involved components, and all
+                // required info for the damage checks first, because one
+                // of the two components may die midway through.
+                var firstDamage = Manager.GetComponent<CollisionDamage>(firstEntity);
+                var secondDamage = Manager.GetComponent<CollisionDamage>(secondEntity);
 
-        #endregion
+                // Get the actual values, if possible, and only if we're not
+                // on cooldown. If it's zero we simply won't try to do any
+                // damage.
+                var firstDamageValue = 0f;
+                // This is used to keep track of whether we already removed the
+                // entity because it self-destructs on impact.
+                var firstAlreadyDead = false;
+                if (firstDamage != null && !firstDamage.Cooldowns.ContainsKey(secondEntity))
+                {
+                    firstDamageValue = firstDamage.Damage;
+                    // One-shot?
+                    if (firstDamage.Cooldown == 0)
+                    {
+                        // Yes, remove from system.
+                        Manager.RemoveEntity(firstEntity);
+                        // Remember we don't need to apply damage to it.
+                        firstAlreadyDead = true;
+                    }
+                    else
+                    {
+                        // No, keep cooldown for this one, if it is still alive.
+                        firstDamage.Cooldowns.Add(secondEntity, firstDamage.Cooldown);
+                    }   
+                }
 
-        #region Utility methods
-        
-        /// <summary>
-        /// Applies the damage of the first entity to the second.
-        /// </summary>
-        /// <param name="damager">The damager.</param>
-        /// <param name="damagee">The damagee.</param>
-        private void ApplyDamage(int damager, int damagee)
-        {
-            // Get damage component of first involved component.
-            var damage = Manager.GetComponent<CollisionDamage>(damager);
+                // Same as for first entity.
+                var secondDamageValue = 0f;
+                var secondAlreadyDead = false;
+                if (secondDamage != null && !secondDamage.Cooldowns.ContainsKey(firstEntity))
+                {
+                    secondDamageValue = secondDamage.Damage;
+                    // One-shot?
+                    if (secondDamage.Cooldown == 0)
+                    {
+                        // Yes, remove from system.
+                        Manager.RemoveEntity(secondEntity);
+                        // Remember we don't need to apply damage to it.
+                        secondAlreadyDead = true;
+                    }
+                    else
+                    {
+                        // No, keep cooldown for this one, if it is still alive.
+                        secondDamage.Cooldowns.Add(firstEntity, secondDamage.Cooldown);
+                    }   
+                }
 
-            // If we don't do any damage, return.
-            if (damage == null)
-            {
-                return;
-            }
-
-            // On cooldown?
-            if (damage.Cooldowns.ContainsKey(damagee))
-            {
-                // Yes.
-                return;
-            }
-
-            // Apply damage if we can.
-            var health = Manager.GetComponent<Health>(damagee);
-            if (health != null)
-            {
-                health.SetValue(health.Value - damage.Damage);
-            }
-
-            // One-shot?
-            if (damage.Cooldown == 0)
-            {
-                // Yes, remove from system.
-                Manager.RemoveEntity(damager);
-            }
-            else if (health != null)
-            {
-                // No, keep cooldown for this one - if it had any health.
-                damage.Cooldowns.Add(damagee, damage.Cooldown);
+                // Apply damage where necessary.
+                if (!secondAlreadyDead && firstDamageValue > 0)
+                {
+                    // Apply damage to second entity.
+                    var secondHealth = Manager.GetComponent<Health>(secondEntity);
+                    if (secondHealth != null)
+                    {
+                        secondHealth.SetValue(secondHealth.Value - firstDamageValue);
+                    }
+                }
+                
+                if (!firstAlreadyDead && secondDamageValue > 0)
+                {
+                    // Apply damage to second entity.
+                    var firstHealth = Manager.GetComponent<Health>(firstEntity);
+                    if (firstHealth != null)
+                    {
+                        firstHealth.SetValue(firstHealth.Value - secondDamageValue);
+                    }
+                }
             }
         }
 

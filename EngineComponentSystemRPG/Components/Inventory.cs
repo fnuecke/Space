@@ -247,7 +247,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 // Find the first free slot.
                 for (int i = 0; i < _items.Count; ++i)
                 {
-                    if (_items[i] <= 0)
+                    if (!_items[i].HasValue)
                     {
                         // Found one, store it.
                         _items[i] = item;

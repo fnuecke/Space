@@ -109,8 +109,10 @@ namespace Space.Data
             { AttributeType.WeaponEnergyConsumption, -70 },
             { AttributeType.ShieldEfficiency, 5 },
             { AttributeType.WeaponCooldown, -20 },
-            { AttributeType.SensorRange, 0.1f}
+            { AttributeType.SensorRange, 0.1f},
+            { AttributeType.WeaponDamage, 80 }
         };
+
         #endregion
 
         /// <summary>

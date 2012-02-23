@@ -120,14 +120,6 @@ namespace Engine.ComponentSystem.Systems
             {
                 TryRemove(((ComponentRemoved)(ValueType)message).Component);
             }
-            else if (message is EntityRemoved)
-            {
-                var entity = ((EntityRemoved)(ValueType)message).Entity;
-                foreach (var component in Manager.GetComponents<TComponent>(entity))
-                {
-                    TryRemove(component);
-                }
-            }
         }
 
         /// <summary>

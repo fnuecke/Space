@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
+using Engine.Util;
 using Microsoft.Xna.Framework;
+using System.Diagnostics;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -36,7 +38,13 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private List<int> _reusableNeighborList = new List<int>();
+        private HashSet<int> _reusableNeighborList = new HashSet<int>();
+
+        /// <summary>
+        /// Used to track which pairs of entities we already checked collision
+        /// for, so as to not do get duplicate messages.
+        /// </summary>
+        private HashSet<ulong> _performedChecks = new HashSet<ulong>();
         
         #endregion
 
@@ -53,6 +61,20 @@ namespace Engine.ComponentSystem.Systems
 
         #region Logic
 
+        /// <summary>
+        /// Does a normal update but clears the list of performed checks
+        /// afterwards..
+        /// </summary>
+        /// <param name="gameTime">The game time.</param>
+        /// <param name="frame">The frame.</param>
+        public override void Update(GameTime gameTime, long frame)
+        {
+            base.Update(gameTime, frame);
+
+            // Clear for next iteration.
+            _performedChecks.Clear();
+        }
+
         protected override void UpdateComponent(GameTime gameTime, long frame, Collidable component)
         {
             var index = Manager.GetSystem<IndexSystem>();
@@ -67,7 +89,37 @@ namespace Engine.ComponentSystem.Systems
                 (ulong)(~component.CollisionGroups) << FirstIndexGroup,
                 _reusableNeighborList))
             {
+                Debug.Assert(neighbor != component.Entity);
+
+                // Test if we really need to do this check, or if it has been
+                // handled before. We do this by keeping track of the paired
+                // entity ids (packed together in one ulong).
+                var permutation = CoordinateIds.Combine(neighbor, component.Entity);
+
+                // We store tuples of (a, b), where a is an entity we already
+                // ran through. So what we need to look for are tuples that
+                // are actually (b, a), because b will be then be an entity
+                // that has *potentially* already been checked.
+                if (_performedChecks.Contains(permutation))
+                {
+                    // Already did that check, skip it.
+                    continue;
+                }
+
+                // Not checked yet, push this permutation.
+                _performedChecks.Add(CoordinateIds.Combine(component.Entity, neighbor));
+
+                // Then do the actual work.
                 TestCollision(component, Manager.GetComponent<Collidable>(neighbor));
+
+                // Stop if the component was invalidated.
+                if (!component.Enabled)
+                {
+                    // Clear the list for the next iteration (and after the
+                    // iteration so we don't keep references to stuff).
+                    _reusableNeighborList.Clear();
+                    return;
+                }
             }
 
             // Clear the list for the next iteration (and after the
@@ -111,7 +163,8 @@ namespace Engine.ComponentSystem.Systems
 
             if (copy != into)
             {
-                copy._reusableNeighborList = new List<int>(_reusableNeighborList.Capacity);
+                copy._reusableNeighborList = new HashSet<int>();
+                copy._performedChecks = new HashSet<ulong>();
             }
 
             return copy;

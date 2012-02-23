@@ -99,7 +99,7 @@ def ge(id):
 
         #region Single allocation
 
-        private static readonly List<int> ReusableItemList = new List<int>();
+        private static readonly HashSet<int> ReusableItemList = new HashSet<int>();
 
         #endregion
 
@@ -321,6 +321,7 @@ def ge(id):
                     // TODO: check if the item belongs to the player.
                     inventory.Add(item);
                 }
+                ReusableItemList.Clear();
             }
         }
 

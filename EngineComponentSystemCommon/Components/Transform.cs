@@ -69,8 +69,11 @@ namespace Engine.ComponentSystem.Components
         /// <param name="rotation">The rotation.</param>
         public Transform Initialize(Vector2 translation, float rotation)
         {
-            SetTranslation(translation);
-            SetRotation(rotation);
+            // Don't use setters because we don't want to trigger messages in
+            // initialization.
+            _translation.X = translation.X;
+            _translation.Y = translation.Y;
+            _rotation = MathHelper.WrapAngle(rotation);
 
             return this;
         }
@@ -140,7 +143,7 @@ namespace Engine.ComponentSystem.Components
             }
 #endif
 
-            if (Translation.X != x && Translation.Y != y)
+            if (Translation.X != x || Translation.Y != y)
             {
                 TranslationChanged message;
                 message.Entity = Entity;
@@ -151,10 +154,7 @@ namespace Engine.ComponentSystem.Components
 
                 message.CurrentPosition = _translation;
 
-                if (Manager != null)
-                {
-                    Manager.SendMessage(ref message);
-                }
+                Manager.SendMessage(ref message);
             }
         }
 

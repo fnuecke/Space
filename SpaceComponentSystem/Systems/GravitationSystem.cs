@@ -17,7 +17,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Reused for iterating components.
         /// </summary>
-        private List<int> _reusableNeighborList = new List<int>();
+        private HashSet<int> _reusableNeighborList = new HashSet<int>();
 
         #endregion
 
@@ -42,11 +42,11 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Then check all our neighbors.
-                foreach (var neigbour in index.
+                foreach (var neigbor in index.
                     RangeQuery(component.Entity, 2 << 13, Gravitation.IndexGroup, _reusableNeighborList))
                 {
                     // If they have an enabled gravitation component...
-                    var otherGravitation = Manager.GetComponent<Gravitation>(neigbour);
+                    var otherGravitation = Manager.GetComponent<Gravitation>(neigbor);
 
 #if DEBUG
                     // Validation.
@@ -63,8 +63,8 @@ namespace Space.ComponentSystem.Systems
                     }
 
                     // Get their velocity (which is what we'll change) and position.
-                    var otherVelocity = Manager.GetComponent<Velocity>(neigbour);
-                    var otherTransform = Manager.GetComponent<Transform>(neigbour);
+                    var otherVelocity = Manager.GetComponent<Velocity>(neigbor);
+                    var otherTransform = Manager.GetComponent<Transform>(neigbor);
 
                     // We need both.
                     if (otherVelocity != null && otherTransform != null)
@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Systems
                         const int nearDistanceSquared = 512 * 512; // We allow overriding gravity at radius 512.
                         if (distanceSquared < nearDistanceSquared)
                         {
-                            var accleration = Manager.GetComponent<Acceleration>(neigbour);
+                            var accleration = Manager.GetComponent<Acceleration>(neigbor);
                             if (accleration == null || accleration.Value == Vector2.Zero)
                             {
                                 if (otherVelocity.Value.LengthSquared() < 16 && distanceSquared < 4)
@@ -131,7 +131,7 @@ namespace Space.ComponentSystem.Systems
 
             if (copy != into)
             {
-                copy._reusableNeighborList = new List<int>();
+                copy._reusableNeighborList = new HashSet<int>();
             }
 
             return copy;

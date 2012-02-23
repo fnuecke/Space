@@ -130,7 +130,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Transform>(entity).Initialize(position);
             manager.AddComponent<Friction>(entity).Initialize(0.01f, 0.02f);
             manager.AddComponent<Acceleration>(entity);
-            manager.AddComponent<Gravitation>(entity);
+            manager.AddComponent<Gravitation>(entity).Initialize();
             manager.AddComponent<Velocity>(entity);
             manager.AddComponent<Spin>(entity);
             manager.AddComponent<ShipControl>(entity);

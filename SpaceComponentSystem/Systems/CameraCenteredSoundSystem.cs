@@ -12,7 +12,7 @@ namespace Space.ComponentSystem.Systems
     /// Defines a sound system which uses the local player's avatar to
     /// determine the listener position.
     /// </summary>
-    public sealed class PlayerCenteredSoundSystem : SoundSystem
+    public sealed class CameraCenteredSoundSystem : SoundSystem
     {
         #region Fields
 
@@ -25,7 +25,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Constructor
         
-        public PlayerCenteredSoundSystem(SoundBank soundbank, IClientSession session)
+        public CameraCenteredSoundSystem(SoundBank soundbank, IClientSession session)
             : base(soundbank)
         {
             _session = session;

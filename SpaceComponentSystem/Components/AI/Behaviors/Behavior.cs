@@ -90,12 +90,12 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// The distance to another ship we need to be under for flocking
         /// to kick in.
         /// </summary>
-        private const float FlockingThreshold = 500;
+        private const float FlockingThreshold = 600;
 
         /// <summary>
         /// The desired distance to keep to other flock members.
         /// </summary>
-        private const float FlockingSeparation = 100;
+        protected const float FlockingSeparation = 300;
 
         /// <summary>
         /// For damagers that have a gravitational pull, this is the multiple
@@ -356,8 +356,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                         // Note that FlockingSeparation / X|Y will be some
                         // value between one and infinity. We multiply this by
                         // the separation distance again, to get away quicker.
-                        direction.X -= FlockingSeparation * FlockingSeparation / toNeighbor.X;
-                        direction.Y -= FlockingSeparation * FlockingSeparation / toNeighbor.Y;
+                        direction.X += 0.5f * FlockingSeparation * FlockingSeparation / toNeighbor.X;
+                        direction.Y += 0.5f * FlockingSeparation * FlockingSeparation / toNeighbor.Y;
                     }
                     // Else we're exactly inside the other object... this
                     // is so unlikely that we just won't bother handling it.

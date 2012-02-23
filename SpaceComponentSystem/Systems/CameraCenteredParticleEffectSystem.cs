@@ -1,20 +1,18 @@
-﻿using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
-    /// Defines a render system which always translates the view to be
+    /// Defines a particle system which always translates the view to be
     /// centered to the camera.
     /// </summary>
-    public sealed class CameraCenteredTextureRenderSystem : TextureRenderSystem
+    public sealed class CameraCenteredParticleEffectSystem : ParticleEffectSystem
     {
         #region Constructor
-        
-        public CameraCenteredTextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
-            : base(content, spriteBatch)
+
+        public CameraCenteredParticleEffectSystem(Game game, IGraphicsDeviceService graphics)
+            : base(game, graphics)
         {
         }
 

@@ -16,18 +16,18 @@ namespace Engine.ComponentSystem.RPG.Systems
         /// </summary>
         public override void Receive<T>(ref T message)
         {
-            base.Receive<T>(ref message);
+            base.Receive(ref message);
 
-            if (message is EntityRemoved)
+            if (message is ComponentRemoved)
             {
-                // If an entity was removed from the game and it was an item
+                // If a component was removed from the game and it was an item
                 // remove it from all known inventories.
-                var removed = (EntityRemoved)(ValueType)message;
-                if (Manager.GetComponent<Item>(removed.Entity) != null)
+                var removed = (ComponentRemoved)(ValueType)message;
+                if (removed.Component is Item)
                 {
                     foreach (var component in Components)
                     {
-                        component.Remove(removed.Entity);
+                        component.Remove(removed.Component.Entity);
                     }
                 }
             }

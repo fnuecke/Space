@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Collections;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
 using Engine.Util;
@@ -154,8 +155,8 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <param name="list">The list to use for storing the results.</param>
         /// <returns>All entities in range (including the query entity).</returns>
-        public ICollection<int> RangeQuery(int entity, float range,
-            ulong groups = DefaultIndexGroupMask, ICollection<int> list = null)
+        public IEnumerable<int> RangeQuery(int entity, float range,
+            ulong groups = DefaultIndexGroupMask, ISet<int> list = null)
         {
             var position = Manager.GetComponent<Transform>(entity).Translation;
             return RangeQuery(ref position, range, groups, list);
@@ -169,10 +170,10 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <param name="list">The list to use for storing the results.</param>
         /// <returns>All entities in range.</returns>
-        public ICollection<int> RangeQuery(ref Vector2 query, float range,
-            ulong groups = DefaultIndexGroupMask, ICollection<int> list = null)
+        public IEnumerable<int> RangeQuery(ref Vector2 query, float range,
+            ulong groups = DefaultIndexGroupMask, ISet<int> list = null)
         {
-            list = list ?? new List<int>();
+            list = list ?? new HashSet<int>();
 
             foreach (var tree in TreesForGroups(groups))
             {
@@ -189,10 +190,10 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <param name="list">The list to use for storing the results.</param>
         /// <returns>All entities in range.</returns>
-        public ICollection<int> RangeQuery(ref Rectangle query,
-            ulong groups = DefaultIndexGroupMask, ICollection<int> list = null)
+        public IEnumerable<int> RangeQuery(ref Rectangle query,
+            ulong groups = DefaultIndexGroupMask, ISet<int> list = null)
         {
-            list = list ?? new List<int>();
+            list = list ?? new HashSet<int>();
 
             foreach (var tree in TreesForGroups(groups))
             {
@@ -200,39 +201,6 @@ namespace Engine.ComponentSystem.Systems
             }
 
             return list;
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Insert entities of added components to our index.
-        /// </summary>
-        protected override void OnComponentAdded(Index component)
-        {
-            // Get the position to add at.
-            Vector2 position = Manager.GetComponent<Transform>(component.Entity).Translation;
-
-            EnsureIndexesExist(component.IndexGroups);
-            foreach (var tree in TreesForGroups(component.IndexGroups))
-            {
-                tree.Add(ref position, component.Entity);
-            }
-        }
-
-        /// <summary>
-        /// Remove entities of removed components from our index.
-        /// </summary>
-        protected override void OnComponentRemoved(Index component)
-        {
-            // Get the position to remove from.
-            Vector2 position = Manager.GetComponent<Transform>(component.Entity).Translation;
-
-            foreach (var tree in TreesForGroups(component.IndexGroups))
-            {
-                tree.Remove(ref position, component.Entity);
-            }
         }
 
         #endregion
@@ -271,6 +239,23 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
+        #region Component removal handling
+
+        /// <summary>
+        /// Remove entities that had their index component removed from all
+        /// indexes.
+        /// </summary>
+        /// <param name="component">The component.</param>
+        protected override void OnComponentRemoved(Index component)
+        {
+            foreach (var tree in TreesForGroups(component.IndexGroups))
+            {
+                tree.Remove(component.Entity);
+            }
+        }
+
+        #endregion
+
         #region Messaging
 
         /// <summary>
@@ -282,7 +267,33 @@ namespace Engine.ComponentSystem.Systems
         {
             base.Receive(ref message);
 
-            if (message is TranslationChanged)
+            if (message is IndexGroupsChanged)
+            {
+                var changedMessage = (IndexGroupsChanged)(ValueType)message;
+
+                // Do we have new groups?
+                if (changedMessage.AddedIndexGroups != 0)
+                {
+                    // Get the position to add at, if we need to add.
+                    var position = Manager.GetComponent<Transform>(changedMessage.Entity).Translation;
+
+                    EnsureIndexesExist(changedMessage.AddedIndexGroups);
+                    foreach (var tree in TreesForGroups(changedMessage.AddedIndexGroups))
+                    {
+                        tree.Add(ref position, changedMessage.Entity);
+                    }
+                }
+
+                // Do we have deprecated groups?
+                if (changedMessage.RemovedIndexGroups != 0)
+                {
+                    foreach (var tree in TreesForGroups(changedMessage.RemovedIndexGroups))
+                    {
+                        tree.Remove(changedMessage.Entity);
+                    }
+                }
+            }
+            else if (message is TranslationChanged)
             {
                 var translationChanged = (TranslationChanged)(ValueType)message;
 
@@ -309,10 +320,7 @@ namespace Engine.ComponentSystem.Systems
                     // Update all indexes the component is part of.
                     foreach (var tree in TreesForGroups(index.IndexGroups))
                     {
-                        tree.Update(
-                            ref translationChanged.PreviousPosition,
-                            ref translationChanged.CurrentPosition,
-                            translationChanged.Entity);
+                        tree.Update(ref translationChanged.CurrentPosition, translationChanged.Entity);
                     }
                 }
             }
@@ -341,6 +349,22 @@ namespace Engine.ComponentSystem.Systems
             {
                 copy._trees = new QuadTree<int>[sizeof(ulong) * 8];
                 copy._reusableTreeList = new List<QuadTree<int>>();
+            }
+
+            for (int i = 0; i < _trees.Length; i++)
+            {
+                if (_trees[i] != null)
+                {
+                    if (copy._trees[i] == null)
+                    {
+                        copy._trees[i]  = new QuadTree<int>(MaxEntriesPerNode, MinimumNodeSize);
+                    }
+                    foreach (var entry in _trees[i])
+                    {
+                        var position = Manager.GetComponent<Transform>(entry).Translation;
+                        copy._trees[i].Add(ref position, entry);
+                    }
+                }
             }
 
             return copy;

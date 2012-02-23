@@ -137,6 +137,7 @@
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
     <Compile Include="Systems\AISystem.cs" />
+    <Compile Include="Systems\CameraCenteredParticleEffectSystem.cs" />
     <Compile Include="Systems\CameraSystem.cs" />
     <Compile Include="Systems\CollisionDamageSystem.cs" />
     <Compile Include="Systems\DeathSystem.cs" />
@@ -175,7 +176,7 @@
     <Compile Include="Systems\CellSystem.cs" />
     <Compile Include="Systems\ParticleEffectSystem.cs" />
     <Compile Include="Systems\CameraCenteredTextureRenderSystem.cs" />
-    <Compile Include="Systems\PlayerCenteredSoundSystem.cs" />
+    <Compile Include="Systems\CameraCenteredSoundSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">

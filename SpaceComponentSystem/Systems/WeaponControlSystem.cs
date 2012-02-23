@@ -31,18 +31,29 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
+        #region Single allocation
+
+        /// <summary>
+        /// Used to iterate the cooldown mapping.
+        /// </summary>
+        private List<int> _reusableEntities = new List<int>();
+
+        #endregion
+
         #region Logic
 
         public override void Update(GameTime gameTime, long frame)
         {
             // Reduce cooldowns.
-            foreach (var slot in _cooldowns.Keys)
+            _reusableEntities.AddRange(_cooldowns.Keys);
+            foreach (var slot in _reusableEntities)
             {
                 if (_cooldowns[slot] > 0)
                 {
                     --_cooldowns[slot];
                 }
             }
+            _reusableEntities.Clear();
 
             base.Update(gameTime, frame);
         }
@@ -64,18 +75,20 @@ namespace Space.ComponentSystem.Systems
             // Check all equipped weapon.
             for (int i = 0; i < equipment.GetSlotCount<Weapon>(); i++)
             {
-                // Test if this weapon is on cooldown.
-                if (_cooldowns[i] > 0)
-                {
-                    continue;
-                }
-
                 // Get the actual weapon item entity.
                 var weaponEntity = equipment.GetItem<Weapon>(i);
                 if (!weaponEntity.HasValue)
                 {
                     continue;
                 }
+
+                // Test if this weapon is on cooldown.
+                if (_cooldowns[weaponEntity.Value] > 0)
+                {
+                    continue;
+                }
+
+                // Get the weapon component.
                 var weapon = Manager.GetComponent<Weapon>(weaponEntity.Value);
 
                 // Get the energy consumption, skip if we don't have enough.
@@ -86,7 +99,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Set cooldown.
-                _cooldowns[i] = (int)(character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown) * 60f);
+                _cooldowns[weaponEntity.Value] = (int)(character.GetValue(AttributeType.WeaponCooldown, weapon.Cooldown) * 60f);
 
                 // Consume our energy.
                 energy.SetValue(energy.Value - energyConsumption);
@@ -224,6 +237,7 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._cooldowns = new Dictionary<int, int>(_cooldowns);
                 copy._random = _random.DeepCopy();
+                copy._reusableEntities = new List<int>();
             }
 
             return copy;
