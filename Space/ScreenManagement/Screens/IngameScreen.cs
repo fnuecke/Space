@@ -1,15 +1,20 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
+using Awesomium.Core;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
+using Nuclex.Input;
+using Nuclex.Input.Devices;
 using Space.Control;
 using Space.ScreenManagement.Screens.Gameplay;
-using Space.Util;
-using System.Collections.Generic;
-using Space.ScreenManagement.Screens.Ingame.Interfaces;
-using Space.ScreenManagement.Screens.Ingame.Hud;
+using Space.ScreenManagement.Screens.Helper;
 using Space.ScreenManagement.Screens.Ingame;
 using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
-using Space.ScreenManagement.Screens.Helper;
-using Microsoft.Xna.Framework.Graphics;
+using Space.ScreenManagement.Screens.Ingame.Hud;
+using Space.ScreenManagement.Screens.Ingame.Interfaces;
+using Space.Util;
 
 namespace Space.ScreenManagement.Screens
 {
@@ -18,6 +23,8 @@ namespace Space.ScreenManagement.Screens
     /// </summary>
     public sealed class IngameScreen : GameScreen
     {
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern short VkKeyScan(char ch);
 
         #region Fields
 
@@ -57,6 +64,10 @@ namespace Space.ScreenManagement.Screens
         Background _background;
 
         Inventory _inventory;
+
+        private WebView _webView;
+
+        private Texture2D _webTex;
 
         #endregion
 
@@ -105,6 +116,7 @@ namespace Space.ScreenManagement.Screens
 
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
+
         }
 
         /// <summary>
@@ -116,7 +128,7 @@ namespace Space.ScreenManagement.Screens
             SpriteBatch = ScreenManager.SpriteBatch;
             Scale = new Scale(SpriteBatch);
             Fonts.LoadContent(this, game.Content);
-            
+
             _background.LoadContent(SpriteBatch, game.Content);
 
             // loop the list of elements and load all of them
@@ -139,6 +151,94 @@ namespace Space.ScreenManagement.Screens
             // timing mechanism that we have just finished a very long frame, and that
             // it should not try to catch up.
             ScreenManager.Game.ResetElapsedTime();
+
+            _webView = WebCore.CreateWebView(800, 600);
+            _webView.FlushAlpha = false;
+            _webView.IsTransparent = true;
+
+            var keyboard = ((IKeyboard)ScreenManager.Game.Services.GetService(typeof(IKeyboard)));
+            keyboard.CharacterEntered +=
+                delegate(char ch)
+                {
+                    var evt = new WebKeyboardEvent();
+                    evt.IsSystemKey = false;
+                    if (keyboard.GetState().IsKeyDown(Keys.LeftControl) ||
+                        keyboard.GetState().IsKeyDown(Keys.RightControl))
+                    {
+                        evt.Modifiers |= WebKeyModifiers.ControlKey;
+                    }
+                    if (keyboard.GetState().IsKeyDown(Keys.LeftShift) ||
+                        keyboard.GetState().IsKeyDown(Keys.RightShift))
+                    {
+                        evt.Modifiers |= WebKeyModifiers.ShiftKey;
+                    }
+                    if (keyboard.GetState().IsKeyDown(Keys.LeftAlt) ||
+                        keyboard.GetState().IsKeyDown(Keys.RightAlt))
+                    {
+                        evt.Modifiers |= WebKeyModifiers.ShiftKey;
+                    }
+                    evt.Text = new ushort[] { ch, 0, 0, 0 };
+                    evt.UnmodifiedText = new ushort[] { ch, 0, 0, 0 };
+                    evt.VirtualKeyCode = (VirtualKey)VkKeyScan(ch);
+                    evt.NativeKeyCode = ch;
+
+                    evt.Type = WebKeyType.KeyDown;
+                    _webView.InjectKeyboardEvent(evt);
+                    WebCore.Update();
+                    Thread.Yield();
+                    evt.Type = WebKeyType.Char;
+                    _webView.InjectKeyboardEvent(evt);
+                    WebCore.Update();
+                    Thread.Yield();
+                    evt.Type = WebKeyType.KeyUp;
+                    _webView.InjectKeyboardEvent(evt);
+                    WebCore.Update();
+                    Thread.Yield();
+                };
+            var mouse = ((IMouse)ScreenManager.Game.Services.GetService(typeof(IMouse)));
+            mouse.MouseMoved +=
+                delegate(float x, float y)
+                {
+                    _webView.InjectMouseMove((int)x, (int)y);
+                };
+            mouse.MouseButtonPressed +=
+                delegate(MouseButtons buttons)
+                {
+                    switch (buttons)
+                    {
+                        case MouseButtons.Left:
+                            _webView.InjectMouseDown(MouseButton.Left);
+                            break;
+                        case MouseButtons.Right:
+                            _webView.InjectMouseDown(MouseButton.Right);
+                            break;
+                        case MouseButtons.Middle:
+                            _webView.InjectMouseDown(MouseButton.Middle);
+                            break;
+                    }
+                };
+            mouse.MouseButtonReleased +=
+                delegate(MouseButtons buttons)
+                {
+                    switch (buttons)
+                    {
+                        case MouseButtons.Left:
+                            _webView.InjectMouseUp(MouseButton.Left);
+                            break;
+                        case MouseButtons.Right:
+                            _webView.InjectMouseUp(MouseButton.Right);
+                            break;
+                        case MouseButtons.Middle:
+                            _webView.InjectMouseUp(MouseButton.Middle);
+                            break;
+                    }
+                };
+            mouse.MouseWheelRotated +=
+                delegate(float ticks)
+                {
+                    _webView.InjectMouseWheel((int)ticks);
+                };
+            _webView.LoadURL("http://www.google.com/");
         }
 
         public override void UnloadContent()
@@ -148,6 +248,13 @@ namespace Space.ScreenManagement.Screens
             if (_postprocessing != null)
             {
                 _postprocessing.Dispose();
+            }
+
+            _webView.Close();
+            if (_webTex != null)
+            {
+                _webTex.Dispose();
+                _webTex = null;
             }
         }
 
@@ -205,6 +312,8 @@ namespace Space.ScreenManagement.Screens
             {
                 _pauseAlpha = Math.Max(_pauseAlpha - 1f / 32, 0);
             }
+
+            WebCore.Update();
         }
 
         /// <summary>
@@ -224,7 +333,6 @@ namespace Space.ScreenManagement.Screens
         /// </summary>
         public override void Draw(GameTime gameTime)
         {
-
             // draw the background first
             _background.Draw();
 
@@ -249,6 +357,22 @@ namespace Space.ScreenManagement.Screens
                 float alpha = MathHelper.Lerp(1f - TransitionAlpha, 1f, _pauseAlpha / 2);
                 ScreenManager.FadeBackBufferToBlack(alpha);
             }
+
+            var webBuffer = _webView.Render();
+            if (_webTex != null && (_webTex.Width != webBuffer.Width || _webTex.Height != webBuffer.Height))
+            {
+                _webTex.Dispose();
+                _webTex = null;
+            }
+
+            if (_webTex == null)
+            {
+                _webTex = new Texture2D(SpriteBatch.GraphicsDevice, webBuffer.Width, webBuffer.Height);
+            }
+
+            SpriteBatch.Begin();
+            //SpriteBatch.Draw(webBuffer.RenderTexture2D(_webTex), Vector2.Zero, Color.White);
+            SpriteBatch.End();
         }
 
         #endregion
@@ -281,6 +405,5 @@ namespace Space.ScreenManagement.Screens
         }
 
         #endregion
-
     }
 }

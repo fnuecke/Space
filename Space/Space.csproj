@@ -73,6 +73,7 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Awesomium.Core, Version=1.6.4.0, Culture=neutral, PublicKeyToken=e1a0d7c8071a5214, processorArchitecture=x86" />
     <Reference Include="IronPython, Version=2.7.0.40, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\IronPython.dll</HintPath>
@@ -229,6 +230,10 @@
     <Content Include="GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AwesomiumXna\Awesomium.Xna.csproj">
+      <Project>{321A57BE-BAA7-46B6-A40D-7DDD83AD638F}</Project>
+      <Name>Awesomium.Xna</Name>
+    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
       <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
       <Name>Engine.ComponentSystem.Common</Name>
