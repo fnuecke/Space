@@ -36,7 +36,6 @@ namespace Engine.Util
         /// Creates a new localized content manager for the specified culture.
         /// </summary>
         /// <param name="service"></param>
-        /// <param name="culture"></param>
         public LocalizedContentManager(IServiceProvider service)
             : base(service)
         {

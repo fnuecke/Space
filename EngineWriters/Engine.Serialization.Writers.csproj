@@ -27,10 +27,6 @@
       <Private>False</Private>
       <SpecificVersion>True</SpecificVersion>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-      <SpecificVersion>True</SpecificVersion>
-    </Reference>
     <Reference Include="Microsoft.Xna.Framework.Content.Pipeline, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
       <SpecificVersion>true</SpecificVersion>
@@ -42,9 +38,6 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
   </ItemGroup>
@@ -59,10 +52,6 @@
     <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
       <Name>Engine.ComponentSystem.RPG</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
-      <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
-      <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>

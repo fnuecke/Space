@@ -79,7 +79,6 @@
       <HintPath>..\Libraries\IronPython.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Dynamic, Version=1.1.0.20, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Libraries\Microsoft.Dynamic.dll</HintPath>
@@ -99,23 +98,7 @@
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework.GamerServices, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Input.Touch, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Video, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Avatar, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Net, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Storage, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
     <Reference Include="mscorlib">
@@ -125,14 +108,6 @@
     <Reference Include="Nuclex.Input">
       <HintPath>..\Libraries\Nuclex.Input.dll</HintPath>
     </Reference>
-    <Reference Include="ProjectMercury, Version=3.1.0.0, Culture=neutral, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\ProjectMercury.dll</HintPath>
-    </Reference>
-    <Reference Include="SlimDX.DirectInput, Version=4.0.10.43, Culture=neutral, PublicKeyToken=96bb577564343f16, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\SlimDX.DirectInput.dll</HintPath>
-    </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -140,12 +115,6 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Xml.Linq">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Net">
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -230,6 +199,10 @@
     <Content Include="GameThumbnail.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AwesomiumScreenManagement\Awesomium.ScreenManagement.csproj">
+      <Project>{24918E4F-32DF-4458-B480-5854D4782D2C}</Project>
+      <Name>Awesomium.ScreenManagement</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AwesomiumXna\Awesomium.Xna.csproj">
       <Project>{321A57BE-BAA7-46B6-A40D-7DDD83AD638F}</Project>
       <Name>Awesomium.Xna</Name>
@@ -278,6 +251,11 @@
       <Name>Space.Content %28data%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
       <Project>{9F932FE2-42AC-452F-AC4C-31342FFAA7E8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SpaceGuiContent\Space.Gui.Content.contentproj">
+      <Project>{4248B6C3-D2EE-496F-9C4B-0B923962449B}</Project>
+      <Name>Space.Gui.Content %28data%29</Name>
+      <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

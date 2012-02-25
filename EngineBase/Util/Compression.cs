@@ -26,9 +26,9 @@ namespace Engine.Util
         /// <summary>
         /// Compress binary data using GZIP.
         /// </summary>
-        /// <param name="value">the raw, uncompressed data.</param>
-        /// <param name="length">how far to read in the raw data.</param>
-        /// <returns>the compressed data.</returns>
+        /// <param name="value">The raw, uncompressed data.</param>
+        /// <param name="length">How far to read in the raw data.</param>
+        /// <returns>The compressed data.</returns>
         public static byte[] Compress(byte[] value, int length)
         {
             if (value == null)
@@ -48,7 +48,7 @@ namespace Engine.Util
         /// <summary>
         /// Decompresses binary data previously compressed using GZIP.
         /// </summary>
-        /// <param name="raw">the raw, compressed data.</param>
+        /// <param name="value">The raw, compressed data.</param>
         public static byte[] Decompress(byte[] value)
         {
             if (value == null)
@@ -61,8 +61,8 @@ namespace Engine.Util
         /// <summary>
         /// Decompresses binary data previously compressed using GZIP.
         /// </summary>
-        /// <param name="value">the raw, compressed data.</param>
-        /// <param name="bufferSize">buffer size to use while decompressing.</param>
+        /// <param name="value">The raw, compressed data.</param>
+        /// <param name="bufferSize">Buffer size to use while decompressing.</param>
         /// <returns>the uncompressed data.</returns>
         public static byte[] Decompress(byte[] value, uint bufferSize)
         {
@@ -73,10 +73,10 @@ namespace Engine.Util
             using (var input = new MemoryStream(value))
             using (var gzip = new GZipStream(input, CompressionMode.Decompress))
             {
-                byte[] buffer = new byte[bufferSize];
-                using (MemoryStream output = new MemoryStream())
+                var buffer = new byte[bufferSize];
+                using (var output = new MemoryStream())
                 {
-                    int count = 0;
+                    int count;
                     while ((count = gzip.Read(buffer, 0, buffer.Length)) > 0)
                     {
                         output.Write(buffer, 0, count);

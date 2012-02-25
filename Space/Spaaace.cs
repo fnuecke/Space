@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using Awesomium.Core;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using NLog;
 using Nuclex.Input;
 using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
 using Space.Control;
-using Space.ScreenManagement;
-using Space.ScreenManagement.Screens;
 using Space.Session;
 using Space.Simulation.Commands;
 using Space.Util;
@@ -24,7 +22,7 @@ namespace Space
     /// <summary>
     /// Main class, sets up services and basic components.
     /// </summary>
-    public class Spaaace : Microsoft.Xna.Framework.Game
+    public sealed class Spaaace : Game
     {
         #region Logger
 
@@ -77,7 +75,7 @@ namespace Space
 
         private RenderTarget2D _scene;
         private SpriteBatch _spriteBatch;
-        private readonly ScreenManager _screenManager;
+        private Awesomium.ScreenManagement.ScreenManager _screenManager;
         private readonly GameConsole _console;
         private readonly GameConsoleTarget _consoleLoggerTarget;
 
@@ -183,20 +181,8 @@ namespace Space
             _console = new GameConsole(this);
             Components.Add(_console);
 
-            // Create the screen manager component.
-            _screenManager = new ScreenManager(this)
-                             {
-                                 // Update after input manager.
-                                 UpdateOrder = 10
-                             };
-            Components.Add(_screenManager);
-
-            // Activate the first screens.
-            _screenManager.AddScreen(new BackgroundScreen());
-            _screenManager.AddScreen(new MainMenuScreen());
-
             // Add a logging target that'll write to our console.
-            _consoleLoggerTarget = new GameConsoleTarget(this, LogLevel.Debug);
+            _consoleLoggerTarget = new GameConsoleTarget(this, NLog.LogLevel.Debug);
 
             // More console setup. Only one console key is supported.
             _console.Hotkey = Settings.Instance.MenuBindings.First(binding => binding.Value == Settings.MenuCommand.Console).Key;
@@ -262,10 +248,10 @@ namespace Space
         {
             if (disposing)
             {
-                _inputManager.Dispose();
-                _console.Dispose();
                 _screenManager.Dispose();
+                _console.Dispose();
                 _consoleLoggerTarget.Dispose();
+                _inputManager.Dispose();
 
                 if (_spriteBatch != null)
                 {
@@ -350,6 +336,19 @@ namespace Space
             int height = pp.BackBufferHeight;
             var format = pp.BackBufferFormat;
             _scene = new RenderTarget2D(GraphicsDevice, width, height, false, format, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+
+            _screenManager = new Awesomium.ScreenManagement.ScreenManager(this, _inputManager);
+            Components.Add(_screenManager);
+
+            _screenManager.AddCallback("Space", "host", JSHost);
+
+            _screenManager.PushScreen("Screens/MainMenu");
+        }
+
+        private void JSHost(object sender, JSCallbackEventArgs e)
+        {
+            RestartServer();
+            RestartClient(true);
         }
 
         #endregion
