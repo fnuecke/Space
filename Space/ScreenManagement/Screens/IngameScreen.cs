@@ -243,7 +243,7 @@ namespace Space.ScreenManagement.Screens
                 };
 
             // load FIFA 4 Fans as sample homepage for the web texture
-            _webView.LoadURL("http://www.fifa4fans.de/");
+            _webView.LoadURL("http://www.google.com/");
         }
 
         public override void UnloadContent()
@@ -380,7 +380,7 @@ namespace Space.ScreenManagement.Screens
             Render();
             _webView.Focus();
             SpriteBatch.Begin();
-            SpriteBatch.Draw(_webTexture, new Rectangle(0, 0, 800, 600), Color.White);
+//            SpriteBatch.Draw(_webTexture, new Rectangle(0, 0, 800, 600), Color.White);
             SpriteBatch.End();
         }
 
