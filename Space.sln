@@ -37,7 +37,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Awesomium.ScreenManagement"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Awesomium.ContentPipeline", "AwesomiumContentPipeline\Awesomium.ContentPipeline.csproj", "{ECECA87C-C991-4DA1-81C2-72690ABA79F7}"
 EndProject
-Project("{96E2B04D-8817-42C6-938A-82C39BA4D311}") = "Space.Gui.Content", "SpaceGuiContent\Space.Gui.Content.contentproj", "{4248B6C3-D2EE-496F-9C4B-0B923962449B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Gui.Content", "SpaceGuiContent\Space.Gui.Content.contentproj", "{4248B6C3-D2EE-496F-9C4B-0B923962449B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Deprecated", "SpaceDeprecated\Space.Deprecated.csproj", "{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -403,6 +405,21 @@ Global
 		{4248B6C3-D2EE-496F-9C4B-0B923962449B}.Release (TSS Threading)|x86.ActiveCfg = Debug|Any CPU
 		{4248B6C3-D2EE-496F-9C4B-0B923962449B}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{4248B6C3-D2EE-496F-9C4B-0B923962449B}.Release|x86.ActiveCfg = Debug|Any CPU
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Debug (Gamelog)|Any CPU.ActiveCfg = Debug|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Debug (Gamelog)|x86.ActiveCfg = Debug|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Debug (Gamelog)|x86.Build.0 = Debug|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Debug|x86.ActiveCfg = Debug|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Debug|x86.Build.0 = Debug|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Release (TSS Threading)|x86.Build.0 = Release|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Release|Any CPU.ActiveCfg = Release|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Release|x86.ActiveCfg = Release|x86
+		{9E8FCD67-1D59-4A3B-8BE2-44DD80A25646}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

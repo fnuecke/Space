@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Control;
 
-namespace Space.ScreenManagement.Screens.Gameplay
+namespace Space.View
 {
     /// <summary>
     /// Renderer class that's responsible for drawing planet orbits for planets

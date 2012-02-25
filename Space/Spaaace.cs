@@ -13,7 +13,6 @@ using Nuclex.Input;
 using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
 using Space.Control;
-using Space.ScreenManagement.Screens.Gameplay;
 using Space.Session;
 using Space.Simulation.Commands;
 using Space.Util;
@@ -85,7 +84,7 @@ namespace Space
         private WaveBank _waveBank;
         private SoundBank _soundBank;
 
-
+        private InputHandler _input;
         private Background _background;
         private Radar _radar;
         private Orbits _orbits;
@@ -349,6 +348,7 @@ namespace Space
             _screenManager.PushScreen("Screens/MainMenu");
             Components.Add(_screenManager);
 
+            _input = new InputHandler();
             _background = new Background(this, _spriteBatch);
             _orbits = new Orbits(this, _spriteBatch);
             _radar = new Radar(this, _spriteBatch);
@@ -367,6 +367,8 @@ namespace Space
         protected override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+
+            _input.Update();
 
             if (_audioEngine != null)
             {
@@ -406,6 +408,7 @@ namespace Space
             Client.UpdateOrder = 25;
             Components.Add(Client);
 
+            _input.Client = Client;
             _background.Client = Client;
             _radar.Client = Client;
             _orbits.Client = Client;
@@ -435,6 +438,7 @@ namespace Space
             }
             Client = null;
 
+            _input.Client = null;
             _background.Client = null;
             _radar.Client = null;
             _orbits.Client = null;

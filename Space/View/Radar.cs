@@ -10,7 +10,7 @@ using Space.Control;
 using Space.Data;
 using Space.Util;
 
-namespace Space.ScreenManagement.Screens.Gameplay
+namespace Space.View
 {
     /// <summary>
     /// Renderer class that's responsible for drawing a player's radar, i.e.
