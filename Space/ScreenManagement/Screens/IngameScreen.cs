@@ -15,6 +15,7 @@ using Space.ScreenManagement.Screens.Ingame.GuiElementManager;
 using Space.ScreenManagement.Screens.Ingame.Hud;
 using Space.ScreenManagement.Screens.Ingame.Interfaces;
 using Space.Util;
+using System.Drawing.Imaging;
 
 namespace Space.ScreenManagement.Screens
 {
@@ -66,8 +67,8 @@ namespace Space.ScreenManagement.Screens
         Inventory _inventory;
 
         private WebView _webView;
-
-        private Texture2D _webTex;
+        private Texture2D _webTexture;
+        private System.Drawing.Bitmap _frameBuffer;
 
         #endregion
 
@@ -152,10 +153,12 @@ namespace Space.ScreenManagement.Screens
             // it should not try to catch up.
             ScreenManager.Game.ResetElapsedTime();
 
+            // initialize the Web View
             _webView = WebCore.CreateWebView(800, 600);
             _webView.FlushAlpha = false;
             _webView.IsTransparent = true;
 
+            // initialize the functionality for mouse and keyboard input
             var keyboard = ((IKeyboard)ScreenManager.Game.Services.GetService(typeof(IKeyboard)));
             keyboard.CharacterEntered +=
                 delegate(char ch)
@@ -238,7 +241,9 @@ namespace Space.ScreenManagement.Screens
                 {
                     _webView.InjectMouseWheel((int)ticks);
                 };
-            _webView.LoadURL("http://www.google.com/");
+
+            // load FIFA 4 Fans as sample homepage for the web texture
+            _webView.LoadURL("http://www.fifa4fans.de/");
         }
 
         public override void UnloadContent()
@@ -251,10 +256,10 @@ namespace Space.ScreenManagement.Screens
             }
 
             _webView.Close();
-            if (_webTex != null)
+            if (_webTexture != null)
             {
-                _webTex.Dispose();
-                _webTex = null;
+                _webTexture.Dispose();
+                _webTexture = null;
             }
         }
 
@@ -359,19 +364,23 @@ namespace Space.ScreenManagement.Screens
             }
 
             var webBuffer = _webView.Render();
-            if (_webTex != null && (_webTex.Width != webBuffer.Width || _webTex.Height != webBuffer.Height))
+            if (_webTexture != null && (_webTexture.Width != webBuffer.Width || _webTexture.Height != webBuffer.Height))
             {
-                _webTex.Dispose();
-                _webTex = null;
+                _webTexture.Dispose();
+                _webTexture = null;
             }
 
-            if (_webTex == null)
+            if (_webTexture == null)
             {
-                _webTex = new Texture2D(SpriteBatch.GraphicsDevice, webBuffer.Width, webBuffer.Height);
+                _webTexture = new Texture2D(SpriteBatch.GraphicsDevice, webBuffer.Width, webBuffer.Height);
             }
 
+
+            // render and draw the web view
+            Render();
+            _webView.Focus();
             SpriteBatch.Begin();
-            //SpriteBatch.Draw(webBuffer.RenderTexture2D(_webTex), Vector2.Zero, Color.White);
+            SpriteBatch.Draw(_webTexture, new Rectangle(0, 0, 800, 600), Color.White);
             SpriteBatch.End();
         }
 
@@ -405,5 +414,58 @@ namespace Space.ScreenManagement.Screens
         }
 
         #endregion
+
+        /// <summary>
+        /// Method that renders the web view texture.
+        /// </summary>
+        void Render()
+        {
+            if (!_webView.IsEnabled)
+                return;
+
+            try
+            {
+                RenderBuffer rBuffer = _webView.Render();
+
+                // Only recreate the bitmap if the size of the buffer has changed.
+                if (_frameBuffer == null || _frameBuffer.Width != rBuffer.Width || _frameBuffer.Height != rBuffer.Height)
+                {
+                    if (_frameBuffer != null)
+                        _frameBuffer.Dispose();
+
+                    _frameBuffer = new System.Drawing.Bitmap(rBuffer.Width, rBuffer.Height, PixelFormat.Format32bppPArgb);
+                }
+
+                BitmapData bits = _frameBuffer.LockBits(
+                    new System.Drawing.Rectangle(0, 0, rBuffer.Width, rBuffer.Height),
+                    ImageLockMode.ReadWrite, _frameBuffer.PixelFormat);
+
+                // Copy to Bitmap specifying ConvertToRGBA = true.
+                rBuffer.CopyTo(bits.Scan0, bits.Stride, 4, true);
+
+                // Get the size of the buffer.
+                int bufferSize = bits.Height * bits.Stride;
+
+                // Create a data buffer.
+                byte[] bytes = new byte[bufferSize];
+
+                // Copy bitmap data into buffer.
+                System.Runtime.InteropServices.Marshal.Copy(bits.Scan0, bytes, 0, bytes.Length);
+
+                _frameBuffer.UnlockBits(bits);
+
+                if (_webTexture != null)
+                    _webTexture.Dispose();
+
+                // Copy our buffer to the texture.
+                _webTexture = new Texture2D(SpriteBatch.GraphicsDevice, rBuffer.Width, rBuffer.Height);
+                _webTexture.SetData(bytes);
+            }
+            catch { /* */ }
+            finally
+            {
+                GC.Collect();
+            }
+        }
     }
 }
