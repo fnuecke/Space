@@ -95,12 +95,15 @@ namespace Awesomium.ScreenManagement
                 mouse.MouseWheelRotated += HandleMouseWheelRotated;
             }
 
-            var config = new WebCoreConfig
-                         {
-                             ForceSingleProcess = true,
-                             ProxyServer = "none"
-                         };
-            WebCore.Initialize(config);
+            if (!WebCore.IsRunning)
+            {
+                var config = new WebCoreConfig
+                             {
+                                 ForceSingleProcess = true,
+                                 ProxyServer = "none"
+                             };
+                WebCore.Initialize(config);
+            }
 
             AddCallback("Screens", "push", JSPushScreen);
             AddCallback("Screens", "pop", JSPopScreen);
