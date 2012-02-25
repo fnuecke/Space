@@ -5,6 +5,7 @@ using System.Text;
 using Awesomium.Core;
 using Awesomium.Xna;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
@@ -28,9 +29,20 @@ namespace Awesomium.ScreenManagement
         #region Fields
 
         /// <summary>
+        /// The sprite batch to render into.
+        /// </summary>
+        private readonly SpriteBatch _spriteBatch;
+
+        /// <summary>
         /// The input manager used for updating.
         /// </summary>
         private readonly InputManager _inputManager;
+
+        /// <summary>
+        /// Buffered result we keep until the current view is flagged dirty
+        /// again.
+        /// </summary>
+        private RenderBuffer _renderBuffer;
 
         /// <summary>
         /// Used to render screens into before painting them to the screen.
@@ -55,10 +67,12 @@ namespace Awesomium.ScreenManagement
         /// Initializes a new instance of the <see cref="ScreenManager"/> class.
         /// </summary>
         /// <param name="game">The game.</param>
+        /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
         /// <param name="manager">The input manager to use.</param>
-        public ScreenManager(Game game, InputManager manager)
+        public ScreenManager(Game game, SpriteBatch spriteBatch, InputManager manager)
             : base(game)
         {
+            _spriteBatch = spriteBatch;
             _inputManager = manager;
             ScrollAmount = 100;
 
@@ -127,27 +141,36 @@ namespace Awesomium.ScreenManagement
 
         #region Logic
 
-        /// <summary>
-        /// Updates the Awesomium WebCore.
-        /// </summary>
-        public void Update()
+        public override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
+
             WebCore.Update();
         }
 
         /// <summary>
         /// Draws all active screens on top of each other.
         /// </summary>
-        /// <param name="spriteBatch">The sprite batch.</param>
-        public void Draw(SpriteBatch spriteBatch)
+        /// <param name="gameTime">Time that passed since the last call to draw.</param>
+        public override void Draw(GameTime gameTime)
         {
-            spriteBatch.Begin();
-            //foreach (var screen in _screens)
+            base.Draw(gameTime);
+
+            if (_screens.Count < 1)
             {
-                _screens.Peek().Render().RenderTexture2D(_backBuffer);
-                spriteBatch.Draw(_backBuffer, Vector2.Zero, Color.White);
+                return;
             }
-            spriteBatch.End();
+
+            var screen = _screens.Peek();
+            if (_renderBuffer == null || screen.IsDirty)
+            {
+                _renderBuffer = screen.Render();
+            }
+
+            _renderBuffer.RenderTexture2D(_backBuffer);
+            _spriteBatch.Begin();
+            _spriteBatch.Draw(_backBuffer, Vector2.Zero, Color.White);
+            _spriteBatch.End();
         }
 
         #endregion
@@ -172,12 +195,9 @@ namespace Awesomium.ScreenManagement
                 screen.SetObjectCallback(parts[0], parts[1], callback.Value);
             }
             screen.LoadHTML(html);
-            if (_screens.Count > 0)
-            {
-                _screens.Peek().Unfocus();
-            }
             screen.Focus();
             _screens.Push(screen);
+            _renderBuffer = null;
         }
 
         /// <summary>
@@ -191,12 +211,12 @@ namespace Awesomium.ScreenManagement
             }
 
             var top = _screens.Pop();
-            top.Unfocus();
             if (_screens.Count > 0)
             {
                 _screens.Peek().Focus();
             }
             top.Close();
+            _renderBuffer = null;
         }
 
         /// <summary>
@@ -422,30 +442,36 @@ namespace Awesomium.ScreenManagement
         /// <returns></returns>
         private ResourceResponse HandleResourceRequest(object sender, ResourceRequestEventArgs e)
         {
-            //return new ResourceResponse(_content.Load<byte[]>(e.Request.Url), "binary");
-            var url = e.Request.Url.Replace("local://base_request.html/", "");
-            var extIndex = url.LastIndexOf(".", StringComparison.InvariantCulture);
-            var assetName = url.Substring(0, extIndex);
-            var assetExtension = url.Substring(extIndex + 1);
-            switch (assetExtension)
+            try
             {
-                case "png":
-                case "gif":
-                case "jpg":
-                case "jpeg":
-                    var image = Game.Content.Load<Texture2D>(assetName);
-                    using (var pngStream = new MemoryStream())
-                    {
-                        image.SaveAsPng(pngStream, image.Width, image.Height);
-                        return new ResourceResponse(pngStream.GetBuffer(), "image/png");
-                    }
-                case "css":
-                    return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/css");
-                case "html":
-                case "xhtml":
-                    return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/html");
-                case "js":
-                    return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/javascript");
+                var url = e.Request.Url.Replace("local://base_request.html/", "");
+                var extIndex = url.LastIndexOf(".", StringComparison.InvariantCulture);
+                var assetName = url.Substring(0, extIndex);
+                var assetExtension = url.Substring(extIndex + 1);
+                switch (assetExtension)
+                {
+                    case "png":
+                    case "gif":
+                    case "jpg":
+                    case "jpeg":
+                        var image = Game.Content.Load<Texture2D>(assetName);
+                        using (var pngStream = new MemoryStream())
+                        {
+                            image.SaveAsPng(pngStream, image.Width, image.Height);
+                            return new ResourceResponse(pngStream.GetBuffer(), "image/png");
+                        }
+                    case "css":
+                        return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/css");
+                    case "html":
+                    case "xhtml":
+                        return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/html");
+                    case "js":
+                        return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/javascript");
+                }
+            }
+            catch (ContentLoadException)
+            {
+                // Failed loading that asset, return null.
             }
             // We cannot handle that request, abort it.
             e.Request.Cancel();

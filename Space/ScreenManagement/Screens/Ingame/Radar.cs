@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Session;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Control;
 using Space.Data;
-using Space.ScreenManagement.Screens.Helper;
-using Space.ScreenManagement.Screens.Ingame.Interfaces;
 using Space.Util;
 
 namespace Space.ScreenManagement.Screens.Gameplay
@@ -19,7 +17,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// the overlay that displays icons for nearby but out-of-screen objects
     /// of interest (ones with a <c>Detectable</c> component).
     /// </summary>
-    sealed class Radar : AbstractGuiElement
+    sealed class Radar
     {
         #region Types
 
@@ -71,7 +69,21 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the game client for which to render the orbits.
+        /// </summary>
+        public GameClient Client { get; set; }
+
+        #endregion
+
         #region Fields
+
+        /// <summary>
+        /// The sprite batch to render the orbits into.
+        /// </summary>
+        private readonly SpriteBatch _spriteBatch;
 
         /// <summary>
         /// Background image for radar icons.
@@ -106,31 +118,21 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
         #region Constructor
 
-        public Radar(GameClient client)
-            : base(client)
+        public Radar(Game game, SpriteBatch spriteBatch)
         {
-        }
+            _spriteBatch = spriteBatch;
 
-        /// <summary>
-        /// Load graphics content for the game.
-        /// </summary>
-        public override void LoadContent(IngameScreen ingame, ContentManager content)
-        {
-            _spriteBatch = ingame.SpriteBatch;
-
-            _radarDirection[(int)RadarDirection.Top] = content.Load<Texture2D>("Textures/Radar/top");
-            _radarDirection[(int)RadarDirection.Left] = content.Load<Texture2D>("Textures/Radar/left");
-            _radarDirection[(int)RadarDirection.Right] = content.Load<Texture2D>("Textures/Radar/right");
-            _radarDirection[(int)RadarDirection.Bottom] = content.Load<Texture2D>("Textures/Radar/bottom");
-            _radarDirection[(int)RadarDirection.TopLeft] = content.Load<Texture2D>("Textures/Radar/top_left");
-            _radarDirection[(int)RadarDirection.TopRight] = content.Load<Texture2D>("Textures/Radar/top_right");
-            _radarDirection[(int)RadarDirection.BottomLeft] = content.Load<Texture2D>("Textures/Radar/bottom_left");
-            _radarDirection[(int)RadarDirection.BottomRight] = content.Load<Texture2D>("Textures/Radar/bottom_right");
-            _radarDistance = content.Load<Texture2D>("Textures/Radar/distance");
-            _radarTarget = content.Load<Texture2D>("Textures/Radar/target");
-            _distanceFont = content.Load<SpriteFont>("Fonts/visitor");
-
-            _basicForms = new BasicForms(_spriteBatch, _client);
+            _radarDirection[(int)RadarDirection.Top] = game.Content.Load<Texture2D>("Textures/Radar/top");
+            _radarDirection[(int)RadarDirection.Left] = game.Content.Load<Texture2D>("Textures/Radar/left");
+            _radarDirection[(int)RadarDirection.Right] = game.Content.Load<Texture2D>("Textures/Radar/right");
+            _radarDirection[(int)RadarDirection.Bottom] = game.Content.Load<Texture2D>("Textures/Radar/bottom");
+            _radarDirection[(int)RadarDirection.TopLeft] = game.Content.Load<Texture2D>("Textures/Radar/top_left");
+            _radarDirection[(int)RadarDirection.TopRight] = game.Content.Load<Texture2D>("Textures/Radar/top_right");
+            _radarDirection[(int)RadarDirection.BottomLeft] = game.Content.Load<Texture2D>("Textures/Radar/bottom_left");
+            _radarDirection[(int)RadarDirection.BottomRight] = game.Content.Load<Texture2D>("Textures/Radar/bottom_right");
+            _radarDistance = game.Content.Load<Texture2D>("Textures/Radar/distance");
+            _radarTarget = game.Content.Load<Texture2D>("Textures/Radar/target");
+            _distanceFont = game.Content.Load<SpriteFont>("Fonts/visitor");
         }
 
         #endregion
@@ -141,10 +143,15 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// Render our local radar system, with whatever detectables are close
         /// enough.
         /// </summary>
-        public override void Draw()
+        public void Draw()
         {
+            if (Client == null || Client.Controller.Session.ConnectionState != ClientState.Connected)
+            {
+                return;
+            }
+
             // Get local player's avatar.
-            var info = _client.GetPlayerShipInfo();
+            var info = Client.GetPlayerShipInfo();
 
             // Can't do anything without an avatar.
             if (info == null)
@@ -153,7 +160,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             }
 
             // Fetch all the components we need.
-            var index = _client.GetSystem<IndexSystem>();
+            var index = Client.GetSystem<IndexSystem>();
 
             // Bail if we're missing something.
             if (index == null)
@@ -165,7 +172,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // actually allow the player to "extend" his radar by the maximum
             // distance of the camera to his ship. That'll be a negligible
             // amount, however, in relation to the total radar range.
-            var position = _client.GetCameraPosition();
+            var position = Client.GetCameraPosition();
 
             // Figure out the overall range of our radar system.
             var radarRange = info.RadarRange;
@@ -204,24 +211,15 @@ namespace Space.ScreenManagement.Screens.Gameplay
             // Begin drawing.
             _spriteBatch.Begin();
 
-            // Make the background of the radar a bit darker...
-            _basicForms.FillRectangle(0, 0, RadarBorderSize, screenBounds.Height, Color.Black * 0.15f);
-            _basicForms.FillRectangle(screenBounds.Width - RadarBorderSize, 0, RadarBorderSize, screenBounds.Height, Color.Black * 0.15f);
-            _basicForms.FillRectangle(RadarBorderSize, 0, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Black * 0.15f);
-            _basicForms.FillRectangle(RadarBorderSize, screenBounds.Height - RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Black * 0.15f);
-
-            // ... and the border of the radar a bit lighter.
-            _basicForms.DrawRectangle(RadarBorderSize, RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, screenBounds.Height - 2 * RadarBorderSize, Color.White * 0.1f);
-
             // Color the background of the radar red if health is low...
             float healthPercent = info.RelativeHealth;
             if (info.RelativeHealth < HealthIndicatorThreshold)
             {
                 float redAlpha = (1 - healthPercent / HealthIndicatorThreshold) / 2;
-                _basicForms.FillRectangle(0, 0, RadarBorderSize, screenBounds.Height, Color.Red * redAlpha);
-                _basicForms.FillRectangle(screenBounds.Width - RadarBorderSize, 0, RadarBorderSize, screenBounds.Height, Color.Red * redAlpha);
-                _basicForms.FillRectangle(RadarBorderSize, 0, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
-                _basicForms.FillRectangle(RadarBorderSize, screenBounds.Height - RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
+                //_basicForms.FillRectangle(0, 0, RadarBorderSize, screenBounds.Height, Color.Red * redAlpha);
+                //_basicForms.FillRectangle(screenBounds.Width - RadarBorderSize, 0, RadarBorderSize, screenBounds.Height, Color.Red * redAlpha);
+                //_basicForms.FillRectangle(RadarBorderSize, 0, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
+                //_basicForms.FillRectangle(RadarBorderSize, screenBounds.Height - RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
             }
 
             // Loop through all our neighbors.
@@ -229,9 +227,9 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 RangeQuery(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
             {
                 // Get the components we need.
-                var neighborTransform = _client.GetComponent<Transform>(neighbor);
-                var neighborDetectable = _client.GetComponent<Detectable>(neighbor);
-                var faction = _client.GetComponent<Faction>(neighbor);
+                var neighborTransform = Client.GetComponent<Transform>(neighbor);
+                var neighborDetectable = Client.GetComponent<Detectable>(neighbor);
+                var faction = Client.GetComponent<Faction>(neighbor);
 
                 // Bail if we're missing something.
                 if (neighborTransform == null || neighborDetectable.Texture == null)

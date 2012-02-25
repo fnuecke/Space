@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Awesomium.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
@@ -93,15 +92,16 @@ namespace Space.ScreenManagement.Screens
             Fonts = new Fonts();
 
             _elements = new List<AbstractGuiElement>();
-            _elements.Add(new Orbits(client));
-            _elements.Add(new Radar(client));
+            //_elements.Add(new Orbits(client.Game, ScreenManager.SpriteBatch));
+            //_elements.Add(new Radar(client.Game, ScreenManager.SpriteBatch));
 
             _inventory = new Inventory(client, _itemManager, _textureManager);
             _elements.Add(_inventory);
 
             _elements.Add(new MouseLayer(client, _itemManager, _textureManager));
 
-            _background = new Background(client);
+            //_background = new Background(client.Game, ScreenManager.SpriteBatch);
+            _background.Client = client;
 
             TransitionOnTime = TimeSpan.FromSeconds(1.5);
             TransitionOffTime = TimeSpan.FromSeconds(0.5);
@@ -118,7 +118,7 @@ namespace Space.ScreenManagement.Screens
             Scale = new Scale(SpriteBatch);
             Fonts.LoadContent(this, game.Content);
 
-            _background.LoadContent(SpriteBatch, game.Content);
+            //_background.LoadContent(SpriteBatch, game.Content);
 
             // loop the list of elements and load all of them
             foreach (AbstractGuiElement e in _elements)
@@ -206,8 +206,6 @@ namespace Space.ScreenManagement.Screens
             {
                 _pauseAlpha = Math.Max(_pauseAlpha - 1f / 32, 0);
             }
-
-            WebCore.Update();
         }
 
         /// <summary>

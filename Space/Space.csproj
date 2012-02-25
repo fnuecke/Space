@@ -203,10 +203,6 @@
       <Project>{24918E4F-32DF-4458-B480-5854D4782D2C}</Project>
       <Name>Awesomium.ScreenManagement</Name>
     </ProjectReference>
-    <ProjectReference Include="..\AwesomiumXna\Awesomium.Xna.csproj">
-      <Project>{321A57BE-BAA7-46B6-A40D-7DDD83AD638F}</Project>
-      <Name>Awesomium.Xna</Name>
-    </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
       <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
       <Name>Engine.ComponentSystem.Common</Name>

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using Awesomium.Core;
+using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -12,6 +13,7 @@ using Nuclex.Input;
 using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
 using Space.Control;
+using Space.ScreenManagement.Screens.Gameplay;
 using Space.Session;
 using Space.Simulation.Commands;
 using Space.Util;
@@ -82,6 +84,11 @@ namespace Space
         private AudioEngine _audioEngine;
         private WaveBank _waveBank;
         private SoundBank _soundBank;
+
+
+        private Background _background;
+        private Radar _radar;
+        private Orbits _orbits;
 
         private readonly DoubleSampling _fps = new DoubleSampling(30);
 
@@ -337,12 +344,14 @@ namespace Space
             var format = pp.BackBufferFormat;
             _scene = new RenderTarget2D(GraphicsDevice, width, height, false, format, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
 
-            _screenManager = new Awesomium.ScreenManagement.ScreenManager(this, _inputManager);
+            _screenManager = new Awesomium.ScreenManagement.ScreenManager(this, _spriteBatch, _inputManager);
+            _screenManager.AddCallback("Space", "host", JSHost);
+            _screenManager.PushScreen("Screens/MainMenu");
             Components.Add(_screenManager);
 
-            _screenManager.AddCallback("Space", "host", JSHost);
-
-            _screenManager.PushScreen("Screens/MainMenu");
+            _background = new Background(this, _spriteBatch);
+            _orbits = new Orbits(this, _spriteBatch);
+            _radar = new Radar(this, _spriteBatch);
         }
 
         private void JSHost(object sender, JSCallbackEventArgs e)
@@ -396,6 +405,10 @@ namespace Space
             // Update after screen manager (input) but before server (logic).
             Client.UpdateOrder = 25;
             Components.Add(Client);
+
+            _background.Client = Client;
+            _radar.Client = Client;
+            _orbits.Client = Client;
         }
 
         /// <summary>
@@ -421,6 +434,10 @@ namespace Space
                 Components.Remove(Client);
             }
             Client = null;
+
+            _background.Client = null;
+            _radar.Client = null;
+            _orbits.Client = null;
         }
 
         /// <summary>
@@ -446,22 +463,54 @@ namespace Space
 
         #endregion
 
-#if DEBUG
-        private Engine.Graphics.Rectangle _indexRectangle;
-        private int _indexGroup = -1;
-#endif
-
         /// <summary>
         /// This is called when the game should draw itself.
         /// </summary>
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            // Set our custom render target to render everything into an
+            // off-screen texture, first.
             GraphicsDevice.SetRenderTarget(_scene);
             GraphicsDevice.Clear(Color.DarkSlateGray);
 
+            // Draw the overall space background.
+            _background.Draw();
+
+            // Draw the orbit lines behind ingame objects.
+            _orbits.Draw();
+
+            // Draw world elements if we're in a game.
+            if (Client != null && Client.Controller.Session.ConnectionState == ClientState.Connected)
+            {
+                Client.Controller.Draw(gameTime);
+            }
+
+            // Draw radar in foreground.
+            _radar.Draw();
+
+            // Draw other stuff (GUI for example).
             base.Draw(gameTime);
-            
+
+            // Draw some debug info on top of everything.
+            DrawDebugInfo(gameTime);
+
+            // Reset our graphics device (pop our off-screen render target).
+            GraphicsDevice.SetRenderTarget(null);
+
+            // Dump everything we rendered into our buffer to the screen.
+            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
+            _spriteBatch.Draw(_scene, GraphicsDevice.PresentationParameters.Bounds, Color.White);
+            _spriteBatch.End();
+        }
+
+#if DEBUG
+        private Engine.Graphics.Rectangle _indexRectangle;
+        private int _indexGroup = -1;
+#endif
+
+        private void DrawDebugInfo(GameTime gameTime)
+        {
 #if DEBUG
             if (_indexRectangle == null)
             {
@@ -549,12 +598,6 @@ namespace Space
                 }
             }
 #endif
-
-            GraphicsDevice.SetRenderTarget(null);
-
-            _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
-            _spriteBatch.Draw(_scene, GraphicsDevice.PresentationParameters.Bounds, Color.White);
-            _spriteBatch.End();
         }
 
         /// <summary>

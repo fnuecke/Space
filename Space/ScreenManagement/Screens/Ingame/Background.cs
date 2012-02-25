@@ -1,6 +1,5 @@
 ﻿using Engine.Graphics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.Control;
 
@@ -12,61 +11,57 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// </summary>
     public sealed class Background : AbstractShape
     {
-        #region Fields
+        #region Properties
 
         /// <summary>
         /// The local client, used to fetch player's position, to compute our
         /// translation.
         /// </summary>
-        private readonly GameClient _client;
+        public GameClient Client { get; set; }
+
+        #endregion
+
+        #region Fields
 
         /// <summary>
         /// Sprite batch used for rendering.
         /// </summary>
-        private SpriteBatch _spriteBatch;
+        private readonly SpriteBatch _spriteBatch;
 
         /// <summary>
         /// The overall background image (stars).
         /// </summary>
-        private Texture2D _backgroundStars;
+        private readonly Texture2D _backgroundStars;
 
         /// <summary>
         /// Layer to blot out some of the stars.
         /// </summary>
-        private Texture2D _backgroundDarkMatter;
+        private readonly Texture2D _backgroundDarkMatter;
 
         /// <summary>
         /// Smaller debris, rendered in the background.
         /// </summary>
-        private Texture2D _backgroundDebrisSmall;
+        private readonly Texture2D _backgroundDebrisSmall;
 
         /// <summary>
         /// Larger debris, rendered nearly at the foreground (i.e. the layer
         /// game objects are on, including players' ships).
         /// </summary>
-        private Texture2D _backgroundDebrisLarge;
+        private readonly Texture2D _backgroundDebrisLarge;
 
         #endregion
 
         #region Constructor
 
-        public Background(GameClient client)
-            : base(client.Game, "Shaders/Space")
-        {
-            _client = client;
-        }
-        
-        /// <summary>
-        /// Load graphics content for the game.
-        /// </summary>
-        public void LoadContent( SpriteBatch spriteBatch, ContentManager content)
+        public Background(Game game, SpriteBatch spriteBatch)
+            : base(game, "Shaders/Space")
         {
             _spriteBatch = spriteBatch;
 
-            _backgroundStars = content.Load<Texture2D>("Textures/Space/stars");
-            _backgroundDarkMatter = content.Load<Texture2D>("Textures/Space/dark_matter");
-            _backgroundDebrisSmall = content.Load<Texture2D>("Textures/Space/debris_small");
-            _backgroundDebrisLarge = content.Load<Texture2D>("Textures/Space/debris_large");
+            _backgroundStars = game.Content.Load<Texture2D>("Textures/Space/stars");
+            _backgroundDarkMatter = game.Content.Load<Texture2D>("Textures/Space/dark_matter");
+            _backgroundDebrisSmall = game.Content.Load<Texture2D>("Textures/Space/debris_small");
+            _backgroundDebrisLarge = game.Content.Load<Texture2D>("Textures/Space/debris_large");
 
             // Normally we'd want to set the parameters each draw call, but we
             // only use this shader in one place, so it's OK to do this once.
@@ -83,7 +78,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
             var maxsize = System.Math.Max(viewport.Width, viewport.Width);
             SetSize(maxsize);
-            SetCenter(viewport.Width / 2, viewport.Height / 2);
+            SetCenter(viewport.Width / 2f, viewport.Height / 2f);
 
             // Adjust texture coordinates.
             _vertices[0].Tex0.X = 0;
@@ -95,7 +90,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
             _vertices[3].Tex0.X = 1;
             _vertices[3].Tex0.Y = 1;
         }
-
+        
         #endregion
 
         #region Drawing
@@ -106,7 +101,10 @@ namespace Space.ScreenManagement.Screens.Gameplay
         protected override void AdjustParameters()
         {
             // Get local camera position.
-            _effect.Parameters["Position"].SetValue(_client.GetCameraPosition() / _width);
+            if (Client != null)
+            {
+                _effect.Parameters["Position"].SetValue(Client.GetCameraPosition() / _width);
+            }
         }
 
         #endregion

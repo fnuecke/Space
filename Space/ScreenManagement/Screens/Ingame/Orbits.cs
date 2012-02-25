@@ -2,11 +2,11 @@
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
+using Engine.Session;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Control;
-using Space.ScreenManagement.Screens.Ingame.Interfaces;
 
 namespace Space.ScreenManagement.Screens.Gameplay
 {
@@ -14,7 +14,7 @@ namespace Space.ScreenManagement.Screens.Gameplay
     /// Renderer class that's responsible for drawing planet orbits for planets
     /// that are in range of the player's scanners.
     /// </summary>
-    sealed class Orbits : AbstractGuiElement
+    sealed class Orbits
     {
         #region Constants
 
@@ -41,7 +41,21 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
         #endregion
 
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets the game client for which to render the orbits.
+        /// </summary>
+        public GameClient Client { get; set; }
+
+        #endregion
+
         #region Fields
+
+        /// <summary>
+        /// The sprite batch to render the orbits into.
+        /// </summary>
+        private readonly SpriteBatch _spriteBatch;
 
         /// <summary>
         /// Used to draw orbits.
@@ -67,22 +81,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
         
         #region Constructor
 
-        public Orbits(GameClient client)
-            : base(client)
+        public Orbits(Game game, SpriteBatch spriteBatch)
         {
-            _orbitEllipse = new Ellipse(client.Game);
+            _spriteBatch = spriteBatch;
+            _orbitEllipse = new Ellipse(game);
             _orbitEllipse.SetThickness(OrbitThickness);
-            _deadZoneEllipse = new FilledEllipse(_client.Game);
+            _deadZoneEllipse = new FilledEllipse(game);
             _deadZoneEllipse.SetGradient(DeadZoneDiffuseWidth);
             _deadZoneEllipse.SetColor(DeadZoneColor);
-        }
-
-        /// <summary>
-        /// Load graphics content for the game.
-        /// </summary>
-        public override void LoadContent(IngameScreen ingame, ContentManager content)
-        {
-            _spriteBatch = ingame.SpriteBatch;
         }
 
         #endregion
@@ -93,10 +99,15 @@ namespace Space.ScreenManagement.Screens.Gameplay
         /// Render our local radar system, with whatever detectables are close
         /// enough.
         /// </summary>
-        public override void Draw()
+        public void Draw()
         {
+            if (Client == null || Client.Controller.Session.ConnectionState != ClientState.Connected)
+            {
+                return;
+            }
+
             // Get local player's avatar.
-            var info = _client.GetPlayerShipInfo();
+            var info = Client.GetPlayerShipInfo();
 
             // Can't do anything without an avatar.
             if (info == null)
@@ -105,8 +116,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
             }
 
             // Fetch all the components we need.
-            var position = _client.GetCameraPosition();
-            var index = _client.GetSystem<IndexSystem>();
+            var position = Client.GetCameraPosition();
+            var index = Client.GetSystem<IndexSystem>();
 
             // Bail if we're missing something.
             if (index == null)
@@ -144,8 +155,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 RangeQuery(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
             {
                 // Get the components we need.
-                var neighborTransform = _client.GetComponent<Transform>(neighbor);
-                var neighborDetectable = _client.GetComponent<Detectable>(neighbor);
+                var neighborTransform = Client.GetComponent<Transform>(neighbor);
+                var neighborDetectable = Client.GetComponent<Detectable>(neighbor);
 
                 // Bail if we're missing something.
                 if (neighborTransform == null || neighborDetectable.Texture == null)
@@ -168,14 +179,14 @@ namespace Space.ScreenManagement.Screens.Gameplay
 
                 // If it's an astronomical object, check if its orbit is
                 // potentially in our screen space, if so draw it.
-                var ellipse = _client.GetComponent<EllipsePath>(neighbor);
+                var ellipse = Client.GetComponent<EllipsePath>(neighbor);
                 if (ellipse != null)
                 {
                     // The entity we're orbiting around is at one of the two
                     // foci of the ellipse. We want the center, though.
 
                     // Get the current position of the entity we're orbiting.
-                    var focusTransform = _client.GetComponent<Transform>(ellipse.CenterEntityId).Translation;
+                    var focusTransform = Client.GetComponent<Transform>(ellipse.CenterEntityId).Translation;
 
                     // Compute the distance of the ellipse's foci to the center
                     // of the ellipse.
@@ -224,8 +235,8 @@ namespace Space.ScreenManagement.Screens.Gameplay
                 // If the neighbor does collision damage and is an attractor,
                 // show the "dead zone" (i.e. the area beyond the point of no
                 // return).
-                var neighborGravitation = _client.GetComponent<Gravitation>(neighbor);
-                var neighborCollisionDamage = _client.GetComponent<CollisionDamage>(neighbor);
+                var neighborGravitation = Client.GetComponent<Gravitation>(neighbor);
+                var neighborCollisionDamage = Client.GetComponent<CollisionDamage>(neighbor);
                 if (neighborCollisionDamage == null || neighborGravitation == null ||
                     (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) == 0)
                 {
