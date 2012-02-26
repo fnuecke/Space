@@ -55,6 +55,11 @@ namespace Awesomium.ScreenManagement
         private readonly Dictionary<string, JSCallback> _callbacks = new Dictionary<string, JSCallback>();
 
         /// <summary>
+        /// List of values to expose to our screens.
+        /// </summary>
+        private readonly Dictionary<string, JSValue> _values = new Dictionary<string, JSValue>();
+
+        /// <summary>
         /// All currently tracked screens.
         /// </summary>
         private readonly Stack<WebView> _screens = new Stack<WebView>();
@@ -197,6 +202,12 @@ namespace Awesomium.ScreenManagement
                 screen.CreateObject(parts[0]);
                 screen.SetObjectCallback(parts[0], parts[1], callback.Value);
             }
+            foreach (var value in _values)
+            {
+                var parts = value.Key.Split(new[] { '.' }, 2);
+                screen.CreateObject(parts[0]);
+                screen.SetObjectProperty(parts[0], parts[1], value.Value);
+            }
             screen.LoadHTML(html);
             screen.Focus();
             _screens.Push(screen);
@@ -261,6 +272,31 @@ namespace Awesomium.ScreenManagement
                 {
                     screen.SetObjectCallback(nameSpace, name, null);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Sets a variable to be available to all screens.
+        /// </summary>
+        /// <param name="nameSpace">The name space to add the value to.</param>
+        /// <param name="name">The name of the value.</param>
+        /// <param name="value">The value.</param>
+        public void SetVariable(string nameSpace, string name, JSValue value)
+        {
+            if (String.IsNullOrWhiteSpace(nameSpace))
+            {
+                throw new ArgumentException("Invalid namespace, must not be empty.");
+            }
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Invalid name, must not be empty.");
+            }
+
+            _values[nameSpace + "." + name] = value;
+            foreach (var screen in _screens)
+            {
+                screen.CreateObject(nameSpace);
+                screen.SetObjectProperty(nameSpace, name, value);
             }
         }
 

@@ -19,17 +19,6 @@ namespace Engine.Simulation
     /// </summary>
     public abstract class AbstractSimulation : ISimulation
     {
-        #region Logger
-
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Logger for game log (i.e. steps happening in a simulation).
-        /// </summary>
-        private static NLog.Logger gamelog = NLog.LogManager.GetLogger("GameLog.Simulation");
-#endif
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -41,15 +30,6 @@ namespace Engine.Simulation
         /// All entities registered with this manager.
         /// </summary>
         public IManager Manager { get; private set; }
-
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Whether to log any game state changes in detail, for debugging.
-        /// </summary>
-        public bool GameLogEnabled { get { return _gameLogEnabled; } set { _gameLogEnabled = value; EntityManager.GameLogEnabled = value; } }
-
-        private bool _gameLogEnabled;
-#endif
 
         #endregion
 
@@ -109,22 +89,9 @@ namespace Engine.Simulation
             // Increment frame number.
             ++CurrentFrame;
 
-#if DEBUG && GAMELOG
-            if (GameLogEnabled)
-            {
-                gamelog.Trace("Transitioning to frame {0}.", CurrentFrame);
-            }
-#endif
-
             // Execute any commands for the current frame.
             foreach (var command in Commands)
             {
-#if DEBUG && GAMELOG
-                if (GameLogEnabled)
-                {
-                    gamelog.Trace("Handling command: {0}", command);
-                }
-#endif
                 HandleCommand(command);
             }
             Commands.Clear();
@@ -173,11 +140,6 @@ namespace Engine.Simulation
         /// <param name="packet">The packet to read from.</param>
         public virtual void Depacketize(Packet packet)
         {
-#if DEBUG && GAMELOG
-            // Disable logging per default.
-            GameLogEnabled = false;
-#endif
-
             // Get the current frame of the simulation.
             CurrentFrame = packet.ReadInt64();
 

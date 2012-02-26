@@ -32,12 +32,5 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="command">the command to apply.</param>
         void PushCommand(Command command);
-
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Whether to log any game state changes in detail, for debugging.
-        /// </summary>
-        bool GameLogEnabled { get; set; }
-#endif
     }
 }

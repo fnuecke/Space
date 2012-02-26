@@ -23,13 +23,6 @@ namespace Engine.Simulation
         /// </summary>
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Logger for game log (i.e. steps happening in a simulation).
-        /// </summary>
-        private static NLog.Logger gamelog = NLog.LogManager.GetLogger("GameLog.Simulation");
-#endif
-
         #endregion
 
         #region Events
@@ -56,13 +49,6 @@ namespace Engine.Simulation
         /// back past.
         /// </summary>
         public long TrailingFrame { get { return _simulations[_simulations.Length - 1].CurrentFrame; } }
-
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Whether to log any game state changes in detail, for debugging.
-        /// </summary>
-        public bool GameLogEnabled { get; set; }
-#endif
 
         /// <summary>
         /// The component system manager in use in this simulation.
@@ -162,12 +148,6 @@ namespace Engine.Simulation
         /// <param name="simulation">The simulation to initialize this TSS to.</param>
         public void Initialize(IAuthoritativeSimulation simulation)
         {
-#if DEBUG && GAMELOG
-            if (GameLogEnabled)
-            {
-                gamelog.Trace("Initializing TSS.");
-            }
-#endif
             MirrorSimulation(simulation, _simulations.Length - 1);
             WaitingForSynchronization = false;
         }
@@ -178,12 +158,6 @@ namespace Engine.Simulation
         /// </summary>
         public void Invalidate()
         {
-#if DEBUG && GAMELOG
-            if (GameLogEnabled)
-            {
-                gamelog.Trace("Invalidating TSS.");
-            }
-#endif
             OnInvalidated(EventArgs.Empty);
         }
 
@@ -213,13 +187,6 @@ namespace Engine.Simulation
         /// <param name="frame">the frame in which to execute the command.</param>
         public void PushCommand(Command command, long frame)
         {
-#if DEBUG && GAMELOG
-            if (GameLogEnabled)
-            {
-                gamelog.Trace("Pushing command to frame {0}: {1}", frame, command);
-            }
-#endif
-
             // Check if we can possibly apply this command.
             if (frame >= TrailingFrame)
             {
@@ -454,13 +421,6 @@ namespace Engine.Simulation
         /// <param name="frame">The frame up to which to run.</param>
         private void FastForward(GameTime gameTime, long frame)
         {
-#if DEBUG && GAMELOG
-            if (GameLogEnabled)
-            {
-                gamelog.Trace("Fast-forwarding TSS to frame {0}.", frame);
-            }
-#endif
-
             // Start threads for the non-trailing frames.
 #if TSS_THREADING
             var tasks = new System.Threading.Tasks.Task[_threadData.Length];
@@ -473,12 +433,6 @@ namespace Engine.Simulation
             }
 #endif
 
-#if DEBUG && !TSS_THREADING && GAMELOG
-            // Enable logging for the trailing state, and the trailing state
-            // only (so we only get the output of one simulation, the one
-            // that has the last say!)
-            TrailingSimulation.GameLogEnabled = true;
-#endif
             // Process the trailing state, see if we need a roll-back.
             bool needsRewind = false;
             while (TrailingSimulation.CurrentFrame < frame - _delays[_simulations.Length - 1])
@@ -613,13 +567,6 @@ namespace Engine.Simulation
         /// <param name="frame">the frame to rewind to.</param>
         private void Rewind(long frame)
         {
-#if DEBUG && GAMELOG
-            if (GameLogEnabled)
-            {
-                gamelog.Trace("Rewinding TSS to frame {0}.", frame);
-            }
-#endif
-
             // Find first state that's not past the frame.
             for (int i = 0; i < _simulations.Length; ++i)
             {

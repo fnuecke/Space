@@ -68,12 +68,6 @@ namespace Engine.Simulation
             {
                 if (!Commands[i].IsAuthoritative)
                 {
-#if DEBUG && GAMELOG
-                    if (GameLogEnabled)
-                    {
-                        gamelog.Trace("Pruning non-authoritative command {0}.", commands[i]);
-                    }
-#endif
                     hadTentative = true;
                     Commands.RemoveAt(i);
                 }

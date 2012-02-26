@@ -25,6 +25,26 @@ namespace Space
     /// </summary>
     public sealed class Spaaace : Game
     {
+        #region Program entry
+
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main(string[] args)
+        {
+            Logger.Info("Starting up program...");
+
+            using (var game = new Spaaace())
+            {
+                game.Run();
+            }
+
+            Logger.Info("Shutting down program...");
+        }
+
+        #endregion
+
         #region Logger
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
@@ -47,38 +67,22 @@ namespace Space
         /// </summary>
         public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
 
-        /// <summary>
-        /// The game server currently running in this program.
-        /// </summary>
-        public GameServer Server { get; private set; }
-
-        /// <summary>
-        /// The game client currently running in this program.
-        /// </summary>
-        public GameClient Client { get; private set; }
-
-        /// <summary>
-        /// The render target that is pushed at the beginning of each draw
-        /// cycle.
-        /// </summary>
-        public Texture2D SceneTarget { get { return _scene; } }
-
         #endregion
 
         #region Fields
 
-        private readonly List<IGameComponent> _componentsToDispose = new List<IGameComponent>();
+        private readonly List<IGameComponent> _pendingComponents = new List<IGameComponent>();
 
         /// <summary>
         /// The input manager used throughout this game.
         /// </summary>
-        private readonly InputManager _inputManager;
+        private InputManager _inputManager;
 
         private RenderTarget2D _scene;
         private SpriteBatch _spriteBatch;
         private Awesomium.ScreenManagement.ScreenManager _screenManager;
-        private readonly GameConsole _console;
-        private readonly GameConsoleTarget _consoleLoggerTarget;
+        private GameConsole _console;
+        private GameConsoleTarget _consoleLoggerTarget;
 
         private AudioEngine _audioEngine;
         private WaveBank _waveBank;
@@ -89,15 +93,30 @@ namespace Space
         private Radar _radar;
         private Orbits _orbits;
 
-        private readonly DoubleSampling _fps = new DoubleSampling(30);
+        private GameServer _server;
+        private GameClient _client;
 
         #endregion
 
         #region Constructor
 
-        public Spaaace()
+        private Spaaace()
         {
-            Logger.Info("Starting up program...");
+            // Some window settings.
+            Window.Title = "Space. The Game. Seriously.";
+            IsMouseVisible = true;
+
+            // XNAs fixed time step implementation doesn't suit us, to be gentle.
+            // So we let it be dynamic and adjust for it as necessary, leading
+            // to almost no desyncs at all! Yay!
+            IsFixedTimeStep = false;
+
+            // We use this to dispose game components that are disposable and
+            // were removed from the list of active components. We don't want
+            // to dispose them during an update loop, because they will still
+            // be updated if they had not been updated before the removal,
+            // leading to object disposed exceptions.
+            Components.ComponentRemoved += (sender, e) => _pendingComponents.Add(e.GameComponent);
 
             // Load settings. Save on exit.
             Settings.Load(SettingsFile);
@@ -116,138 +135,12 @@ namespace Space
                                         SynchronizeWithVerticalRetrace = true
                                     };
 
-
-            // XNAs fixed time step implementation doesn't suit us, to be gentle.
-            // So we let it be dynamic and adjust for it as necessary, leading
-            // to almost no desyncs at all! Yay!
-            IsFixedTimeStep = false;
-
             // Create our own, localized content manager.
-            Content = new LocalizedContentManager(Services)
-                      {
-                          RootDirectory = "data"
-                      };
+            Content = new LocalizedContentManager(Services) { RootDirectory = "data" };
 
-            // Remember to keep this in sync with the content project.
-
-            // Get locale for localized content.
-            CultureInfo culture;
-            try
-            {
-                culture = CultureInfo.GetCultureInfo(Settings.Instance.Language);
-            }
-            catch (CultureNotFoundException)
-            {
-                culture = CultureInfo.InvariantCulture;
-                Settings.Instance.Language = culture.Name;
-            }
-            MenuStrings.Culture = culture;
-            ((LocalizedContentManager)Content).Culture = culture;
-
-            // Some window settings.
-            Window.Title = "Space. The Game. Seriously.";
-            IsMouseVisible = true;
-
-            Components.ComponentRemoved += (sender, e) => _componentsToDispose.Add(e.GameComponent);
-
-            // Initialize input.
-            _inputManager = new InputManager(Services, Window.Handle)
-                            {
-                                UpdateOrder = 0
-                            };
-            Components.Add(_inputManager);
-
-            // Get our input devices.
-            foreach (var keyboard in _inputManager.Keyboards)
-            {
-                if (keyboard.IsAttached)
-                {
-                    Services.AddService(typeof(IKeyboard), keyboard);
-                    break;
-                }
-            }
-            foreach (var mouse in _inputManager.Mice)
-            {
-                if (mouse.IsAttached)
-                {
-                    Services.AddService(typeof(IMouse), mouse);
-                    break;
-                }
-            }
-            foreach (var gamepad in _inputManager.GamePads)
-            {
-                if (gamepad.IsAttached)
-                {
-                    Services.AddService(typeof(IGamePad), gamepad);
-                    break;
-                }
-            }
-
-            // Add some more utility components.
-            _console = new GameConsole(this);
-            Components.Add(_console);
-
-            // Add a logging target that'll write to our console.
-            _consoleLoggerTarget = new GameConsoleTarget(this, NLog.LogLevel.Debug);
-
-            // More console setup. Only one console key is supported.
-            _console.Hotkey = Settings.Instance.MenuBindings.First(binding => binding.Value == Settings.MenuCommand.Console).Key;
-
-            _console.AddCommand(new[] { "fullscreen", "fs" }, args =>
-            {
-                GraphicsDeviceManager.ToggleFullScreen();
-            },
-                "Toggles fullscreen mode.");
-
-            _console.AddCommand("search", args =>
-            {
-                Client.Controller.Session.Search();
-            },
-                "Search for games available on the local subnet.");
-            _console.AddCommand("connect", args =>
-            {
-                Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, (Profile)Settings.Instance.CurrentProfile);
-            },
-                "Joins a game at the given host.",
-                "connect <host> - join the host with the given host name or IP.");
-            _console.AddCommand("leave", args =>
-            {
-                DisposeClient();
-            },
-                "Leave the current game.");
-
-            #region Debug commands
-            #if DEBUG
-
-            // Default handler to interpret everything that is not a command
-            // as a script.
-            _console.SetDefaultCommandHandler(command =>
-            {
-                Client.Controller.PushLocalCommand(new ScriptCommand(command));
-            });
-
-            _console.AddCommand("d_renderindex", args =>
-            {
-                int index = int.Parse(args[1]);
-                if (index > 64)
-                {
-                    _console.WriteLine("Invalid index, must be smaller or equal to 64.");
-                }
-                else
-                {
-                    _indexGroup = index;
-                }
-            },
-                "Enables rendering of the index with the given index.",
-                "d_renderindex <index> - render the cells of the specified index.");
-
-            #endif
-            #endregion
-
-            // Copy everything written to our game console to the actual console,
-            // too, so we can inspect it out of game, copy stuff or read it after
-            // the game has crashed.
-            _console.LineWritten += (sender, e) => Console.WriteLine(((LineWrittenEventArgs)e).Message);
+            SetupLocalization();
+            SetupInput();
+            SetupConsole();
         }
 
         protected override void Dispose(bool disposing)
@@ -295,9 +188,9 @@ namespace Space
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             Services.AddService(typeof(SpriteBatch), _spriteBatch);
 
+            // Finishing touches to console setup.
             _console.SpriteBatch = _spriteBatch;
             _console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
-
             _console.WriteLine("Game Console. Type 'help' for available commands.");
 
             // Load generator constraints.
@@ -319,6 +212,18 @@ namespace Space
                 Settings.Instance.CurrentProfile.Save();
             }
 
+            // Set up the render target into which we'll draw everything (to
+            // allow switching to and from it for certain effects).
+            var pp = GraphicsDevice.PresentationParameters;
+            _scene = new RenderTarget2D(GraphicsDevice, pp.BackBufferWidth, pp.BackBufferHeight, false, pp.BackBufferFormat, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+
+            SetupAudio();
+
+            SetupGui();
+        }
+
+        private void SetupAudio()
+        {
             // Set up audio stuff.
             try
             {
@@ -326,6 +231,7 @@ namespace Space
                 _waveBank = new WaveBank(_audioEngine, "data/Audio/Wave Bank.xwb");
                 _soundBank = new SoundBank(_audioEngine, "data/Audio/Sound Bank.xsb");
 
+                // Do a first update, as recommended in the documentation.
                 _audioEngine.Update();
 
                 Services.AddService(typeof(SoundBank), _soundBank);
@@ -334,17 +240,119 @@ namespace Space
             {
                 Logger.ErrorException("Failed initializing AudioEngine.", ex);
             }
+        }
 
-            // Set up the render target into which we'll draw everything (to
-            // allow switching to and from it for certain effects).
-            var pp = GraphicsDevice.PresentationParameters;
-            int width = pp.BackBufferWidth;
-            int height = pp.BackBufferHeight;
-            var format = pp.BackBufferFormat;
-            _scene = new RenderTarget2D(GraphicsDevice, width, height, false, format, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+        private void SetupLocalization()
+        {
+            // Get locale for localized content.
+            CultureInfo culture;
+            try
+            {
+                culture = CultureInfo.GetCultureInfo(Settings.Instance.Language);
+            }
+            catch (CultureNotFoundException)
+            {
+                culture = CultureInfo.InvariantCulture;
+                Settings.Instance.Language = culture.Name;
+            }
+            MenuStrings.Culture = culture;
+            ((LocalizedContentManager)Content).Culture = culture;
+        }
 
+        private void SetupConsole()
+        {
+            // Add some more utility components.
+            _console = new GameConsole(this);
+            Components.Add(_console);
+
+            // Add a logging target that'll write to our console.
+            _consoleLoggerTarget = new GameConsoleTarget(this, NLog.LogLevel.Debug);
+
+            // More console setup. Only one console key is supported.
+            _console.Hotkey = Settings.Instance.MenuBindings.First(binding => binding.Value == Settings.MenuCommand.Console).Key;
+
+            _console.AddCommand(new[] { "fullscreen", "fs" },
+                args => GraphicsDeviceManager.ToggleFullScreen(),
+                "Toggles fullscreen mode.");
+
+            _console.AddCommand("search",
+                args => _client.Controller.Session.Search(),
+                "Search for games available on the local subnet.");
+            _console.AddCommand("connect",
+                args => _client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, (Profile)Settings.Instance.CurrentProfile),
+                "Joins a game at the given host.",
+                "connect <host> - join the host with the given host name or IP.");
+            _console.AddCommand("leave",
+                args => DisposeClient(),
+                "Leave the current game.");
+
+#if DEBUG
+
+            // Default handler to interpret everything that is not a command
+            // as a script.
+            _console.SetDefaultCommandHandler(command => _client.Controller.PushLocalCommand(new ScriptCommand(command)));
+
+            _console.AddCommand("d_renderindex",
+                args =>
+                {
+                    int index = int.Parse(args[1]);
+                    if (index > 64)
+                    {
+                        _console.WriteLine("Invalid index, must be smaller or equal to 64.");
+                    }
+                    else
+                    {
+                        _indexGroup = index;
+                    }
+                },
+                "Enables rendering of the index with the given index.",
+                "d_renderindex <index> - render the cells of the specified index.");
+
+#endif
+
+            // Copy everything written to our game console to the actual console,
+            // too, so we can inspect it out of game, copy stuff or read it after
+            // the game has crashed.
+            _console.LineWritten += (sender, e) => Console.WriteLine(((LineWrittenEventArgs)e).Message);
+        }
+
+        private void SetupInput()
+        {
+            // Initialize input.
+            _inputManager = new InputManager(Services, Window.Handle);
+            Components.Add(_inputManager);
+
+            // Get our input devices.
+            foreach (var keyboard in _inputManager.Keyboards)
+            {
+                if (keyboard.IsAttached)
+                {
+                    Services.AddService(typeof(IKeyboard), keyboard);
+                    break;
+                }
+            }
+            foreach (var mouse in _inputManager.Mice)
+            {
+                if (mouse.IsAttached)
+                {
+                    Services.AddService(typeof(IMouse), mouse);
+                    break;
+                }
+            }
+            foreach (var gamepad in _inputManager.GamePads)
+            {
+                if (gamepad.IsAttached)
+                {
+                    Services.AddService(typeof(IGamePad), gamepad);
+                    break;
+                }
+            }
+        }
+
+        private void SetupGui()
+        {
             _screenManager = new Awesomium.ScreenManagement.ScreenManager(this, _spriteBatch, _inputManager);
-            _screenManager.AddCallback("Space", "host", JSHost);
+            SetupJavaScriptApi();
             _screenManager.PushScreen("Screens/MainMenu");
             Components.Add(_screenManager);
 
@@ -354,118 +362,112 @@ namespace Space
             _radar = new Radar(this, _spriteBatch);
         }
 
+        private void SetupJavaScriptApi()
+        {
+            var s = _screenManager;
+            s.AddCallback("Space", "host", JSHost);
+            s.AddCallback("Space", "join", JSJoin);
+            s.AddCallback("Space", "leave", JSLeave);
+            s.AddCallback("Space", "search", JSSearch);
+        }
+
+        #endregion
+
+        #region Javascript API
+
         private void JSHost(object sender, JSCallbackEventArgs e)
         {
             RestartServer();
             RestartClient(true);
         }
 
+        private void JSJoin(object sender, JSCallbackEventArgs jsCallbackEventArgs)
+        {
+        }
+
+        private void JSLeave(object sender, JSCallbackEventArgs jsCallbackEventArgs)
+        {
+            DisposeControllers();
+        }
+
+        private void JSSearch(object sender, JSCallbackEventArgs jsCallbackEventArgs)
+        {
+        }
+
+        private void UpdateJSApiObjects()
+        {
+            if (_client == null)
+            {
+                return;
+            }
+
+            var session = _client.Controller.Session;
+            if (session.ConnectionState != ClientState.Connected)
+            {
+                return;
+            }
+
+            var info = _client.GetPlayerShipInfo();
+            var s = _screenManager;
+
+            s.SetVariable("Space", "numPlayers", new JSValue(session.NumPlayers));
+            s.SetVariable("Space", "maxPlayers", new JSValue(session.MaxPlayers));
+            s.SetVariable("Space", "localPlayer", new JSValue(session.LocalPlayer.Number));
+
+            s.SetVariable("Space", "health", new JSValue(info.Health));
+            s.SetVariable("Space", "maxHealth", new JSValue(info.MaxHealth));
+            s.SetVariable("Space", "energy", new JSValue(info.Energy));
+            s.SetVariable("Space", "maxEnergy", new JSValue(info.MaxEnergy));
+
+            s.SetVariable("Space", "inventorySize", new JSValue(info.InventoryCapacity));
+            s.SetVariable("Space", "isAccelerating", new JSValue(info.IsAccelerating));
+            s.SetVariable("Space", "isAlive", new JSValue(info.IsAlive));
+            s.SetVariable("Space", "isStabilizing", new JSValue(info.IsStabilizing));
+            s.SetVariable("Space", "playerX", new JSValue(info.Position.X));
+            s.SetVariable("Space", "playerY", new JSValue(info.Position.Y));
+            s.SetVariable("Space", "speed", new JSValue(info.Speed));
+
+            //s.SetVariable("Space", "", new JSValue());
+        }
+
         #endregion
 
         #region Logic
 
+        /// <summary>
+        /// Updates whatever needs updating.
+        /// </summary>
+        /// <param name="gameTime">Time passed since the last call to Update.</param>
         protected override void Update(GameTime gameTime)
         {
-            base.Update(gameTime);
-
+            // Update ingame input, sending commands where necessary.
             _input.Update();
 
+            // Update values exposed to javascript.
+            UpdateJSApiObjects();
+
+            // Update the rest of the game.
+            base.Update(gameTime);
+
+            // Update the audio engine if we have one (setting one up can bug
+            // out on some systems).
             if (_audioEngine != null)
             {
                 _audioEngine.Update();
             }
 
-            foreach (var component in _componentsToDispose)
+            // Post-update disposable of game components that were removed
+            // from our the components list.
+            foreach (var component in _pendingComponents)
             {
-                if (component is IDisposable)
+                var disposable = component as IDisposable;
+                if (disposable != null)
                 {
-                    ((IDisposable)component).Dispose();
+                    (disposable).Dispose();
                 }
             }
-            _componentsToDispose.Clear();
+            _pendingComponents.Clear();
         }
-
-        #endregion
-
-        #region Server / Client
-
-        /// <summary>
-        /// Starts or restarts the game client.
-        /// </summary>
-        /// <param name="local">Whether to join locally, or not.</param>
-        public void RestartClient(bool local = false)
-        {
-            DisposeClient();
-            if (local)
-            {
-                Client = new GameClient(this, Server);
-            }
-            else
-            {
-                Client = new GameClient(this);
-            }
-            // Update after screen manager (input) but before server (logic).
-            Client.UpdateOrder = 25;
-            Components.Add(Client);
-
-            _input.Client = Client;
-            _background.Client = Client;
-            _radar.Client = Client;
-            _orbits.Client = Client;
-        }
-
-        /// <summary>
-        /// Starts or restarts the game server.
-        /// </summary>
-        public void RestartServer()
-        {
-            DisposeServer();
-            Server = new GameServer(this);
-            // Update after screen manager and client to get input commands.
-            Server.UpdateOrder = 50;
-            Components.Add(Server);
-        }
-
-        /// <summary>
-        /// Kills the game client.
-        /// </summary>
-        public void DisposeClient()
-        {
-            if (Client != null)
-            {
-                Client.Controller.Session.Leave();
-                Components.Remove(Client);
-            }
-            Client = null;
-
-            _input.Client = null;
-            _background.Client = null;
-            _radar.Client = null;
-            _orbits.Client = null;
-        }
-
-        /// <summary>
-        /// Kills the game server.
-        /// </summary>
-        public void DisposeServer()
-        {
-            if (Server != null)
-            {
-                Components.Remove(Server);
-            }
-            Server = null;
-        }
-
-        /// <summary>
-        /// Kills the server and the client.
-        /// </summary>
-        public void DisposeControllers()
-        {
-            DisposeClient();
-            DisposeServer();
-        }
-
-        #endregion
 
         /// <summary>
         /// This is called when the game should draw itself.
@@ -485,19 +487,21 @@ namespace Space
             _orbits.Draw();
 
             // Draw world elements if we're in a game.
-            if (Client != null && Client.Controller.Session.ConnectionState == ClientState.Connected)
+            if (_client != null && _client.Controller.Session.ConnectionState == ClientState.Connected)
             {
-                Client.Controller.Draw(gameTime);
+                _client.Controller.Draw(gameTime);
             }
-
-            // Draw radar in foreground.
-            _radar.Draw();
 
             // Draw other stuff (GUI for example).
             base.Draw(gameTime);
 
+            // Draw radar in foreground.
+            _radar.Draw();
+
+#if DEBUG
             // Draw some debug info on top of everything.
             DrawDebugInfo(gameTime);
+#endif
 
             // Reset our graphics device (pop our off-screen render target).
             GraphicsDevice.SetRenderTarget(null);
@@ -508,14 +512,95 @@ namespace Space
             _spriteBatch.End();
         }
 
+        #endregion
+
+        #region Server / Client
+
+        /// <summary>
+        /// Starts or restarts the game client.
+        /// </summary>
+        /// <param name="local">Whether to join locally, or not.</param>
+        public void RestartClient(bool local = false)
+        {
+            DisposeClient();
+            if (local)
+            {
+                _client = new GameClient(this, _server);
+            }
+            else
+            {
+                _client = new GameClient(this);
+            }
+            // Update after screen manager (input) but before server (logic).
+            _client.UpdateOrder = 25;
+            Components.Add(_client);
+
+            _input.Client = _client;
+            _background.Client = _client;
+            _radar.Client = _client;
+            _orbits.Client = _client;
+        }
+
+        /// <summary>
+        /// Starts or restarts the game server.
+        /// </summary>
+        public void RestartServer()
+        {
+            DisposeServer();
+            _server = new GameServer(this);
+            // Update after screen manager and client to get input commands.
+            _server.UpdateOrder = 50;
+            Components.Add(_server);
+        }
+
+        /// <summary>
+        /// Kills the game client.
+        /// </summary>
+        public void DisposeClient()
+        {
+            if (_client != null)
+            {
+                _client.Controller.Session.Leave();
+                Components.Remove(_client);
+            }
+            _client = null;
+
+            _input.Client = null;
+            _background.Client = null;
+            _radar.Client = null;
+            _orbits.Client = null;
+        }
+
+        /// <summary>
+        /// Kills the game server.
+        /// </summary>
+        public void DisposeServer()
+        {
+            if (_server != null)
+            {
+                Components.Remove(_server);
+            }
+            _server = null;
+        }
+
+        /// <summary>
+        /// Kills the server and the client.
+        /// </summary>
+        public void DisposeControllers()
+        {
+            DisposeClient();
+            DisposeServer();
+        }
+
+        #endregion
+
 #if DEBUG
+        private readonly DoubleSampling _fps = new DoubleSampling(30);
         private Engine.Graphics.Rectangle _indexRectangle;
         private int _indexGroup = -1;
-#endif
 
         private void DrawDebugInfo(GameTime gameTime)
         {
-#if DEBUG
             if (_indexRectangle == null)
             {
                 _indexRectangle = new Engine.Graphics.Rectangle(this);
@@ -526,7 +611,7 @@ namespace Space
 
             _spriteBatch.Begin();
 
-            string fps = String.Format("FPS: {0:f}", System.Math.Ceiling(_fps.Mean()));
+            string fps = String.Format("FPS: {0:f}", Math.Ceiling(_fps.Mean()));
             var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - _console.Font.MeasureString(fps).X, 10);
 
             _spriteBatch.DrawString(_console.Font, fps, infoPosition, Color.White);
@@ -563,8 +648,8 @@ namespace Space
                         _spriteBatch.Begin();
 
                         var position = info.Position;
-                        var cellX = ((int)position.X) >> Space.ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
-                        var cellY = ((int)position.Y) >> Space.ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
+                        var cellX = ((int)position.X) >> ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
+                        var cellY = ((int)position.Y) >> ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
                         sb.AppendFormat("Position: ({0:f}, {1:f}), Cell: ({2}, {3})\n", position.X, position.Y, cellX, cellY);
 
                         sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
@@ -601,19 +686,7 @@ namespace Space
                     NetGraph.Draw(session.Information, ngOffset, _console.Font, _spriteBatch);
                 }
             }
+        }
 #endif
-        }
-
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main(string[] args)
-        {
-            using (var game = new Spaaace())
-            {
-                game.Run();
-            }
-        }
     }
 }
