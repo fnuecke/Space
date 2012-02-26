@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
 using Microsoft.Xna.Framework;
@@ -20,7 +20,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// A list of components registered in this system.
         /// </summary>
-        protected ReadOnlyCollection<TComponent> Components { get { return _components.AsReadOnly(); } }
+        protected IEnumerable<TComponent> Components { get { return _components; } }
 
         #endregion
 
@@ -29,7 +29,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
-        private List<TComponent> _components = new List<TComponent>();
+        private HashSet<TComponent> _components = new HashSet<TComponent>();
 
         #endregion
 
@@ -114,48 +114,40 @@ namespace Engine.ComponentSystem.Systems
         {
             if (message is ComponentAdded)
             {
-                TryAdd(((ComponentAdded)(ValueType)message).Component);
+                var component = ((ComponentAdded)(ValueType)message).Component;
+
+                Debug.Assert(component.Entity > 0, "component.Entity > 0");
+                Debug.Assert(component.Id > 0, "component.Id > 0");
+
+                // Check if the component is of the right type.
+                if (component is TComponent)
+                {
+                    var typedComponent = (TComponent)component;
+                    if (!_components.Contains(typedComponent))
+                    {
+                        _components.Add(typedComponent);
+
+                        // Tell subclasses.
+                        OnComponentAdded(typedComponent);
+                    }
+                }
             }
             else if (message is ComponentRemoved)
             {
-                TryRemove(((ComponentRemoved)(ValueType)message).Component);
-            }
-        }
+                var component = ((ComponentRemoved)(ValueType)message).Component;
 
-        /// <summary>
-        /// Adds the specified component only if its of the correct type.
-        /// </summary>
-        /// <param name="component">The component to add.</param>
-        private void TryAdd(Component component)
-        {
-            // Check if the component is of the right type.
-            if (component is TComponent)
-            {
-                var typedComponent = (TComponent)component;
-                if (!_components.Contains(typedComponent))
+                Debug.Assert(component.Entity > 0, "component.Entity > 0");
+                Debug.Assert(component.Id > 0, "component.Id > 0");
+
+                // Check if the component is of the right type.
+                if (component is TComponent)
                 {
-                    _components.Add(typedComponent);
+                    var typedComponent = (TComponent)component;
 
-                    // Tell subclasses.
-                    OnComponentAdded(typedComponent);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes the specified component if its of the correct type.
-        /// </summary>
-        /// <param name="component">The component.</param>
-        private void TryRemove(Component component)
-        {
-            // Check if the component is of the right type.
-            if (component is TComponent)
-            {
-                var typedComponent = (TComponent)component;
-
-                if (_components.Remove(typedComponent))
-                {
-                    OnComponentRemoved(typedComponent);
+                    if (_components.Remove(typedComponent))
+                    {
+                        OnComponentRemoved(typedComponent);
+                    }
                 }
             }
         }
@@ -207,7 +199,7 @@ namespace Engine.ComponentSystem.Systems
             }
             else
             {
-                copy._components = new List<TComponent>();
+                copy._components = new HashSet<TComponent>();
                 copy._updatingComponents = new List<TComponent>();
             }
 

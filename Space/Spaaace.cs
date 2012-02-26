@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using Awesomium.Core;
+using Engine.Controller;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -308,6 +310,37 @@ namespace Space
                 "Enables rendering of the index with the given index.",
                 "d_renderindex <index> - render the cells of the specified index.");
 
+            _console.AddCommand("d_check_serialization",
+                args =>
+                {
+                    try
+                    {
+                        ((AbstractTssController<IServerSession>)_server.Controller).ValidateSerialization();
+                    }
+                    catch (InvalidProgramException ex)
+                    {
+                        _console.WriteLine("Serialization broken, " + ex.Message);
+                    }
+                },
+                "Verifies the simulation's serialization works by creating a",
+                "snapshot and deserializing it again, then compares the hash",
+                "values of the two simulations.");
+
+            _console.AddCommand("d_check_rollback",
+                args =>
+                {
+                    try
+                    {
+                        ((AbstractTssController<IServerSession>)_server.Controller).ValidateRollback();
+                    }
+                    catch (InvalidProgramException ex)
+                    {
+                        _console.WriteLine("Serialization broken, " + ex.Message);
+                    }
+                },
+                "Verifies the simulation's serialization works by creating a",
+                "snapshot and deserializing it again, then compares the hash",
+                "values of the two simulations.");
 #endif
 
             // Copy everything written to our game console to the actual console,
@@ -498,10 +531,8 @@ namespace Space
             // Draw radar in foreground.
             _radar.Draw();
 
-#if DEBUG
             // Draw some debug info on top of everything.
             DrawDebugInfo(gameTime);
-#endif
 
             // Reset our graphics device (pop our off-screen render target).
             GraphicsDevice.SetRenderTarget(null);
@@ -594,11 +625,11 @@ namespace Space
 
         #endregion
 
-#if DEBUG
         private readonly DoubleSampling _fps = new DoubleSampling(30);
         private Engine.Graphics.Rectangle _indexRectangle;
         private int _indexGroup = -1;
 
+        [Conditional("DEBUG")]
         private void DrawDebugInfo(GameTime gameTime)
         {
             if (_indexRectangle == null)
@@ -687,6 +718,5 @@ namespace Space
                 }
             }
         }
-#endif
     }
 }

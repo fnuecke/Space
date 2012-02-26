@@ -21,17 +21,17 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Lookup table for quick access to component by type.
         /// </summary>
-        private Dictionary<Type, AbstractSystem> _systems = new Dictionary<Type, AbstractSystem>();
+        private readonly Dictionary<Type, AbstractSystem> _systems = new Dictionary<Type, AbstractSystem>();
 
         /// <summary>
         /// Keeps track of entity->component relationships.
         /// </summary>
-        private Dictionary<int, Entity> _entities = new Dictionary<int, Entity>();
+        private readonly Dictionary<int, Entity> _entities = new Dictionary<int, Entity>();
 
         /// <summary>
         /// Component mapping id to instance (because there can be gaps
         /// </summary>
-        private Dictionary<int, Component> _components = new Dictionary<int, Component>();
+        private readonly Dictionary<int, Component> _components = new Dictionary<int, Component>();
 
         /// <summary>
         /// Manager for entity ids.
@@ -453,6 +453,11 @@ namespace Engine.ComponentSystem
                     _entities.Add(component.Entity, AllocateEntity());
                 }
                 _entities[component.Entity].Add(component);
+
+                // Send a message to all interested systems.
+                ComponentAdded message;
+                message.Component = component;
+                SendMessage(ref message);
             }
 
             // And finally, the managers for ids.
@@ -467,6 +472,10 @@ namespace Engine.ComponentSystem
         /// <param name="hasher">The hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
+            foreach (var system in _systems.Values)
+            {
+                system.Hash(hasher);
+            }
             foreach (var component in _components.Values)
             {
                 component.Hash(hasher);
@@ -517,7 +526,6 @@ namespace Engine.ComponentSystem
                 component.Manager = this;
                 component.Id = _componentIds.GetId();
                 component.Entity = entity;
-                component.Enabled = true;
                 _components[component.Id] = component;
 
                 // Add to entity index.
@@ -549,7 +557,8 @@ namespace Engine.ComponentSystem
                 // Copy systems.
                 foreach (var item in _systems)
                 {
-                    item.Value.DeepCopy(copy._systems[item.Key]);
+                    copy._systems[item.Key] = item.Value.DeepCopy(copy._systems[item.Key]);
+                    copy._systems[item.Key].Manager = copy;
                 }
 
                 // Free all instances.
@@ -563,38 +572,58 @@ namespace Engine.ComponentSystem
                     copy.ReleaseComponent(component);
                 }
                 copy._components.Clear();
-
-                // Copy id managers.
-                copy._entityIds = _entityIds.DeepCopy(copy._entityIds);
-                copy._componentIds = _componentIds.DeepCopy(copy._componentIds);
             }
             else
             {
-                copy._systems = new Dictionary<Type, AbstractSystem>();
-                copy._entities = new Dictionary<int, Entity>();
-                copy._components = new Dictionary<int, Component>();
-                copy._dirtyPool = new Dictionary<Type, Stack<Component>>();
-
                 // Copy systems.
-                foreach (var item in _systems)
+                foreach (var system in _systems)
                 {
-                    copy._systems.Add(item.Key, item.Value.DeepCopy());
+                    var systemCopy = system.Value.DeepCopy();
+                    systemCopy.Manager = copy;
+                    copy._systems.Add(system.Key, systemCopy);
                 }
-
-                // Copy id managers.
-                copy._entityIds = _entityIds.DeepCopy();
-                copy._componentIds = _componentIds.DeepCopy();
             }
 
             // Copy components and entity mapping.
             foreach (var component in _components.Values)
             {
-                copy._components.Add(component.Id, component);
-                if (!copy._entities.ContainsKey(component.Entity))
+                // The create the component and set it up.
+                var componentCopy = AllocateComponent(component.GetType());
+                componentCopy.Manager = copy;
+                componentCopy.Id = component.Id;
+                componentCopy.Entity = component.Entity;
+                componentCopy.Enabled = true;
+                copy._components[componentCopy.Id] = componentCopy;
+
+                // Add to entity index.
+                if (!copy._entities.ContainsKey(componentCopy.Entity))
                 {
-                    copy._entities.Add(component.Entity, AllocateEntity());
+                    copy._entities.Add(componentCopy.Entity, AllocateEntity());
                 }
-                copy._entities[component.Entity].Add(component);
+                copy._entities[componentCopy.Entity].Add(componentCopy);
+            }
+
+            // Copy id managers.
+            copy._entityIds = _entityIds.DeepCopy(copy._entityIds);
+            copy._componentIds = _componentIds.DeepCopy(copy._componentIds);
+
+            // Send a message to all interested systems. Do this after adding
+            // all components, to avoid with event handlers adding their own
+            // components (which they should not, anyway, but still).
+            foreach (var component in copy._components.Values)
+            {
+                ComponentAdded message;
+                message.Component = component;
+                copy.SendMessage(ref message);   
+            }
+
+            // Finally, initialize the components. We do this here to be
+            // consistent with initialization when adding from the outside,
+            // via AddComponent. Also, all entities that may be needed in
+            // the initialization will be registered at this point.
+            foreach (var component in _components)
+            {
+                copy._components[component.Key].Initialize(component.Value);
             }
 
             return copy;
@@ -610,7 +639,7 @@ namespace Engine.ComponentSystem
         /// components that might still be referenced in running system update
         /// loops.
         /// </summary>
-        private Dictionary<Type, Stack<Component>> _dirtyPool = new Dictionary<Type, Stack<Component>>();
+        private readonly Dictionary<Type, Stack<Component>> _dirtyPool = new Dictionary<Type, Stack<Component>>();
 
         /// <summary>
         /// Object pool for reusable instances.
@@ -647,7 +676,6 @@ namespace Engine.ComponentSystem
         /// <param name="component">The component to release.</param>
         private void ReleaseComponent(Component component)
         {
-            Debug.Assert(!_components.ContainsValue(component));
             component.Reset();
             var type = component.GetType();
             if (!_dirtyPool.ContainsKey(type))
@@ -703,9 +731,8 @@ namespace Engine.ComponentSystem
         /// Releases the entity for later reuse.
         /// </summary>
         /// <param name="entity">The entity.</param>
-        private void ReleaseEntity(Entity entity)
+        private static void ReleaseEntity(Entity entity)
         {
-            Debug.Assert(!_entities.ContainsValue(entity));
             entity.Components.Clear();
             foreach (var cache in entity.TypeCache.Values)
             {

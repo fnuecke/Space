@@ -27,9 +27,10 @@ namespace Engine.ComponentSystem.RPG.Components
                 {
                     for (var i = 0; i < slots.Length; i++)
                     {
-                        if (slots[i].HasValue)
+                        var slot = slots[i];
+                        if (slot.HasValue)
                         {
-                            yield return slots[i].Value;
+                            yield return slot.Value;
                         }
                     }
                 }

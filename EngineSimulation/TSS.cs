@@ -969,7 +969,7 @@ namespace Engine.Simulation
             /// <param name="hasher">The hasher to push data to.</param>
             public void Hash(Hasher hasher)
             {
-                throw new NotSupportedException();
+                _tss.LeadingSimulation.Manager.Hash(hasher);
             }
 
             #endregion
@@ -984,7 +984,7 @@ namespace Engine.Simulation
             /// </returns>
             public IManager DeepCopy()
             {
-                throw new NotSupportedException();
+                return DeepCopy(null);
             }
 
             /// <summary>
@@ -996,7 +996,7 @@ namespace Engine.Simulation
             /// </returns>
             public IManager DeepCopy(IManager into)
             {
-                throw new NotSupportedException();
+                return _tss.LeadingSimulation.Manager.DeepCopy(into);
             }
 
             #endregion

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Session;
@@ -383,6 +384,47 @@ namespace Engine.Controller
             }
 
             #endregion
+        }
+
+        #endregion
+
+        #region Debugging / Testing
+        
+        [Conditional("DEBUG")]
+        public void ValidateSerialization()
+        {
+            var hasher = new Hasher();
+            Tss.Manager.Hash(hasher);
+            var hash1 = hasher.Value;
+
+            var copy = Tss.Manager.DeepCopy();
+            hasher = new Hasher();
+            copy.Hash(hasher);
+            var hash2 = hasher.Value;
+
+            Tss.Manager.DeepCopy(copy);
+            hasher = new Hasher();
+            copy.Hash(hasher);
+            var hash3 = hasher.Value;
+
+            if (hash1 != hash2)
+            {
+                // Deep copy with new instance broken.
+                throw new InvalidProgramException("DeepCopy() implementation resulted in invalid copy.");
+            }
+            if (hash1 != hash3)
+            {
+                // Deep copy with existing instance broken.
+                throw new InvalidProgramException("DeepCopy(into) implementation resulted in invalid copy.");
+            }
+
+            // Else all is well.
+        }
+
+        [Conditional("DEBUG")]
+        public void ValidateRollback()
+        {
+            Tss.RunToFrame(new GameTime(), Tss.TrailingFrame);
         }
 
         #endregion
