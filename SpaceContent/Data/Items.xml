@@ -1,6 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <XnaContent>
-  <!-- TODO: replace this Asset with your own XML asset data. -->
   <Asset Type="Space.ComponentSystem.Factories.ItemPool[]">
     <Item>
       <Name>Starter</Name>
@@ -19,7 +18,7 @@
           <Probability>0.01</Probability>
         </Item>
         <Item>
-          <ItemName>RarBasicArmor</ItemName>
+          <ItemName>RareBasicArmor</ItemName>
           <Probability>0.001</Probability>
         </Item>
         <Item>
@@ -35,7 +34,7 @@
           <Probability>0.01</Probability>
         </Item>
         <Item>
-          <ItemName>RarBasicWeapon</ItemName>
+          <ItemName>RareBasicWeapon</ItemName>
           <Probability>0.001</Probability>
         </Item>
         <Item>
@@ -51,7 +50,7 @@
           <Probability>0.01</Probability>
         </Item>
         <Item>
-          <ItemName>RarBasicReactor</ItemName>
+          <ItemName>RareBasicReactor</ItemName>
           <Probability>0.001</Probability>
         </Item>
         <Item>
@@ -67,7 +66,7 @@
           <Probability>0.01</Probability>
         </Item>
         <Item>
-          <ItemName>RarBasicSensor</ItemName>
+          <ItemName>RareBasicSensor</ItemName>
           <Probability>0.001</Probability>
         </Item>
         <Item>
@@ -83,7 +82,7 @@
           <Probability>0.01</Probability>
         </Item>
         <Item>
-          <ItemName>RarBasicThruster</ItemName>
+          <ItemName>RareBasicThruster</ItemName>
           <Probability>0.001</Probability>
         </Item>
        
