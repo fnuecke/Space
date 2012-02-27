@@ -918,7 +918,7 @@ namespace Engine.Util
         {
             if (IsOpen)
             {
-                _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll - System.Math.Sign(ticks) * EntriesToScroll));
+                _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll + System.Math.Sign(ticks) * EntriesToScroll));
             }
         }
 

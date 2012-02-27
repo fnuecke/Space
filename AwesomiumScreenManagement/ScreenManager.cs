@@ -28,7 +28,7 @@ namespace Awesomium.ScreenManagement
         /// <summary>
         /// Some custom default CSS to add to all screens.
         /// </summary>
-        private static readonly string DefaultCSS = @"
+        private const string DefaultCSS = @"
 * {
     -webkit-user-select: none;
 }
@@ -501,7 +501,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="Awesomium.Core.JSConsoleMessageEventArgs"/> instance containing the event data.</param>
-        private void HandleJSConsoleMessageAdded(object sender, JSConsoleMessageEventArgs e)
+        private static void HandleJSConsoleMessageAdded(object sender, JSConsoleMessageEventArgs e)
         {
             Logger.Info("JS: {0} ({1}:{2})", e.Message, e.Source.Replace("local://base_request.html/", ""), e.LineNumber);
         }
