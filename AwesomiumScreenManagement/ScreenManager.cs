@@ -17,6 +17,27 @@ namespace Awesomium.ScreenManagement
     /// </summary>
     public sealed class ScreenManager : DrawableGameComponent
     {
+        #region Logger
+
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
+        #region Constants
+
+        /// <summary>
+        /// Some custom default CSS to add to all screens.
+        /// </summary>
+        private static readonly string DefaultCSS = @"
+* {
+    -webkit-user-select: none;
+}
+input[type=""text""], input[type=""password""], textarea {
+    -webkit-user-select: text;
+}";
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -105,7 +126,8 @@ namespace Awesomium.ScreenManagement
                 var config = new WebCoreConfig
                              {
                                  ForceSingleProcess = true,
-                                 ProxyServer = "none"
+                                 ProxyServer = "none",
+                                 CustomCSS = DefaultCSS
                              };
                 WebCore.Initialize(config);
             }
@@ -196,6 +218,7 @@ namespace Awesomium.ScreenManagement
             screen.FlushAlpha = false;
             screen.IsTransparent = true;
             screen.ResourceRequest += HandleResourceRequest;
+            screen.JSConsoleMessageAdded += HandleJSConsoleMessageAdded;
             foreach (var callback in _callbacks)
             {
                 var parts = callback.Key.Split(new[] {'.'}, 2);
@@ -474,6 +497,16 @@ namespace Awesomium.ScreenManagement
         }
 
         /// <summary>
+        /// Handles an added JS console message.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="Awesomium.Core.JSConsoleMessageEventArgs"/> instance containing the event data.</param>
+        private void HandleJSConsoleMessageAdded(object sender, JSConsoleMessageEventArgs e)
+        {
+            Logger.Info("JS: {0} ({1}:{2})", e.Message, e.Source.Replace("local://base_request.html/", ""), e.LineNumber);
+        }
+
+        /// <summary>
         /// Handles downloads by redirecting them to the content manager.
         /// </summary>
         /// <param name="sender">The sender.</param>
@@ -508,9 +541,10 @@ namespace Awesomium.ScreenManagement
                         return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/javascript");
                 }
             }
-            catch (ContentLoadException)
+            catch (ContentLoadException ex)
             {
                 // Failed loading that asset, return null.
+                Logger.WarnException("Failed loading a resource for a web view.", ex);
             }
             // We cannot handle that request, abort it.
             e.Request.Cancel();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.Collections;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
@@ -16,55 +17,6 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public sealed class IndexSystem : AbstractComponentSystem<Index>
     {
-        #region Debug stuff
-        #if DEBUG
-
-        public int DEBUG_NumIndexes
-        {
-            get
-            {
-                int count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        ++count;
-                    }
-                }
-                return count;
-            }
-        }
-
-        public int DEBUG_Count
-        {
-            get
-            {
-                int count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        count += index.Count;
-                    }
-                }
-                return count;
-            }
-        }
-
-        public void DEBUG_DrawIndex(ulong groups, Engine.Graphics.AbstractShape shape, Vector2 translation)
-        {
-            foreach (var tree in TreesForGroups(groups))
-            {
-                if (tree is QuadTree<int>)
-                {
-                    ((QuadTree<int>)tree).Draw(shape, translation);
-                }
-            }
-        }
-
-        #endif
-        #endregion
-
         #region Constants
 
         /// <summary>
@@ -371,6 +323,54 @@ namespace Engine.ComponentSystem.Systems
             }
 
             return copy;
+        }
+
+        #endregion
+
+        #region Debug stuff
+
+        public int NumIndexes
+        {
+            get
+            {
+                int count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        ++count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public int Count
+        {
+            get
+            {
+                int count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        count += index.Count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        [Conditional("DEBUG")]
+        public void DrawIndex(ulong groups, Graphics.AbstractShape shape, Vector2 translation)
+        {
+            foreach (var tree in TreesForGroups(groups))
+            {
+                if (tree is QuadTree<int>)
+                {
+                    ((QuadTree<int>)tree).Draw(shape, translation);
+                }
+            }
         }
 
         #endregion

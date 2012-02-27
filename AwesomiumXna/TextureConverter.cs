@@ -201,7 +201,7 @@ namespace Awesomium.Xna
 
             D3DLOCKED_RECT lockRect;
             var rect = new RECT();
-            Marshal.ThrowExceptionForHR(d3Dt.LockRect(0, out  lockRect, rect, 0));
+            Marshal.ThrowExceptionForHR(d3Dt.LockRect(0, out lockRect, rect, 0));
 
             buffer.CopyTo((IntPtr)(uint)(lockRect.pBits), lockRect.Pitch, 4, false);
             d3Dt.UnlockRect(0);

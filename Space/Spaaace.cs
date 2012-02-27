@@ -288,8 +288,6 @@ namespace Space
                 args => DisposeClient(),
                 "Leave the current game.");
 
-#if DEBUG
-
             // Default handler to interpret everything that is not a command
             // as a script.
             _console.SetDefaultCommandHandler(command => _client.Controller.PushLocalCommand(new ScriptCommand(command)));
@@ -341,7 +339,6 @@ namespace Space
                 "Verifies the simulation's serialization works by creating a",
                 "snapshot and deserializing it again, then compares the hash",
                 "values of the two simulations.");
-#endif
 
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
@@ -674,7 +671,7 @@ namespace Space
                     NetGraph.Draw(session.Information, ngOffset, _console.Font, _spriteBatch);
 
                     // Draw planet arrows and stuff.
-                    if (session.ConnectionState == Engine.Session.ClientState.Connected)
+                    if (session.ConnectionState == ClientState.Connected)
                     {
                         _spriteBatch.Begin();
 
@@ -691,9 +688,9 @@ namespace Space
                         {
                             if (_indexGroup >= 0)
                             {
-                                index.DEBUG_DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon);
+                                index.DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon);
                             }
-                            sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.DEBUG_NumIndexes, index.DEBUG_Count);
+                            sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.NumIndexes, index.Count);
                         }
 
                         sb.AppendFormat("Speed: {0:f}/{1:f}, Maximum acceleration: {2:f}\n", info.Speed, info.MaxSpeed, info.MaxAcceleration);
