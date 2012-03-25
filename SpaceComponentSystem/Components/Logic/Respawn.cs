@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Components
 {
@@ -12,21 +10,21 @@ namespace Space.ComponentSystem.Components
     /// Allows a timed death for entities, meaning they will respawn
     /// automatically after a specified timeout.
     /// </summary>
-    public sealed class Respawn : AbstractComponent
+    public sealed class Respawn : Component
     {
         #region Properties
 
         /// <summary>
         /// A list of components which should be disabled while dead.
         /// </summary>
-        public HashSet<Type> ComponentsToDisable;
+        public readonly HashSet<Type> ComponentsToDisable = new HashSet<Type>();
 
         /// <summary>
         /// Returns whether the component is currently in respawn mode, i.e.
         /// the entity is to be considered dead, and we're waiting to respawn
         /// it.
         /// </summary>
-        public bool IsRespawning { get { return _timeToRespawn > 0; } }
+        public bool IsRespawning { get { return TimeToRespawn > 0; } }
 
         #endregion
 
@@ -57,118 +55,82 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The remaining time in ticks until to respawn the entity.
         /// </summary>
-        private int _timeToRespawn;
+        internal int TimeToRespawn;
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
-        public Respawn(int delay, HashSet<Type> disableComponents, Vector2 position, float relativeHealth, float relativeEnergy)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherRespawn = (Respawn)other;
+            Delay = otherRespawn.Delay;
+            Position = otherRespawn.Position;
+            foreach (var type in otherRespawn.ComponentsToDisable)
+            {
+                ComponentsToDisable.Add(type);
+            }
+            RelativeHealth = otherRespawn.RelativeHealth;
+            RelativeEnergy = otherRespawn.RelativeEnergy;
+            TimeToRespawn = otherRespawn.TimeToRespawn;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Initialize with the specified parameters.
+        /// </summary>
+        /// <param name="delay">The delay.</param>
+        /// <param name="disableComponents">The disable components.</param>
+        /// <param name="position">The position.</param>
+        /// <param name="relativeHealth">The relative health.</param>
+        /// <param name="relativeEnergy">The relative energy.</param>
+        public Respawn Initialize(int delay, IEnumerable<Type> disableComponents, Vector2 position, float relativeHealth = 1f, float relativeEnergy = 1f)
         {
             this.Delay = delay;
             this.Position = position;
-            this.ComponentsToDisable = disableComponents;
+            if (disableComponents != null)
+            {
+                foreach (var type in disableComponents)
+                {
+                    ComponentsToDisable.Add(type);
+                }
+            }
             this.RelativeHealth = relativeHealth;
             this.RelativeEnergy = relativeEnergy;
-        }
 
-        public Respawn(int delay, HashSet<Type> disableComponents, Vector2 position)
-            : this(delay, disableComponents, position, 1, 1)
-        {
-        }
-
-        public Respawn(int delay, HashSet<Type> disableComponents)
-            : this(delay, disableComponents, Vector2.Zero)
-        {
-        }
-
-        public Respawn()
-            : this(0, new HashSet<Type>())
-        {
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Checks if health is zero, and if so removes the entity from the
-        /// simulation.
-        /// </summary>
-        /// <param name="parameterization">Logic parameterization.</param>
-        public override void Update(object parameterization)
-        {
-            if (_timeToRespawn > 0 && --_timeToRespawn == 0)
-            {
-                // Respawn.
-                // Try to position.
-                var transform = Entity.GetComponent<Transform>();
-                if (transform != null)
-                {
-                    transform.SetTranslation(ref Position);
-                    transform.Rotation = 0;
-                }
-
-                // Kill of remainder velocity.
-                var velocity = Entity.GetComponent<Velocity>();
-                if (velocity != null)
-                {
-                    velocity.Value = Vector2.Zero;
-                }
-
-                // Fill up health / energy.
-                var health = Entity.GetComponent<Health>();
-                if (health != null)
-                {
-                    health.Value = health.MaxValue * RelativeHealth;
-                }
-                var energy = Entity.GetComponent<Energy>();
-                if (energy != null)
-                {
-                    energy.Value = energy.MaxValue * RelativeEnergy;
-                }
-
-                // Enable components.
-                foreach (var componentType in ComponentsToDisable)
-                {
-                    Entity.GetComponent(componentType).Enabled = true;
-                }
-            }
+            return this;
         }
 
         /// <summary>
-        /// Accepts <c>DefaultLogicParameterization</c>.
+        /// Initialize with the specified parameters.
         /// </summary>
-        /// <param name="parameterizationType">The parameterization to check.</param>
-        /// <returns>Whether its supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
+        /// <param name="delay">The delay.</param>
+        /// <param name="disableComponents">The disable components.</param>
+        public Respawn Initialize(int delay = 0, IEnumerable<Type> disableComponents = null)
         {
-            return parameterizationType == typeof(DefaultLogicParameterization);
+            return Initialize(delay, disableComponents, Vector2.Zero);
         }
 
-        public override void HandleMessage<T>(ref T message)
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
         {
-            if (message is EntityDied)
-            {
-                var died = (EntityDied)(ValueType)message;
+            base.Reset();
 
-                Entity.Manager.AddEntity(EntityFactory.CreateExplosion(Entity.GetComponent<Transform>().Translation, 1));
-
-                // Entity died, disable components and wait.
-                foreach (var componentType in ComponentsToDisable)
-                {
-                    Entity.GetComponent(componentType).Enabled = false;
-                }
-                _timeToRespawn = Delay;
-
-                // Stop the entity, to avoid zooming off to nowhere when
-                // killed by a sun, e.g.
-                var velocity = Entity.GetComponent<Velocity>();
-                if (velocity != null)
-                {
-                    velocity.Value = Vector2.Zero;
-                }
-            }
+            Delay = 0;
+            Position = Vector2.Zero;
+            ComponentsToDisable.Clear();
+            RelativeHealth = 1;
+            RelativeEnergy = 1;
         }
 
         #endregion
@@ -226,41 +188,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(_timeToRespawn));
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of this instance by reusing the specified
-        /// instance, if possible.
-        /// </summary>
-        /// <param name="into"></param>
-        /// <returns>
-        /// An independent (deep) clone of this instance.
-        /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
-        {
-            var copy = (Respawn)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.ComponentsToDisable.Clear();
-                copy.ComponentsToDisable.UnionWith(ComponentsToDisable);
-                copy.Delay = Delay;
-                copy.Position = Position;
-                copy.RelativeHealth = RelativeHealth;
-                copy.RelativeEnergy = RelativeEnergy;
-                copy._timeToRespawn = _timeToRespawn;
-            }
-            else
-            {
-                copy.ComponentsToDisable = new HashSet<Type>(ComponentsToDisable);
-            }
-
-            return copy;
+            hasher.Put(BitConverter.GetBytes(TimeToRespawn));
         }
 
         #endregion
@@ -275,7 +203,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", TimeToRespawn = " + _timeToRespawn.ToString();
+            return base.ToString() + ", TimeToRespawn = " + TimeToRespawn;
         }
 
         #endregion

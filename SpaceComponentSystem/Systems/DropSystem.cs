@@ -1,22 +1,26 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
+using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Factories;
+using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
     /// Manages Item Drops
     /// </summary>
-    public class DropSystem : AbstractSystem
+    public class DropSystem : AbstractComponentSystem<Drops>
     {
         #region Fields
 
         /// <summary>
-        /// A List of all Item Pools Mapped to the ID
+        /// A List of all item pools mapped by their ID.
         /// </summary>
         private Dictionary<string, ItemPool> _itemPools = new Dictionary<string, ItemPool>();
 
@@ -49,9 +53,6 @@ namespace Space.ComponentSystem.Systems
             {
                 _itemPools.Add(itemPool.Name, itemPool);
             }
-
-            // We need to synchronize our randomizer.
-            ShouldSynchronize = true;
         }
 
         #endregion
@@ -78,7 +79,7 @@ namespace Space.ComponentSystem.Systems
             for (int i = _reusableDropInfo.Count; i > 1; i--)
             {
                 // Pick random element to swap.
-                int j = _random.NextInt32(i); // 0 <= j <= i-1
+                int j = _random.NextInt32(i); // 0 <= j <= i - 1
                 // Swap.
                 var tmp = _reusableDropInfo[j];
                 _reusableDropInfo[j] = _reusableDropInfo[i - 1];
@@ -91,10 +92,8 @@ namespace Space.ComponentSystem.Systems
                 // Give the item a chance to be dropped.
                 if (item.Probability > _random.NextDouble())
                 {
-                    //move a bit away from ship
-                    var positionvariance = new Vector2(_random.NextInt32(-10, 10), _random.NextInt32(-10, 10));
                     // Random roll succeeded, drop the item.
-                    Manager.EntityManager.AddEntity(FactoryLibrary.SampleItem(item.ItemName, position + positionvariance, _random));
+                    FactoryLibrary.SampleItem(Manager, item.ItemName, position, _random);
 
                     // Did a drop, check if we're done.
                     dropCount++;
@@ -108,9 +107,37 @@ namespace Space.ComponentSystem.Systems
             // Clear up for next run.
             _reusableDropInfo.Clear();
         }
+
+        /// <summary>
+        /// Drop items when entities die.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="message">The message.</param>
+        public override void Receive<T>(ref T message)
+        {
+            base.Receive(ref message);
+
+            if (message is EntityDied)
+            {
+                var entity = ((EntityDied)(ValueType)message).Entity;
+
+                var drops = Manager.GetComponent<Drops>(entity);
+                if (drops != null)
+                {
+                    // Don't drop exactly at the location of the entity that died,
+                    // but move it off to the side a bit.
+                    var translation = Manager.GetComponent<Transform>(entity).Translation;
+                    translation.X += _random.NextInt32(-10, 10);
+                    translation.Y += _random.NextInt32(-10, 10);
+
+                    Drop(drops.ItemPool, ref translation);
+                }
+            }
+        }
+
         #endregion
 
-        #region Serilization
+        #region Serialization
 
         /// <summary>
         /// Write the object's state to the given packet.
@@ -133,19 +160,20 @@ namespace Space.ComponentSystem.Systems
         {
             base.Depacketize(packet);
 
-            _random = packet.ReadPacketizableInto<MersenneTwister>(_random);
+            _random = packet.ReadPacketizableInto(_random);
         }
 
         #endregion
 
         #region Copying
 
-        public override ISystem DeepCopy(ISystem into)
+        public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (DropSystem)base.DeepCopy(into);
 
             if (copy == into)
             {
+                // Copy for shuffling.
                 copy._itemPools.Clear();
                 foreach (var item in _itemPools)
                 {
@@ -155,6 +183,7 @@ namespace Space.ComponentSystem.Systems
             }
             else
             {
+                // Copy for shuffling.
                 copy._itemPools = new Dictionary<string, ItemPool>(_itemPools);
                 copy._random = _random.DeepCopy();
                 copy._reusableDropInfo = new List<ItemPool.DropInfo>();

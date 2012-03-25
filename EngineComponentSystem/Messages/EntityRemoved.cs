@@ -8,6 +8,6 @@
         /// <summary>
         /// The entity that was removed.
         /// </summary>
-        public Entity Entity;
+        public int Entity;
     }
 }

@@ -130,7 +130,7 @@ namespace Space.Graphics
             _effect.Parameters["EmbossScale"].SetValue(1f / _width);
 
             _effect.Parameters["TextureOffset"].SetValue(_surfaceRotation * ((float)_gameTime.TotalGameTime.TotalSeconds / _width));
-            _effect.Parameters["TextureScale"].SetValue((float)_surface.Width / (2f * _width));
+            _effect.Parameters["TextureScale"].SetValue(_surface.Width / (2f * _width));
         }
 
         #endregion

@@ -9,20 +9,21 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Health : AbstractRegeneratingValue
     {
-        #region Constructor
+        #region Accessors
 
         /// <summary>
-        /// Creates a new health component.
+        /// Sets the value.
         /// </summary>
-        /// <param name="timeout">The number of ticks to wait after taking
-        /// damage before starting to regenerate health again.</param>
-        public Health(int timeout)
-            : base(timeout)
+        /// <param name="value">The value.</param>
+        public sealed override void SetValue(float value)
         {
-        }
-
-        public Health()
-        {
+            base.SetValue(value);
+            if (Value <= 0)
+            {
+                EntityDied message;
+                message.Entity = Entity;
+                Manager.SendMessage(ref message);
+            }
         }
 
         #endregion
@@ -30,26 +31,12 @@ namespace Space.ComponentSystem.Components
         #region Logic
 
         /// <summary>
-        /// Sends <c>EntityDied</c> messages if health is zero. It is expected
-        /// that this component will be disabled on death, so this won't be
-        /// spammed all the time.
+        /// Recomputes the maximum value and regeneration speed.
         /// </summary>
-        /// <param name="parameterization"></param>
-        public override void Update(object parameterization)
-        {
-            if (Value <= 0)
-            {
-                EntityDied message;
-                Entity.SendMessage(ref message);
-            }
-
-            base.Update(parameterization);
-        }
-
-        protected override void RecomputeValues()
+        internal override void RecomputeValues()
         {
             // Recompute our values.
-            var character = Entity.GetComponent<Character<AttributeType>>();
+            var character = Manager.GetComponent<Character<AttributeType>>(Entity);
 
             // Remember current relative value. Set to full if it was zero
             // before, because that means we're initializing for the first

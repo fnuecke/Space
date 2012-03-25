@@ -14,15 +14,18 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new reactor based on these constraints.
         /// </summary>
+        /// <param name="manager"></param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled reactor.</returns>
-        public override Entity Sample(IUniformRandom random)
+        /// <returns>
+        /// The sampled reactor.
+        /// </returns>
+        public override int Sample(IManager manager, IUniformRandom random)
         {
-            var entity = base.Sample(random);
+            var entity = base.Sample(manager, random);
 
-            entity.AddComponent(new Reactor(Name, Icon, Quality));
+            manager.AddComponent<Reactor>(entity).Initialize(Name, Icon, Quality);
 
-            return SampleAttributes(entity, random);
+            return SampleAttributes(manager, entity, random);
         }
 
         #endregion

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.Serialization;
 using Engine.Util;
-using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components
 {
@@ -13,14 +10,14 @@ namespace Space.ComponentSystem.Components
     /// Gives an entity the ability to spawn other entities in a regular
     /// interval.
     /// </summary>
-    public sealed class ShipSpawner : AbstractComponent
+    public sealed class ShipSpawner : Component
     {
         #region Fields
         
         /// <summary>
         /// A list of stations this spawner may send ships to.
         /// </summary>
-        public HashSet<int> Targets = new HashSet<int>();
+        public readonly HashSet<int> Targets = new HashSet<int>();
 
         /// <summary>
         /// The interval in which new entities are being spawned, in ticks.
@@ -30,60 +27,40 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Ticks to wait before sending the next wave.
         /// </summary>
-        private int _cooldown;
+        internal int Cooldown;
 
         #endregion
 
-        #region Logic
-        
-        /// <summary>
-        /// Decrements the remaining cooldown until the next spawn wave, and
-        /// spawns some ships, if it expired, then resets it.
-        /// </summary>
-        /// <param name="parameterization"></param>
-        public override void Update(object parameterization)
-        {
-            if (--_cooldown <= 0)
-            {
-                var shipSpawnSystem = Entity.Manager.SystemManager.GetSystem<ShipsSpawnSystem>();
-                var faction = Entity.GetComponent<Faction>();
-                var tranform = Entity.GetComponent<Transform>();
-                foreach (var target in Targets)
-                {
-                    // shipSpawnSystem.CreateAttackingShip(ref tranform.Translation, target, faction.Value);
-                }
+        #region Initialization
 
-                _cooldown = SpawnInterval;
-            }
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        /// <returns></returns>
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherSpawner = (ShipSpawner)other;
+            Targets.UnionWith(otherSpawner.Targets);
+            SpawnInterval = otherSpawner.SpawnInterval;
+            Cooldown = otherSpawner.Cooldown;
+
+            return this;
         }
 
         /// <summary>
-        /// Accepts <c>DefaultLogicParameterization</c>.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        /// <param name="parameterizationType">The parameterization to check.</param>
-        /// <returns>Whether it's supported.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
+        public override void Reset()
         {
-            return parameterizationType == typeof(DefaultLogicParameterization);
-        }
+            base.Reset();
 
-        #endregion
-
-        #region Messaging
-
-        /// <summary>
-        /// Removes potential targets from our list when they are removed from
-        /// the simulation.
-        /// </summary>
-        /// <typeparam name="T">The type of message.</typeparam>
-        /// <param name="message">The message to handle.</param>
-        public override void HandleMessage<T>(ref T message)
-        {
-            if (message is EntityRemoved)
-            {
-                var removedMessage = (EntityRemoved)(ValueType)(message);
-                Targets.Remove(removedMessage.Entity.UID);
-            }
+            Targets.Clear();
+            SpawnInterval = 0;
+            Cooldown = 0;
         }
 
         #endregion
@@ -109,7 +86,7 @@ namespace Space.ComponentSystem.Components
 
             packet
                 .Write(SpawnInterval)
-                .Write(_cooldown);
+                .Write(Cooldown);
 
             return packet;
         }
@@ -130,7 +107,7 @@ namespace Space.ComponentSystem.Components
             }
 
             SpawnInterval = packet.ReadInt32();
-            _cooldown = packet.ReadInt32();
+            Cooldown = packet.ReadInt32();
         }
 
         /// <summary>
@@ -143,33 +120,7 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(BitConverter.GetBytes(SpawnInterval));
-            hasher.Put(BitConverter.GetBytes(_cooldown));
-        }
-
-        #endregion
-
-        #region Copying
-
-        public override AbstractComponent DeepCopy(AbstractComponent into)
-        {
-            var copy = (ShipSpawner)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.Targets.Clear();
-                foreach (var item in Targets)
-                {
-                    copy.Targets.Add(item);
-                }
-                copy.SpawnInterval = SpawnInterval;
-                copy._cooldown = _cooldown;
-            }
-            else
-            {
-                copy.Targets = new HashSet<int>(Targets);
-            }
-
-            return copy;
+            hasher.Put(BitConverter.GetBytes(Cooldown));
         }
 
         #endregion

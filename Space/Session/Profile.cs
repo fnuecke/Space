@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.RPG.Components;
@@ -23,7 +24,7 @@ namespace Space.Session
     {
         #region Logger
 
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -34,17 +35,22 @@ namespace Space.Session
         /// fundamentally so that we can handle files differently. This is
         /// the version we write to new snapshots.
         /// </summary>
-        private const int _version = 0;
+        private const int Version = 0;
+
+        /// <summary>
+        /// Header for our save game files.
+        /// </summary>
+        private static readonly byte[] Header = Encoding.ASCII.GetBytes("MPSAV");
 
         /// <summary>
         /// Pattern used to eliminate invalid chars from profile names, for saving.
         /// </summary>
-        private static readonly Regex _invalidCharPattern = new Regex(string.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))), RegexOptions.Compiled);
+        private static readonly Regex InvalidCharPattern = new Regex(string.Format("[{0}]", Regex.Escape(new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars()))), RegexOptions.Compiled);
 
         /// <summary>
         /// Cryptography service we use to encrypt our save files.
         /// </summary>
-        private static readonly SimpleCrypto _crypto = new SimpleCrypto(
+        private static readonly SimpleCrypto Crypto = new SimpleCrypto(
             new byte[] { 174, 190, 179, 189, 31, 66, 187, 235, 115, 253, 233, 119, 144, 33, 238, 191, 210, 244, 101, 247, 193, 75, 136, 202, 188, 1, 124, 237, 118, 223, 99, 140 },
             new byte[] { 123, 239, 208, 52, 86, 203, 255, 232, 156, 225, 31, 219, 2, 65, 143, 155 });
 
@@ -59,7 +65,7 @@ namespace Space.Session
         {
             get
             {
-                var profileFolder = _invalidCharPattern.Replace(Settings.Instance.ProfileFolder, "_");
+                var profileFolder = InvalidCharPattern.Replace(Settings.Instance.ProfileFolder, "_");
                 if (Directory.Exists(profileFolder))
                 {
                     foreach (var fileName in Directory.EnumerateFiles(profileFolder, "*.sav"))
@@ -75,7 +81,10 @@ namespace Space.Session
         /// </summary>
         public string Name { get; private set; }
 
-        // TODO: additional info we might want do display in character selection, such as level, gold, ...
+        /// <summary>
+        /// The player class of this profile.
+        /// </summary>
+        public PlayerClassType PlayerClass { get; private set; }
 
         #endregion
 
@@ -84,7 +93,7 @@ namespace Space.Session
         /// <summary>
         /// The serialized character data.
         /// </summary>
-        private Packet _data = new Packet();
+        private Packet _data;
 
         #endregion
 
@@ -92,9 +101,10 @@ namespace Space.Session
 
         public void Dispose()
         {
-            _data.Dispose();
-
-            GC.SuppressFinalize(this);
+            if (_data != null)
+            {
+                _data.Dispose();
+            }
         }
 
         #endregion
@@ -110,72 +120,90 @@ namespace Space.Session
         /// <exception cref="ArgumentException">profile name is invalid.</exception>
         public void Create(string name, PlayerClassType playerClass)
         {
-            if (_invalidCharPattern.IsMatch(name))
+            if (InvalidCharPattern.IsMatch(name))
             {
                 throw new ArgumentException("Invalid profile name, contains invalid character.", "name");
             }
 
+            // Save name and class, initialization will be done when restore
+            // is called for the first time.
+            Reset();
             this.Name = name;
-            var profilePath = GetFullProfilePath();
-            if (File.Exists(profilePath))
-            {
-                logger.Warn("Profile with that name already exists.");
-            }
+            PlayerClass = playerClass;
 
-            // Create new profile.
-            Initialize(playerClass);
+            if (File.Exists(GetFullProfilePath()))
+            {
+                Logger.Warn("Profile with that name already exists.");
+            }
         }
 
         /// <summary>
         /// Loads this profile from disk. If loading fails this will default to
         /// a new profile with the fall-back character class.
         /// </summary>
-        /// <exception cref="ArgumentException">profile name is invalid.</exception>
+        /// <exception cref="ArgumentException">Profile name is invalid.</exception>
         public void Load(string name)
         {
-            if (_invalidCharPattern.IsMatch(name))
+            if (InvalidCharPattern.IsMatch(name))
             {
                 throw new ArgumentException("Invalid profile name, contains invalid character.", "name");
             }
 
+            // Figure out the path, check if it's valid.
+            Reset();
             this.Name = name;
             var profilePath = GetFullProfilePath();
+
+            if (!File.Exists(profilePath))
+            {
+                throw new ArgumentException("Invalid profile name, no such file.", "name");
+            }
+
             try
             {
                 // Load the file contents, which are encrypted and compressed.
                 var encrypted = File.ReadAllBytes(profilePath);
-                var compressed = _crypto.Decrypt(encrypted);
+                var compressed = Crypto.Decrypt(encrypted);
                 var plain = SimpleCompression.Decompress(compressed);
 
                 // Now we have the plain data, handle it as a packet to read our
                 // data from it.
                 using (var packet = new Packet(plain))
                 {
+                    // Get file header.
+                    if (!CheckHeader(packet.ReadByteArray()))
+                    {
+                        Logger.Error("Failed loading profile, invalid header, using default.");
+                        return;
+                    }
+
                     // Get the hash the data had when writing.
                     var hash = packet.ReadInt32();
+
+                    // Get the player class.
+                    var playerClass = (PlayerClassType)packet.ReadByte();
+
                     // And the actual data.
                     var data = packet.ReadByteArray();
 
                     // Check if the hash matches.
                     var hasher = new Hasher();
-                    hasher.Put(data);
-                    if (hasher.Value != hash)
+                    hasher.Put((byte)playerClass);
+                    if (data != null)
                     {
-                        // Broken or modified data, don't use it.
-                        Initialize(PlayerClassType.Default);
+                        hasher.Put(data);
                     }
-                    else
+                    if (hasher.Value == hash)
                     {
                         // All is well, keep the data, drop our old data, if any.
-                        _data.Dispose();
+                        PlayerClass = playerClass;
                         _data = new Packet(data);
                     }
                 }
             }
             catch (Exception ex)
             {
-                logger.ErrorException("Failed loading profile, using default.", ex);
-                Initialize(PlayerClassType.Default);
+                Logger.ErrorException("Failed loading profile, using default.", ex);
             }
         }
 
@@ -185,69 +213,82 @@ namespace Space.Session
         public void Save()
         {
             // Get our plain data and hash it.
-            var plain = _data.GetBuffer();
+            var plain = (_data != null) ? _data.GetBuffer() : null;
             var hasher = new Hasher();
-            hasher.Put(plain);
+            hasher.Put((byte)PlayerClass);
+            if (plain != null)
+            {
+                hasher.Put(plain);
+            }
 
             // Write it to a packet, compress it, encrypt it and save it.
             using (var packet = new Packet())
             {
                 // Put our hash and plain data.
+                packet.Write(Header);
                 packet.Write(hasher.Value);
+                packet.Write((byte)PlayerClass);
                 packet.Write(plain);
 
                 // Compress and encrypt, then save.
                 var compressed = SimpleCompression.Compress(packet.GetBuffer());
-                var encrypted = _crypto.Encrypt(compressed);
+                var encrypted = Crypto.Encrypt(compressed);
 
                 var profilePath = GetFullProfilePath();
-                Directory.CreateDirectory(Path.GetDirectoryName(profilePath));
-
-                // Make a backup if there's a save already.
-                if (File.Exists(profilePath))
+                try
                 {
-                    var backupPath = profilePath + ".bak";
+                    Directory.CreateDirectory(Path.GetDirectoryName(profilePath));
+
+                    // Make a backup if there's a save already.
+                    if (File.Exists(profilePath))
+                    {
+                        var backupPath = profilePath + ".bak";
+                        try
+                        {
+                            if (File.Exists(backupPath))
+                            {
+                                File.Delete(backupPath);
+                            }
+                            File.Move(profilePath, backupPath);
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.WarnException("Failed backing-up saved profile.", ex);
+                        }
+                    }
+
                     try
                     {
-                        if (File.Exists(backupPath))
-                        {
-                            File.Delete(backupPath);
-                        }
-                        File.Move(profilePath, backupPath);
+                        File.WriteAllBytes(profilePath, encrypted);
+#if DEBUG
+                        File.WriteAllBytes(profilePath + ".raw", plain);
+#endif
                     }
                     catch (Exception ex)
                     {
-                        logger.WarnException("Failed backing-up saved profile.", ex);
+                        Logger.ErrorException("Failed saving profile.", ex);
+                        // If we have a backup, try to restore it.
+                        var backupPath = profilePath + ".bak";
+                        if (File.Exists(backupPath))
+                        {
+                            try
+                            {
+                                if (File.Exists(profilePath))
+                                {
+                                    File.Delete(profilePath);
+                                }
+                                File.Copy(backupPath, profilePath);
+                            }
+                            catch (Exception ex2)
+                            {
+                                Logger.WarnException("Failed restoring backed-up profile.", ex2);
+                            }
+                        }
                     }
-                }
-
-                try
-                {
-                    File.WriteAllBytes(profilePath, encrypted);
-#if DEBUG
-                    File.WriteAllBytes(profilePath + ".raw", plain);
-#endif
                 }
                 catch (Exception ex)
                 {
-                    logger.ErrorException("Failed saving profile.", ex);
-                    // If we have a backup, try to restore it.
-                    var backupPath = profilePath + ".bak";
-                    if (File.Exists(backupPath))
-                    {
-                        try
-                        {
-                            if (File.Exists(profilePath))
-                            {
-                                File.Delete(profilePath);
-                            }
-                            File.Copy(backupPath, profilePath);
-                        }
-                        catch (Exception ex2)
-                        {
-                            logger.WarnException("Failed restoring backed-up profile.", ex2);
-                        }
-                    }
+                    Logger.ErrorException("Failed saving.", ex);
                 }
             }
         }
@@ -259,42 +300,50 @@ namespace Space.Session
         /// <summary>
         /// Take a snapshot of a character's current state in a running game.
         /// </summary>
+        /// <param name="manager">The component system manager.</param>
         /// <param name="avatar">The avatar to take a snapshot of.</param>
-        public void Capture(Entity avatar)
+        public void Capture(int avatar, IManager manager)
         {
-            if (avatar.UID <= 0)
+            if (avatar < 1)
             {
                 throw new ArgumentException("Invalid avatar specified.", "avatar");
             }
+            if (manager == null)
+            {
+                throw new ArgumentNullException("manager");
+            }
 
             // Get the elements we need to save.
-            var playerClass = avatar.GetComponent<PlayerClass>();
-            var respawn = avatar.GetComponent<Respawn>();
-            var character = avatar.GetComponent<Character<AttributeType>>();
-            var equipment = avatar.GetComponent<Equipment>();
-            var inventory = avatar.GetComponent<Inventory>();
-            var manager = avatar.Manager;
+            var playerClass = manager.GetComponent<PlayerClass>(avatar);
+            var respawn = manager.GetComponent<Respawn>(avatar);
+            var character = manager.GetComponent<Character<AttributeType>>(avatar);
+            var equipment = manager.GetComponent<Equipment>(avatar);
+            var inventory = manager.GetComponent<Inventory>(avatar);
 
             // Check if we have everything we need.
             if (playerClass == null ||
                 respawn == null ||
                 character == null ||
                 equipment == null ||
-                inventory == null ||
-                manager == null)
+                inventory == null)
             {
                 throw new ArgumentException("Invalid avatar specified.", "avatar");
             }
 
             // Make the actual snapshot via serialization.
-            _data.Dispose();
+            if (_data != null)
+            {
+                _data.Dispose();
+            }
             _data = new Packet();
 
             // Write file version.
-            _data.Write(_version);
+            _data.Write(Version);
 
             // Store the player class. Needed to create the actual ship when
-            // loading.
+            // loading. Also update the profile accordingly (should never
+            // change, but who knows...)
+            PlayerClass = playerClass.Value;
             _data.Write((byte)playerClass.Value);
 
             // Save the current spawning position.
@@ -317,6 +366,10 @@ namespace Space.Session
                 typeof(Weapon)
             };
 
+            // Track items and their slots.
+            var itemSlots = new List<int>();
+            var items = new List<int>();
+
             _data.Write(itemTypes.Length);
             foreach (var itemType in itemTypes)
             {
@@ -324,38 +377,49 @@ namespace Space.Session
                 int slotCount = equipment.GetSlotCount(itemType);
 
                 // Get the list of equipped items of that type.
-                var itemSlots = new List<int>();
-                var itemsOfType = new List<Entity>();
                 for (int i = 0; i < slotCount; i++)
                 {
                     var item = equipment.GetItem(itemType, i);
-                    if (item != null)
+                    if (item.HasValue)
                     {
                         itemSlots.Add(i);
-                        itemsOfType.Add(item);
+                        items.Add(item.Value);
                     }
                 }
 
                 // Write the type, count and actual items.
                 _data.Write(itemType.AssemblyQualifiedName);
                 _data.Write(slotCount);
-                _data.Write(itemsOfType.Count);
-                for (int i = 0; i < itemsOfType.Count; i++)
+                _data.Write(items.Count);
+                for (int i = 0; i < items.Count; i++)
                 {
                     _data.Write(itemSlots[i]);
-                    _data.Write(itemsOfType[i]);
+                    manager.PacketizeEntity(items[i], _data);
                 }
+
+                itemSlots.Clear();
+                items.Clear();
             }
 
             // And finally, the inventory. Same as with the inventory, we have
             // to serialize the actual items in it.
-            _data.Write(inventory.Capacity);
             for (int i = 0; i < inventory.Capacity; i++)
             {
-                _data.Write(inventory[i]);
+                var item = inventory[i];
+                if (item.HasValue)
+                {
+                    itemSlots.Add(i);
+                    items.Add(item.Value);
+                }
             }
 
-            // TODO: extract additional display info, if desired.
+            // Write the number of items in the inventory and actual items.
+            _data.Write(items.Count);
+            for (int i = 0; i < items.Count; i++)
+            {
+                _data.Write(itemSlots[i]);
+                manager.PacketizeEntity(items[i], _data);
+            }
         }
 
         /// <summary>
@@ -365,12 +429,20 @@ namespace Space.Session
         /// he is restored to.</param>
         /// <param name="manager">The entity manager to add the restored
         /// entities to.</param>
-        /// <returns>The restored avatar.</returns>
-        public void Restore(int playerNumber, IEntityManager manager)
+        /// <returns>
+        /// The restored avatar.
+        /// </returns>
+        public int Restore(int playerNumber, IManager manager)
         {
             if (manager == null)
             {
-                throw new ArgumentNullException("EntityManager must not be null.", "manager");
+                throw new ArgumentNullException("manager");
+            }
+
+            if (_data == null)
+            {
+                // No data yet, meaning the profile isn't initialized, yet.
+                return Initialize(playerNumber, manager);
             }
 
             // OK, start from scratch.
@@ -379,65 +451,47 @@ namespace Space.Session
             // Check version and use according loader, where possible.
             try
             {
-                Entity avatar;
-
                 switch (_data.ReadInt32())
                 {
                     case 0:
-                        avatar = Restore0(playerNumber, manager);
-                        break;
+                        return Restore0(playerNumber, manager);
 
                     default:
-                        throw new InvalidOperationException("Unknown profile version.");
+                        Logger.Error("Unknown profile version, using default.");
+                        break;
                 }
-
-                // Add the ship to the simulation.
-                manager.AddEntity(avatar);
             }
             catch (Exception ex)
             {
-                logger.ErrorException("Failed restoring profile, using default.", ex);
-                Initialize(PlayerClassType.Fighter);
-                Restore(playerNumber, manager);
+                Logger.ErrorException("Failed restoring profile, using default.", ex);
             }
+
+            // Restore a default profile and return it.
+            Reset();
+            return Restore(playerNumber, manager);
         }
 
         #region Restore implementations
 
         /// <summary>
-        /// Always points to current restore implementation.
-        /// </summary>
-        private Entity RestoreCurrent(int playerNumber, IEntityManager manager)
-        {
-            return Restore0(playerNumber, manager);
-        }
-
-        /// <summary>
         /// Load saves of version 0.
         /// </summary>
-        private Entity Restore0(int playerNumber, IEntityManager manager)
+        private int Restore0(int playerNumber, IManager manager)
         {
             // Read the player's class and create the ship.
             var playerClass = (PlayerClassType)_data.ReadByte();
+            PlayerClass = playerClass;
 
             // Read the respawn position.
             var position = _data.ReadVector2();
 
             // Create the ship.
-            var avatar = EntityFactory.CreatePlayerShip(playerClass, playerNumber, position);
+            var avatar = EntityFactory.CreatePlayerShip(manager, playerClass, playerNumber, position);
 
             // Get the elements we need to save.
-            var character = avatar.GetComponent<Character<AttributeType>>();
-            var equipment = avatar.GetComponent<Equipment>();
-            var inventory = avatar.GetComponent<Inventory>();
-
-            // Check if we have everything we need.
-            if (character == null ||
-                equipment == null ||
-                inventory == null)
-            {
-                throw new ArgumentException("Invalid avatar specified.", "avatar");
-            }
+            var character = manager.GetComponent<Character<AttributeType>>(avatar);
+            var equipment = manager.GetComponent<Equipment>(avatar);
+            var inventory = manager.GetComponent<Inventory>(avatar);
 
             // Restore character. Use special packetizer implementation only
             // adjusting the actual character data, not the base data.
@@ -457,9 +511,9 @@ namespace Space.Session
                 for (int j = 0; j < equipment.GetSlotCount(itemType); j++)
                 {
                     var item = equipment.Unequip(itemType, j);
-                    if (item != null)
+                    if (item.HasValue)
                     {
-                        manager.RemoveEntity(item);
+                        manager.RemoveEntity(item.Value);
                     }
                 }
 
@@ -471,30 +525,29 @@ namespace Space.Session
                 for (int j = 0; j < numItemsOfType; j++)
                 {
                     int slot = _data.ReadInt32();
-                    var item = _data.ReadPacketizable<Entity>();
-                    // Reset uid, add to our entity manager.
-                    item.UID = -1;
-                    manager.AddEntity(item);
-                    equipment.Equip(item, slot);
+                    var item = manager.DepacketizeEntity(_data);
+                    equipment.Equip(slot, item);
                 }
             }
 
             // Restore inventory, clear it first. As with the equipment, remove
             // any old items, if there were any.
-            inventory.Clear();
+            for (int i = inventory.Capacity - 1; i >= 0; --i)
+            {
+                var item = inventory[i];
+                if (item.HasValue)
+                {
+                    manager.RemoveEntity(item.Value);
+                }
+            }
 
             // Then read back the stored items.
             int numInventoryItems = _data.ReadInt32();
             for (int i = 0; i < numInventoryItems; i++)
             {
-                var item = _data.ReadPacketizable<Entity>();
-                if (item != null)
-                {
-                    // Reset id, add to our entity manager.
-                    item.UID = -1;
-                    manager.AddEntity(item);
-                    inventory.Insert(i, item);
-                }
+                var slot = _data.ReadInt32();
+                var item = manager.DepacketizeEntity(_data);
+                inventory.Insert(slot, item);
             }
 
             return avatar;
@@ -512,88 +565,87 @@ namespace Space.Session
         /// <returns>The path to this profile.</returns>
         private string GetFullProfilePath()
         {
-            return Path.Combine(_invalidCharPattern.Replace(Settings.Instance.ProfileFolder, "_"), Name + ".sav");
+            return Path.Combine(InvalidCharPattern.Replace(Settings.Instance.ProfileFolder, "_"), Name + ".sav");
+        }
+
+        /// <summary>
+        /// Check if the header is correct.
+        /// </summary>
+        /// <param name="header">The header.</param>
+        /// <returns></returns>
+        private bool CheckHeader(byte[] header)
+        {
+            if (header == null || header.Length != Header.Length)
+            {
+                return false;
+            }
+            for (int i = 0; i < Header.Length; i++)
+            {
+                if (header[i] != Header[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
         /// Initializes this profile to a new ship.
         /// </summary>
-        private void Initialize(PlayerClassType playerClass)
+        /// <param name="playerNumber">The player number.</param>
+        /// <param name="manager">The manager.</param>
+        private int Initialize(int playerNumber, IManager manager)
         {
-            // Start from scratch.
-            _data.Dispose();
-            _data = new Packet();
-
-            // Write file version.
-            _data.Write(_version);
-
-            // Store the player class. Needed to create the actual ship when
-            // loading.
-            _data.Write((byte)playerClass);
-
-            // Save the current spawning position.
-            _data.Write(new Vector2(50000, 50000));
-
             // Store the character's base values. This is a little roundabout,
             // but this way it'll always be up-to-date.
-            var ship = EntityFactory.CreatePlayerShip(playerClass, 0, Vector2.Zero);
-            var character = ship.GetComponent<Character<AttributeType>>();
-            var equipment = ship.GetComponent<Equipment>();
-            character.PacketizeLocal(_data);
-
-            // Store the equipment.
-            var blueprint = playerClass.GetShipFactoryName();
-
-            // Number of item types.
-            _data.Write(6);
+            var ship = EntityFactory.CreatePlayerShip(manager, PlayerClass, playerNumber, new Vector2(50000, 50000));
+            var equipment = manager.GetComponent<Equipment>(ship);
 
             // Basic starter outfit for that class.
-            _data.Write(typeof(Armor).AssemblyQualifiedName);
-            _data.Write(equipment.GetSlotCount<Armor>());
-            InitializeEquipment<Armor>(playerClass);
+            InitializeEquipment<Armor>(equipment, manager);
+            InitializeEquipment<Reactor>(equipment, manager);
+            InitializeEquipment<Sensor>(equipment, manager);
+            InitializeEquipment<Shield>(equipment, manager);
+            InitializeEquipment<Thruster>(equipment, manager);
+            InitializeEquipment<Weapon>(equipment, manager);
 
-            _data.Write(typeof(Reactor).AssemblyQualifiedName);
-            _data.Write(equipment.GetSlotCount<Reactor>());
-            InitializeEquipment<Reactor>(playerClass);
-
-            _data.Write(typeof(Sensor).AssemblyQualifiedName);
-            _data.Write(equipment.GetSlotCount<Sensor>());
-            InitializeEquipment<Sensor>(playerClass);
-
-            _data.Write(typeof(Shield).AssemblyQualifiedName);
-            _data.Write(equipment.GetSlotCount<Shield>());
-            InitializeEquipment<Shield>(playerClass);
-
-            _data.Write(typeof(Thruster).AssemblyQualifiedName);
-            _data.Write(equipment.GetSlotCount<Thruster>());
-            InitializeEquipment<Thruster>(playerClass);
-
-            _data.Write(typeof(Weapon).AssemblyQualifiedName);
-            _data.Write(equipment.GetSlotCount<Weapon>());
-            InitializeEquipment<Weapon>(playerClass);
-
-            // And finally, the inventory.
-            // TODO: empty for now, maybe some healing items or such when we have them.
-            _data.Write(0);
+            return ship;
         }
 
         /// <summary>
         /// Utility method for initializing an equipment type.
         /// </summary>
         /// <typeparam name="T">The item type to initialize.</typeparam>
-        /// <param name="playerClass">The player class to initialize for.</param>
-        private void InitializeEquipment<T>(PlayerClassType playerClass)
+        /// <param name="equipment">The equipment.</param>
+        /// <param name="manager">The manager.</param>
+        private void InitializeEquipment<T>(Equipment equipment, IManager manager) where T : Item
         {
-            var itemName = playerClass.GetStarterItemFactoryName<T>();
-            if (itemName == null)
+            // Check if we can equip this item.
+            if (equipment.GetSlotCount<T>() < 1)
             {
-                _data.Write(0); // Number of items.
+                return;
             }
-            else
+            // Get the item name.
+            var itemName = PlayerClass.GetStarterItemFactoryName<T>();
+            if (itemName != null)
             {
-                _data.Write(1); // Number of items.
-                _data.Write(0); // Slot number.
-                _data.Write(FactoryLibrary.SampleItem(itemName, null)); // Actual item.
+                // Got one, create and equip it in slot one.
+                equipment.Equip(0, FactoryLibrary.SampleItem(manager, itemName, null));
+            }
+        }
+
+        /// <summary>
+        /// Resets the profile to an uninitialized state with the default
+        /// player class.
+        /// </summary>
+        private void Reset()
+        {
+            PlayerClass = PlayerClassType.Default;
+            if (_data != null)
+            {
+                _data.Dispose();
+                _data = null;
             }
         }
 
@@ -612,6 +664,7 @@ namespace Space.Session
         {
             return packet
                 .Write(Name)
+                .Write((byte)PlayerClass)
                 .Write(_data);
         }
 
@@ -622,7 +675,11 @@ namespace Space.Session
         public void Depacketize(Packet packet)
         {
             Name = packet.ReadString();
-            _data.Dispose();
+            PlayerClass = (PlayerClassType)packet.ReadByte();
+            if (_data != null)
+            {
+                _data.Dispose();
+            }
             _data = packet.ReadPacket();
         }
 

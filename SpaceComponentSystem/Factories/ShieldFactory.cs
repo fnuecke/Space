@@ -13,9 +13,12 @@ namespace Space.ComponentSystem.Factories
         /// <summary>
         /// Samples a new shield based on these constraints.
         /// </summary>
+        /// <param name="manager"></param>
         /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled shield.</returns>
-        public override Entity Sample(IUniformRandom random)
+        /// <returns>
+        /// The sampled shield.
+        /// </returns>
+        public override int Sample(IManager manager, IUniformRandom random)
         {
             throw new System.NotImplementedException();
         }

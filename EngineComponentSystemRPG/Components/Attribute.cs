@@ -9,7 +9,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// </summary>
     /// <typeparam name="TAttribute">The enum that holds the possible types of
     /// attributes.</typeparam>
-    public sealed class Attribute<TAttribute> : AbstractComponent
+    public sealed class Attribute<TAttribute> : Component
         where TAttribute : struct
     {
         #region Fields
@@ -21,17 +21,43 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
-        public Attribute(AttributeModifier<TAttribute> value)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
         {
-            this.Modifier = value;
+            base.Initialize(other);
+
+            Modifier = ((Attribute<TAttribute>)other).Modifier;
+
+            return this;
         }
 
-        public Attribute()
+        /// <summary>
+        /// Initialize with the specified modifier.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public Attribute<TAttribute> Initialize(AttributeModifier<TAttribute> value)
         {
+            Modifier = value;
+
+            return this;
         }
 
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            Modifier = null;
+        }   
+          
         #endregion
 
         #region Serialization / Hashing
@@ -74,27 +100,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #endregion
 
-        #region Copying
-
-        public override AbstractComponent DeepCopy(AbstractComponent into)
-        {
-            var copy = (Attribute<TAttribute>)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.Modifier = Modifier.DeepCopy(copy.Modifier);
-            }
-            else
-            {
-                copy.Modifier = Modifier.DeepCopy();
-            }
-
-            return copy;
-        }
-
-        #endregion
-
-        #region Overrides
+        #region ToString
 
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
@@ -104,10 +110,9 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value = " + Modifier.ToString();
+            return base.ToString() + ", Value = " + Modifier;
         }
 
         #endregion
     }
-
 }

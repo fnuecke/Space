@@ -12,8 +12,8 @@ namespace Engine.Simulation
     /// </para>
     /// </summary>
     /// <param name="command">The command to process.</param>
-    /// <param name="systemManager">The relevant entity manager.</param>
-    public delegate void CommandHandler(Command command, IEntityManager manager);
+    /// <param name="manager">The relevant component system manager.</param>
+    public delegate void CommandHandler(Command command, IManager manager);
 
     /// <summary>
     /// A delegate-based implementation of a simulation that supports pruning non-authoritative
@@ -64,18 +64,12 @@ namespace Engine.Simulation
         public bool SkipTentativeCommands()
         {
             bool hadTentative = false;
-            for (int i = commands.Count - 1; i >= 0; --i)
+            for (int i = Commands.Count - 1; i >= 0; --i)
             {
-                if (!commands[i].IsAuthoritative)
+                if (!Commands[i].IsAuthoritative)
                 {
-#if DEBUG && GAMELOG
-                    if (GameLogEnabled)
-                    {
-                        gamelog.Trace("Pruning non-authoritative command {0}.", commands[i]);
-                    }
-#endif
                     hadTentative = true;
-                    commands.RemoveAt(i);
+                    Commands.RemoveAt(i);
                 }
             }
             return hadTentative;
@@ -89,7 +83,7 @@ namespace Engine.Simulation
         {
             if (Command != null)
             {
-                Command(command, EntityManager);
+                Command(command, Manager);
             }
         }
 

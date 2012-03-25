@@ -18,22 +18,22 @@ namespace Engine.Controller
         /// <summary>
         /// Creates a new game client, ready to connect to an open game.
         /// </summary>
-        /// <param name="game"></param>
+        /// <param name="commandHandler">The command handler to use.</param>
         public SimpleClientController(CommandHandler commandHandler)
             : base(new HybridClientSession<TPlayerData>())
         {
             var simulation = new DefaultSimulation();
             simulation.Command += commandHandler;
-            _tss.Initialize(simulation);
+            Tss.Initialize(simulation);
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (this.Session.ConnectionState != ClientState.Unconnected)
+                if (Session.ConnectionState != ClientState.Unconnected)
                 {
-                    this.Session.Leave();
+                    Session.Leave();
                 }
 
                 Session.Dispose();
@@ -46,6 +46,11 @@ namespace Engine.Controller
 
         #region Logic
 
+        /// <summary>
+        /// Drives the game loop, right after driving the network protocol
+        /// in the base class. Also part of synchronizing run speeds on
+        /// server and client by sending sync requests in certain intervals.
+        /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         public override void Update(GameTime gameTime)
         {
@@ -57,12 +62,15 @@ namespace Engine.Controller
             }
         }
 
+        /// <summary>
+        /// Draws the current state of the simulation.
+        /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         public override void Draw(GameTime gameTime)
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                Simulation.EntityManager.SystemManager.Draw(gameTime, Simulation.CurrentFrame);
+                Simulation.Manager.Draw(gameTime, Simulation.CurrentFrame);
             }
         }
 

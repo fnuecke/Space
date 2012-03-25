@@ -1,14 +1,19 @@
 ﻿namespace Engine.ComponentSystem.RPG.Messages
 {
     /// <summary>
-    /// Sent by the <c>Equipment<c> component when an item is unequipped.
+    /// Sent by the <c>Equipment</c> component when an item is unequipped.
     /// </summary>
     public struct ItemRemoved
     {
         /// <summary>
+        /// The entity for which the item was removed.
+        /// </summary>
+        public int Entity;
+
+        /// <summary>
         /// The item that was unequipped.
         /// </summary>
-        public Entity Item;
+        public int Item;
 
         /// <summary>
         /// The slot from which the item was removed.

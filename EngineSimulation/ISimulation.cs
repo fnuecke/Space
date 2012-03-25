@@ -2,13 +2,14 @@
 using Engine.Serialization;
 using Engine.Simulation.Commands;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Simulation
 {
     /// <summary>
     /// Minimal interface to be implemented by simulation states.
     /// </summary>
-    public interface ISimulation : ICopyable<ISimulation>, IPacketizable, IHashable
+    public interface ISimulation : IPacketizable, IHashable, ICopyable<ISimulation>
     {
         /// <summary>
         /// The current frame of the simulation the state represents.
@@ -16,21 +17,15 @@ namespace Engine.Simulation
         long CurrentFrame { get; }
 
         /// <summary>
-        /// The entity manager in use in this simulation.
+        /// The component system manager in use in this simulation.
         /// </summary>
-        IEntityManager EntityManager { get; }
-
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Whether to log any game state changes in detail, for debugging.
-        /// </summary>
-        bool GameLogEnabled { get; set; }
-#endif
+        IManager Manager { get; }
 
         /// <summary>
         /// Advance the simulation by one frame.
         /// </summary>
-        void Update();
+        /// <param name="gameTime">The elapsed time since the last call to Update.</param>
+        void Update(GameTime gameTime);
 
         /// <summary>
         /// Apply a given command to the simulation state.

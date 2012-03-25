@@ -1,30 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Simulation.Commands;
 
 namespace Space.Simulation.Commands
 {
+    /// <summary>
+    /// Makes a player use an item from his inventory.
+    /// </summary>
     public sealed class UseCommand : FrameCommand
     {
         #region Fields
+
         /// <summary>
-        /// The slot of the item to be used
+        /// The index in the inventory of the item to be used.
         /// </summary>
-        public int Slot;
+        public int InventoryIndex;
+
         #endregion
 
-        public UseCommand(int slot)
+        #region Constructor
+
+        public UseCommand(int inventoryIndex)
             : base(SpaceCommandType.UseItem)
         {
-            Slot = slot;
+            InventoryIndex = inventoryIndex;
         }
 
+        /// <summary>
+        /// For deserialization.
+        /// </summary>
         public UseCommand()
             : this(-1)
-        { }
+        {
+        }
+
+        #endregion
 
         #region Serialization
 
@@ -38,7 +47,7 @@ namespace Space.Simulation.Commands
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Slot);
+                .Write(InventoryIndex);
         }
 
         /// <summary>
@@ -49,8 +58,7 @@ namespace Space.Simulation.Commands
         {
             base.Depacketize(packet);
 
-            
-            Slot = packet.ReadInt32();
+            InventoryIndex = packet.ReadInt32();
         }
 
         #endregion
@@ -67,7 +75,7 @@ namespace Space.Simulation.Commands
         public override bool Equals(Command other)
         {
             return base.Equals(other) &&
-                Slot == ((UseCommand)other).Slot;
+                InventoryIndex == ((UseCommand)other).InventoryIndex;
         }
 
         #endregion

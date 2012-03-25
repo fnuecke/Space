@@ -49,45 +49,14 @@
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.GamerServices, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Video, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Avatar, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Net, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Storage, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Xml">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System.Core">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Net">
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -97,23 +66,29 @@
     <Compile Include="Components\Character.cs" />
     <Compile Include="Components\Equipment.cs" />
     <Compile Include="Components\Inventory.cs" />
-    <Compile Include="Components\AbstractStatusEffect.cs" />
+    <Compile Include="Components\StatusEffect.cs" />
     <Compile Include="Components\Attribute.cs" />
-    <Compile Include="Components\Items\Consumable.cs" />
-    <Compile Include="Components\Items\Item.cs" />
-    <Compile Include="Components\Items\ItemInfo.cs" />
-    <Compile Include="Components\Items\Stackable.cs" />
-    <Compile Include="Components\Items\Usable.cs" />
+    <Compile Include="Components\Item.cs" />
+    <Compile Include="Components\Stackable.cs" />
+    <Compile Include="Components\Usable.cs" />
     <Compile Include="Constraints\AttributeModifierConstraint.cs" />
     <Compile Include="Messages\CharacterStatsInvalidated.cs" />
     <Compile Include="Messages\ItemAdded.cs" />
     <Compile Include="Messages\ItemRemoved.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Systems\CharacterSystem.cs" />
+    <Compile Include="Systems\InventorySystem.cs" />
+    <Compile Include="Systems\StatusEffectSystem.cs" />
+    <Compile Include="Systems\UsablesSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
+      <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
+      <Name>Engine.ComponentSystem.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystem\Engine.ComponentSystem.csproj">
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>

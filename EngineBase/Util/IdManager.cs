@@ -32,7 +32,7 @@ namespace Engine.Util
         /// <returns></returns>
         public bool InUse(int id)
         {
-            return id < _nextId && !_reusableIds.Contains(id);
+            return id > 0 && id < _nextId && !_reusableIds.Contains(id);
         }
 
         /// <summary>

@@ -10,5 +10,9 @@
     /// </summary>
     public struct EntityDied
     {
+        /// <summary>
+        /// The entity that just died.
+        /// </summary>
+        public int Entity;
     }
 }

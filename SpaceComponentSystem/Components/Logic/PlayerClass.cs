@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Space.Data;
 
@@ -7,7 +8,7 @@ namespace Space.ComponentSystem.Components
     /// <summary>
     /// Tells the player class via a player's ship.
     /// </summary>
-    public sealed class PlayerClass : AbstractComponent
+    public sealed class PlayerClass : Component
     {
         #region Fields
 
@@ -18,18 +19,41 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Constructor
+        #region Initialization
 
-        public PlayerClass(PlayerClassType playerClass)
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
         {
-            Value = playerClass;
+            base.Initialize(other);
+
+            Value = ((PlayerClass)other).Value;
+
+            return this;
         }
 
         /// <summary>
-        /// For serialization.
+        /// Initialize with the specified player class.
         /// </summary>
-        public PlayerClass()
+        /// <param name="playerClass">The player class.</param>
+        public PlayerClass Initialize(PlayerClassType playerClass)
         {
+            Value = playerClass;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            Value = PlayerClassType.Default;
         }
 
         #endregion
@@ -60,20 +84,31 @@ namespace Space.ComponentSystem.Components
             Value = (PlayerClassType)packet.ReadInt32();
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Engine.Util.Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put(BitConverter.GetBytes((byte)Value));
+        }
+
         #endregion
 
-        #region Copying
+        #region ToString
 
-        public override AbstractComponent DeepCopy(AbstractComponent into)
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
         {
-            var copy = (PlayerClass)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.Value = Value;
-            }
-
-            return copy;
+            return base.ToString() + ", PlayerClass = " + Value;
         }
 
         #endregion

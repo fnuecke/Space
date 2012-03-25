@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
 using Engine.Util;
@@ -14,7 +13,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// </summary>
     /// <typeparam name="TAttribute">The enum that holds the possible types of
     /// attributes.</typeparam>
-    public class Character<TAttribute> : AbstractComponent
+    public class Character<TAttribute> : Component
         where TAttribute : struct
     {
         #region Properties
@@ -36,12 +35,12 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Base values for attributes.
         /// </summary>
-        private Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
+        private readonly Dictionary<TAttribute, float> _baseAttributes = new Dictionary<TAttribute, float>();
 
         /// <summary>
         /// Modified values, based on equipment and status effects.
         /// </summary>
-        private Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
+        private readonly Dictionary<TAttribute, float[]> _modifiedAttributes = new Dictionary<TAttribute, float[]>();
 
         #endregion
 
@@ -50,12 +49,46 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Reusable list for modifier computation.
         /// </summary>
-        private List<AttributeModifier<TAttribute>> _reusableAdditiveList = new List<AttributeModifier<TAttribute>>();
+        private readonly List<AttributeModifier<TAttribute>> _reusableAdditiveList = new List<AttributeModifier<TAttribute>>();
 
         /// <summary>
         /// Reusable list for modifier computation.
         /// </summary>
-        private List<AttributeModifier<TAttribute>> _reusableMultiplicativeList = new List<AttributeModifier<TAttribute>>();
+        private readonly List<AttributeModifier<TAttribute>> _reusableMultiplicativeList = new List<AttributeModifier<TAttribute>>();
+
+        #endregion
+
+        #region Initialization
+
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherCharacter = (Character<TAttribute>)other;
+            foreach (var baseAttribute in otherCharacter._baseAttributes)
+            {
+                _baseAttributes.Add(baseAttribute.Key, baseAttribute.Value);
+            }
+            RecomputeAttributes();
+
+            return this;
+        }
+
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            _baseAttributes.Clear();
+            _modifiedAttributes.Clear();
+        }
 
         #endregion
 
@@ -93,7 +126,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="type">The attribute type.</param>
         /// <param name="baseValue">The base value to use.</param>
         /// <returns>The base value for that type.</returns>
-        public float GetValue(TAttribute type, float baseValue)
+        public float GetValue(TAttribute type, float baseValue = 0)
         {
             if (!_modifiedAttributes.ContainsKey(type))
             {
@@ -103,78 +136,14 @@ namespace Engine.ComponentSystem.RPG.Components
             return (modifiers[0] + baseValue) * modifiers[1];
         }
 
-        /// <summary>
-        /// Gets the modified value for the specified attribute type.
-        /// </summary>
-        /// <param name="type">The attribute type.</param>
-        /// <returns>The base value for that type.</returns>
-        public float GetValue(TAttribute type)
-        {
-            return GetValue(type, 0);
-        }
-
         #endregion
 
         #region Logic
 
         /// <summary>
-        /// Handles messages to trigger recomputation of modified attribute
-        /// values.
-        /// </summary>
-        /// <typeparam name="T">The type of the messages.</typeparam>
-        /// <param name="message">The message.</param>
-        public override void HandleMessage<T>(ref T message)
-        {
-            if (message is EntityAdded && ((EntityAdded)(ValueType)message).Entity == Entity)
-            {
-                RecomputeAttributes();
-            }
-            // Only handle local commands if we're part of the system.
-            else if (Entity.Manager != null)
-            {
-                if (message is ItemAdded)
-                {
-                    // Recompute if an item with attribute modifiers was added.
-                    var added = (ItemAdded)(ValueType)message;
-                    if (added.Item.GetComponent<Attribute<TAttribute>>() != null)
-                    {
-                        RecomputeAttributes();
-                    }
-                }
-                else if (message is ItemRemoved)
-                {
-                    // Recompute if an item with attribute modifiers was removed.
-                    var removed = (ItemRemoved)(ValueType)message;
-                    if (removed.Item.GetComponent<Attribute<TAttribute>>() != null)
-                    {
-                        RecomputeAttributes();
-                    }
-                }
-                else if (message is ComponentAdded)
-                {
-                    // Recompute if a status effect with attribute modifiers was added.
-                    var added = (ComponentAdded)(ValueType)message;
-                    if (added.Component is AttributeStatusEffect<TAttribute> || added.Component == this)
-                    {
-                        RecomputeAttributes();
-                    }
-                }
-                else if (message is ComponentRemoved)
-                {
-                    // Recompute if a status effect with attribute modifiers was removed.
-                    var removed = (ComponentRemoved)(ValueType)message;
-                    if (removed.Component is AttributeStatusEffect<TAttribute>)
-                    {
-                        RecomputeAttributes();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Recomputes the modified values of all attributes.
         /// </summary>
-        private void RecomputeAttributes()
+        public void RecomputeAttributes()
         {
             // Find all additive and multiplicative modifiers.
 
@@ -185,48 +154,42 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             // Parse all items.
-            var equipment = Entity.GetComponent<Equipment>();
+            var equipment = Manager.GetComponent<Equipment>(Entity);
             if (equipment != null)
             {
                 foreach (var item in equipment.AllItems)
                 {
-                    foreach (var component in item.Components)
+                    foreach (var component in Manager.GetComponents<Attribute<TAttribute>>(item))
                     {
-                        if (component is Attribute<TAttribute>)
+                        var modifier = component.Modifier;
+                        switch (modifier.ComputationType)
                         {
-                            var attribute = ((Attribute<TAttribute>)component).Modifier;
-                            switch (attribute.ComputationType)
-                            {
-                                case AttributeComputationType.Additive:
-                                    _reusableAdditiveList.Add(attribute);
-                                    break;
+                            case AttributeComputationType.Additive:
+                                _reusableAdditiveList.Add(modifier);
+                                break;
 
-                                case AttributeComputationType.Multiplicative:
-                                    _reusableMultiplicativeList.Add(attribute);
-                                    break;
-                            }
+                            case AttributeComputationType.Multiplicative:
+                                _reusableMultiplicativeList.Add(modifier);
+                                break;
                         }
                     }
                 }
             }
 
             // Parse all status effects.
-            foreach (var component in Entity.Components)
+            foreach (var component in Manager.GetComponents<AttributeStatusEffect<TAttribute>>(Entity))
             {
-                if (component is AttributeStatusEffect<TAttribute>)
+                foreach (var modifier in component.Modifiers)
                 {
-                    foreach (var attribute in ((AttributeStatusEffect<TAttribute>)component).Modifiers)
+                    switch (modifier.ComputationType)
                     {
-                        switch (attribute.ComputationType)
-                        {
-                            case AttributeComputationType.Additive:
-                                _reusableAdditiveList.Add(attribute);
-                                break;
+                        case AttributeComputationType.Additive:
+                            _reusableAdditiveList.Add(modifier);
+                            break;
 
-                            case AttributeComputationType.Multiplicative:
-                                _reusableMultiplicativeList.Add(attribute);
-                                break;
-                        }
+                        case AttributeComputationType.Multiplicative:
+                            _reusableMultiplicativeList.Add(modifier);
+                            break;
                     }
                 }
             }
@@ -237,7 +200,7 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 if (!_modifiedAttributes.ContainsKey(modifier.Type))
                 {
-                    _modifiedAttributes[modifier.Type] = new float[] { modifier.Value, 1f };
+                    _modifiedAttributes[modifier.Type] = new[] { modifier.Value, 1f };
                 }
                 else
                 {
@@ -258,7 +221,8 @@ namespace Engine.ComponentSystem.RPG.Components
 
             // Send message.
             CharacterStatsInvalidated message;
-            Entity.SendMessage(ref message);
+            message.Entity = Entity;
+            Manager.SendMessage(ref message);
         }
         
         #endregion
@@ -338,43 +302,6 @@ namespace Engine.ComponentSystem.RPG.Components
                 hasher.Put(BitConverter.GetBytes(attribute.Value[0]));
                 hasher.Put(BitConverter.GetBytes(attribute.Value[1]));
             }
-        }
-
-        #endregion
-
-        #region Copying
-
-        public override AbstractComponent DeepCopy(AbstractComponent into)
-        {
-            var copy = (Character<TAttribute>)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy._baseAttributes.Clear();
-                foreach (var attribute in _baseAttributes)
-                {
-                    copy._baseAttributes[attribute.Key] = attribute.Value;
-                }
-                copy._modifiedAttributes.Clear();
-            }
-            else
-            {
-                copy._baseAttributes = new Dictionary<TAttribute, float>(_baseAttributes);
-                copy._modifiedAttributes = new Dictionary<TAttribute, float[]>();
-
-                // For multi-threading.
-                copy._reusableAdditiveList = new List<AttributeModifier<TAttribute>>();
-                copy._reusableMultiplicativeList = new List<AttributeModifier<TAttribute>>();
-            }
-
-            foreach (var attribute in _modifiedAttributes)
-            {
-                var value = new float[attribute.Value.Length];
-                attribute.Value.CopyTo(value, 0);
-                copy._modifiedAttributes[attribute.Key] = value;
-            }
-
-            return copy;
         }
 
         #endregion

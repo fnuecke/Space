@@ -52,33 +52,12 @@
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework.GamerServices, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Video, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Avatar, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Net, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Storage, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
     <Reference Include="NLog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL" />
     <Reference Include="Nuclex.Input">
       <HintPath>..\Libraries\Nuclex.Input.dll</HintPath>
-    </Reference>
-    <Reference Include="SlimDX.DirectInput">
-      <HintPath>..\Libraries\SlimDX.DirectInput.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Private>False</Private>
@@ -90,25 +69,24 @@
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Net">
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AttributeStrings.Designer.cs">
+    <Compile Include="AttributeNames.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>AttributeStrings.resx</DependentUpon>
+      <DependentUpon>AttributeNames.resx</DependentUpon>
+    </Compile>
+    <Compile Include="AttributePrefixes.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AttributePrefixes.resx</DependentUpon>
     </Compile>
     <Compile Include="Data\AttributeType.cs" />
     <Compile Include="Data\Factions.cs" />
     <Compile Include="Data\IProfile.cs" />
     <Compile Include="Data\ItemDescription.cs" />
     <Compile Include="Data\PlayerClassType.cs" />
+    <Compile Include="Data\UsableResponse.cs" />
     <Compile Include="Graphics\Planet.cs" />
     <Compile Include="Graphics\Sun.cs" />
     <Compile Include="Input\GamePadHelper.cs" />
@@ -124,12 +102,21 @@
       <DependentUpon>ItemNames.resx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="QualityNames.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>QualityNames.resx</DependentUpon>
+    </Compile>
     <Compile Include="Util\Settings.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
+      <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
+      <Name>Engine.ComponentSystem.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>
@@ -141,9 +128,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AttributeStrings.resx">
+    <EmbeddedResource Include="AttributeNames.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
-      <LastGenOutput>AttributeStrings.Designer.cs</LastGenOutput>
+      <LastGenOutput>AttributeNames.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AttributePrefixes.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>AttributePrefixes.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="ItemDescriptions.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -152,6 +143,10 @@
     <EmbeddedResource Include="ItemNames.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ItemNames.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="QualityNames.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>QualityNames.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

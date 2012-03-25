@@ -117,12 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AccelerationForce" xml:space="preserve">
-    <value>Speedy</value>
-  </data>
-  <data name="Armor" xml:space="preserve">
-    <value>Tenable</value>
-  </data>
   <data name="BasicArmor" xml:space="preserve">
     <value>Basic Armor</value>
   </data>
@@ -140,9 +134,6 @@
   </data>
   <data name="BasicWeapon" xml:space="preserve">
     <value>Basic Weapon</value>
-  </data>
-  <data name="Common" xml:space="preserve">
-    <value>Coomon</value>
   </data>
   <data name="CommonBasicArmor" xml:space="preserve">
     <value>Basic Armor</value>
@@ -162,27 +153,6 @@
   <data name="CommonBasicWeapon" xml:space="preserve">
     <value>Basic Weapon</value>
   </data>
-  <data name="Energy" xml:space="preserve">
-    <value>Energetic</value>
-  </data>
-  <data name="EnergyRegeneration" xml:space="preserve">
-    <value>Enduring</value>
-  </data>
-  <data name="Epic" xml:space="preserve">
-    <value>Master</value>
-  </data>
-  <data name="Health" xml:space="preserve">
-    <value>Healthy</value>
-  </data>
-  <data name="HealthRegeneration" xml:space="preserve">
-    <value>Vital</value>
-  </data>
-  <data name="Mass" xml:space="preserve">
-    <value>Heavy</value>
-  </data>
-  <data name="Poor" xml:space="preserve">
-    <value>Poor</value>
-  </data>
   <data name="PoorBasicArmor" xml:space="preserve">
     <value>Basic Armor</value>
   </data>
@@ -200,9 +170,6 @@
   </data>
   <data name="PoorBasicWeapon" xml:space="preserve">
     <value>Basic Weapon</value>
-  </data>
-  <data name="Rare" xml:space="preserve">
-    <value>Very Special</value>
   </data>
   <data name="RareBasicArmor" xml:space="preserve">
     <value>Basic Armor</value>
@@ -222,18 +189,6 @@
   <data name="RareBasicWeapon" xml:space="preserve">
     <value>Basic Weapon</value>
   </data>
-  <data name="RotationForce" xml:space="preserve">
-    <value>Rotating</value>
-  </data>
-  <data name="SensorRange" xml:space="preserve">
-    <value>Farseeing</value>
-  </data>
-  <data name="ShieldEfficiency" xml:space="preserve">
-    <value>Protective</value>
-  </data>
-  <data name="ShieldEnergyConsumption" xml:space="preserve">
-    <value />
-  </data>
   <data name="StarterArmor" xml:space="preserve">
     <value>Starter Armor</value>
   </data>
@@ -252,12 +207,6 @@
   <data name="StarterWeapon" xml:space="preserve">
     <value>Starter Weapon</value>
   </data>
-  <data name="ThrusterEnergyConsumption" xml:space="preserve">
-    <value />
-  </data>
-  <data name="Uncommon" xml:space="preserve">
-    <value>Spezial</value>
-  </data>
   <data name="UncommonBasicArmor" xml:space="preserve">
     <value>Basic Armor</value>
   </data>
@@ -275,11 +224,5 @@
   </data>
   <data name="UncommonBasicWeapon" xml:space="preserve">
     <value>Basic Weapon</value>
-  </data>
-  <data name="WeaponCooldown" xml:space="preserve">
-    <value />
-  </data>
-  <data name="WeaponEnergyConsumption" xml:space="preserve">
-    <value />
   </data>
 </root>

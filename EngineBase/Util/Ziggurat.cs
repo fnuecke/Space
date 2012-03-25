@@ -3,6 +3,10 @@ using System.Diagnostics;
 
 namespace Engine.Util
 {
+    /// <summary>
+    /// Implementation of a ziggurat sampler for producing gaussian
+    /// distributions from uniform ones.
+    /// </summary>
     public sealed class Ziggurat : IGaussianRandom
     {
         #region Static Fields [Defaults]
@@ -35,7 +39,7 @@ namespace Engine.Util
         readonly double[] _x;
         readonly double[] _y;
 
-        // The proprtion of each segment that is entirely within the distribution, expressed as uint where 
+        // The proportion of each segment that is entirely within the distribution, expressed as uint where 
         // a value of 0 indicates 0% and uint.MaxValue 100%. Expressing this as an integer allows some floating
         // points operations to be replaced with integer ones.
         readonly uint[] _xComp;
@@ -107,8 +111,8 @@ namespace Engine.Util
             _xComp = new uint[__blockCount];
 
             // Special case for base box. _xComp[0] stores the area of B0 as a proportion of __R 
-            // (recalling that all segments have area __A, but htat the base segment is the combination of B0 and the distribution tail).
-            // Thus -xComp[0[ is teh probability that a sample point is within the box part of the segment.
+            // (recalling that all segments have area __A, but that the base segment is the combination of B0 and the distribution tail).
+            // Thus -xComp[0[ is the probability that a sample point is within the box part of the segment.
             _xComp[0] = (uint)(((__R * _y[0]) / __A) * (double)uint.MaxValue);
 
             for(int i=1; i<__blockCount-1; i++) {
@@ -173,7 +177,7 @@ namespace Engine.Util
         /// Get the next sample value from the gaussian distribution.
         /// </summary>
         /// <param name="mu">The distribution's mean.</param>
-        /// <param name="mu">The distribution's standard deviation.</param>
+        /// <param name="sigma">The distribution's standard deviation.</param>
         public double NextSample(double mu, double sigma)
         {
             return mu + (NextSample() * sigma);
@@ -184,7 +188,7 @@ namespace Engine.Util
         /// clamp it to the 2*sigma interval around mu.
         /// </summary>
         /// <param name="mu">The distribution's mean.</param>
-        /// <param name="mu">The distribution's standard deviation.</param>
+        /// <param name="sigma">The distribution's standard deviation.</param>
         public double NextSampleClamped(double mu, double sigma)
         {
             double sample = NextSample();

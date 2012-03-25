@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Engine.ComponentSystem;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
 using Space.Data;
@@ -21,7 +19,20 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Constructor
+        #region Initialization
+
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            Quality = ((SpaceItem)other).Quality;
+
+            return this;
+        }
 
         /// <summary>
         /// Creates a new item with the specified parameters.
@@ -29,79 +40,24 @@ namespace Space.ComponentSystem.Components
         /// <param name="name">The logical base name of the item.</param>
         /// <param name="iconName">The name of the icon used for the item.</param>
         /// <param name="quality">The quality level of the item.</param>
-        public SpaceItem(string name, string iconName, ItemQuality quality)
-            : base(name, iconName)
+        public SpaceItem Initialize(string name, string iconName, ItemQuality quality)
         {
+            base.Initialize(name, iconName);
+
             this.Quality = quality;
+
+            return this;
         }
 
         /// <summary>
-        /// For deserialization.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        public SpaceItem()
+        public override void Reset()
         {
-        }
+            base.Reset();
 
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Puts item specific information into the given descripton object.
-        /// </summary>
-        /// <param name="descripton">The object to write the object information
-        /// into.</param>
-        public virtual void GetDescription(ref ItemDescription descripton)
-        {
-            // Reset.
-            descripton.Attributes = descripton.Attributes ?? new List<AttributeModifier<AttributeType>>();
-            descripton.Attributes.Clear();
-            descripton.IsWeapon = false;
-
-            // Add attributes.
-            foreach (var component in Entity.Components)
-            {
-                if (component is Attribute<AttributeType>)
-                {
-                    descripton.Attributes.Add(((Attribute<AttributeType>)component).Modifier);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Calculates the Name of the Item according to the attributes.
-        /// </summary>
-        public override string GetDisplayName()
-        {
-            var displayName = ItemNames.ResourceManager.GetString(Name) ?? ("!!" + Name + "!!");
-
-            // Unique items don't need prefix.
-            if (Quality != ItemQuality.Unique)
-            {
-                var maxValue = float.MinValue;
-                var type = AttributeType.None;
-
-                // Go through all attributes and calculate highest ranking.
-                foreach (var component in Entity.Components)
-                {
-                    if (component is Attribute<AttributeType>)
-                    {
-                        var attribute = (((Attribute<AttributeType>)component).Modifier);
-                        // Check if we have a new max value.
-                        if (attribute.Type.GetValue(attribute.Value) > maxValue)
-                        {
-                            maxValue = attribute.Type.GetValue(attribute.Value);
-                            type = attribute.Type;
-                        }
-                    }
-                }
-                if (type != AttributeType.None)
-                {
-                    return ItemNames.ResourceManager.GetString(Quality.ToString())+" "+ type.ToNameString() + " " + displayName;
-                }
-            }
-
-            return displayName;
+            Quality = ItemQuality.Common;
         }
 
         #endregion
@@ -130,22 +86,6 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Quality = (ItemQuality)packet.ReadByte();
-        }
-
-        #endregion
-
-        #region Copying
-
-        public override AbstractComponent DeepCopy(AbstractComponent into)
-        {
-            var copy = (SpaceItem)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.Quality = Quality;
-            }
-
-            return copy;
         }
 
         #endregion

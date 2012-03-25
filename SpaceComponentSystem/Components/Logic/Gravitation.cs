@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Parameterizations;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
 {
@@ -14,19 +10,8 @@ namespace Space.ComponentSystem.Components
     /// Component that takes care of entities working in a gravitational
     /// environment.
     /// </summary>
-    public class Gravitation : AbstractComponent
+    public class Gravitation : Component
     {
-        #region Logger
-
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Logger for game log (i.e. steps happening in a simulation).
-        /// </summary>
-        private static NLog.Logger gamelog = NLog.LogManager.GetLogger("GameLog.Gravitation");
-#endif
-
-        #endregion
-
         #region Types
 
         /// <summary>
@@ -78,178 +63,46 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Single-Allocation
+        #region Initialization
 
         /// <summary>
-        /// Reused for iterating components.
+        /// Initialize the component by using another instance of its type.
         /// </summary>
-        private List<Entity> _reusableNeighborList = new List<Entity>(64);
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
 
-        #endregion
+            var otherGravitation = (Gravitation)other;
+            GravitationType = otherGravitation.GravitationType;
+            Mass = otherGravitation.Mass;
 
-        #region Constructor
+            return this;
+        }
 
-        public Gravitation(GravitationTypes type, float mass)
+        /// <summary>
+        /// Initialize with the specified parameters.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="mass">The mass.</param>
+        public Gravitation Initialize(GravitationTypes type = GravitationTypes.Attractee, float mass = 1)
         {
             this.GravitationType = type;
             this.Mass = mass;
-        }
 
-        public Gravitation(GravitationTypes type)
-            : this(type, 1)
-        {
-        }
-
-        public Gravitation(float mass)
-            : this(GravitationTypes.Attractee, mass)
-        {
-        }
-
-        public Gravitation()
-            : this(GravitationTypes.Attractee, 1)
-        {
-        }
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Updates an objects position based on this velocity.
-        /// </summary>
-        /// <param name="parameterization">The parameterization to use.</param>
-        public override void Update(object parameterization)
-        {
-            // Only do something if we're attracting stuff.
-            if ((GravitationType & GravitationTypes.Attractor) != 0)
-            {
-                // Get our position.
-                var myTransform = Entity.GetComponent<Transform>();
-                if (myTransform == null)
-                {
-                    return;
-                }
-                // And the index.
-                var index = Entity.Manager.SystemManager.GetSystem<IndexSystem>();
-                if (index == null)
-                {
-                    return;
-                }
-
-                // Then check all our neighbors.
-                foreach (var neigbour in index.
-                    RangeQuery(Entity, 2 << 13, IndexGroup, _reusableNeighborList))
-                {
-                    // If they have an enabled gravitation component...
-                    var otherGravitation = neigbour.GetComponent<Gravitation>();
-
-#if DEBUG
-                    // Validation.
-                    if ((otherGravitation.GravitationType & GravitationTypes.Attractee) == 0)
-                    {
-                        throw new InvalidOperationException("Non-attractees must not be added to the index.");
-                    }
-#endif
-
-                    // Is it enabled?
-                    if (!otherGravitation.Enabled)
-                    {
-                        continue;
-                    }
-
-                    // Get their velocity (which is what we'll change) and position.
-                    var otherVelocity = neigbour.GetComponent<Velocity>();
-                    var otherTransform = neigbour.GetComponent<Transform>();
-
-                    // We need both.
-                    if (otherVelocity != null && otherTransform != null)
-                    {
-                        // Get the delta vector between the two positions.
-                        var delta = otherTransform.Translation - myTransform.Translation;
-
-                        // Compute the angle between us and the other entity.
-                        float distanceSquared = delta.LengthSquared();
-
-#if DEBUG && GAMELOG
-                        if (Entity.Manager.GameLogEnabled)
-                        {
-                            gamelog.Trace("{0}: Attracting = {1}, old Velocity = {2}", Entity.UID, neigbour.UID, otherVelocity.Value);
-                        }
-#endif
-
-                        // If we're near the core only pull if  the other
-                        // object isn't currently accelerating.
-                        if (distanceSquared < 262144) // 262144 = 512 * 512, so we allow overriding gravity at radius 512
-                        {
-                            var accleration = neigbour.GetComponent<Acceleration>();
-                            if (accleration == null || accleration.Value == Vector2.Zero)
-                            {
-                                if (otherVelocity.Value.LengthSquared() < 16 && distanceSquared < 4)
-                                {
-                                    // Dock.
-                                    otherTransform.SetTranslation(ref myTransform.Translation);
-                                    otherVelocity.Value = Vector2.Zero;
-                                }
-                                else
-                                {
-                                    // Adjust velocity.
-                                    delta.Normalize();
-                                    float gravitation = Mass * otherGravitation.Mass / System.Math.Max(262144, distanceSquared);
-                                    var directedGravitation = delta * gravitation;
-
-#if DEBUG && GAMELOG
-                                    if (Entity.Manager.GameLogEnabled)
-                                    {
-                                        gamelog.Trace("Delta = {0}, Gravitation = {1}", delta, gravitation);
-                                    }
-#endif
-
-                                    otherVelocity.Value.X -= directedGravitation.X;
-                                    otherVelocity.Value.Y -= directedGravitation.Y;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            // Adjust velocity.
-                            delta.Normalize();
-                            float gravitation = Mass * otherGravitation.Mass / distanceSquared;
-                            var directedGravitation = delta * gravitation;
-
-#if DEBUG && GAMELOG
-                            if (Entity.Manager.GameLogEnabled)
-                            {
-                                gamelog.Trace("Delta = {0}, Gravitation = {1}", delta, gravitation);
-                            }
-#endif
-
-                            otherVelocity.Value.X -= directedGravitation.X;
-                            otherVelocity.Value.Y -= directedGravitation.Y;
-                        }
-
-#if DEBUG && GAMELOG
-                        if (Entity.Manager.GameLogEnabled)
-                        {
-                            gamelog.Trace("new Velocity = {0}", otherVelocity.Value);
-                        }
-#endif
-                    }
-                }
-
-                // Clear the list for the next iteration (and after the
-                // iteration so we don't keep references to stuff).
-                _reusableNeighborList.Clear();
-            }
+            return this;
         }
 
         /// <summary>
-        /// Accepts <c>DefaultLogicParameterization</c>s.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        /// <param name="parameterizationType">the type to check.</param>
-        /// <returns>whether the type's supported or not.</returns>
-        public override bool SupportsUpdateParameterization(Type parameterizationType)
+        public override void Reset()
         {
-            return parameterizationType == typeof(DefaultLogicParameterization);
+            base.Reset();
+
+            GravitationType = GravitationTypes.None;
+            Mass = 0;
         }
 
         #endregion
@@ -297,35 +150,6 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of this instance by reusing the specified
-        /// instance, if possible.
-        /// </summary>
-        /// <param name="into"></param>
-        /// <returns>
-        /// An independent (deep) clone of this instance.
-        /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
-        {
-            var copy = (Gravitation)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy.GravitationType = GravitationType;
-                copy.Mass = Mass;
-            }
-            else
-            {
-                copy._reusableNeighborList = new List<Entity>(64);
-            }
-
-            return copy;
-        }
-
-        #endregion
-
         #region ToString
 
         /// <summary>
@@ -336,7 +160,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Type = " + GravitationType.ToString() + ", Mass = " + Mass.ToString();
+            return base.ToString() + ", Type = " + GravitationType + ", Mass = " + Mass;
         }
 
         #endregion

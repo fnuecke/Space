@@ -21,7 +21,7 @@ namespace Engine.Controller
     /// </summary>
     /// <typeparam name="TPlayerData">The type of player data being used.</typeparam>
     public sealed class ThinClientController<TPlayerData>
-        : AbstractController<IClientSession, FrameCommand>, IClientController<FrameCommand>, ISimulationController<IClientSession>
+        : AbstractController<IClientSession, FrameCommand>, IClientController<FrameCommand>
         where TPlayerData : IPacketizable, new()
     {
         #region Properties
@@ -49,7 +49,7 @@ namespace Engine.Controller
         /// <summary>
         /// The server this client is coupled to.
         /// </summary>
-        private ISimulationController<IServerSession> _server;
+        private readonly ISimulationController<IServerSession> _server;
 
         #endregion
 
@@ -111,7 +111,7 @@ namespace Engine.Controller
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                Simulation.EntityManager.SystemManager.Draw(gameTime, Simulation.CurrentFrame);
+                Simulation.Manager.Draw(gameTime, Simulation.CurrentFrame);
             }
         }
 
@@ -119,6 +119,10 @@ namespace Engine.Controller
 
         #region Commands
 
+        /// <summary>
+        /// Pushes the locally emitted command.
+        /// </summary>
+        /// <param name="command">The command.</param>
         public void PushLocalCommand(FrameCommand command)
         {
             command.PlayerNumber = Session.LocalPlayer.Number;

@@ -1,10 +1,7 @@
-﻿using Engine.ComponentSystem;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
-using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
-using Space.Data;
 
 namespace Space.ComponentSystem.Components
 {
@@ -13,29 +10,42 @@ namespace Space.ComponentSystem.Components
     /// facade to centralize common tasks for retrieving information on
     /// ships.
     /// </summary>
-    public sealed class ShipInfo : AbstractComponent
+    public sealed class ShipInfo : Component
     {
-        #region Fields
+        #region Initialization
 
         /// <summary>
-        /// Cached value for maximum ship acceleration.
+        /// Initialize the component by using another instance of its type.
         /// </summary>
-        private float _maxAcceleration;
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherShipInfo = (ShipInfo)other;
+            MaxAcceleration = otherShipInfo.MaxAcceleration;
+            MaxSpeed = otherShipInfo.MaxSpeed;
+            Mass = otherShipInfo.Mass;
+            RadarRange = otherShipInfo.RadarRange;
+            WeaponRange = otherShipInfo.WeaponRange;
+
+            return this;
+        }
 
         /// <summary>
-        /// Cached value for maximum ship speed.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        private float _maxSpeed;
+        public override void Reset()
+        {
+            base.Reset();
 
-        /// <summary>
-        /// Cached value for ship mass.
-        /// </summary>
-        private float _mass;
-
-        /// <summary>
-        /// Cached value for ship's radar range.
-        /// </summary>
-        private float _radarRange;
+            MaxAcceleration = 0;
+            MaxSpeed = 0;
+            Mass = 0;
+            RadarRange = 0;
+            WeaponRange = 0;
+        }
 
         #endregion
 
@@ -53,15 +63,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var respawn = Entity.GetComponent<Respawn>();
-                if (respawn != null)
-                {
-                    return !respawn.IsRespawning;
-                }
-                else
-                {
-                    return true;
-                }
+                var respawn = Manager.GetComponent<Respawn>(Entity);
+                return respawn == null || !respawn.IsRespawning;
             }
         }
 
@@ -72,15 +75,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var health = Entity.GetComponent<Health>();
-                if (health != null)
-                {
-                    return health.Value;
-                }
-                else
-                {
-                    return 0;
-                }
+                var health = Manager.GetComponent<Health>(Entity);
+                return health != null ? health.Value : 0;
             }
         }
 
@@ -91,15 +87,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var health = Entity.GetComponent<Health>();
-                if (health != null)
-                {
-                    return health.MaxValue;
-                }
-                else
-                {
-                    return 0;
-                }
+                var health = Manager.GetComponent<Health>(Entity);
+                return health != null ? health.MaxValue : 0;
             }
         }
 
@@ -110,15 +99,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var health = Entity.GetComponent<Health>();
-                if (health != null)
-                {
-                    return health.Value / health.MaxValue;
-                }
-                else
-                {
-                    return 0;
-                }
+                var health = Manager.GetComponent<Health>(Entity);
+                return health != null ? health.Value / health.MaxValue : 0;
             }
         }
 
@@ -129,15 +111,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var energy = Entity.GetComponent<Energy>();
-                if (energy != null)
-                {
-                    return energy.Value;
-                }
-                else
-                {
-                    return 0;
-                }
+                var energy = Manager.GetComponent<Energy>(Entity);
+                return energy != null ? energy.Value : 0;
             }
         }
 
@@ -148,15 +123,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var energy = Entity.GetComponent<Energy>();
-                if (energy != null)
-                {
-                    return energy.MaxValue;
-                }
-                else
-                {
-                    return 0;
-                }
+                var energy = Manager.GetComponent<Energy>(Entity);
+                return energy != null ? energy.MaxValue : 0;
             }
         }
 
@@ -167,15 +135,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var energy = Entity.GetComponent<Energy>();
-                if (energy != null)
-                {
-                    return energy.Value / energy.MaxValue;
-                }
-                else
-                {
-                    return 0;
-                }
+                var energy = Manager.GetComponent<Energy>(Entity);
+                return energy != null ? energy.Value / energy.MaxValue : 0;
             }
         }
 
@@ -190,15 +151,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var transform = Entity.GetComponent<Transform>();
-                if (transform != null)
-                {
-                    return transform.Translation;
-                }
-                else
-                {
-                    return Vector2.Zero;
-                }
+                var transform = Manager.GetComponent<Transform>(Entity);
+                return transform != null ? transform.Translation : Vector2.Zero;
             }
         }
 
@@ -209,15 +163,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var transform = Entity.GetComponent<Transform>();
-                if (transform != null)
-                {
-                    return transform.Rotation;
-                }
-                else
-                {
-                    return 0;
-                }
+                var transform = Manager.GetComponent<Transform>(Entity);
+                return transform != null ? transform.Rotation : 0;
             }
         }
 
@@ -228,15 +175,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var acceleration = Entity.GetComponent<Acceleration>();
-                if (acceleration != null)
-                {
-                    return acceleration.Value != Vector2.Zero;
-                }
-                else
-                {
-                    return false;
-                }
+                var acceleration = Manager.GetComponent<Acceleration>(Entity);
+                return acceleration != null && acceleration.Value != Vector2.Zero;
             }
         }
 
@@ -247,15 +187,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var control = Entity.GetComponent<ShipControl>();
-                if (control != null)
-                {
-                    return control.Stabilizing;
-                }
-                else
-                {
-                    return false;
-                }
+                var control = Manager.GetComponent<ShipControl>(Entity);
+                return control != null && control.Stabilizing;
             }
         }
 
@@ -274,39 +207,20 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var velocity = Entity.GetComponent<Velocity>();
-                if (velocity != null)
-                {
-                    return velocity.Value.Length();
-                }
-                else
-                {
-                    return 0;
-                }
+                var velocity = Manager.GetComponent<Velocity>(Entity);
+                return velocity != null ? velocity.Value.Length() : 0;
             }
         }
 
         /// <summary>
         /// Get the maximum speed of the ship.
         /// </summary>
-        public float MaxSpeed
-        {
-            get
-            {
-                return _maxSpeed;
-            }
-        }
+        public float MaxSpeed { get; internal set; }
 
         /// <summary>
         /// Get the maximum acceleration this ship is capable of.
         /// </summary>
-        public float MaxAcceleration
-        {
-            get
-            {
-                return _maxAcceleration;
-            }
-        }
+        public float MaxAcceleration { get; internal set; }
 
         /// <summary>
         /// Get the ship's current rotation speed, in radians per tick.
@@ -315,15 +229,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var spin = Entity.GetComponent<Spin>();
-                if (spin != null)
-                {
-                    return spin.Value;
-                }
-                else
-                {
-                    return 0;
-                }
+                var spin = Manager.GetComponent<Spin>(Entity);
+                return spin != null ? spin.Value : 0;
             }
         }
 
@@ -334,24 +241,17 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// Gets the overall mass of this ship.
         /// </summary>
-        public float Mass
-        {
-            get
-            {
-                return _mass;
-            }
-        }
+        public float Mass { get; internal set; }
 
         /// <summary>
         /// Get the ship's overall radar range.
         /// </summary>
-        public float RadarRange
-        {
-            get
-            {
-                return _radarRange;
-            }
-        }
+        public float RadarRange { get; internal set; }
+
+        /// <summary>
+        /// The distance our highest range weapon can shoot.
+        /// </summary>
+        public double WeaponRange { get; internal set; }
 
         #endregion
 
@@ -364,12 +264,8 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var inventory = Entity.GetComponent<Inventory>();
-                if (inventory != null)
-                {
-                    return inventory.Capacity;
-                }
-                return 0;
+                var inventory = Manager.GetComponent<Inventory>(Entity);
+                return inventory != null ? inventory.Capacity : 0;
             }
         }
 
@@ -378,14 +274,10 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         /// <param name="index">The index of the item.</param>
         /// <returns>The item at that index.</returns>
-        public Entity InventoryItemAt(int index)
+        public int? InventoryItemAt(int index)
         {
-            var inventory = Entity.GetComponent<Inventory>();
-            if (inventory != null)
-            {
-                return inventory[index];
-            }
-            return null;
+            var inventory = Manager.GetComponent<Inventory>(Entity);
+            return inventory != null ? inventory[index] : null;
         }
 
         /// <summary>
@@ -396,12 +288,8 @@ namespace Space.ComponentSystem.Components
         public int EquipmentSlotCount<TItem>()
             where TItem : Item
         {
-            var equipment = Entity.GetComponent<Equipment>();
-            if (equipment != null)
-            {
-                return equipment.GetSlotCount<TItem>();
-            }
-            return 0;
+            var equipment = Manager.GetComponent<Equipment>(Entity);
+            return equipment != null ? equipment.GetSlotCount<TItem>() : 0;
         }
 
         /// <summary>
@@ -410,51 +298,11 @@ namespace Space.ComponentSystem.Components
         /// <typeparam name="TItem">The type of item to check.</typeparam>
         /// <param name="index">The slot index from which to get the item.</param>
         /// <returns>The item at that slot index.</returns>
-        public Entity EquipmentItemAt<TItem>(int index)
+        public int? EquipmentItemAt<TItem>(int index)
             where TItem : Item
         {
-            var equipment = Entity.GetComponent<Equipment>();
-            if (equipment != null)
-            {
-                return equipment.GetItem<TItem>(index);
-            }
-            return null;
-        }
-
-        #endregion
-
-        #region Messaging
-
-        /// <summary>
-        /// Handles a message. Updates speed and acceleration when modules
-        /// change.
-        /// </summary>
-        /// <param name="message">The message to handle.</param>
-        public override void HandleMessage<T>(ref T message)
-        {
-            if (message is CharacterStatsInvalidated)
-            {
-                // Get ship modules.
-                var character = Entity.GetComponent<Character<AttributeType>>();
-                var equipment = Entity.GetComponent<Equipment>();
-
-                // Get the mass of the ship and return it.
-                _mass = character.GetValue(AttributeType.Mass);
-
-                // Recompute cached values.
-                _maxAcceleration = character.GetValue(AttributeType.AccelerationForce) / _mass;
-                _maxSpeed = float.PositiveInfinity;
-
-                // Maximum speed.
-                var friction = Entity.GetComponent<Friction>();
-                if (friction != null)
-                {
-                    _maxSpeed = MaxAcceleration / friction.Value;
-                }
-
-                // Figure out the overall range of our radar system.
-                _radarRange = character.GetValue(AttributeType.SensorRange);
-            }
+            var equipment = Manager.GetComponent<Equipment>(Entity);
+            return equipment != null ? equipment.GetItem<TItem>(index) : null;
         }
 
         #endregion
@@ -471,10 +319,10 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(_maxAcceleration)
-                .Write(_maxSpeed)
-                .Write(_mass)
-                .Write(_radarRange);
+                .Write(MaxAcceleration)
+                .Write(MaxSpeed)
+                .Write(Mass)
+                .Write(RadarRange);
         }
 
         /// <summary>
@@ -485,37 +333,10 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            _maxAcceleration = packet.ReadSingle();
-            _maxSpeed = packet.ReadSingle();
-            _mass = packet.ReadSingle();
-            _radarRange = packet.ReadSingle();
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Creates a deep copy of this instance by reusing the specified
-        /// instance, if possible.
-        /// </summary>
-        /// <param name="into"></param>
-        /// <returns>
-        /// An independent (deep) clone of this instance.
-        /// </returns>
-        public override AbstractComponent DeepCopy(AbstractComponent into)
-        {
-            var copy = (ShipInfo)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                copy._maxAcceleration = _maxAcceleration;
-                copy._maxSpeed = _maxSpeed;
-                copy._mass = _mass;
-                copy._radarRange = _radarRange;
-            }
-
-            return copy;
+            MaxAcceleration = packet.ReadSingle();
+            MaxSpeed = packet.ReadSingle();
+            Mass = packet.ReadSingle();
+            RadarRange = packet.ReadSingle();
         }
 
         #endregion

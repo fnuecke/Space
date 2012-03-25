@@ -10,6 +10,6 @@ namespace Engine.ComponentSystem.Messages
         /// <summary>
         /// The component that was removed.
         /// </summary>
-        public AbstractComponent Component;
+        public Component Component;
     }
 }

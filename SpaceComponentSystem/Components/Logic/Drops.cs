@@ -1,6 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
-using Space.ComponentSystem.Messages;
-using Space.ComponentSystem.Systems;
+using Engine.Serialization;
 
 namespace Space.ComponentSystem.Components
 {
@@ -8,7 +7,7 @@ namespace Space.ComponentSystem.Components
     /// Tracks what items a unit may drop on death, via the item pool id to
     /// draw items from.
     /// </summary>
-    public class Drops : AbstractComponent
+    public sealed class Drops : Component
     {
         #region Fields
 
@@ -20,23 +19,69 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
-        #region Logic
+        #region Initialization
 
         /// <summary>
-        /// Handles the Messages and tells the DropSystem to Drop an Item if the entity is dead
+        /// Initialize the component by using another instance of its type.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message"></param>
-        public override void HandleMessage<T>(ref T message)
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
         {
-            if (message is EntityDied)
-            {
-                var transform = Entity.GetComponent<Transform>();
-                if (transform != null)
-                {
-                    Entity.Manager.SystemManager.GetSystem<DropSystem>().Drop(ItemPool, ref transform.Translation);
-                }
-            }
+            base.Initialize(other);
+
+            ItemPool = ((Drops)other).ItemPool;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Initialize with the specified item pool.
+        /// </summary>
+        /// <param name="itemPool">The item pool.</param>
+        public Drops Initialize(string itemPool)
+        {
+            ItemPool = itemPool;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            ItemPool = null;
+        }
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Packet Packetize(Packet packet)
+        {
+            return base.Packetize(packet)
+                .Write(ItemPool);
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+
+            ItemPool = packet.ReadString();
         }
 
         #endregion

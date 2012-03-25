@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
-using Space.ComponentSystem.Util;
+using Space.ComponentSystem.Factories;
 using Space.Data;
 
 namespace Space.ComponentSystem.Components
@@ -49,6 +49,25 @@ namespace Space.ComponentSystem.Components
         #region Constructor
 
         /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            var otherWeapon = (Weapon)other;
+            ModelName = otherWeapon.ModelName;
+            Sound = otherWeapon.Sound;
+            Cooldown = otherWeapon.Cooldown;
+            EnergyConsumption = otherWeapon.EnergyConsumption;
+            Damage = otherWeapon.Damage;
+            Projectiles = otherWeapon.Projectiles;
+
+            return this;
+        }
+
+        /// <summary>
         /// Creates a new armor with the specified parameters.
         /// </summary>
         /// <param name="name">The logical base name of the item.</param>
@@ -62,45 +81,37 @@ namespace Space.ComponentSystem.Components
         /// shot</param>
         /// <param name="damage">The amount of damage a single projectile does.</param>
         /// <param name="projectiles">The info on projectiles being shot.</param>
-        public Weapon(string name, string iconName, ItemQuality quality,
+        public Weapon Initialize(string name, string iconName, ItemQuality quality,
             string modelName, string sound,
             float cooldown, float energyConsumption,
             float damage, ProjectileFactory[] projectiles)
-            : base(name, iconName, quality)
         {
+            Initialize(name, iconName, quality);
+
             this.ModelName = modelName;
             this.Sound = sound;
             this.Cooldown = cooldown;
             this.EnergyConsumption = energyConsumption;
             this.Damage = damage;
             this.Projectiles = projectiles;
+
+            return this;
         }
 
         /// <summary>
-        /// For deserialization.
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
         /// </summary>
-        public Weapon()
+        public override void Reset()
         {
-        }
+            base.Reset();
 
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Puts item specific information into the given descripton object.
-        /// </summary>
-        /// <param name="descripton">The object to write the object information
-        /// into.</param>
-        public override void GetDescription(ref ItemDescription descripton)
-        {
-            base.GetDescription(ref descripton);
-            
-            descripton.IsWeapon = true;
-            descripton.WeaponDamage = Damage;
-            descripton.WeaponCooldown = Cooldown;
-            descripton.WeaponEnergyConsumption = EnergyConsumption;
-            descripton.WeaponProjectileCount = Projectiles.Length;
+            ModelName = null;
+            Sound = null;
+            Cooldown = 0;
+            EnergyConsumption = 0;
+            Damage = 0;
+            Projectiles = null;
         }
 
         #endregion
@@ -150,28 +161,6 @@ namespace Space.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(Cooldown));
             hasher.Put(BitConverter.GetBytes(EnergyConsumption));
             hasher.Put(BitConverter.GetBytes(Damage));
-        }
-
-        #endregion
-
-        #region Copying
-
-        public override AbstractComponent DeepCopy(AbstractComponent into)
-        {
-            var copy = (Weapon)base.DeepCopy(into);
-
-            if (copy == into)
-            {
-                // Copying into other instance.
-                copy.ModelName = ModelName;
-                copy.Sound = Sound;
-                copy.Cooldown = Cooldown;
-                copy.EnergyConsumption = EnergyConsumption;
-                copy.Damage = Damage;
-                copy.Projectiles = Projectiles;
-            }
-
-            return copy;
         }
 
         #endregion

@@ -52,22 +52,7 @@
     <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.Xna.Framework.GamerServices, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Video, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Avatar, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Net, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.Xna.Framework.Storage, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86">
       <Private>False</Private>
     </Reference>
     <Reference Include="mscorlib">
@@ -80,47 +65,32 @@
     <Reference Include="ProjectMercury">
       <HintPath>..\Libraries\ProjectMercury.dll</HintPath>
     </Reference>
-    <Reference Include="SlimDX.DirectInput, Version=4.0.10.43, Culture=neutral, PublicKeyToken=96bb577564343f16, processorArchitecture=x86">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Libraries\SlimDX.DirectInput.dll</HintPath>
-    </Reference>
     <Reference Include="System">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Xml">
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Net">
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Components\AI\Behaviours\AttackBehaviour.cs" />
-    <Compile Include="Components\AI\Behaviours\Behaviour.cs" />
-    <Compile Include="Components\AI\Behaviours\MoveBehaviour.cs" />
-    <Compile Include="Components\AI\Behaviours\PatrolBehaviour.cs" />
-    <Compile Include="Components\AI\AIComponent.cs" />
-    <Compile Include="Components\Logic\VoidDeath.cs" />
-    <Compile Include="Components\Media\ExplosionEffect.cs" />
+    <Compile Include="Components\AI\Behaviors\AttackBehavior.cs" />
+    <Compile Include="Components\AI\Behaviors\Behavior.cs" />
+    <Compile Include="Components\AI\Behaviors\DockBehavior.cs" />
+    <Compile Include="Components\AI\Behaviors\MoveBehavior.cs" />
+    <Compile Include="Components\AI\Behaviors\AttackMoveBehavior.cs" />
+    <Compile Include="Components\AI\ArtificialIntelligence.cs" />
+    <Compile Include="Components\AI\Behaviors\RoamBehavior.cs" />
+    <Compile Include="Components\Items\ItemInfo.cs" />
     <Compile Include="Components\Items\SpaceItem.cs" />
     <Compile Include="Components\Logic\AbstractRegeneratingValue.cs" />
     <Compile Include="Components\Logic\CollisionDamage.cs" />
-    <Compile Include="Components\Logic\Death.cs" />
     <Compile Include="Components\Logic\Drops.cs" />
     <Compile Include="Components\Logic\PlayerClass.cs" />
-    <Compile Include="Components\Items\Consumables\RepairKit.cs" />
     <Compile Include="Components\Logic\ShipSpawner.cs" />
     <Compile Include="Components\Logic\Target.cs" />
     <Compile Include="Components\Util\Detectable.cs" />
-    <Compile Include="Components\Media\Effect.cs" />
+    <Compile Include="Components\Media\ParticleEffects.cs" />
     <Compile Include="Components\Logic\Energy.cs" />
     <Compile Include="Components\Util\Faction.cs" />
     <Compile Include="Components\Logic\Gravitation.cs" />
@@ -128,22 +98,33 @@
     <Compile Include="Components\Media\PlanetRenderer.cs" />
     <Compile Include="Components\Logic\Respawn.cs" />
     <Compile Include="Components\Logic\ShipControl.cs" />
-    <Compile Include="Components\Logic\ShipGravitation.cs" />
     <Compile Include="Components\Util\ShipInfo.cs" />
     <Compile Include="Components\Media\SunRenderer.cs" />
-    <Compile Include="Components\Media\ThrusterEffect.cs" />
     <Compile Include="Components\Logic\WeaponControl.cs" />
-    <Compile Include="Components\Media\WeaponSound.cs" />
     <Compile Include="EntityFactory.cs" />
     <Compile Include="Factories\ArmorFactory.cs" />
     <Compile Include="Factories\FactoryLibrary.cs" />
-    <Compile Include="Factories\ConsumableFactory.cs" />
     <Compile Include="Factories\IFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
+    <Compile Include="Systems\AISystem.cs" />
+    <Compile Include="Systems\CameraCenteredParticleEffectSystem.cs" />
+    <Compile Include="Systems\CameraSystem.cs" />
+    <Compile Include="Systems\CollisionDamageSystem.cs" />
+    <Compile Include="Systems\DeathSystem.cs" />
+    <Compile Include="Systems\DetectableSystem.cs" />
     <Compile Include="Systems\DropSystem.cs" />
-    <Compile Include="Systems\ShipsSpawnSystem.cs" />
+    <Compile Include="Systems\GravitationSystem.cs" />
+    <Compile Include="Systems\PlanetRenderSystem.cs" />
+    <Compile Include="Systems\PlayerMassSystem.cs" />
+    <Compile Include="Systems\RegeneratingValueSystem.cs" />
+    <Compile Include="Systems\ShipControlSystem.cs" />
+    <Compile Include="Systems\ShipInfoSystem.cs" />
+    <Compile Include="Systems\ShipSpawnSystem.cs" />
+    <Compile Include="Systems\SpaceUsablesSystem.cs" />
+    <Compile Include="Systems\SunRenderSystem.cs" />
     <Compile Include="Systems\UniverseSystem.cs" />
+    <Compile Include="Systems\WeaponControlSystem.cs" />
     <Compile Include="Util\PlayerClassType.cs" />
     <Compile Include="Factories\ReactorFactory.cs" />
     <Compile Include="Factories\SensorFactory.cs" />
@@ -162,17 +143,20 @@
     <Compile Include="Messages\CellStateChanged.cs" />
     <Compile Include="Messages\EntityDied.cs" />
     <Compile Include="Messages\WeaponFired.cs" />
-    <Compile Include="Parameterizations\ParticleParameterization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\CellSystem.cs" />
-    <Compile Include="Systems\ParticleSystem.cs" />
-    <Compile Include="Systems\PlayerCenteredRenderSystem.cs" />
-    <Compile Include="Systems\PlayerCenteredSoundSystem.cs" />
+    <Compile Include="Systems\ParticleEffectSystem.cs" />
+    <Compile Include="Systems\CameraCenteredTextureRenderSystem.cs" />
+    <Compile Include="Systems\CameraCenteredSoundSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
       <Name>Engine.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\EngineComponentSystemCommon\Engine.ComponentSystem.Common.csproj">
+      <Project>{B5511E78-2327-4247-BBB9-6AE131AC218E}</Project>
+      <Name>Engine.ComponentSystem.Common</Name>
     </ProjectReference>
     <ProjectReference Include="..\EngineComponentSystemRPG\Engine.ComponentSystem.RPG.csproj">
       <Project>{7F3C5E7C-F720-4EBD-9B93-1759A2F79E53}</Project>

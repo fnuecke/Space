@@ -12,13 +12,11 @@ namespace Engine.Controller
     /// This takes care of synchronizing the game states between server and
     /// client, and getting the run speed synchronized as well.
     /// </summary>
-    /// <typeparam name="TPlayerData">the tpye of the player data structure.</typeparam>
-    /// <typeparam name="TPacketizerContext">the type of the packetizer context.</typeparam>
     public abstract class AbstractTssServer : AbstractTssController<IServerSession>
     {
         #region Logger
 
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -28,12 +26,6 @@ namespace Engine.Controller
         /// The interval in milliseconds after which to send a hash check to the clients.
         /// </summary>
         private const int HashInterval = 10000;
-
-        /// <summary>
-        /// The interval in milliseconds after which we allow resending the game state to
-        /// a specific client.
-        /// </summary>
-        private const int GameStateResendInterval = 5000;
 
         #endregion
 
@@ -48,7 +40,7 @@ namespace Engine.Controller
         /// Keeping track of how stressed each client is. If all have idle time
         /// and our speed is lowered, speed up again.
         /// </summary>
-        private float[] _clientLoads;
+        private readonly float[] _clientLoads;
 
         /// <summary>
         /// Keeping track of whether we might be the one slowing the game.
@@ -63,14 +55,11 @@ namespace Engine.Controller
         /// Base constructor, creates simulation. You'll need to initialize it
         /// by calling its <c>Initialize()</c> method yourself.
         /// </summary>
-        /// <param name="game">the game this belongs to.</param>
-        /// <param name="maxPlayers">the maximum number of players in the game.</param>
-        /// <param name="port">the port to listen on.</param>
-        /// <param name="header">the protocol header.</param>
+        /// <param name="session">The session.</param>
         protected AbstractTssServer(IServerSession session)
-            : base(session, new uint[] {
-                (uint)System.Math.Ceiling(50 / _targetElapsedMilliseconds), //< Expected case.
-                (uint)System.Math.Ceiling(250 / _targetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
+            : base(session, new[] {
+                (uint)Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
+                (uint)Math.Ceiling(250 / TargetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
             })
         {
             _clientLoads = new float[Session.MaxPlayers];
@@ -100,14 +89,14 @@ namespace Engine.Controller
         public override void Update(GameTime gameTime)
         {
             // Drive game logic.
-            UpdateSimulation(gameTime, _adjustedSpeed);
+            UpdateSimulation(gameTime, AdjustedSpeed);
 
             // Also take the possibility of the server slowing down the game
             // into account.
             double serverSpeed = 1f / SafeLoad;
-            if (SafeLoad >= 1f && serverSpeed < _adjustedSpeed)
+            if (SafeLoad >= 1f && serverSpeed < AdjustedSpeed)
             {
-                _adjustedSpeed = serverSpeed;
+                AdjustedSpeed = serverSpeed;
                 _serverIsSlowing = true;
             }
             else if (_serverIsSlowing)
@@ -122,14 +111,14 @@ namespace Engine.Controller
             {
                 _lastHashTime = DateTime.Now.Ticks;
 
-                Hasher hasher = new Hasher();
-                _tss.Hash(hasher);
+                var hasher = new Hasher();
+                Tss.Hash(hasher);
 
                 using (var packet = new Packet())
                 {
                     Session.Send(packet
                         .Write((byte)TssControllerMessage.HashCheck)
-                        .Write(_tss.TrailingFrame)
+                        .Write(Tss.TrailingFrame)
                         .Write(hasher.Value));
                 }
             }
@@ -157,11 +146,11 @@ namespace Engine.Controller
             // Adjust speed to the worst load.
             if (worstLoad > 1f)
             {
-                _adjustedSpeed = 1f / worstLoad;
+                AdjustedSpeed = 1f / worstLoad;
             }
             else
             {
-                _adjustedSpeed = 1;
+                AdjustedSpeed = 1;
             }
         }
 
@@ -175,7 +164,7 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         protected override void Apply(FrameCommand command)
         {
-            if (command.Frame >= _tss.TrailingFrame)
+            if (command.Frame >= Tss.TrailingFrame)
             {
                 // All commands we apply are authoritative.
                 command.IsAuthoritative = true;
@@ -186,7 +175,7 @@ namespace Engine.Controller
             }
             else
             {
-                logger.Trace("Client command too old: {0} < {1}. Ignoring.", command.Frame, _tss.TrailingFrame);
+                Logger.Trace("Client command too old: {0} < {1}. Ignoring.", command.Frame, Tss.TrailingFrame);
             }
         }
 
@@ -243,9 +232,9 @@ namespace Engine.Controller
                         // Adjust our desired game speed to accommodate slowest
                         // client machine. Is this the slowest client so far?
                         double clientSpeed = 1.0 / _clientLoads[player];
-                        if (_clientLoads[player] >= 1f && clientSpeed < _adjustedSpeed)
+                        if (_clientLoads[player] >= 1f && clientSpeed < AdjustedSpeed)
                         {
-                            _adjustedSpeed = clientSpeed;
+                            AdjustedSpeed = clientSpeed;
                             _serverIsSlowing = false;
                         }
                         else
@@ -261,8 +250,8 @@ namespace Engine.Controller
                             Session.SendTo(args.Player, packet
                                 .Write((byte)TssControllerMessage.Synchronize)
                                 .Write(clientFrame)
-                                .Write(_tss.CurrentFrame)
-                                .Write((float)_adjustedSpeed));
+                                .Write(Tss.CurrentFrame)
+                                .Write((float)AdjustedSpeed));
                         }
                     }
                     break;
@@ -270,18 +259,14 @@ namespace Engine.Controller
                 case TssControllerMessage.GameStateRequest:
                     // Client needs game state.
                     var hasher = new Hasher();
-                    _tss.Hash(hasher);
+                    Tss.Hash(hasher);
                     using (var packet = new Packet())
                     {
                         Session.SendTo(args.Player, packet
                             .Write((byte)TssControllerMessage.GameStateResponse)
                             .Write(hasher.Value)
-                            .Write(_tss));
+                            .Write(Tss));
                     }
-                    break;
-
-                // Everything else is unhandled on the server.
-                default:
                     break;
             }
             return null;

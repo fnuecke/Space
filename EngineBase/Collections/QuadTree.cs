@@ -24,7 +24,7 @@ namespace Engine.Collections
     /// </summary>
     /// <typeparam name="T">The type of the values stored in this tree.</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class QuadTree<T> : IEnumerable<T>
+    public sealed class QuadTree<T> : IIndex<T>
     {
         #region Properties
 
@@ -64,13 +64,13 @@ namespace Engine.Collections
         /// adding an entry to a leaf node, keeping the pointers to the segment
         /// of an inner intact.
         /// </summary>
-        private LinkedList<Entry> _entries = new LinkedList<Entry>();
+        private readonly LinkedList<Entry> _entries = new LinkedList<Entry>();
 
         /// <summary>
         /// Reused list when splitting nodes and so on (not re-allocating each
         /// run).
         /// </summary>
-        private List<LinkedListNode<Entry>> _reusableEntryList;
+        private readonly List<LinkedListNode<Entry>> _reusableEntryList;
 
         #endregion
 
@@ -106,6 +106,8 @@ namespace Engine.Collections
         }
 
         #endregion
+
+        #region Accessors
 
         /// <summary>
         /// Add a new entry to the tree, at the specified position, with the
@@ -201,15 +203,36 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Update a single entry by changing its position.
+        /// Update a single entry by changing its position. If the entry is not
+        /// already in the tree, it will be added.
         /// </summary>
-        /// <param name="oldPoint">The old position of the entry.</param>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
         /// <exception cref="ArgumentException">If there is no such value in
         /// the tree at the specified old position.</exception>
-        public void Update(ref Vector2 oldPoint, ref Vector2 newPoint, T value)
+        public void Update(ref Vector2 newPoint, T value)
         {
+            // Find the current position for that value, by finding the value
+            // in our list of entries.
+            Vector2 oldPoint = Vector2.Zero;
+            bool success = false;
+            foreach (var entry in _entries)
+            {
+                if (entry.Value.Equals(value))
+                {
+                    oldPoint = entry.Point;
+                    success = true;
+                    break;
+                }
+            }
+
+            // If we have no such entry, add it instead.
+            if (!success)
+            {
+                Add(ref newPoint, value);
+                return;
+            }
+
             // Handle dynamic growth.
             EnsureCapacity(ref newPoint);
 
@@ -237,7 +260,7 @@ namespace Engine.Collections
                         else
                         {
                             // Different node, re-insert.
-                            Remove(ref oldPoint, value);
+                            RemoveEntry(ref oldPoint, value);
                             Add(ref newPoint, value);
                         }
 
@@ -250,26 +273,228 @@ namespace Engine.Collections
         }
         
         /// <summary>
-        /// Update a single entry by changing its position.
+        /// Update a single entry by changing its position. If the entry is not
+        /// already in the tree, it will be added.
         /// </summary>
-        /// <param name="oldPoint">The old position of the entry.</param>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
         /// <exception cref="ArgumentException">If there is no such value in
         /// the tree at the specified old position.</exception>
-        public void Update(Vector2 oldPoint, Vector2 newPoint, T value)
+        public void Update(Vector2 newPoint, T value)
         {
-            Update(ref oldPoint, ref newPoint, value);
+            Update(ref newPoint, value);
         }
+
+        /// <summary>
+        /// Remove the specified value from the tree.
+        /// </summary>
+        /// <param name="value">The value to remove.</param>
+        public bool Remove(T value)
+        {
+            // See if we have that entry.
+            foreach (var entry in _entries)
+            {
+                if (entry.Value.Equals(value))
+                {
+                    RemoveEntry(ref entry.Point, entry.Value);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Test whether this tree contains the specified value at the
+        /// specified point.
+        /// </summary>
+        /// <param name="point">The point at which to look for.</param>
+        /// <param name="value">The value to look for.</param>
+        /// <returns><c>true</c> if the tree contains the value at the
+        /// specified point.</returns>
+        public bool Contains(ref Vector2 point, T value)
+        {
+            // Get the node the entry would be in.
+            int nodeX, nodeY, nodeSize;
+            var node = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
+            
+            // Is the node a leaf node? If not we don't have that entry.
+            if (node.IsLeaf)
+            {
+                // Check if we have that entry.
+                for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
+                {
+                    if (entry.Value.Point.Equals(point) &&
+                        entry.Value.Value.Equals(value))
+                    {
+                        // Got it :)
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+        
+        /// <summary>
+        /// Test whether this tree contains the specified value.
+        /// </summary>
+        /// <param name="value">The value to look for.</param>
+        /// <returns><c>true</c> if the tree contains the value at the
+        /// specified point.</returns>
+        public bool Contains(T value)
+        {
+            foreach (var entry in _entries)
+            {
+                if (entry.Value.Equals(value))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Removes all entries from this tree.
+        /// </summary>
+        public void Clear()
+        {
+            // Free all tree nodes.
+            FreeBranch(_root);
+            _root = GetNode(null);
+
+            // Free all list nodes.
+            for (var node = _entries.First; node != null; node = node.Next)
+            {
+                FreeListNode(node);
+            }
+            _entries.Clear();
+        }
+
+        /// <summary>
+        /// Perform a range query on this tree. This will return all entries
+        /// in the tree that are in the specified range to the specified point,
+        /// using a euclidean distance.
+        /// </summary>
+        /// <param name="point">The query point near which to get entries.</param>
+        /// <param name="range">The maximum distance an entry may be away
+        /// from the query point to be returned.</param>
+        /// <param name="list">The list to put the results into, or null in
+        /// which case a new list will be created and returned.</param>
+        /// <returns>All objects in the neighborhood of the query point.</returns>
+        public ICollection<T> RangeQuery(ref Vector2 point, float range, ISet<T> list = null)
+        {
+            var result = list ?? new HashSet<T>();
+
+            // Recurse through the tree, starting at the root node, to find
+            // nodes intersecting with the range query.
+            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
+                ref point, range, result);
+
+            return result;
+        }
+        
+        /// <summary>
+        /// Perform a range query on this tree. This will return all entries
+        /// in the tree that are in the specified range to the specified point,
+        /// using a euclidean distance.
+        /// </summary>
+        /// <param name="point">The query point near which to get entries.</param>
+        /// <param name="range">The maximum distance an entry may be away
+        /// from the query point to be returned.</param>
+        /// <returns></returns>
+        public ICollection<T> RangeQuery(Vector2 point, float range)
+        {
+            return RangeQuery(ref point, range);
+        }
+
+        /// <summary>
+        /// Perform a range query on this tree. This will return all entries
+        /// in the tree that are in contained the specified rectangle.
+        /// </summary>
+        /// <param name="rectangle">The query rectangle.</param>
+        /// <param name="list">The list to put the results into, or null in
+        /// which case a new list will be created and returned.</param>
+        /// <returns>All objects in the query rectangle.</returns>
+        public ICollection<T> RangeQuery(ref Rectangle rectangle, ICollection<T> list = null)
+        {
+            var result = list ?? new List<T>();
+
+            // Recurse through the tree, starting at the root node, to find
+            // nodes intersecting with the range query.
+            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
+                ref rectangle, result);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Perform a range query on this tree. This will return all entries
+        /// in the tree that are in contained the specified rectangle.
+        /// </summary>
+        /// <param name="rectangle">The query rectangle.</param>
+        /// <returns>All objects in the query rectangle.</returns>
+        public ICollection<T> RangeQuery(Rectangle rectangle)
+        {
+            return RangeQuery(ref rectangle);
+        }
+
+        #endregion
+
+        #region Internal functionality
+
+        /// <summary>
+        /// Find a node at the given query point. If possible, this will return
+        /// a leaf node. If there is no leaf node at the query point, it will
+        /// return the inner node that would contain the leaf node that would
+        /// hold that point.
+        /// </summary>
+        /// <param name="point">The point to get the leaf node for.</param>
+        /// <param name="nodeX">Will be the x position of the node.</param>
+        /// <param name="nodeY">Will be the y position of the node.</param>
+        /// <param name="nodeSize">Will be the size of the node.</param>
+        /// <returns>The node for the specified query point.</returns>
+        private Node FindNode(ref Vector2 point, out int nodeX, out int nodeY, out int nodeSize)
+        {
+            var node = _root;
+            nodeX = _bounds.X;
+            nodeY = _bounds.Y;
+            nodeSize = _bounds.Width;
+
+            while (!node.IsLeaf)
+            {
+                // Get current child size.
+                var childSize = nodeSize >> 1;
+
+                // Into which child node would we descend?
+                var cell = ComputeCell(nodeX, nodeY, childSize, ref point);
+
+                // Do we have to create that child?
+                if (node.Children[cell] != null)
+                {
+                    // Yes, descend into that node.
+                    node = node.Children[cell];
+                    nodeX += (((cell & 1) == 0) ? 0 : childSize);
+                    nodeY += (((cell & 2) == 0) ? 0 : childSize);
+                    nodeSize = childSize;
+                }
+                else
+                {
+                    // No. Return the current inner node instead.
+                    return node;
+                }
+            }
+
+            return node;
+        }
+
+        #region Restructuring
 
         /// <summary>
         /// Remove the specified value at the specified point from the tree.
         /// </summary>
         /// <param name="point">The position to remove the value at.</param>
         /// <param name="value">The value to remove.</param>
-        /// <returns><c>true</c> if the specified pair of point and value was
-        /// in the tree, <c>false</c> otherwise.</returns>
-        public bool Remove(ref Vector2 point, T value)
+        private void RemoveEntry(ref Vector2 point, T value)
         {
             // Get the node the entry would be in.
             int nodeX, nodeY, nodeSize;
@@ -322,204 +547,13 @@ namespace Engine.Collections
                         // has to be removed first (to update entry counts).
                         CleanNode(removalNode);
 
-                        return true;
+                        // Aaaand... we're done.
+                        return;
                     }
                 }
             }
-            return false;
         }
         
-        /// <summary>
-        /// Remove the specified value at the specified point from the tree.
-        /// </summary>
-        /// <param name="point">The position to remove the value at.</param>
-        /// <param name="value">The value to remove.</param>
-        /// <returns><c>true</c> if the specified pair of point and value was
-        /// in the tree, <c>false</c> otherwise.</returns>
-        public bool Remove(Vector2 point, T value)
-        {
-            return Remove(ref point, value);
-        }
-
-        /// <summary>
-        /// Test whether this tree contains the specified value at the
-        /// specified point.
-        /// </summary>
-        /// <param name="point">The point at which to look for.</param>
-        /// <param name="value">The value to look for.</param>
-        /// <returns><c>true</c> if the tree contains the value at the
-        /// specified point.</returns>
-        public bool Contains(ref Vector2 point, T value)
-        {
-            // Get the node the entry would be in.
-            int nodeX, nodeY, nodeSize;
-            var node = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
-            
-            // Is the node a leaf node? If not we don't have that entry.
-            if (node.IsLeaf)
-            {
-                // Check if we have that entry.
-                for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
-                {
-                    if (entry.Value.Point.Equals(point) &&
-                        entry.Value.Value.Equals(value))
-                    {
-                        // Got it :)
-                        return true;
-                    }
-                }
-            }
-
-            return false;
-        }
-        
-        /// <summary>
-        /// Test whether this tree contains the specified value at the
-        /// specified point.
-        /// </summary>
-        /// <param name="point">The point at which to look for.</param>
-        /// <param name="value">The value to look for.</param>
-        /// <returns><c>true</c> if the tree contains the value at the
-        /// specified point.</returns>
-        public bool Contains(Vector2 point, T value)
-        {
-            return Contains(ref point, value);
-        }
-
-        /// <summary>
-        /// Removes all entries from this tree.
-        /// </summary>
-        public void Clear()
-        {
-            // Free all tree nodes.
-            FreeBranch(_root);
-            _root = GetNode(null);
-
-            // Free all list nodes.
-            for (var node = _entries.First; node != null; node = node.Next)
-            {
-                FreeListNode(node);
-            }
-            _entries.Clear();
-        }
-
-        /// <summary>
-        /// Perform a range query on this tree. This will return all entries
-        /// in the tree that are in the specified range to the specified point,
-        /// using a euclidean distance.
-        /// </summary>
-        /// <param name="point">The query point near which to get entries.</param>
-        /// <param name="range">The maximum distance an entry may be away
-        /// from the query point to be returned.</param>
-        /// <param name="list">The list to put the results into, or null in
-        /// which case a new list will be created and returned.</param>
-        /// <returns>All objects in the neighborhood of the query point.</returns>
-        public List<T> RangeQuery(ref Vector2 point, float range, List<T> list = null)
-        {
-            var result = list ?? new List<T>();
-
-            // Recurse through the tree, starting at the root node, to find
-            // nodes intersecting with the range query.
-            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
-                ref point, range, result);
-
-            return result;
-        }
-        
-        /// <summary>
-        /// Perform a range query on this tree. This will return all entries
-        /// in the tree that are in the specified range to the specified point,
-        /// using a euclidean distance.
-        /// </summary>
-        /// <param name="point">The query point near which to get entries.</param>
-        /// <param name="range">The maximum distance an entry may be away
-        /// from the query point to be returned.</param>
-        /// <returns></returns>
-        public List<T> RangeQuery(Vector2 point, float range)
-        {
-            return RangeQuery(ref point, range);
-        }
-
-        /// <summary>
-        /// Perform a range query on this tree. This will return all entries
-        /// in the tree that are in contained the specified rectangle.
-        /// </summary>
-        /// <param name="point">The query rectangle.</param>
-        /// <param name="list">The list to put the results into, or null in
-        /// which case a new list will be created and returned.</param>
-        /// <returns>All objects in the query rectangle.</returns>
-        public List<T> RangeQuery(ref Rectangle rectangle, List<T> list = null)
-        {
-            var result = list ?? new List<T>();
-
-            // Recurse through the tree, starting at the root node, to find
-            // nodes intersecting with the range query.
-            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
-                ref rectangle, result);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Perform a range query on this tree. This will return all entries
-        /// in the tree that are in contained the specified rectangle.
-        /// </summary>
-        /// <param name="point">The query rectangle.</param>
-        /// <returns>All objects in the query rectangle.</returns>
-        public List<T> RangeQuery(Rectangle rectangle)
-        {
-            return RangeQuery(ref rectangle);
-        }
-
-        #region Internal functionality
-
-        /// <summary>
-        /// Find a node at the given query point. If possible, this will return
-        /// a leaf node. If there is no leaf node at the query point, it will
-        /// return the inner node that would contain the leaf node that would
-        /// hold that point.
-        /// </summary>
-        /// <param name="point">The point to get the leaf node for.</param>
-        /// <param name="nodeX">Will be the x position of the node.</param>
-        /// <param name="nodeY">Will be the y position of the node.</param>
-        /// <param name="nodeSize">Will be the size of the node.</param>
-        /// <returns>The node for the specified query point.</returns>
-        private Node FindNode(ref Vector2 point, out int nodeX, out int nodeY, out int nodeSize)
-        {
-            var node = _root;
-            nodeX = _bounds.X;
-            nodeY = _bounds.Y;
-            nodeSize = _bounds.Width;
-
-            while (!node.IsLeaf)
-            {
-                // Get current child size.
-                var childSize = nodeSize >> 1;
-
-                // Into which child node would we descend?
-                var cell = ComputeCell(nodeX, nodeY, childSize, ref point);
-
-                // Do we have to create that child?
-                if (node.Children[cell] != null)
-                {
-                    // Yes, descend into that node.
-                    node = node.Children[cell];
-                    nodeX += (((cell & 1) == 0) ? 0 : childSize);
-                    nodeY += (((cell & 2) == 0) ? 0 : childSize);
-                    nodeSize = childSize;
-                }
-                else
-                {
-                    // No. Return the current inner node instead.
-                    return node;
-                }
-            }
-
-            return node;
-        }
-
-        #region Restructuring
-
         /// <summary>
         /// Try to clean up a node and its parents. This walks the tree towards
         /// the root, removing child nodes where possible.
@@ -841,7 +875,7 @@ namespace Engine.Collections
         /// <param name="point">The query point.</param>
         /// <param name="range">The query range.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range, List<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range, ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref point, range, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -903,7 +937,7 @@ namespace Engine.Collections
         /// <param name="node">The current node.</param>
         /// <param name="point">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Rectangle query, List<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Rectangle query, ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref query, x, y, size);
             if (intersectionType == IntersectionType.Contained)
