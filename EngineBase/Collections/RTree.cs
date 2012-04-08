@@ -198,9 +198,12 @@ namespace Engine.Collections
             root = new LeafNode();
         }
 
-        public ICollection<T> RangeQuery(ref Vector2 point, float range, ISet<T> list = null)
+        public ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null)
         {
-            throw new NotImplementedException();
+            var result = list ?? new HashSet<T>();
+
+
+            return result;
         }
 
         public ICollection<T> RangeQuery(Vector2 point, float range)
@@ -210,7 +213,10 @@ namespace Engine.Collections
 
         public ICollection<T> RangeQuery(ref Rectangle rectangle, ICollection<T> list = null)
         {
-            throw new NotImplementedException();
+            var result = list ?? new HashSet<T>();
+            Accumulate(root, ref rectangle, result);
+
+            return result;
         }
 
         public ICollection<T> RangeQuery(Rectangle rectangle)
@@ -220,6 +226,70 @@ namespace Engine.Collections
 
         #endregion
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="currentNode"></param>
+        /// <param name="rectangle"></param>
+        /// <param name="list"></param>
+        private void Accumulate(Node currentNode,ref Rectangle rectangle,ICollection<T> list)
+        {
+            if (currentNode is LeafNode)
+            {
+                var leafnode = (LeafNode)currentNode;
+                foreach (var entry in leafnode.Entrys)
+                {
+                    if (RectangleContainsPoint(ref rectangle, ref entry.Point))
+                    {
+                        list.Add(entry.Value);
+                    }
+                }
+            }
+            else//innernode
+            {
+                foreach (var child in ((InnerNode)currentNode).Nodes)
+                {
+                    //if searched rectangle is inside mbb search in there
+                    if (child.Boundingbox.Intersects(rectangle))
+                    {
+                        Accumulate(child, ref rectangle, list);
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="currentNode"></param>
+        /// <param name="rectangle"></param>
+        /// <param name="list"></param>
+        private void Accumulate(Node currentNode, ref Vector2 point, float range, ICollection<T> list)
+        {
+            if (currentNode is LeafNode)
+            {
+                var leafnode = (LeafNode)currentNode;
+                foreach (var entry in leafnode.Entrys)
+                {
+                    if (ComputeIntersection(ref point,range, ref entry.Point))
+                    {
+                        list.Add(entry.Value);
+                    }
+                }
+            }
+            else//innernode
+            {
+                foreach (var child in ((InnerNode)currentNode).Nodes)
+                {
+                    //if searched rectangle is inside mbb search in there
+                    if (ComputeIntersection(ref point,range,ref child.Boundingbox))
+                    {
+                        Accumulate(child, ref point,range,list);
+                    }
+                }
+            }
+        }
+
+        
         /// <summary>
         /// Choose the Leaf in which the point fits best
         /// </summary>
@@ -784,6 +854,94 @@ namespace Engine.Collections
             return node.Entrys.Count < maxEntrys;
         }
 
+        /// <summary>
+        /// Circle / Box intersection test.
+        /// </summary>
+        /// <param name="center">The center of the circle.</param>
+        /// <param name="radiusSquared">The squared radius of the circle.</param>
+        /// <param name="x">The x position of the box.</param>
+        /// <param name="y">The y position of the box.</param>
+        /// <param name="size">The size of the box.</param>
+        /// <returns>How the two intersect.</returns>
+        private static bool ComputeIntersection(ref Vector2 center, float radius,ref Rectangle rect)
+        {
+            // Check for axis aligned separation.
+            if (rect.Right < center.X - radius ||
+                rect.Bottom < center.Y - radius ||
+                rect.Left > center.X + radius ||
+                rect.Top > center.Y + radius)
+            {
+                return false;
+            }
+
+            // Check for unaligned separation.
+            Vector2 closest = center;
+            if (center.X < rect.Left)
+            {
+                closest.X = rect.Left;
+            }
+            else if (center.X > rect.Right)
+            {
+                closest.X = rect.Right;
+            }
+            if (center.Y < rect.Top)
+            {
+                closest.Y = rect.Top;
+            }
+            else if (center.Y > rect.Bottom)
+            {
+                closest.Y = rect.Bottom;
+            }
+            float distanceX = closest.X - center.X;
+            float distanceY = closest.Y - center.Y;
+            if ((distanceX * distanceX + distanceY * distanceY) > radius * radius)
+            {
+                return false;
+            }
+            return true;
+        }
+        private bool ComputeIntersection(ref Vector2 center, float radius, ref Vector2 vector2)
+        {
+            // Check for axis aligned separation.
+            if (vector2.X < center.X - radius ||
+                vector2.Y < center.Y - radius ||
+                vector2.X > center.X + radius ||
+                vector2.Y > center.Y + radius)
+            {
+                return false;
+            }
+
+            // Check for unaligned separation.
+            Vector2 closest = center;
+            if (center.X < vector2.X)
+            {
+                closest.X = vector2.X;
+            }
+            else if (center.X > vector2.X)
+            {
+                closest.X = vector2.X;
+            }
+            if (center.Y < vector2.Y)
+            {
+                closest.Y = vector2.Y;
+            }
+            else if (center.Y > vector2.Y)
+            {
+                closest.Y = vector2.Y;
+            }
+            float distanceX = closest.X - center.X;
+            float distanceY = closest.Y - center.Y;
+            if ((distanceX * distanceX + distanceY * distanceY) > radius * radius)
+            {
+                return false;
+            }
+            return true;
+        }
+        private bool RectangleContainsPoint(ref Rectangle rect,ref Vector2 point)
+        {
+            return (rect.Top <= point.Y && rect.Bottom >= point.Y
+                && rect.Left <= point.X && rect.Right >= point.X);
+        }
         /// <summary>
         /// 
         /// </summary>
