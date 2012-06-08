@@ -73,6 +73,9 @@
     <Reference Include="mscorlib">
       <Private>False</Private>
     </Reference>
+    <Reference Include="Nuclex.Input">
+      <HintPath>..\Libraries\Nuclex.Input.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -139,6 +142,16 @@
     <Compile Include="ScreenManagement\Screens\MessageBoxScreen.cs" />
     <Compile Include="ScreenManagement\Screens\OptionsMenuScreen.cs" />
     <Compile Include="ScreenManagement\Screens\PauseMenuScreen.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
+      <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
+      <Name>Engine.Base</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
+      <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>
+      <Name>Space.Base</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
