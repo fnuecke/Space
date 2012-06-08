@@ -162,8 +162,10 @@ input[type=""text""], input[type=""password""], textarea {
                     mouse.MouseMoved -= HandleMouseMoved;
                     mouse.MouseWheelRotated -= HandleMouseWheelRotated;
                 }
-            }
 
+                WebCore.Shutdown();
+            }
+            
             base.Dispose(disposing);
         }
 
