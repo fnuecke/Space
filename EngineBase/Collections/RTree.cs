@@ -41,9 +41,9 @@ namespace Engine.Collections
         /// <summary>
         /// 
         /// </summary>
-        private int maxEntrys = 4;
+        private int maxEntrys = 128;
 
-        private int minEntrys = 2;
+        private int minEntrys = 20;
 
         /// <summary>
         /// 
@@ -206,7 +206,7 @@ namespace Engine.Collections
         {
             var result = list ?? new HashSet<T>();
 
-
+            Accumulate(root,ref point,range,result);
             return result;
         }
 
