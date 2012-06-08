@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Awesomium.ContentPipeline",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Space.Gui.Content", "SpaceGuiContent\Space.Gui.Content.contentproj", "{4248B6C3-D2EE-496F-9C4B-0B923962449B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug (TSS Threading)|Any CPU = Debug (TSS Threading)|Any CPU
@@ -331,6 +333,18 @@ Global
 		{4248B6C3-D2EE-496F-9C4B-0B923962449B}.Release (TSS Threading)|x86.ActiveCfg = Debug|Any CPU
 		{4248B6C3-D2EE-496F-9C4B-0B923962449B}.Release|Any CPU.ActiveCfg = Debug|Any CPU
 		{4248B6C3-D2EE-496F-9C4B-0B923962449B}.Release|x86.ActiveCfg = Debug|Any CPU
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Debug (TSS Threading)|Any CPU.ActiveCfg = Debug|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Debug (TSS Threading)|x86.ActiveCfg = Debug|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Debug (TSS Threading)|x86.Build.0 = Debug|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Debug|x86.ActiveCfg = Debug|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Debug|x86.Build.0 = Debug|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Release (TSS Threading)|Any CPU.ActiveCfg = Release|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Release (TSS Threading)|x86.ActiveCfg = Release|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Release (TSS Threading)|x86.Build.0 = Release|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Release|Any CPU.ActiveCfg = Release|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Release|x86.ActiveCfg = Release|x86
+		{8C67F7E1-1C53-462F-A8F4-30B4827EABD8}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
