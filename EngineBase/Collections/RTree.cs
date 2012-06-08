@@ -75,7 +75,7 @@ namespace Engine.Collections
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return _pointDict.Count; }
         }
 
 
