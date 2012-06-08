@@ -205,12 +205,12 @@ namespace Space.Control
             if ((DateTime.Now - _lastUpdate).TotalMilliseconds > MousePollInterval)
             {
                 // Has the mouse moved since the last update?
-                if (_rotationChanged > _lastUpdate)
+                if (_rotationChanged >= _lastUpdate)
                 {
                     // Yes, push command.
                     Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, new Vector2(_targetRotation, 0)));
                 }
-                if (_accelerationChanged > _lastUpdate)
+                if (_accelerationChanged >= _lastUpdate)
                 {
                     Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, _accelerationDirection));
                 }
@@ -231,28 +231,27 @@ namespace Space.Control
         {
             if (Settings.Instance.GameBindings.ContainsKey(key))
             {
-                if (Settings.Instance.GameBindings[key] == Settings.GameCommand.Stabilize)
+                switch (Settings.Instance.GameBindings[key])
                 {
-                    if (Settings.Instance.ToggleStabilize)
-                    {
-                        // Toggle stabilizers.
-                        _stabilizing = !_stabilizing;
-                        Client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
-                    }
-                    else
-                    {
-                        // Just enable stabilizers.
-                        Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginStabilizing));
-                    }
-                }
-                else if (Settings.Instance.GameBindings[key] == Settings.GameCommand.PickUp)
-                {
-                    // Try to pick up nearby items.
-                    Client.Controller.PushLocalCommand(new PickUpCommand());
-                }
-                else
-                {
-                    UpdateKeyboardAcceleration();
+                    case Settings.GameCommand.Stabilize:
+                        if (Settings.Instance.ToggleStabilize)
+                        {
+                            // Toggle stabilizers.
+                            _stabilizing = !_stabilizing;
+                            Client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
+                        }
+                        else
+                        {
+                            // Just enable stabilizers.
+                            Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginStabilizing));
+                        }
+                        break;
+                    case Settings.GameCommand.PickUp:
+                        Client.Controller.PushLocalCommand(new PickUpCommand());
+                        break;
+                    default:
+                        UpdateKeyboardAcceleration();
+                        break;
                 }
             }
         }
@@ -264,17 +263,18 @@ namespace Space.Control
         {
             if (Settings.Instance.GameBindings.ContainsKey(key))
             {
-                if (Settings.Instance.GameBindings[key] == Settings.GameCommand.Stabilize)
+                switch (Settings.Instance.GameBindings[key])
                 {
-                    if (!Settings.Instance.ToggleStabilize)
-                    {
-                        // Disable stabilizers if not toggling.
-                        Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
-                    }
-                }
-                else
-                {
-                    UpdateKeyboardAcceleration();
+                    case Settings.GameCommand.Stabilize:
+                        if (!Settings.Instance.ToggleStabilize)
+                        {
+                            // Disable stabilizers if not toggling.
+                            Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
+                        }
+                        break;
+                    default:
+                        UpdateKeyboardAcceleration();
+                        break;
                 }
             }
         }
