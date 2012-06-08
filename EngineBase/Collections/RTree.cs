@@ -31,6 +31,10 @@ namespace Engine.Collections
             Add(new Vector2(4, 5), list[4]);
             Add(new Vector2(5, 6), list[4]);
 
+            foreach(var asd in RangeQuery(new Rectangle(0,0,1,1)))
+            {
+                Console.WriteLine(asd);
+            }
             Console.WriteLine(root);
         }
         #region Fields
@@ -85,7 +89,7 @@ namespace Engine.Collections
             }
             Insert(entry);
         }
-        public void 
+        private void 
             Insert(Entry entry)
         {
             //coose the leaf in which the value shall be stored
@@ -164,7 +168,7 @@ namespace Engine.Collections
                 if(entry.Value.Equals(value))
                 {
                     node.Entrys.Remove(entry);
-
+                    CondenseTree(node);
                     return true;
                 }
             }
@@ -198,7 +202,7 @@ namespace Engine.Collections
             root = new LeafNode();
         }
 
-        public ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null)
+        public ICollection<T> RangeQuery(ref Vector2 point, float range, ISet<T> list = null)
         {
             var result = list ?? new HashSet<T>();
 
@@ -843,6 +847,10 @@ namespace Engine.Collections
                 }
                 
             }
+            if (root is InnerNode && ((InnerNode)root).Nodes.Count == 1)
+            {
+                root = ((InnerNode)root).Nodes[0];
+            }
             
         }
         /// <summary>
@@ -1005,7 +1013,7 @@ namespace Engine.Collections
         /// and value.
         /// </summary>
         [DebuggerDisplay("Point = {Point}, Value = {Value}")]
-        private class Entry
+        public class Entry
         {
             #region Fields
 
