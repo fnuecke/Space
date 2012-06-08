@@ -31,6 +31,10 @@ namespace Engine.Collections
             Add(new Vector2(4, 5), list[4]);
             Add(new Vector2(5, 6), list[4]);
 
+            foreach(var asd in RangeQuery(new Rectangle(0,0,1,1)))
+            {
+                Console.WriteLine(asd);
+            }
             Console.WriteLine(root);
         }
         #region Fields
@@ -39,18 +43,25 @@ namespace Engine.Collections
         /// </summary>
         private int maxEntrys = 4;
 
+        private int minEntrys = 2;
+
         /// <summary>
         /// 
         /// </summary>
         Node root = new LeafNode();
 
+
+        private Dictionary<T, LeafNode> _pointDict = new Dictionary<T, LeafNode>();
         #endregion
 
         #region Implementation of IEnumerable
 
         public IEnumerator<T> GetEnumerator()
         {
-            throw new NotImplementedException();
+            foreach (var entry in _pointDict)
+            {
+                yield return entry.Key;
+            }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -72,22 +83,63 @@ namespace Engine.Collections
         {
             //the entry to be stored
             var entry = new Entry() { Point = point, Value = value };
+            if (_pointDict.ContainsKey(value))
+            {
+                throw new ArgumentException("Entry is already in the tree at the specified point.", "value");
+            }
+            Insert(entry);
+        }
+        private void 
+            Insert(Entry entry)
+        {
             //coose the leaf in which the value shall be stored
-            var node = ChooseLeaf(ref point);
+            var node = ChooseLeaf(ref entry.Point);
             //if the node has enough space to hold the entry
             LeafNode createdNode = null;
             if (TestCapacity(node))
             {
                 node.Entrys.Add(entry);
+                if (_pointDict.ContainsKey(entry.Value))
+                {
+                    _pointDict.Remove(entry.Value);
+                }
+                _pointDict.Add(entry.Value, node);
             }
             else
             {
                 node.Entrys.Add(entry);
+                if (_pointDict.ContainsKey(entry.Value))
+                {
+                    _pointDict.Remove(entry.Value);
+                }
+                _pointDict.Add(entry.Value, node);
                 createdNode = (LeafNode)SplitNode(node);
             }
             AdjustTree(node, createdNode);
         }
-
+        /// <summary>
+        /// Inserts the given node in the tree at the given father node level
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="parentLevel"></param>
+        private void Insert(Node childnode, int parentLevel)
+        {
+            //coose the leaf in which the value shall be stored
+            var node = ChooseNode(childnode,parentLevel);
+            //if the node has enough space to hold the entry
+            InnerNode createdNode = null;
+            if (node.Nodes.Count<maxEntrys)
+            {
+                node.Nodes.Add(childnode);
+            }
+            else
+            {
+                node.Nodes.Add(childnode);
+                
+                createdNode = (InnerNode)SplitNode(node);
+            }
+            AdjustTree(node, createdNode);
+        }
         public void Add(Vector2 point, T value)
         {
             Add(ref point, value);
@@ -100,51 +152,148 @@ namespace Engine.Collections
 
         public void Update(Vector2 newPoint, T value)
         {
-            throw new NotImplementedException();
+            Update(ref newPoint, value);
         }
 
         public bool Remove(T value)
         {
-            throw new NotImplementedException();
+            if (!_pointDict.ContainsKey(value))
+            {
+                return false;
+            }
+            var node = _pointDict[value];
+            foreach (var entry in node.Entrys)
+            {
+                //find entry in node
+                if(entry.Value.Equals(value))
+                {
+                    node.Entrys.Remove(entry);
+                    CondenseTree(node);
+                    return true;
+                }
+            }
+            return false;
         }
 
         public bool Contains(ref Vector2 point, T value)
         {
-            throw new NotImplementedException();
+            if (_pointDict.ContainsKey(value))
+            {
+                var node = _pointDict[value].Entrys;
+                foreach (var entry in node)
+                {
+                    if (entry.Value.Equals(value))
+                    {
+                        return entry.Point.Equals(point);
+                    }
+                }
+            }
+            return false;
         }
 
         public bool Contains(T value)
         {
-            throw new NotImplementedException();
+            return _pointDict.ContainsKey(value);
         }
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            _pointDict = new Dictionary<T, LeafNode>();
+            root = new LeafNode();
         }
 
         public ICollection<T> RangeQuery(ref Vector2 point, float range, ISet<T> list = null)
         {
-            throw new NotImplementedException();
+            var result = list ?? new HashSet<T>();
+
+
+            return result;
         }
 
         public ICollection<T> RangeQuery(Vector2 point, float range)
         {
-            throw new NotImplementedException();
+            return RangeQuery(ref point, range);
         }
 
         public ICollection<T> RangeQuery(ref Rectangle rectangle, ICollection<T> list = null)
         {
-            throw new NotImplementedException();
+            var result = list ?? new HashSet<T>();
+            Accumulate(root, ref rectangle, result);
+
+            return result;
         }
 
         public ICollection<T> RangeQuery(Rectangle rectangle)
         {
-            throw new NotImplementedException();
+            return RangeQuery(ref rectangle);
         }
 
         #endregion
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="currentNode"></param>
+        /// <param name="rectangle"></param>
+        /// <param name="list"></param>
+        private void Accumulate(Node currentNode,ref Rectangle rectangle,ICollection<T> list)
+        {
+            if (currentNode is LeafNode)
+            {
+                var leafnode = (LeafNode)currentNode;
+                foreach (var entry in leafnode.Entrys)
+                {
+                    if (RectangleContainsPoint(ref rectangle, ref entry.Point))
+                    {
+                        list.Add(entry.Value);
+                    }
+                }
+            }
+            else//innernode
+            {
+                foreach (var child in ((InnerNode)currentNode).Nodes)
+                {
+                    //if searched rectangle is inside mbb search in there
+                    if (child.Boundingbox.Intersects(rectangle))
+                    {
+                        Accumulate(child, ref rectangle, list);
+                    }
+                }
+            }
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="currentNode"></param>
+        /// <param name="rectangle"></param>
+        /// <param name="list"></param>
+        private void Accumulate(Node currentNode, ref Vector2 point, float range, ICollection<T> list)
+        {
+            if (currentNode is LeafNode)
+            {
+                var leafnode = (LeafNode)currentNode;
+                foreach (var entry in leafnode.Entrys)
+                {
+                    if (ComputeIntersection(ref point,range, ref entry.Point))
+                    {
+                        list.Add(entry.Value);
+                    }
+                }
+            }
+            else//innernode
+            {
+                foreach (var child in ((InnerNode)currentNode).Nodes)
+                {
+                    //if searched rectangle is inside mbb search in there
+                    if (ComputeIntersection(ref point,range,ref child.Boundingbox))
+                    {
+                        Accumulate(child, ref point,range,list);
+                    }
+                }
+            }
+        }
+
+        
         /// <summary>
         /// Choose the Leaf in which the point fits best
         /// </summary>
@@ -160,6 +309,34 @@ namespace Engine.Collections
             return (LeafNode)node;
         }
 
+        private InnerNode ChooseNode(Node node, int parentLevel)
+        {
+            
+            InnerNode testnode = (InnerNode)root;
+            while (testnode.Level!=parentLevel)
+            {
+                testnode = MMBMinNode(testnode, node.Boundingbox);
+            }
+            return testnode;
+        }
+
+        private InnerNode MMBMinNode(InnerNode testnode, Rectangle boundingbox)
+        {
+            int minexpansion = int.MaxValue;
+            Node returnNode= null;
+            foreach (var childnode in testnode.Nodes)
+            {
+                var mbb = childnode.Boundingbox;
+                var area = Rectangle.Union(boundingbox, mbb);
+                var size = area.Height * area.Width;
+                if (size < minexpansion)
+                {
+                    minexpansion = size;
+                    returnNode = childnode;
+                }
+            }
+            return (InnerNode)returnNode;
+        }
         /// <summary>
         /// Returns the Child node of the given node with the minimal expansion to contain the given point
         /// </summary>
@@ -281,7 +458,7 @@ namespace Engine.Collections
                 //note to split is root so create new root node
                 if (node == root)
                 {
-                    var rootNode = new InnerNode();
+                    var rootNode = new InnerNode(1);
                     root = rootNode;
                     node.ParentNode = rootNode;
                     rootNode.Nodes.Add(node);
@@ -294,17 +471,19 @@ namespace Engine.Collections
                 {
                     var entry = leafnode.Entrys[i];
                     leafnode.Entrys.Remove(entry);
+                    _pointDict.Remove(entry.Value);
                     newNode.Entrys.Add(entry);
+                    _pointDict.Add(entry.Value, newNode);
                 }
                 return newNode;
             }
             //else innernode
             var innernode = (InnerNode) node;
-            var newInnerNode = new InnerNode();
+            var newInnerNode = new InnerNode(innernode.Level);
             //note to split is root so create new root node
             if (node == root)
             {
-                var rootNode = new InnerNode();
+                var rootNode = new InnerNode(innernode.Level+1);
                 root = rootNode;
                 node.ParentNode = rootNode;
                 rootNode.Nodes.Add(node);
@@ -516,7 +695,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="node"></param>
         /// <param name="createdNode"> </param>
-        private void AdjustTree(LeafNode node, LeafNode createdNode = null)
+        private void AdjustTree(Node node, Node createdNode = null)
         {
             Node testnode = node;
             while (testnode != root)
@@ -542,7 +721,7 @@ namespace Engine.Collections
 
             }
         }
-
+        
         /// <summary>
         /// Returns the MBB for the given Leaf Node
         /// </summary>
@@ -627,7 +806,53 @@ namespace Engine.Collections
             }
             return changed;
         }
+        private void CondenseTree(Node node)
+        {
+            var testnode = node;
+            var deletedNodes = new List<InnerNode>();
+            var deletedLeafs = new List<LeafNode>();
+            while (testnode != root)
+            {
+                var parent = testnode.ParentNode;
+                if (testnode is InnerNode && ((InnerNode)testnode).Nodes.Count < minEntrys)
+                  {
+                    parent.Nodes.Remove(testnode);
+                    deletedNodes.Add((InnerNode)testnode);
+                }
+                else if (testnode is LeafNode && ((LeafNode)testnode).Entrys.Count < minEntrys)
+                {
+                    parent.Nodes.Remove(testnode);
+                    deletedLeafs.Add((LeafNode)testnode);
+                }
+                else 
+                {
+                    CalculateMBB(testnode);
+                }
+                testnode = parent;
+            }
 
+            foreach (var nodes in deletedNodes)
+            {
+                foreach ( var entry in nodes.Nodes)
+                {
+                    Insert(entry,nodes.Level);
+                }
+            }
+            foreach (var entrys in deletedLeafs)
+            {
+                
+                foreach (var entry in entrys.Entrys)
+                {
+                    Insert(entry);
+                }
+                
+            }
+            if (root is InnerNode && ((InnerNode)root).Nodes.Count == 1)
+            {
+                root = ((InnerNode)root).Nodes[0];
+            }
+            
+        }
         /// <summary>
         /// Tests if the tree can contain the given point.
         /// </summary>
@@ -637,6 +862,94 @@ namespace Engine.Collections
             return node.Entrys.Count < maxEntrys;
         }
 
+        /// <summary>
+        /// Circle / Box intersection test.
+        /// </summary>
+        /// <param name="center">The center of the circle.</param>
+        /// <param name="radiusSquared">The squared radius of the circle.</param>
+        /// <param name="x">The x position of the box.</param>
+        /// <param name="y">The y position of the box.</param>
+        /// <param name="size">The size of the box.</param>
+        /// <returns>How the two intersect.</returns>
+        private static bool ComputeIntersection(ref Vector2 center, float radius,ref Rectangle rect)
+        {
+            // Check for axis aligned separation.
+            if (rect.Right < center.X - radius ||
+                rect.Bottom < center.Y - radius ||
+                rect.Left > center.X + radius ||
+                rect.Top > center.Y + radius)
+            {
+                return false;
+            }
+
+            // Check for unaligned separation.
+            Vector2 closest = center;
+            if (center.X < rect.Left)
+            {
+                closest.X = rect.Left;
+            }
+            else if (center.X > rect.Right)
+            {
+                closest.X = rect.Right;
+            }
+            if (center.Y < rect.Top)
+            {
+                closest.Y = rect.Top;
+            }
+            else if (center.Y > rect.Bottom)
+            {
+                closest.Y = rect.Bottom;
+            }
+            float distanceX = closest.X - center.X;
+            float distanceY = closest.Y - center.Y;
+            if ((distanceX * distanceX + distanceY * distanceY) > radius * radius)
+            {
+                return false;
+            }
+            return true;
+        }
+        private bool ComputeIntersection(ref Vector2 center, float radius, ref Vector2 vector2)
+        {
+            // Check for axis aligned separation.
+            if (vector2.X < center.X - radius ||
+                vector2.Y < center.Y - radius ||
+                vector2.X > center.X + radius ||
+                vector2.Y > center.Y + radius)
+            {
+                return false;
+            }
+
+            // Check for unaligned separation.
+            Vector2 closest = center;
+            if (center.X < vector2.X)
+            {
+                closest.X = vector2.X;
+            }
+            else if (center.X > vector2.X)
+            {
+                closest.X = vector2.X;
+            }
+            if (center.Y < vector2.Y)
+            {
+                closest.Y = vector2.Y;
+            }
+            else if (center.Y > vector2.Y)
+            {
+                closest.Y = vector2.Y;
+            }
+            float distanceX = closest.X - center.X;
+            float distanceY = closest.Y - center.Y;
+            if ((distanceX * distanceX + distanceY * distanceY) > radius * radius)
+            {
+                return false;
+            }
+            return true;
+        }
+        private bool RectangleContainsPoint(ref Rectangle rect,ref Vector2 point)
+        {
+            return (rect.Top <= point.Y && rect.Bottom >= point.Y
+                && rect.Left <= point.X && rect.Right >= point.X);
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -660,7 +973,13 @@ namespace Engine.Collections
         {
             #region Fields
 
+            public int Level;
             public List<Node> Nodes = new List<Node>();
+
+            public InnerNode(int level)
+            {
+                Level = level;
+            }
             public override string ToString()
             {
                 var returnstring = "Leaf Node childs: " + Nodes.Count + "\n";
@@ -694,7 +1013,7 @@ namespace Engine.Collections
         /// and value.
         /// </summary>
         [DebuggerDisplay("Point = {Point}, Value = {Value}")]
-        private class Entry
+        public class Entry
         {
             #region Fields
 
