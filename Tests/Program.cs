@@ -10,12 +10,13 @@ namespace Tests
 {
     class Program
     {
+        private static int size = 10000;
         static void Main(string[] args)
         {
             Console.WriteLine("workss");
             
             var list = new List<string>();
-            for(var i = 0; i< 100;i++)
+            for (var i = 0; i < size; i++)
             {
                 list.Add(""+i);
             }
@@ -34,16 +35,16 @@ namespace Tests
 
             foreach (var item in list)
             {
-                index.Add(new Vector2(random.NextInt32(1000),random.NextInt32(1000)),item);
+                index.Add(new Vector2(random.NextInt32(size), random.NextInt32(size)), item);
             }
             index.Remove("7");
-            var returnlist = index.RangeQuery(new Vector2(random.NextInt32(1000), random.NextInt32(1000)),100);
+            var returnlist = index.RangeQuery(new Vector2(random.NextInt32(size), random.NextInt32(size)), 100);
             foreach (var returnedItem in returnlist)
             {
                 Console.WriteLine(returnedItem);
             }
             var currTime2 = DateTime.Now;
-
+            Console.WriteLine(index.Count);
             Console.WriteLine(" Elapesed Time: "+(currTime2.Ticks-currTime.Ticks));
         }
     }
