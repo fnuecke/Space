@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using Awesomium.Core;
-using Engine.Controller;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -16,7 +15,6 @@ using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
 using Space.Control;
 using Space.Session;
-using Space.Simulation.Commands;
 using Space.Util;
 using Space.View;
 
@@ -287,7 +285,8 @@ namespace Space
             _console.AddCommand("leave",
                 args => DisposeClient(),
                 "Leave the current game.");
-
+            
+#if DEBUG
             // Default handler to interpret everything that is not a command
             // as a script.
             _console.SetDefaultCommandHandler(command => _client.Controller.PushLocalCommand(new ScriptCommand(command)));
@@ -339,6 +338,7 @@ namespace Space
                 "Verifies the simulation's serialization works by creating a",
                 "snapshot and deserializing it again, then compares the hash",
                 "values of the two simulations.");
+#endif
 
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
