@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{383E3C11-C642-47D6-9B75-3E680F9E1A17}</ProjectGuid>
+    <ProjectGuid>{E0588C47-23DC-4498-8A72-B4035787AAFE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Engine.Tests</RootNamespace>
-    <AssemblyName>Engine.Tests</AssemblyName>
+    <RootNamespace>SpaceTests</RootNamespace>
+    <AssemblyName>SpaceTests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -33,8 +33,6 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
-    <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="NSubstitute">
       <HintPath>..\Libraries\NSubstitute.dll</HintPath>
     </Reference>
@@ -48,12 +46,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Base\Serialization\AbstractSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\AbstractComponentSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\AbstractItemSerializationTest.cs" />
-    <Compile Include="ComponentSystem\ManagerTest.cs" />
+    <Compile Include="ComponentSystem\Components\AbstractSpaceItemSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\WeaponSerializationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\EngineBase\Engine.Base.csproj">
       <Project>{BE49F091-927E-4C8F-B6AC-A54C99AF2C0E}</Project>
@@ -71,20 +68,19 @@
       <Project>{C82769BC-E5C6-4382-8AFE-3648C6B8627B}</Project>
       <Name>Engine.ComponentSystem</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EngineController\Engine.Controller.csproj">
-      <Project>{10945D08-8588-4F0E-9671-0E90D374EB78}</Project>
-      <Name>Engine.Controller</Name>
+    <ProjectReference Include="..\EngineTests\Engine.Tests.csproj">
+      <Project>{383E3C11-C642-47D6-9B75-3E680F9E1A17}</Project>
+      <Name>Engine.Tests</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EngineSession\Engine.Session.csproj">
-      <Project>{93B52E9C-6872-40F0-B577-D3D9363F7AF1}</Project>
-      <Name>Engine.Session</Name>
+    <ProjectReference Include="..\SpaceBase\Space.Base.csproj">
+      <Project>{9D15628C-635B-495D-A06A-899DE5ED3035}</Project>
+      <Name>Space.Base</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EngineSimulation\Engine.Simulation.csproj">
-      <Project>{96E70AC4-C288-478C-866E-5C7280067642}</Project>
-      <Name>Engine.Simulation</Name>
+    <ProjectReference Include="..\SpaceComponentSystem\Space.ComponentSystem.csproj">
+      <Project>{19B0BD60-0104-4E8E-9D43-A6A7F182E649}</Project>
+      <Name>Space.ComponentSystem</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
