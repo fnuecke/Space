@@ -45,7 +45,6 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(GameTime gameTime, long frame, TextureRenderer component)
         {
-            // 
             if (component.Texture == null)
             {
                 component.Texture = _content.Load<Texture2D>(component.TextureName);

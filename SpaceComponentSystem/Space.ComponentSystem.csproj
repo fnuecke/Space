@@ -120,6 +120,7 @@
     <Compile Include="Systems\RegeneratingValueSystem.cs" />
     <Compile Include="Systems\ShipControlSystem.cs" />
     <Compile Include="Systems\ShipInfoSystem.cs" />
+    <Compile Include="Systems\ShipRenderSystem.cs" />
     <Compile Include="Systems\ShipSpawnSystem.cs" />
     <Compile Include="Systems\SpaceUsablesSystem.cs" />
     <Compile Include="Systems\SunRenderSystem.cs" />

@@ -45,7 +45,7 @@ namespace Space.ComponentSystem.Systems
             if (message is WeaponFired)
             {
                 var weaponMessage = (WeaponFired)(ValueType)message;
-                Play(weaponMessage.Weapon.Sound, weaponMessage.Weapon.Entity);
+                Play(weaponMessage.Weapon.Sound, weaponMessage.ShipEntity);
             }
         }
 

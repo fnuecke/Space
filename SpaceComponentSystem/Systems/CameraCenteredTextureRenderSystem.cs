@@ -9,7 +9,7 @@ namespace Space.ComponentSystem.Systems
     /// Defines a render system which always translates the view to be
     /// centered to the camera.
     /// </summary>
-    public sealed class CameraCenteredTextureRenderSystem : TextureRenderSystem
+    public class CameraCenteredTextureRenderSystem : TextureRenderSystem
     {
         #region Constructor
         
