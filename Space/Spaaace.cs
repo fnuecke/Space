@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using Awesomium.Core;
+using Engine.Controller;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -15,6 +16,7 @@ using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
 using Space.Control;
 using Space.Session;
+using Space.Simulation.Commands;
 using Space.Util;
 using Space.View;
 
