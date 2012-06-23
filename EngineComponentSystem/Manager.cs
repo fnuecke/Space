@@ -211,6 +211,20 @@ namespace Engine.ComponentSystem
         /// </returns>
         public T AddComponent<T>(int entity) where T : Component, new()
         {
+            return (T)AddComponent(typeof(T), entity);
+        }
+        
+        /// <summary>
+        /// Creates a new component for the specified entity. The component must have
+        /// a parameterless constructor and be a descendant of Component.
+        /// </summary>
+        /// <param name="componentType">The type of component to create.</param>
+        /// <param name="entity">The entity to attach the component to.</param>
+        /// <returns>
+        /// The new component.
+        /// </returns>
+        public Component AddComponent(Type componentType, int entity)
+        {
             // Make sure that entity exists.
             if (!HasEntity(entity))
             {
@@ -218,7 +232,7 @@ namespace Engine.ComponentSystem
             }
 
             // The create the component and set it up.
-            var component = (T)AllocateComponent(typeof(T));
+            var component = AllocateComponent(componentType);
             component.Manager = this;
             component.Id = _componentIds.GetId();
             component.Entity = entity;
