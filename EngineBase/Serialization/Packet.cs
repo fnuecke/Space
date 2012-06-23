@@ -292,7 +292,14 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet Write(string data)
         {
-            return Write(Encoding.UTF8.GetBytes(data));
+            if (data == null)
+            {
+                return Write((byte[])null);
+            }
+            else
+            {
+                return Write(Encoding.UTF8.GetBytes(data));
+            }
         }
 
         /// <summary>
@@ -677,7 +684,15 @@ namespace Engine.Serialization
             {
                 throw new PacketException("Cannot read string.");
             }
-            return Encoding.UTF8.GetString(ReadByteArray());
+            var data = ReadByteArray();
+            if (data == null)
+            {
+                return null;
+            }
+            else
+            {
+                return Encoding.UTF8.GetString(data);
+            }
         }
 
         /// <summary>

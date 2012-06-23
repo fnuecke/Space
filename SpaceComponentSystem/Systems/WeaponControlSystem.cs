@@ -113,6 +113,7 @@ namespace Space.ComponentSystem.Systems
                 // Generate message.
                 WeaponFired message;
                 message.Weapon = weapon;
+                message.ShipEntity = component.Entity;
                 Manager.SendMessage(ref message);
             }
         }

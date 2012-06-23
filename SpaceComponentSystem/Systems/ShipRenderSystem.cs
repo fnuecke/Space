@@ -1,15 +1,13 @@
 ﻿using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Components;
 
-namespace Engine.ComponentSystem.Systems
+namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Basic implementation of a render system. Subclasses may override the
-    /// GetTranslation() method to implement camera positioning.
-    /// </summary>
-    public class TextureRenderSystem : AbstractComponentSystem<TextureRenderer>
+    public sealed class ShipRenderSystem : AbstractComponentSystem<ShipInfo>
     {
         #region Fields
 
@@ -26,8 +24,8 @@ namespace Engine.ComponentSystem.Systems
         #endregion
 
         #region Constructor
-        
-        public TextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+
+        public ShipRenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
             _content = content;
             _spriteBatch = spriteBatch;
@@ -38,17 +36,13 @@ namespace Engine.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Loads texture, if it's not set.
+        /// Loads textures, if it's not set.
         /// </summary>
         /// <param name="gameTime">The game time.</param>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
-        protected override void UpdateComponent(GameTime gameTime, long frame, TextureRenderer component)
+        protected override void UpdateComponent(GameTime gameTime, long frame, ShipInfo component)
         {
-            if (component.Texture == null)
-            {
-                component.Texture = _content.Load<Texture2D>(component.TextureName);
-            }
         }
 
         /// <summary>
@@ -57,7 +51,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="gameTime">The game time.</param>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
-        protected override void DrawComponent(GameTime gameTime, long frame, TextureRenderer component)
+        protected override void DrawComponent(GameTime gameTime, long frame, ShipInfo component)
         {
             // Get global render translation.
             var translation = GetTranslation();
@@ -66,18 +60,18 @@ namespace Engine.ComponentSystem.Systems
             var transform = Manager.GetComponent<Transform>(component.Entity);
 
             // Get the rectangle at which we'll draw.
-            Vector2 origin;
-            origin.X = component.Texture.Width / 2f;
-            origin.Y = component.Texture.Height / 2f;
+            //Vector2 origin;
+            //origin.X = component.Texture.Width / 2f;
+            //origin.Y = component.Texture.Height / 2f;
 
-            Vector2 position;
-            position.X = transform.Translation.X + translation.X;
-            position.Y = transform.Translation.Y + translation.Y;
+            //Vector2 position;
+            //position.X = transform.Translation.X + translation.X;
+            //position.Y = transform.Translation.Y + translation.Y;
 
-            // Draw.
-            _spriteBatch.Begin();
-            _spriteBatch.Draw(component.Texture, position, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
-            _spriteBatch.End();
+            //// Draw.
+            //_spriteBatch.Begin();
+            //_spriteBatch.Draw(component.Texture, position, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
+            //_spriteBatch.End();
         }
 
         /// <summary>
@@ -86,9 +80,14 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>
         /// The translation.
         /// </returns>
-        protected virtual Vector2 GetTranslation()
+        private Vector2 GetTranslation()
         {
-            return Vector2.Zero;
+            var translation = Manager.GetSystem<CameraSystem>().GetTranslation();
+
+            Vector2 result;
+            result.X = translation.X;
+            result.Y = translation.Y;
+            return result;
         }
 
         #endregion

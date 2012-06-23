@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -161,6 +162,27 @@ namespace Space.ComponentSystem.Components
             hasher.Put(BitConverter.GetBytes(Cooldown));
             hasher.Put(BitConverter.GetBytes(EnergyConsumption));
             hasher.Put(BitConverter.GetBytes(Damage));
+            hasher.Put((byte)Quality);
+            if (Name != null)
+            {
+                hasher.Put(Encoding.UTF8.GetBytes(Name));
+            }
+            if (ModelName != null)
+            {
+                hasher.Put(Encoding.UTF8.GetBytes(ModelName));
+            }
+            if (Sound != null)
+            {
+                hasher.Put(Encoding.UTF8.GetBytes(Sound));
+            }
+
+            if (Projectiles != null)
+            {
+                foreach (var projectile in Projectiles)
+                {
+                    projectile.Hash(hasher);
+                }
+            }
         }
 
         #endregion

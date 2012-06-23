@@ -1,6 +1,8 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Text;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.RPG.Components
 {
@@ -106,6 +108,28 @@ namespace Engine.ComponentSystem.RPG.Components
 
             Name = packet.ReadString();
             IconName = packet.ReadString();
+        }
+
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            if (Name != null)
+            {
+                hasher.Put(Encoding.UTF8.GetBytes(Name));
+            }
+            else
+            {
+                hasher.Put(0);
+            }
+            if (IconName != null)
+            {
+                hasher.Put(Encoding.UTF8.GetBytes(IconName));
+            }
+            else
+            {
+                hasher.Put(0);
+            }
         }
 
         #endregion
