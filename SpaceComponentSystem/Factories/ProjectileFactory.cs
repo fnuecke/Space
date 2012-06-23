@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
@@ -13,7 +14,7 @@ namespace Space.ComponentSystem.Factories
     /// <summary>
     /// Contains data about a single projectile fired by a weapon.
     /// </summary>
-    public sealed class ProjectileFactory : IPacketizable
+    public sealed class ProjectileFactory : IPacketizable, IHashable
     {
         #region Fields
 
@@ -276,6 +277,30 @@ namespace Space.ComponentSystem.Factories
             TimeToLive = packet.ReadSingle();
         }
 
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public void Hash(Hasher hasher)
+        {
+            hasher.Put(Encoding.UTF8.GetBytes(Model));
+            hasher.Put(Encoding.UTF8.GetBytes(Effect));
+            hasher.Put(BitConverter.GetBytes(CollisionRadius));
+            hasher.Put(BitConverter.GetBytes(CanBeShot));
+            hasher.Put(BitConverter.GetBytes(InitialVelocity.Low));
+            hasher.Put(BitConverter.GetBytes(InitialVelocity.High));
+            hasher.Put(BitConverter.GetBytes(InitialDirection.Low));
+            hasher.Put(BitConverter.GetBytes(InitialDirection.High));
+            hasher.Put(BitConverter.GetBytes(InitialRotation.Low));
+            hasher.Put(BitConverter.GetBytes(InitialRotation.High));
+            hasher.Put(BitConverter.GetBytes(AccelerationForce.Low));
+            hasher.Put(BitConverter.GetBytes(AccelerationForce.High));
+            hasher.Put(BitConverter.GetBytes(Friction));
+            hasher.Put(BitConverter.GetBytes(TimeToLive));
+        }
+
         #endregion
+
     }
 }
