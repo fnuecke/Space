@@ -3,7 +3,7 @@
   <Asset Type="Space.ComponentSystem.Factories.ShipFactory[]">
     <Item>
       <Name>Player</Name>
-      <Texture>Textures/ship</Texture>
+      <Texture>Textures/spaceshipB</Texture>
       <CollisionRadius>20</CollisionRadius>
 
       <Attributes>
