@@ -119,10 +119,29 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Add the given translation to the current translation.
         /// </summary>
+        /// <param name="x">The new x translation to add.</param>
+        /// <param name="y">The new y translation to add.</param>
+        public void AddTranslation(float x, float y)
+        {
+            SetTranslation(_translation.X + x, _translation.Y + y);
+        }
+
+        /// <summary>
+        /// Add the given translation to the current translation.
+        /// </summary>
         /// <param name="value">The translation to add.</param>
         public void AddTranslation(ref Vector2 value)
         {
             SetTranslation(_translation.X + value.X, _translation.Y + value.Y);
+        }
+
+        /// <summary>
+        /// Add the given translation to the current translation.
+        /// </summary>
+        /// <param name="value">The translation to add.</param>
+        public void AddTranslation(Vector2 value)
+        {
+            AddTranslation(ref value);
         }
 
         /// <summary>
@@ -154,7 +173,10 @@ namespace Engine.ComponentSystem.Components
 
                 message.CurrentPosition = _translation;
 
-                Manager.SendMessage(ref message);
+                if (Manager != null)
+                {
+                    Manager.SendMessage(ref message);
+                }
             }
         }
 

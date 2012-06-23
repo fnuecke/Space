@@ -49,8 +49,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Base\Serialization\AbstractSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\AbstractCollidableSerializationTest.cs" />
     <Compile Include="ComponentSystem\Components\AbstractComponentSerializationTest.cs" />
     <Compile Include="ComponentSystem\Components\AbstractItemSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\AccelerationSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\AvatarSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\CollidableBoxSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\CollidableSphereSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\EllipsePathSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\ExpirationSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\FrictionSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\IndexSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\SpinSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\TextureRendererSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\TransformSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\VelocitySerializationTest.cs" />
     <Compile Include="ComponentSystem\ManagerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -86,6 +99,10 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>set PROGPATH=%25PROGRAMFILES(X86)%25||%25PROGRAMFILES%25
+"%25PROGPATH%25\NUnit 2.6\bin\nunit-console-x86.exe" "$(TargetPath)"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

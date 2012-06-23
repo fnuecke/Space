@@ -1,0 +1,95 @@
+﻿using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Components;
+
+namespace Space.ComponentSystem.Systems
+{
+    public sealed class ShipRenderSystem : AbstractComponentSystem<ShipInfo>
+    {
+        #region Fields
+
+        /// <summary>
+        /// The content manager used to load textures.
+        /// </summary>
+        private readonly ContentManager _content;
+
+        /// <summary>
+        /// The sprite batch to render textures into.
+        /// </summary>
+        private readonly SpriteBatch _spriteBatch;
+
+        #endregion
+
+        #region Constructor
+
+        public ShipRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+        {
+            _content = content;
+            _spriteBatch = spriteBatch;
+        }
+
+        #endregion
+
+        #region Logic
+
+        /// <summary>
+        /// Loads textures, if it's not set.
+        /// </summary>
+        /// <param name="gameTime">The game time.</param>
+        /// <param name="frame">The frame.</param>
+        /// <param name="component">The component.</param>
+        protected override void UpdateComponent(GameTime gameTime, long frame, ShipInfo component)
+        {
+        }
+
+        /// <summary>
+        /// Draws the component.
+        /// </summary>
+        /// <param name="gameTime">The game time.</param>
+        /// <param name="frame">The frame.</param>
+        /// <param name="component">The component.</param>
+        protected override void DrawComponent(GameTime gameTime, long frame, ShipInfo component)
+        {
+            // Get global render translation.
+            var translation = GetTranslation();
+
+            // Draw the texture based on its position.
+            var transform = Manager.GetComponent<Transform>(component.Entity);
+
+            // Get the rectangle at which we'll draw.
+            //Vector2 origin;
+            //origin.X = component.Texture.Width / 2f;
+            //origin.Y = component.Texture.Height / 2f;
+
+            //Vector2 position;
+            //position.X = transform.Translation.X + translation.X;
+            //position.Y = transform.Translation.Y + translation.Y;
+
+            //// Draw.
+            //_spriteBatch.Begin();
+            //_spriteBatch.Draw(component.Texture, position, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
+            //_spriteBatch.End();
+        }
+
+        /// <summary>
+        /// Returns the <em>translation</em> for offsetting rendered content.
+        /// </summary>
+        /// <returns>
+        /// The translation.
+        /// </returns>
+        private Vector2 GetTranslation()
+        {
+            var translation = Manager.GetSystem<CameraSystem>().GetTranslation();
+
+            Vector2 result;
+            result.X = translation.X;
+            result.Y = translation.Y;
+            return result;
+        }
+
+        #endregion
+    }
+}
