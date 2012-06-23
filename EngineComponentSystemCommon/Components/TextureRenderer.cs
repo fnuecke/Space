@@ -1,4 +1,6 @@
-﻿using Engine.Serialization;
+﻿using System;
+using System.Text;
+using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -150,6 +152,23 @@ namespace Engine.ComponentSystem.Components
             Tint = color;
 
             Scale = packet.ReadSingle();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Util.Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            if (TextureName != null)
+            {
+                hasher.Put(Encoding.UTF8.GetBytes(TextureName));
+            }
+            hasher.Put(BitConverter.GetBytes(Scale));
+            hasher.Put(BitConverter.GetBytes(Tint.PackedValue));
         }
 
         #endregion

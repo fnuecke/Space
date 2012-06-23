@@ -32,7 +32,10 @@ namespace Engine.ComponentSystem.Components
                     message.RemovedIndexGroups = _indexGroups & ~value;
                     _indexGroups = value;
 
-                    Manager.SendMessage(ref message);
+                    if (Manager != null)
+                    {
+                        Manager.SendMessage(ref message);
+                    }
                 }
             }
         }

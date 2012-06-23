@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Components;
-using Engine.Tests.Base.Serialization;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Tests.ComponentSystem.Components
 {
-    public abstract class AbstractComponentSerializationTest<T> : AbstractSerializationTest<T>
-        where T : Component, new()
+    public abstract class AbstractCollidableSerializationTest<T> : AbstractComponentSerializationTest<T>
+        where T : Collidable, new()
     {
         /// <summary>
         /// Returns a list of methods that change a value of an instance so
@@ -15,8 +16,9 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.Enabled = !instance.Enabled
-                   };
+                       instance => instance.CollisionGroups += 1,
+                       instance => instance.PreviousPosition += new Vector2(1, 2)
+                   }.Concat(base.GetValueChangers());
         }
     }
 }
