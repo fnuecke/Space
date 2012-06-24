@@ -281,7 +281,7 @@ namespace Space
                 args => _client.Controller.Session.Search(),
                 "Search for games available on the local subnet.");
             _console.AddCommand("connect",
-                args => _client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, (Profile)Settings.Instance.CurrentProfile),
+                args => _client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, Settings.Instance.CurrentProfile),
                 "Joins a game at the given host.",
                 "connect <host> - join the host with the given host name or IP.");
             _console.AddCommand("leave",
@@ -385,7 +385,7 @@ namespace Space
         {
             _screenManager = new Awesomium.ScreenManagement.ScreenManager(this, _spriteBatch, _inputManager);
             SetupJavaScriptApi();
-            _screenManager.PushScreen("Screens/MainMenu");
+            _screenManager.PushScreen("MainMenu");
             Components.Add(_screenManager);
 
             _input = new InputHandler();
@@ -401,65 +401,107 @@ namespace Space
             s.AddCallback("Space", "join", JSJoin);
             s.AddCallback("Space", "leave", JSLeave);
             s.AddCallback("Space", "search", JSSearch);
+
+            s.AddCallbackWithReturnValue("Space", "getNumPlayers", JSGetNumPlayers);
+            s.AddCallbackWithReturnValue("Space", "getMaxPlayers", JSGetMaxPlayers);
+            s.AddCallbackWithReturnValue("Space", "getLocalPlayerNumber", JSGetLocalPlayerNumber);
+            s.AddCallbackWithReturnValue("Space", "getHealth", JSGetHealth);
+            s.AddCallbackWithReturnValue("Space", "getMaxHealth", JSGetMaxHealth);
+            s.AddCallbackWithReturnValue("Space", "getEnergy", JSGetEnergy);
+            s.AddCallbackWithReturnValue("Space", "getMaxEnergy", JSGetMaxEnergy);
         }
 
         #endregion
 
         #region Javascript API
 
-        private void JSHost(object sender, JSCallbackEventArgs e)
+        private void JSHost(JSValue[] args)
         {
             RestartServer();
             RestartClient(true);
         }
 
-        private void JSJoin(object sender, JSCallbackEventArgs jsCallbackEventArgs)
+        private void JSJoin(JSValue[] args)
         {
         }
 
-        private void JSLeave(object sender, JSCallbackEventArgs jsCallbackEventArgs)
+        private void JSLeave(JSValue[] args)
         {
             DisposeControllers();
         }
 
-        private void JSSearch(object sender, JSCallbackEventArgs jsCallbackEventArgs)
+        private void JSSearch(JSValue[] args)
         {
         }
 
-        private void UpdateJSApiObjects()
+        private JSValue JSGetNumPlayers(JSValue[] args)
         {
-            if (_client == null)
-            {
-                return;
-            }
-
             var session = _client.Controller.Session;
             if (session.ConnectionState != ClientState.Connected)
             {
-                return;
+                return JSValue.CreateUndefined();
             }
+            return new JSValue(session.NumPlayers);
+        }
 
+        private JSValue JSGetMaxPlayers(JSValue[] args)
+        {
+            var session = _client.Controller.Session;
+            if (session.ConnectionState != ClientState.Connected)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(session.MaxPlayers);
+        }
+
+        private JSValue JSGetLocalPlayerNumber(JSValue[] args)
+        {
+            var session = _client.Controller.Session;
+            if (session.ConnectionState != ClientState.Connected)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(session.LocalPlayer.Number);
+        }
+
+        private JSValue JSGetHealth(JSValue[] args)
+        {
             var info = _client.GetPlayerShipInfo();
-            var s = _screenManager;
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(info.Health);
+        }
 
-            s.SetVariable("Space", "numPlayers", new JSValue(session.NumPlayers));
-            s.SetVariable("Space", "maxPlayers", new JSValue(session.MaxPlayers));
-            s.SetVariable("Space", "localPlayer", new JSValue(session.LocalPlayer.Number));
+        private JSValue JSGetMaxHealth(JSValue[] args)
+        {
+            var info = _client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(info.MaxHealth);
+        }
 
-            s.SetVariable("Space", "health", new JSValue(info.Health));
-            s.SetVariable("Space", "maxHealth", new JSValue(info.MaxHealth));
-            s.SetVariable("Space", "energy", new JSValue(info.Energy));
-            s.SetVariable("Space", "maxEnergy", new JSValue(info.MaxEnergy));
+        private JSValue JSGetEnergy(JSValue[] args)
+        {
+            var info = _client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(info.Energy);
+        }
 
-            s.SetVariable("Space", "inventorySize", new JSValue(info.InventoryCapacity));
-            s.SetVariable("Space", "isAccelerating", new JSValue(info.IsAccelerating));
-            s.SetVariable("Space", "isAlive", new JSValue(info.IsAlive));
-            s.SetVariable("Space", "isStabilizing", new JSValue(info.IsStabilizing));
-            s.SetVariable("Space", "playerX", new JSValue(info.Position.X));
-            s.SetVariable("Space", "playerY", new JSValue(info.Position.Y));
-            s.SetVariable("Space", "speed", new JSValue(info.Speed));
-
-            //s.SetVariable("Space", "", new JSValue());
+        private JSValue JSGetMaxEnergy(JSValue[] args)
+        {
+            var info = _client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(info.MaxEnergy);
         }
 
         #endregion
@@ -474,9 +516,6 @@ namespace Space
         {
             // Update ingame input, sending commands where necessary.
             _input.Update();
-
-            // Update values exposed to javascript.
-            UpdateJSApiObjects();
 
             // Update the rest of the game.
             base.Update(gameTime);

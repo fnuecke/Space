@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Awesomium.Core;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Awesomium.Xna
@@ -190,12 +189,15 @@ namespace Awesomium.Xna
     }
 
     #endregion
-
+    
     internal static class TextureFormatConverter
     {
         #region XNA To DirectX by Reflection
 
-        public static unsafe void DirectBlit(RenderBuffer buffer, ref Texture2D texture2D)
+        [DllImport("msvcrt.dll", EntryPoint = "memcpy")]
+        public unsafe static extern void CopyMemory(IntPtr pDest, IntPtr pSrc, int length);
+
+        public static unsafe void DirectBlit(IntPtr buffer, ref Texture2D texture2D)
         {
             var d3Dt = GetIUnknownObject<IDirect3DTexture9>(texture2D);
 
@@ -203,7 +205,17 @@ namespace Awesomium.Xna
             var rect = new RECT();
             Marshal.ThrowExceptionForHR(d3Dt.LockRect(0, out lockRect, rect, 0));
 
-            buffer.CopyTo((IntPtr)(uint)(lockRect.pBits), lockRect.Pitch, 4, false);
+            var memBuffer = (IntPtr)(uint)(lockRect.pBits);
+            var size = texture2D.Width * texture2D.Height * 4;
+            var src = (long*)buffer;
+            var dest = (long*)memBuffer;
+            for (int i = 0; i < size / sizeof(long); i++)
+            {
+                dest[i] = src[i];
+            }
+
+            //CopyMemory(dest, buffer, size);
+
             d3Dt.UnlockRect(0);
 
             // Move onto Dispose() if d3Dt will be cached d3Dt

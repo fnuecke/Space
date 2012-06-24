@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using Awesomium.Core;
 using Awesomium.Xna;
@@ -23,12 +24,33 @@ namespace Awesomium.ScreenManagement
 
         #endregion
 
+        #region Types
+
+        /// <summary>
+        /// Interface for methods that can be called from JavaScript.
+        /// </summary>
+        /// <param name="args">Arguments received from JS.</param>
+        public delegate void JSCallback(JSValue[] args);
+
+        /// <summary>
+        /// Interface for methods that can be called from JavaScript and return
+        /// a value.
+        /// </summary>
+        /// <param name="args">Arguments received from JS.</param>
+        /// <returns>The value to return.</returns>
+        public delegate JSValue JSCallbackWithReturnValue(JSValue[] args);
+
+        #endregion
+
         #region Constants
 
         /// <summary>
         /// Some custom default CSS to add to all screens.
         /// </summary>
         private const string DefaultCSS = @"
+body {
+    background-color: transparent;
+}
 * {
     -webkit-user-select: none;
 }
@@ -60,25 +82,29 @@ input[type=""text""], input[type=""password""], textarea {
         private readonly InputManager _inputManager;
 
         /// <summary>
-        /// Buffered result we keep until the current view is flagged dirty
-        /// again.
-        /// </summary>
-        private RenderBuffer _renderBuffer;
-
-        /// <summary>
         /// Used to render screens into before painting them to the screen.
         /// </summary>
         private readonly Texture2D _backBuffer;
 
         /// <summary>
-        /// List of callbacks to register to allow interaction.
+        /// Data source to allow loading stuff from content loader.
         /// </summary>
-        private readonly Dictionary<string, JSCallback> _callbacks = new Dictionary<string, JSCallback>();
+        private readonly ContentLoaderDataSource _dataSource;
 
         /// <summary>
-        /// List of values to expose to our screens.
+        /// WebSession in use for all our views.
         /// </summary>
-        private readonly Dictionary<string, JSValue> _values = new Dictionary<string, JSValue>();
+        private readonly WebSession _session;
+
+        /// <summary>
+        /// List of callbacks to expose to all screens.
+        /// </summary>
+        private readonly List<JSCallBackInfo<JSCallback>> _callbacks = new List<JSCallBackInfo<JSCallback>>();
+        
+        /// <summary>
+        /// List of callbacks with return values to expose to all screens.
+        /// </summary>
+        private readonly List<JSCallBackInfo<JSCallbackWithReturnValue>> _callbacksWithReturnValue = new List<JSCallBackInfo<JSCallbackWithReturnValue>>();
 
         /// <summary>
         /// All currently tracked screens.
@@ -123,14 +149,23 @@ input[type=""text""], input[type=""password""], textarea {
 
             if (!WebCore.IsRunning)
             {
-                var config = new WebCoreConfig
-                             {
-                                 ForceSingleProcess = true,
-                                 ProxyServer = "none",
-                                 CustomCSS = DefaultCSS
-                             };
-                WebCore.Initialize(config);
+                WebCore.Initialize(new WebConfig
+                                   {
+#if DEBUG
+                                       LogLevel = LogLevel.Verbose,
+#else
+                                       LogLevel = LogLevel.None,
+#endif
+                                       LogPath = Environment.CurrentDirectory
+                                   });
             }
+            _session = WebCore.CreateWebSession(new WebPreferences
+            {
+                CustomCSS = DefaultCSS,
+                ProxyConfig = "none"
+            });
+            _dataSource = new ContentLoaderDataSource(Game.Content);
+            _session.AddDataSource("space", _dataSource);
 
             AddCallback("Screens", "push", JSPushScreen);
             AddCallback("Screens", "pop", JSPopScreen);
@@ -145,7 +180,7 @@ input[type=""text""], input[type=""password""], textarea {
             {
                 foreach (var screen in _screens)
                 {
-                    screen.Close();
+                    screen.Dispose();
                 }
 
                 foreach (var keyboard in _inputManager.Keyboards)
@@ -187,22 +222,20 @@ input[type=""text""], input[type=""password""], textarea {
         public override void Draw(GameTime gameTime)
         {
             base.Draw(gameTime);
-
             if (_screens.Count < 1)
             {
                 return;
             }
 
             var screen = _screens.Peek();
-            if (_renderBuffer == null || screen.IsDirty)
+            if (screen.Surface != null)
             {
-                _renderBuffer = screen.Render();
+                var surface = (BitmapSurface)screen.Surface;
+                _backBuffer.RenderTexture2D(surface.Buffer);
+                _spriteBatch.Begin();
+                _spriteBatch.Draw(_backBuffer, Vector2.Zero, Color.White);
+                _spriteBatch.End();   
             }
-
-            _renderBuffer.RenderTexture2D(_backBuffer);
-            _spriteBatch.Begin();
-            _spriteBatch.Draw(_backBuffer, Vector2.Zero, Color.White);
-            _spriteBatch.End();
         }
 
         #endregion
@@ -215,28 +248,12 @@ input[type=""text""], input[type=""password""], textarea {
         /// <param name="screenName">Name of the screen.</param>
         public void PushScreen(string screenName)
         {
-            var html = Game.Content.Load<string>(screenName);
-            var screen = WebCore.CreateWebView(Game.GraphicsDevice.Viewport.Width, Game.GraphicsDevice.Viewport.Height);
-            screen.FlushAlpha = false;
-            screen.IsTransparent = true;
-            screen.ResourceRequest += HandleResourceRequest;
-            screen.JSConsoleMessageAdded += HandleJSConsoleMessageAdded;
-            foreach (var callback in _callbacks)
-            {
-                var parts = callback.Key.Split(new[] {'.'}, 2);
-                screen.CreateObject(parts[0]);
-                screen.SetObjectCallback(parts[0], parts[1], callback.Value);
-            }
-            foreach (var value in _values)
-            {
-                var parts = value.Key.Split(new[] { '.' }, 2);
-                screen.CreateObject(parts[0]);
-                screen.SetObjectProperty(parts[0], parts[1], value.Value);
-            }
+            var html = Game.Content.Load<string>("Screens/" + screenName);
+            var screen = WebCore.CreateWebView(Game.GraphicsDevice.Viewport.Width, Game.GraphicsDevice.Viewport.Height, _session);
+            screen.JSMethodHandler = new JavaScriptHandler(screen, _callbacks, _callbacksWithReturnValue);
             screen.LoadHTML(html);
-            screen.Focus();
+            screen.FocusView();
             _screens.Push(screen);
-            _renderBuffer = null;
         }
 
         /// <summary>
@@ -252,10 +269,9 @@ input[type=""text""], input[type=""password""], textarea {
             var top = _screens.Pop();
             if (_screens.Count > 0)
             {
-                _screens.Peek().Focus();
+                _screens.Peek().FocusView();
             }
-            top.Close();
-            _renderBuffer = null;
+            top.Dispose();
         }
 
         /// <summary>
@@ -276,37 +292,26 @@ input[type=""text""], input[type=""password""], textarea {
                 throw new ArgumentException("Invalid name, must not be empty.");
             }
 
-            _callbacks.Add(nameSpace + "." + name, callback);
+            _callbacks.Add(new JSCallBackInfo<JSCallback>
+                           {
+                               Name = name,
+                               Namespace = nameSpace,
+                               Callback = callback
+                           });
             foreach (var screen in _screens)
             {
-                screen.CreateObject(nameSpace);
-                screen.SetObjectCallback(nameSpace, name, callback);
+                ((JavaScriptHandler)screen.JSMethodHandler).AddCallback(nameSpace, name, callback);
             }
         }
-
+        
         /// <summary>
-        /// Removes the callback from all screens.
+        /// Adds the callback to all screens, and will ensure the callback
+        /// is added to all future screens.
         /// </summary>
-        /// <param name="nameSpace">The name space to remove the callback from.</param>
-        /// <param name="name">The name of the callback to remove.</param>
-        public void RemoveCallback(string nameSpace, string name)
-        {
-            if (_callbacks.Remove(nameSpace + "." + name))
-            {
-                foreach (var screen in _screens)
-                {
-                    screen.SetObjectCallback(nameSpace, name, null);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Sets a variable to be available to all screens.
-        /// </summary>
-        /// <param name="nameSpace">The name space to add the value to.</param>
-        /// <param name="name">The name of the value.</param>
-        /// <param name="value">The value.</param>
-        public void SetVariable(string nameSpace, string name, JSValue value)
+        /// <param name="nameSpace">The name space to add the callback to.</param>
+        /// <param name="name">The name of the callback.</param>
+        /// <param name="callback">The callback.</param>
+        public void AddCallbackWithReturnValue(string nameSpace, string name, JSCallbackWithReturnValue callback)
         {
             if (String.IsNullOrWhiteSpace(nameSpace))
             {
@@ -317,11 +322,15 @@ input[type=""text""], input[type=""password""], textarea {
                 throw new ArgumentException("Invalid name, must not be empty.");
             }
 
-            _values[nameSpace + "." + name] = value;
+            _callbacksWithReturnValue.Add(new JSCallBackInfo<JSCallbackWithReturnValue>
+                                          {
+                               Name = name,
+                               Namespace = nameSpace,
+                               Callback = callback
+                           });
             foreach (var screen in _screens)
             {
-                screen.CreateObject(nameSpace);
-                screen.SetObjectProperty(nameSpace, name, value);
+                ((JavaScriptHandler)screen.JSMethodHandler).AddCallback(nameSpace, name, callback);
             }
         }
 
@@ -342,7 +351,7 @@ input[type=""text""], input[type=""password""], textarea {
 
             var e = new WebKeyboardEvent
                     {
-                        Type = WebKeyType.KeyDown,
+                        Type = WebKeyboardEventType.KeyDown,
                         IsSystemKey = false,
                         VirtualKeyCode = (VirtualKey)key
                     };
@@ -364,10 +373,10 @@ input[type=""text""], input[type=""password""], textarea {
 
             var e = new WebKeyboardEvent
                     {
-                        Type = WebKeyType.Char,
+                        Type = WebKeyboardEventType.Char,
                         IsSystemKey = false,
-                        Text = new ushort[] {character, 0, 0, 0},
-                        UnmodifiedText = new ushort[] {character, 0, 0, 0},
+                        Text = new string(character, 1),
+                        UnmodifiedText = new string(character, 1),
                         VirtualKeyCode = (VirtualKey)VkKeyScan(character),
                         NativeKeyCode = character
                     };
@@ -388,7 +397,7 @@ input[type=""text""], input[type=""password""], textarea {
 
             var e = new WebKeyboardEvent
                     {
-                        Type = WebKeyType.KeyUp,
+                        Type = WebKeyboardEventType.KeyUp,
                         IsSystemKey = false,
                         VirtualKeyCode = (VirtualKey)key
                     };
@@ -405,17 +414,17 @@ input[type=""text""], input[type=""password""], textarea {
             if (Keyboard.GetState().IsKeyDown(Keys.LeftControl) ||
                 Keyboard.GetState().IsKeyDown(Keys.RightControl))
             {
-                e.Modifiers |= WebKeyModifiers.ControlKey;
+                e.Modifiers |= Modifiers.ControlKey;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) ||
                 Keyboard.GetState().IsKeyDown(Keys.RightShift))
             {
-                e.Modifiers |= WebKeyModifiers.ShiftKey;
+                e.Modifiers |= Modifiers.ShiftKey;
             }
             if (Keyboard.GetState().IsKeyDown(Keys.LeftAlt) ||
                 Keyboard.GetState().IsKeyDown(Keys.RightAlt))
             {
-                e.Modifiers |= WebKeyModifiers.ShiftKey;
+                e.Modifiers |= Modifiers.ShiftKey;
             }
         }
 
@@ -495,62 +504,218 @@ input[type=""text""], input[type=""password""], textarea {
                 return;
             }
 
-            _screens.Peek().InjectMouseWheel((int)(ticks * ScrollAmount));
+            _screens.Peek().InjectMouseWheel((int)(ticks * ScrollAmount),  0);
+        }
+        
+        #endregion
+
+        #region JS Callback handler
+
+        private sealed class JavaScriptHandler : IJSMethodHandler
+        {
+            private readonly WebView _webView;
+            
+            private readonly List<JSCallBackInfo<JSCallback>> _exitingCallbacks;
+
+            private readonly List<JSCallBackInfo<JSCallbackWithReturnValue>> _existingCallbacksWithReturnValue;
+
+            private bool _areGlobalObjectsInitialized;
+
+            private readonly Dictionary<string, JSValue> _nameSpaces = new Dictionary<string, JSValue>();
+
+            private readonly Dictionary<uint, Dictionary<string, JSCallback>> _callbacks = new Dictionary<uint, Dictionary<string, JSCallback>>();
+
+            private readonly Dictionary<uint, Dictionary<string, JSCallbackWithReturnValue>> _callbacksWithReturnValue = new Dictionary<uint, Dictionary<string, JSCallbackWithReturnValue>>();
+
+            public JavaScriptHandler(WebView webView, List<JSCallBackInfo<JSCallback>> existingCallbacks, List<JSCallBackInfo<JSCallbackWithReturnValue>> existingCallbacksWithReturnValue)
+            {
+                _webView = webView;
+                _exitingCallbacks = existingCallbacks;
+                _existingCallbacksWithReturnValue = existingCallbacksWithReturnValue;
+                if (webView.IsDocumentReady)
+                {
+                    CreateGlobalObjects();
+                } else
+                {
+                    webView.DocumentReady += WebViewOnDocumentReady;
+                }
+            }
+
+            private void WebViewOnDocumentReady(object sender, UrlEventArgs urlEventArgs)
+            {
+                _webView.DocumentReady -= WebViewOnDocumentReady;
+                CreateGlobalObjects();
+                _webView.IsTransparent = true;
+            }
+
+            private void CreateGlobalObjects()
+            {
+                foreach (var callbackInfo in _exitingCallbacks)
+                {
+                    SetCallback(callbackInfo.Namespace, callbackInfo.Name, callbackInfo.Callback);
+                }
+                foreach (var callbackInfo in _existingCallbacksWithReturnValue)
+                {
+                    SetCallback(callbackInfo.Namespace, callbackInfo.Name, callbackInfo.Callback);
+                }
+                _areGlobalObjectsInitialized = true;
+            }
+
+            private void SetCallback(string nameSpace, string name, JSCallback callback)
+            {
+                var ns = _nameSpaces.ContainsKey(nameSpace)
+                             ? _nameSpaces[nameSpace]
+                             : (_nameSpaces[nameSpace] = _webView.CreateGlobalJavascriptObject(nameSpace));
+                using (var obj = ns.ToObject())
+                {
+                    obj.SetCustomMethod(name, false);
+                    if (!_callbacks.ContainsKey(obj.RemoteID))
+                    {
+                        _callbacks[obj.RemoteID] = new Dictionary<string, JSCallback>();
+                    }
+                    _callbacks[obj.RemoteID][name] = callback;
+                }
+            }
+
+            private void SetCallback(string nameSpace, string name, JSCallbackWithReturnValue callback)
+            {
+                var ns = _nameSpaces.ContainsKey(nameSpace)
+                             ? _nameSpaces[nameSpace]
+                             : (_nameSpaces[nameSpace] = _webView.CreateGlobalJavascriptObject(nameSpace));
+                using (var obj = ns.ToObject())
+                {
+                    obj.SetCustomMethod(name, true);
+                    if (!_callbacksWithReturnValue.ContainsKey(obj.RemoteID))
+                    {
+                        _callbacksWithReturnValue[obj.RemoteID] = new Dictionary<string, JSCallbackWithReturnValue>();
+                    }
+                    _callbacksWithReturnValue[obj.RemoteID][name] = callback;
+                }
+            }
+
+            public void AddCallback(string nameSpace, string name, JSCallback callback)
+            {
+                if (_areGlobalObjectsInitialized)
+                {
+                    SetCallback(nameSpace, name, callback);
+                }
+            }
+
+            public void AddCallback(string nameSpace, string name, JSCallbackWithReturnValue callback)
+            {
+                if (_areGlobalObjectsInitialized)
+                {
+                    SetCallback(nameSpace, name, callback);
+                }
+            }
+
+            public void OnMethodCall(IWebView caller, uint remoteObjectID, string methodName, params JSValue[] args)
+            {
+                if (_callbacks.ContainsKey(remoteObjectID))
+                {
+                    var ns = _callbacks[remoteObjectID];
+                    if (ns.ContainsKey(methodName))
+                    {
+                        ns[methodName](args);
+                    }
+                }
+            }
+
+            public JSValue OnMethodCallWithReturnValue(IWebView caller, uint remoteObjectID, string methodName, params JSValue[] args)
+            {
+                if (_callbacksWithReturnValue.ContainsKey(remoteObjectID))
+                {
+                    var ns = _callbacksWithReturnValue[remoteObjectID];
+                    if (ns.ContainsKey(methodName))
+                    {
+                        return ns[methodName](args);
+                    }
+                }
+
+                return JSValue.CreateUndefined();
+            }
+        }
+        
+        private sealed class JSCallBackInfo<T>
+        {
+            public string Namespace;
+
+            public string Name;
+            
+            public T Callback;
         }
 
-        /// <summary>
-        /// Handles an added JS console message.
-        /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="Awesomium.Core.JSConsoleMessageEventArgs"/> instance containing the event data.</param>
-        private static void HandleJSConsoleMessageAdded(object sender, JSConsoleMessageEventArgs e)
-        {
-            Logger.Info("JS: {0} ({1}:{2})", e.Message, e.Source.Replace("local://base_request.html/", ""), e.LineNumber);
-        }
+        #endregion
+
+        #region DataSource
 
         /// <summary>
         /// Handles downloads by redirecting them to the content manager.
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="Awesomium.Core.ResourceRequestEventArgs"/> instance containing the event data.</param>
-        /// <returns></returns>
-        private ResourceResponse HandleResourceRequest(object sender, ResourceRequestEventArgs e)
+        private sealed class ContentLoaderDataSource : DataSource
         {
-            try
+            private readonly ContentManager _content;
+
+            public ContentLoaderDataSource(ContentManager content)
             {
-                var url = e.Request.Url.Replace("local://base_request.html/", "");
-                var extIndex = url.LastIndexOf(".", StringComparison.InvariantCulture);
-                var assetName = url.Substring(0, extIndex);
-                var assetExtension = url.Substring(extIndex + 1);
-                switch (assetExtension)
+                _content = content;
+            }
+
+            public override void OnRequest(int requestId, string path)
+            {
+                try
                 {
-                    case "png":
-                    case "gif":
-                    case "jpg":
-                    case "jpeg":
-                        var image = Game.Content.Load<Texture2D>(assetName);
-                        using (var pngStream = new MemoryStream())
-                        {
-                            image.SaveAsPng(pngStream, image.Width, image.Height);
-                            return new ResourceResponse(pngStream.GetBuffer(), "image/png");
-                        }
-                    case "css":
-                        return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/css");
-                    case "html":
-                    case "xhtml":
-                        return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/html");
-                    case "js":
-                        return new ResourceResponse(Encoding.UTF8.GetBytes(Game.Content.Load<string>(assetName)), "text/javascript");
+                    var url = path;
+                    var extIndex = url.LastIndexOf(".", StringComparison.InvariantCulture);
+                    var assetName = url.Substring(0, extIndex);
+                    var assetExtension = url.Substring(extIndex + 1);
+                    switch (assetExtension)
+                    {
+                        case "png":
+                        case "gif":
+                        case "jpg":
+                        case "jpeg":
+                            var image = _content.Load<Texture2D>(assetName);
+                            using (var pngStream = new MemoryStream())
+                            {
+                                image.SaveAsPng(pngStream, image.Width, image.Height);
+                                SendResponse(requestId, pngStream.GetBuffer(), "image/png");
+                                return;
+                            }
+                        case "css":
+                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/css");
+                            return;
+                        case "html":
+                        case "xhtml":
+                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/html");
+                            return;
+                        case "js":
+                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/javascript");
+                            return;
+                    }
+                }
+                catch (ContentLoadException ex)
+                {
+                    // Failed loading that asset, return null.
+                    Logger.WarnException("Failed loading a resource for a web view.", ex);
+                }
+                // We cannot handle that request, abort it.
+            }
+
+            private void SendResponse(int requestId, byte[] buffer, string mimeType)
+            {
+                var size = Marshal.SizeOf(buffer[0]) * buffer.Length;
+                var pointer = Marshal.AllocHGlobal(size);
+                try
+                {
+                    Marshal.Copy(buffer, 0, pointer, buffer.Length);
+                    SendResponse(requestId, (uint)size, pointer, mimeType);
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(pointer);
                 }
             }
-            catch (ContentLoadException ex)
-            {
-                // Failed loading that asset, return null.
-                Logger.WarnException("Failed loading a resource for a web view.", ex);
-            }
-            // We cannot handle that request, abort it.
-            e.Request.Cancel();
-            return null;
         }
 
         #endregion
@@ -560,22 +725,18 @@ input[type=""text""], input[type=""password""], textarea {
         /// <summary>
         /// Allow pushing screens from within screens.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void JSPushScreen(object sender, JSCallbackEventArgs e)
+        private void JSPushScreen(JSValue[] args)
         {
-            if (e.Arguments.Length == 1 && e.Arguments[0].Type == JSValueType.String)
+            if (args.Length == 1 && args[0].IsString)
             {
-                PushScreen(e.Arguments[0].ToString());
+                PushScreen(args[0].ToString());
             }
         }
 
         /// <summary>
         /// Allow popping screens from within screens.
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The <see cref="Awesomium.Core.JSCallbackEventArgs"/> instance containing the event data.</param>
-        private void JSPopScreen(object sender, JSCallbackEventArgs e)
+        private void JSPopScreen(JSValue[] args)
         {
             PopScreen();
         }
@@ -584,7 +745,7 @@ input[type=""text""], input[type=""password""], textarea {
 
         #region Externals
 
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        [DllImport("user32.dll")]
         private static extern short VkKeyScan(char ch);
 
         #endregion

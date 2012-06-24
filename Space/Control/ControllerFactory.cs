@@ -7,7 +7,6 @@ using Engine.Simulation.Commands;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
 using Space.Data;
 using Space.Session;
@@ -116,7 +115,7 @@ namespace Space.Control
                     
                     // Update our universe before our spawn system, to give
                     // it a chance to generate cell information.
-                    new UniverseSystem(game.Content.Load<WorldConstraints>("Data/world")),
+                    new UniverseSystem(),
                     new ShipSpawnSystem(),
 
                     // Friction has to be updated before acceleration is, to allow
