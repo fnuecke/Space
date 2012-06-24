@@ -96,8 +96,8 @@ namespace Space.ComponentSystem.Systems
             _isDrawingInstance = true;
 
             // Render all known effects.
-            var translation = GetTranslation();
-            var transform = Matrix.CreateTranslation(translation.X, translation.Y, 0);
+            var transform = GetTransform();
+           
             foreach (var effect in _effects.Values)
             {
                 _renderer.RenderEffect(effect, ref transform);
@@ -130,6 +130,10 @@ namespace Space.ComponentSystem.Systems
             return Vector2.Zero;
         }
 
+        protected virtual Matrix GetTransform()
+        {
+            return Matrix.Identity;
+        }
         #endregion
 
         #region Accessors

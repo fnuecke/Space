@@ -106,6 +106,7 @@ namespace Space.ComponentSystem.Systems
                 _planet.SetAtmosphereTint(component.AtmosphereTint);
                 _planet.SetLightDirection(toSun);
                 _planet.SetGameTime(gameTime);
+                _planet.Scale= Manager.GetSystem<CameraSystem>().Zoom;
                 _planet.Draw();
             }
         }

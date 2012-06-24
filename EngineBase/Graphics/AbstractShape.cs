@@ -289,6 +289,8 @@ namespace Engine.Graphics
                 // start at the top left, so subtract half the screen width,
                 // and invert the y axis (also subtract there).
                 * Matrix.CreateTranslation(_center.X - _device.Viewport.Width / 2f, _device.Viewport.Height / 2f - _center.Y, 0)
+                //
+                * GetScaleMatrix()
                 // Finally map what we have to screen space.
                 * Matrix.CreateOrthographic(_device.Viewport.Width, _device.Viewport.Height, _device.Viewport.MinDepth, _device.Viewport.MaxDepth);
             // Apply transform to each corner.
@@ -362,6 +364,10 @@ namespace Engine.Graphics
             #endregion
         }
 
+        protected virtual Matrix GetScaleMatrix()
+        {
+            return Matrix.CreateScale(1);
+        }
         #endregion
     }
 }

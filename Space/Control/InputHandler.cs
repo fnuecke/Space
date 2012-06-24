@@ -136,6 +136,7 @@ namespace Space.Control
                 _mouse.MouseMoved += HandleMouseMoved;
                 _mouse.MouseButtonPressed += HandleMousePressed;
                 _mouse.MouseButtonReleased += HandleMouseReleased;
+                _mouse.MouseWheelRotated += HandleMouseWheelRotated;
             }
 
             // Register for game pad buttons. Sticks are handled in update.
@@ -144,6 +145,12 @@ namespace Space.Control
                 _gamepad.ButtonPressed += HandleGamePadPressed;
                 _gamepad.ButtonReleased += HandleGamePadReleased;
             }
+        }
+
+        private void HandleMouseWheelRotated(float ticks)
+        {
+            var cam = Client.GetCameraSystem();
+            cam.ChangeZoom(ticks);
         }
 
         private void DetachListeners()
@@ -159,6 +166,7 @@ namespace Space.Control
                 _mouse.MouseMoved -= HandleMouseMoved;
                 _mouse.MouseButtonPressed -= HandleMousePressed;
                 _mouse.MouseButtonReleased -= HandleMouseReleased;
+                _mouse.MouseWheelRotated -= HandleMouseWheelRotated;
             }
 
             if (_gamepad != null)

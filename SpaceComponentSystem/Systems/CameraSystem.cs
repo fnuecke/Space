@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input.Devices;
 using Space.Input;
 using Space.Util;
@@ -69,6 +70,19 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private Vector2? _customCameraPosition;
 
+        private Matrix _transform;
+
+        public float Zoom
+        {
+            get {return _previousZoom; }
+        }
+
+        private float _previousZoom;
+        private float _zoom;
+
+        private float MAXZOOM = 1.0f;
+
+        private float MINZOOM = 0.4f;
         #endregion
 
         #region Constructor
@@ -78,6 +92,7 @@ namespace Space.ComponentSystem.Systems
         {
             _game = game;
             _session = session;
+            _zoom = 1.0f;
         }
 
         #region Accessors
@@ -103,10 +118,32 @@ namespace Space.ComponentSystem.Systems
             return result;
         }
 
+        public Matrix GetTransformation()
+        {
+            
+            return _transform;
+        }
+
+        public void ChangeZoom(float amount)
+        {
+            _zoom += 0.05f*amount;
+            if (_zoom < MINZOOM) _zoom = MINZOOM;
+            if (_zoom > MAXZOOM) _zoom = MAXZOOM;
+        }
         #endregion
 
         #region Logic
 
+        private void UpdateTransformation()
+        {
+            
+            var viewport = _game.GraphicsDevice.Viewport;
+            _transform =       // Thanks to o KB o for this solution
+              Matrix.CreateTranslation(new Vector3(-CameraPositon.X, -CameraPositon.Y, 0)) *
+                                         Matrix.CreateRotationZ(0.0f) *
+                                         Matrix.CreateScale(new Vector3(_previousZoom, _previousZoom, 1)) *
+                                         Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
+        }
         /// <summary>
         /// Used to update the camera position. We don't do this in the draw,
         /// to make sure it's up-to-date before *anything* else is drawn,
@@ -139,6 +176,11 @@ namespace Space.ComponentSystem.Systems
                         // subtracted to make the mouse position's origin centered
                         // to the screen.
                         _cameraPosition = avatarPosition + _previousOffset;
+
+                        
+                        //Interpolate new zoom moving slowly in or out
+                        _previousZoom = MathHelper.Lerp(_previousZoom, _zoom, 0.05f);
+                        UpdateTransformation();
                     }
                 }
 

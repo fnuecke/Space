@@ -32,9 +32,11 @@ namespace Space.ComponentSystem.Systems
         {
             if (_sun == null)
             {
+                var cam = Manager.GetSystem<CameraSystem>();
                 _sun = new Sun(game);
                 _sun.LoadContent(spriteBatch, game.Content);
             }
+            
         }
 
         #endregion
@@ -68,6 +70,7 @@ namespace Space.ComponentSystem.Systems
                 _sun.SetSize(component.Radius * 2);
                 _sun.SetCenter(transform.Translation.X + translation.X,
                                transform.Translation.Y + translation.Y);
+                _sun.Scale = Manager.GetSystem<CameraSystem>().Zoom;
                 _sun.Draw();
             }
         }
