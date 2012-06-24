@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="Space.ComponentSystem.Factories.PlanetFactory[]">
+    <Item>
+      <Name>planet_1</Name>
+      <Texture>Textures/Planets/rock_07</Texture>
+      <SurfaceTint>FFAAB597</SurfaceTint>
+      <AtmosphereTint>FF87CEFA</AtmosphereTint>
+      <Radius>250 to 550</Radius>
+      <Mass>1500 to 2000</Mass>
+      <RotationSpeed>1</RotationSpeed>
+      <MajorRadius>1</MajorRadius>
+      <MinorRadius>0.8</MinorRadius>
+      <AngleOffset>0.1</AngleOffset>
+      <TravelSpeed>10</TravelSpeed>
+    </Item>
+    <Item>
+      <Name>moon_tiny</Name>
+      <Texture>Textures/Planets/rock_02</Texture>
+      <Radius>30 to 40</Radius>
+      <RotationSpeed>0.1</RotationSpeed>
+      <MajorRadius>1</MajorRadius>
+      <MinorRadius>0.8</MinorRadius>
+      <AngleOffset>0.1</AngleOffset>
+      <TravelSpeed>15</TravelSpeed>
+    </Item>
+    <Item>
+      <Name>moon_small</Name>
+      <Texture>Textures/Planets/rock_02</Texture>
+      <Radius>40 to 60</Radius>
+      <RotationSpeed>0.2</RotationSpeed>
+      <MajorRadius>1</MajorRadius>
+      <MinorRadius>0.8</MinorRadius>
+      <AngleOffset>0.1</AngleOffset>
+      <TravelSpeed>10</TravelSpeed>
+    </Item>
+    <Item>
+      <Name>moon_medium</Name>
+      <Texture>Textures/Planets/rock_02</Texture>
+      <Radius>60 to 80</Radius>
+      <RotationSpeed>0.3</RotationSpeed>
+      <MajorRadius>1</MajorRadius>
+      <MinorRadius>0.8</MinorRadius>
+      <AngleOffset>0.1</AngleOffset>
+      <TravelSpeed>8</TravelSpeed>
+    </Item>
+    <Item>
+      <Name>moon_large</Name>
+      <Texture>Textures/Planets/rock_02</Texture>
+      <Radius>80 to 100</Radius>
+      <RotationSpeed>0.4</RotationSpeed>
+      <MajorRadius>1</MajorRadius>
+      <MinorRadius>0.8</MinorRadius>
+      <AngleOffset>0.1</AngleOffset>
+      <TravelSpeed>6</TravelSpeed>
+    </Item>
+  </Asset>
+</XnaContent>

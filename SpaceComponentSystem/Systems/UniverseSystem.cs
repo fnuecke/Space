@@ -36,25 +36,11 @@ namespace Space.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
-        /// Some constraints used for generating procedural content.
-        /// </summary>
-        private readonly WorldConstraints _constraints;
-
-        /// <summary>
         /// Tracks cell information for active cells and inactive cells that
         /// are in a changed state (deviating from the one that would be
         /// procedurally generated).
         /// </summary>
         private Dictionary<ulong, CellInfo> _cellInfo = new Dictionary<ulong, CellInfo>();
-
-        #endregion
-
-        #region Constructor
-
-        public UniverseSystem(WorldConstraints constaits)
-        {
-            _constraints = constaits;
-        }
 
         #endregion
 
@@ -126,15 +112,12 @@ namespace Space.ComponentSystem.Systems
                     {
                         // It is, use a predefined number of planets and moons,
                         // and make sure it's a solar system.
-                        CreateSystem(random, ref center,
-                            _cellInfo[info.Id],
-                            // Seven planets, with their respective number of moons.
-                            7, new[] { 0, 0, 1, 2, 4, 2, 1 });
+                        FactoryLibrary.SampleSunSystem(Manager, "home_system", center, random);
                     }
                     else
                     {
                         // It isn't, randomize.
-                        CreateSystem(random, ref center, _cellInfo[info.Id]);
+                        FactoryLibrary.SampleSunSystem(Manager, "sunsystem_1", center, random);
                     }
 
                     // Find nearby active cells and the stations in them, mark
@@ -290,178 +273,6 @@ namespace Space.ComponentSystem.Systems
             }
 
             return copy;
-        }
-
-        #endregion
-
-        #region Generators
-
-        #region Solar systems
-
-        /// <summary>
-        /// Creates a new solar system.
-        /// </summary>
-        private void CreateSystem(
-            IUniformRandom random,
-            ref Vector2 center,
-            CellInfo cellInfo,
-            int numPlanets = -1,
-            IList<int> numsMoons = null)
-        {
-            // Get our gaussian distributed randomizer.
-            var gaussian = new Ziggurat(random);
-
-            // Create our sun.
-            var sunRadius = _constraints.SampleSunRadius(gaussian);
-            var sunMass = _constraints.SunMassFactor * 4f / 3f * MathHelper.Pi * sunRadius * sunRadius * sunRadius;
-            var sun = EntityFactory.CreateSun(Manager, sunRadius, center, sunMass);
-
-            // Get a dominant angle for orbits in our system. This is to avoid
-            // planets' orbits to intersect, because we don't want to handle
-            // planet collisions ;)
-            var dominantPlanetOrbitAngle = (float)(2 * Math.PI * random.NextDouble());
-
-            // Keep track of the last orbit major radius, to incrementally
-            // increase the radii.
-            var previousPlanetOrbit = _constraints.PlanetOrbitMean - _constraints.PlanetOrbitStdDev;
-
-            // Generate as many as we sample.
-            if (numPlanets == -1)
-            {
-                numPlanets = _constraints.SamplePlanets(gaussian);
-            }
-            for (int i = 0; i < numPlanets; i++)
-            {
-                int numMoons;
-                if (numsMoons != null && numsMoons.Count > i)
-                {
-                    numMoons = numsMoons[i];
-                }
-                else
-                {
-                    numMoons = _constraints.SampleMoons(gaussian);
-                }
-                previousPlanetOrbit = CreatePlanet(random, gaussian, sun, sunMass, previousPlanetOrbit, dominantPlanetOrbitAngle, numMoons, cellInfo);
-            }
-        }
-
-        /// <summary>
-        /// Creates a new planet.
-        /// </summary>
-        private float CreatePlanet(
-            IUniformRandom random,
-            IGaussianRandom gaussian,
-            int sun,
-            float sunMass,
-            float previousOrbitRadius,
-            float dominantOrbitAngle,
-            int numMoons,
-            CellInfo cellInfo)
-        {
-            // Sample planet properties.
-            var planetRadius = _constraints.SamplePlanetRadius(gaussian);
-            var planetOrbitMajorRadius = previousOrbitRadius + _constraints.SamplePlanetOrbit(gaussian);
-            var planetOrbitEccentricity = _constraints.SamplePlanetOrbitEccentricity(gaussian);
-            var planetOrbitMinorRadius = (float)Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * (1 - planetOrbitEccentricity * planetOrbitEccentricity));
-            var planetOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constraints.SamplePlanetOrbitAngleDeviation(gaussian));
-            var planetPeriod = (float)(2 * Math.PI * Math.Sqrt(planetOrbitMajorRadius * planetOrbitMajorRadius * planetOrbitMajorRadius * 3 /* < slowing factor */ / sunMass));
-            var planetMass = _constraints.PlanetMassFactor * 4f / 3f * MathHelper.Pi * planetRadius * planetRadius * planetRadius;
-
-            var planet = EntityFactory.CreateOrbitingAstronomicalObject(
-                Manager,
-                texture: "Textures/Planets/rock_07",
-                planetTint: Color.Lerp(Color.DarkOliveGreen, Color.White, 0.5f),
-                radius: planetRadius,
-                atmosphereTint: Color.LightSkyBlue,
-                rotationSpeed: (float)gaussian.NextSampleClamped(Math.PI / 6000, 0.0000125) * Math.Sign(random.NextDouble() - 0.5),
-                center: sun,
-                majorRadius: planetOrbitMajorRadius,
-                minorRadius: planetOrbitMinorRadius,
-                angle: planetOrbitAngle,
-                period: planetPeriod,
-                periodOffset: (float)(2 * Math.PI * random.NextDouble()),
-                mass: planetMass);
-
-            // Create some moons, so our planet doesn't feel so ronery.
-
-            // Again, fetch a dominant angle.
-            var dominantMoonOrbitAngle = (float)(random.NextDouble() * Math.PI * 2);
-
-            // And track the radii. Start outside our planet.
-            var previousMoonOrbit = (_constraints.PlanetRadiusMean + _constraints.PlanetRadiusStdDev) * 1.5f;
-            if (_constraints.SampleStation(random))
-            {
-                CreateStation(gaussian, planet, planetMass, planetRadius, cellInfo);
-            }
-            // The create as many as we sample.
-            for (int j = 0; j < numMoons; j++)
-            {
-                previousMoonOrbit = CreateMoon(random, gaussian, planet, planetMass, previousMoonOrbit, dominantMoonOrbitAngle);
-            }
-
-            return planetOrbitMajorRadius;
-        }
-
-        /// <summary>
-        /// Creates a new moon, orbiting a planet.
-        /// </summary>
-        private float CreateMoon(
-            IUniformRandom random,
-            IGaussianRandom gaussian,
-            int planet,
-            float planetMass,
-            float previousOrbitRadius,
-            float dominantOrbitAngle)
-        {
-            // Sample moon properties.
-            var moonRadius = _constraints.SampleMoonRadius(gaussian);
-            var moonOrbitMajorRadius = previousOrbitRadius + _constraints.SampleMoonOrbit(gaussian);
-            var moonOrbitEccentricity = _constraints.SampleMoonOrbitEccentricity(gaussian);
-            var moonOrbitMinorRadius = (float)Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * (1 - moonOrbitEccentricity * moonOrbitEccentricity));
-            var moonOrbitAngle = dominantOrbitAngle + MathHelper.ToRadians(_constraints.SampleMoonOrbitAngleDeviation(gaussian));
-            var moonPeriod = (float)(2 * Math.PI * Math.Sqrt(moonOrbitMajorRadius * moonOrbitMajorRadius * moonOrbitMajorRadius / planetMass));
-            var moonMass = _constraints.PlanetMassFactor * 4f / 3f * MathHelper.Pi * moonRadius * moonRadius * moonRadius;
-
-            EntityFactory.CreateOrbitingAstronomicalObject(Manager,
-                texture: "Textures/Planets/rock_02",
-                planetTint: Color.White,
-                radius: moonRadius,
-                atmosphereTint: Color.Transparent,
-                rotationSpeed: (float)gaussian.NextSampleClamped(Math.PI / 20000, 0.0000025) * Math.Sign(random.NextDouble() - 0.5),
-                center: planet,
-                majorRadius: moonOrbitMajorRadius,
-                minorRadius: moonOrbitMinorRadius,
-                angle: moonOrbitAngle,
-                period: moonPeriod,
-                periodOffset: (float)(2 * Math.PI * random.NextDouble()),
-                mass: /*moonMass*/ 0);
-
-            return moonOrbitMajorRadius;
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Creates a new space station, orbiting another object (planet, moon).
-        /// </summary>
-        private void CreateStation(
-            IGaussianRandom gaussian,
-            int center,
-            float centerMass,
-            float centerRadius,
-            CellInfo cellInfo)
-        {
-            var stationOrbit = centerRadius + _constraints.SampleStationOrbit(gaussian);
-            var stationPeriod = (float)(2 * Math.PI * Math.Sqrt(stationOrbit * stationOrbit * stationOrbit / centerMass));
-            var station = EntityFactory.CreateStation(
-                Manager,
-                texture: "Textures/Stolen/Ships/sensor_array",
-                center: center,
-                orbitRadius: stationOrbit,
-                period: stationPeriod,
-                faction: cellInfo.Faction);
-
-            cellInfo.Stations.Add(station);
         }
 
         #endregion

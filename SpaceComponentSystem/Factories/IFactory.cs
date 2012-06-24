@@ -6,7 +6,7 @@
     public interface IFactory
     {
         /// <summary>
-        /// The unique name of the constraint.
+        /// The unique name of the object type.
         /// </summary>
         string Name { get; }
     }
