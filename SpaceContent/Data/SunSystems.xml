@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<XnaContent>
+  <Asset Type="Space.ComponentSystem.Factories.SunSystemFactory[]">
+    <Item>
+      <Name>home_system</Name>
+      <Sun>sun_1</Sun>
+    </Item>
+    
+    <Item>
+      <Name>sunsystem_1</Name>
+      <Sun>sun_1</Sun>
+      <Planets>
+        <Orbiter>
+          <PlanetName>planet_1</PlanetName>
+          <OrbitRadius>6000 to 7000</OrbitRadius>
+          <ChanceToExist>0.4</ChanceToExist>
+          <Moons>#NormalMoons_4</Moons>
+        </Orbiter>
+        <Orbiter>
+          <PlanetName>planet_1</PlanetName>
+          <OrbitRadius>12000 to 13000</OrbitRadius>
+          <ChanceToExist>0.4</ChanceToExist>
+          <Moons>#NormalMoons_4</Moons>
+        </Orbiter>
+        <Orbiter>
+          <PlanetName>planet_1</PlanetName>
+          <OrbitRadius>19000 to 20000</OrbitRadius>
+          <ChanceToExist>0.4</ChanceToExist>
+          <Moons>#NormalMoons_4</Moons>
+        </Orbiter>
+        <Orbiter>
+          <PlanetName>planet_1</PlanetName>
+          <OrbitRadius>26000 to 27000</OrbitRadius>
+          <ChanceToExist>0.4</ChanceToExist>
+          <Moons>#NormalMoons_4</Moons>
+        </Orbiter>
+        <Orbiter>
+          <PlanetName>planet_1</PlanetName>
+          <OrbitRadius>33000 to 34000</OrbitRadius>
+          <ChanceToExist>0.4</ChanceToExist>
+          <Moons>#NormalMoons_4</Moons>
+        </Orbiter>
+        <Orbiter>
+          <PlanetName>planet_1</PlanetName>
+          <OrbitRadius>40000 to 41000</OrbitRadius>
+          <ChanceToExist>0.4</ChanceToExist>
+          <Moons>#NormalMoons_4</Moons>
+        </Orbiter>
+        <Orbiter>
+          <PlanetName>planet_1</PlanetName>
+          <OrbitRadius>47000 to 48000</OrbitRadius>
+          <ChanceToExist>0.4</ChanceToExist>
+          <Moons>#NormalMoons_4</Moons>
+        </Orbiter>
+        <Orbiter>
+          <PlanetName>planet_1</PlanetName>
+          <OrbitRadius>54000 to 55000</OrbitRadius>
+          <ChanceToExist>0.4</ChanceToExist>
+          <Moons>#NormalMoons_4</Moons>
+        </Orbiter>
+      </Planets>
+    </Item>
+  </Asset>
+  
+  <Resources>
+    <Resource ID="#NormalMoons_4" Type="Space.ComponentSystem.Factories.SunSystemFactoryTypes.Orbit">
+      <Orbiter>
+        <PlanetName>moon_tiny</PlanetName>
+        <OrbitRadius>900 to 1000</OrbitRadius>
+        <ChanceToExist>0.3</ChanceToExist>
+      </Orbiter>
+      <Orbiter>
+        <PlanetName>moon_small</PlanetName>
+        <OrbitRadius>1400 to 1500</OrbitRadius>
+        <ChanceToExist>0.5</ChanceToExist>
+      </Orbiter>
+      <Orbiter>
+        <PlanetName>moon_large</PlanetName>
+        <OrbitRadius>1800 to 1900</OrbitRadius>
+        <ChanceToExist>0.6</ChanceToExist>
+      </Orbiter>
+      <Orbiter>
+        <PlanetName>moon_medium</PlanetName>
+        <OrbitRadius>2300 to 2400</OrbitRadius>
+        <ChanceToExist>0.4</ChanceToExist>
+      </Orbiter>
+    </Resource>
+  </Resources>
+</XnaContent>

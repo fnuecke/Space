@@ -107,6 +107,9 @@
     <Compile Include="Factories\IFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\ItemPool.cs" />
+    <Compile Include="Factories\PlanetFactory.cs" />
+    <Compile Include="Factories\SunFactory.cs" />
+    <Compile Include="Factories\SunSystemFactory.cs" />
     <Compile Include="Systems\AISystem.cs" />
     <Compile Include="Systems\CameraCenteredParticleEffectSystem.cs" />
     <Compile Include="Systems\CameraSystem.cs" />

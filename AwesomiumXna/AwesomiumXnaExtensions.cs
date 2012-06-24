@@ -1,4 +1,4 @@
-using Awesomium.Core;
+using System;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Awesomium.Xna
@@ -16,13 +16,12 @@ namespace Awesomium.Xna
         /// <summary>
         /// Renders the Awesomium buffer to the specified texture.
         /// </summary>
-        /// <param name="buffer">The buffer.</param>
         /// <param name="texture">The texture.</param>
+        /// <param name="buffer">The buffer.</param>
         /// <returns>The specified texture.</returns>
-        public static Texture2D RenderTexture2D(this RenderBuffer buffer, Texture2D texture)
+        public static void RenderTexture2D(this Texture2D texture, IntPtr buffer)
         {
             TextureFormatConverter.DirectBlit(buffer, ref texture);
-            return texture;
         }
     }
 }

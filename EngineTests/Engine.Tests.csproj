@@ -97,7 +97,9 @@
       <Name>Engine.Simulation</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ComponentSystem\RPG\Components\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>set PROGPATH=%25PROGRAMFILES(X86)%25||%25PROGRAMFILES%25
