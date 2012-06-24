@@ -75,7 +75,7 @@ namespace Engine.Collections
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return _pointDict.Count; }
         }
 
 
@@ -147,6 +147,20 @@ namespace Engine.Collections
 
         public void Update(ref Vector2 newPoint, T value)
         {
+            LeafNode node = null;
+            //check if node exists
+            var found = _pointDict.TryGetValue(value,out node);
+            if (!found)
+                throw new ArgumentException("Value not in Tree");
+            
+            //still in old parent
+            if (node.Boundingbox.Contains((int)newPoint.X, (int)newPoint.Y))
+            {
+                var entry = node.getEntry(value);
+                entry.Point = newPoint;
+                AdjustTree(node);
+                return;
+            }
             throw new NotImplementedException();
         }
 
@@ -162,6 +176,7 @@ namespace Engine.Collections
                 return false;
             }
             var node = _pointDict[value];
+            _pointDict.Remove(value);
             foreach (var entry in node.Entrys)
             {
                 //find entry in node
@@ -996,6 +1011,20 @@ namespace Engine.Collections
             #region Fields
 
             public List<Entry> Entrys = new List<Entry>();
+            public Entry getEntry(T value)
+            {
+                foreach (var entrytest in Entrys)
+                {
+                    //find entry in node
+                    if (entrytest.Value.Equals(value))
+                    {
+                        return entrytest;
+                    }
+                    
+                }
+                return null;
+
+            }
             public override string ToString()
             {
                 var returnstring = "Leaf Node childs: " + Entrys.Count + "\n";
