@@ -39,6 +39,18 @@ namespace Engine.Graphics
         /// </summary>
         public GraphicsDevice GraphicsDevice { get { return _device; } }
 
+        /// <summary>
+        /// The scale to used on this shape
+        /// </summary>
+        public float Scale
+        {
+            get { return _scale; }
+            set
+            {
+                _scale = value;
+                _verticesAreValid = false;
+            }
+        }
         #endregion
 
         #region Fields
@@ -88,17 +100,11 @@ namespace Engine.Graphics
         /// The color of the shape.
         /// </summary>
         protected Color _color;
-
+        /// <summary>
+        /// The scale of the shape
+        /// </summary>
         private float _scale;
-        public float Scale
-        {
-            get { return _scale; }
-            set
-            {
-                _scale = value;
-                _verticesAreValid = false;
-            }
-        }
+        
         
         #endregion
 
@@ -375,6 +381,10 @@ namespace Engine.Graphics
             #endregion
         }
 
+        /// <summary>
+        /// Creates the scale matrix for the shape
+        /// </summary>
+        /// <returns>The scale matrix</returns>
         protected virtual Matrix GetScaleMatrix()
         {
             return Matrix.CreateScale(_scale);

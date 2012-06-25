@@ -66,6 +66,7 @@ namespace Space.ComponentSystem.Systems
 
             var zoom = Manager.GetSystem<CameraSystem>().Zoom;
             var screenBounds = _sun.GraphicsDevice.Viewport.Bounds;
+            //Inflate bounds by zoomed amount
             screenBounds.Inflate((int)(screenBounds.Width / zoom - screenBounds.Width), (int)(screenBounds.Height / zoom - screenBounds.Height));
             if (sunBounds.Intersects(screenBounds))
             {
