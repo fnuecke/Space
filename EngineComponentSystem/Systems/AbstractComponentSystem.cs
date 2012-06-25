@@ -75,6 +75,7 @@ namespace Engine.ComponentSystem.Systems
             {
                 if (component.Enabled)
                 {
+                    //Todo hier schon begin /end? performanz?
                     DrawComponent(gameTime, frame, component);
                 }
             }

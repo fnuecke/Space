@@ -32,6 +32,13 @@ namespace Space.ComponentSystem.Systems
                 _customCameraPosition = value; 
             }
         }
+        /// <summary>
+        /// The Current camera zoom
+        /// </summary>
+        public float Zoom
+        {
+            get { return _previousZoom; }
+        }
 
         #endregion
 
@@ -69,19 +76,29 @@ namespace Space.ComponentSystem.Systems
         /// or was dynamically computed.
         /// </summary>
         private Vector2? _customCameraPosition;
-
+        /// <summary>
+        /// The Transform Matrix Containing position and zoom of the camera
+        /// </summary>
         private Matrix _transform;
 
-        public float Zoom
-        {
-            get {return _previousZoom; }
-        }
-
+        /// <summary>
+        /// The Zoom of the camera which was computed for smooting reasons
+        /// </summary>
         private float _previousZoom = 1.0f;
+
+        /// <summary>
+        /// The Zoom of the Camera
+        /// </summary>
         private float _zoom;
 
+        /// <summary>
+        /// The Maximum Zoom
+        /// </summary>
         public static readonly float MAXZOOM = 1.0f;
 
+        /// <summary>
+        /// The Minimum Zoom
+        /// </summary>
         public static readonly float MINZOOM = 0.4f;
         #endregion
 
@@ -134,6 +151,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
+        /// <summary>
+        /// Updates the Transformation of the Camera including position and scale
+        /// </summary>
         private void UpdateTransformation()
         {
             
@@ -180,6 +200,8 @@ namespace Space.ComponentSystem.Systems
                         
                         //Interpolate new zoom moving slowly in or out
                         _previousZoom = MathHelper.Lerp(_previousZoom, _zoom, 0.05f);
+
+                        //Update the Transformation
                         UpdateTransformation();
                     }
                 }
@@ -251,6 +273,7 @@ namespace Space.ComponentSystem.Systems
                 copy._previousOffset = _previousOffset;
                 copy._cameraPosition = _cameraPosition;
                 copy._customCameraPosition = _customCameraPosition;
+                //TODO flo kommt hier der zoom rein?
             }
 
             return copy;

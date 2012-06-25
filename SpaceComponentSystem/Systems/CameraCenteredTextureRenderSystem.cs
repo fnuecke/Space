@@ -37,6 +37,11 @@ namespace Space.ComponentSystem.Systems
             result.Y = translation.Y;
             return result;
         }
+
+        /// <summary>
+        /// Returns the <em>transformation</em> for offsetting and scaling renederd content.
+        /// </summary>
+        /// <returns>The transformation.</returns>
         protected override Matrix GetTransform()
         {
             return Manager.GetSystem<CameraSystem>().GetTransformation();

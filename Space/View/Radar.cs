@@ -223,7 +223,9 @@ namespace Space.View
                 //_basicForms.FillRectangle(RadarBorderSize, 0, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
                 //_basicForms.FillRectangle(RadarBorderSize, screenBounds.Height - RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
             }
+            //Get zoom from camera 
             var zoom = Client.GetSystem<CameraSystem>().Zoom;
+            //Inflate screen by zoomed amount
             screenBounds.Inflate((int)(screenBounds.Width / zoom - screenBounds.Width), (int)(screenBounds.Height / zoom - screenBounds.Height));
             // Loop through all our neighbors.
             foreach (var neighbor in index.

@@ -77,7 +77,7 @@ namespace Engine.ComponentSystem.Systems
                         null,
                         null,
                         null,
-                        null,GetTransform());
+                        null,GetTransform()); //Use Transformation of the camera for sprites drawn, so no transformation for sprite itself is needed
             _spriteBatch.Draw(component.Texture, transform.Translation, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
             _spriteBatch.End();
         }
@@ -93,6 +93,10 @@ namespace Engine.ComponentSystem.Systems
             return Vector2.Zero;
         }
 
+        /// <summary>
+        /// Returns the <em>transformation</em> for offsetting and scaling renederd content.
+        /// </summary>
+        /// <returns>The transformation.</returns>
         protected virtual Matrix GetTransform()
         {
             return Matrix.Identity;

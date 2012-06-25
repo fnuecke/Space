@@ -71,6 +71,7 @@ namespace Space.ComponentSystem.Systems
             // The position and orientation we're rendering at and in.
             var transform = Manager.GetComponent<Transform>(component.Entity);
             var translation = Manager.GetSystem<CameraSystem>().GetTranslation();
+            //Get zoom from Camera
             var zoom = Manager.GetSystem<CameraSystem>().Zoom;
             // Get the position at which to draw (in screen space).
             Vector2 position;
@@ -82,7 +83,8 @@ namespace Space.ComponentSystem.Systems
             position2.Y = transform.Translation.Y + translation.Y;
             // Check if we're even visible.
             var clipRectangle = _planet.GraphicsDevice.Viewport.Bounds;
-            clipRectangle.Inflate((int)(clipRectangle.Width / zoom), (int)(clipRectangle.Height / zoom));
+            //Inflate clip by zoomed amount
+            clipRectangle.Inflate((int)(clipRectangle.Width / zoom - clipRectangle.Width), (int)(clipRectangle.Height / zoom - clipRectangle.Height));
             clipRectangle.Inflate((int)(2 * component.Radius ), (int)(2 * component.Radius ));
             if (clipRectangle.Contains((int)position.X, (int)position.Y)) 
             {
