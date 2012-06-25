@@ -71,16 +71,20 @@ namespace Space.ComponentSystem.Systems
             // The position and orientation we're rendering at and in.
             var transform = Manager.GetComponent<Transform>(component.Entity);
             var translation = Manager.GetSystem<CameraSystem>().GetTranslation();
-
+            var zoom = Manager.GetSystem<CameraSystem>().Zoom;
             // Get the position at which to draw (in screen space).
             Vector2 position;
-            position.X = transform.Translation.X + translation.X;
-            position.Y = transform.Translation.Y + translation.Y;
+            position.X = transform.Translation.X * 1 + translation.X;
+            position.Y = transform.Translation.Y * 1 + translation.Y;
 
+            Vector2 position2;
+            position2.X = transform.Translation.X + translation.X;
+            position2.Y = transform.Translation.Y + translation.Y;
             // Check if we're even visible.
             var clipRectangle = _planet.GraphicsDevice.Viewport.Bounds;
-            clipRectangle.Inflate((int)(2 * component.Radius), (int)(2 * component.Radius));
-            if (clipRectangle.Contains((int)position.X, (int)position.Y))
+            clipRectangle.Inflate((int)(clipRectangle.Width / zoom), (int)(clipRectangle.Height / zoom));
+            clipRectangle.Inflate((int)(2 * component.Radius ), (int)(2 * component.Radius ));
+            if (clipRectangle.Contains((int)position.X, (int)position.Y)) 
             {
                 // Get position relative to our sun, to rotate atmosphere and shadow.
                 var toSun = Vector2.Zero;
@@ -98,7 +102,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Set parameters and draw.
-                _planet.SetCenter(position);
+                _planet.SetCenter(position2);
                 _planet.SetRotation(transform.Rotation);
                 _planet.SetSize(component.Radius * 2);
                 _planet.SetSurfaceTexture(component.Texture);
@@ -106,7 +110,7 @@ namespace Space.ComponentSystem.Systems
                 _planet.SetAtmosphereTint(component.AtmosphereTint);
                 _planet.SetLightDirection(toSun);
                 _planet.SetGameTime(gameTime);
-                _planet.Scale= Manager.GetSystem<CameraSystem>().Zoom;
+                _planet.Scale = zoom;
                 _planet.Draw();
             }
         }

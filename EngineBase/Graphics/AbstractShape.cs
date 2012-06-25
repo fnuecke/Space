@@ -89,6 +89,17 @@ namespace Engine.Graphics
         /// </summary>
         protected Color _color;
 
+        private float _scale;
+        public float Scale
+        {
+            get { return _scale; }
+            set
+            {
+                _scale = value;
+                _verticesAreValid = false;
+            }
+        }
+        
         #endregion
 
         #region Constructor
@@ -104,7 +115,7 @@ namespace Engine.Graphics
                 _effect = game.Content.Load<Effect>(effectName);
             }
             _device = game.GraphicsDevice;
-
+            _scale = 1;
             // Set texture coordinates.
             _vertices[0].Tex0.X = -1;
             _vertices[0].Tex0.Y = -1;
@@ -366,7 +377,7 @@ namespace Engine.Graphics
 
         protected virtual Matrix GetScaleMatrix()
         {
-            return Matrix.CreateScale(1);
+            return Matrix.CreateScale(_scale);
         }
         #endregion
     }

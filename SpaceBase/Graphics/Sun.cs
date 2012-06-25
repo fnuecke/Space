@@ -83,12 +83,7 @@ namespace Space.Graphics
         /// </summary>
         private GameTime _gameTime;
 
-        private float _scale;
-        public float Scale
-        {
-            get { return _scale; }
-            set { _scale = value;} 
-        }
+      
         #endregion
 
         #region Initialization
@@ -273,10 +268,7 @@ namespace Space.Graphics
             _spriteBatch.Draw(_turbulenceSphere, Vector2.Zero, Color.White);
             _spriteBatch.End();
         }
-        protected override Matrix GetScaleMatrix()
-        {
-            return Matrix.CreateScale(_scale);
-        }
+        
         #endregion
     }
 }

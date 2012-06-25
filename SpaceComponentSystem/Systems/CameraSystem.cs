@@ -77,12 +77,12 @@ namespace Space.ComponentSystem.Systems
             get {return _previousZoom; }
         }
 
-        private float _previousZoom;
+        private float _previousZoom = 1.0f;
         private float _zoom;
 
-        private float MAXZOOM = 1.0f;
+        public static readonly float MAXZOOM = 1.0f;
 
-        private float MINZOOM = 0.4f;
+        public static readonly float MINZOOM = 0.4f;
         #endregion
 
         #region Constructor

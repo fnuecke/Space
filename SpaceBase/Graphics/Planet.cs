@@ -37,7 +37,7 @@ namespace Space.Graphics
         /// </summary>
         private GameTime _gameTime;
 
-        public float Scale { get; set; }
+        
 
         #endregion
 
@@ -135,10 +135,7 @@ namespace Space.Graphics
             _effect.Parameters["TextureScale"].SetValue(_surface.Width / (2f * _width));
         }
 
-        protected override Matrix GetScaleMatrix()
-        {
-            return Matrix.CreateScale(Scale);
-        }
+        
         #endregion
     }
 }
