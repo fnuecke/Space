@@ -170,7 +170,7 @@ input[type=""text""], input[type=""password""], textarea {
                 ProxyConfig = "none"
             });
             _dataSource = new ContentLoaderDataSource(Game.Content);
-            _session.AddDataSource("space", _dataSource);
+            _session.AddDataSource("xna", _dataSource);
 
             AddCallback("Screens", "push", JSPushScreen);
             AddCallback("Screens", "pop", JSPopScreen);
