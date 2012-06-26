@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
 using Nuclex.Input.Devices;
+using Space.ComponentSystem.Systems;
 using Space.Input;
 using Space.Simulation.Commands;
 using Space.Util;
@@ -367,13 +368,12 @@ namespace Space.Control
         {
             if (ticks > 0)
             {
-                Client.GetCameraSystem().ZoomIn();
+                Client.GetSystem<CameraSystem>().ZoomIn();
             }
             else
             {
-                Client.GetCameraSystem().ZoomOut();
+                Client.GetSystem<CameraSystem>().ZoomOut();
             }
-            
         }
 
         #endregion

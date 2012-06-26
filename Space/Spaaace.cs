@@ -14,7 +14,6 @@ using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input;
 using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
-using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Session;
 using Space.Simulation.Commands;
@@ -469,11 +468,7 @@ namespace Space
             // Draw the overall space background.
             if (_client != null)
             {
-                var cam = _client.GetSystem<CameraSystem>();
-                if (cam != null)
-                {
-                    _background.SetScale(cam.Zoom);
-                }
+                _background.SetScale(_client.GetCameraZoom());
             }
             _background.Draw();
 

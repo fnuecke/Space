@@ -136,10 +136,6 @@ namespace Space.Control
             return null;
         }
 
-        public CameraSystem GetCameraSystem()
-        {
-            return GetSystem<CameraSystem>();
-        }
         /// <summary>
         /// Get the information facade for the ship of the specified player,
         /// if possible.
@@ -169,7 +165,7 @@ namespace Space.Control
         /// Gets the current camera position, i.e. the view center, in global
         /// coordinates.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Current camera position.</returns>
         public Vector2 GetCameraPosition()
         {
             var system = GetSystem<CameraSystem>();
@@ -180,6 +176,23 @@ namespace Space.Control
             else
             {
                 return Vector2.Zero;
+            }
+        }
+
+        /// <summary>
+        /// Gets the current camera zoom.
+        /// </summary>
+        /// <returns>Current zoom level.</returns>
+        public float GetCameraZoom()
+        {
+            var system = GetSystem<CameraSystem>();
+            if (system != null)
+            {
+                return system.Zoom;
+            }
+            else
+            {
+                return 1.0f;
             }
         }
 

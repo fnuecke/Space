@@ -6,7 +6,6 @@ using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Data;
 using Space.Util;
@@ -202,7 +201,7 @@ namespace Space.View
             _spriteBatch.Begin();
 
             // Get zoom from camera .
-            var zoom = Client.GetSystem<CameraSystem>().Zoom;
+            var zoom = Client.GetCameraZoom();
 
             // Loop through all our neighbors.
             foreach (var neighbor in index.

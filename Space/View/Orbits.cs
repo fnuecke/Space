@@ -6,7 +6,6 @@ using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Systems;
 using Space.Control;
 
 namespace Space.View
@@ -149,7 +148,7 @@ namespace Space.View
             var radius = (float)System.Math.Sqrt(center.X * center.X + center.Y * center.Y);
 
             // Get zoom from camera.
-            var zoom = Client.GetSystem<CameraSystem>().Zoom;
+            var zoom = Client.GetCameraZoom();
 
             // Increase radius accordingly, to include stuff possibly further away.
             radius /= zoom;
