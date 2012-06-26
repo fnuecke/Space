@@ -14,6 +14,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input;
 using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
+using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Session;
 using Space.Simulation.Commands;
@@ -466,6 +467,14 @@ namespace Space
             GraphicsDevice.Clear(Color.DarkSlateGray);
 
             // Draw the overall space background.
+            if (_client != null)
+            {
+                var cam = _client.GetSystem<CameraSystem>();
+                if (cam != null)
+                {
+                    _background.Scale = cam.Zoom;
+                }
+            }
             _background.Draw();
 
             // Draw the orbit lines behind ingame objects.

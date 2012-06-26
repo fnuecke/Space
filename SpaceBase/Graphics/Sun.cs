@@ -83,6 +83,7 @@ namespace Space.Graphics
         /// </summary>
         private GameTime _gameTime;
 
+      
         #endregion
 
         #region Initialization
@@ -103,8 +104,9 @@ namespace Space.Graphics
             _turbulenceTwoRotation.Y = -((float)random.NextDouble() + 1f) / 2f;
             _turbulenceTwoRotation.Normalize();
             _turbulenceTwoRotation *= 4;
+            
         }
-
+        
         public void Dispose()
         {
             if (_surfaceSphere != null)
@@ -266,7 +268,7 @@ namespace Space.Graphics
             _spriteBatch.Draw(_turbulenceSphere, Vector2.Zero, Color.White);
             _spriteBatch.End();
         }
-
+        
         #endregion
     }
 }

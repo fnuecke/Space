@@ -36,6 +36,11 @@ namespace Space.ComponentSystem.Systems
             return result;
         }
 
+        protected override Matrix GetTransform()
+        {
+            return Manager.GetSystem<CameraSystem>().GetTransformation();
+        }
+
         #endregion
     }
 }

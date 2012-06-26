@@ -76,6 +76,7 @@
     <Compile Include="Components\Expiration.cs" />
     <Compile Include="Components\Friction.cs" />
     <Compile Include="Components\Index.cs" />
+    <Compile Include="Components\Sound.cs" />
     <Compile Include="Components\Spin.cs" />
     <Compile Include="Components\TextureRenderer.cs" />
     <Compile Include="Components\Transform.cs" />

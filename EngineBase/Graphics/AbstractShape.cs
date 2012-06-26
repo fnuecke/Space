@@ -39,6 +39,18 @@ namespace Engine.Graphics
         /// </summary>
         public GraphicsDevice GraphicsDevice { get { return _device; } }
 
+        /// <summary>
+        /// The scale to used on this shape
+        /// </summary>
+        public float Scale
+        {
+            get { return _scale; }
+            set
+            {
+                _scale = value;
+                _verticesAreValid = false;
+            }
+        }
         #endregion
 
         #region Fields
@@ -88,7 +100,12 @@ namespace Engine.Graphics
         /// The color of the shape.
         /// </summary>
         protected Color _color;
-
+        /// <summary>
+        /// The scale of the shape
+        /// </summary>
+        private float _scale;
+        
+        
         #endregion
 
         #region Constructor
@@ -104,7 +121,7 @@ namespace Engine.Graphics
                 _effect = game.Content.Load<Effect>(effectName);
             }
             _device = game.GraphicsDevice;
-
+            _scale = 1;
             // Set texture coordinates.
             _vertices[0].Tex0.X = -1;
             _vertices[0].Tex0.Y = -1;
@@ -289,6 +306,8 @@ namespace Engine.Graphics
                 // start at the top left, so subtract half the screen width,
                 // and invert the y axis (also subtract there).
                 * Matrix.CreateTranslation(_center.X - _device.Viewport.Width / 2f, _device.Viewport.Height / 2f - _center.Y, 0)
+                //
+                * GetScaleMatrix()
                 // Finally map what we have to screen space.
                 * Matrix.CreateOrthographic(_device.Viewport.Width, _device.Viewport.Height, _device.Viewport.MinDepth, _device.Viewport.MaxDepth);
             // Apply transform to each corner.
@@ -362,6 +381,14 @@ namespace Engine.Graphics
             #endregion
         }
 
+        /// <summary>
+        /// Creates the scale matrix for the shape
+        /// </summary>
+        /// <returns>The scale matrix</returns>
+        protected virtual Matrix GetScaleMatrix()
+        {
+            return Matrix.CreateScale(_scale);
+        }
         #endregion
     }
 }

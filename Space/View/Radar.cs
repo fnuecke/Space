@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Data;
 using Space.Util;
@@ -221,7 +223,10 @@ namespace Space.View
                 //_basicForms.FillRectangle(RadarBorderSize, 0, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
                 //_basicForms.FillRectangle(RadarBorderSize, screenBounds.Height - RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
             }
-
+            //Get zoom from camera 
+            var zoom = Client.GetSystem<CameraSystem>().Zoom;
+            //Inflate screen by zoomed amount
+            screenBounds.Inflate((int)(screenBounds.Width / zoom - screenBounds.Width), (int)(screenBounds.Height / zoom - screenBounds.Height));
             // Loop through all our neighbors.
             foreach (var neighbor in index.
                 RangeQuery(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
@@ -242,9 +247,10 @@ namespace Space.View
                 // viewport. This will also serve as our direction vector.
                 var direction = neighborTransform.Translation - position;
                 float distance = direction.Length();
-
+              
                 // Check if the object's inside. If so, skip it.
-                if (screenBounds.Contains((int)(direction.X + center.X), (int)(direction.Y + center.Y)))
+                
+                if (screenBounds.Contains((int)(direction.X  + center.X), (int)(direction.Y + center.Y)))
                 {
                     continue;
                 }

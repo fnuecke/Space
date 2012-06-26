@@ -59,8 +59,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component.</param>
         protected override void DrawComponent(GameTime gameTime, long frame, TextureRenderer component)
         {
-            // Get global render translation.
-            var translation = GetTranslation();
+            
 
             // Draw the texture based on its position.
             var transform = Manager.GetComponent<Transform>(component.Entity);
@@ -70,13 +69,16 @@ namespace Engine.ComponentSystem.Systems
             origin.X = component.Texture.Width / 2f;
             origin.Y = component.Texture.Height / 2f;
 
-            Vector2 position;
-            position.X = transform.Translation.X + translation.X;
-            position.Y = transform.Translation.Y + translation.Y;
+            
 
             // Draw.
-            _spriteBatch.Begin();
-            _spriteBatch.Draw(component.Texture, position, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
+            _spriteBatch.Begin(SpriteSortMode.BackToFront,
+                        BlendState.AlphaBlend,
+                        null,
+                        null,
+                        null,
+                        null,GetTransform()); //Use Transformation of the camera for sprites drawn, so no transformation for sprite itself is needed
+            _spriteBatch.Draw(component.Texture, transform.Translation, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
             _spriteBatch.End();
         }
 
@@ -91,6 +93,14 @@ namespace Engine.ComponentSystem.Systems
             return Vector2.Zero;
         }
 
+        /// <summary>
+        /// Returns the <em>transformation</em> for offsetting and scaling renederd content.
+        /// </summary>
+        /// <returns>The transformation.</returns>
+        protected virtual Matrix GetTransform()
+        {
+            return Matrix.Identity;
+        }
         #endregion
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Engine.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Systems;
 using Space.Control;
 
 namespace Space.View
@@ -76,7 +77,7 @@ namespace Space.View
             // Set our size, which is simply the viewport, but keep it a square
             // to avoid stretching of the background.
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
-            var maxsize = System.Math.Max(viewport.Width, viewport.Width);
+            var maxsize = System.Math.Max(viewport.Width / CameraSystem.MINZOOM, viewport.Width / CameraSystem.MINZOOM);
             SetSize(maxsize);
             SetCenter(viewport.Width / 2f, viewport.Height / 2f);
 

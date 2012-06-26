@@ -2203,6 +2203,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Textures\spaceshipB.png">
+      <Name>spaceshipB</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Data\Planets.xml">
       <Name>Planets</Name>
       <Importer>XmlImporter</Importer>

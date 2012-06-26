@@ -136,6 +136,10 @@ namespace Space.Control
             return null;
         }
 
+        public CameraSystem GetCameraSystem()
+        {
+            return GetSystem<CameraSystem>();
+        }
         /// <summary>
         /// Get the information facade for the ship of the specified player,
         /// if possible.

@@ -37,6 +37,8 @@ namespace Space.Graphics
         /// </summary>
         private GameTime _gameTime;
 
+        
+
         #endregion
 
         #region Constructor
@@ -133,6 +135,7 @@ namespace Space.Graphics
             _effect.Parameters["TextureScale"].SetValue(_surface.Width / (2f * _width));
         }
 
+        
         #endregion
     }
 }
