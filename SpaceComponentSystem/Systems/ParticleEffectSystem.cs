@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Systems
             // Update all known effects.
             foreach (var effect in _effects.Values)
             {
-                effect.Update((float)gameTime.ElapsedGameTime.TotalMilliseconds);
+                effect.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
             }
         }
 
