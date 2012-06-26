@@ -147,10 +147,13 @@ namespace Space.View
 
             // Get the radius of the minimal bounding sphere of our viewport.
             var radius = (float)System.Math.Sqrt(center.X * center.X + center.Y * center.Y);
-            //Get zoom from Camera
+
+            // Get zoom from camera.
             var zoom = Client.GetSystem<CameraSystem>().Zoom;
-            //scale radius
+
+            // Increase radius accordingly, to include stuff possibly further away.
             radius /= zoom;
+
             // Begin drawing.
             _spriteBatch.Begin();
 
@@ -230,7 +233,7 @@ namespace Space.View
                         // when nearby, not only when exactly on top of the
                         // object ;)
                         _orbitEllipse.SetColor(OrbitColor * ld);
-                        //scale ellipse
+                        // Scale ellipse based on camera zoom.
                         _orbitEllipse.SetScale(zoom);
                         // And draw it!
                         _orbitEllipse.Draw();
@@ -260,8 +263,9 @@ namespace Space.View
                 // will exactly hit that point, so give them some fair
                 // warning.
                 _deadZoneEllipse.SetRadius(pointOfNoReturn + DeadZoneDiffuseWidth);
-                //scale elipse
+                // Scale ellipse based on camera zoom.
                 _deadZoneEllipse.SetScale(zoom);
+                // And draw it!
                 _deadZoneEllipse.Draw();
             }
 

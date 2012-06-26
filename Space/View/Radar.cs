@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
@@ -57,17 +56,6 @@ namespace Space.View
         /// center of the radar icons.
         /// </summary>
         private const int DistanceOffset = 5;
-
-        /// <summary>
-        /// Size of the radar border in pixel.
-        /// </summary>
-        private const int RadarBorderSize = 50;
-
-        /// <summary>
-        /// Percentage value when the health indicator within the radar frame
-        /// should start displaying low health in red color.
-        /// </summary>
-        private const float HealthIndicatorThreshold = 0.5f;
 
         #endregion
 
@@ -213,20 +201,9 @@ namespace Space.View
             // Begin drawing.
             _spriteBatch.Begin();
 
-            // Color the background of the radar red if health is low...
-            float healthPercent = info.RelativeHealth;
-            if (info.RelativeHealth < HealthIndicatorThreshold)
-            {
-                float redAlpha = (1 - healthPercent / HealthIndicatorThreshold) / 2;
-                //_basicForms.FillRectangle(0, 0, RadarBorderSize, screenBounds.Height, Color.Red * redAlpha);
-                //_basicForms.FillRectangle(screenBounds.Width - RadarBorderSize, 0, RadarBorderSize, screenBounds.Height, Color.Red * redAlpha);
-                //_basicForms.FillRectangle(RadarBorderSize, 0, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
-                //_basicForms.FillRectangle(RadarBorderSize, screenBounds.Height - RadarBorderSize, screenBounds.Width - 2 * RadarBorderSize, RadarBorderSize, Color.Red * redAlpha);
-            }
-            //Get zoom from camera 
+            // Get zoom from camera .
             var zoom = Client.GetSystem<CameraSystem>().Zoom;
-            //Inflate screen by zoomed amount
-            screenBounds.Inflate((int)(screenBounds.Width / zoom - screenBounds.Width), (int)(screenBounds.Height / zoom - screenBounds.Height));
+
             // Loop through all our neighbors.
             foreach (var neighbor in index.
                 RangeQuery(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
@@ -248,9 +225,9 @@ namespace Space.View
                 var direction = neighborTransform.Translation - position;
                 float distance = direction.Length();
               
-                // Check if the object's inside. If so, skip it.
-                
-                if (screenBounds.Contains((int)(direction.X  + center.X), (int)(direction.Y + center.Y)))
+                // Check if the object's inside. If so, skip it. Take camera
+                // zoom into account here.
+                if (screenBounds.Contains((int)(direction.X * zoom + center.X), (int)(direction.Y * zoom + center.Y)))
                 {
                     continue;
                 }
