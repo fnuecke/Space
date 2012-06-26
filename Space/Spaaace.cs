@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
-using Awesomium.Core;
+using Awesomium.ScreenManagement;
 using Engine.Controller;
 using Engine.Session;
 using Engine.Util;
@@ -62,12 +62,36 @@ namespace Space
 
         #endregion
 
+        #region Events
+
+        public event EventHandler<ClientInitializedEventArgs> ClientInitialized;
+
+        public event EventHandler<EventArgs> ClientDisposed;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
         /// The graphics device manager used in this game.
         /// </summary>
         public GraphicsDeviceManager GraphicsDeviceManager { get; private set; }
+
+        /// <summary>
+        /// The currently active game client.
+        /// </summary>
+        public GameClient Client
+        {
+            get { return _client; }
+        }
+
+        /// <summary>
+        /// The screen manager used for rendering the GUI.
+        /// </summary>
+        public ScreenManager ScreenManager
+        {
+            get { return _screenManager; }
+        }
 
         #endregion
 
@@ -82,7 +106,7 @@ namespace Space
 
         private RenderTarget2D _scene;
         private SpriteBatch _spriteBatch;
-        private Awesomium.ScreenManagement.ScreenManager _screenManager;
+        private ScreenManager _screenManager;
         private GameConsole _console;
         private GameConsoleTarget _consoleLoggerTarget;
 
@@ -383,8 +407,8 @@ namespace Space
 
         private void SetupGui()
         {
-            _screenManager = new Awesomium.ScreenManagement.ScreenManager(this, _spriteBatch, _inputManager);
-            SetupJavaScriptApi();
+            _screenManager = new ScreenManager(this, _spriteBatch, _inputManager);
+            new JSCallbacks(this);
             _screenManager.PushScreen("MainMenu");
             Components.Add(_screenManager);
 
@@ -392,116 +416,6 @@ namespace Space
             _background = new Background(this, _spriteBatch);
             _orbits = new Orbits(this, _spriteBatch);
             _radar = new Radar(this, _spriteBatch);
-        }
-
-        private void SetupJavaScriptApi()
-        {
-            var s = _screenManager;
-            s.AddCallback("Space", "host", JSHost);
-            s.AddCallback("Space", "join", JSJoin);
-            s.AddCallback("Space", "leave", JSLeave);
-            s.AddCallback("Space", "search", JSSearch);
-
-            s.AddCallbackWithReturnValue("Space", "getNumPlayers", JSGetNumPlayers);
-            s.AddCallbackWithReturnValue("Space", "getMaxPlayers", JSGetMaxPlayers);
-            s.AddCallbackWithReturnValue("Space", "getLocalPlayerNumber", JSGetLocalPlayerNumber);
-            s.AddCallbackWithReturnValue("Space", "getHealth", JSGetHealth);
-            s.AddCallbackWithReturnValue("Space", "getMaxHealth", JSGetMaxHealth);
-            s.AddCallbackWithReturnValue("Space", "getEnergy", JSGetEnergy);
-            s.AddCallbackWithReturnValue("Space", "getMaxEnergy", JSGetMaxEnergy);
-        }
-
-        #endregion
-
-        #region Javascript API
-
-        private void JSHost(JSValue[] args)
-        {
-            RestartServer();
-            RestartClient(true);
-        }
-
-        private void JSJoin(JSValue[] args)
-        {
-        }
-
-        private void JSLeave(JSValue[] args)
-        {
-            DisposeControllers();
-        }
-
-        private void JSSearch(JSValue[] args)
-        {
-        }
-
-        private JSValue JSGetNumPlayers(JSValue[] args)
-        {
-            var session = _client.Controller.Session;
-            if (session.ConnectionState != ClientState.Connected)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(session.NumPlayers);
-        }
-
-        private JSValue JSGetMaxPlayers(JSValue[] args)
-        {
-            var session = _client.Controller.Session;
-            if (session.ConnectionState != ClientState.Connected)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(session.MaxPlayers);
-        }
-
-        private JSValue JSGetLocalPlayerNumber(JSValue[] args)
-        {
-            var session = _client.Controller.Session;
-            if (session.ConnectionState != ClientState.Connected)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(session.LocalPlayer.Number);
-        }
-
-        private JSValue JSGetHealth(JSValue[] args)
-        {
-            var info = _client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(info.Health);
-        }
-
-        private JSValue JSGetMaxHealth(JSValue[] args)
-        {
-            var info = _client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(info.MaxHealth);
-        }
-
-        private JSValue JSGetEnergy(JSValue[] args)
-        {
-            var info = _client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(info.Energy);
-        }
-
-        private JSValue JSGetMaxEnergy(JSValue[] args)
-        {
-            var info = _client.GetPlayerShipInfo();
-            if (info == null)
-            {
-                return JSValue.CreateUndefined();
-            }
-            return new JSValue(info.MaxEnergy);
         }
 
         #endregion
@@ -592,14 +506,7 @@ namespace Space
         public void RestartClient(bool local = false)
         {
             DisposeClient();
-            if (local)
-            {
-                _client = new GameClient(this, _server);
-            }
-            else
-            {
-                _client = new GameClient(this);
-            }
+            _client = local ? new GameClient(this, _server) : new GameClient(this);
             // Update after screen manager (input) but before server (logic).
             _client.UpdateOrder = 25;
             Components.Add(_client);
@@ -608,6 +515,11 @@ namespace Space
             _background.Client = _client;
             _radar.Client = _client;
             _orbits.Client = _client;
+
+            if (ClientInitialized != null)
+            {
+                ClientInitialized(this, new ClientInitializedEventArgs(_client));
+            }
         }
 
         /// <summary>
@@ -629,7 +541,10 @@ namespace Space
         {
             if (_client != null)
             {
-                _client.Controller.Session.Leave();
+                if (_client.Controller.Session.ConnectionState == ClientState.Connected)
+                {
+                    _client.Controller.Session.Leave();
+                }
                 Components.Remove(_client);
             }
             _client = null;
@@ -638,6 +553,11 @@ namespace Space
             _background.Client = null;
             _radar.Client = null;
             _orbits.Client = null;
+
+            if (ClientDisposed != null)
+            {
+                ClientDisposed(this, EventArgs.Empty);
+            }
         }
 
         /// <summary>

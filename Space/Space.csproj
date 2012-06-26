@@ -123,9 +123,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClientInitializedEventArgs.cs" />
     <Compile Include="Control\ControllerFactory.cs" />
     <Compile Include="Control\InputHandler.cs" />
     <Compile Include="View\Background.cs" />
+    <Compile Include="View\JSCallbacks.cs" />
     <Compile Include="View\Orbits.cs" />
     <Compile Include="View\Radar.cs" />
     <Compile Include="Session\Profile.cs" />

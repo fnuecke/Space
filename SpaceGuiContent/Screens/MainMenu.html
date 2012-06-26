@@ -6,21 +6,37 @@
 	</head>
 	<body style="background:url(asset://space/Images/background.png)">
 		<h1>Welcome to Space</h1>
+		<div id="info">info</div>
 		<button id="host">Host game</button><br/>
 		<input type="text" id="ip" value="127.0.0.1"/>
 		<button id="join">Join game</button>
 		
 		<script type="text/javascript">
+			function handleGameInfoReceived(e) {
+					$("#info").css("color", "#c33");
+					$("#info").text("Got some game info: " + e.host + " (" + e.numPlayers + "/" + e.maxPlayers + ")");
+			}
+			function handleConnected() {
+				Screens.push("Ingame");
+			}
+			function handleDisconnected() {
+				$("#info").css("color", "#c33");
+				$("#info").text("Failed to connect to server!");
+			}
 			(function($) {
-				$(document).ready(function() {
-					$("#host").click(function() {
-						Space.host();
-						Screens.push("Ingame");
-					});
-					$("#join").click(function() {
-						Space.join($("#ip").attr("value"));
-						Screens.push("Ingame");
-					});
+				Space.onGameInfoReceived(handleGameInfoReceived);
+				Space.onConnected(handleConnected);
+				Space.onDisconnected(handleDisconnected);
+				
+				$("#host").click(function() {
+					Space.hostGame();
+					$("#info").empty();
+					Screens.push("Ingame");
+				});
+				$("#join").click(function() {
+					Space.joinGame($("#ip").attr("value"));
+					$("#info").empty();
+					//Screens.push("Ingame");
 				});
 			})(jQuery);
 		</script>

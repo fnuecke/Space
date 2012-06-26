@@ -87,6 +87,11 @@ namespace Engine.Session
         /// </summary>
         private TPlayerData _playerData;
 
+        /// <summary>
+        /// Reset was requested from async connection thread.
+        /// </summary>
+        private bool _resetRequested;
+
         #endregion
 
         #region Construction / Destruction
@@ -102,22 +107,25 @@ namespace Engine.Session
         {
             if (disposing)
             {
-                if (_stream != null)
+                lock (this)
                 {
-                    _stream.Dispose();
+                    if (_stream != null)
+                    {
+                        _stream.Dispose();
+                    }
+
+                    if (_tcp != null)
+                    {
+                        _tcp.Close();
+                    }
+
+                    ConnectionState = ClientState.Unconnected;
+
+                    _tcp = null;
+                    _stream = null;
+                    _localPlayerNumber = -1;
+                    _playerData = default(TPlayerData);
                 }
-
-                if (_tcp != null)
-                {
-                    _tcp.Close();
-                }
-
-                ConnectionState = ClientState.Unconnected;
-
-                _tcp = null;
-                _stream = null;
-                _localPlayerNumber = -1;
-                _playerData = default(TPlayerData);
             }
 
             base.Dispose(disposing);
@@ -129,48 +137,55 @@ namespace Engine.Session
 
         public override void Update()
         {
-            if (_stream != null)
+            lock (this)
             {
-                try
+                if (_resetRequested)
                 {
-                    while (_stream != null)
+                    Reset();
+                }
+                else if (_stream != null)
+                {
+                    try
                     {
-                        using (var packet = _stream.Read())
+                        while (_stream != null)
                         {
-                            if (packet == null)
+                            using (var packet = _stream.Read())
                             {
-                                break;
-                            }
-                            else
-                            {
-                                var type = (SessionMessage)packet.ReadByte();
-
-                                // Statistics.
-                                _information.PutIncomingTraffic(packet.Length,
-                                                                type == SessionMessage.Data
-                                                                    ? TrafficTypes.Data
-                                                                    : TrafficTypes.Protocol);
-                                _information.PutIncomingPacketSize(packet.Length);
-
-                                using (var data = packet.ReadPacket())
+                                if (packet == null)
                                 {
-                                    HandleTcpData(type, data);
+                                    break;
+                                }
+                                else
+                                {
+                                    var type = (SessionMessage)packet.ReadByte();
+
+                                    // Statistics.
+                                    _information.PutIncomingTraffic(packet.Length,
+                                                                    type == SessionMessage.Data
+                                                                        ? TrafficTypes.Data
+                                                                        : TrafficTypes.Protocol);
+                                    _information.PutIncomingPacketSize(packet.Length);
+
+                                    using (var data = packet.ReadPacket())
+                                    {
+                                        HandleTcpData(type, data);
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                catch (IOException ex)
-                {
-                    // Connection failed, disconnect.
-                    logger.TraceException("Socket connection died.", ex);
-                    Reset();
-                }
-                catch (PacketException ex)
-                {
-                    // Received invalid packet from server.
-                    logger.WarnException("Invalid packet received from server.", ex);
-                    Reset();
+                    catch (IOException ex)
+                    {
+                        // Connection failed, disconnect.
+                        logger.TraceException("Socket connection died.", ex);
+                        Reset();
+                    }
+                    catch (PacketException ex)
+                    {
+                        // Received invalid packet from server.
+                        logger.WarnException("Invalid packet received from server.", ex);
+                        Reset();
+                    }
                 }
             }
 
@@ -341,39 +356,42 @@ namespace Engine.Session
         /// </summary>
         private void HandleConnected(IAsyncResult result)
         {
-            if (_tcp == null)
+            lock (this)
             {
-                return;
-            }
-            try
-            {
-                logger.Debug("Connected to host, sending actual join request.");
-                _tcp.EndConnect(result);
-                _stream =
-                    new EncryptedPacketStream(new CompressedPacketStream(new NetworkPacketStream(_tcp.GetStream())));
-                using (var packet = new Packet())
+                if (_tcp == null)
                 {
-                    using (var packetInner = new Packet())
+                    return;
+                }
+                try
+                {
+                    logger.Debug("Connected to host, sending actual join request.");
+                    _tcp.EndConnect(result);
+                    _stream =
+                        new EncryptedPacketStream(new CompressedPacketStream(new NetworkPacketStream(_tcp.GetStream())));
+                    using (var packet = new Packet())
                     {
-                        packet.
-                            Write((byte)SessionMessage.JoinRequest).
-                            Write(packetInner.
-                                      Write(_playerName).
-                                      Write(_playerData));
-                        var written = _stream.Write(packet);
+                        using (var packetInner = new Packet())
+                        {
+                            packet.
+                                Write((byte)SessionMessage.JoinRequest).
+                                Write(packetInner.
+                                          Write(_playerName).
+                                          Write(_playerData));
+                            var written = _stream.Write(packet);
 
-                        // Statistics.
-                        _information.PutOutgoingTraffic(written, TrafficTypes.Protocol);
-                        _information.PutOutgoingPacketSize(written);
-                        _information.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
+                            // Statistics.
+                            _information.PutOutgoingTraffic(written, TrafficTypes.Protocol);
+                            _information.PutOutgoingPacketSize(written);
+                            _information.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
+                        }
                     }
                 }
-            }
-            catch (SocketException ex)
-            {
-                // Connection failed.
-                logger.DebugException("Join failed.", ex);
-                Reset();
+                catch (SocketException ex)
+                {
+                    // Connection failed.
+                    logger.DebugException("Join failed.", ex);
+                    _resetRequested = true;
+                }
             }
         }
 
@@ -625,31 +643,36 @@ namespace Engine.Session
         /// </summary>
         private void Reset()
         {
+            _resetRequested = false;
+
             if (ConnectionState != ClientState.Unconnected)
             {
-                logger.Debug("Resetting session.");
-
-                OnDisconnecting(EventArgs.Empty);
-
-                _players = null;
-                _localPlayerNumber = -1;
-                NumPlayers = 0;
-                MaxPlayers = 0;
-
-                if (_stream != null)
+                lock (this)
                 {
-                    _stream.Dispose();
-                }
-                if (_tcp != null)
-                {
-                    _tcp.Close();
-                }
-                _stream = null;
-                _tcp = null;
+                    logger.Debug("Resetting session.");
 
-                ConnectionState = ClientState.Unconnected;
+                    OnDisconnecting(EventArgs.Empty);
 
-                OnDisconnected(EventArgs.Empty);
+                    _players = null;
+                    _localPlayerNumber = -1;
+                    NumPlayers = 0;
+                    MaxPlayers = 0;
+
+                    if (_stream != null)
+                    {
+                        _stream.Dispose();
+                    }
+                    if (_tcp != null)
+                    {
+                        _tcp.Close();
+                    }
+                    _stream = null;
+                    _tcp = null;
+
+                    ConnectionState = ClientState.Unconnected;
+
+                    OnDisconnected(EventArgs.Empty);
+                }
             }
         }
 

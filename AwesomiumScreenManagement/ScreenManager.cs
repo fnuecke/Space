@@ -107,6 +107,11 @@ input[type=""text""], input[type=""password""], textarea {
         private readonly List<JSCallBackInfo<JSCallbackWithReturnValue>> _callbacksWithReturnValue = new List<JSCallBackInfo<JSCallbackWithReturnValue>>();
 
         /// <summary>
+        /// List of events to expose to all screens.
+        /// </summary>
+        private readonly List<JSEventInfo> _events = new List<JSEventInfo>();
+        
+        /// <summary>
         /// All currently tracked screens.
         /// </summary>
         private readonly Stack<WebView> _screens = new Stack<WebView>();
@@ -249,12 +254,22 @@ input[type=""text""], input[type=""password""], textarea {
         public void PushScreen(string screenName)
         {
             var html = Game.Content.Load<string>("Screens/" + screenName);
-            var screen = WebCore.CreateWebView(Game.GraphicsDevice.Viewport.Width, Game.GraphicsDevice.Viewport.Height, _session);
-            screen.JSMethodHandler = new JavaScriptHandler(screen, _callbacks, _callbacksWithReturnValue);
-            screen.LoadHTML(html);
+            var screen = WebCore.CreateWebView(Game.GraphicsDevice.Viewport.Width, Game.GraphicsDevice.Viewport.Height,
+                                               _session);
+            screen.JSMethodHandler = new JavaScriptHandler(screen, _events, _callbacks, _callbacksWithReturnValue);
+
+            // Workaround to get JS callbacks inserted before document.onready gets executed.
+            screen.DocumentReady += delegate(object sender, UrlEventArgs e)
+                                    {
+                                        if (e.Url.Equals("asset://dummy/")) screen.LoadHTML(html);
+                                    };
+            screen.LoadURL(new Uri("asset://dummy/"));
+
             screen.FocusView();
             _screens.Push(screen);
         }
+
+        
 
         /// <summary>
         /// Pops the top screen and disposes it.
@@ -303,7 +318,7 @@ input[type=""text""], input[type=""password""], textarea {
                 ((JavaScriptHandler)screen.JSMethodHandler).AddCallback(nameSpace, name, callback);
             }
         }
-        
+
         /// <summary>
         /// Adds the callback to all screens, and will ensure the callback
         /// is added to all future screens.
@@ -324,16 +339,80 @@ input[type=""text""], input[type=""password""], textarea {
 
             _callbacksWithReturnValue.Add(new JSCallBackInfo<JSCallbackWithReturnValue>
                                           {
-                               Name = name,
-                               Namespace = nameSpace,
-                               Callback = callback
-                           });
+                                              Name = name,
+                                              Namespace = nameSpace,
+                                              Callback = callback
+                                          });
             foreach (var screen in _screens)
             {
                 ((JavaScriptHandler)screen.JSMethodHandler).AddCallback(nameSpace, name, callback);
             }
         }
 
+        /// <summary>
+        /// Call a JavaScript method in the currently active screen.
+        /// </summary>
+        /// <param name="nameSpace">The name of the global object in which the method resides.</param>
+        /// <param name="name">The name of the method to call.</param>
+        /// <param name="args">The arguments to pass to the method.</param>
+        public void Call(string nameSpace, string name, JSValue[] args)
+        {
+            if (String.IsNullOrWhiteSpace(nameSpace))
+            {
+                throw new ArgumentException("Invalid namespace, must not be empty.");
+            }
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Invalid name, must not be empty.");
+            }
+
+            var screen = _screens.Peek();
+            if (screen != null && screen.JSMethodHandler != null)
+            {
+                ((JavaScriptHandler)screen.JSMethodHandler).Call(nameSpace, name, args);
+            }
+        }
+
+        public void AddEvent(string nameSpace, string name)
+        {
+            if (String.IsNullOrWhiteSpace(nameSpace))
+            {
+                throw new ArgumentException("Invalid namespace, must not be empty.");
+            }
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Invalid name, must not be empty.");
+            }
+
+            _events.Add(new JSEventInfo
+                        {
+                            Name = name,
+                            Namespace = nameSpace
+                        });
+            foreach (var screen in _screens)
+            {
+                ((JavaScriptHandler)screen.JSMethodHandler).AddEvent(nameSpace, name);
+            }
+        }
+
+        public void RaiseEvent(string nameSpace, string name, JSValue[] args)
+        {
+            if (String.IsNullOrWhiteSpace(nameSpace))
+            {
+                throw new ArgumentException("Invalid namespace, must not be empty.");
+            }
+            if (String.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Invalid name, must not be empty.");
+            }
+
+            var screen = _screens.Peek();
+            if (screen != null && screen.JSMethodHandler != null)
+            {
+                ((JavaScriptHandler)screen.JSMethodHandler).RaiseEvent(nameSpace, name, args);
+            }
+        }
+        
         #endregion
 
         #region Events handling
@@ -513,8 +592,12 @@ input[type=""text""], input[type=""password""], textarea {
 
         private sealed class JavaScriptHandler : IJSMethodHandler
         {
+            private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+
             private readonly WebView _webView;
-            
+
+            private List<JSEventInfo> _existingEvents;
+
             private readonly List<JSCallBackInfo<JSCallback>> _exitingCallbacks;
 
             private readonly List<JSCallBackInfo<JSCallbackWithReturnValue>> _existingCallbacksWithReturnValue;
@@ -523,19 +606,30 @@ input[type=""text""], input[type=""password""], textarea {
 
             private readonly Dictionary<string, JSValue> _nameSpaces = new Dictionary<string, JSValue>();
 
-            private readonly Dictionary<uint, Dictionary<string, JSCallback>> _callbacks = new Dictionary<uint, Dictionary<string, JSCallback>>();
+            private readonly Dictionary<uint, string> _nameSpaceNames = new Dictionary<uint, string>();
 
-            private readonly Dictionary<uint, Dictionary<string, JSCallbackWithReturnValue>> _callbacksWithReturnValue = new Dictionary<uint, Dictionary<string, JSCallbackWithReturnValue>>();
+            private readonly Dictionary<uint, HashSet<string>> _events = new Dictionary<uint, HashSet<string>>();
 
-            public JavaScriptHandler(WebView webView, List<JSCallBackInfo<JSCallback>> existingCallbacks, List<JSCallBackInfo<JSCallbackWithReturnValue>> existingCallbacksWithReturnValue)
+            private readonly Dictionary<string, Dictionary<string, JSValue>> _eventCallbacks = new Dictionary<string, Dictionary<string, JSValue>>();
+
+            private readonly Dictionary<uint, Dictionary<string, JSCallback>> _callbacks =
+                new Dictionary<uint, Dictionary<string, JSCallback>>();
+
+            private readonly Dictionary<uint, Dictionary<string, JSCallbackWithReturnValue>> _callbacksWithReturnValue =
+                new Dictionary<uint, Dictionary<string, JSCallbackWithReturnValue>>();
+
+            public JavaScriptHandler(WebView webView, List<JSEventInfo> existingEvents, List<JSCallBackInfo<JSCallback>> existingCallbacks,
+                                     List<JSCallBackInfo<JSCallbackWithReturnValue>> existingCallbacksWithReturnValue)
             {
                 _webView = webView;
+                _existingEvents = existingEvents;
                 _exitingCallbacks = existingCallbacks;
                 _existingCallbacksWithReturnValue = existingCallbacksWithReturnValue;
                 if (webView.IsDocumentReady)
                 {
                     CreateGlobalObjects();
-                } else
+                }
+                else
                 {
                     webView.DocumentReady += WebViewOnDocumentReady;
                 }
@@ -558,38 +652,59 @@ input[type=""text""], input[type=""password""], textarea {
                 {
                     SetCallback(callbackInfo.Namespace, callbackInfo.Name, callbackInfo.Callback);
                 }
+                foreach (var eventInfo in _existingEvents)
+                {
+                    SetEvent(eventInfo.Namespace, eventInfo.Name);
+                }
                 _areGlobalObjectsInitialized = true;
+            }
+
+            private JSValue GetNameSpace(string nameSpace)
+            {
+                if (!_nameSpaces.ContainsKey(nameSpace))
+                {
+                    _nameSpaces[nameSpace] = _webView.CreateGlobalJavascriptObject(nameSpace);
+                    _nameSpaceNames[_nameSpaces[nameSpace].ToObject().RemoteID] = nameSpace;
+                }
+                return _nameSpaces[nameSpace];
             }
 
             private void SetCallback(string nameSpace, string name, JSCallback callback)
             {
-                var ns = _nameSpaces.ContainsKey(nameSpace)
-                             ? _nameSpaces[nameSpace]
-                             : (_nameSpaces[nameSpace] = _webView.CreateGlobalJavascriptObject(nameSpace));
-                using (var obj = ns.ToObject())
+                using (var ns = GetNameSpace(nameSpace).ToObject())
                 {
-                    obj.SetCustomMethod(name, false);
-                    if (!_callbacks.ContainsKey(obj.RemoteID))
+                    ns.SetCustomMethod(name, false);
+                    if (!_callbacks.ContainsKey(ns.RemoteID))
                     {
-                        _callbacks[obj.RemoteID] = new Dictionary<string, JSCallback>();
+                        _callbacks[ns.RemoteID] = new Dictionary<string, JSCallback>();
                     }
-                    _callbacks[obj.RemoteID][name] = callback;
+                    _callbacks[ns.RemoteID][name] = callback;
                 }
             }
 
             private void SetCallback(string nameSpace, string name, JSCallbackWithReturnValue callback)
             {
-                var ns = _nameSpaces.ContainsKey(nameSpace)
-                             ? _nameSpaces[nameSpace]
-                             : (_nameSpaces[nameSpace] = _webView.CreateGlobalJavascriptObject(nameSpace));
-                using (var obj = ns.ToObject())
+                using (var ns = GetNameSpace(nameSpace).ToObject())
                 {
-                    obj.SetCustomMethod(name, true);
-                    if (!_callbacksWithReturnValue.ContainsKey(obj.RemoteID))
+                    ns.SetCustomMethod(name, true);
+                    if (!_callbacksWithReturnValue.ContainsKey(ns.RemoteID))
                     {
-                        _callbacksWithReturnValue[obj.RemoteID] = new Dictionary<string, JSCallbackWithReturnValue>();
+                        _callbacksWithReturnValue[ns.RemoteID] = new Dictionary<string, JSCallbackWithReturnValue>();
                     }
-                    _callbacksWithReturnValue[obj.RemoteID][name] = callback;
+                    _callbacksWithReturnValue[ns.RemoteID][name] = callback;
+                }
+            }
+
+            private void SetEvent(string nameSpace, string name)
+            {
+                using (var ns = GetNameSpace(nameSpace).ToObject())
+                {
+                    ns.SetCustomMethod(name, false);
+                    if (!_events.ContainsKey(ns.RemoteID))
+                    {
+                        _events[ns.RemoteID] = new HashSet<string>();
+                    }
+                    _events[ns.RemoteID].Add(name);
                 }
             }
 
@@ -616,26 +731,90 @@ input[type=""text""], input[type=""password""], textarea {
                     var ns = _callbacks[remoteObjectID];
                     if (ns.ContainsKey(methodName))
                     {
-                        ns[methodName](args);
+                        try
+                        {
+                            ns[methodName](args);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.WarnException("Error in JS callback '" + methodName + "':", ex);
+                        }
+                    }
+                }
+                if (_events.ContainsKey(remoteObjectID))
+                {
+                    var ns = _events[remoteObjectID];
+                    if (ns.Contains(methodName))
+                    {
+                        if (args.Length == 1)
+                        {
+                            var nameSpace = _nameSpaceNames[remoteObjectID];
+                            if (!_eventCallbacks.ContainsKey(nameSpace))
+                            {
+                                _eventCallbacks[nameSpace] = new Dictionary<string, JSValue>();
+                            }
+                            _eventCallbacks[nameSpace][methodName] = args[0];
+                        }
                     }
                 }
             }
 
-            public JSValue OnMethodCallWithReturnValue(IWebView caller, uint remoteObjectID, string methodName, params JSValue[] args)
+            public JSValue OnMethodCallWithReturnValue(IWebView caller, uint remoteObjectID, string methodName,
+                                                       params JSValue[] args)
             {
                 if (_callbacksWithReturnValue.ContainsKey(remoteObjectID))
                 {
                     var ns = _callbacksWithReturnValue[remoteObjectID];
                     if (ns.ContainsKey(methodName))
                     {
-                        return ns[methodName](args);
+                        try
+                        {
+                            return ns[methodName](args);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.WarnException("Error in JS callback '" + methodName + "':", ex);
+                        }
+                        return JSValue.CreateUndefined();
                     }
                 }
 
                 return JSValue.CreateUndefined();
             }
+
+            public void Call(string nameSpace, string name, JSValue[] args)
+            {
+                if (_areGlobalObjectsInitialized)
+                {
+                    using (var ns = GetNameSpace(nameSpace).ToObject())
+                    {
+                        ns.Invoke(name, args);
+                    }
+                }
+            }
+
+            public void AddEvent(string nameSpace, string name)
+            {
+                if (_areGlobalObjectsInitialized)
+                {
+                    SetEvent(nameSpace, name);
+                }
+            }
+
+            public void RaiseEvent(string nameSpace, string name, JSValue[] args)
+            {
+                if (_eventCallbacks.ContainsKey(nameSpace) && _eventCallbacks[nameSpace].ContainsKey(name))
+                {
+                    using (var ns = GetNameSpace(nameSpace).ToObject())
+                    {
+                        ns["__awe_eventDispatcher"] = _eventCallbacks[nameSpace][name];
+                        ns.Invoke("__awe_eventDispatcher", args);
+                        ns["__awe_eventDispatcher"] = JSValue.CreateUndefined();
+                    }
+                }
+            }
         }
-        
+
         private sealed class JSCallBackInfo<T>
         {
             public string Namespace;
@@ -643,6 +822,13 @@ input[type=""text""], input[type=""password""], textarea {
             public string Name;
             
             public T Callback;
+        }
+
+        private sealed class JSEventInfo
+        {
+            public string Namespace;
+
+            public string Name;
         }
 
         #endregion

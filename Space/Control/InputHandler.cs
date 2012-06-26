@@ -45,7 +45,9 @@ namespace Space.Control
                     _keyboard = ((IKeyboard)Client.Game.Services.GetService(typeof(IKeyboard)));
                     _mouse = ((IMouse)Client.Game.Services.GetService(typeof(IMouse)));
                     _gamepad = ((IGamePad)Client.Game.Services.GetService(typeof(IGamePad)));
-                    AttachListeners();
+                    _client.Controller.Session.JoinResponse += (s, e) => AttachListeners();
+                    _client.Controller.Session.Disconnecting += (s, e) => DetachListeners();
+                    _client.Controller.Session.Disconnected += (s, e) => DetachListeners();
                 }
             }
         }

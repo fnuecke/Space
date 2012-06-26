@@ -2221,6 +2221,7 @@
       <Name>SunSystems</Name>
       <Importer>XmlImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
+      <SubType>Designer</SubType>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />

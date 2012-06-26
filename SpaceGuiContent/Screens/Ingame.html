@@ -14,16 +14,30 @@
 		<div class="radar bottom"></div>
 		<div class="radar bottom-right"></div>
 		<div class="radar-border"></div>
-		<p style="color:#fff" id="info"/>
+		
+		<div style="margin:200px 0 0 50px;">
+			<p style="color:#fff" id="info"/><br/>
+			<p style="color:#ccc" id="log"/>
+		</div>
+		
 		<script type="text/javascript">
 		(function($) {
-			$(document).ready(function() {
-				setInterval(function() {
-					$("#info").text(
-						"Health: " + Math.round(Space.getHealth()) + "\n" +
-						"Energy: " + Math.round(Space.getEnergy())
-					);
-				}, 500);
+			setInterval(function() {
+				$("#info").text(
+					"Health: " + Math.round(Space.getHealth()) + "\n" +
+					"Energy: " + Math.round(Space.getEnergy())
+				);
+			}, 500);
+			
+			Space.onDisconnect(function() {
+				$("#log").append("Connection lost<br/>");
+				Screens.pop();
+			});
+			Space.onPlayerJoined(function(e) {
+				$("#log").append("Player joined: " + e.name + " (#" + e.number + ")<br/>");
+			});
+			Space.onPlayerLeft(function(e) {
+				$("#log").append("Player left: " + e.name + " (#" + e.number + ")<br/>");
 			});
 		})(jQuery);
 		</script>
