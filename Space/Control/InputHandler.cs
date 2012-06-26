@@ -149,12 +149,6 @@ namespace Space.Control
             }
         }
 
-        private void HandleMouseWheelRotated(float ticks)
-        {
-            var cam = Client.GetCameraSystem();
-            cam.ChangeZoom(ticks);
-        }
-
         private void DetachListeners()
         {
             if (_keyboard != null)
@@ -363,6 +357,23 @@ namespace Space.Control
             var ry = y - Client.Game.GraphicsDevice.Viewport.Height / 2f;
             _targetRotation = (float)Math.Atan2(ry, rx);
             _rotationChanged = DateTime.Now;
+        }
+
+        /// <summary>
+        /// Update zoom on mouse wheel rotation.
+        /// </summary>
+        /// <param name="ticks"></param>
+        private void HandleMouseWheelRotated(float ticks)
+        {
+            if (ticks > 0)
+            {
+                Client.GetCameraSystem().ZoomIn();
+            }
+            else
+            {
+                Client.GetCameraSystem().ZoomOut();
+            }
+            
         }
 
         #endregion

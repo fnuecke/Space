@@ -27,6 +27,11 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         public const float MinimumZoom = 0.5f;
 
+        /// <summary>
+        /// The maximum zoom scale.
+        /// </summary>
+        public const float ZoomStep = 0.1f;
+
         #endregion
 
         #region Properties
@@ -147,11 +152,38 @@ namespace Space.ComponentSystem.Systems
             return _transform;
         }
 
-        public void ChangeZoom(float amount)
+        /// <summary>
+        /// Set the current and target zoom to the specified value. This instantly
+        /// sets the current zoom.
+        /// </summary>
+        public void SetZoom(float value)
         {
-            _targetZoom += 0.05f * amount;
-            if (_targetZoom < MinimumZoom) _targetZoom = MinimumZoom;
-            if (_targetZoom > MaximumZoom) _targetZoom = MaximumZoom;
+            _currentZoom = _targetZoom = MathHelper.Clamp(value, MinimumZoom, MaximumZoom);
+        }
+
+        /// <summary>
+        /// Set the target zoom to the specified value. This slowly interpolates
+        /// to the specified zoom value.
+        /// </summary>
+        public void ZoomTo(float value)
+        {
+            _targetZoom = MathHelper.Clamp(value, MinimumZoom, MaximumZoom);
+        }
+
+        /// <summary>
+        /// Zoom in by one <em>ZoomStep</em>.
+        /// </summary>
+        public void ZoomIn()
+        {
+            ZoomTo(_targetZoom + ZoomStep);
+        }
+
+        /// <summary>
+        /// Zoom out by one <em>ZoomStep</em>.
+        /// </summary>
+        public void ZoomOut()
+        {
+            ZoomTo(_targetZoom - ZoomStep);
         }
 
         #endregion
