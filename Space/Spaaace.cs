@@ -472,7 +472,7 @@ namespace Space
                 var cam = _client.GetSystem<CameraSystem>();
                 if (cam != null)
                 {
-                    _background.Scale = cam.Zoom;
+                    _background.SetScale(cam.Zoom);
                 }
             }
             _background.Draw();

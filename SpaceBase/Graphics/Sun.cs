@@ -83,7 +83,6 @@ namespace Space.Graphics
         /// </summary>
         private GameTime _gameTime;
 
-      
         #endregion
 
         #region Initialization

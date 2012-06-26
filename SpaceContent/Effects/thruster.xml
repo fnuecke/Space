@@ -44,7 +44,7 @@
       </Modifiers>
       <BlendMode>Alpha</BlendMode>
       <TriggerOffset>0 0</TriggerOffset>
-      <MinimumTriggerPeriod>0.01</MinimumTriggerPeriod>
+      <MinimumTriggerPeriod>0</MinimumTriggerPeriod>
       <Direction>0</Direction>
       <ConeAngle>0</ConeAngle>
     </Item>
@@ -91,7 +91,7 @@
       </Modifiers>
       <BlendMode>Add</BlendMode>
       <TriggerOffset>0 0</TriggerOffset>
-      <MinimumTriggerPeriod>0.01</MinimumTriggerPeriod>
+      <MinimumTriggerPeriod>0</MinimumTriggerPeriod>
       <Direction>0</Direction>
       <ConeAngle>0</ConeAngle>
     </Item>

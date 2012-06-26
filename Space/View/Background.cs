@@ -75,9 +75,11 @@ namespace Space.View
             _effect.Parameters["DebrisLargeTint"].SetValue(Color.SlateGray.ToVector4());
 
             // Set our size, which is simply the viewport, but keep it a square
-            // to avoid stretching of the background.
+            // to avoid stretching of the background. Scale it up, so that it still
+            // fills the whole screen, even when zoomed out completely.
             var viewport = _spriteBatch.GraphicsDevice.Viewport;
-            var maxsize = System.Math.Max(viewport.Width / CameraSystem.MINZOOM, viewport.Width / CameraSystem.MINZOOM);
+            var maxsize = System.Math.Max(viewport.Width / CameraSystem.MinimumZoom,
+                                          viewport.Height / CameraSystem.MinimumZoom);
             SetSize(maxsize);
             SetCenter(viewport.Width / 2f, viewport.Height / 2f);
 

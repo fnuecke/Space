@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
@@ -232,7 +231,7 @@ namespace Space.View
                         // object ;)
                         _orbitEllipse.SetColor(OrbitColor * ld);
                         //scale ellipse
-                        _orbitEllipse.Scale = zoom;
+                        _orbitEllipse.SetScale(zoom);
                         // And draw it!
                         _orbitEllipse.Draw();
                     }
@@ -262,7 +261,7 @@ namespace Space.View
                 // warning.
                 _deadZoneEllipse.SetRadius(pointOfNoReturn + DeadZoneDiffuseWidth);
                 //scale elipse
-                _deadZoneEllipse.Scale = zoom;
+                _deadZoneEllipse.SetScale(zoom);
                 _deadZoneEllipse.Draw();
             }
 

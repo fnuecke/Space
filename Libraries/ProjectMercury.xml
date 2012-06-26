@@ -609,12 +609,22 @@
             Returns a deep copy of the ParticleEffect.
             </summary>
         </member>
-        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2)">
+        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
             <summary>
             Triggers the ParticleEffect at the specified position.
             </summary>
         </member>
-        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2@)">
+        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
+            <summary>
+            Triggers the ParticleEffect at the specified position.
+            </summary>
+        </member>
+        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
+            <summary>
+            Triggers the ParticleEffect at the specified position.
+            </summary>
+        </member>
+        <member name="M:ProjectMercury.ParticleEffect.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
             Triggers the ParticleEffect at the specified position.
             </summary>
@@ -698,7 +708,7 @@
             Defines the abstract base class for a controller.
             </summary>
         </member>
-        <member name="M:ProjectMercury.Controllers.Controller.Trigger(Microsoft.Xna.Framework.Vector2@)">
+        <member name="M:ProjectMercury.Controllers.Controller.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
             Called by the particle effect when it is triggered.
             </summary>
@@ -724,7 +734,7 @@
             Initializes a new instance of the <see cref="T:ProjectMercury.Controllers.TimelineController"/> class.
             </summary>
         </member>
-        <member name="M:ProjectMercury.Controllers.TimelineController.Trigger(Microsoft.Xna.Framework.Vector2@)">
+        <member name="M:ProjectMercury.Controllers.TimelineController.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
             Called by the particle effect when it is triggered.
             </summary>
@@ -1091,13 +1101,25 @@
             </summary>
             <param name="deltaSeconds">Elapsed frame time in whole and fractional seconds.</param>
         </member>
-        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2@)">
+        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
              Triggers the Emitter at the specified position...
             </summary>
             <exception cref="T:System.InvalidOperationException">Thrown if the Emitter has not been initialised.</exception>
         </member>
-        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2)">
+        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
+            <summary>
+             Triggers the Emitter at the specified position...
+            </summary>
+            <exception cref="T:System.InvalidOperationException">Thrown if the Emitter has not been initialised.</exception>
+        </member>
+        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2,Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
+            <summary>
+             Triggers the Emitter at the specified position...
+            </summary>
+            <exception cref="T:System.InvalidOperationException">Thrown if the Emitter has not been initialised.</exception>
+        </member>
+        <member name="M:ProjectMercury.Emitters.Emitter.Trigger(Microsoft.Xna.Framework.Vector2,System.Single,System.Single)">
             <summary>
              Triggers the Emitter at the specified position...
             </summary>
@@ -2477,7 +2499,7 @@
             Initializes a new instance of the <see cref="!:QueueController"/> class.
             </summary>
         </member>
-        <member name="M:ProjectMercury.Controllers.TriggerQueueController.Trigger(Microsoft.Xna.Framework.Vector2@)">
+        <member name="M:ProjectMercury.Controllers.TriggerQueueController.Trigger(Microsoft.Xna.Framework.Vector2@,Microsoft.Xna.Framework.Vector2@,System.Single,System.Single)">
             <summary>
             Called by the particle effect when it is triggered.
             </summary>

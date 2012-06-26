@@ -59,8 +59,6 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component.</param>
         protected override void DrawComponent(GameTime gameTime, long frame, TextureRenderer component)
         {
-            
-
             // Draw the texture based on its position.
             var transform = Manager.GetComponent<Transform>(component.Entity);
 
@@ -69,38 +67,22 @@ namespace Engine.ComponentSystem.Systems
             origin.X = component.Texture.Width / 2f;
             origin.Y = component.Texture.Height / 2f;
 
-            
-
-            // Draw.
-            _spriteBatch.Begin(SpriteSortMode.BackToFront,
-                        BlendState.AlphaBlend,
-                        null,
-                        null,
-                        null,
-                        null,GetTransform()); //Use Transformation of the camera for sprites drawn, so no transformation for sprite itself is needed
+            // Draw. Use transformation of the camera for sprites drawn, so no transformation
+            // for the sprite itself is needed.
+            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, GetTransform());
             _spriteBatch.Draw(component.Texture, transform.Translation, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
             _spriteBatch.End();
         }
 
         /// <summary>
-        /// Returns the <em>translation</em> for offsetting rendered content.
-        /// </summary>
-        /// <returns>
-        /// The translation.
-        /// </returns>
-        protected virtual Vector2 GetTranslation()
-        {
-            return Vector2.Zero;
-        }
-
-        /// <summary>
-        /// Returns the <em>transformation</em> for offsetting and scaling renederd content.
+        /// Returns the <em>transformation</em> for offsetting and scaling rendered content.
         /// </summary>
         /// <returns>The transformation.</returns>
         protected virtual Matrix GetTransform()
         {
             return Matrix.Identity;
         }
+
         #endregion
     }
 }

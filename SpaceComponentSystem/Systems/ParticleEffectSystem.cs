@@ -97,7 +97,6 @@ namespace Space.ComponentSystem.Systems
 
             // Render all known effects.
             var transform = GetTransform();
-           
             foreach (var effect in _effects.Values)
             {
                 _renderer.RenderEffect(effect, ref transform);
@@ -120,20 +119,16 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Returns the <em>translation</em> for offsetting rendered content.
+        /// Returns the <em>transformation</em> for rendered content.
         /// </summary>
         /// <returns>
         /// The translation.
         /// </returns>
-        protected virtual Vector2 GetTranslation()
-        {
-            return Vector2.Zero;
-        }
-
         protected virtual Matrix GetTransform()
         {
             return Matrix.Identity;
         }
+
         #endregion
 
         #region Accessors
@@ -143,8 +138,10 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="effectName">The effect.</param>
         /// <param name="position">The position.</param>
+        /// <param name="impulse">The initial (additional) impulse of the particle.</param>
+        /// <param name="rotation">The rotation.</param>
         /// <param name="scale">The scale.</param>
-        public void Play(string effectName, ref Vector2 position, float scale = 1f)
+        public void Play(string effectName, ref Vector2 position, ref Vector2 impulse, float rotation = 0.0f, float scale = 1.0f)
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
@@ -153,7 +150,9 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
 
-            var translation = position + GetTranslation();
+            var transform = GetTransform();
+            Vector2 translation;
+            Vector2.Transform(ref position, ref transform, out translation);
             var bounds = _renderer.GraphicsDeviceService.GraphicsDevice.Viewport.Bounds;
             bounds.Inflate((int)(256 * scale), (int)(256 * scale));
             if (!bounds.Contains((int)translation.X, (int)translation.Y))
@@ -163,7 +162,7 @@ namespace Space.ComponentSystem.Systems
 
             // Let there be graphics!
             var effect = GetEffect(effectName);
-            effect.Trigger(position);
+            effect.Trigger(ref position, ref impulse, rotation, scale);
         }
 
         /// <summary>
@@ -173,16 +172,33 @@ namespace Space.ComponentSystem.Systems
         /// <param name="effect">The name of the effect to play.</param>
         /// <param name="entity">The entity that emits the effect.</param>
         /// <param name="offset">The offset of the effect to the center of the entity.</param>
+        /// <param name="scale">The scaling of the effect.</param>
         /// <remarks>
         /// The entity must have a <c>Transform</c> component.
         /// </remarks>
-        public void Play(string effect, int entity, ref Vector2 offset)
+        public void Play(string effect, int entity, ref Vector2 offset, float scale = 1.0f)
         {
             var transform = Manager.GetComponent<Transform>(entity);
-            var position = transform.Translation + offset;
-            var rotation = transform.Rotation + MathHelper.Pi;
+            var position = Vector2.Zero;
+            var rotation = 0.0f;
+            if (transform != null)
+            {
+                position = transform.Translation + offset;
+                rotation = transform.Rotation + MathHelper.Pi;
+            }
+            var velocity = Manager.GetComponent<Velocity>(entity);
+            var impulse = Vector2.Zero;
+            if (velocity != null)
+            {
+                impulse = velocity.Value;
 
-            Play(effect, ref position, rotation);
+                // We need to simulate the first update in advance, otherwise the emitter
+                // position appears to "move" depending on object velocity.
+                position -= impulse;
+                impulse *= 59;
+            }
+
+            Play(effect, ref position, ref impulse, rotation, scale);
         }
 
         /// <summary>
@@ -191,13 +207,14 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         /// <param name="effect">The name of the effect to play.</param>
         /// <param name="entity">The entity that emits the effect.</param>
+        /// <param name="scale">The scaling for the effect.</param>
         /// <remarks>
         /// The entity must have a <c>Transform</c> component.
         /// </remarks>
-        public void Play(string effect, int entity)
+        public void Play(string effect, int entity, float scale = 1.0f)
         {
-            Vector2 offset = Vector2.Zero;
-            Play(effect, entity, ref offset);
+            var offset = Vector2.Zero;
+            Play(effect, entity, ref offset, scale);
         }
 
         #endregion

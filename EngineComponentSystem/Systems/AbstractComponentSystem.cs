@@ -71,11 +71,10 @@ namespace Engine.ComponentSystem.Systems
         public override void Draw(GameTime gameTime, long frame)
         {
             _updatingComponents.AddRange(_components);
-            foreach (var component in _updatingComponents)//Todo hier schon begin /end? performanz?
+            foreach (var component in _updatingComponents)
             {
                 if (component.Enabled)
                 {
-                    
                     DrawComponent(gameTime, frame, component);
                 }
             }

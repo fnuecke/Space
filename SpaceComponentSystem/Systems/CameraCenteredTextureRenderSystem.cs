@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns>
         /// The translation.
         /// </returns>
-        protected override Vector2 GetTranslation()
+        protected virtual Vector2 GetTranslation()
         {
             var translation = Manager.GetSystem<CameraSystem>().GetTranslation();
 
@@ -39,13 +39,14 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Returns the <em>transformation</em> for offsetting and scaling renederd content.
+        /// Returns the <em>transformation</em> for offsetting and scaling rendered content.
         /// </summary>
         /// <returns>The transformation.</returns>
         protected override Matrix GetTransform()
         {
             return Manager.GetSystem<CameraSystem>().GetTransformation();
         }
+
         #endregion
     }
 }

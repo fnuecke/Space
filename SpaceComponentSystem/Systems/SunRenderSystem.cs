@@ -32,11 +32,9 @@ namespace Space.ComponentSystem.Systems
         {
             if (_sun == null)
             {
-              //  var cam = Manager.GetSystem<CameraSystem>();
                 _sun = new Sun(game);
                 _sun.LoadContent(spriteBatch, game.Content);
             }
-            
         }
 
         #endregion
@@ -66,15 +64,16 @@ namespace Space.ComponentSystem.Systems
 
             var zoom = Manager.GetSystem<CameraSystem>().Zoom;
             var screenBounds = _sun.GraphicsDevice.Viewport.Bounds;
-            //Inflate bounds by zoomed amount
-            screenBounds.Inflate((int)(screenBounds.Width / zoom - screenBounds.Width), (int)(screenBounds.Height / zoom - screenBounds.Height));
+            // Inflate bounds by zoomed amount.
+            screenBounds.Inflate((int)(screenBounds.Width / zoom - screenBounds.Width),
+                                 (int)(screenBounds.Height / zoom - screenBounds.Height));
             if (sunBounds.Intersects(screenBounds))
             {
                 _sun.SetGameTime(gameTime);
                 _sun.SetSize(component.Radius * 2);
                 _sun.SetCenter(transform.Translation.X + translation.X,
                                transform.Translation.Y + translation.Y);
-                _sun.Scale = zoom;
+                _sun.SetScale(zoom);
                 _sun.Draw();
             }
         }

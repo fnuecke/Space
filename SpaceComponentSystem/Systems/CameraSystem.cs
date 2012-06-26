@@ -3,7 +3,6 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input.Devices;
 using Space.Input;
 using Space.Util;
@@ -16,6 +15,20 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class CameraSystem : AbstractSystem
     {
+        #region Constants
+        
+        /// <summary>
+        /// The maximum zoom scale.
+        /// </summary>
+        public const float MaximumZoom = 1.0f;
+
+        /// <summary>
+        /// The minimum zoom scale.
+        /// </summary>
+        public const float MinimumZoom = 0.5f;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -32,12 +45,13 @@ namespace Space.ComponentSystem.Systems
                 _customCameraPosition = value; 
             }
         }
+
         /// <summary>
         /// The Current camera zoom
         /// </summary>
         public float Zoom
         {
-            get { return _previousZoom; }
+            get { return _currentZoom; }
         }
 
         #endregion
@@ -64,7 +78,7 @@ namespace Space.ComponentSystem.Systems
         /// Previous offset to the ship, use to slowly interpolate, giving a
         /// more organic feel.
         /// </summary>
-        private Vector2 _previousOffset;
+        private Vector2 _currentOffset;
 
         /// <summary>
         /// The current camera position.
@@ -76,41 +90,34 @@ namespace Space.ComponentSystem.Systems
         /// or was dynamically computed.
         /// </summary>
         private Vector2? _customCameraPosition;
+
+        /// <summary>
+        /// The current target zoom of the camera.
+        /// </summary>
+        private float _targetZoom = 1.0f;
+
+        /// <summary>
+        /// The current zoom of the camera which is interpolated towards the
+        /// actual target zoom.
+        /// </summary>
+        private float _currentZoom = 1.0f;
+
         /// <summary>
         /// The Transform Matrix Containing position and zoom of the camera
         /// </summary>
         private Matrix _transform;
 
-        /// <summary>
-        /// The Zoom of the camera which was computed for smooting reasons
-        /// </summary>
-        private float _previousZoom = 1.0f;
-
-        /// <summary>
-        /// The Zoom of the Camera
-        /// </summary>
-        private float _zoom;
-
-        /// <summary>
-        /// The Maximum Zoom
-        /// </summary>
-        public static readonly float MAXZOOM = 1.0f;
-
-        /// <summary>
-        /// The Minimum Zoom
-        /// </summary>
-        public static readonly float MINZOOM = 0.4f;
         #endregion
 
         #region Constructor
-        #endregion
 
         public CameraSystem(Game game, IClientSession session)
         {
             _game = game;
             _session = session;
-            _zoom = 1.0f;
         }
+
+        #endregion
 
         #region Accessors
 
@@ -137,33 +144,20 @@ namespace Space.ComponentSystem.Systems
 
         public Matrix GetTransformation()
         {
-            
             return _transform;
         }
 
         public void ChangeZoom(float amount)
         {
-            _zoom += 0.05f*amount;
-            if (_zoom < MINZOOM) _zoom = MINZOOM;
-            if (_zoom > MAXZOOM) _zoom = MAXZOOM;
+            _targetZoom += 0.05f * amount;
+            if (_targetZoom < MinimumZoom) _targetZoom = MinimumZoom;
+            if (_targetZoom > MaximumZoom) _targetZoom = MaximumZoom;
         }
+
         #endregion
 
         #region Logic
 
-        /// <summary>
-        /// Updates the Transformation of the Camera including position and scale
-        /// </summary>
-        private void UpdateTransformation()
-        {
-            
-            var viewport = _game.GraphicsDevice.Viewport;
-            _transform =       // Thanks to o KB o for this solution
-              Matrix.CreateTranslation(new Vector3(-CameraPositon.X, -CameraPositon.Y, 0)) *
-                                         Matrix.CreateRotationZ(0.0f) *
-                                         Matrix.CreateScale(new Vector3(_previousZoom, _previousZoom, 1)) *
-                                         Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
-        }
         /// <summary>
         /// Used to update the camera position. We don't do this in the draw,
         /// to make sure it's up-to-date before *anything* else is drawn,
@@ -184,24 +178,23 @@ namespace Space.ComponentSystem.Systems
                     {
                         // Non-fixed camera, update our offset based on the game pad
                         // or mouse position, relative to the ship.
-                        var currentOffset = GetInputInducedOffset();
+                        var targetOffset = GetInputInducedOffset();
                         var avatarPosition = Manager.GetComponent<Transform>(avatar.Value).Translation;
 
                         // The interpolate to our new offset, slowly to make the
                         // effect less brain-melting.
-                        _previousOffset = Vector2.Lerp(_previousOffset, currentOffset, 0.05f);
+                        _currentOffset = Vector2.Lerp(_currentOffset, targetOffset, 0.05f);
 
                         // The camera *position* is then the avatar position, plus
                         // the offset, correcting for the viewport center which was
                         // subtracted to make the mouse position's origin centered
                         // to the screen.
-                        _cameraPosition = avatarPosition + _previousOffset;
+                        _cameraPosition = avatarPosition + _currentOffset;
 
-                        
-                        //Interpolate new zoom moving slowly in or out
-                        _previousZoom = MathHelper.Lerp(_previousZoom, _zoom, 0.05f);
+                        // Interpolate new zoom moving slowly in or out.
+                        _currentZoom = MathHelper.Lerp(_currentZoom, _targetZoom, 0.05f);
 
-                        //Update the Transformation
+                        // Update the transformation.
                         UpdateTransformation();
                     }
                 }
@@ -260,6 +253,19 @@ namespace Space.ComponentSystem.Systems
             return offset * offsetScale;
         }
 
+        /// <summary>
+        /// Updates the Transformation of the Camera including position and scale
+        /// </summary>
+        private void UpdateTransformation()
+        {
+            var viewport = _game.GraphicsDevice.Viewport;
+            // Thanks to o KB o for this solution
+            // fn: wtf is KB?
+            _transform = Matrix.CreateTranslation(new Vector3(-CameraPositon.X, -CameraPositon.Y, 0)) *
+                         Matrix.CreateScale(new Vector3(_currentZoom, _currentZoom, 1)) *
+                         Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, viewport.Height * 0.5f, 0));
+        }
+
         #endregion
 
         #region Copying
@@ -270,10 +276,11 @@ namespace Space.ComponentSystem.Systems
 
             if (copy == into)
             {
-                copy._previousOffset = _previousOffset;
+                copy._currentOffset = _currentOffset;
                 copy._cameraPosition = _cameraPosition;
                 copy._customCameraPosition = _customCameraPosition;
-                //TODO flo kommt hier der zoom rein?
+                copy._targetZoom = _targetZoom;
+                copy._currentZoom = _currentZoom;
             }
 
             return copy;

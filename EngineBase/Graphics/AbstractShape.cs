@@ -39,18 +39,6 @@ namespace Engine.Graphics
         /// </summary>
         public GraphicsDevice GraphicsDevice { get { return _device; } }
 
-        /// <summary>
-        /// The scale to used on this shape
-        /// </summary>
-        public float Scale
-        {
-            get { return _scale; }
-            set
-            {
-                _scale = value;
-                _verticesAreValid = false;
-            }
-        }
         #endregion
 
         #region Fields
@@ -100,11 +88,11 @@ namespace Engine.Graphics
         /// The color of the shape.
         /// </summary>
         protected Color _color;
+
         /// <summary>
         /// The scale of the shape
         /// </summary>
-        private float _scale;
-        
+        protected float _scale = 1.0f;
         
         #endregion
 
@@ -121,7 +109,7 @@ namespace Engine.Graphics
                 _effect = game.Content.Load<Effect>(effectName);
             }
             _device = game.GraphicsDevice;
-            _scale = 1;
+
             // Set texture coordinates.
             _vertices[0].Tex0.X = -1;
             _vertices[0].Tex0.Y = -1;
@@ -171,6 +159,19 @@ namespace Engine.Graphics
         public void SetCenter(Vector2 center)
         {
             SetCenter(center.X, center.Y);
+        }
+
+        /// <summary>
+        /// Sets a new scaling for this shape.
+        /// </summary>
+        /// <param name="size">The new size.</param>
+        public void SetScale(float scale)
+        {
+            if (scale != _scale)
+            {
+                _scale = scale;
+                _verticesAreValid = false;
+            }
         }
 
         /// <summary>
@@ -306,8 +307,9 @@ namespace Engine.Graphics
                 // start at the top left, so subtract half the screen width,
                 // and invert the y axis (also subtract there).
                 * Matrix.CreateTranslation(_center.X - _device.Viewport.Width / 2f, _device.Viewport.Height / 2f - _center.Y, 0)
-                //
-                * GetScaleMatrix()
+                // Apply scaling to the object (at this point to scale relative
+                // to its center)
+                * Matrix.CreateScale(_scale)
                 // Finally map what we have to screen space.
                 * Matrix.CreateOrthographic(_device.Viewport.Width, _device.Viewport.Height, _device.Viewport.MinDepth, _device.Viewport.MaxDepth);
             // Apply transform to each corner.
@@ -381,14 +383,6 @@ namespace Engine.Graphics
             #endregion
         }
 
-        /// <summary>
-        /// Creates the scale matrix for the shape
-        /// </summary>
-        /// <returns>The scale matrix</returns>
-        protected virtual Matrix GetScaleMatrix()
-        {
-            return Matrix.CreateScale(_scale);
-        }
         #endregion
     }
 }
