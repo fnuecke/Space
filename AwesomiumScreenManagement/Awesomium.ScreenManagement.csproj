@@ -72,6 +72,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DelegatingJSMethodHandler.cs" />
     <Compile Include="ScreenManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
