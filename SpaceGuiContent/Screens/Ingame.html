@@ -11,28 +11,28 @@
 		</div>
 		
 		<script type="text/javascript">
-		(function($) {
-		    setInterval(function () {
-		        $("#info").html(
-					"Health: " + Math.round(Space.getHealth()) + "<br />" +
-					"Energy: " + Math.round(Space.getEnergy())
-				);
-		    }, 500);
+			var Space = {};
+			(function($) {
+				Space.onDisconnect = function () {
+					$("#log").append("Connection lost<br/>");
+					Screens.pop();
+				};
 
-		    Space.onDisconnect(function () {
-				$("#log").append("Connection lost<br/>");
-				Screens.pop();
-			});
+				Space.onPlayerJoined = function(e) {
+					$("#log").append("Player joined: " + e.name + " (#" + e.number + ")<br/>");
+				};
 
-			Space.onPlayerJoined(function(e) {
-				$("#log").append("Player joined: " + e.name + " (#" + e.number + ")<br/>");
-			});
+				Space.onPlayerLeft = function(e) {
+					$("#log").append("Player left: " + e.name + " (#" + e.number + ")<br/>");
+				};
 
-			Space.onPlayerLeft(function(e) {
-				$("#log").append("Player left: " + e.name + " (#" + e.number + ")<br/>");
-            });
-
-        })(jQuery);
+				setInterval(function () {
+											$("#info").html(
+												"Health: " + Math.round(Space.getHealth()) + "<br />" +
+												"Energy: " + Math.round(Space.getEnergy())
+											);
+										}, 500);
+			})(jQuery);
 		</script>
 	</body>
 </html>

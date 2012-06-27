@@ -156,7 +156,8 @@ input[type=""text""], input[type=""password""], textarea {
 #else
                                        LogLevel = LogLevel.None,
 #endif
-                                       LogPath = Environment.CurrentDirectory
+                                       LogPath = Environment.CurrentDirectory,
+                                       RemoteDebuggingPort = 1337
                                    });
             }
             _session = WebCore.CreateWebSession(new WebPreferences
@@ -608,8 +609,8 @@ input[type=""text""], input[type=""password""], textarea {
             {
                 if (!_nameSpaces.ContainsKey(nameSpace))
                 {
-                    _nameSpaces[nameSpace] = _webView.ExecuteJavascriptWithResult("(typeof " + nameSpace + " === 'undefined') ? undefined : " + nameSpace, string.Empty);
-                    if (_nameSpaces[nameSpace] == null || !_nameSpaces[nameSpace].IsObject)
+                    _nameSpaces[nameSpace] = _webView.ExecuteJavascriptWithResult("window." + nameSpace, string.Empty);
+                    if (!_nameSpaces[nameSpace].IsObject)
                     {
                         _webView.ExecuteJavascript("var " + nameSpace + " = {};", string.Empty);
                         _nameSpaces[nameSpace] = _webView.ExecuteJavascriptWithResult(nameSpace, string.Empty);
