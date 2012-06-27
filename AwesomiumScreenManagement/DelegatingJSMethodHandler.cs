@@ -25,6 +25,29 @@ namespace Awesomium.ScreenManagement
     /// <summary>
     /// This is a simple implementation of a JavaScript method handler that
     /// leaves callback logic to registered delegate functions.
+    /// 
+    /// <para>
+    /// Usage:
+    /// * Create instance for a WebView. This will automatically
+    /// register the handler with the WebView.
+    /// * Use the RegisterCallback methods to add delegates.
+    /// * In Javascript, call the methods.
+    /// </para>
+    /// 
+    /// <para>
+    /// Example:
+    /// C#
+    /// <code>
+    /// void initWebView(WebView webView) {
+    ///   var handler = new DelegatingJSMethodHandler(webView);
+    ///   handler.RegisterCallback("Globals", "test", (args) => Console.WriteLine("in test"));
+    /// }
+    /// </code>
+    /// JS
+    /// <code>
+    /// Globals.test();
+    /// </code>
+    /// </para>
     /// </summary>
     public sealed class DelegatingJSMethodHandler : IJSMethodHandler
     {
@@ -37,7 +60,7 @@ namespace Awesomium.ScreenManagement
         #region Fields
 
         /// <summary>
-        /// The webview this handler is attached to.
+        /// The WebView this handler is attached to.
         /// </summary>
         private readonly WebView _webView;
 
@@ -66,12 +89,13 @@ namespace Awesomium.ScreenManagement
         #region Constructor
 
         /// <summary>
-        /// Creates a new delegating method handler for the specified webview.
+        /// Creates a new delegating method handler for the specified WebView.
         /// </summary>
         /// <param name="webView">The webview to create the handler for.</param>
         public DelegatingJSMethodHandler(WebView webView)
         {
             _webView = webView;
+            _webView.JSMethodHandler = this;
             _webView.DocumentReady += WebViewOnDocumentReady;
             if (_webView.IsDocumentReady)
             {

@@ -267,7 +267,6 @@ input[type=""text""], input[type=""password""], textarea {
 
             // Create JS handler and register callbacks.
             var handler = new DelegatingJSMethodHandler(screen);
-            screen.JSMethodHandler = handler;
             foreach (var callback in _callbacks)
             {
                 handler.RegisterCallback(callback.Namespace, callback.Name, callback.Callback);
