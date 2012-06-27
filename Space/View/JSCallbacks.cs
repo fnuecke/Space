@@ -55,17 +55,17 @@ namespace Space.View
             args["numPlayers"] = new JSValue(e.NumPlayers);
             args["maxPlayers"] = new JSValue(e.MaxPlayers);
             args["data"] = JSValue.CreateNull(); // TODO think of what else we might want to send
-            _game.ScreenManager.RaiseEvent("Space", "onGameInfoReceived", new[] {new JSValue(args)});
+            _game.ScreenManager.Call("Space", "onGameInfoReceived", new[] {new JSValue(args)});
         }
 
         private void SessionOnJoinResponse(object sender, JoinResponseEventArgs e)
         {
-            _game.ScreenManager.RaiseEvent("Space", "onConnected", new JSValue[0]);
+            _game.ScreenManager.Call("Space", "onConnected", new JSValue[0]);
         }
 
         private void SessionOnDisconnected(object sender, EventArgs e)
         {
-            _game.ScreenManager.RaiseEvent("Space", "onDisconnected", new JSValue[0]);
+            _game.ScreenManager.Call("Space", "onDisconnected", new JSValue[0]);
         }
 
         private void SessionOnPlayerJoined(object sender, PlayerEventArgs e)
@@ -73,7 +73,7 @@ namespace Space.View
             var args = new JSObject();
             args["number"] = new JSValue(e.Player.Number);
             args["name"] = new JSValue(e.Player.Name);
-            _game.ScreenManager.RaiseEvent("Space", "onPlayerJoined", new[] { new JSValue(args) });
+            _game.ScreenManager.Call("Space", "onPlayerJoined", new[] { new JSValue(args) });
         }
 
         private void SessionOnPlayerLeft(object sender, PlayerEventArgs e)
@@ -81,7 +81,7 @@ namespace Space.View
             var args = new JSObject();
             args["number"] = new JSValue(e.Player.Number);
             args["name"] = new JSValue(e.Player.Name);
-            _game.ScreenManager.RaiseEvent("Space", "onPlayerLeft", new[] { new JSValue(args) });
+            _game.ScreenManager.Call("Space", "onPlayerLeft", new[] { new JSValue(args) });
         }
 
         #endregion
@@ -95,12 +95,6 @@ namespace Space.View
             s.AddCallback("Space", "joinGame", JoinGame);
             s.AddCallback("Space", "leaveGame", LeaveGame);
             s.AddCallback("Space", "searchGames", SearchGames);
-
-            s.AddEvent("Space", "onGameInfoReceived");
-            s.AddEvent("Space", "onConnected");
-            s.AddEvent("Space", "onDisconnected");
-            s.AddEvent("Space", "onPlayerJoined");
-            s.AddEvent("Space", "onPlayerLeft");
 
             s.AddCallbackWithReturnValue("Space", "getNumPlayers", GetNumPlayers);
             s.AddCallbackWithReturnValue("Space", "getMaxPlayers", GetMaxPlayers);

@@ -107,11 +107,6 @@ input[type=""text""], input[type=""password""], textarea {
         private readonly List<JSCallBackInfo<JSCallbackWithReturnValue>> _callbacksWithReturnValue = new List<JSCallBackInfo<JSCallbackWithReturnValue>>();
 
         /// <summary>
-        /// List of events to expose to all screens.
-        /// </summary>
-        private readonly List<JSEventInfo> _events = new List<JSEventInfo>();
-        
-        /// <summary>
         /// All currently tracked screens.
         /// </summary>
         private readonly Stack<WebView> _screens = new Stack<WebView>();
@@ -256,20 +251,11 @@ input[type=""text""], input[type=""password""], textarea {
             var html = Game.Content.Load<string>("Screens/" + screenName);
             var screen = WebCore.CreateWebView(Game.GraphicsDevice.Viewport.Width, Game.GraphicsDevice.Viewport.Height,
                                                _session);
-            screen.JSMethodHandler = new JavaScriptHandler(screen, _events, _callbacks, _callbacksWithReturnValue);
-
-            // Workaround to get JS callbacks inserted before document.onready gets executed.
-            screen.DocumentReady += delegate(object sender, UrlEventArgs e)
-                                    {
-                                        if (e.Url.Equals("asset://dummy/")) screen.LoadHTML(html);
-                                    };
-            screen.LoadURL(new Uri("asset://dummy/"));
-
+            screen.JSMethodHandler = new JavaScriptHandler(screen, _callbacks, _callbacksWithReturnValue);
+            screen.LoadHTML(html);
             screen.FocusView();
             _screens.Push(screen);
         }
-
-        
 
         /// <summary>
         /// Pops the top screen and disposes it.
@@ -373,46 +359,6 @@ input[type=""text""], input[type=""password""], textarea {
             }
         }
 
-        public void AddEvent(string nameSpace, string name)
-        {
-            if (String.IsNullOrWhiteSpace(nameSpace))
-            {
-                throw new ArgumentException("Invalid namespace, must not be empty.");
-            }
-            if (String.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Invalid name, must not be empty.");
-            }
-
-            _events.Add(new JSEventInfo
-                        {
-                            Name = name,
-                            Namespace = nameSpace
-                        });
-            foreach (var screen in _screens)
-            {
-                ((JavaScriptHandler)screen.JSMethodHandler).AddEvent(nameSpace, name);
-            }
-        }
-
-        public void RaiseEvent(string nameSpace, string name, JSValue[] args)
-        {
-            if (String.IsNullOrWhiteSpace(nameSpace))
-            {
-                throw new ArgumentException("Invalid namespace, must not be empty.");
-            }
-            if (String.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Invalid name, must not be empty.");
-            }
-
-            var screen = _screens.Peek();
-            if (screen != null && screen.JSMethodHandler != null)
-            {
-                ((JavaScriptHandler)screen.JSMethodHandler).RaiseEvent(nameSpace, name, args);
-            }
-        }
-        
         #endregion
 
         #region Events handling
@@ -596,21 +542,15 @@ input[type=""text""], input[type=""password""], textarea {
 
             private readonly WebView _webView;
 
-            private List<JSEventInfo> _existingEvents;
+            private bool _areGlobalObjectsInitialized;
 
             private readonly List<JSCallBackInfo<JSCallback>> _exitingCallbacks;
 
             private readonly List<JSCallBackInfo<JSCallbackWithReturnValue>> _existingCallbacksWithReturnValue;
 
-            private bool _areGlobalObjectsInitialized;
-
             private readonly Dictionary<string, JSValue> _nameSpaces = new Dictionary<string, JSValue>();
 
             private readonly Dictionary<uint, string> _nameSpaceNames = new Dictionary<uint, string>();
-
-            private readonly Dictionary<uint, HashSet<string>> _events = new Dictionary<uint, HashSet<string>>();
-
-            private readonly Dictionary<string, Dictionary<string, JSValue>> _eventCallbacks = new Dictionary<string, Dictionary<string, JSValue>>();
 
             private readonly Dictionary<uint, Dictionary<string, JSCallback>> _callbacks =
                 new Dictionary<uint, Dictionary<string, JSCallback>>();
@@ -618,28 +558,37 @@ input[type=""text""], input[type=""password""], textarea {
             private readonly Dictionary<uint, Dictionary<string, JSCallbackWithReturnValue>> _callbacksWithReturnValue =
                 new Dictionary<uint, Dictionary<string, JSCallbackWithReturnValue>>();
 
-            public JavaScriptHandler(WebView webView, List<JSEventInfo> existingEvents, List<JSCallBackInfo<JSCallback>> existingCallbacks,
+            public JavaScriptHandler(WebView webView, List<JSCallBackInfo<JSCallback>> existingCallbacks,
                                      List<JSCallBackInfo<JSCallbackWithReturnValue>> existingCallbacksWithReturnValue)
             {
                 _webView = webView;
-                _existingEvents = existingEvents;
                 _exitingCallbacks = existingCallbacks;
                 _existingCallbacksWithReturnValue = existingCallbacksWithReturnValue;
                 if (webView.IsDocumentReady)
                 {
+                    _webView.IsTransparent = true;
                     CreateGlobalObjects();
                 }
                 else
                 {
-                    webView.DocumentReady += WebViewOnDocumentReady;
+                    _webView.LoadingFrame += WebViewOnLoadingFrame;
+                    _webView.DocumentReady += WebViewOnDocumentReady;
                 }
+            }
+
+            private void WebViewOnLoadingFrame(object sender, LoadingFrameEventArgs loadingFrameEventArgs)
+            {
+                _areGlobalObjectsInitialized = false;
+                _nameSpaces.Clear();
+                _nameSpaceNames.Clear();
+                _callbacks.Clear();
+                _callbacksWithReturnValue.Clear();
             }
 
             private void WebViewOnDocumentReady(object sender, UrlEventArgs urlEventArgs)
             {
-                _webView.DocumentReady -= WebViewOnDocumentReady;
-                CreateGlobalObjects();
                 _webView.IsTransparent = true;
+                CreateGlobalObjects();
             }
 
             private void CreateGlobalObjects()
@@ -652,10 +601,6 @@ input[type=""text""], input[type=""password""], textarea {
                 {
                     SetCallback(callbackInfo.Namespace, callbackInfo.Name, callbackInfo.Callback);
                 }
-                foreach (var eventInfo in _existingEvents)
-                {
-                    SetEvent(eventInfo.Namespace, eventInfo.Name);
-                }
                 _areGlobalObjectsInitialized = true;
             }
 
@@ -663,7 +608,12 @@ input[type=""text""], input[type=""password""], textarea {
             {
                 if (!_nameSpaces.ContainsKey(nameSpace))
                 {
-                    _nameSpaces[nameSpace] = _webView.CreateGlobalJavascriptObject(nameSpace);
+                    _nameSpaces[nameSpace] = _webView.ExecuteJavascriptWithResult("(typeof " + nameSpace + " === 'undefined') ? undefined : " + nameSpace, string.Empty);
+                    if (_nameSpaces[nameSpace] == null || !_nameSpaces[nameSpace].IsObject)
+                    {
+                        _webView.ExecuteJavascript("var " + nameSpace + " = {};", string.Empty);
+                        _nameSpaces[nameSpace] = _webView.ExecuteJavascriptWithResult(nameSpace, string.Empty);
+                    }
                     _nameSpaceNames[_nameSpaces[nameSpace].ToObject().RemoteID] = nameSpace;
                 }
                 return _nameSpaces[nameSpace];
@@ -692,19 +642,6 @@ input[type=""text""], input[type=""password""], textarea {
                         _callbacksWithReturnValue[ns.RemoteID] = new Dictionary<string, JSCallbackWithReturnValue>();
                     }
                     _callbacksWithReturnValue[ns.RemoteID][name] = callback;
-                }
-            }
-
-            private void SetEvent(string nameSpace, string name)
-            {
-                using (var ns = GetNameSpace(nameSpace).ToObject())
-                {
-                    ns.SetCustomMethod(name, false);
-                    if (!_events.ContainsKey(ns.RemoteID))
-                    {
-                        _events[ns.RemoteID] = new HashSet<string>();
-                    }
-                    _events[ns.RemoteID].Add(name);
                 }
             }
 
@@ -741,22 +678,6 @@ input[type=""text""], input[type=""password""], textarea {
                         }
                     }
                 }
-                if (_events.ContainsKey(remoteObjectID))
-                {
-                    var ns = _events[remoteObjectID];
-                    if (ns.Contains(methodName))
-                    {
-                        if (args.Length == 1)
-                        {
-                            var nameSpace = _nameSpaceNames[remoteObjectID];
-                            if (!_eventCallbacks.ContainsKey(nameSpace))
-                            {
-                                _eventCallbacks[nameSpace] = new Dictionary<string, JSValue>();
-                            }
-                            _eventCallbacks[nameSpace][methodName] = args[0];
-                        }
-                    }
-                }
             }
 
             public JSValue OnMethodCallWithReturnValue(IWebView caller, uint remoteObjectID, string methodName,
@@ -788,28 +709,10 @@ input[type=""text""], input[type=""password""], textarea {
                 {
                     using (var ns = GetNameSpace(nameSpace).ToObject())
                     {
-                        ns.Invoke(name, args);
-                    }
-                }
-            }
-
-            public void AddEvent(string nameSpace, string name)
-            {
-                if (_areGlobalObjectsInitialized)
-                {
-                    SetEvent(nameSpace, name);
-                }
-            }
-
-            public void RaiseEvent(string nameSpace, string name, JSValue[] args)
-            {
-                if (_eventCallbacks.ContainsKey(nameSpace) && _eventCallbacks[nameSpace].ContainsKey(name))
-                {
-                    using (var ns = GetNameSpace(nameSpace).ToObject())
-                    {
-                        ns["__awe_eventDispatcher"] = _eventCallbacks[nameSpace][name];
-                        ns.Invoke("__awe_eventDispatcher", args);
-                        ns["__awe_eventDispatcher"] = JSValue.CreateUndefined();
+                        if (ns.HasMethod(name))
+                        {
+                            ns.Invoke(name, args);
+                        }
                     }
                 }
             }
@@ -822,13 +725,6 @@ input[type=""text""], input[type=""password""], textarea {
             public string Name;
             
             public T Callback;
-        }
-
-        private sealed class JSEventInfo
-        {
-            public string Namespace;
-
-            public string Name;
         }
 
         #endregion
