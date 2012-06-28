@@ -19,10 +19,18 @@
             <div id="tapir5b" class="fillDiagonal1"><hr class="diagonal1" /></div>
             <div id="tapir6a" class="fill lineBottom"></div>
             <div id="tapir7a" class="fillDiagonal1"><hr class="diagonal1" /></div>
+            <div id="anitest">
+                <div class="box1 box2"></div>
+            </div>
         </div>
 
-	    <div style="position:absolute; top: 200px; left:60px;">
-		    <p style="color:#fff" id="info">Health: 100<br />Energy: 100</p><p style="color:#ccc" id="log"><br />
+	    <button id="testbutton">Click me!</button>
+        <div style="position:absolute; top: 200px; left:60px;">
+		    <p style="color:#fff" id="info">
+                Health: 100<br />
+                Energy: 100
+            </p>
+            <p style="color:#ccc" id="log"><br />
         </p></div>
 
 		<script type="text/javascript">
@@ -47,8 +55,14 @@
 						"Energy: " + Math.round(Space.getEnergy())
 					);
 		        }, 500);
+
+
+		        $("#testbutton").click(function () {
+		            $(".box1").toggleClass("box2");
+		        });
+
 		    })(jQuery);
 		</script>
 	
-    </body>
-</html>
+    
+</body></html>
