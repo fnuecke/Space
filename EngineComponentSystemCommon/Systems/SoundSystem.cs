@@ -20,12 +20,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The sound listener to use for relative position.
         /// </summary>
-        private readonly AudioListener _listener = new AudioListener();
+        protected readonly AudioListener _listener = new AudioListener();
 
         /// <summary>
         /// The sound emitter to use for emitted sound positioning.
         /// </summary>
-        private readonly AudioEmitter _emitter = new AudioEmitter();
+        protected readonly AudioEmitter _emitter = new AudioEmitter();
 
         /// <summary>
         /// Whether this is the sound system thats doing the actual "rendering"
@@ -69,13 +69,13 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
         /// <param name="velocity">The velocity of the sound's emitter.</param>
-        public void Play(string soundCue, ref Vector2 position, ref Vector2 velocity)
+        public Cue Play(string soundCue, ref Vector2 position, ref Vector2 velocity)
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
             if (!_isDrawingInstance)
             {
-                return;
+                return null;
             }
 
             // Get position and velocity of listener. We might be playing
@@ -92,7 +92,10 @@ namespace Engine.ComponentSystem.Systems
             _emitter.Velocity = ToV3(ref velocity);
 
             // Let there be sound!
-            _soundBank.PlayCue(soundCue, _listener, _emitter);
+            var cue = _soundBank.GetCue(soundCue);
+            cue.Apply3D(_listener, _emitter);
+            cue.Play();
+            return cue;//return cue for further usage
         }
 
         /// <summary>
@@ -100,10 +103,10 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="position">The position at which to emit the sound.</param>
-        public void Play(string soundCue, ref Vector2 position)
+        public Cue Play(string soundCue, ref Vector2 position)
         {
             var zero = Vector2.Zero;
-            Play(soundCue, ref  position, ref zero);
+            return Play(soundCue, ref  position, ref zero);
         }
 
         /// <summary>
@@ -116,7 +119,7 @@ namespace Engine.ComponentSystem.Systems
         /// </remarks>
         /// <param name="soundCue">The name of the sound cue to play.</param>
         /// <param name="entity">The entity that emits the sound.</param>
-        public void Play(string soundCue, int entity)
+        public Cue Play(string soundCue, int entity)
         {
             var position = Manager.GetComponent<Transform>(entity).Translation;
             var velocity = Vector2.Zero;
@@ -125,7 +128,7 @@ namespace Engine.ComponentSystem.Systems
             {
                 velocity = velocityComponent.Value;
             }
-            Play(soundCue, ref position, ref velocity);
+            return Play(soundCue, ref position, ref velocity);
         }
 
         #endregion
@@ -159,7 +162,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="v2">The vector to convert.</param>
         /// <returns>The converted vector.</returns>
-        private static Vector3 ToV3(ref Vector2 v2)
+        protected static Vector3 ToV3(ref Vector2 v2)
         {
             Vector3 result;
             result.X = v2.X;
