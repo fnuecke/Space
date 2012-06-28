@@ -35,6 +35,13 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
+        public override void Update(GameTime gameTime, long frame)
+        {
+            base.Update(gameTime, frame);
+
+            GetListenerPosition();
+        }
+
         /// <summary>
         /// Reacts to messages to fire sounds.
         /// </summary>
@@ -54,8 +61,15 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         protected override Vector2 GetListenerPosition()
         {
-            var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
-            return avatar.HasValue ? Manager.GetComponent<Transform>(avatar.Value).Translation : Vector2.Zero;
+            if (_session.ConnectionState == ClientState.Connected)
+            {
+                var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
+                if (avatar.HasValue)
+                {
+                    return Manager.GetComponent<Transform>(avatar.Value).Translation;
+                }
+            }
+            return Vector2.Zero;
         }
 
         /// <summary>
@@ -63,8 +77,15 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         protected override Vector2 GetListenerVelocity()
         {
-            var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
-            return avatar.HasValue ? Manager.GetComponent<Velocity>(avatar.Value).Value : Vector2.Zero;
+            if (_session.ConnectionState == ClientState.Connected)
+            {
+                var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
+                if (avatar.HasValue)
+                {
+                    return Manager.GetComponent<Velocity>(avatar.Value).Value;
+                }
+            }
+            return Vector2.Zero;
         }
 
         #endregion
