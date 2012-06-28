@@ -35,13 +35,6 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void Update(GameTime gameTime, long frame)
-        {
-            base.Update(gameTime, frame);
-
-            GetListenerPosition();
-        }
-
         /// <summary>
         /// Reacts to messages to fire sounds.
         /// </summary>
