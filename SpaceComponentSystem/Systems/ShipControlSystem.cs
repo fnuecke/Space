@@ -27,7 +27,7 @@ namespace Space.ComponentSystem.Systems
             var weaponControl = Manager.GetComponent<WeaponControl>(component.Entity);
             var acceleration = Manager.GetComponent<Acceleration>(component.Entity);
             var effects = Manager.GetComponent<ParticleEffects>(component.Entity);
-
+            var sound = Manager.GetComponent<Sound>(component.Entity);
             // Get the mass of the ship.
             float mass = info.Mass;
 
@@ -97,7 +97,8 @@ namespace Space.ComponentSystem.Systems
                         }
                     }
                 }
-
+                //Enable sound for component
+                sound.Enabled = true;
                 // Apply our acceleration. Use the min to our desired
                 // acceleration so we don't exceed our target.
                 acceleration.Value = accelerationDirection * Math.Min(desiredAcceleration, accelerationForce);
@@ -109,7 +110,8 @@ namespace Space.ComponentSystem.Systems
                 {
                     effects.Remove("Effects/thruster");
                 }
-
+                //no acceleration = no sond
+                sound.Enabled = false;
                 // Adjust acceleration value.
                 acceleration.Value = Vector2.Zero;
             }

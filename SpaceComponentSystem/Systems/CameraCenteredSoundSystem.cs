@@ -97,12 +97,16 @@ namespace Space.ComponentSystem.Systems
             foreach (var neighbor in index.
                     RangeQuery(ref position, MaxSoundDistance, Sound.IndexGroup, _reusableNeighborList))
             {
+                 //sound component of the neighbor
+                var sound = Manager.GetComponent<Sound>(neighbor);
+                if(!sound.Enabled)
+                    continue;
                 // Get sound position and velocity.
                 var emitterPosition = Manager.GetComponent<Transform>(neighbor).Translation;
                 // The velocity is optional, so we must check if it exists.
                 var neighborVelocity = Manager.GetComponent<Velocity>(neighbor);
                 var emitterVelocity = neighborVelocity != null ? neighborVelocity.Value : Vector2.Zero;
-
+               
                 // Check whether to update or start playing.
                 if (_playingSounds.ContainsKey(neighbor))
                 {
@@ -131,7 +135,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     // Sound is not yet playing, start it.
                     _reusablePlayingSounds.Add(neighbor,
-                        Play(Manager.GetComponent<Sound>(neighbor).SoundName,
+                        Play(sound.SoundName,
                              ref emitterPosition, ref emitterVelocity));
                 }
             }

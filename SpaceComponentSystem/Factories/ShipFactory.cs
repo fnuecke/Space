@@ -144,6 +144,7 @@ namespace Space.ComponentSystem.Factories
             // components.
             manager.AddComponent<Index>(entity).Initialize(
                 Gravitation.IndexGroup |
+                Sound.IndexGroup |
                 Detectable.IndexGroup |
                 faction.ToCollisionIndexGroup());
 
@@ -175,7 +176,10 @@ namespace Space.ComponentSystem.Factories
 
             // Add some character!
             manager.AddComponent<Character<AttributeType>>(entity);
-            
+
+
+
+            manager.AddComponent<Sound>(entity).Initialize("Thruster");
             // Do we drop stuff?
             if (ItemPool != null)
             {
