@@ -177,9 +177,9 @@ namespace Space.ComponentSystem.Factories
             // Add some character!
             manager.AddComponent<Character<AttributeType>>(entity);
 
-
-
+            // The the sound component for the thruster sound.
             manager.AddComponent<Sound>(entity).Initialize("Thruster");
+
             // Do we drop stuff?
             if (ItemPool != null)
             {

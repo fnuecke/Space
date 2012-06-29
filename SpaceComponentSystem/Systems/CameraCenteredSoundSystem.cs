@@ -97,10 +97,15 @@ namespace Space.ComponentSystem.Systems
             foreach (var neighbor in index.
                     RangeQuery(ref position, MaxSoundDistance, Sound.IndexGroup, _reusableNeighborList))
             {
-                 //sound component of the neighbor
+                // Get the sound component of the neighbor.
                 var sound = Manager.GetComponent<Sound>(neighbor);
-                if(!sound.Enabled)
+
+                // Skip this neighbor if its sound is not enabled.
+                if (!sound.Enabled)
+                {
                     continue;
+                }
+
                 // Get sound position and velocity.
                 var emitterPosition = Manager.GetComponent<Transform>(neighbor).Translation;
                 // The velocity is optional, so we must check if it exists.
@@ -134,14 +139,15 @@ namespace Space.ComponentSystem.Systems
                         // Dispose it. It will be restarted in the next update,
                         // if still in range.
                         cue.Dispose();
+                        // Don't dispose it again.
+                        _playingSounds.Remove(neighbor);
                     }
                 }
                 else
                 {
                     // Sound is not yet playing, start it.
                     _reusablePlayingSounds.Add(neighbor,
-                        Play(sound.SoundName,
-                             ref emitterPosition, ref emitterVelocity));
+                        Play(sound.SoundName, ref emitterPosition, ref emitterVelocity));
                 }
             }
 
