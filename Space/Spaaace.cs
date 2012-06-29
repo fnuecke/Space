@@ -259,9 +259,6 @@ namespace Space
 
                 // Do a first update, as recommended in the documentation.
                 _audioEngine.Update();
-                var sound =_soundBank.GetCue("Sun");
-                sound.Play();
-                sound.Stop(AudioStopOptions.AsAuthored);
                 Services.AddService(typeof(SoundBank), _soundBank);
             }
             catch (InvalidOperationException ex)

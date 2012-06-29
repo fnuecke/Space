@@ -15,17 +15,17 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The sound bank we use to get actual sounds for our cue names.
         /// </summary>
-        protected readonly SoundBank _soundBank;
+        private readonly SoundBank _soundBank;
 
         /// <summary>
         /// The sound listener to use for relative position.
         /// </summary>
-        protected readonly AudioListener _listener = new AudioListener();
+        protected readonly AudioListener Listener = new AudioListener();
 
         /// <summary>
         /// The sound emitter to use for emitted sound positioning.
         /// </summary>
-        protected readonly AudioEmitter _emitter = new AudioEmitter();
+        protected readonly AudioEmitter Emitter = new AudioEmitter();
 
         /// <summary>
         /// Whether this is the sound system thats doing the actual "rendering"
@@ -33,13 +33,13 @@ namespace Engine.ComponentSystem.Systems
         /// Draw is called for this instance. Only that system may actually
         /// play sounds.
         /// </summary>
-        protected bool _isDrawingInstance;
+        protected bool IsDrawingInstance;
 
         #endregion
 
         #region Constructor
 
-        public SoundSystem(SoundBank soundBank)
+        protected SoundSystem(SoundBank soundBank)
         {
             _soundBank = soundBank;
         }
@@ -55,7 +55,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="frame">The frame that should be rendered.</param>
         public sealed override void Draw(GameTime gameTime, long frame)
         {
-            _isDrawingInstance = true;
+            IsDrawingInstance = true;
         }
 
         #endregion
@@ -73,7 +73,7 @@ namespace Engine.ComponentSystem.Systems
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
-            if (!_isDrawingInstance)
+            if (!IsDrawingInstance)
             {
                 return null;
             }
@@ -83,19 +83,21 @@ namespace Engine.ComponentSystem.Systems
             // using that old position would be just as wrong, so this
             // wrong is simpler ;)
             var tmp = GetListenerPosition();
-            _listener.Position = ToV3(ref tmp);
+            Listener.Position = ToV3(ref tmp);
             tmp = GetListenerVelocity();
-            _listener.Velocity = ToV3(ref tmp);
+            Listener.Velocity = ToV3(ref tmp);
 
             // Get position and velocity of emitter.
-            _emitter.Position = ToV3(ref position);
-            _emitter.Velocity = ToV3(ref velocity);
+            Emitter.Position = ToV3(ref position);
+            Emitter.Velocity = ToV3(ref velocity);
 
             // Let there be sound!
             var cue = _soundBank.GetCue(soundCue);
-            cue.Apply3D(_listener, _emitter);
+            cue.Apply3D(Listener, Emitter);
             cue.Play();
-            return cue;//return cue for further usage
+
+            // Return cue for further usage.
+            return cue;
         }
 
         /// <summary>
@@ -180,7 +182,7 @@ namespace Engine.ComponentSystem.Systems
             var copy = (SoundSystem)base.DeepCopy(into);
 
             // Mark as secondary system.
-            copy._isDrawingInstance = false;
+            copy.IsDrawingInstance = false;
 
             return copy;
         }

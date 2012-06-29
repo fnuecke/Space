@@ -15,6 +15,15 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class CameraCenteredSoundSystem : SoundSystem
     {
+        #region Constants
+
+        /// <summary>
+        /// The maximum distance from which sounds can be heard.
+        /// </summary>
+        private const float MaxSoundDistance = 5000;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -25,39 +34,123 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// All Currently playing sounds mapped to the entry id
         /// </summary>
-        private Dictionary<int, Cue> _playingSounds;
+        private Dictionary<int, Cue> _playingSounds = new Dictionary<int, Cue>();
 
         #endregion
 
-        #region Constants
-
-
-        /// <summary>
-        /// The Maximum Distance from which the sound shall be heard
-        /// </summary>
-        private const float Maxsounddistance = 5000;
-
-        #endregion
         #region Single-Allocation
 
         /// <summary>
-        /// Reused for iterating components.
+        /// Reused for iterating components. As its only used by the drawing
+        /// instance we don't need to clone it, so it can be readonly.
         /// </summary>
-        private HashSet<int> _reusableNeighborList = new HashSet<int>();
+        private readonly HashSet<int> _reusableNeighborList = new HashSet<int>();
+
+        /// <summary>
+        /// Used to swap between this dict and the one assigned to _playingSounds
+        /// to avoid reallocating each update.
+        /// </summary>
+        private Dictionary<int, Cue> _reusablePlayingSounds = new Dictionary<int, Cue>();
 
         #endregion
+
         #region Constructor
 
         public CameraCenteredSoundSystem(SoundBank soundbank, IClientSession session)
             : base(soundbank)
         {
             _session = session;
-            _playingSounds = new Dictionary<int, Cue>();
         }
 
         #endregion
 
         #region Logic
+
+        /// <summary>
+        /// Check for sound in range and play.
+        /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
+        /// <param name="frame">The frame in which the update is applied.</param>
+        public override void Update(GameTime gameTime, long frame)
+        {
+            if (!IsDrawingInstance)
+            {
+                return;
+            }
+
+            var index = Manager.GetSystem<IndexSystem>();
+            if (index == null)
+            {
+                return;
+            }
+
+            // Update listener information.
+            var position = GetListenerPosition();
+            Listener.Position = ToV3(ref position);
+            var velocity = GetListenerVelocity();
+            Listener.Velocity = ToV3(ref velocity);
+
+            // Iterate all sounds in range of the listener. All sounds remaining
+            // in the current list of sounds playing will be stopped, as they are
+            // out of range. The ones in range will be removed from that list and
+            // added to our reusable list.
+            foreach (var neighbor in index.
+                    RangeQuery(ref position, MaxSoundDistance, Sound.IndexGroup, _reusableNeighborList))
+            {
+                // Get sound position and velocity.
+                var emitterPosition = Manager.GetComponent<Transform>(neighbor).Translation;
+                // The velocity is optional, so we must check if it exists.
+                var neighborVelocity = Manager.GetComponent<Velocity>(neighbor);
+                var emitterVelocity = neighborVelocity != null ? neighborVelocity.Value : Vector2.Zero;
+
+                // Check whether to update or start playing.
+                if (_playingSounds.ContainsKey(neighbor))
+                {
+                    // We already know this one so just apply 3d effect.
+                    var cue = _playingSounds[neighbor];
+
+                    // Make sure cue is not stopped (how ever that may have happened...)
+                    if (!cue.IsStopped)
+                    {
+                        // Do not stop it.
+                        _playingSounds.Remove(neighbor);
+
+                        // Get position and velocity of emitter.
+                        Emitter.Position = ToV3(ref emitterPosition);
+                        Emitter.Velocity = ToV3(ref emitterVelocity);
+
+                        // Apply new surround effect.
+                        cue.Apply3D(Listener, Emitter);
+
+                        // Add it to the new list of playing sounds.
+                        _reusablePlayingSounds.Add(neighbor, cue);
+                    }
+                    // else: it will be restarted in the next update.
+                }
+                else
+                {
+                    // Sound is not yet playing, start it.
+                    _reusablePlayingSounds.Add(neighbor,
+                        Play(Manager.GetComponent<Sound>(neighbor).SoundName,
+                             ref emitterPosition, ref emitterVelocity));
+                }
+            }
+
+            // Clear for next update.
+            _reusableNeighborList.Clear();
+
+            // Stop all sound thats not in range.
+            foreach (var cue in _playingSounds)
+            {
+                cue.Value.Stop(AudioStopOptions.Immediate);
+            }
+            _playingSounds.Clear();
+
+            // Swap the two sound dictionaries.
+            var tmp = _reusablePlayingSounds;
+            _reusablePlayingSounds = _playingSounds;
+            _playingSounds = tmp;
+        }
 
         /// <summary>
         /// Reacts to messages to fire sounds.
@@ -105,64 +198,6 @@ namespace Space.ComponentSystem.Systems
             return Vector2.Zero;
         }
 
-        /// <summary>
-        /// Check for sound in range and play
-        /// </summary>
-        /// <param name="gameTime"></param>
-        /// <param name="frame"></param>
-        public override void Update(GameTime gameTime, long frame)
-        {
-            if (!_isDrawingInstance)
-                return;
-
-            var position = GetListenerPosition();
-            var index = Manager.GetSystem<IndexSystem>();
-            if (index == null)
-            {
-                return;
-            }
-            _listener.Position = ToV3(ref position);
-            var tmp = GetListenerVelocity();
-            _listener.Velocity = ToV3(ref tmp);
-            var newDict = new Dictionary<int, Cue>();
-            foreach (var neigbor in index.
-                    RangeQuery(ref position, Maxsounddistance, Sound.IndexGroup, _reusableNeighborList))
-            {
-                var neigborTransform = Manager.GetComponent<Transform>(neigbor);
-                var neigborPosition = neigborTransform.Translation;
-                var neigborVelocity = Manager.GetComponent<Velocity>(neigbor);
-                var nvel = neigborVelocity != null ? neigborVelocity.Value : Vector2.Zero;
-                if (_playingSounds.ContainsKey(neigbor))//we already know this one so just apply 3d effect
-                {
-                    var cue = _playingSounds[neigbor];
-
-                    if (cue != null && !cue.IsStopped)//make sure cue is not stoped (how ever that may have happened...)
-                    {
-                        _playingSounds.Remove(neigbor);
-                        // Get position and velocity of emitter.
-                        _emitter.Position = ToV3(ref neigborPosition);
-                        _emitter.Velocity = ToV3(ref nvel);
-                        cue.Apply3D(_listener, _emitter);//apply new 3d effect
-                        newDict.Add(neigbor, cue);
-                    }
-                }
-                else
-                {
-                    var neigborSound = Manager.GetComponent<Sound>(neigbor);
-                    //var cue = _soundBank.GetCue(neigborSound.SoundName);
-                    var cue = Play(neigborSound.SoundName, ref neigborPosition, ref nvel);
-                    //cue.Play();
-                    newDict.Add(neigbor, cue);
-                }
-
-
-            }
-            foreach (var cue in _playingSounds)//stop all sound thats not in range
-            {
-                cue.Value.Stop(AudioStopOptions.Immediate);
-            }
-            _playingSounds = newDict;
-        }
         #endregion
     }
 }

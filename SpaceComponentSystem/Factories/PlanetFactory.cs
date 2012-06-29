@@ -115,7 +115,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(SampleRotationSpeed(random)) / 60);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, majorRadius, minorRadius, angle + SampleAngleOffset(random), period, MathHelper.TwoPi * (float)random.NextDouble());
             manager.AddComponent<Index>(entity).Initialize(Detectable.IndexGroup |
-                Sound.IndexGroup |//todo check this if this is the right way
+                Sound.IndexGroup |
                 CellSystem.CellDeathAutoRemoveIndex);
             var mass = SampleMass(random);
             if (mass > 0)
@@ -126,8 +126,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
             manager.AddComponent<PlanetRenderer>(entity).Initialize(Texture, SurfaceTint, SampleRadius(random), AtmosphereTint);
 
-
-            manager.AddComponent<Sound>(entity).Initialize("Planet");//TODO this is not sure
+            manager.AddComponent<Sound>(entity).Initialize("Planet");
 
             return entity;
         }

@@ -50,9 +50,9 @@ namespace Space.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            var otherDetectalbe = (Detectable)other;
-            Texture = otherDetectalbe.Texture;
-            _textureName = otherDetectalbe._textureName;
+            var otherDetectable = (Detectable)other;
+            Texture = otherDetectable.Texture;
+            _textureName = otherDetectable._textureName;
 
             return this;
         }

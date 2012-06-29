@@ -55,7 +55,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Spin>(entity);
             manager.AddComponent<Index>(entity).Initialize(
                 Detectable.IndexGroup |
-                Sound.IndexGroup |//todo check this if this is the right way
+                Sound.IndexGroup |
                 CellSystem.CellDeathAutoRemoveIndex |
                 Factions.Nature.ToCollisionIndexGroup());
             manager.AddComponent<Gravitation>(entity).Initialize(Gravitation.GravitationTypes.Attractor, SampleMass(random));
@@ -69,7 +69,7 @@ namespace Space.ComponentSystem.Factories
 
             manager.AddComponent<SunRenderer>(entity).Initialize(radius);
 
-            manager.AddComponent<Sound>(entity).Initialize("Sun");//TODO this is not sure
+            manager.AddComponent<Sound>(entity).Initialize("Sun");
 
             return entity;
         }
