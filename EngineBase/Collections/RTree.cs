@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Collections
@@ -161,7 +159,8 @@ namespace Engine.Collections
                 AdjustTree(node);
                 return;
             }
-            throw new NotImplementedException();
+            // TODO implement!
+            //throw new NotImplementedException();
         }
 
         public void Update(Vector2 newPoint, T value)
@@ -217,7 +216,7 @@ namespace Engine.Collections
             root = new LeafNode();
         }
 
-        public ICollection<T> RangeQuery(ref Vector2 point, float range, ISet<T> list = null)
+        public ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null)
         {
             var result = list ?? new HashSet<T>();
 

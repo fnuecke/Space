@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Engine.Graphics;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Collections
@@ -52,7 +53,7 @@ namespace Engine.Collections
         /// The current bounds of the tree. This is a dynamic value, adjusted
         /// based on elements added to the tree.
         /// </summary>
-        private Rectangle _bounds = Rectangle.Empty;
+        private Microsoft.Xna.Framework.Rectangle _bounds = Microsoft.Xna.Framework.Rectangle.Empty;
 
         /// <summary>
         /// The root node of the tree.
@@ -65,6 +66,11 @@ namespace Engine.Collections
         /// of an inner intact.
         /// </summary>
         private readonly LinkedList<Entry> _entries = new LinkedList<Entry>();
+
+        /// <summary>
+        /// Mapping back from value to entry, for faster removal.
+        /// </summary>
+        private readonly Dictionary<T, LinkedListNode<Entry>> _values = new Dictionary<T, LinkedListNode<Entry>>();
 
         /// <summary>
         /// Reused list when splitting nodes and so on (not re-allocating each
@@ -119,6 +125,11 @@ namespace Engine.Collections
         /// are already stored in the tree.</exception>
         public void Add(ref Vector2 point, T value)
         {
+            if (Contains(value))
+            {
+                throw new ArgumentException("Entry is already in the tree at the specified point.", "value");
+            }
+
             // Create the entry to add.
             var entry = GetListNode(point, value);
 
@@ -141,15 +152,7 @@ namespace Engine.Collections
             }
             else
             {
-                // Got a leaf, check if we already have that point.
-                for (var existingEntry = insertionNode.LowEntry; existingEntry != null && existingEntry != insertionNode.HighEntry.Next; existingEntry = existingEntry.Next)
-                {
-                    if (entry.Equals(existingEntry))
-                    {
-                        throw new ArgumentException("Entry is already in the tree at the specified point.", "value");
-                    }
-                }
-                // Not yet in the tree.
+                // Got a leaf, insert in it.
                 insertAfter = insertionNode.LowEntry;
             }
 
@@ -162,6 +165,7 @@ namespace Engine.Collections
             {
                 _entries.AddFirst(entry);
             }
+            _values.Add(value, entry);
 
             var node = insertionNode;
             while (node != null)
@@ -212,64 +216,40 @@ namespace Engine.Collections
         /// the tree at the specified old position.</exception>
         public void Update(ref Vector2 newPoint, T value)
         {
-            // Find the current position for that value, by finding the value
-            // in our list of entries.
-            Vector2 oldPoint = Vector2.Zero;
-            bool success = false;
-            foreach (var entry in _entries)
-            {
-                if (entry.Value.Equals(value))
-                {
-                    oldPoint = entry.Point;
-                    success = true;
-                    break;
-                }
-            }
-
-            // If we have no such entry, add it instead.
-            if (!success)
+            // Check if we have that entry, if not add it.
+            if (!Contains(value))
             {
                 Add(ref newPoint, value);
                 return;
             }
 
+            // Get the old position.
+            var entry = _values[value];
+
             // Handle dynamic growth.
             EnsureCapacity(ref newPoint);
 
-            // Get the node the entry would be in.
+            // Out parameters we don't care for.
             int nodeX, nodeY, nodeSize;
-            var oldNode = FindNode(ref oldPoint, out nodeX, out nodeY, out nodeSize);
-            
-            // Is the node a leaf node? If not we don't have that entry.
-            if (oldNode.IsLeaf)
-            {
-                // Check if we have that entry.
-                for (var entry = oldNode.LowEntry; entry != null && entry != oldNode.HighEntry.Next; entry = entry.Next)
-                {
-                    if (entry.Value.Point.Equals(oldPoint) &&
-                        entry.Value.Value.Equals(value))
-                    {
-                        // Found it! See if the new point falls into the same
-                        // node, otherwise re-insert.
-                        var newNode = FindNode(ref newPoint, out nodeX, out nodeY, out nodeSize);
-                        if (oldNode == newNode)
-                        {
-                            // Same node, just update the entry.
-                            entry.Value.Point = newPoint;
-                        }
-                        else
-                        {
-                            // Different node, re-insert.
-                            RemoveEntry(ref oldPoint, value);
-                            Add(ref newPoint, value);
-                        }
 
-                        // Success, don't throw.
-                        return;
-                    }
-                }
+            // Get the node the entry would be in.
+            var oldNode = FindNode(ref entry.Value.Point, out nodeX, out nodeY, out nodeSize);
+            
+            Debug.Assert(oldNode.IsLeaf);
+
+            // See if the new point falls into the same node, otherwise re-insert.
+            var newNode = FindNode(ref newPoint, out nodeX, out nodeY, out nodeSize);
+            if (oldNode == newNode)
+            {
+                // Same node, just update the entry.
+                entry.Value.Point = newPoint;
             }
-            throw new ArgumentException("Entry not in the tree at the specified point.", "value");
+            else
+            {
+                // Different node, re-insert.
+                RemoveFromNode(oldNode, entry);
+                Add(ref newPoint, value);
+            }
         }
         
         /// <summary>
@@ -292,13 +272,10 @@ namespace Engine.Collections
         public bool Remove(T value)
         {
             // See if we have that entry.
-            foreach (var entry in _entries)
+            if (_values.ContainsKey(value))
             {
-                if (entry.Value.Equals(value))
-                {
-                    RemoveEntry(ref entry.Point, entry.Value);
-                    return true;
-                }
+                var entry = _values[value].Value;
+                RemoveEntry(ref entry.Point, entry.Value);
             }
             return false;
         }
@@ -313,26 +290,7 @@ namespace Engine.Collections
         /// specified point.</returns>
         public bool Contains(ref Vector2 point, T value)
         {
-            // Get the node the entry would be in.
-            int nodeX, nodeY, nodeSize;
-            var node = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
-            
-            // Is the node a leaf node? If not we don't have that entry.
-            if (node.IsLeaf)
-            {
-                // Check if we have that entry.
-                for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
-                {
-                    if (entry.Value.Point.Equals(point) &&
-                        entry.Value.Value.Equals(value))
-                    {
-                        // Got it :)
-                        return true;
-                    }
-                }
-            }
-
-            return false;
+            return _values.ContainsKey(value) && _values[value].Value.Point.Equals(point);
         }
         
         /// <summary>
@@ -343,14 +301,7 @@ namespace Engine.Collections
         /// specified point.</returns>
         public bool Contains(T value)
         {
-            foreach (var entry in _entries)
-            {
-                if (entry.Value.Equals(value))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return _values.ContainsKey(value);
         }
 
         /// <summary>
@@ -368,6 +319,7 @@ namespace Engine.Collections
                 FreeListNode(node);
             }
             _entries.Clear();
+            _values.Clear();
         }
 
         /// <summary>
@@ -381,7 +333,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the neighborhood of the query point.</returns>
-        public ICollection<T> RangeQuery(ref Vector2 point, float range, ISet<T> list = null)
+        public ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null)
         {
             var result = list ?? new HashSet<T>();
 
@@ -415,7 +367,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the query rectangle.</returns>
-        public ICollection<T> RangeQuery(ref Rectangle rectangle, ICollection<T> list = null)
+        public ICollection<T> RangeQuery(ref Microsoft.Xna.Framework.Rectangle rectangle, ICollection<T> list = null)
         {
             var result = list ?? new List<T>();
 
@@ -433,7 +385,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <returns>All objects in the query rectangle.</returns>
-        public ICollection<T> RangeQuery(Rectangle rectangle)
+        public ICollection<T> RangeQuery(Microsoft.Xna.Framework.Rectangle rectangle)
         {
             return RangeQuery(ref rectangle);
         }
@@ -509,49 +461,60 @@ namespace Engine.Collections
                     if (entry.Value.Point.Equals(point) &&
                         entry.Value.Value.Equals(value))
                     {
-                        // Found it! If it's our low or high state adjust them
-                        // accordingly.
-                        var node = removalNode;
-                        while (node != null)
-                        {
-                            if (node.LowEntry == node.HighEntry)
-                            {
-                                // Only one left, clear the node.
-                                node.LowEntry = null;
-                                node.HighEntry = null;
-                            }
-                            else if (node.LowEntry == entry)
-                            {
-                                // It's the low node, adjust accordingly.
-                                node.LowEntry = node.LowEntry.Next;
-                            }
-                            else if (node.HighEntry == entry)
-                            {
-                                // It's the high node, adjust accordingly.
-                                node.HighEntry = node.HighEntry.Previous;
-                            }
-
-                            // Adjust entry count.
-                            --node.EntryCount;
-
-                            // Continue checking in our parent.
-                            node = node.Parent;
-                        }
-
-                        // Remove the entry from the list of entries.
-                        _entries.Remove(entry);
-                        FreeListNode(entry);
-
-                        // See if we can compact the node's parent. This has to
-                        // be done in a post-processing step because the entry
-                        // has to be removed first (to update entry counts).
-                        CleanNode(removalNode);
+                        RemoveFromNode(removalNode, entry);
 
                         // Aaaand... we're done.
                         return;
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Removes an entry from a node.
+        /// </summary>
+        /// <param name="removalNode">The node to remove from.</param>
+        /// <param name="entry">The entry to remove.</param>
+        private void RemoveFromNode(Node removalNode, LinkedListNode<Entry> entry)
+        {
+            // Found it! If it's our low or high state adjust them
+            // accordingly.
+            var node = removalNode;
+            while (node != null)
+            {
+                if (node.LowEntry == node.HighEntry)
+                {
+                    // Only one left, clear the node.
+                    node.LowEntry = null;
+                    node.HighEntry = null;
+                }
+                else if (node.LowEntry == entry)
+                {
+                    // It's the low node, adjust accordingly.
+                    node.LowEntry = node.LowEntry.Next;
+                }
+                else if (node.HighEntry == entry)
+                {
+                    // It's the high node, adjust accordingly.
+                    node.HighEntry = node.HighEntry.Previous;
+                }
+
+                // Adjust entry count.
+                --node.EntryCount;
+
+                // Continue checking in our parent.
+                node = node.Parent;
+            }
+
+            // Remove the entry from the list of entries.
+            _entries.Remove(entry);
+            _values.Remove(entry.Value.Value);
+            FreeListNode(entry);
+
+            // See if we can compact the node's parent. This has to
+            // be done in a post-processing step because the entry
+            // has to be removed first (to update entry counts).
+            CleanNode(removalNode);
         }
         
         /// <summary>
@@ -937,7 +900,7 @@ namespace Engine.Collections
         /// <param name="node">The current node.</param>
         /// <param name="point">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Rectangle query, ICollection<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Microsoft.Xna.Framework.Rectangle query, ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref query, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -1009,7 +972,7 @@ namespace Engine.Collections
         /// Circle / Box intersection test.
         /// </summary>
         /// <param name="center">The center of the circle.</param>
-        /// <param name="radiusSquared">The squared radius of the circle.</param>
+        /// <param name="radius">The radius of the circle.</param>
         /// <param name="x">The x position of the box.</param>
         /// <param name="y">The y position of the box.</param>
         /// <param name="size">The size of the box.</param>
@@ -1072,9 +1035,9 @@ namespace Engine.Collections
         /// <param name="y">The y position of the second box.</param>
         /// <param name="size">The size of the second box.</param>
         /// <returns>How the two intersect.</returns>
-        private static IntersectionType ComputeIntersection(ref Rectangle rectangle, int x, int y, int size)
+        private static IntersectionType ComputeIntersection(ref Microsoft.Xna.Framework.Rectangle rectangle, int x, int y, int size)
         {
-            Rectangle other;
+            Microsoft.Xna.Framework.Rectangle other;
             other.X = x;
             other.Y = y;
             other.Width = size;
@@ -1382,10 +1345,10 @@ namespace Engine.Collections
         /// Renders a graphical representation of this tree's cells using the
         /// specified shape renderer.
         /// </summary>
-        /// <param name="rectangle">The shape renderer to paint with.</param>
+        /// <param name="shape">The shape renderer to paint with.</param>
         /// <param name="translation">The translation to apply to all draw
-        /// operation.</param>
-        public void Draw(Engine.Graphics.AbstractShape shape, Vector2 translation)
+        ///   operation.</param>
+        public void Draw(AbstractShape shape, Vector2 translation)
         {
             DrawNode(_root, translation.X, translation.Y, _bounds.Width, shape);
         }
@@ -1394,7 +1357,7 @@ namespace Engine.Collections
         /// Renders a single note into a sprite batch, and recursively render
         /// its children.
         /// </summary>
-        private void DrawNode(Node node, float centerX, float centerY, int size, Engine.Graphics.AbstractShape shape)
+        private void DrawNode(Node node, float centerX, float centerY, int size, AbstractShape shape)
         {
             // Abort if there is no node here.
             if (node == null)
@@ -1410,10 +1373,10 @@ namespace Engine.Collections
             float width = shape.GraphicsDevice.Viewport.Width;
             float height = shape.GraphicsDevice.Viewport.Height;
 
-            if (IsInInterval(left, 0, width) ||
-                IsInInterval(right, 0, width) ||
-                IsInInterval(top, 0, height) ||
-                IsInInterval(bottom, 0, height))
+            //if (IsInInterval(left, 0, width) ||
+            //    IsInInterval(right, 0, width) ||
+            //    IsInInterval(top, 0, height) ||
+            //    IsInInterval(bottom, 0, height))
             {
                 shape.SetCenter(centerX, centerY);
                 shape.SetSize(size - 1);

@@ -63,13 +63,10 @@ from Space.ComponentSystem.Systems import *
 from Space.Data import *
 
 def goto(x, y):
-    avatar.GetComponent[Transform]().SetTranslation(x, y)
+    manager.GetComponent[Transform](avatar).SetTranslation(x, y)
 
 def setBaseStat(type, value):
     character.SetBaseValue(type, value)
-
-def ge(id):
-    return manager.GetEntity(id)
 ", Script.Runtime.Globals);
             }
             catch (Exception ex)

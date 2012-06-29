@@ -43,7 +43,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Maximum entries per node in our index to use.
         /// </summary>
-        private const int MaxEntriesPerNode = 50;
+        private const int MaxEntriesPerNode = 30;
 
         #endregion
 

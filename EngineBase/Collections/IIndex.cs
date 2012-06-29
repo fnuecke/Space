@@ -101,7 +101,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the neighborhood of the query point.</returns>
-        ICollection<T> RangeQuery(ref Vector2 point, float range, ISet<T> list = null);
+        ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null);
 
         /// <summary>
         /// Perform a range query on this tree. This will return all entries

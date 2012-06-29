@@ -12,7 +12,7 @@
       <MajorRadius>1</MajorRadius>
       <MinorRadius>0.8</MinorRadius>
       <AngleOffset>0.1</AngleOffset>
-      <TravelSpeed>10</TravelSpeed>
+      <TravelSpeed>8 to 12</TravelSpeed>
     </Item>
     <Item>
       <Name>moon_tiny</Name>
@@ -22,7 +22,7 @@
       <MajorRadius>1</MajorRadius>
       <MinorRadius>0.8</MinorRadius>
       <AngleOffset>0.1</AngleOffset>
-      <TravelSpeed>15</TravelSpeed>
+      <TravelSpeed>12 to 16</TravelSpeed>
     </Item>
     <Item>
       <Name>moon_small</Name>
@@ -32,7 +32,7 @@
       <MajorRadius>1</MajorRadius>
       <MinorRadius>0.8</MinorRadius>
       <AngleOffset>0.1</AngleOffset>
-      <TravelSpeed>10</TravelSpeed>
+      <TravelSpeed>8 to 12</TravelSpeed>
     </Item>
     <Item>
       <Name>moon_medium</Name>
@@ -42,7 +42,7 @@
       <MajorRadius>1</MajorRadius>
       <MinorRadius>0.8</MinorRadius>
       <AngleOffset>0.1</AngleOffset>
-      <TravelSpeed>8</TravelSpeed>
+      <TravelSpeed>6 to 8</TravelSpeed>
     </Item>
     <Item>
       <Name>moon_large</Name>
@@ -52,7 +52,7 @@
       <MajorRadius>1</MajorRadius>
       <MinorRadius>0.8</MinorRadius>
       <AngleOffset>0.1</AngleOffset>
-      <TravelSpeed>6</TravelSpeed>
+      <TravelSpeed>4 to 6</TravelSpeed>
     </Item>
   </Asset>
 </XnaContent>
