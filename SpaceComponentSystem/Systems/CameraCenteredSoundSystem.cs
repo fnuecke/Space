@@ -129,7 +129,12 @@ namespace Space.ComponentSystem.Systems
                         // Add it to the new list of playing sounds.
                         _reusablePlayingSounds.Add(neighbor, cue);
                     }
-                    // else: it will be restarted in the next update.
+                    else
+                    {
+                        // Dispose it. It will be restarted in the next update,
+                        // if still in range.
+                        cue.Dispose();
+                    }
                 }
                 else
                 {
@@ -147,6 +152,7 @@ namespace Space.ComponentSystem.Systems
             foreach (var cue in _playingSounds)
             {
                 cue.Value.Stop(AudioStopOptions.Immediate);
+                cue.Value.Dispose();
             }
             _playingSounds.Clear();
 
