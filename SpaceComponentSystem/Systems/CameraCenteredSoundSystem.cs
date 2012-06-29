@@ -22,21 +22,23 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private readonly IClientSession _session;
 
+        /// <summary>
+        /// All Currently playing sounds mapped to the entry id
+        /// </summary>
         private Dictionary<int, Cue> _playingSounds;
-        
+
         #endregion
 
-         #region Constants
+        #region Constants
+
 
         /// <summary>
-        /// Index group to use for gravitational computations.
+        /// The Maximum Distance from which the sound shall be heard
         /// </summary>
-        public static readonly ulong IndexGroup = 1ul << IndexSystem.GetGroup();
-
-        private const float Maxsounddistance = 3000;
+        private const float Maxsounddistance = 5000;
 
         #endregion
-         #region Single-Allocation
+        #region Single-Allocation
 
         /// <summary>
         /// Reused for iterating components.
@@ -45,7 +47,7 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
         #region Constructor
-        
+
         public CameraCenteredSoundSystem(SoundBank soundbank, IClientSession session)
             : base(soundbank)
         {
@@ -110,6 +112,9 @@ namespace Space.ComponentSystem.Systems
         /// <param name="frame"></param>
         public override void Update(GameTime gameTime, long frame)
         {
+            if (!_isDrawingInstance)
+                return;
+
             var position = GetListenerPosition();
             var index = Manager.GetSystem<IndexSystem>();
             if (index == null)
@@ -121,33 +126,36 @@ namespace Space.ComponentSystem.Systems
             _listener.Velocity = ToV3(ref tmp);
             var newDict = new Dictionary<int, Cue>();
             foreach (var neigbor in index.
-                    RangeQuery(ref position, Maxsounddistance, IndexGroup, _reusableNeighborList))
+                    RangeQuery(ref position, Maxsounddistance, Sound.IndexGroup, _reusableNeighborList))
             {
                 var neigborTransform = Manager.GetComponent<Transform>(neigbor);
                 var neigborPosition = neigborTransform.Translation;
                 var neigborVelocity = Manager.GetComponent<Velocity>(neigbor);
-                
-                if(_playingSounds.ContainsKey(neigbor))//we already know this one so just apply 3d effect
+                var nvel = neigborVelocity != null ? neigborVelocity.Value : Vector2.Zero;
+                if (_playingSounds.ContainsKey(neigbor))//we already know this one so just apply 3d effect
                 {
                     var cue = _playingSounds[neigbor];
-                    _playingSounds.Remove(neigbor);
-                    if(!cue.IsDisposed)
+
+                    if (cue != null && !cue.IsStopped)//make sure cue is not stoped (how ever that may have happened...)
                     {
+                        _playingSounds.Remove(neigbor);
                         // Get position and velocity of emitter.
                         _emitter.Position = ToV3(ref neigborPosition);
-                        _emitter.Velocity = ToV3(ref neigborVelocity.Value);
-                        cue.Apply3D(_listener, _emitter);
+                        _emitter.Velocity = ToV3(ref nvel);
+                        cue.Apply3D(_listener, _emitter);//apply new 3d effect
                         newDict.Add(neigbor, cue);
                     }
                 }
                 else
                 {
                     var neigborSound = Manager.GetComponent<Sound>(neigbor);
-                    var cue = Play(neigborSound.SoundName, ref neigborPosition, ref neigborVelocity.Value);
-                    newDict.Add(neigbor,cue);
+                    //var cue = _soundBank.GetCue(neigborSound.SoundName);
+                    var cue = Play(neigborSound.SoundName, ref neigborPosition, ref nvel);
+                    //cue.Play();
+                    newDict.Add(neigbor, cue);
                 }
 
-                
+
             }
             foreach (var cue in _playingSounds)//stop all sound thats not in range
             {

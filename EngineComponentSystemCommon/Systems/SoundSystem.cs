@@ -15,7 +15,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The sound bank we use to get actual sounds for our cue names.
         /// </summary>
-        private readonly SoundBank _soundBank;
+        protected readonly SoundBank _soundBank;
 
         /// <summary>
         /// The sound listener to use for relative position.
@@ -33,7 +33,7 @@ namespace Engine.ComponentSystem.Systems
         /// Draw is called for this instance. Only that system may actually
         /// play sounds.
         /// </summary>
-        private bool _isDrawingInstance;
+        protected bool _isDrawingInstance;
 
         #endregion
 

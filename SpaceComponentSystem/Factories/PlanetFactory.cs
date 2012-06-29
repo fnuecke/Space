@@ -73,7 +73,7 @@ namespace Space.ComponentSystem.Factories
         /// The offset from the base orbiting angle of the sun system.
         /// </summary>
         [ContentSerializer(Optional = true)]
-        public Interval<float> AngleOffset = Interval<float>.Zero; 
+        public Interval<float> AngleOffset = Interval<float>.Zero;
 
         /// <summary>
         /// The travel speed of generated planets' orbits. This will be used
@@ -82,7 +82,7 @@ namespace Space.ComponentSystem.Factories
         public Interval<float> TravelSpeed;
 
         #endregion
-    
+
         #region Sampling
 
         /// <summary>
@@ -114,7 +114,9 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Transform>(entity).Initialize(manager.GetComponent<Transform>(center).Translation);
             manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(SampleRotationSpeed(random)) / 60);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, majorRadius, minorRadius, angle + SampleAngleOffset(random), period, MathHelper.TwoPi * (float)random.NextDouble());
-            manager.AddComponent<Index>(entity).Initialize(Detectable.IndexGroup | CellSystem.CellDeathAutoRemoveIndex);
+            manager.AddComponent<Index>(entity).Initialize(Detectable.IndexGroup |
+                Sound.IndexGroup |//todo check this if this is the right way
+                CellSystem.CellDeathAutoRemoveIndex);
             var mass = SampleMass(random);
             if (mass > 0)
             {
@@ -123,6 +125,9 @@ namespace Space.ComponentSystem.Factories
 
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
             manager.AddComponent<PlanetRenderer>(entity).Initialize(Texture, SurfaceTint, SampleRadius(random), AtmosphereTint);
+
+
+            manager.AddComponent<Sound>(entity).Initialize("Planet");//TODO this is not sure
 
             return entity;
         }
