@@ -66,13 +66,13 @@ namespace Space.View
 
             // Normally we'd want to set the parameters each draw call, but we
             // only use this shader in one place, so it's OK to do this once.
-            _effect.Parameters["Stars"].SetValue(_backgroundStars);
-            _effect.Parameters["DarkMatter"].SetValue(_backgroundDarkMatter);
-            _effect.Parameters["DebrisSmall"].SetValue(_backgroundDebrisSmall);
-            _effect.Parameters["DebrisLarge"].SetValue(_backgroundDebrisLarge);
+            Effect.Parameters["Stars"].SetValue(_backgroundStars);
+            Effect.Parameters["DarkMatter"].SetValue(_backgroundDarkMatter);
+            Effect.Parameters["DebrisSmall"].SetValue(_backgroundDebrisSmall);
+            Effect.Parameters["DebrisLarge"].SetValue(_backgroundDebrisLarge);
 
-            _effect.Parameters["DebrisSmallTint"].SetValue(Color.DarkSlateGray.ToVector4());
-            _effect.Parameters["DebrisLargeTint"].SetValue(Color.SlateGray.ToVector4());
+            Effect.Parameters["DebrisSmallTint"].SetValue(Color.DarkSlateGray.ToVector4());
+            Effect.Parameters["DebrisLargeTint"].SetValue(Color.SlateGray.ToVector4());
 
             // Set our size, which is simply the viewport, but keep it a square
             // to avoid stretching of the background. Scale it up, so that it still
@@ -106,7 +106,7 @@ namespace Space.View
             // Get local camera position.
             if (Client != null)
             {
-                _effect.Parameters["Position"].SetValue(Client.GetCameraPosition() / _width);
+                Effect.Parameters["Position"].SetValue(Client.GetCameraPosition() / Width);
             }
         }
 

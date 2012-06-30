@@ -18,13 +18,13 @@ namespace Engine.Graphics
         /// Meaning we want two triangles, the one from 0->1->2, and the
         /// one from 2->1->3 (or anything equivalent).
         /// </summary>
-        protected static readonly short[] _indices = { 0, 1, 2,   // First triangle.
-                                                       2, 1, 3 }; // Second triangle.
+        protected static readonly short[] Indices = { 0, 1, 2,   // First triangle.
+                                                      2, 1, 3 }; // Second triangle.
 
         /// <summary>
         /// Actual value for our vertex declaration.
         /// </summary>
-        protected static readonly VertexDeclaration _vertexDeclaration = new VertexDeclaration(new[]
+        protected static readonly VertexDeclaration VertexDeclaration = new VertexDeclaration(new[]
             {
                 new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
                 new VertexElement(sizeof(float) * 3, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0)
@@ -39,6 +39,95 @@ namespace Engine.Graphics
         /// </summary>
         public GraphicsDevice GraphicsDevice { get { return _device; } }
 
+        /// <summary>
+        /// The center for this shape.
+        /// </summary>
+        public Vector2 Center
+        {
+            get { return _center; }
+            set { SetCenter(value.X, value.Y); }
+        }
+
+        /// <summary>
+        /// The scaling for this shape.
+        /// </summary>
+        public float Scale
+        {
+            get { return _scale; }
+            set
+            {
+                if (value != _scale)
+                {
+                    _scale = value;
+                    InvalidateVertices();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The width for this shape.
+        /// </summary>
+        public float Width
+        {
+            get { return _width; }
+            set
+            {
+                if (value != _width)
+                {
+                    _width = value;
+                    InvalidateVertices();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The height for this shape.
+        /// </summary>
+        public float Height
+        {
+            get { return _height; }
+            set
+            {
+                if (value != _height)
+                {
+                    _height = value;
+                    InvalidateVertices();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The rotation for this shape.
+        /// </summary>
+        public float Rotation
+        {
+            get { return _rotation; }
+            set
+            {
+                if (value != _rotation)
+                {
+                    _rotation = value;
+                    InvalidateVertices();
+                }
+            }
+        }
+
+        /// <summary>
+        /// The color for this shape.
+        /// </summary>
+        public Color Color
+        {
+            get { return _color; }
+            set
+            {
+                if (value != _color)
+                {
+                    _color = value;
+                    InvalidateVertices();
+                }
+            }
+        }
+
         #endregion
 
         #region Fields
@@ -46,7 +135,7 @@ namespace Engine.Graphics
         /// <summary>
         /// The shader we use to draw the ellipse.
         /// </summary>
-        protected Effect _effect;
+        protected readonly Effect Effect;
 
         /// <summary>
         /// The graphics device we'll be drawing on.
@@ -62,37 +151,37 @@ namespace Engine.Graphics
         /// Whether our vertices are valid, i.e. correspond to the set shape
         /// parameters.
         /// </summary>
-        protected bool _verticesAreValid;
+        private bool _verticesAreValid;
 
         /// <summary>
         /// The current center of the shape.
         /// </summary>
-        protected Vector2 _center;
+        private Vector2 _center;
 
         /// <summary>
         /// The current width of the shape.
         /// </summary>
-        protected float _width;
+        private float _width;
 
         /// <summary>
         /// The current height of the shape.
         /// </summary>
-        protected float _height;
+        private float _height;
 
         /// <summary>
         /// The current rotation of the shape.
         /// </summary>
-        protected float _rotation;
+        private float _rotation;
 
         /// <summary>
         /// The color of the shape.
         /// </summary>
-        protected Color _color;
+        private Color _color = Color.White;
 
         /// <summary>
         /// The scale of the shape
         /// </summary>
-        protected float _scale = 1.0f;
+        private float _scale = 1.0f;
         
         #endregion
 
@@ -101,12 +190,13 @@ namespace Engine.Graphics
         /// <summary>
         /// Creates a new ellipse renderer for the given game.
         /// </summary>
-        /// <param name="game"></param>
+        /// <param name="game">The game we will render for.</param>
+        /// <param name="effectName">The shader to use for rendering the shape.</param>
         protected AbstractShape(Game game, string effectName)
         {
-            if (_effect == null)
+            if (Effect == null)
             {
-                _effect = game.Content.Load<Effect>(effectName);
+                Effect = game.Content.Load<Effect>(effectName);
             }
             _device = game.GraphicsDevice;
 
@@ -119,9 +209,6 @@ namespace Engine.Graphics
             _vertices[2].Tex0.Y = 1;
             _vertices[3].Tex0.X = 1;
             _vertices[3].Tex0.Y = 1;
-
-            // Set defaults.
-            SetColor(Color.White);
         }
 
         #endregion
@@ -144,45 +231,14 @@ namespace Engine.Graphics
         }
 
         /// <summary>
-        /// Sets a new center for this shape.
-        /// </summary>
-        /// <param name="center">The new center.</param>
-        public void SetCenter(ref Vector2 center)
-        {
-            SetCenter(center.X, center.Y);
-        }
-
-        /// <summary>
-        /// Sets a new center for this shape.
-        /// </summary>
-        /// <param name="center">The new center.</param>
-        public void SetCenter(Vector2 center)
-        {
-            SetCenter(center.X, center.Y);
-        }
-
-        /// <summary>
-        /// Sets a new scaling for this shape.
-        /// </summary>
-        /// <param name="size">The new size.</param>
-        public void SetScale(float scale)
-        {
-            if (scale != _scale)
-            {
-                _scale = scale;
-                _verticesAreValid = false;
-            }
-        }
-
-        /// <summary>
         /// Sets a new size for this shape.
         /// </summary>
         /// <param name="width">The new width.</param>
         /// <param name="height">The new height.</param>
         public void SetSize(float width, float height)
         {
-            SetWidth(width);
-            SetHeight(height);
+            Width = width;
+            Height = height;
         }
 
         /// <summary>
@@ -196,55 +252,11 @@ namespace Engine.Graphics
         }
 
         /// <summary>
-        /// Sets a new width for this shape.
+        /// Marks the vertices as invalid, so that they are recomputed before the next draw.
         /// </summary>
-        /// <param name="width">The new width.</param>
-        public void SetWidth(float width)
+        protected void InvalidateVertices()
         {
-            if (width != _width)
-            {
-                _width = width;
-                _verticesAreValid = false;
-            }
-        }
-
-        /// <summary>
-        /// Sets a new height for this shape.
-        /// </summary>
-        /// <param name="height">The new height.</param>
-        public void SetHeight(float height)
-        {
-            if (height != _height)
-            {
-                _height = height;
-                _verticesAreValid = false;
-            }
-        }
-
-        /// <summary>
-        /// Sets a new rotation for this shape.
-        /// </summary>
-        /// <param name="rotation">The new rotation.</param>
-        public void SetRotation(float rotation)
-        {
-            if (rotation != _rotation)
-            {
-                _rotation = rotation;
-                _verticesAreValid = false;
-            }
-        }
-
-        /// <summary>
-        /// Sets a new color for this shape.
-        /// </summary>
-        /// <param name="color">The new color.</param>
-        public void SetColor(Color color)
-        {
-            if (color != _color)
-            {
-                _color = color;
-                _verticesAreValid = false;
-            }
+            _verticesAreValid = false;
         }
 
         #endregion
@@ -257,20 +269,17 @@ namespace Engine.Graphics
         public virtual void Draw()
         {
             // Update our paint canvas if necessary.
-            if (!_verticesAreValid)
-            {
-                RecomputeQuads();
-            }
+            RecomputeQuads();
 
             // Always adjust shader parameters, because it may be re-used by
             // different shape renderers.
             AdjustParameters();
 
             // Apply the effect and render our area.
-            foreach (var pass in _effect.CurrentTechnique.Passes)
+            foreach (var pass in Effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, _indices, 0, 2, _vertexDeclaration);
+                _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
             }
         }
 
@@ -279,7 +288,7 @@ namespace Engine.Graphics
         /// </summary>
         protected virtual void AdjustParameters()
         {
-            var color = _effect.Parameters["Color"];
+            var color = Effect.Parameters["Color"];
             if (color != null)
             {
                 color.SetValue(_color.ToVector4());
@@ -296,6 +305,12 @@ namespace Engine.Graphics
         /// </summary>
         protected void RecomputeQuads()
         {
+            // Skip if all is in order.
+            if (_verticesAreValid)
+            {
+                return;
+            }
+
             // Adjust bounds.
             AdjustBounds();
 
@@ -376,8 +391,8 @@ namespace Engine.Graphics
             /// <param name="uv">The texture coordinate at the vertex.</param>
             public QuadVertex(Vector3 xyz, Vector2 uv)
             {
-                this.Position = xyz;
-                this.Tex0 = uv;
+                Position = xyz;
+                Tex0 = uv;
             }
 
             #endregion

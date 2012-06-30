@@ -10,6 +10,57 @@ namespace Space.Graphics
     /// </summary>
     public sealed class Planet : AbstractShape
     {
+        #region Properties
+
+        /// <summary>
+        /// The surface texture.
+        /// </summary>
+        public Texture2D SurfaceTexture
+        {
+            get { return _surface; }
+            set { _surface = value; }
+        }
+
+        /// <summary>
+        /// The surface tint applied to the surface texture.
+        /// </summary>
+        public Color SurfaceTint
+        {
+            get { return Color; }
+            set { Color = value; }
+        }
+
+        /// <summary>
+        /// The atmosphere tint applied to the planet's atmosphere.
+        /// </summary>
+        public Color AtmosphereTint
+        {
+            get { return _atmosphereTint; }
+            set { _atmosphereTint = value; }
+        }
+
+        /// <summary>
+        /// The direction the light is coming from (vector to the sun
+        /// this planet is orbiting).
+        /// </summary>
+        public Vector2 LightDirection
+        {
+            get { return _lightDirection; }
+            set { _lightDirection = value; }
+        }
+
+        /// <summary>
+        /// The current game time, which is used to determine the current
+        /// rotation of the planet.
+        /// </summary>
+        public GameTime GameTime
+        {
+            get { return _gameTime; }
+            set { _gameTime = value; }
+        }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -53,67 +104,6 @@ namespace Space.Graphics
 
         #endregion
 
-        #region Accessors
-
-        /// <summary>
-        /// Sets the surface texture.
-        /// </summary>
-        /// <param name="texture">The texture to use.</param>
-        public void SetSurfaceTexture(Texture2D texture)
-        {
-            _surface = texture;
-        }
-
-        /// <summary>
-        /// Sets the surface tint applied to the surface texture.
-        /// </summary>
-        /// <param name="tint">The tint to use.</param>
-        public void SetSurfaceTint(Color tint)
-        {
-            SetColor(tint);
-        }
-
-        /// <summary>
-        /// Sets the atmosphere tint applied to the planet's atmosphere.
-        /// </summary>
-        /// <param name="tint">The tint to use.</param>
-        public void SetAtmosphereTint(Color tint)
-        {
-            _atmosphereTint = tint;
-        }
-
-        /// <summary>
-        /// Sets the direction the light is coming from (vector to the sun
-        /// this planet is orbiting).
-        /// </summary>
-        /// <param name="toLight">Direction to the light source.</param>
-        public void SetLightDirection(ref Vector2 toLight)
-        {
-            _lightDirection = toLight;
-        }
-
-        /// <summary>
-        /// Sets the direction the light is coming from (vector to the sun
-        /// this planet is orbiting).
-        /// </summary>
-        /// <param name="toLight">Direction to the light source.</param>
-        public void SetLightDirection(Vector2 toLight)
-        {
-            SetLightDirection(ref toLight);
-        }
-
-        /// <summary>
-        /// Sets the current game time, which is used to determine the current
-        /// rotation of the planet.
-        /// </summary>
-        /// <param name="gameTime"></param>
-        public void SetGameTime(GameTime gameTime)
-        {
-            _gameTime = gameTime;
-        }
-
-        #endregion
-
         #region Draw
 
         /// <summary>
@@ -121,16 +111,17 @@ namespace Space.Graphics
         /// </summary>
         protected override void AdjustParameters()
         {
-            _effect.Parameters["SurfaceTexture"].SetValue(_surface);
-            _effect.Parameters["SurfaceTint"].SetValue(_color.ToVector4());
-            _effect.Parameters["AtmosphereTint"].SetValue(_atmosphereTint.ToVector4());
-            _effect.Parameters["LightDirection"].SetValue(_lightDirection);
+            Effect.Parameters["SurfaceTexture"].SetValue(_surface);
+            Effect.Parameters["SurfaceTint"].SetValue(Color.ToVector4());
+            Effect.Parameters["AtmosphereTint"].SetValue(_atmosphereTint.ToVector4());
+            Effect.Parameters["LightDirection"].SetValue(_lightDirection);
 
-            _effect.Parameters["RenderRadius"].SetValue(_width / 2f);
-            _effect.Parameters["EmbossScale"].SetValue(1f / _width);
+            Effect.Parameters["RenderRadius"].SetValue(Width / 2f);
+            Effect.Parameters["EmbossScale"].SetValue(1f / Width);
 
-            _effect.Parameters["TextureOffset"].SetValue(_surfaceRotation * ((float)_gameTime.TotalGameTime.TotalSeconds / _width));
-            _effect.Parameters["TextureScale"].SetValue(_surface.Width / (2f * _width));
+            Effect.Parameters["TextureOffset"].SetValue(_surfaceRotation *
+                                                        ((float)_gameTime.TotalGameTime.TotalSeconds / Width));
+            Effect.Parameters["TextureScale"].SetValue(_surface.Width / (2f * Width));
         }
 
         #endregion

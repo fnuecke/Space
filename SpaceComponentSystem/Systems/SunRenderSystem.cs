@@ -69,11 +69,10 @@ namespace Space.ComponentSystem.Systems
                                  (int)(screenBounds.Height / zoom - screenBounds.Height));
             if (sunBounds.Intersects(screenBounds))
             {
-                _sun.SetGameTime(gameTime);
+                _sun.GameTime = gameTime;
                 _sun.SetSize(component.Radius * 2);
-                _sun.SetCenter(transform.Translation.X + translation.X,
-                               transform.Translation.Y + translation.Y);
-                _sun.SetScale(zoom);
+                _sun.Center = transform.Translation + translation;
+                _sun.Scale = zoom;
                 _sun.Draw();
             }
         }

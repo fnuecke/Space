@@ -32,7 +32,10 @@ namespace Engine.Collections
         /// <summary>
         /// The number of values stored in this tree.
         /// </summary>
-        public int Count { get { return _values.Count; } }
+        public int Count
+        {
+            get { return _values.Count; }
+        }
 
         #endregion
 
@@ -106,7 +109,7 @@ namespace Engine.Collections
             _bounds.X = _bounds.Y = -_minBucketSize;
             _bounds.Width = _bounds.Height = _minBucketSize << 1;
 
-            _root = GetNode(null);
+            _root = new Node();
 
             _reusableEntryList = new List<Entry>(_maxEntriesPerNode + 1);
         }
@@ -131,7 +134,7 @@ namespace Engine.Collections
             }
 
             // Create the entry to add.
-            var entry = GetEntry(point, value);
+            var entry = new Entry {Point = point, Value = value};
 
             // Handle dynamic growth.
             EnsureCapacity(ref point);
@@ -146,7 +149,7 @@ namespace Engine.Collections
             if (!insertionNode.IsLeaf)
             {
                 var cell = ComputeCell(nodeX, nodeY, nodeSize >> 1, ref point);
-                insertionNode.Children[cell] = GetNode(insertionNode);
+                insertionNode.Children[cell] = new Node {Parent = insertionNode};
                 insertionNode = insertionNode.Children[cell];
                 insertAfter = insertionNode.Parent.HighEntry;
             }
@@ -192,7 +195,7 @@ namespace Engine.Collections
             // We need to split the node.
             SplitNodeIfNecessary(nodeX, nodeY, nodeSize, insertionNode);
         }
-        
+
         /// <summary>
         /// Add a new entry to the tree, at the specified position, with the
         /// specified associated value.
@@ -234,7 +237,7 @@ namespace Engine.Collections
 
             // Get the node the entry would be in.
             var oldNode = FindNode(ref entry.Point, out nodeX, out nodeY, out nodeSize);
-            
+
             // See if the new point falls into the same node, otherwise re-insert.
             var newNode = FindNode(ref newPoint, out nodeX, out nodeY, out nodeSize);
             if (oldNode == newNode)
@@ -249,7 +252,7 @@ namespace Engine.Collections
                 Add(ref newPoint, value);
             }
         }
-        
+
         /// <summary>
         /// Update a single entry by changing its position. If the entry is not
         /// already in the tree, it will be added.
@@ -274,7 +277,9 @@ namespace Engine.Collections
             {
                 var entry = _values[value];
                 // Get the node the entry would be in.
-                int nodeX, nodeY, nodeSize;                RemoveFromNode(FindNode(ref entry.Point, out nodeX, out nodeY, out nodeSize), entry);            }
+                int nodeX, nodeY, nodeSize;
+                RemoveFromNode(FindNode(ref entry.Point, out nodeX, out nodeY, out nodeSize), entry);
+            }
             return false;
         }
 
@@ -290,7 +295,7 @@ namespace Engine.Collections
         {
             return _values.ContainsKey(value) && _values[value].Point.Equals(point);
         }
-        
+
         /// <summary>
         /// Test whether this tree contains the specified value.
         /// </summary>
@@ -307,15 +312,7 @@ namespace Engine.Collections
         /// </summary>
         public void Clear()
         {
-            // Free all tree nodes.
-            FreeBranch(_root);
-            _root = GetNode(null);
-
-            // Free all list nodes.
-            for (var entry = _entries; entry != null; entry = entry.Next)
-            {
-                FreeEntry(entry);
-            }
+            _root = new Node();
             _entries = null;
             _values.Clear();
         }
@@ -338,11 +335,11 @@ namespace Engine.Collections
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
             Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
-                ref point, range, result);
+                       ref point, range, result);
 
             return result;
         }
-        
+
         /// <summary>
         /// Perform a range query on this tree. This will return all entries
         /// in the tree that are in the specified range to the specified point,
@@ -372,7 +369,7 @@ namespace Engine.Collections
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
             Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
-                ref rectangle, result);
+                       ref rectangle, result);
 
             return result;
         }
@@ -482,14 +479,13 @@ namespace Engine.Collections
             {
                 _entries = null;
             }
-            FreeEntry(entry);
 
             // See if we can compact the node's parent. This has to
             // be done in a post-processing step because the entry
             // has to be removed first (to update entry counts).
             CleanNode(removalNode);
         }
-        
+
         /// <summary>
         /// Try to clean up a node and its parents. This walks the tree towards
         /// the root, removing child nodes where possible.
@@ -507,10 +503,6 @@ namespace Engine.Collections
             if (node.EntryCount <= _maxEntriesPerNode)
             {
                 // We can prune the child nodes.
-                FreeNode(node.Children[0]);
-                FreeNode(node.Children[1]);
-                FreeNode(node.Children[2]);
-                FreeNode(node.Children[3]);
                 node.Children[0] = null;
                 node.Children[1] = null;
                 node.Children[2] = null;
@@ -519,12 +511,11 @@ namespace Engine.Collections
             else
             {
                 // Check if we have empty child nodes.
-                for (int i = 0; i < 4; i++)
+                for (var i = 0; i < 4; i++)
                 {
                     // If so, remove them.
                     if (node.Children[i] != null && node.Children[i].EntryCount == 0)
                     {
-                        FreeNode(node.Children[i]);
                         node.Children[i] = null;
                     }
                 }
@@ -572,13 +563,10 @@ namespace Engine.Collections
         private void InsertLevel()
         {
             // Create the new root node.
-            var node = GetNode(null);
+            var node = new Node {EntryCount = _root.EntryCount, LowEntry = _root.LowEntry, HighEntry = _root.HighEntry};
 
             // Copy list start and end (which will just be the first and last
             // elements in the list of all entries).
-            node.EntryCount = _root.EntryCount;
-            node.LowEntry = _root.LowEntry;
-            node.HighEntry = _root.HighEntry;
 
             // Check sectors for relocations. For existing child nodes
             // of root (0, 1, 2, null)
@@ -610,7 +598,7 @@ namespace Engine.Collections
                 }
 
                 // Allocate new node.
-                var wrapper = node.Children[childNumber] = GetNode(node);
+                var wrapper = node.Children[childNumber] = new Node {Parent = node};
 
                 // Set opposing corner inside that node to old node in that corner.
                 // The (3 - x) will always yield the diagonally opposite cell to x.
@@ -622,9 +610,6 @@ namespace Engine.Collections
                 wrapper.LowEntry = child.LowEntry;
                 wrapper.HighEntry = child.HighEntry;
             }
-
-            // Kill of the old root.
-            FreeNode(_root);
 
             // Set the new root node, adjust the overall tree bounds.
             _root = node;
@@ -671,8 +656,7 @@ namespace Engine.Collections
                 if (node.Children[cell] == null)
                 {
                     // Yes.
-                    node.Children[cell] = GetNode(node);
-                    node.Children[cell].LowEntry = entry;
+                    node.Children[cell] = new Node {Parent = node, LowEntry = entry};
 
                     // No shuffling, mark this as the last entry.
                     highEntry = entry;
@@ -800,7 +784,8 @@ namespace Engine.Collections
         /// <param name="point">The query point.</param>
         /// <param name="range">The query range.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range, ICollection<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range,
+                                       ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref point, range, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -862,7 +847,8 @@ namespace Engine.Collections
         /// <param name="node">The current node.</param>
         /// <param name="query">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Microsoft.Xna.Framework.Rectangle query, ICollection<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Microsoft.Xna.Framework.Rectangle query,
+                                       ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref query, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -980,7 +966,7 @@ namespace Engine.Collections
             var outside = (distanceX * distanceX + distanceY * distanceY) > radius * radius;
             return outside ? IntersectionType.Overlapping : IntersectionType.Contained;
         }
-        
+
         /// <summary>
         /// Box / Box intersection test.
         /// </summary>
@@ -989,7 +975,8 @@ namespace Engine.Collections
         /// <param name="y">The y position of the second box.</param>
         /// <param name="size">The size of the second box.</param>
         /// <returns>How the two intersect.</returns>
-        private static IntersectionType ComputeIntersection(ref Microsoft.Xna.Framework.Rectangle rectangle, int x, int y, int size)
+        private static IntersectionType ComputeIntersection(ref Microsoft.Xna.Framework.Rectangle rectangle, int x,
+                                                            int y, int size)
         {
             Microsoft.Xna.Framework.Rectangle other;
             other.X = x;
@@ -1019,20 +1006,27 @@ namespace Engine.Collections
         /// reference to more specific child nodes.
         /// </para>
         /// </summary>
-        [DebuggerDisplay("Count = {EntryCount}, Children = {GetChildrenCount()}")]
+        [DebuggerDisplay("Count = {EntryCount}, Leaf = {IsLeaf}")]
         private sealed class Node
         {
             #region Properties
-            
+
             /// <summary>
             /// Whether this node is a leaf node.
             /// </summary>
-            public bool IsLeaf { get { return GetChildrenCount() == 0; } }
+            public bool IsLeaf
+            {
+                get
+                {
+                    return (Children[0] == null) && (Children[1] == null) && (Children[2] == null) &&
+                           (Children[3] == null);
+                }
+            }
 
             #endregion
 
             #region Fields
-            
+
             /// <summary>
             /// The parent of this node.
             /// </summary>
@@ -1057,22 +1051,6 @@ namespace Engine.Collections
             /// The children this node points to.
             /// </summary>
             public readonly Node[] Children = new Node[4];
-
-            #endregion
-
-            #region Accessors
-            
-            /// <summary>
-            /// Get the number of child nodes this node references.
-            /// </summary>
-            /// <returns>The number of child nodes of this node.</returns>
-            private int GetChildrenCount()
-            {
-                return ((Children[0] == null) ? 0 : 1) +
-                       ((Children[1] == null) ? 0 : 1) +
-                       ((Children[2] == null) ? 0 : 1) +
-                       ((Children[3] == null) ? 0 : 1);
-            }
 
             #endregion
         }
@@ -1105,7 +1083,7 @@ namespace Engine.Collections
             /// The value stored in this entry.
             /// </summary>
             public T Value;
-            
+
             #endregion
 
             #region Methods
@@ -1160,10 +1138,7 @@ namespace Engine.Collections
         /// <returns></returns>
         public IEnumerator<T> GetEnumerator()
         {
-            for (var entry = _entries; entry != null; entry = entry.Next)
-            {
-                yield return entry.Value;
-            }
+            return _values.Keys.GetEnumerator();
         }
 
         /// <summary>
@@ -1173,131 +1148,6 @@ namespace Engine.Collections
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        #endregion
-
-        #region Object pooling
-
-        /// <summary>
-        /// List of available nodes.
-        /// </summary>
-        private readonly List<Node> _nodePool = new List<Node>(512);
-
-        /// <summary>
-        /// List of available entries.
-        /// </summary>
-        private readonly List<Entry> _entryPool = new List<Entry>(1024);
-
-        /// <summary>
-        /// Allocate more nodes, if we ran out of them.
-        /// </summary>
-        private void AllocNodes()
-        {
-            for (var i = _nodePool.Count; i < _nodePool.Capacity; i++)
-            {
-                _nodePool.Add(new Node());
-            }
-        }
-
-        /// <summary>
-        /// Allocate more entries, if we ran out of them.
-        /// </summary>
-        private void AllocEntries()
-        {
-            for (var i = _entryPool.Count; i < _entryPool.Capacity; i++)
-            {
-                _entryPool.Add(new Entry());
-            }
-        }
-
-        /// <summary>
-        /// Get a fresh node.
-        /// </summary>
-        /// <param name="parent">For constructor.</param>
-        /// <returns>Initialized node.</returns>
-        private Node GetNode(Node parent)
-        {
-            if (_nodePool.Count == 0)
-            {
-                AllocNodes();
-            }
-            var result = _nodePool[_nodePool.Count - 1];
-            _nodePool.RemoveAt(_nodePool.Count - 1);
-            result.Children[0] = null;
-            result.Children[1] = null;
-            result.Children[2] = null;
-            result.Children[3] = null;
-            result.EntryCount = 0;
-            result.HighEntry = null;
-            result.LowEntry = null;
-            result.Parent = parent;
-            return result;
-        }
-
-        /// <summary>
-        /// Releases a node to be reused.
-        /// </summary>
-        /// <param name="node">The node to free.</param>
-        private void FreeNode(Node node)
-        {
-            if (node != null)
-            {
-                _nodePool.Add(node);
-            }
-        }
-
-        /// <summary>
-        /// Releases a node and all its child nodes.
-        /// </summary>
-        /// <param name="node"></param>
-        private void FreeBranch(Node node)
-        {
-            if (node != null)
-            {
-                // If its an inner node, free all children first.
-                if (!node.IsLeaf)
-                {
-                    foreach (var child in node.Children)
-                    {
-                        FreeBranch(child);
-                    }
-                }
-
-                // Then the node itself.
-                FreeNode(node);
-            }
-        }
-
-        /// <summary>
-        /// Gets a fresh entry.
-        /// </summary>
-        /// <param name="position">For constructor of entry.</param>
-        /// <param name="value">For constructor of entry.</param>
-        /// <returns>An entry.</returns>
-        private Entry GetEntry(Vector2 position, T value)
-        {
-            if (_entryPool.Count == 0)
-            {
-                AllocEntries();
-            }
-            var result = _entryPool[_entryPool.Count - 1];
-            _entryPool.RemoveAt(_entryPool.Count - 1);
-            result.Point = position;
-            result.Value = value;
-            return result;
-        }
-
-        /// <summary>
-        /// Releases an entry to be reused.
-        /// </summary>
-        /// <param name="entry">The entry to free.</param>
-        private void FreeEntry(Entry entry)
-        {
-            if (entry != null)
-            {
-                _entryPool.Add(entry);
-            }
         }
 
         #endregion
@@ -1328,32 +1178,16 @@ namespace Engine.Collections
                 return;
             }
 
-            // Render the bounds for this node, if they are visible.
-            float left = centerX - (size >> 1);
-            float top = centerY - (size >> 1);
-            float right = left + size;
-            float bottom = top + size;
-            float width = shape.GraphicsDevice.Viewport.Width;
-            float height = shape.GraphicsDevice.Viewport.Height;
-
-            //if (IsInInterval(left, 0, width) ||
-            //    IsInInterval(right, 0, width) ||
-            //    IsInInterval(top, 0, height) ||
-            //    IsInInterval(bottom, 0, height))
-            {
-                shape.SetCenter(centerX, centerY);
-                shape.SetSize(size - 1);
-                shape.Draw();
-            }
+            shape.SetCenter(centerX, centerY);
+            shape.SetSize(size - 1);
+            shape.Draw();
 
             // Check for child nodes.
-            for (int i = 0; i < 4; ++i)
+            for (var i = 0; i < 4; ++i)
             {
-                DrawNode(node.Children[i],
-                            centerX + (((i & 1) == 0) ? -(size >> 2) : (size >> 2)),
-                            centerY + (((i & 2) == 0) ? -(size >> 2) : (size >> 2)),
-                            size >> 1,
-                            shape);
+                var childX = centerX + (((i & 1) == 0) ? -(size >> 2) : (size >> 2));
+                var childY = centerY + (((i & 2) == 0) ? -(size >> 2) : (size >> 2));
+                DrawNode(node.Children[i], childX, childY, size >> 1, shape);
             }
         }
 

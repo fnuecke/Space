@@ -464,7 +464,7 @@ namespace Space
             // Draw the overall space background.
             if (_client != null)
             {
-                _background.SetScale(_client.GetCameraZoom());
+                _background.Scale = _client.GetCameraZoom();
             }
             _background.Draw();
 
@@ -594,16 +594,14 @@ namespace Space
         {
             if (_indexRectangle == null)
             {
-                _indexRectangle = new Engine.Graphics.Rectangle(this);
-                _indexRectangle.SetColor(Color.LightGreen * 0.25f);
-                _indexRectangle.SetThickness(2);
+                _indexRectangle = new Engine.Graphics.Rectangle(this) {Color = Color.LightGreen * 0.25f, Thickness = 2f};
             }
 
             _fps.Put(1 / gameTime.ElapsedGameTime.TotalSeconds);
 
             _spriteBatch.Begin();
 
-            string fps = String.Format("FPS: {0:f}", Math.Ceiling(_fps.Mean()));
+            var fps = String.Format("FPS: {0:f}", Math.Ceiling(_fps.Mean()));
             var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - _console.Font.MeasureString(fps).X, 10);
 
             _spriteBatch.DrawString(_console.Font, fps, infoPosition, Color.White);
@@ -652,7 +650,7 @@ namespace Space
                         {
                             if (_indexGroup >= 0)
                             {
-                                _indexRectangle.SetScale(camera.Zoom);
+                                _indexRectangle.Scale = camera.Zoom;
                                 index.DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon);
                             }
                             sb.AppendFormat("Indexes: {0}, Total entries: {1}, Queries: {2}\n", index.NumIndexes, index.Count, index.NumQueriesLastUpdate);

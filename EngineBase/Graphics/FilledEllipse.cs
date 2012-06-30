@@ -7,6 +7,26 @@ namespace Engine.Graphics
     /// </summary>
     public sealed class FilledEllipse : AbstractEllipse
     {
+        #region Properties
+
+        /// <summary>
+        /// The gradient for this ellipse.
+        /// </summary>
+        public float Gradient
+        {
+            get { return _gradient; }
+            set
+            {
+                if (value != _gradient)
+                {
+                    _gradient = System.Math.Max(1, value);
+                    InvalidateVertices();
+                }
+            }
+        }
+
+        #endregion
+
         #region Fields
         
         /// <summary>
@@ -21,29 +41,12 @@ namespace Engine.Graphics
         /// <summary>
         /// Creates a new ellipse renderer for the given game.
         /// </summary>
-        /// <param name="game"></param>
+        /// <param name="game">The game we will render for.</param>
         public FilledEllipse(Game game)
             : base(game, "Shaders/FilledCircle")
         {
             // Set defaults.
-            SetGradient(1f);
-        }
-
-        #endregion
-
-        #region Accessors
-
-        /// <summary>
-        /// Sets a new gradient for this ellipse.
-        /// </summary>
-        /// <param name="gradient">The new gradient.</param>
-        public void SetGradient(float gradient)
-        {
-            if (gradient != _gradient)
-            {
-                _gradient = System.Math.Max(1, gradient);
-                _verticesAreValid = false;
-            }
+            Gradient = 1f;
         }
 
         #endregion
@@ -57,7 +60,7 @@ namespace Engine.Graphics
         {
             base.AdjustParameters();
 
-            _effect.Parameters["Gradient"].SetValue((_gradient + _gradient) / _width);
+            Effect.Parameters["Gradient"].SetValue((_gradient + _gradient) / Width);
         }
 
         #endregion

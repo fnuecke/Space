@@ -11,8 +11,22 @@ namespace Space.Graphics
     /// </summary>
     public sealed class Sun : AbstractShape, IDisposable
     {
+        #region Properties
+
+        /// <summary>
+        /// The current game time, which is used to determine the current
+        /// rotation of the sun.
+        /// </summary>
+        public GameTime GameTime
+        {
+            get { return _gameTime; }
+            set { _gameTime = value; }
+        }
+
+        #endregion
+
         #region Fields
-        
+
         /// <summary>
         /// Sprite batch used for rendering.
         /// </summary>
@@ -61,7 +75,7 @@ namespace Space.Graphics
         /// <summary>
         /// Lower resolution versions of the turbulence.
         /// </summary>
-        private RenderTarget2D[] _mipmaps = new RenderTarget2D[7];
+        private readonly RenderTarget2D[] _mipmaps = new RenderTarget2D[7];
 
         /// <summary>
         /// Rotation direction (and speed) of the base image.
@@ -86,7 +100,7 @@ namespace Space.Graphics
         #endregion
 
         #region Initialization
-        
+
         public Sun(Game game)
             : base(game, "Shaders/Sun")
         {
@@ -103,9 +117,9 @@ namespace Space.Graphics
             _turbulenceTwoRotation.Y = -((float)random.NextDouble() + 1f) / 2f;
             _turbulenceTwoRotation.Normalize();
             _turbulenceTwoRotation *= 4;
-            
+
         }
-        
+
         public void Dispose()
         {
             if (_surfaceSphere != null)
@@ -145,44 +159,33 @@ namespace Space.Graphics
             _additiveBlend = content.Load<Effect>("Shaders/SunBlend");
 
             // Apply texture parameters.
-            _effect.Parameters["Surface"].SetValue(_surface);
-            _effect.Parameters["TurbulenceOne"].SetValue(_turbulenceOne);
-            _effect.Parameters["TurbulenceTwo"].SetValue(_turbulenceTwo);
-            _effect.Parameters["TurbulenceColor"].SetValue(_turbulenceColor);
+            Effect.Parameters["Surface"].SetValue(_surface);
+            Effect.Parameters["TurbulenceOne"].SetValue(_turbulenceOne);
+            Effect.Parameters["TurbulenceTwo"].SetValue(_turbulenceTwo);
+            Effect.Parameters["TurbulenceColor"].SetValue(_turbulenceColor);
 
             // Get settings. We use the whole screen to draw.
-            PresentationParameters pp = GraphicsDevice.PresentationParameters;
+            var pp = GraphicsDevice.PresentationParameters;
 
-            int width = pp.BackBufferWidth;
-            int height = pp.BackBufferHeight;
+            var width = pp.BackBufferWidth;
+            var height = pp.BackBufferHeight;
 
             // Create a target for rendering the main sun texture.
-            _surfaceSphere = new RenderTarget2D(GraphicsDevice, width, height, false, pp.BackBufferFormat, DepthFormat.None);
+            _surfaceSphere = new RenderTarget2D(GraphicsDevice, width, height, false, pp.BackBufferFormat,
+                                                DepthFormat.None);
 
             // One for the turbulence.
-            _turbulenceSphere = new RenderTarget2D(GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+            _turbulenceSphere = new RenderTarget2D(GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4,
+                                                   DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
 
             // And one for the mipmaps of the whole thing.
-            for (int i = 0; i < _mipmaps.Length; i++)
+            for (var i = 0; i < _mipmaps.Length; i++)
             {
                 width >>= 1;
                 height >>= 1;
-                _mipmaps[i] = new RenderTarget2D(GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+                _mipmaps[i] = new RenderTarget2D(GraphicsDevice, width, height, false, SurfaceFormat.HalfVector4,
+                                                 DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
             }
-        }
-
-        #endregion
-
-        #region Accessors
-        
-        /// <summary>
-        /// Sets the current game time, which is used to determine the current
-        /// rotation of the sun.
-        /// </summary>
-        /// <param name="gameTime"></param>
-        public void SetGameTime(GameTime gameTime)
-        {
-            _gameTime = gameTime;
         }
 
         #endregion
@@ -195,36 +198,35 @@ namespace Space.Graphics
         public override void Draw()
         {
             // Update our paint canvas if necessary.
-            if (!_verticesAreValid)
-            {
-                RecomputeQuads();
-            }
+            RecomputeQuads();
 
             // Save main render targets.
-            RenderTargetBinding[] previousRenderTargets = GraphicsDevice.GetRenderTargets();
+            var previousRenderTargets = GraphicsDevice.GetRenderTargets();
 
             // Set the render target for our base sun image.
             GraphicsDevice.SetRenderTarget(_surfaceSphere);
             GraphicsDevice.Clear(Color.Transparent);
 
-            float offset = (float)_gameTime.TotalGameTime.TotalSeconds / _width;
-            _effect.Parameters["SurfaceOffset"].SetValue(_surfaceRotation * offset);
-            _effect.Parameters["TurbulenceOneOffset"].SetValue(_turbulenceOneRotation * offset);
-            _effect.Parameters["TurbulenceTwoOffset"].SetValue(_turbulenceTwoRotation * offset);
-            _effect.Parameters["RenderRadius"].SetValue(_width / 2);
-            _effect.Parameters["TextureScale"].SetValue((float)_surface.Width / (2 * _width));
+            var offset = (float)_gameTime.TotalGameTime.TotalSeconds / Width;
+            Effect.Parameters["SurfaceOffset"].SetValue(_surfaceRotation * offset);
+            Effect.Parameters["TurbulenceOneOffset"].SetValue(_turbulenceOneRotation * offset);
+            Effect.Parameters["TurbulenceTwoOffset"].SetValue(_turbulenceTwoRotation * offset);
+            Effect.Parameters["RenderRadius"].SetValue(Width / 2);
+            Effect.Parameters["TextureScale"].SetValue(_surface.Width / (2 * Width));
 
             // And draw it.
-            _effect.CurrentTechnique.Passes[0].Apply();
-            _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, _indices, 0, 2, _vertexDeclaration);
-            
+            Effect.CurrentTechnique.Passes[0].Apply();
+            _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, Indices, 0, 2,
+                                              VertexDeclaration);
+
             // Then get the turbulence.
             GraphicsDevice.SetRenderTarget(_turbulenceSphere);
             GraphicsDevice.Clear(Color.Transparent);
 
             // And draw that, too.
-            _effect.CurrentTechnique.Passes[1].Apply();
-            _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, _indices, 0, 2, _vertexDeclaration);
+            Effect.CurrentTechnique.Passes[1].Apply();
+            _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, Indices, 0, 2,
+                                              VertexDeclaration);
 
             // Create the down-sampled versions.
             GraphicsDevice.SetRenderTarget(_mipmaps[0]);
@@ -233,7 +235,7 @@ namespace Space.Graphics
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque, null, null, null, _gaussianBlur);
             _spriteBatch.Draw(_turbulenceSphere, _mipmaps[0].Bounds, Color.White);
             _spriteBatch.End();
-            for (int i = 1; i < _mipmaps.Length; ++i)
+            for (var i = 1; i < _mipmaps.Length; ++i)
             {
                 GraphicsDevice.SetRenderTarget(_mipmaps[i]);
                 GraphicsDevice.Clear(Color.Transparent);
@@ -244,7 +246,7 @@ namespace Space.Graphics
             }
 
             // Add them up.
-            for (int i = _mipmaps.Length - 2; i >= 0; --i)
+            for (var i = _mipmaps.Length - 2; i >= 0; --i)
             {
                 GraphicsDevice.SetRenderTarget(_mipmaps[i]);
                 _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, null, null, null, _additiveBlend);
@@ -267,7 +269,7 @@ namespace Space.Graphics
             _spriteBatch.Draw(_turbulenceSphere, Vector2.Zero, Color.White);
             _spriteBatch.End();
         }
-        
+
         #endregion
     }
 }

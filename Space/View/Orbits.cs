@@ -84,11 +84,8 @@ namespace Space.View
         public Orbits(Game game, SpriteBatch spriteBatch)
         {
             _spriteBatch = spriteBatch;
-            _orbitEllipse = new Ellipse(game);
-            _orbitEllipse.SetThickness(OrbitThickness);
-            _deadZoneEllipse = new FilledEllipse(game);
-            _deadZoneEllipse.SetGradient(DeadZoneDiffuseWidth);
-            _deadZoneEllipse.SetColor(DeadZoneColor);
+            _orbitEllipse = new Ellipse(game) {Thickness = OrbitThickness};
+            _deadZoneEllipse = new FilledEllipse(game) {Gradient = DeadZoneDiffuseWidth, Color = DeadZoneColor};
         }
 
         #endregion
@@ -221,19 +218,19 @@ namespace Space.View
                         nearClipDistance <= distanceToCenterSquared)
                     {
                         // Yes, set the properties for our ellipse renderer.
-                        _orbitEllipse.SetCenter(ellipseCenter - position + center);
-                        _orbitEllipse.SetMajorRadius(ellipse.MajorRadius);
-                        _orbitEllipse.SetMinorRadius(ellipse.MinorRadius);
-                        _orbitEllipse.SetRotation(ellipse.Angle);
+                        _orbitEllipse.Center = ellipseCenter - position + center;
+                        _orbitEllipse.MajorRadius = ellipse.MajorRadius;
+                        _orbitEllipse.MinorRadius = ellipse.MinorRadius;
+                        _orbitEllipse.Rotation = ellipse.Angle;
 
                         // Diameter the opacity based on our distance to the
                         // actual object. Apply a exponential fall-off, and
                         // make it cap a little early to get the 100% alpha
                         // when nearby, not only when exactly on top of the
                         // object ;)
-                        _orbitEllipse.SetColor(OrbitColor * ld);
+                        _orbitEllipse.Color = OrbitColor * ld;
                         // Scale ellipse based on camera zoom.
-                        _orbitEllipse.SetScale(zoom);
+                        _orbitEllipse.Scale = zoom;
                         // And draw it!
                         _orbitEllipse.Draw();
                     }
@@ -256,14 +253,14 @@ namespace Space.View
                 var maxAcceleration = info.MaxAcceleration;
                 var neighborMass = neighborGravitation.Mass;
                 var pointOfNoReturn = (float)System.Math.Sqrt(mass * neighborMass / maxAcceleration);
-                _deadZoneEllipse.SetCenter(neighborTransform.Translation - position + center);
+                _deadZoneEllipse.Center = neighborTransform.Translation - position + center;
                 // Add the complete diffuse width, not just the half (which
                 // would be the exact point), because it's unlikely someone
                 // will exactly hit that point, so give them some fair
                 // warning.
-                _deadZoneEllipse.SetRadius(pointOfNoReturn + DeadZoneDiffuseWidth);
+                _deadZoneEllipse.Radius = pointOfNoReturn + DeadZoneDiffuseWidth;
                 // Scale ellipse based on camera zoom.
-                _deadZoneEllipse.SetScale(zoom);
+                _deadZoneEllipse.Scale = zoom;
                 // And draw it!
                 _deadZoneEllipse.Draw();
             }

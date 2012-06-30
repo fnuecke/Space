@@ -7,6 +7,26 @@ namespace Engine.Graphics
     /// </summary>
     public sealed class Ellipse : AbstractEllipse
     {
+        #region Properties
+
+        /// <summary>
+        /// The thickness for this ellipse.
+        /// </summary>
+        public float Thickness
+        {
+            get { return _thickness; }
+            set
+            {
+                if (value != _thickness)
+                {
+                    _thickness = value;
+                    InvalidateVertices();
+                }
+            }
+        }
+
+        #endregion
+
         #region Fields
         
         /// <summary>
@@ -21,29 +41,12 @@ namespace Engine.Graphics
         /// <summary>
         /// Creates a new ellipse renderer for the given game.
         /// </summary>
-        /// <param name="game"></param>
+        /// <param name="game">The game we will render for.</param>
         public Ellipse(Game game)
             : base(game, "Shaders/Circle")
         {
             // Set defaults.
-            SetThickness(1f);
-        }
-
-        #endregion
-
-        #region Accessors
-
-        /// <summary>
-        /// Sets a new thickness for this ellipse.
-        /// </summary>
-        /// <param name="thickness">The new thickness.</param>
-        public void SetThickness(float thickness)
-        {
-            if (thickness != _thickness)
-            {
-                _thickness = thickness;
-                _verticesAreValid = false;
-            }
+            Thickness = 1f;
         }
 
         #endregion
@@ -57,7 +60,7 @@ namespace Engine.Graphics
         {
             base.AdjustParameters();
 
-            _effect.Parameters["Thickness"].SetValue((_thickness + _thickness) / _width);
+            Effect.Parameters["Thickness"].SetValue((_thickness + _thickness) / Width);
         }
 
         #endregion

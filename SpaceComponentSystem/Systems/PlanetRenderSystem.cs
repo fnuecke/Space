@@ -85,7 +85,7 @@ namespace Space.ComponentSystem.Systems
             // Inflate clip by zoomed amount and object radius.
             clipRectangle.Inflate((int)(clipRectangle.Width / zoom - clipRectangle.Width + 2 * component.Radius),
                                   (int)(clipRectangle.Height / zoom - clipRectangle.Height + 2 * component.Radius));
-            if (clipRectangle.Contains((int)position.X, (int)position.Y)) 
+            if (clipRectangle.Contains((int)position.X, (int)position.Y))
             {
                 // Get position relative to our sun, to rotate atmosphere and shadow.
                 var toSun = Vector2.Zero;
@@ -103,15 +103,15 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Set parameters and draw.
-                _planet.SetCenter(position);
-                _planet.SetRotation(transform.Rotation);
+                _planet.Center = position;
+                _planet.Rotation = transform.Rotation;
                 _planet.SetSize(component.Radius * 2);
-                _planet.SetSurfaceTexture(component.Texture);
-                _planet.SetSurfaceTint(component.PlanetTint);
-                _planet.SetAtmosphereTint(component.AtmosphereTint);
-                _planet.SetLightDirection(toSun);
-                _planet.SetGameTime(gameTime);
-                _planet.SetScale(zoom);
+                _planet.SurfaceTexture = component.Texture;
+                _planet.SurfaceTint = component.PlanetTint;
+                _planet.AtmosphereTint = component.AtmosphereTint;
+                _planet.LightDirection = toSun;
+                _planet.GameTime = gameTime;
+                _planet.Scale = zoom;
                 _planet.Draw();
             }
         }
