@@ -30,7 +30,7 @@ namespace Space.ComponentSystem.Factories
         public Orbit Planets;
 
         #endregion
-    
+
         #region Sampling
 
         /// <summary>

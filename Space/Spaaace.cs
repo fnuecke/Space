@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using Awesomium.ScreenManagement;
-using Engine.Controller;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -16,7 +14,6 @@ using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
 using Space.Control;
 using Space.Session;
-using Space.Simulation.Commands;
 using Space.Util;
 using Space.View;
 
@@ -314,7 +311,7 @@ namespace Space
 #if DEBUG
             // Default handler to interpret everything that is not a command
             // as a script.
-            _console.SetDefaultCommandHandler(command => _client.Controller.PushLocalCommand(new ScriptCommand(command)));
+            _console.SetDefaultCommandHandler(command => _client.Controller.PushLocalCommand(new Space.Simulation.Commands.ScriptCommand(command)));
 
             _console.AddCommand("d_renderindex",
                 args =>
@@ -337,7 +334,7 @@ namespace Space
                 {
                     try
                     {
-                        ((AbstractTssController<IServerSession>)_server.Controller).ValidateSerialization();
+                        ((Engine.Controller.AbstractTssController<IServerSession>)_server.Controller).ValidateSerialization();
                     }
                     catch (InvalidProgramException ex)
                     {
@@ -353,7 +350,7 @@ namespace Space
                 {
                     try
                     {
-                        ((AbstractTssController<IServerSession>)_server.Controller).ValidateRollback();
+                        ((Engine.Controller.AbstractTssController<IServerSession>)_server.Controller).ValidateRollback();
                     }
                     catch (InvalidProgramException ex)
                     {
@@ -487,7 +484,9 @@ namespace Space
             _radar.Draw();
 
             // Draw some debug info on top of everything.
+#if DEBUG
             DrawDebugInfo(gameTime);
+#endif
 
             // Reset our graphics device (pop our off-screen render target).
             GraphicsDevice.SetRenderTarget(null);
@@ -586,11 +585,11 @@ namespace Space
 
         #endregion
 
+#if DEBUG
         private readonly DoubleSampling _fps = new DoubleSampling(30);
         private Engine.Graphics.Rectangle _indexRectangle;
         private int _indexGroup = -1;
 
-        [Conditional("DEBUG")]
         private void DrawDebugInfo(GameTime gameTime)
         {
             if (_indexRectangle == null)
@@ -656,7 +655,7 @@ namespace Space
                                 _indexRectangle.SetScale(camera.Zoom);
                                 index.DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon);
                             }
-                            sb.AppendFormat("Indexes: {0}, Total entries: {1}\n", index.NumIndexes, index.Count);
+                            sb.AppendFormat("Indexes: {0}, Total entries: {1}, Queries: {2}\n", index.NumIndexes, index.Count, index.NumQueriesLastUpdate);
                         }
 
                         sb.AppendFormat("Speed: {0:f}/{1:f}, Maximum acceleration: {2:f}\n", info.Speed, info.MaxSpeed, info.MaxAcceleration);
@@ -681,5 +680,6 @@ namespace Space
                 }
             }
         }
+#endif
     }
 }

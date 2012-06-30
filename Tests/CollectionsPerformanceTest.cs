@@ -82,7 +82,7 @@ namespace Tests
             Console.ReadKey(true);
         }
 
-        static void Test(IIndex<int> index, IEnumerable<Tuple<int, Vector2>> data)
+        static void Test(IIndex<int> index, List<Tuple<int, Vector2>> data)
         {
             // Get new randomizer.
             var random = new MersenneTwister(Seed);
@@ -92,7 +92,11 @@ namespace Tests
 
             // Preallocate a list that's definitely large enough, to avoid having that
             // allocation impact the measurement.
-            var results = new List<int>(NumberOfObjects);
+            var results = new List<List<int>>(Queries);
+            for (var i = 0; i < Queries; i++)
+            {
+                results.Add(new List<int>(NumberOfObjects));
+            }
 
             // Also allocate the ids to look up in advance.
             var queries = new List<Vector2>();
@@ -128,7 +132,7 @@ namespace Tests
 
                 // Generate look up ids in advance.
                 queries.Clear();
-                for (int j = 0; j < Queries; j++)
+                for (var j = 0; j < Queries; j++)
                 {
                     queries.Add(random.NextVector(Area));
                 }
@@ -136,14 +140,20 @@ namespace Tests
                 // Test look up time.
                 watch.Reset();
                 watch.Start();
-                foreach (var query in queries)
+                for (var j = 0; j < Queries; j++)
                 {
-                    var v = query;
-                    results.Clear();
-                    index.RangeQuery(ref v, QueryRadius, results);
+                    var v = queries[j];
+                    // Use different result list so we can clear afterwards.
+                    index.RangeQuery(ref v, QueryRadius, results[j]);
                 }
                 watch.Stop();
                 queryTime += watch.ElapsedMilliseconds / (double)queries.Count;
+
+                // Clear results.
+                for (int j = 0; j < Queries; j++)
+                {
+                    results[j].Clear();
+                }
 
                 // Generate position updates.
                 updates.Clear();

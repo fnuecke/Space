@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Engine.Collections;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
@@ -132,6 +131,9 @@ namespace Engine.ComponentSystem.Systems
 
             foreach (var tree in TreesForGroups(groups))
             {
+#if DEBUG
+                ++_numQueriesLastUpdate;
+#endif
                 tree.RangeQuery(ref query, range, list);
             }
 
@@ -152,6 +154,9 @@ namespace Engine.ComponentSystem.Systems
 
             foreach (var tree in TreesForGroups(groups))
             {
+#if DEBUG
+                ++_numQueriesLastUpdate;
+#endif
                 tree.RangeQuery(ref query, list);
             }
 
@@ -304,6 +309,9 @@ namespace Engine.ComponentSystem.Systems
             {
                 copy._trees = new IIndex<int>[sizeof(ulong) * 8];
                 copy._reusableTreeList = new List<IIndex<int>>();
+#if DEBUG
+                copy._numQueriesLastUpdate = _numQueriesLastUpdate;
+#endif
             }
 
             for (int i = 0; i < _trees.Length; i++)
@@ -328,6 +336,14 @@ namespace Engine.ComponentSystem.Systems
         #endregion
 
         #region Debug stuff
+#if DEBUG
+
+        private int _numQueriesLastUpdate;
+
+        public int NumQueriesLastUpdate
+        {
+            get { return _numQueriesLastUpdate; }
+        }
 
         public int NumIndexes
         {
@@ -361,7 +377,6 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        [Conditional("DEBUG")]
         public void DrawIndex(ulong groups, Graphics.AbstractShape shape, Vector2 translation)
         {
             foreach (var tree in TreesForGroups(groups))
@@ -373,6 +388,16 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
+        public override void Update(GameTime gameTime, long frame)
+        {
+            base.Update(gameTime, frame);
+
+#if DEBUG
+            _numQueriesLastUpdate = 0;
+#endif
+        }
+
+#endif
         #endregion
     }
 }
