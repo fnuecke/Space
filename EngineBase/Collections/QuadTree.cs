@@ -334,8 +334,7 @@ namespace Engine.Collections
 
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
-            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
-                       ref point, range, result);
+            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root, ref point, range, result);
 
             return result;
         }
@@ -368,8 +367,7 @@ namespace Engine.Collections
 
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
-            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root,
-                       ref rectangle, result);
+            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root, ref rectangle, result);
 
             return result;
         }
@@ -705,7 +703,7 @@ namespace Engine.Collections
 
             // Do this recursively if the split resulted in another bucket that
             // is too large.
-            for (int i = 0; i < 4; ++i)
+            for (var i = 0; i < 4; ++i)
             {
                 if (node.Children[i] != null)
                 {
@@ -784,8 +782,7 @@ namespace Engine.Collections
         /// <param name="point">The query point.</param>
         /// <param name="range">The query range.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range,
-                                       ICollection<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range, ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref point, range, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -805,7 +802,9 @@ namespace Engine.Collections
                 {
                     // Add all entries in this node that are in range.
                     var rangeSquared = range * range;
-                    for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
+                    for (var entry = node.LowEntry;
+                         entry != null && entry != node.HighEntry.Next;
+                         entry = entry.Next)
                     {
                         var distanceX = point.X - entry.Point.X;
                         var distanceY = point.Y - entry.Point.Y;
@@ -819,16 +818,23 @@ namespace Engine.Collections
                 {
                     // Recurse into child nodes.
                     var childSize = size >> 1;
-                    for (int i = 0; i < 4; i++)
+
+                    // Unrolled loop.
+                    if (node.Children[0] != null)
                     {
-                        if (node.Children[i] != null)
-                        {
-                            Accumulate(
-                                x + (((i & 1) == 0) ? 0 : childSize),
-                                y + (((i & 2) == 0) ? 0 : childSize),
-                                childSize, node.Children[i],
-                                ref point, range, list);
-                        }
+                        Accumulate(x, y, childSize, node.Children[0], ref point, range, list);
+                    }
+                    if (node.Children[1] != null)
+                    {
+                        Accumulate(x + childSize, y, childSize, node.Children[1], ref point, range, list);
+                    }
+                    if (node.Children[2] != null)
+                    {
+                        Accumulate(x, y + childSize, childSize, node.Children[2], ref point, range, list);
+                    }
+                    if (node.Children[3] != null)
+                    {
+                        Accumulate(x + childSize, y + childSize, childSize, node.Children[3], ref point, range, list);
                     }
                 }
             }
@@ -847,8 +853,7 @@ namespace Engine.Collections
         /// <param name="node">The current node.</param>
         /// <param name="query">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Microsoft.Xna.Framework.Rectangle query,
-                                       ICollection<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Microsoft.Xna.Framework.Rectangle query, ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref query, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -881,12 +886,14 @@ namespace Engine.Collections
                     var childSize = size >> 1;
                     for (var i = 0; i < 4; i++)
                     {
-                        if (node.Children[i] != null)
+                        if (node.Children[i] == null)
                         {
-                            var childX = x + (((i & 1) == 0) ? 0 : childSize);
-                            var childY = y + (((i & 2) == 0) ? 0 : childSize);
-                            Accumulate(childX, childY, childSize, node.Children[i], ref query, list);
+                            continue;
                         }
+
+                        var childX = x + (((i & 1) == 0) ? 0 : childSize);
+                        var childY = y + (((i & 2) == 0) ? 0 : childSize);
+                        Accumulate(childX, childY, childSize, node.Children[i], ref query, list);
                     }
                 }
             }

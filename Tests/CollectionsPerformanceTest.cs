@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Collections;
@@ -19,7 +20,20 @@ namespace Tests
         /// <summary>
         /// The number of points to generate.
         /// </summary>
-        private const int NumberOfObjects = 75000;
+        private const int NumberOfObjects = 90000; // 10k per active cell.
+
+        /// <summary>
+        /// How many iterations to run for each configuration to average over.
+        /// </summary>
+        private const int Iterations = 10;
+
+        /// <summary>
+        /// Number of runs per operation to perform to average over. This is
+        /// used to minimize impact from outside influences. Note that the
+        /// parameters for the operations need to be precomputed, though, so
+        /// a high value here will result in higher memory consumption.
+        /// </summary>
+        private const int Operations = 4000;
 
         /// <summary>
         /// The area over which to distribute the points.
@@ -27,26 +41,12 @@ namespace Tests
         private const int Area = CellSystem.CellSize * 3; // Normally active area.
 
         /// <summary>
-        /// How many iterations to run for each configuration to average over.
-        /// </summary>
-        private const int Iterations = 10;
-
-        // Number of lookups to perform per iteration.
-        private const int Queries = 2000;
-
-        /// <summary>
         /// The radius of a range query.
         /// </summary>
-        private const int QueryRadius = CellSystem.CellSize;
-
-        // Number of updates to perform per iteration.
-        private const int Updates = 2000;
-
-        // Number of objects to remove per iteration.
-        private const int Removals = 2000;
+        private const int QueryRadius = CellSystem.CellSize; // This is the furthest one should ever query, else it leaves the active area.
 
         // List of values for max entry count to test.
-        private static readonly int[] QuadTreeMaxNodeEntries = new[] {29, 30, 31};
+        private static readonly int[] QuadTreeMaxNodeEntries = new[] {20,30,40};
 
         private static void Main(string[] args)
         {
@@ -74,7 +74,16 @@ namespace Tests
             {
                 Console.WriteLine("Running R-Tree test.");
                 var tree = new RTree<int>();
-                Test(tree, data);
+                try
+                {
+                    Test(tree, data);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error!");
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                }
             }
 
             // Wait for key press to close, to allow reading results.
@@ -90,35 +99,39 @@ namespace Tests
             // Get stop watch for profiling.
             var watch = new Stopwatch();
 
-            // Preallocate a list that's definitely large enough, to avoid having that
-            // allocation impact the measurement.
-            var results = new List<List<int>>(Queries);
-            for (var i = 0; i < Queries; i++)
-            {
-                results.Add(new List<int>(NumberOfObjects));
-            }
-
             // Also allocate the ids to look up in advance.
-            var queries = new List<Vector2>();
+            var queries = new List<Vector2>(Operations);
 
             // And updates.
-            var updates = new List<Tuple<int, Vector2>>();
+            var updates = new List<Tuple<int, Vector2>>(Operations);
 
-            // As well as removals.
-            var removals = new List<int>();
-
-            double addTime = 0;
-            double queryTime = 0;
-            double updateTime = 0;
-            double removeTime = 0;
+            var addTime = new DoubleSampling(Iterations);
+            var queryTime = new DoubleSampling(Iterations);
+            var updateTime = new DoubleSampling(Iterations);
+            var removeTime = new DoubleSampling(Iterations);
 
             Console.Write("Doing {0} iterations... ", Iterations);
+
             for (var i = 0; i < Iterations; i++)
             {
                 Console.Write("{0}. ", i + 1);
 
                 // Clear the index.
                 index.Clear();
+
+                // Generate look up ids in advance.
+                queries.Clear();
+                for (var j = 0; j < Operations; j++)
+                {
+                    queries.Add(random.NextVector(Area));
+                }
+
+                // Generate position updates.
+                updates.Clear();
+                for (var j = 0; j < Operations; j++)
+                {
+                    updates.Add(Tuple.Create(random.NextInt32(NumberOfObjects), random.NextVector(Area)));
+                }
 
                 // Test time to add.
                 watch.Reset();
@@ -128,39 +141,18 @@ namespace Tests
                     index.Add(item.Item2, item.Item1);
                 }
                 watch.Stop();
-                addTime += watch.ElapsedMilliseconds / (double)index.Count;
-
-                // Generate look up ids in advance.
-                queries.Clear();
-                for (var j = 0; j < Queries; j++)
-                {
-                    queries.Add(random.NextVector(Area));
-                }
+                addTime.Put(watch.ElapsedMilliseconds / (double)index.Count);
 
                 // Test look up time.
                 watch.Reset();
                 watch.Start();
-                for (var j = 0; j < Queries; j++)
+                for (var j = 0; j < Operations; j++)
                 {
                     var v = queries[j];
-                    // Use different result list so we can clear afterwards.
-                    index.RangeQuery(ref v, QueryRadius, results[j]);
+                    index.RangeQuery(ref v, QueryRadius, DummyCollection<int>.Instance);
                 }
                 watch.Stop();
-                queryTime += watch.ElapsedMilliseconds / (double)queries.Count;
-
-                // Clear results.
-                for (var j = 0; j < Queries; j++)
-                {
-                    results[j].Clear();
-                }
-
-                // Generate position updates.
-                updates.Clear();
-                for (var j = 0; j < Updates; j++)
-                {
-                    updates.Add(Tuple.Create(random.NextInt32(NumberOfObjects), random.NextVector(Area)));
-                }
+                queryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
 
                 // Test update time.
                 watch.Reset();
@@ -170,43 +162,89 @@ namespace Tests
                     index.Update(update.Item2, update.Item1);
                 }
                 watch.Stop();
-                updateTime += watch.ElapsedMilliseconds / (double)Updates;
-
-                // Generate removals in advance.
-                removals.Clear();
-                // No duplicates here.
-                while (removals.Count < Removals)
-                {
-                    var n = random.NextInt32(NumberOfObjects);
-                    if (!removals.Contains(n))
-                    {
-                        removals.Add(n);
-                    }
-                }
+                updateTime.Put(watch.ElapsedMilliseconds / (double)Operations);
 
                 // Test removal time.
                 watch.Reset();
                 watch.Start();
-                foreach (var removal in removals)
+                foreach (var item in data)
                 {
-                    index.Remove(removal);
+                    index.Remove(item.Item1);
                 }
                 watch.Stop();
-                removeTime += watch.ElapsedMilliseconds / (double)Removals;
+                removeTime.Put(watch.ElapsedMilliseconds / (double)Operations);
             }
 
             Console.WriteLine("Done!");
 
-            addTime /= Iterations;
-            queryTime /= Iterations;
-            updateTime /= Iterations;
-            removeTime /= Iterations;
-
-            Console.WriteLine("Add: {0:0.00000}ms\nQuery: {1:0.00000}ms\nUpdate: {2:0.00000}ms\nRemove: {3:0.00000}ms",
-                              addTime, queryTime, updateTime, removeTime);
+            Console.WriteLine("Operation | Mean      | Std.dev.\n" +
+                              "Add:      | {0:0.00000}ms | {1:0.00000}ms\n" +
+                              "Query:    | {2:0.00000}ms | {3:0.00000}ms\n" +
+                              "Update:   | {4:0.00000}ms | {5:0.00000}ms\n" +
+                              "Remove:   | {6:0.00000}ms | {7:0.00000}ms",
+                              addTime.Mean(), addTime.StandardDeviation(),
+                              queryTime.Mean(), queryTime.StandardDeviation(),
+                              updateTime.Mean(), updateTime.StandardDeviation(),
+                              removeTime.Mean(), removeTime.StandardDeviation());
         }
     }
 
+    #region Utilities
+
+    /// <summary>
+    /// Dummy collection used for result gathering, to ignore overhead from used collections.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    internal sealed class DummyCollection<T> : ICollection<T>
+    {
+        public static readonly DummyCollection<T> Instance = new DummyCollection<T>();
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            yield break;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        public void Add(T item)
+        {
+        }
+
+        public void Clear()
+        {
+        }
+
+        public bool Contains(T item)
+        {
+            return false;
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+        }
+
+        public bool Remove(T item)
+        {
+            return false;
+        }
+
+        public int Count
+        {
+            get { return  0; }
+        }
+
+        public bool IsReadOnly
+        {
+            get { return false; }
+        }
+    }
+
+    /// <summary>
+    /// Random number generator extension for vector generation.
+    /// </summary>
     internal static class Extensions
     {
         public static Vector2 NextVector(this IUniformRandom random, int area)
@@ -215,4 +253,6 @@ namespace Tests
                                (float)(random.NextDouble() * area - area / 2.0));
         }
     }
+    
+    #endregion
 }
