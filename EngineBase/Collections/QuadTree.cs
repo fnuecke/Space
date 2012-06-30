@@ -273,8 +273,8 @@ namespace Engine.Collections
             if (Contains(value))
             {
                 var entry = _values[value];
-                RemoveEntry(ref entry.Point, entry.Value);
-            }
+                // Get the node the entry would be in.
+                int nodeX, nodeY, nodeSize;                RemoveFromNode(FindNode(ref entry.Point, out nodeX, out nodeY, out nodeSize), entry);            }
             return false;
         }
 
@@ -440,35 +440,6 @@ namespace Engine.Collections
         #region Restructuring
 
         /// <summary>
-        /// Remove the specified value at the specified point from the tree.
-        /// </summary>
-        /// <param name="point">The position to remove the value at.</param>
-        /// <param name="value">The value to remove.</param>
-        private void RemoveEntry(ref Vector2 point, T value)
-        {
-            // Get the node the entry would be in.
-            int nodeX, nodeY, nodeSize;
-            var removalNode = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
-
-            // Is the node a leaf node? If not we don't have that entry.
-            if (removalNode.IsLeaf)
-            {
-                // Check if we have that entry.
-                for (var entry = removalNode.LowEntry; entry != null && entry != removalNode.HighEntry.Next; entry = entry.Next)
-                {
-                    if (entry.Point.Equals(point) &&
-                        entry.Value.Equals(value))
-                    {
-                        RemoveFromNode(removalNode, entry);
-
-                        // Aaaand... we're done.
-                        return;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Removes an entry from a node.
         /// </summary>
         /// <param name="removalNode">The node to remove from.</param>
@@ -609,56 +580,47 @@ namespace Engine.Collections
             node.LowEntry = _root.LowEntry;
             node.HighEntry = _root.HighEntry;
 
-            // Check top left sector, add it as top left sectors lower right
-            // node, if it is set.
-            if (_root.Children[0] != null)
+            // Check sectors for relocations. For existing child nodes
+            // of root (0, 1, 2, null)
+            // +---+---+
+            // | 0 | 1 |
+            // +---+---+
+            // | 2 |
+            // +---+
+            // this results in the wrappers (a, b, c, d)
+            // +-------+-------+
+            // |  a    |    b  |
+            // |   +---+---+   |
+            // |   | 0 | 1 |   |
+            // +---+---+---+---+
+            // |   | 2 |
+            // |   +---+
+            // |  c    |
+            // +-------+
+            // If there was no node before, there won't be one afterwards, either.
+            for (var childNumber = 0; childNumber < 4; childNumber++)
             {
-                node.Children[0] = GetNode(node);
-                node.Children[0].Children[3] = _root.Children[0];
-                _root.Children[0].Parent = node.Children[0];
+                // Get the old child node that will be attached to the new node.
+                var child = _root.Children[childNumber];
 
-                node.Children[0].EntryCount = _root.Children[0].EntryCount;
-                node.Children[0].LowEntry = _root.Children[0].LowEntry;
-                node.Children[0].HighEntry = _root.Children[0].HighEntry;
-            }
+                // Skip unset ones.
+                if (child == null)
+                {
+                    continue;
+                }
 
-            // Check top right sector, add it as top right sectors lower left
-            // node, if it is set.
-            if (_root.Children[1] != null)
-            {
-                node.Children[1] = GetNode(node);
-                node.Children[1].Children[2] = _root.Children[1];
-                _root.Children[1].Parent = node.Children[1];
+                // Allocate new node.
+                var wrapper = node.Children[childNumber] = GetNode(node);
 
-                node.Children[1].EntryCount = _root.Children[1].EntryCount;
-                node.Children[1].LowEntry = _root.Children[1].LowEntry;
-                node.Children[1].HighEntry = _root.Children[1].HighEntry;
-            }
+                // Set opposing corner inside that node to old node in that corner.
+                // The (3 - x) will always yield the diagonally opposite cell to x.
+                wrapper.Children[3 - childNumber] = child;
+                child.Parent = wrapper;
 
-            // Check bottom left sector, add it as bottom left sectors top
-            // right node, if it is set.
-            if (_root.Children[2] != null)
-            {
-                node.Children[2] = GetNode(node);
-                node.Children[2].Children[1] = _root.Children[2];
-                _root.Children[2].Parent = node.Children[2];
-
-                node.Children[2].EntryCount = _root.Children[2].EntryCount;
-                node.Children[2].LowEntry = _root.Children[2].LowEntry;
-                node.Children[2].HighEntry = _root.Children[2].HighEntry;
-            }
-
-            // Check bottom right sector, add it as bottom right sectors top
-            // left node, if it is set.
-            if (_root.Children[3] != null)
-            {
-                node.Children[3] = GetNode(node);
-                node.Children[3].Children[0] = _root.Children[3];
-                _root.Children[3].Parent = node.Children[3];
-
-                node.Children[3].EntryCount = _root.Children[3].EntryCount;
-                node.Children[3].LowEntry = _root.Children[3].LowEntry;
-                node.Children[3].HighEntry = _root.Children[3].HighEntry;
+                // Copy values from child node (it's the only one, so they are the same).
+                wrapper.EntryCount = child.EntryCount;
+                wrapper.LowEntry = child.LowEntry;
+                wrapper.HighEntry = child.HighEntry;
             }
 
             // Kill of the old root.
@@ -857,11 +819,11 @@ namespace Engine.Collections
                 if (node.IsLeaf)
                 {
                     // Add all entries in this node that are in range.
-                    float rangeSquared = range * range;
+                    var rangeSquared = range * range;
                     for (var entry = node.LowEntry; entry != null && entry != node.HighEntry.Next; entry = entry.Next)
                     {
-                        float distanceX = point.X - entry.Point.X;
-                        float distanceY = point.Y - entry.Point.Y;
+                        var distanceX = point.X - entry.Point.X;
+                        var distanceY = point.Y - entry.Point.Y;
                         if ((distanceX * distanceX + distanceY * distanceY) < rangeSquared)
                         {
                             list.Add(entry.Value);
@@ -935,11 +897,9 @@ namespace Engine.Collections
                     {
                         if (node.Children[i] != null)
                         {
-                            Accumulate(
-                                x + (((i & 1) == 0) ? 0 : childSize),
-                                y + (((i & 2) == 0) ? 0 : childSize),
-                                childSize, node.Children[i],
-                                ref query, list);
+                            var childX = x + (((i & 1) == 0) ? 0 : childSize);
+                            var childY = y + (((i & 2) == 0) ? 0 : childSize);
+                            Accumulate(childX, childY, childSize, node.Children[i], ref query, list);
                         }
                     }
                 }
@@ -989,7 +949,7 @@ namespace Engine.Collections
             }
 
             // Check for unaligned separation.
-            Vector2 closest = center;
+            var closest = center;
             if (center.X < x)
             {
                 closest.X = x;
@@ -1017,14 +977,8 @@ namespace Engine.Collections
             // box is contained within the circle.
             distanceX = Math.Max(center.X - x, x + size - center.X);
             distanceY = Math.Max(center.Y - y, y + size - center.Y);
-            if ((distanceX * distanceX + distanceY * distanceY) > radius * radius)
-            {
-                return IntersectionType.Overlapping;
-            }
-            else
-            {
-                return IntersectionType.Contained;
-            }
+            var outside = (distanceX * distanceX + distanceY * distanceY) > radius * radius;
+            return outside ? IntersectionType.Overlapping : IntersectionType.Contained;
         }
         
         /// <summary>
@@ -1050,14 +1004,7 @@ namespace Engine.Collections
                 return IntersectionType.Separated;
             }
             rectangle.Contains(ref other, out result);
-            if (result)
-            {
-                return IntersectionType.Contained;
-            }
-            else
-            {
-                return IntersectionType.Overlapping;
-            }
+            return result ? IntersectionType.Contained : IntersectionType.Overlapping;
         }
 
         #endregion
@@ -1073,7 +1020,7 @@ namespace Engine.Collections
         /// </para>
         /// </summary>
         [DebuggerDisplay("Count = {EntryCount}, Children = {GetChildrenCount()}")]
-        private class Node
+        private sealed class Node
         {
             #region Properties
             
@@ -1135,7 +1082,7 @@ namespace Engine.Collections
         /// and value.
         /// </summary>
         [DebuggerDisplay("Point = {Point}, Value = {Value}")]
-        private class Entry
+        private sealed class Entry
         {
             #region Fields
 
@@ -1163,6 +1110,9 @@ namespace Engine.Collections
 
             #region Methods
 
+            /// <summary>
+            /// Remove this entry from the linked list.
+            /// </summary>
             public void Remove()
             {
                 if (Previous != null)
@@ -1178,8 +1128,10 @@ namespace Engine.Collections
                 Previous = null;
             }
 
-            #endregion
-
+            /// <summary>
+            /// Insert this node into the linked list, after the specified entry.
+            /// </summary>
+            /// <param name="entry">The entry to insert after.</param>
             public void InsertAfter(Entry entry)
             {
                 var insertAfter = entry;
@@ -1194,6 +1146,8 @@ namespace Engine.Collections
                 Previous = insertAfter;
                 Next = insertBefore;
             }
+
+            #endregion
         }
 
         #endregion
@@ -1231,7 +1185,7 @@ namespace Engine.Collections
         private readonly List<Node> _nodePool = new List<Node>(512);
 
         /// <summary>
-        /// List of available linked list nodes (entries).
+        /// List of available entries.
         /// </summary>
         private readonly List<Entry> _entryPool = new List<Entry>(1024);
 
@@ -1240,18 +1194,18 @@ namespace Engine.Collections
         /// </summary>
         private void AllocNodes()
         {
-            for (int i = _nodePool.Count; i < _nodePool.Capacity; i++)
+            for (var i = _nodePool.Count; i < _nodePool.Capacity; i++)
             {
                 _nodePool.Add(new Node());
             }
         }
 
         /// <summary>
-        /// Allocate more linked list nodes, if we ran out of them.
+        /// Allocate more entries, if we ran out of them.
         /// </summary>
         private void AllocEntries()
         {
-            for (int i = _entryPool.Count; i < _entryPool.Capacity; i++)
+            for (var i = _entryPool.Count; i < _entryPool.Capacity; i++)
             {
                 _entryPool.Add(new Entry());
             }
