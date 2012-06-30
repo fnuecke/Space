@@ -5,7 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Components
 {
-    public class Detectable : Component
+    public sealed class Detectable : Component
     {
         #region Constants
 
@@ -21,7 +21,15 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The name of the texture to use for rendering the physics object.
         /// </summary>
-        public string TextureName { get { return _textureName; } set { _textureName = value; Texture = null; } }
+        public string TextureName
+        {
+            get { return _textureName; }
+            set
+            {
+                _textureName = value;
+                Texture = null;
+            }
+        }
 
         #endregion
 
@@ -31,6 +39,11 @@ namespace Space.ComponentSystem.Components
         /// The actual texture with the set name.
         /// </summary>
         public Texture2D Texture;
+
+        /// <summary>
+        /// Whether to use the objects rotation to rotate the detectable's icon.
+        /// </summary>
+        public bool RotateIcon;
 
         /// <summary>
         /// Actual texture name. Setter is used to invalidate the actual texture reference,
@@ -52,6 +65,7 @@ namespace Space.ComponentSystem.Components
 
             var otherDetectable = (Detectable)other;
             Texture = otherDetectable.Texture;
+            RotateIcon = otherDetectable.RotateIcon;
             _textureName = otherDetectable._textureName;
 
             return this;
@@ -61,9 +75,11 @@ namespace Space.ComponentSystem.Components
         /// Initialize with the specified texture name.
         /// </summary>
         /// <param name="textureName">Name of the texture.</param>
-        public Detectable Initialize(string textureName)
+        /// <param name="rotateIcon">Whether to rotate the icon based on the object's rotation.</param>
+        public Detectable Initialize(string textureName, bool rotateIcon = false)
         {
             TextureName = textureName;
+            RotateIcon = rotateIcon;
 
             return this;
         }
@@ -77,6 +93,7 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             _textureName = null;
+            RotateIcon = false;
         }
 
         #endregion
@@ -93,7 +110,8 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(TextureName);
+                .Write(TextureName)
+                .Write(RotateIcon);
         }
 
         /// <summary>
@@ -105,6 +123,7 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             TextureName = packet.ReadString();
+            RotateIcon = packet.ReadBoolean();
         }
 
         #endregion

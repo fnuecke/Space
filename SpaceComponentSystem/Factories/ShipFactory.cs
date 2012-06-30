@@ -160,7 +160,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<ShipInfo>(entity);
 
             // Audio and display components.
-            manager.AddComponent<Detectable>(entity).Initialize("Textures/ship");
+            manager.AddComponent<Detectable>(entity).Initialize("Textures/ship", true);
 
             // Create equipment slots.
             var equipment = manager.AddComponent<Equipment>(entity);

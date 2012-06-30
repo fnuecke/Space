@@ -17,7 +17,7 @@ namespace Space.View
     /// the overlay that displays icons for nearby but out-of-screen objects
     /// of interest (ones with a <c>Detectable</c> component).
     /// </summary>
-    sealed class Radar
+    internal sealed class Radar
     {
         #region Types
 
@@ -27,12 +27,19 @@ namespace Space.View
         private enum RadarDirection
         {
             Top,
+
             Left,
+
             Right,
+
             Bottom,
+
             TopLeft,
+
             TopRight,
+
             BottomLeft,
+
             BottomRight
         }
 
@@ -82,7 +89,7 @@ namespace Space.View
         /// <summary>
         /// Background for rendering the distance to a target.
         /// </summary>
-        private Texture2D _radarDistance;
+        private readonly Texture2D _radarDistance;
 
         /// <summary>
         /// Texture marking an icon as targeted.
@@ -92,7 +99,7 @@ namespace Space.View
         /// <summary>
         /// Font used to render the distance on radar icons.
         /// </summary>
-        private SpriteFont _distanceFont;
+        private readonly SpriteFont _distanceFont;
 
         #endregion
 
@@ -118,7 +125,8 @@ namespace Space.View
             _radarDirection[(int)RadarDirection.TopLeft] = game.Content.Load<Texture2D>("Textures/Radar/top_left");
             _radarDirection[(int)RadarDirection.TopRight] = game.Content.Load<Texture2D>("Textures/Radar/top_right");
             _radarDirection[(int)RadarDirection.BottomLeft] = game.Content.Load<Texture2D>("Textures/Radar/bottom_left");
-            _radarDirection[(int)RadarDirection.BottomRight] = game.Content.Load<Texture2D>("Textures/Radar/bottom_right");
+            _radarDirection[(int)RadarDirection.BottomRight] =
+                game.Content.Load<Texture2D>("Textures/Radar/bottom_right");
             _radarDistance = game.Content.Load<Texture2D>("Textures/Radar/distance");
             _radarTarget = game.Content.Load<Texture2D>("Textures/Radar/target");
             _distanceFont = game.Content.Load<SpriteFont>("Fonts/visitor");
@@ -223,7 +231,7 @@ namespace Space.View
                 // viewport. This will also serve as our direction vector.
                 var direction = neighborTransform.Translation - position;
                 float distance = direction.Length();
-              
+
                 // Check if the object's inside. If so, skip it. Take camera
                 // zoom into account here.
                 if (screenBounds.Contains((int)(direction.X * zoom + center.X), (int)(direction.Y * zoom + center.Y)))
@@ -280,7 +288,7 @@ namespace Space.View
                     iconPosition.X *= scale;
                     iconPosition.Y *= scale;
                 }
-                
+
                 // Adjust the distance to an object such that it is the
                 // distance to the screen edge, if so desired.
                 if (Settings.Instance.RadarDistanceFromBorder)
@@ -302,8 +310,8 @@ namespace Space.View
 
                 // And, finally, draw it. First the background.
                 _spriteBatch.Draw(_radarDirection[(int)GetRadarDirection(ref iconPosition, ref innerBounds)],
-                    iconPosition, null,
-                    color, 0, backgroundOrigin, ld, SpriteEffects.None, 0);
+                                  iconPosition, null,
+                                  color, 0, backgroundOrigin, ld, SpriteEffects.None, 0);
 
                 // Get the texture origin (middle of the texture).
                 Vector2 origin;
@@ -312,17 +320,18 @@ namespace Space.View
 
                 // And draw that, too.
                 _spriteBatch.Draw(neighborDetectable.Texture, iconPosition, null,
-                    Color.White * ld, 0, origin, ld, SpriteEffects.None, 0);
+                                  Color.White * ld, neighborDetectable.RotateIcon ? neighborTransform.Rotation : 0,
+                                  origin, ld, SpriteEffects.None, 0);
 
                 // Draw the distance to the object.
                 _spriteBatch.Draw(_radarDistance, iconPosition, null,
-                    Color.White * ld, 0, backgroundOrigin, ld, SpriteEffects.None, 0);
+                                  Color.White * ld, 0, backgroundOrigin, ld, SpriteEffects.None, 0);
 
                 string formattedDistance = FormatDistance(distance);
                 origin.X = _distanceFont.MeasureString(formattedDistance).X / 2f;
                 origin.Y = -DistanceOffset;
                 _spriteBatch.DrawString(_distanceFont, formattedDistance, iconPosition,
-                    Color.White * ld, 0, origin, ld, SpriteEffects.None, 0);
+                                        Color.White * ld, 0, origin, ld, SpriteEffects.None, 0);
             }
 
             // Clear the list for the next run.
@@ -392,7 +401,7 @@ namespace Space.View
         /// <summary>
         /// List of SI units, used for distance formatting.
         /// </summary>
-        private static readonly string[] UnitNames = new[] { "", "k", "m", "g", "t", "p", "e", "z", "y" };
+        private static readonly string[] UnitNames = new[] {"", "k", "m", "g", "t", "p", "e", "z", "y"};
 
         /// <summary>
         /// Formats a distance to a string to be displayed in a radar icon.
