@@ -46,7 +46,7 @@ namespace Tests
         private const int QueryRadius = CellSystem.CellSize; // This is the furthest one should ever query, else it leaves the active area.
 
         // List of values for max entry count to test.
-        private static readonly int[] QuadTreeMaxNodeEntries = new[] {20,30,40};
+        private static readonly int[] QuadTreeMaxNodeEntries = new[] {30};
 
         private static void Main(string[] args)
         {

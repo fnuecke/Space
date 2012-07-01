@@ -68,16 +68,6 @@ namespace Engine.Collections
         bool Remove(T value);
 
         /// <summary>
-        /// Test whether this tree contains the specified value at the
-        /// specified point.
-        /// </summary>
-        /// <param name="point">The point at which to look for.</param>
-        /// <param name="value">The value to look for.</param>
-        /// <returns><c>true</c> if the tree contains the value at the
-        /// specified point.</returns>
-        bool Contains(ref Vector2 point, T value);
-
-        /// <summary>
         /// Test whether this tree contains the specified value.
         /// </summary>
         /// <param name="value">The value to look for.</param>

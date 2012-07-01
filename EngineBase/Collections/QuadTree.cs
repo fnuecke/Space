@@ -284,19 +284,6 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Test whether this tree contains the specified value at the
-        /// specified point.
-        /// </summary>
-        /// <param name="point">The point at which to look for.</param>
-        /// <param name="value">The value to look for.</param>
-        /// <returns><c>true</c> if the tree contains the value at the
-        /// specified point.</returns>
-        public bool Contains(ref Vector2 point, T value)
-        {
-            return _values.ContainsKey(value) && _values[value].Point.Equals(point);
-        }
-
-        /// <summary>
         /// Test whether this tree contains the specified value.
         /// </summary>
         /// <param name="value">The value to look for.</param>
@@ -475,14 +462,22 @@ namespace Engine.Collections
             }
             else
             {
-                // Check if we have empty child nodes.
-                for (var i = 0; i < 4; i++)
+                // Check if we have empty child nodes. If so, remove them.
+                if (node.Children[0] != null && node.Children[0].EntryCount == 0)
                 {
-                    // If so, remove them.
-                    if (node.Children[i] != null && node.Children[i].EntryCount == 0)
-                    {
-                        node.Children[i] = null;
-                    }
+                    node.Children[0] = null;
+                }
+                if (node.Children[1] != null && node.Children[1].EntryCount == 0)
+                {
+                    node.Children[1] = null;
+                }
+                if (node.Children[2] != null && node.Children[2].EntryCount == 0)
+                {
+                    node.Children[2] = null;
+                }
+                if (node.Children[3] != null && node.Children[3].EntryCount == 0)
+                {
+                    node.Children[3] = null;
                 }
             }
 
@@ -670,15 +665,21 @@ namespace Engine.Collections
 
             // Do this recursively if the split resulted in another bucket that
             // is too large.
-            for (var i = 0; i < 4; ++i)
+            if (node.Children[0] != null)
             {
-                if (node.Children[i] != null)
-                {
-                    SplitNodeIfNecessary(
-                        x + (((i & 1) == 0) ? 0 : childSize),
-                        y + (((i & 2) == 0) ? 0 : childSize),
-                        childSize, node.Children[i]);
-                }
+                SplitNodeIfNecessary(x, y, childSize, node.Children[0]);
+            }
+            if (node.Children[1] != null)
+            {
+                SplitNodeIfNecessary(x + childSize, y, childSize, node.Children[1]);
+            }
+            if (node.Children[2] != null)
+            {
+                SplitNodeIfNecessary(x, y + childSize, childSize, node.Children[2]);
+            }
+            if (node.Children[3] != null)
+            {
+                SplitNodeIfNecessary(x + childSize, y + childSize, childSize, node.Children[3]);
             }
         }
 
@@ -851,16 +852,23 @@ namespace Engine.Collections
                 {
                     // Recurse into child nodes.
                     var childSize = size >> 1;
-                    for (var i = 0; i < 4; i++)
-                    {
-                        if (node.Children[i] == null)
-                        {
-                            continue;
-                        }
 
-                        var childX = x + (((i & 1) == 0) ? 0 : childSize);
-                        var childY = y + (((i & 2) == 0) ? 0 : childSize);
-                        Accumulate(childX, childY, childSize, node.Children[i], ref query, ref list);
+                    // Unrolled loop.
+                    if (node.Children[0] != null)
+                    {
+                        Accumulate(x, y, childSize, node.Children[0], ref query, ref list);
+                    }
+                    if (node.Children[1] != null)
+                    {
+                        Accumulate(x + childSize, y, childSize, node.Children[1], ref query, ref list);
+                    }
+                    if (node.Children[2] != null)
+                    {
+                        Accumulate(x, y + childSize, childSize, node.Children[2], ref query, ref list);
+                    }
+                    if (node.Children[3] != null)
+                    {
+                        Accumulate(x + childSize, y + childSize, childSize, node.Children[3], ref query, ref list);
                     }
                 }
             }

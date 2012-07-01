@@ -651,7 +651,8 @@ namespace Space
                             if (_indexGroup >= 0)
                             {
                                 _indexRectangle.Scale = camera.Zoom;
-                                index.DrawIndex(1ul << _indexGroup, _indexRectangle, new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon);
+                                var translation = new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon;
+                                index.DrawIndex(1ul << _indexGroup, _indexRectangle, translation);
                             }
                             sb.AppendFormat("Indexes: {0}, Total entries: {1}, Queries: {2}\n", index.NumIndexes, index.Count, index.NumQueriesLastUpdate);
                         }
