@@ -143,7 +143,7 @@ namespace Engine.Collections
             Add(ref point, value);
         }
 
-        public void Update(ref Vector2 newPoint, T value)
+        public bool Update(ref Vector2 newPoint, T value)
         {
             LeafNode node = null;
             //check if node exists
@@ -157,15 +157,16 @@ namespace Engine.Collections
                 var entry = node.getEntry(value);
                 entry.Point = newPoint;
                 AdjustTree(node);
-                return;
+                return true;
             }
             // TODO implement!
             //throw new NotImplementedException();
+            return false;
         }
 
-        public void Update(Vector2 newPoint, T value)
+        public bool Update(Vector2 newPoint, T value)
         {
-            Update(ref newPoint, value);
+            return Update(ref newPoint, value);
         }
 
         public bool Remove(T value)

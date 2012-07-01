@@ -140,60 +140,11 @@ namespace Engine.Collections
             EnsureCapacity(ref point);
 
             // Get the node to insert in.
-            int nodeX, nodeY, nodeSize;
-            var insertionNode = FindNode(ref point, out nodeX, out nodeY, out nodeSize);
-
-            // If it's not a leaf node, create the leaf node for the new entry.
-            // Also get the node in the linked list to insert after.
-            Entry insertAfter;
-            if (!insertionNode.IsLeaf)
-            {
-                var cell = ComputeCell(nodeX, nodeY, nodeSize >> 1, ref point);
-                insertionNode.Children[cell] = new Node {Parent = insertionNode};
-                insertionNode = insertionNode.Children[cell];
-                insertAfter = insertionNode.Parent.HighEntry;
-            }
-            else
-            {
-                // Got a leaf, insert in it.
-                insertAfter = insertionNode.LowEntry;
-            }
-
-            // Add the data, get the newly created list entry.
-            if (insertAfter != null)
-            {
-                entry.InsertAfter(insertAfter);
-            }
-            else
-            {
-                _entries = entry;
-            }
-            _values.Add(value, entry);
-
-            var node = insertionNode;
-            while (node != null)
-            {
-                if (node.LowEntry == node.HighEntry)
-                {
-                    // Only one node yet, or empty.
-                    node.LowEntry = node.LowEntry ?? entry;
-                    node.HighEntry = entry;
-                }
-                else if (node.HighEntry == insertAfter)
-                {
-                    // Inserted after high node, adjust accordingly.
-                    node.HighEntry = entry;
-                }
-
-                // Remember we have one more entry.
-                ++node.EntryCount;
-
-                // Continue checking in our parent.
-                node = node.Parent;
-            }
-
-            // We need to split the node.
-            SplitNodeIfNecessary(nodeX, nodeY, nodeSize, insertionNode);
+            var nodeX = _bounds.X;
+            var nodeY = _bounds.Y;
+            var nodeSize = _bounds.Width;
+            var node = FindNode(ref point, _root, ref nodeX, ref nodeY, ref nodeSize);
+            AddToNode(node, nodeX, nodeY, nodeSize, entry);
         }
 
         /// <summary>
@@ -211,59 +162,94 @@ namespace Engine.Collections
 
         /// <summary>
         /// Update a single entry by changing its position. If the entry is not
-        /// already in the tree, it will be added.
+        /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
-        /// <exception cref="ArgumentException">If there is no such value in
-        /// the tree at the specified old position.</exception>
-        public void Update(ref Vector2 newPoint, T value)
+        /// <returns><code>true</code> if the update was successful.</returns>
+        public bool Update(ref Vector2 newPoint, T value)
         {
             // Check if we have that entry, if not add it.
             if (!Contains(value))
             {
-                Add(ref newPoint, value);
-                return;
+                return false;
             }
-
-            // Get the old position.
-            var entry = _values[value];
 
             // Handle dynamic growth.
             EnsureCapacity(ref newPoint);
 
-            // Out parameters we don't care for.
-            int nodeX, nodeY, nodeSize;
+            // Get the old position.
+            var entry = _values[value];
 
-            // Get the node the entry would be in.
-            var oldNode = FindNode(ref entry.Point, out nodeX, out nodeY, out nodeSize);
+            // Get the node the entry would be in. Start searching at root level.
+            var bounds = _bounds;
+            var node = FindNode(ref entry.Point, _root, ref bounds.X, ref bounds.Y, ref bounds.Width);
+            bounds.Height = bounds.Width;
 
-            // See if the new point falls into the same node, otherwise re-insert.
-            var newNode = FindNode(ref newPoint, out nodeX, out nodeY, out nodeSize);
-            if (oldNode == newNode)
+            // Find smallest parent cell we can re-insert it into.
+            var insertionNode = node;
+            while (!bounds.Contains((int)newPoint.X, (int)newPoint.Y))
             {
-                // Same node, just update the entry.
-                entry.Point = newPoint;
+                // Check how to shift the cell coordinates.
+                if (insertionNode.Parent.Children[1] == insertionNode)
+                {
+                    // Was top right.
+                    bounds.X -= bounds.Width;
+                }
+                else if (insertionNode.Parent.Children[2] == insertionNode)
+                {
+                    // Was bottom left.
+                    bounds.Y -= bounds.Width;
+                }
+                else if (insertionNode.Parent.Children[3] == insertionNode)
+                {
+                    // Was bottom right.
+                    bounds.X -= bounds.Width;
+                    bounds.Y -= bounds.Height;
+                }
+                else
+                {
+                    // Was top left, nothing to do.
+                    Debug.Assert(insertionNode.Parent.Children[0] == insertionNode);
+                }
+
+                // Adjust cell size.
+                bounds.Width = bounds.Width << 1;
+                bounds.Height = bounds.Height << 1;
+
+                // Move on to parent node.
+                insertionNode = insertionNode.Parent;
             }
-            else
+
+            // Update the position in the entry.
+            entry.Point = newPoint;
+
+            // Check if we need to re-insert.
+            if (node != insertionNode)
             {
-                // Different node, re-insert.
-                RemoveFromNode(oldNode, entry);
-                Add(ref newPoint, value);
+                // Did not fit in node, search leaf node starting in current node.
+                // Remove before looking for the node to insert in to avoid invalidating
+                // the node we'd want to insert in (cascaded remove).
+                RemoveFromNode(node, entry);
+
+                // Find actual node to insert into, then add.
+                var newNode = FindNode(ref newPoint, insertionNode, ref bounds.X, ref bounds.Y, ref bounds.Width);
+                AddToNode(newNode, bounds.X, bounds.Y, bounds.Width, entry);
             }
+
+            return true;
         }
 
         /// <summary>
         /// Update a single entry by changing its position. If the entry is not
-        /// already in the tree, it will be added.
+        /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
-        /// <exception cref="ArgumentException">If there is no such value in
-        /// the tree at the specified old position.</exception>
-        public void Update(Vector2 newPoint, T value)
+        /// <returns><code>true</code> if the update was successful.</returns>
+        public bool Update(Vector2 newPoint, T value)
         {
-            Update(ref newPoint, value);
+            return Update(ref newPoint, value);
         }
 
         /// <summary>
@@ -276,9 +262,13 @@ namespace Engine.Collections
             if (Contains(value))
             {
                 var entry = _values[value];
+
                 // Get the node the entry would be in.
-                int nodeX, nodeY, nodeSize;
-                RemoveFromNode(FindNode(ref entry.Point, out nodeX, out nodeY, out nodeSize), entry);
+                var nodeX = _bounds.X;
+                var nodeY = _bounds.Y;
+                var nodeSize = _bounds.Width;
+                var node = FindNode(ref entry.Point, _root, ref nodeX, ref nodeY, ref nodeSize);
+                RemoveFromNode(node, entry);
             }
             return false;
         }
@@ -348,17 +338,13 @@ namespace Engine.Collections
         /// hold that point.
         /// </summary>
         /// <param name="point">The point to get the leaf node for.</param>
+        /// <param name="node">The node to start searching in.</param>
         /// <param name="nodeX">Will be the x position of the node.</param>
         /// <param name="nodeY">Will be the y position of the node.</param>
         /// <param name="nodeSize">Will be the size of the node.</param>
         /// <returns>The node for the specified query point.</returns>
-        private Node FindNode(ref Vector2 point, out int nodeX, out int nodeY, out int nodeSize)
+        private static Node FindNode(ref Vector2 point, Node node, ref int nodeX, ref int nodeY, ref int nodeSize)
         {
-            var node = _root;
-            nodeX = _bounds.X;
-            nodeY = _bounds.Y;
-            nodeSize = _bounds.Width;
-
             while (!node.IsLeaf)
             {
                 // Get current child size.
@@ -368,25 +354,86 @@ namespace Engine.Collections
                 var cell = ComputeCell(nodeX, nodeY, childSize, ref point);
 
                 // Do we have to create that child?
-                if (node.Children[cell] != null)
-                {
-                    // Yes, descend into that node.
-                    node = node.Children[cell];
-                    nodeX += (((cell & 1) == 0) ? 0 : childSize);
-                    nodeY += (((cell & 2) == 0) ? 0 : childSize);
-                    nodeSize = childSize;
-                }
-                else
+                if (node.Children[cell] == null)
                 {
                     // No. Return the current inner node instead.
                     return node;
                 }
+
+                // Yes, descend into that node.
+                node = node.Children[cell];
+                nodeX += (((cell & 1) == 0) ? 0 : childSize);
+                nodeY += (((cell & 2) == 0) ? 0 : childSize);
+                nodeSize = childSize;
             }
 
             return node;
         }
 
         #region Restructuring
+
+        /// <summary>
+        /// Adds an entry to a node and handles overflow as necessary.
+        /// </summary>
+        /// <param name="node">The node to insert in.</param>
+        /// <param name="nodeX">The x coordinate of the node.</param>
+        /// <param name="nodeY">The y coordinate of the node.</param>
+        /// <param name="nodeSize">The size of the node.</param>
+        /// <param name="entry">The node to insert.</param>
+        private void AddToNode(Node node, int nodeX, int nodeY, int nodeSize, Entry entry)
+        {
+            // If it's not a leaf node, create the leaf node for the new entry.
+            // Also get the node in the linked list to insert after.
+            Entry insertAfter;
+            if (!node.IsLeaf)
+            {
+                var cell = ComputeCell(nodeX, nodeY, nodeSize >> 1, ref entry.Point);
+                node.Children[cell] = new Node { Parent = node };
+                node = node.Children[cell];
+                insertAfter = node.Parent.HighEntry;
+            }
+            else
+            {
+                // Got a leaf, insert in it.
+                insertAfter = node.LowEntry;
+            }
+
+            // Add the data, get the newly created list entry.
+            if (insertAfter != null)
+            {
+                entry.InsertAfter(insertAfter);
+            }
+            else
+            {
+                _entries = entry;
+            }
+            _values.Add(entry.Value, entry);
+
+            var iter = node;
+            while (iter != null)
+            {
+                if (iter.LowEntry == iter.HighEntry)
+                {
+                    // Only one node yet, or empty.
+                    iter.LowEntry = iter.LowEntry ?? entry;
+                    iter.HighEntry = entry;
+                }
+                else if (iter.HighEntry == insertAfter)
+                {
+                    // Inserted after high node, adjust accordingly.
+                    iter.HighEntry = entry;
+                }
+
+                // Remember we have one more entry.
+                ++iter.EntryCount;
+
+                // Continue checking in our parent.
+                iter = iter.Parent;
+            }
+
+            // We need to split the node.
+            SplitNodeIfNecessary(nodeX, nodeY, nodeSize, node);
+        }
 
         /// <summary>
         /// Removes an entry from a node.
@@ -1152,7 +1199,7 @@ namespace Engine.Collections
         /// Renders a single note into a sprite batch, and recursively render
         /// its children.
         /// </summary>
-        private void DrawNode(Node node, float centerX, float centerY, int size, AbstractShape shape)
+        private static void DrawNode(Node node, float centerX, float centerY, int size, AbstractShape shape)
         {
             // Abort if there is no node here.
             if (node == null)
@@ -1171,18 +1218,6 @@ namespace Engine.Collections
                 var childY = centerY + (((i & 2) == 0) ? -(size >> 2) : (size >> 2));
                 DrawNode(node.Children[i], childX, childY, size >> 1, shape);
             }
-        }
-
-        /// <summary>
-        /// Tests if a value is in the specified interval.
-        /// </summary>
-        /// <param name="value">The value to check.</param>
-        /// <param name="low">The lower bound of the interval.</param>
-        /// <param name="high">The upper bound of the intervale.</param>
-        /// <returns></returns>
-        private static bool IsInInterval(float value, float low, float high)
-        {
-            return value >= low && value <= high;
         }
 
         #endregion

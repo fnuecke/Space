@@ -43,23 +43,21 @@ namespace Engine.Collections
 
         /// <summary>
         /// Update a single entry by changing its position. If the entry is not
-        /// already in the tree, it will be added.
+        /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
-        /// <exception cref="ArgumentException">If there is no such value in
-        /// the tree at the specified old position.</exception>
-        void Update(ref Vector2 newPoint, T value);
+        /// <returns><code>true</code> if the update was successful.</returns>
+        bool Update(ref Vector2 newPoint, T value);
 
         /// <summary>
         /// Update a single entry by changing its position. If the entry is not
-        /// already in the tree, it will be added.
+        /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
-        /// <exception cref="ArgumentException">If there is no such value in
-        /// the tree at the specified old position.</exception>
-        void Update(Vector2 newPoint, T value);
+        /// <returns><code>true</code> if the update was successful.</returns>
+        bool Update(Vector2 newPoint, T value);
 
         /// <summary>
         /// Remove the specified value from the tree.

@@ -25,7 +25,7 @@ namespace Tests
         /// <summary>
         /// How many iterations to run for each configuration to average over.
         /// </summary>
-        private const int Iterations = 10;
+        private const int Iterations = 20;
 
         /// <summary>
         /// Number of runs per operation to perform to average over. This is
@@ -33,7 +33,7 @@ namespace Tests
         /// parameters for the operations need to be precomputed, though, so
         /// a high value here will result in higher memory consumption.
         /// </summary>
-        private const int Operations = 4000;
+        private const int Operations = 8000;
 
         /// <summary>
         /// The area over which to distribute the points.
