@@ -29,10 +29,10 @@ namespace Engine.Collections
             Add(new Vector2(4, 5), list[4]);
             Add(new Vector2(5, 6), list[4]);
 
-            foreach(var asd in RangeQuery(new Rectangle(0,0,1,1)))
-            {
-                Console.WriteLine(asd);
-            }
+            //foreach(var asd in RangeQuery(new Rectangle(0,0,1,1)))
+            //{
+            //    Console.WriteLine(asd);
+            //}
             Console.WriteLine(root);
         }
         #region Fields
@@ -216,30 +216,14 @@ namespace Engine.Collections
             root = new LeafNode();
         }
 
-        public ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null)
+        public void RangeQuery(ref Vector2 point, float range, ref ICollection<T> list)
         {
-            var result = list ?? new HashSet<T>();
-
-            Accumulate(root,ref point,range,result);
-            return result;
+            Accumulate(root, ref point, range, list);
         }
 
-        public ICollection<T> RangeQuery(Vector2 point, float range)
+        public void RangeQuery(ref Rectangle rectangle, ref ICollection<T> list)
         {
-            return RangeQuery(ref point, range);
-        }
-
-        public ICollection<T> RangeQuery(ref Rectangle rectangle, ICollection<T> list = null)
-        {
-            var result = list ?? new HashSet<T>();
-            Accumulate(root, ref rectangle, result);
-
-            return result;
-        }
-
-        public ICollection<T> RangeQuery(Rectangle rectangle)
-        {
-            return RangeQuery(ref rectangle);
+            Accumulate(root, ref rectangle, list);
         }
 
         #endregion

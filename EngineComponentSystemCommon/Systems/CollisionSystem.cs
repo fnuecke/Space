@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
 using Engine.Util;
 using Microsoft.Xna.Framework;
-using System.Diagnostics;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -13,7 +13,7 @@ namespace Engine.ComponentSystem.Systems
     /// neighbors and checks their collision groups, keeping the number of
     /// actual collision checks that have to be performed low.
     /// </summary>
-    public class CollisionSystem : AbstractComponentSystem<Collidable>
+    public sealed class CollisionSystem : AbstractComponentSystem<Collidable>
     {
         #region Constants
 
@@ -83,11 +83,10 @@ namespace Engine.ComponentSystem.Systems
             // Use the inverse of the collision group, i.e. get
             // entries from all those entries where we're not in
             // that group.
-            foreach (var neighbor in index.RangeQuery(
-                component.Entity,
-                _maxCollidableRadius,
-                (ulong)(~component.CollisionGroups) << FirstIndexGroup,
-                _reusableNeighborList))
+            ICollection<int> neighbors = _reusableNeighborList;
+            index.RangeQuery(component.Entity, _maxCollidableRadius, ref neighbors,
+                             (ulong)(~component.CollisionGroups) << FirstIndexGroup);
+            foreach (var neighbor in neighbors)
             {
                 Debug.Assert(neighbor != component.Entity);
 

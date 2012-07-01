@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors
@@ -56,7 +57,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var closestStation = 0;
             var distanceSquared = float.MaxValue;
 
-            foreach (var neighbor in index.RangeQuery(ref position, ScanRange, Detectable.IndexGroup))
+            ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
+            index.RangeQuery(ref position, ScanRange, ref neighbors, Detectable.IndexGroup);
+            foreach (var neighbor in neighbors)
             {
                 // See if it's a station.
                 // TODO...

@@ -94,8 +94,9 @@ namespace Space.ComponentSystem.Systems
             // in the current list of sounds playing will be stopped, as they are
             // out of range. The ones in range will be removed from that list and
             // added to our reusable list.
-            foreach (var neighbor in index.
-                    RangeQuery(ref position, MaxSoundDistance, Sound.IndexGroup, _reusableNeighborList))
+            ICollection<int> neighbors = _reusableNeighborList;
+            index.RangeQuery(ref position, MaxSoundDistance, ref neighbors, Sound.IndexGroup);
+            foreach (var neighbor in neighbors)
             {
                 // Get the sound component of the neighbor.
                 var sound = Manager.GetComponent<Sound>(neighbor);

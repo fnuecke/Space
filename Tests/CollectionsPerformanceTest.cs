@@ -149,7 +149,7 @@ namespace Tests
                 for (var j = 0; j < Operations; j++)
                 {
                     var v = queries[j];
-                    index.RangeQuery(ref v, QueryRadius, DummyCollection<int>.Instance);
+                    index.RangeQuery(ref v, QueryRadius, ref DummyCollection<int>.Instance);
                 }
                 watch.Stop();
                 queryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
@@ -197,7 +197,7 @@ namespace Tests
     /// <typeparam name="T"></typeparam>
     internal sealed class DummyCollection<T> : ICollection<T>
     {
-        public static readonly DummyCollection<T> Instance = new DummyCollection<T>();
+        public static ICollection<T> Instance = new DummyCollection<T>();
 
         public IEnumerator<T> GetEnumerator()
         {

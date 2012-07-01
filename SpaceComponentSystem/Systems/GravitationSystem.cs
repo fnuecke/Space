@@ -42,8 +42,9 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Then check all our neighbors.
-                foreach (var neigbor in index.
-                    RangeQuery(component.Entity, 2 << 13, Gravitation.IndexGroup, _reusableNeighborList))
+                ICollection<int> neighbors = _reusableNeighborList;
+                index.RangeQuery(component.Entity, 2 << 13, ref neighbors, Gravitation.IndexGroup);
+                foreach (var neigbor in neighbors)
                 {
                     // If they have an enabled gravitation component...
                     var otherGravitation = Manager.GetComponent<Gravitation>(neigbor);

@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors
@@ -47,7 +48,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var faction = AI.Manager.GetComponent<Faction>(AI.Entity).Value;
             var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
             var index = AI.Manager.GetSystem<IndexSystem>();
-            foreach (var neighbor in index.RangeQuery(ref position, AggroRange, Detectable.IndexGroup))
+            ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
+            index.RangeQuery(ref position, AggroRange, ref neighbors, Detectable.IndexGroup);
+            foreach (var neighbor in neighbors)
             {
                 // See if it has health. Otherwise don't bother attacking.
                 var health = AI.Manager.GetComponent<Health>(neighbor);

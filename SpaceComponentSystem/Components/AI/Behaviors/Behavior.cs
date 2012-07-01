@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -287,7 +288,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
 
             // Look for evil neighbors, in particular suns and the like.
             var index = AI.Manager.GetSystem<IndexSystem>();
-            foreach (var neighbor in index.RangeQuery(ref position, MaxEscapeCheckDistance, Detectable.IndexGroup))
+            ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
+            index.RangeQuery(ref position, MaxEscapeCheckDistance, ref neighbors, Detectable.IndexGroup);
+            foreach (var neighbor in neighbors)
             {
                 // If it does damage we want to keep our distance.
                 var neighborFaction = AI.Manager.GetComponent<Faction>(neighbor);
@@ -327,7 +330,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             }
             
             // Check all neighbors in normal flocking range.
-            foreach (var neighbor in index.RangeQuery(ref position, FlockingThreshold, Detectable.IndexGroup))
+            neighbors.Clear();
+            index.RangeQuery(ref position, FlockingThreshold, ref neighbors, Detectable.IndexGroup);
+            foreach (var neighbor in neighbors)
             {
                 // Ignore non-ships.
                 if (AI.Manager.GetComponent<ShipControl>(neighbor) == null)

@@ -101,18 +101,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the neighborhood of the query point.</returns>
-        ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null);
-
-        /// <summary>
-        /// Perform a range query on this tree. This will return all entries
-        /// in the tree that are in the specified range to the specified point,
-        /// using a euclidean distance.
-        /// </summary>
-        /// <param name="point">The query point near which to get entries.</param>
-        /// <param name="range">The maximum distance an entry may be away
-        /// from the query point to be returned.</param>
-        /// <returns></returns>
-        ICollection<T> RangeQuery(Vector2 point, float range);
+        void RangeQuery(ref Vector2 point, float range, ref ICollection<T> list);
 
         /// <summary>
         /// Perform a range query on this tree. This will return all entries
@@ -122,15 +111,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the query rectangle.</returns>
-        ICollection<T> RangeQuery(ref Rectangle rectangle, ICollection<T> list = null);
-
-        /// <summary>
-        /// Perform a range query on this tree. This will return all entries
-        /// in the tree that are in contained the specified rectangle.
-        /// </summary>
-        /// <param name="rectangle">The query rectangle.</param>
-        /// <returns>All objects in the query rectangle.</returns>
-        ICollection<T> RangeQuery(Rectangle rectangle);
+        void RangeQuery(ref Rectangle rectangle, ref ICollection<T> list);
 
         #endregion
     }

@@ -92,11 +92,6 @@ namespace Space.View
         private readonly Texture2D _radarDistance;
 
         /// <summary>
-        /// Texture marking an icon as targeted.
-        /// </summary>
-        private Texture2D _radarTarget;
-
-        /// <summary>
         /// Font used to render the distance on radar icons.
         /// </summary>
         private readonly SpriteFont _distanceFont;
@@ -128,7 +123,7 @@ namespace Space.View
             _radarDirection[(int)RadarDirection.BottomRight] =
                 game.Content.Load<Texture2D>("Textures/Radar/bottom_right");
             _radarDistance = game.Content.Load<Texture2D>("Textures/Radar/distance");
-            _radarTarget = game.Content.Load<Texture2D>("Textures/Radar/target");
+            game.Content.Load<Texture2D>("Textures/Radar/target");
             _distanceFont = game.Content.Load<SpriteFont>("Fonts/visitor");
         }
 
@@ -212,8 +207,9 @@ namespace Space.View
             var zoom = Client.GetCameraZoom();
 
             // Loop through all our neighbors.
-            foreach (var neighbor in index.
-                RangeQuery(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
+            ICollection<int> neighbors = _reusableNeighborList;
+            index.RangeQuery(ref position, radarRange, ref neighbors, Detectable.IndexGroup);
+            foreach (var neighbor in neighbors)
             {
                 // Get the components we need.
                 var neighborTransform = Client.GetComponent<Transform>(neighbor);

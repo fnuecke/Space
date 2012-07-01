@@ -328,29 +328,11 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the neighborhood of the query point.</returns>
-        public ICollection<T> RangeQuery(ref Vector2 point, float range, ICollection<T> list = null)
+        public void RangeQuery(ref Vector2 point, float range, ref ICollection<T> list)
         {
-            var result = list ?? new HashSet<T>();
-
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
-            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root, ref point, range, result);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Perform a range query on this tree. This will return all entries
-        /// in the tree that are in the specified range to the specified point,
-        /// using a euclidean distance.
-        /// </summary>
-        /// <param name="point">The query point near which to get entries.</param>
-        /// <param name="range">The maximum distance an entry may be away
-        /// from the query point to be returned.</param>
-        /// <returns></returns>
-        public ICollection<T> RangeQuery(Vector2 point, float range)
-        {
-            return RangeQuery(ref point, range);
+            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root, ref point, range, ref list);
         }
 
         /// <summary>
@@ -361,26 +343,11 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the query rectangle.</returns>
-        public ICollection<T> RangeQuery(ref Microsoft.Xna.Framework.Rectangle rectangle, ICollection<T> list = null)
+        public void RangeQuery(ref Microsoft.Xna.Framework.Rectangle rectangle, ref ICollection<T> list)
         {
-            var result = list ?? new List<T>();
-
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
-            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root, ref rectangle, result);
-
-            return result;
-        }
-
-        /// <summary>
-        /// Perform a range query on this tree. This will return all entries
-        /// in the tree that are in contained the specified rectangle.
-        /// </summary>
-        /// <param name="rectangle">The query rectangle.</param>
-        /// <returns>All objects in the query rectangle.</returns>
-        public ICollection<T> RangeQuery(Microsoft.Xna.Framework.Rectangle rectangle)
-        {
-            return RangeQuery(ref rectangle);
+            Accumulate(_bounds.X, _bounds.Y, _bounds.Width, _root, ref rectangle, ref list);
         }
 
         #endregion
@@ -782,7 +749,7 @@ namespace Engine.Collections
         /// <param name="point">The query point.</param>
         /// <param name="range">The query range.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range, ICollection<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Vector2 point, float range, ref ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref point, range, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -822,19 +789,19 @@ namespace Engine.Collections
                     // Unrolled loop.
                     if (node.Children[0] != null)
                     {
-                        Accumulate(x, y, childSize, node.Children[0], ref point, range, list);
+                        Accumulate(x, y, childSize, node.Children[0], ref point, range, ref list);
                     }
                     if (node.Children[1] != null)
                     {
-                        Accumulate(x + childSize, y, childSize, node.Children[1], ref point, range, list);
+                        Accumulate(x + childSize, y, childSize, node.Children[1], ref point, range, ref list);
                     }
                     if (node.Children[2] != null)
                     {
-                        Accumulate(x, y + childSize, childSize, node.Children[2], ref point, range, list);
+                        Accumulate(x, y + childSize, childSize, node.Children[2], ref point, range, ref list);
                     }
                     if (node.Children[3] != null)
                     {
-                        Accumulate(x + childSize, y + childSize, childSize, node.Children[3], ref point, range, list);
+                        Accumulate(x + childSize, y + childSize, childSize, node.Children[3], ref point, range, ref list);
                     }
                 }
             }
@@ -853,7 +820,7 @@ namespace Engine.Collections
         /// <param name="node">The current node.</param>
         /// <param name="query">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Microsoft.Xna.Framework.Rectangle query, ICollection<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Microsoft.Xna.Framework.Rectangle query, ref ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref query, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -893,7 +860,7 @@ namespace Engine.Collections
 
                         var childX = x + (((i & 1) == 0) ? 0 : childSize);
                         var childY = y + (((i & 2) == 0) ? 0 : childSize);
-                        Accumulate(childX, childY, childSize, node.Children[i], ref query, list);
+                        Accumulate(childX, childY, childSize, node.Children[i], ref query, ref list);
                     }
                 }
             }

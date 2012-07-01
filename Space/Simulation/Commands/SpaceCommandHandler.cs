@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
@@ -18,7 +17,7 @@ namespace Space.Simulation.Commands
     {
         #region Logger
 
-        private static readonly NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -69,9 +68,9 @@ def setBaseStat(type, value):
     character.SetBaseValue(type, value)
 ", Script.Runtime.Globals);
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-                logger.WarnException("Failed initializing script engine.", ex);
+                Logger.WarnException("Failed initializing script engine.", ex);
             }
 
             // Redirect scripting output to the logger.
@@ -160,7 +159,7 @@ def setBaseStat(type, value):
             // Only allow loading once a session, so skip if he already has an avatar.
             if (avatar.HasValue)
             {
-                logger.Warn("Player already has an avatar, not restoring received profile.");
+                Logger.Warn("Player already has an avatar, not restoring received profile.");
             }
             else
             {
@@ -235,7 +234,7 @@ def setBaseStat(type, value):
             // Make sure the inventory index is valid.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
             {
-                logger.Warn("Invalid equip command, inventory index out of bounds.");
+                Logger.Warn("Invalid equip command, inventory index out of bounds.");
                 return;
             }
 
@@ -245,7 +244,7 @@ def setBaseStat(type, value):
             // Make sure there is an item there.
             if (!item.HasValue)
             {
-                logger.Warn("Invalid equip command, not item at that inventory index.");
+                Logger.Warn("Invalid equip command, not item at that inventory index.");
                 return;
             }
 
@@ -253,7 +252,7 @@ def setBaseStat(type, value):
             var itemType = manager.GetComponent<Item>(item.Value).GetType();
             if (command.Slot < 0 || command.Slot >= equipment.GetSlotCount(itemType))
             {
-                logger.Warn("Invalid equip command, equipment slot out of bounds.");
+                Logger.Warn("Invalid equip command, equipment slot out of bounds.");
                 return;
             }
 
@@ -288,7 +287,7 @@ def setBaseStat(type, value):
                 command.FirstIndex >= inventory.Capacity ||
                 command.SecondIndex >= inventory.Capacity)
             {
-                logger.Warn("Invalid move item command, index out of bounds.");
+                Logger.Warn("Invalid move item command, index out of bounds.");
                 return;
             }
 
@@ -315,7 +314,9 @@ def setBaseStat(type, value):
             // lock this shared list.
             lock (ReusableItemList)
             {
-                foreach (var item in index.RangeQuery(avatar.Value, 100, Item.IndexGroup, ReusableItemList))
+                ICollection<int> neighbors = ReusableItemList;
+                index.RangeQuery(avatar.Value, 100, ref neighbors, Item.IndexGroup);
+                foreach (var item in neighbors)
                 {
                     // Pick the item up.
                     // TODO: check if the item belongs to the player.
@@ -347,7 +348,7 @@ def setBaseStat(type, value):
                         // Validate the index.
                         if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
                         {
-                            logger.Warn("Invalid drop command, index out of bounds.");
+                            Logger.Warn("Invalid drop command, index out of bounds.");
                             return;
                         }
 
@@ -404,7 +405,7 @@ def setBaseStat(type, value):
             // Validate inventory index.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
             {
-                logger.Warn("Invalid use command, index out of bounds.");
+                Logger.Warn("Invalid use command, index out of bounds.");
                 return;
             }
 
@@ -510,11 +511,11 @@ def setBaseStat(type, value):
                 {
                     Script.Execute(command.Script, Script.Runtime.Globals);
                 }
-                catch (Exception ex)
+                catch (System.Exception ex)
                 {
                     if (!_ignoreScriptOutput)
                     {
-                        logger.ErrorException("Error executing script.", ex);
+                        Logger.ErrorException("Error executing script.", ex);
                     }
                 }
                 finally
@@ -545,7 +546,7 @@ def setBaseStat(type, value):
             {
                 if (!_ignoreScriptOutput && !string.IsNullOrWhiteSpace(value))
                 {
-                    logger.Info(value);
+                    Logger.Info(value);
                 }
             }
         }
@@ -561,7 +562,7 @@ def setBaseStat(type, value):
             {
                 if (!_ignoreScriptOutput && !string.IsNullOrWhiteSpace(value))
                 {
-                    logger.Error(value);
+                    Logger.Error(value);
                 }
             }
         }

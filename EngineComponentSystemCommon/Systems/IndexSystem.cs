@@ -106,14 +106,13 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="entity">The entity to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
-        /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <param name="list">The list to use for storing the results.</param>
+        /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range (including the query entity).</returns>
-        public IEnumerable<int> RangeQuery(int entity, float range,
-            ulong groups = DefaultIndexGroupMask, ISet<int> list = null)
+        public void RangeQuery(int entity, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
         {
             var position = Manager.GetComponent<Transform>(entity).Translation;
-            return RangeQuery(ref position, range, groups, list);
+            RangeQuery(ref position, range, ref list, groups);
         }
 
         /// <summary>
@@ -121,46 +120,36 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="query">The point to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
-        /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <param name="list">The list to use for storing the results.</param>
+        /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public IEnumerable<int> RangeQuery(ref Vector2 query, float range,
-            ulong groups = DefaultIndexGroupMask, ISet<int> list = null)
+        public void RangeQuery(ref Vector2 query, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
         {
-            list = list ?? new HashSet<int>();
-
             foreach (var tree in TreesForGroups(groups))
             {
 #if DEBUG
                 ++_numQueriesLastUpdate;
 #endif
-                tree.RangeQuery(ref query, range, list);
+                tree.RangeQuery(ref query, range, ref list);
             }
-
-            return list;
         }
 
         /// <summary>
         /// Get all entities contained in the specified rectangle.
         /// </summary>
         /// <param name="query">The query rectangle.</param>
-        /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <param name="list">The list to use for storing the results.</param>
+        /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public IEnumerable<int> RangeQuery(ref Rectangle query,
-            ulong groups = DefaultIndexGroupMask, ISet<int> list = null)
+        public void RangeQuery(ref Rectangle query, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
         {
-            list = list ?? new HashSet<int>();
-
             foreach (var tree in TreesForGroups(groups))
             {
 #if DEBUG
                 ++_numQueriesLastUpdate;
 #endif
-                tree.RangeQuery(ref query, list);
+                tree.RangeQuery(ref query, ref list);
             }
-
-            return list;
         }
 
         #endregion
@@ -169,7 +158,7 @@ namespace Engine.ComponentSystem.Systems
 
         private void EnsureIndexesExist(ulong groups)
         {
-            int index = 0;
+            var index = 0;
             while (groups > 0)
             {
                 if ((groups & 1) == 1 && _trees[index] == null)
@@ -381,9 +370,10 @@ namespace Engine.ComponentSystem.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-                if (tree is QuadTree<int>)
+                var quadTree = tree as QuadTree<int>;
+                if (quadTree != null)
                 {
-                    ((QuadTree<int>)tree).Draw(shape, translation);
+                    (quadTree).Draw(shape, translation);
                 }
             }
         }

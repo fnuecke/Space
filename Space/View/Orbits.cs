@@ -154,8 +154,9 @@ namespace Space.View
             _spriteBatch.Begin();
 
             // Loop through all our neighbors.
-            foreach (var neighbor in index.
-                RangeQuery(ref position, radarRange, Detectable.IndexGroup, _reusableNeighborList))
+            ICollection<int> neighbors = _reusableNeighborList;
+            index.RangeQuery(ref position, radarRange, ref neighbors, Detectable.IndexGroup);
+            foreach (var neighbor in neighbors)
             {
                 // Get the components we need.
                 var neighborTransform = Client.GetComponent<Transform>(neighbor);
