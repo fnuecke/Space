@@ -4,7 +4,6 @@ using Engine.Collections;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
@@ -254,23 +253,10 @@ namespace Engine.ComponentSystem.Systems
                     return;
                 }
 
-                // Check if the actual index cell we're in might have changed.
-                var previousCellId = CoordinateIds.Combine(
-                    (int)translationChanged.PreviousPosition.X >> MinimumNodeSizeShift,
-                    (int)translationChanged.PreviousPosition.Y >> MinimumNodeSizeShift);
-
-                var newCellId = CoordinateIds.Combine(
-                    (int)translationChanged.CurrentPosition.X >> MinimumNodeSizeShift,
-                    (int)translationChanged.CurrentPosition.Y >> MinimumNodeSizeShift);
-
-                if (newCellId != previousCellId)
+                // Update all indexes the component is part of.
+                foreach (var tree in TreesForGroups(index.IndexGroups))
                 {
-                    // Actual cell we might be in in the index has changed.
-                    // Update all indexes the component is part of.
-                    foreach (var tree in TreesForGroups(index.IndexGroups))
-                    {
-                        tree.Update(ref translationChanged.CurrentPosition, translationChanged.Entity);
-                    }
+                    tree.Update(ref translationChanged.CurrentPosition, translationChanged.Entity);
                 }
             }
         }
