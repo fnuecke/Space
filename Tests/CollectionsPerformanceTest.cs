@@ -103,12 +103,16 @@ namespace Tests
             var queries = new List<Vector2>(Operations);
 
             // And updates.
-            var updates = new List<Tuple<int, Vector2>>(Operations);
+            var smallUpdates = new List<Tuple<int, Vector2>>(Operations);
+            var largeUpdates = new List<Tuple<int, Vector2>>(Operations);
 
             var addTime = new DoubleSampling(Iterations);
             var queryTime = new DoubleSampling(Iterations);
-            var updateTime = new DoubleSampling(Iterations);
-            var removeTime = new DoubleSampling(Iterations);
+            var smallUpdateTime = new DoubleSampling(Iterations);
+            var largeUpdateTime = new DoubleSampling(Iterations);
+            var highLoadRemoveTime = new DoubleSampling(Iterations);
+            var mediumLoadRemoveTime = new DoubleSampling(Iterations);
+            var lowLoadRemoveTime = new DoubleSampling(Iterations);
 
             Console.Write("Doing {0} iterations... ", Iterations);
 
@@ -127,10 +131,17 @@ namespace Tests
                 }
 
                 // Generate position updates.
-                updates.Clear();
+                smallUpdates.Clear();
+                largeUpdates.Clear();
                 for (var j = 0; j < Operations; j++)
                 {
-                    updates.Add(Tuple.Create(random.NextInt32(NumberOfObjects), random.NextVector(Area)));
+                    // High chance it remains in the same cell.
+                    smallUpdates.Add(Tuple.Create(j, data[j].Item2 + random.NextVector(1)));
+                }
+                for (var j = 0; j < Operations; j++)
+                {
+                    // High chance it will be outside the original cell.
+                    largeUpdates.Add(Tuple.Create(j, random.NextVector(Area)));
                 }
 
                 // Test time to add.
@@ -141,7 +152,7 @@ namespace Tests
                     index.Add(item.Item2, item.Item1);
                 }
                 watch.Stop();
-                addTime.Put(watch.ElapsedMilliseconds / (double)index.Count);
+                addTime.Put(watch.ElapsedMilliseconds / (double)data.Count);
 
                 // Test look up time.
                 watch.Reset();
@@ -157,35 +168,68 @@ namespace Tests
                 // Test update time.
                 watch.Reset();
                 watch.Start();
-                foreach (var update in updates)
+                foreach (var update in smallUpdates)
                 {
                     index.Update(update.Item2, update.Item1);
                 }
                 watch.Stop();
-                updateTime.Put(watch.ElapsedMilliseconds / (double)Operations);
+                smallUpdateTime.Put(watch.ElapsedMilliseconds / (double)smallUpdates.Count);
+
+                watch.Reset();
+                watch.Start();
+                foreach (var update in largeUpdates)
+                {
+                    index.Update(update.Item2, update.Item1);
+                }
+                watch.Stop();
+                largeUpdateTime.Put(watch.ElapsedMilliseconds / (double)largeUpdates.Count);
 
                 // Test removal time.
                 watch.Reset();
                 watch.Start();
-                foreach (var item in data)
+                for (var j = 0; j < NumberOfObjects / 3; j++)
                 {
-                    index.Remove(item.Item1);
+                    index.Remove(data[j].Item1);
                 }
                 watch.Stop();
-                removeTime.Put(watch.ElapsedMilliseconds / (double)Operations);
+                highLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
+
+                watch.Reset();
+                watch.Start();
+                for (var j = NumberOfObjects / 3; j < NumberOfObjects * 2 / 3; j++)
+                {
+                    index.Remove(data[j].Item1);
+                }
+                watch.Stop();
+                mediumLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
+
+                watch.Reset();
+                watch.Start();
+                for (var j = NumberOfObjects * 2 / 3; j < NumberOfObjects; j++)
+                {
+                    index.Remove(data[j].Item1);
+                }
+                watch.Stop();
+                lowLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
             }
 
             Console.WriteLine("Done!");
 
-            Console.WriteLine("Operation | Mean      | Std.dev.\n" +
-                              "Add:      | {0:0.00000}ms | {1:0.00000}ms\n" +
-                              "Query:    | {2:0.00000}ms | {3:0.00000}ms\n" +
-                              "Update:   | {4:0.00000}ms | {5:0.00000}ms\n" +
-                              "Remove:   | {6:0.00000}ms | {7:0.00000}ms",
+            Console.WriteLine("Operation           | Mean      | Std.dev.\n" +
+                              "Add:                | {0:0.00000}ms | {1:0.00000}ms\n" +
+                              "Query:              | {2:0.00000}ms | {3:0.00000}ms\n" +
+                              "Update (small):     | {4:0.00000}ms | {5:0.00000}ms\n" +
+                              "Update (large):     | {6:0.00000}ms | {7:0.00000}ms\n" +
+                              "Remove (high load): | {8:0.00000}ms | {9:0.00000}ms\n" +
+                              "Remove (med. load): | {10:0.00000}ms | {11:0.00000}ms\n" +
+                              "Remove (low load):  | {12:0.00000}ms | {13:0.00000}ms",
                               addTime.Mean(), addTime.StandardDeviation(),
                               queryTime.Mean(), queryTime.StandardDeviation(),
-                              updateTime.Mean(), updateTime.StandardDeviation(),
-                              removeTime.Mean(), removeTime.StandardDeviation());
+                              smallUpdateTime.Mean(), smallUpdateTime.StandardDeviation(),
+                              largeUpdateTime.Mean(), largeUpdateTime.StandardDeviation(),
+                              highLoadRemoveTime.Mean(), highLoadRemoveTime.StandardDeviation(),
+                              mediumLoadRemoveTime.Mean(), mediumLoadRemoveTime.StandardDeviation(),
+                              lowLoadRemoveTime.Mean(), lowLoadRemoveTime.StandardDeviation());
         }
     }
 
