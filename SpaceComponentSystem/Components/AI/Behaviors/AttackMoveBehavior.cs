@@ -49,7 +49,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
             var index = AI.Manager.GetSystem<IndexSystem>();
             ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
-            index.RangeQuery(ref position, AggroRange, ref neighbors, Detectable.IndexGroup);
+            index.RangeQuery(position, AggroRange, ref neighbors, Detectable.IndexGroup);
             foreach (var neighbor in neighbors)
             {
                 // See if it has health. Otherwise don't bother attacking.

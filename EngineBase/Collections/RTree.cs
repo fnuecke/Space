@@ -77,7 +77,7 @@ namespace Engine.Collections
         }
 
 
-        public void Add(ref Vector2 point, T value)
+        public void Add(Vector2 point, T value)
         {
             //the entry to be stored
             var entry = new Entry() { Point = point, Value = value };
@@ -138,12 +138,8 @@ namespace Engine.Collections
             }
             AdjustTree(node, createdNode);
         }
-        public void Add(Vector2 point, T value)
-        {
-            Add(ref point, value);
-        }
 
-        public bool Update(ref Vector2 newPoint, T value)
+        public bool Update(Vector2 newPoint, T value)
         {
             LeafNode node = null;
             //check if node exists
@@ -162,11 +158,6 @@ namespace Engine.Collections
             // TODO implement!
             //throw new NotImplementedException();
             return false;
-        }
-
-        public bool Update(Vector2 newPoint, T value)
-        {
-            return Update(ref newPoint, value);
         }
 
         public bool Remove(T value)
@@ -190,22 +181,6 @@ namespace Engine.Collections
             return false;
         }
 
-        public bool Contains(ref Vector2 point, T value)
-        {
-            if (_pointDict.ContainsKey(value))
-            {
-                var node = _pointDict[value].Entrys;
-                foreach (var entry in node)
-                {
-                    if (entry.Value.Equals(value))
-                    {
-                        return entry.Point.Equals(point);
-                    }
-                }
-            }
-            return false;
-        }
-
         public bool Contains(T value)
         {
             return _pointDict.ContainsKey(value);
@@ -217,7 +192,7 @@ namespace Engine.Collections
             root = new LeafNode();
         }
 
-        public void RangeQuery(ref Vector2 point, float range, ref ICollection<T> list)
+        public void RangeQuery(Vector2 point, float range, ref ICollection<T> list)
         {
             Accumulate(root, ref point, range, list);
         }

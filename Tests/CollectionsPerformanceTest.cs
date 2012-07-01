@@ -159,8 +159,7 @@ namespace Tests
                 watch.Start();
                 for (var j = 0; j < Operations; j++)
                 {
-                    var v = queries[j];
-                    index.RangeQuery(ref v, QueryRadius, ref DummyCollection<int>.Instance);
+                    index.RangeQuery(queries[j], QueryRadius, ref DummyCollection<int>.Instance);
                 }
                 watch.Stop();
                 queryTime.Put(watch.ElapsedMilliseconds / (double)Operations);

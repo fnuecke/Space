@@ -110,8 +110,7 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>All entities in range (including the query entity).</returns>
         public void RangeQuery(int entity, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
         {
-            var position = Manager.GetComponent<Transform>(entity).Translation;
-            RangeQuery(ref position, range, ref list, groups);
+            RangeQuery(Manager.GetComponent<Transform>(entity).Translation, range, ref list, groups);
         }
 
         /// <summary>
@@ -122,14 +121,14 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void RangeQuery(ref Vector2 query, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
+        public void RangeQuery(Vector2 query, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
         {
             foreach (var tree in TreesForGroups(groups))
             {
 #if DEBUG
                 ++_numQueriesLastUpdate;
 #endif
-                tree.RangeQuery(ref query, range, ref list);
+                tree.RangeQuery(query, range, ref list);
             }
         }
 
@@ -228,7 +227,7 @@ namespace Engine.ComponentSystem.Systems
                     EnsureIndexesExist(changedMessage.AddedIndexGroups);
                     foreach (var tree in TreesForGroups(changedMessage.AddedIndexGroups))
                     {
-                        tree.Add(ref position, changedMessage.Entity);
+                        tree.Add(position, changedMessage.Entity);
                     }
                 }
 
@@ -256,7 +255,7 @@ namespace Engine.ComponentSystem.Systems
                 // Update all indexes the component is part of.
                 foreach (var tree in TreesForGroups(index.IndexGroups))
                 {
-                    tree.Update(ref translationChanged.CurrentPosition, translationChanged.Entity);
+                    tree.Update(translationChanged.CurrentPosition, translationChanged.Entity);
                 }
             }
         }
@@ -299,8 +298,7 @@ namespace Engine.ComponentSystem.Systems
                     }
                     foreach (var entry in _trees[i])
                     {
-                        var position = Manager.GetComponent<Transform>(entry).Translation;
-                        copy._trees[i].Add(ref position, entry);
+                        copy._trees[i].Add(Manager.GetComponent<Transform>(entry).Translation, entry);
                     }
                 }
             }

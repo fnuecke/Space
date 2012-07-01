@@ -29,26 +29,7 @@ namespace Engine.Collections
         /// <param name="value">The value associated with the point.</param>
         /// <exception cref="ArgumentException">This pair of point and value
         /// are already stored in the tree.</exception>
-        void Add(ref Vector2 point, T value);
-
-        /// <summary>
-        /// Add a new entry to the tree, at the specified position, with the
-        /// specified associated value.
-        /// </summary>
-        /// <param name="point">The point at which to store the entry.</param>
-        /// <param name="value">The value associated with the point.</param>
-        /// <exception cref="ArgumentException">This pair of point and value
-        /// are already stored in the tree.</exception>
         void Add(Vector2 point, T value);
-
-        /// <summary>
-        /// Update a single entry by changing its position. If the entry is not
-        /// already in the tree, this will return <code>false</code>.
-        /// </summary>
-        /// <param name="newPoint">The new position of the entry.</param>
-        /// <param name="value">The value of the entry.</param>
-        /// <returns><code>true</code> if the update was successful.</returns>
-        bool Update(ref Vector2 newPoint, T value);
 
         /// <summary>
         /// Update a single entry by changing its position. If the entry is not
@@ -89,7 +70,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the neighborhood of the query point.</returns>
-        void RangeQuery(ref Vector2 point, float range, ref ICollection<T> list);
+        void RangeQuery(Vector2 point, float range, ref ICollection<T> list);
 
         /// <summary>
         /// Perform a range query on this tree. This will return all entries

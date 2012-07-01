@@ -126,7 +126,7 @@ namespace Engine.Collections
         /// <param name="value">The value associated with the point.</param>
         /// <exception cref="ArgumentException">This pair of point and value
         /// are already stored in the tree.</exception>
-        public void Add(ref Vector2 point, T value)
+        public void Add(Vector2 point, T value)
         {
             if (Contains(value))
             {
@@ -148,26 +148,13 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Add a new entry to the tree, at the specified position, with the
-        /// specified associated value.
-        /// </summary>
-        /// <param name="point">The point at which to store the entry.</param>
-        /// <param name="value">The value associated with the point.</param>
-        /// <exception cref="ArgumentException">This pair of point and value
-        /// are already stored in the tree.</exception>
-        public void Add(Vector2 point, T value)
-        {
-            Add(ref point, value);
-        }
-
-        /// <summary>
         /// Update a single entry by changing its position. If the entry is not
         /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
         /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(ref Vector2 newPoint, T value)
+        public bool Update(Vector2 newPoint, T value)
         {
             // Check if we have that entry, if not add it.
             if (!Contains(value))
@@ -241,18 +228,6 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Update a single entry by changing its position. If the entry is not
-        /// already in the tree, this will return <code>false</code>.
-        /// </summary>
-        /// <param name="newPoint">The new position of the entry.</param>
-        /// <param name="value">The value of the entry.</param>
-        /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(Vector2 newPoint, T value)
-        {
-            return Update(ref newPoint, value);
-        }
-
-        /// <summary>
         /// Remove the specified value from the tree.
         /// </summary>
         /// <param name="value">The value to remove.</param>
@@ -305,7 +280,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the neighborhood of the query point.</returns>
-        public void RangeQuery(ref Vector2 point, float range, ref ICollection<T> list)
+        public void RangeQuery(Vector2 point, float range, ref ICollection<T> list)
         {
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
