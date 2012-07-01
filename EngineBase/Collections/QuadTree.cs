@@ -234,17 +234,20 @@ namespace Engine.Collections
         public bool Remove(T value)
         {
             // See if we have that entry.
-            if (Contains(value))
+            if (!Contains(value))
             {
-                var entry = _values[value];
-
-                // Get the node the entry would be in.
-                var nodeX = _bounds.X;
-                var nodeY = _bounds.Y;
-                var nodeSize = _bounds.Width;
-                var node = FindNode(ref entry.Point, _root, ref nodeX, ref nodeY, ref nodeSize);
-                RemoveFromNode(node, entry);
+                return false;
             }
+
+            var entry = _values[value];
+
+            // Get the node the entry would be in.
+            var nodeX = _bounds.X;
+            var nodeY = _bounds.Y;
+            var nodeSize = _bounds.Width;
+            var node = FindNode(ref entry.Point, _root, ref nodeX, ref nodeY, ref nodeSize);
+            RemoveFromNode(node, entry);
+
             return false;
         }
 
@@ -544,9 +547,6 @@ namespace Engine.Collections
         /// </summary>
         private void InsertLevel()
         {
-            // Create the new root node.
-            var node = new Node {EntryCount = _root.EntryCount, LowEntry = _root.LowEntry, HighEntry = _root.HighEntry};
-
             // Copy list start and end (which will just be the first and last
             // elements in the list of all entries).
 
@@ -580,7 +580,7 @@ namespace Engine.Collections
                 }
 
                 // Allocate new node.
-                var wrapper = node.Children[childNumber] = new Node {Parent = node};
+                var wrapper = _root.Children[childNumber] = new Node {Parent = _root};
 
                 // Set opposing corner inside that node to old node in that corner.
                 // The (3 - x) will always yield the diagonally opposite cell to x.
@@ -593,8 +593,7 @@ namespace Engine.Collections
                 wrapper.HighEntry = child.HighEntry;
             }
 
-            // Set the new root node, adjust the overall tree bounds.
-            _root = node;
+            // Adjust the overall tree bounds.
             _bounds.X = _bounds.X << 1;
             _bounds.Y = _bounds.Y << 1;
             _bounds.Width = _bounds.Width << 1;
@@ -1167,14 +1166,14 @@ namespace Engine.Collections
         ///   operation.</param>
         public void Draw(AbstractShape shape, Vector2 translation)
         {
-            DrawNode(_root, translation.X, translation.Y, _bounds.Width, shape);
+            DrawNode(_root, 0, 0, _bounds.Width, translation, shape);
         }
 
         /// <summary>
         /// Renders a single note into a sprite batch, and recursively render
         /// its children.
         /// </summary>
-        private static void DrawNode(Node node, float centerX, float centerY, int size, AbstractShape shape)
+        private static void DrawNode(Node node, float centerX, float centerY, int nodeSize, Vector2 translation, AbstractShape shape)
         {
             // Abort if there is no node here.
             if (node == null)
@@ -1182,16 +1181,16 @@ namespace Engine.Collections
                 return;
             }
 
-            shape.SetCenter(centerX, centerY);
-            shape.SetSize(size - 1);
+            shape.SetCenter(translation.X + centerX, translation.Y + centerY);
+            shape.SetSize(nodeSize - 1);
             shape.Draw();
 
             // Check for child nodes.
             for (var i = 0; i < 4; ++i)
             {
-                var childX = centerX + (((i & 1) == 0) ? -(size >> 2) : (size >> 2));
-                var childY = centerY + (((i & 2) == 0) ? -(size >> 2) : (size >> 2));
-                DrawNode(node.Children[i], childX, childY, size >> 1, shape);
+                var childX = centerX + (((i & 1) == 0) ? -(nodeSize >> 2) : (nodeSize >> 2));
+                var childY = centerY + (((i & 2) == 0) ? -(nodeSize >> 2) : (nodeSize >> 2));
+                DrawNode(node.Children[i], childX, childY, nodeSize >> 1, translation, shape);
             }
         }
 
