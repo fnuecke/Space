@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Engine.Graphics;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Collections
@@ -56,7 +55,7 @@ namespace Engine.Collections
         /// The current bounds of the tree. This is a dynamic value, adjusted
         /// based on elements added to the tree.
         /// </summary>
-        private Microsoft.Xna.Framework.Rectangle _bounds = Microsoft.Xna.Framework.Rectangle.Empty;
+        private Rectangle _bounds = Rectangle.Empty;
 
         /// <summary>
         /// The root node of the tree.
@@ -298,7 +297,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the query rectangle.</returns>
-        public void RangeQuery(ref Microsoft.Xna.Framework.Rectangle rectangle, ref ICollection<T> list)
+        public void RangeQuery(ref Rectangle rectangle, ref ICollection<T> list)
         {
             // Recurse through the tree, starting at the root node, to find
             // nodes intersecting with the range query.
@@ -842,7 +841,7 @@ namespace Engine.Collections
         /// <param name="node">The current node.</param>
         /// <param name="query">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(int x, int y, int size, Node node, ref Microsoft.Xna.Framework.Rectangle query, ref ICollection<T> list)
+        private static void Accumulate(int x, int y, int size, Node node, ref Rectangle query, ref ICollection<T> list)
         {
             var intersectionType = ComputeIntersection(ref query, x, y, size);
             if (intersectionType == IntersectionType.Contained)
@@ -978,10 +977,10 @@ namespace Engine.Collections
         /// <param name="y">The y position of the second box.</param>
         /// <param name="size">The size of the second box.</param>
         /// <returns>How the two intersect.</returns>
-        private static IntersectionType ComputeIntersection(ref Microsoft.Xna.Framework.Rectangle rectangle, int x,
+        private static IntersectionType ComputeIntersection(ref Rectangle rectangle, int x,
                                                             int y, int size)
         {
-            Microsoft.Xna.Framework.Rectangle other;
+            Rectangle other;
             other.X = x;
             other.Y = y;
             other.Width = size;
@@ -1164,7 +1163,7 @@ namespace Engine.Collections
         /// <param name="shape">The shape renderer to paint with.</param>
         /// <param name="translation">The translation to apply to all draw
         ///   operation.</param>
-        public void Draw(AbstractShape shape, Vector2 translation)
+        public void Draw(Graphics.AbstractShape shape, Vector2 translation)
         {
             DrawNode(_root, 0, 0, _bounds.Width, translation, shape);
         }
@@ -1173,7 +1172,7 @@ namespace Engine.Collections
         /// Renders a single note into a sprite batch, and recursively render
         /// its children.
         /// </summary>
-        private static void DrawNode(Node node, float centerX, float centerY, int nodeSize, Vector2 translation, AbstractShape shape)
+        private static void DrawNode(Node node, float centerX, float centerY, int nodeSize, Vector2 translation, Graphics.AbstractShape shape)
         {
             // Abort if there is no node here.
             if (node == null)
