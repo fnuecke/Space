@@ -82,10 +82,17 @@ namespace Engine.ComponentSystem.Systems
             // some events from the past, where we were somewhere else, but
             // using that old position would be just as wrong, so this
             // wrong is simpler ;)
-            var tmp = GetListenerPosition();
-            Listener.Position = ToV3(ref tmp);
-            tmp = GetListenerVelocity();
-            Listener.Velocity = ToV3(ref tmp);
+            var listenerPosition = GetListenerPosition();
+            var listenerVelocity = GetListenerVelocity();
+
+            // Skip if too far away.
+            if (Vector2.Distance(listenerPosition, position) > 5000.0f)
+            {
+                return null;
+            }
+
+            Listener.Position = ToV3(ref listenerPosition);
+            Listener.Velocity = ToV3(ref listenerVelocity);
 
             // Get position and velocity of emitter.
             Emitter.Position = ToV3(ref position);

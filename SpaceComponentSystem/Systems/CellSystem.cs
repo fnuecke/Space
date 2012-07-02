@@ -154,8 +154,8 @@ namespace Space.ComponentSystem.Systems
             foreach (var avatar in avatarSystem.Avatars)
             {
                 var transform = Manager.GetComponent<Transform>(avatar);
-                int x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
-                int y = ((int)transform.Translation.Y) >> CellSizeShiftAmount;
+                var x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
+                var y = ((int)transform.Translation.Y) >> CellSizeShiftAmount;
                 AddCellAndNeighbors(x, y, _reusableNewCellIds);
             }
 

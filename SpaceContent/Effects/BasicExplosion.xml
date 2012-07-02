@@ -52,7 +52,7 @@
       </Modifiers>
       <BlendMode>Alpha</BlendMode>
       <TriggerOffset>0 0</TriggerOffset>
-      <MinimumTriggerPeriod>0.25</MinimumTriggerPeriod>
+      <MinimumTriggerPeriod>0</MinimumTriggerPeriod>
       <Radius>1</Radius>
       <Ring>true</Ring>
       <Radiate>true</Radiate>
@@ -99,7 +99,7 @@
       </Modifiers>
       <BlendMode>Add</BlendMode>
       <TriggerOffset>0 0</TriggerOffset>
-      <MinimumTriggerPeriod>0.25</MinimumTriggerPeriod>
+      <MinimumTriggerPeriod>0</MinimumTriggerPeriod>
       <Radius>1</Radius>
       <Ring>true</Ring>
       <Radiate>true</Radiate>
@@ -143,7 +143,7 @@
       </Modifiers>
       <BlendMode>Add</BlendMode>
       <TriggerOffset>0 0</TriggerOffset>
-      <MinimumTriggerPeriod>0.25</MinimumTriggerPeriod>
+      <MinimumTriggerPeriod>0</MinimumTriggerPeriod>
     </Item>
     <Item>
       <Name>Flash</Name>
@@ -181,7 +181,7 @@
       </Modifiers>
       <BlendMode>Add</BlendMode>
       <TriggerOffset>0 0</TriggerOffset>
-      <MinimumTriggerPeriod>0.25</MinimumTriggerPeriod>
+      <MinimumTriggerPeriod>0</MinimumTriggerPeriod>
     </Item>
     <Name>Basic Explosion</Name>
     <Author>Matt Davey</Author>
