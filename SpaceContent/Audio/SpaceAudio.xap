@@ -445,8 +445,8 @@ Wave Bank
     Windows Bank Path Edited = 0;
     Seek Tables = 1;
     Compression Preset Name = <none>;
-    Bank Last Revised Low = 2602372551;
-    Bank Last Revised High = 30234693;
+    Bank Last Revised Low = 1280455476;
+    Bank Last Revised High = 30234700;
 
     Wave
     {
@@ -1104,7 +1104,7 @@ Sound Bank
     Sound
     {
         Name = laser1;
-        Volume = -1200;
+        Volume = -2850;
         Pitch = 0;
         Priority = 0;
 
@@ -1277,7 +1277,7 @@ Sound Bank
     Sound
     {
         Name = space01;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1334,7 +1334,7 @@ Sound Bank
     Sound
     {
         Name = space02;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1391,7 +1391,7 @@ Sound Bank
     Sound
     {
         Name = space03;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1448,7 +1448,7 @@ Sound Bank
     Sound
     {
         Name = space04;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1505,7 +1505,7 @@ Sound Bank
     Sound
     {
         Name = space05;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1562,7 +1562,7 @@ Sound Bank
     Sound
     {
         Name = space06;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1619,7 +1619,7 @@ Sound Bank
     Sound
     {
         Name = space07;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1676,7 +1676,7 @@ Sound Bank
     Sound
     {
         Name = space08;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1733,7 +1733,7 @@ Sound Bank
     Sound
     {
         Name = space09;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1790,7 +1790,7 @@ Sound Bank
     Sound
     {
         Name = space10;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1847,7 +1847,7 @@ Sound Bank
     Sound
     {
         Name = space11;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1904,7 +1904,7 @@ Sound Bank
     Sound
     {
         Name = space12;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -1961,7 +1961,7 @@ Sound Bank
     Sound
     {
         Name = space13;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2018,7 +2018,7 @@ Sound Bank
     Sound
     {
         Name = space14;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2075,7 +2075,7 @@ Sound Bank
     Sound
     {
         Name = space15;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2132,7 +2132,7 @@ Sound Bank
     Sound
     {
         Name = space16;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2189,7 +2189,7 @@ Sound Bank
     Sound
     {
         Name = space17;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2246,7 +2246,7 @@ Sound Bank
     Sound
     {
         Name = space18;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2337,7 +2337,7 @@ Sound Bank
     Sound
     {
         Name = space19;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2394,7 +2394,7 @@ Sound Bank
     Sound
     {
         Name = space20;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2451,7 +2451,7 @@ Sound Bank
     Sound
     {
         Name = space21;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2508,7 +2508,7 @@ Sound Bank
     Sound
     {
         Name = space22;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2565,7 +2565,7 @@ Sound Bank
     Sound
     {
         Name = space23;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2622,7 +2622,7 @@ Sound Bank
     Sound
     {
         Name = space24;
-        Volume = -1200;
+        Volume = -3200;
         Pitch = 0;
         Priority = 0;
 
@@ -2679,7 +2679,7 @@ Sound Bank
     Sound
     {
         Name = Explosion;
-        Volume = -1200;
+        Volume = -2400;
         Pitch = 0;
         Priority = 0;
 

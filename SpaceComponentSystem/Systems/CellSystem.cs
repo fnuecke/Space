@@ -203,8 +203,8 @@ namespace Space.ComponentSystem.Systems
                 // Kill any remaining entities in the area covered by the
                 // cell that just died.
                 Rectangle cellBounds;
-                cellBounds.X = xy.Item1;
-                cellBounds.Y = xy.Item2;
+                cellBounds.X = xy.Item1 * CellSize;
+                cellBounds.Y = xy.Item2 * CellSize;
                 cellBounds.Width = CellSize;
                 cellBounds.Height = CellSize;
                 ICollection<int> neighbors = _reusableEntityList;
