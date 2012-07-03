@@ -168,7 +168,8 @@ namespace Engine.Collections
             nodeBounds.Inflate(-1, -1);
 
             // Check if the entry should go to a different node now.
-            if (!nodeBounds.Contains(newBounds) || ComputeCell(ref nodeBounds, ref newBounds) > -1)
+            if (!nodeBounds.Contains(newBounds) ||
+                (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1))
             {
                 // Did not fit in node anymore or can be inserted into child node,
                 // remove from that node.

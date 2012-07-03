@@ -154,16 +154,6 @@ namespace Tests
                 watch.Stop();
                 addTime.Put(watch.ElapsedMilliseconds / (double)data.Count);
 
-                // Test look up time.
-                watch.Reset();
-                watch.Start();
-                for (var j = 0; j < Operations; j++)
-                {
-                    index.RangeQuery(queries[j], QueryRadius, ref DummyCollection<int>.Instance);
-                }
-                watch.Stop();
-                queryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
-
                 // Test update time.
                 watch.Reset();
                 watch.Start();
@@ -182,6 +172,16 @@ namespace Tests
                 }
                 watch.Stop();
                 largeUpdateTime.Put(watch.ElapsedMilliseconds / (double)largeUpdates.Count);
+
+                // Test look up time.
+                watch.Reset();
+                watch.Start();
+                for (var j = 0; j < Operations; j++)
+                {
+                    index.RangeQuery(queries[j], QueryRadius, ref DummyCollection<int>.Instance);
+                }
+                watch.Stop();
+                queryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
 
                 // Test removal time.
                 watch.Reset();
