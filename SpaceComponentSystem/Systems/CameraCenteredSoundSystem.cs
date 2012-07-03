@@ -147,8 +147,11 @@ namespace Space.ComponentSystem.Systems
                 else
                 {
                     // Sound is not yet playing, start it.
-                    _reusablePlayingSounds.Add(neighbor,
-                        Play(sound.SoundName, ref emitterPosition, ref emitterVelocity));
+                    var cue = Play(sound.SoundName, ref emitterPosition, ref emitterVelocity);
+                    if (cue != null)
+                    {
+                        _reusablePlayingSounds.Add(neighbor, cue);
+                    }
                 }
             }
 
