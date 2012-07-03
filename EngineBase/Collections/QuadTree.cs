@@ -106,6 +106,14 @@ namespace Engine.Collections
 
         #region Accessors
 
+        /// <summary>
+        /// Add a new entry to the tree, with the specified bounds, with the
+        /// specified associated value.
+        /// </summary>
+        /// <param name="bounds">The bounds of the entry.</param>
+        /// <param name="value">The value associated with the point.</param>
+        /// <exception cref="ArgumentException">This value is already stored
+        /// in the tree.</exception>
         public void Add(ref Rectangle bounds, T value)
         {
             if (Contains(value))
@@ -132,16 +140,27 @@ namespace Engine.Collections
         /// Add a new entry to the tree, at the specified position, with the
         /// specified associated value.
         /// </summary>
+        /// <remarks>
+        /// This will generate a bounding rectangle with zero extent to use
+        /// as the bounds for the value.
+        /// </remarks>
         /// <param name="point">The point at which to store the entry.</param>
         /// <param name="value">The value associated with the point.</param>
-        /// <exception cref="ArgumentException">This pair of point and value
-        /// are already stored in the tree.</exception>
+        /// <exception cref="ArgumentException">This value is already stored
+        /// in the tree.</exception>
         public void Add(Vector2 point, T value)
         {
             var bounds = new Rectangle {X = (int)point.X, Y = (int)point.Y};
             Add(ref bounds, value);
         }
 
+        /// <summary>
+        /// Update a single entry by changing its bounds. If the entry is not
+        /// already in the tree, this will return <code>false</code>.
+        /// </summary>
+        /// <param name="newBounds">The new bounds of the entry.</param>
+        /// <param name="value">The value of the entry.</param>
+        /// <returns><code>true</code> if the update was successful.</returns>
         public bool Update(ref Rectangle newBounds, T value)
         {
             // Check if we have that entry, if not add it.
@@ -149,11 +168,6 @@ namespace Engine.Collections
             {
                 return false;
             }
-
-            //Remove(value);
-            //Add(ref newBounds, value);
-
-            //return true;
 
             // Get the old position.
             var entry = _values[value];
@@ -194,6 +208,10 @@ namespace Engine.Collections
         /// Update a single entry by changing its position. If the entry is not
         /// already in the tree, this will return <code>false</code>.
         /// </summary>
+        /// <remarks>
+        /// This will generate a bounding rectangle with zero extent to use
+        /// as the bounds for the value.
+        /// </remarks>
         /// <param name="newPoint">The new position of the entry.</param>
         /// <param name="value">The value of the entry.</param>
         /// <returns><code>true</code> if the update was successful.</returns>
@@ -958,7 +976,7 @@ namespace Engine.Collections
             // Check how to proceed.
             switch (ComputeIntersection(ref point, range, ref nodeBounds))
             {
-                case IntersectionType.Contained:
+                case IntersectionType.Contains:
                 {
                     // Box completely contained in query, return all points in it,
                     // no need to recurse further.
@@ -971,7 +989,7 @@ namespace Engine.Collections
                     }
                     break;
                 }
-                case IntersectionType.Overlapping:
+                case IntersectionType.Intersects:
                 {
                     // Add all local entries in this node that are in range, regardless of
                     // whether this is an inner or a leaf node.
@@ -981,7 +999,7 @@ namespace Engine.Collections
                         var end = node.LastEntry.Next;
                         for (var entry = begin; entry != end; entry = entry.Next)
                         {
-                            if (ComputeIntersection(ref point, range, ref entry.Bounds) != IntersectionType.Separated)
+                            if (ComputeIntersection(ref point, range, ref entry.Bounds) != IntersectionType.Disjoint)
                             {
                                 list.Add(entry.Value);
                             }
@@ -1039,7 +1057,7 @@ namespace Engine.Collections
             // Check how to proceed.
             switch (ComputeIntersection(ref rectangle, ref nodeBounds))
             {
-                case IntersectionType.Contained:
+                case IntersectionType.Contains:
                 {
                     // Box completely contained in query, return all points in it,
                     // no need to recurse further.
@@ -1052,7 +1070,7 @@ namespace Engine.Collections
                     }
                     break;
                 }
-                case IntersectionType.Overlapping:
+                case IntersectionType.Intersects:
                 {
                     // Add all local entries in this node that are in range, regardless of
                     // whether this is an inner or a leaf node.
@@ -1062,7 +1080,7 @@ namespace Engine.Collections
                         var end = node.LastEntry.Next;
                         for (var entry = begin; entry != end; entry = entry.Next)
                         {
-                            if (ComputeIntersection(ref rectangle, ref entry.Bounds) != IntersectionType.Separated)
+                            if (ComputeIntersection(ref rectangle, ref entry.Bounds) != IntersectionType.Disjoint)
                             {
                                 list.Add(entry.Value);
                             }
@@ -1116,17 +1134,17 @@ namespace Engine.Collections
             /// <summary>
             /// The shapes are cleanly separated from each other.
             /// </summary>
-            Separated,
-
+            Disjoint,
+            
             /// <summary>
             /// The two shapes are overlapping each other.
             /// </summary>
-            Overlapping,
+            Intersects,
 
             /// <summary>
             /// One shape is completely contained within the other.
             /// </summary>
-            Contained
+            Contains
         }
 
         /// <summary>
@@ -1144,7 +1162,7 @@ namespace Engine.Collections
                 bounds.X > center.X + radius ||
                 bounds.Y > center.Y + radius)
             {
-                return IntersectionType.Separated;
+                return IntersectionType.Disjoint;
             }
 
             // Check for unaligned separation.
@@ -1178,7 +1196,7 @@ namespace Engine.Collections
             var radiusSquared = radius * radius;
             if ((distanceX * distanceX + distanceY * distanceY) > radiusSquared)
             {
-                return IntersectionType.Separated;
+                return IntersectionType.Disjoint;
             }
 
             // At least intersection, check furthest point to check if the
@@ -1186,7 +1204,7 @@ namespace Engine.Collections
             distanceX = Math.Max(Math.Abs(center.X - bounds.X), Math.Abs(center.X - right));
             distanceY = Math.Max(Math.Abs(center.Y - bounds.Y), Math.Abs(center.Y - bottom));
             var outside = (distanceX * distanceX + distanceY * distanceY) > radiusSquared;
-            return outside ? IntersectionType.Overlapping : IntersectionType.Contained;
+            return outside ? IntersectionType.Intersects : IntersectionType.Contains;
         }
 
         /// <summary>
@@ -1201,10 +1219,10 @@ namespace Engine.Collections
             rectangle.Intersects(ref bounds, out result);
             if (!result)
             {
-                return IntersectionType.Separated;
+                return IntersectionType.Disjoint;
             }
             rectangle.Contains(ref bounds, out result);
-            return result ? IntersectionType.Contained : IntersectionType.Overlapping;
+            return result ? IntersectionType.Contains : IntersectionType.Intersects;
         }
 
         #endregion

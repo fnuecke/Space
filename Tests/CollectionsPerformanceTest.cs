@@ -41,9 +41,16 @@ namespace Tests
         private const int Area = CellSystem.CellSize * 3; // Normally active area.
 
         /// <summary>
-        /// The radius of a range query.
+        /// The maximum radius of a range query, and half the maximum
+        /// extent of an area query.
         /// </summary>
-        private const int QueryRadius = CellSystem.CellSize; // This is the furthest one should ever query, else it leaves the active area.
+        private const int MaxQueryRange = CellSystem.CellSize; // This is the furthest one should ever query, else it leaves the active area.
+
+        /// <summary>
+        /// The minimum query range, and half the minimum extent of an
+        /// area query.
+        /// </summary>
+        private const int MinQueryRange = (CellSystem.CellSize >> 8) + 1;
 
         // List of values for max entry count to test.
         private static readonly int[] QuadTreeMaxNodeEntries = new[] {30};
@@ -52,10 +59,36 @@ namespace Tests
         {
             // Generate data beforehand.
             var random = new MersenneTwister(Seed);
-            var data = new List<Tuple<int, Vector2>>();
+
+            Console.WriteLine("Used area is {0}x{0}.", Area);
+            Console.WriteLine("Number of objects is {0}.", NumberOfObjects);
+            Console.WriteLine("Number of operations is {0}.", Operations);
+
+            var points = new List<Tuple<int, Vector2>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                data.Add(Tuple.Create(i, random.NextVector(Area)));
+                points.Add(Tuple.Create(i, random.NextVector(Area)));
+            }
+
+            Console.WriteLine("Minimum node size for index structures is {0}.", IndexSystem.MinimumNodeSize);
+            Console.WriteLine("Rectangle sizes: {0}-{1}, {2}-{3}, {4}-{5}.", IndexSystem.MinimumNodeSize >> 2,
+                IndexSystem.MinimumNodeSize >> 1, IndexSystem.MinimumNodeSize, IndexSystem.MinimumNodeSize << 1,
+                IndexSystem.MinimumNodeSize << 2, IndexSystem.MinimumNodeSize << 3);
+
+            var smallRectangles = new List<Tuple<int, Rectangle>>();
+            for (var i = 0; i < NumberOfObjects; i++)
+            {
+                smallRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, IndexSystem.MinimumNodeSize >> 2, IndexSystem.MinimumNodeSize >> 1)));
+            }
+            var mediumRectangles = new List<Tuple<int, Rectangle>>();
+            for (var i = 0; i < NumberOfObjects; i++)
+            {
+                mediumRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, IndexSystem.MinimumNodeSize, IndexSystem.MinimumNodeSize << 1)));
+            }
+            var largeRectangles = new List<Tuple<int, Rectangle>>();
+            for (var i = 0; i < NumberOfObjects; i++)
+            {
+                largeRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, IndexSystem.MinimumNodeSize << 2, IndexSystem.MinimumNodeSize << 3)));
             }
 
             // Wait for application to settle in.
@@ -67,7 +100,7 @@ namespace Tests
             {
                 Console.WriteLine("Running QuadTree test with maximum entries per node = {0}.", maxEntriesPerNode);
                 var tree = new QuadTree<int>(maxEntriesPerNode, IndexSystem.MinimumNodeSize);
-                Test(tree, data);
+                Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
             }
 
             // Test R-Tree.
@@ -76,7 +109,7 @@ namespace Tests
                 var tree = new RTree<int>();
                 try
                 {
-                    Test(tree, data);
+                    Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
                 }
                 catch (Exception ex)
                 {
@@ -91,7 +124,90 @@ namespace Tests
             Console.ReadKey(true);
         }
 
-        private static void Test(IIndex<int> index, List<Tuple<int, Vector2>> data)
+        private delegate void BuildSmallUpdates<T>(IList<Tuple<int, T>> list, IList<Tuple<int, T>> data, IUniformRandom random, int i);
+
+        private delegate void BuildLargeUpdates<T>(IList<Tuple<int, T>> list, IList<Tuple<int, T>> data, IUniformRandom random, int i);
+
+        private delegate void AddEntries<T>(IIndex<int> index, IList<Tuple<int, T>> data);
+
+        private delegate void DoUpdate<T>(IIndex<int> index, Tuple<int, T> update);
+
+        private static void Test(IIndex<int> index, IList<Tuple<int, Vector2>> points,
+            IList<Tuple<int, Rectangle>> smallRectangles,
+            IList<Tuple<int, Rectangle>> mediumRectangles,
+            IList<Tuple<int, Rectangle>> largeRectangles)
+        {
+            Console.WriteLine("Testing with point data...");
+            {
+                RunPoints(index, points);
+            }
+
+            Console.WriteLine("Testing with small rectangle data...");
+            {
+                RunRectangles(index, smallRectangles);
+            }
+
+            Console.WriteLine("Testing with medium rectangle data...");
+            {
+                RunRectangles(index, smallRectangles);
+            }
+
+            Console.WriteLine("Testing with large rectangle data...");
+            {
+                RunRectangles(index, smallRectangles);
+            }
+        }
+
+        private static void RunPoints(IIndex<int> index, IList<Tuple<int, Vector2>> points)
+        {
+            Run(index,
+                points,
+                (list, data, random, i) => list.Add(Tuple.Create(i, data[i].Item2 + random.NextVector(2))),
+                (list, data, random, i) => list.Add(Tuple.Create(i, random.NextVector(Area))),
+                (ints, data) =>
+                {
+                    foreach (var item in data)
+                    {
+                        index.Add(item.Item2, item.Item1);
+                    }
+                },
+                (ints, update) => index.Update(update.Item2, update.Item1)
+                );
+        }
+
+        private static void RunRectangles(IIndex<int> index, IList<Tuple<int, Rectangle>> rectangles)
+        {
+            Run(index,
+                rectangles,
+                (list, data, random, i) =>
+                {
+                    var rect = data[i].Item2;
+                    rect.X += random.NextInt32(-2, 2);
+                    rect.Y += random.NextInt32(-2, 2);
+                    list.Add(Tuple.Create(i, rect));
+                },
+                (list, data, random, i) => list.Add(Tuple.Create(i, random.NextRectangle(Area, 16, 1024))),
+                (ints, data) =>
+                {
+                    foreach (var item in data)
+                    {
+                        var rect = item.Item2;
+                        index.Add(ref rect, item.Item1);
+                    }
+                },
+                (ints, update) =>
+                {
+                    var rect = update.Item2;
+                    index.Update(ref rect, update.Item1);
+                }
+                );
+        }
+
+        private static void Run<T>(IIndex<int> index, IList<Tuple<int, T>> data,
+            BuildSmallUpdates<T> makeSmallUpdate,
+            BuildLargeUpdates<T> makeLargeUpdate,
+            AddEntries<T> addEntries,
+            DoUpdate<T> doUpdate)
         {
             // Get new randomizer.
             var random = new MersenneTwister(Seed);
@@ -100,14 +216,16 @@ namespace Tests
             var watch = new Stopwatch();
 
             // Also allocate the ids to look up in advance.
-            var queries = new List<Vector2>(Operations);
+            var rangeQueries = new List<Tuple<Vector2, float>>(Operations);
+            var areaQueries = new List<Rectangle>(Operations);
 
             // And updates.
-            var smallUpdates = new List<Tuple<int, Vector2>>(Operations);
-            var largeUpdates = new List<Tuple<int, Vector2>>(Operations);
+            var smallUpdates = new List<Tuple<int, T>>(Operations);
+            var largeUpdates = new List<Tuple<int, T>>(Operations);
 
             var addTime = new DoubleSampling(Iterations);
-            var queryTime = new DoubleSampling(Iterations);
+            var rangeQueryTime = new DoubleSampling(Iterations);
+            var areaQueryTime = new DoubleSampling(Iterations);
             var smallUpdateTime = new DoubleSampling(Iterations);
             var largeUpdateTime = new DoubleSampling(Iterations);
             var highLoadRemoveTime = new DoubleSampling(Iterations);
@@ -124,10 +242,15 @@ namespace Tests
                 index.Clear();
 
                 // Generate look up ids in advance.
-                queries.Clear();
+                rangeQueries.Clear();
                 for (var j = 0; j < Operations; j++)
                 {
-                    queries.Add(random.NextVector(Area));
+                    rangeQueries.Add(Tuple.Create(random.NextVector(Area), MinQueryRange + (MaxQueryRange - MinQueryRange) * (float)random.NextDouble()));
+                }
+                areaQueries.Clear();
+                for (var j = 0; j < Operations; j++)
+                {
+                    areaQueries.Add(random.NextRectangle(Area, MinQueryRange * 2, MaxQueryRange * 2));
                 }
 
                 // Generate position updates.
@@ -136,30 +259,27 @@ namespace Tests
                 for (var j = 0; j < Operations; j++)
                 {
                     // High chance it remains in the same cell.
-                    smallUpdates.Add(Tuple.Create(j, data[j].Item2 + random.NextVector(1)));
+                    makeSmallUpdate(smallUpdates, data, random, j);
                 }
                 for (var j = 0; j < Operations; j++)
                 {
                     // High chance it will be outside the original cell.
-                    largeUpdates.Add(Tuple.Create(j, random.NextVector(Area)));
+                    makeLargeUpdate(largeUpdates, data, random, j);
                 }
 
                 // Test time to add.
                 watch.Reset();
                 watch.Start();
-                foreach (var item in data)
-                {
-                    index.Add(item.Item2, item.Item1);
-                }
+                addEntries(index, data);
                 watch.Stop();
-                addTime.Put(watch.ElapsedMilliseconds / (double)data.Count);
+                addTime.Put(watch.ElapsedMilliseconds / (double)NumberOfObjects);
 
                 // Test update time.
                 watch.Reset();
                 watch.Start();
                 foreach (var update in smallUpdates)
                 {
-                    index.Update(update.Item2, update.Item1);
+                    doUpdate(index, update);
                 }
                 watch.Stop();
                 smallUpdateTime.Put(watch.ElapsedMilliseconds / (double)smallUpdates.Count);
@@ -168,7 +288,7 @@ namespace Tests
                 watch.Start();
                 foreach (var update in largeUpdates)
                 {
-                    index.Update(update.Item2, update.Item1);
+                    doUpdate(index, update);
                 }
                 watch.Stop();
                 largeUpdateTime.Put(watch.ElapsedMilliseconds / (double)largeUpdates.Count);
@@ -178,10 +298,20 @@ namespace Tests
                 watch.Start();
                 for (var j = 0; j < Operations; j++)
                 {
-                    index.RangeQuery(queries[j], QueryRadius, ref DummyCollection<int>.Instance);
+                    index.RangeQuery(rangeQueries[j].Item1, rangeQueries[j].Item2, ref DummyCollection<int>.Instance);
                 }
                 watch.Stop();
-                queryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
+                rangeQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
+
+                watch.Reset();
+                watch.Start();
+                for (var j = 0; j < Operations; j++)
+                {
+                    var rect = areaQueries[j];
+                    index.RangeQuery(ref rect, ref DummyCollection<int>.Instance);
+                }
+                watch.Stop();
+                areaQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
 
                 // Test removal time.
                 watch.Reset();
@@ -216,14 +346,16 @@ namespace Tests
 
             Console.WriteLine("Operation           | Mean      | Std.dev.\n" +
                               "Add:                | {0:0.00000}ms | {1:0.00000}ms\n" +
-                              "Query:              | {2:0.00000}ms | {3:0.00000}ms\n" +
-                              "Update (small):     | {4:0.00000}ms | {5:0.00000}ms\n" +
-                              "Update (large):     | {6:0.00000}ms | {7:0.00000}ms\n" +
-                              "Remove (high load): | {8:0.00000}ms | {9:0.00000}ms\n" +
-                              "Remove (med. load): | {10:0.00000}ms | {11:0.00000}ms\n" +
-                              "Remove (low load):  | {12:0.00000}ms | {13:0.00000}ms",
+                              "Range query:        | {2:0.00000}ms | {3:0.00000}ms\n" +
+                              "Area query:         | {4:0.00000}ms | {5:0.00000}ms\n" +
+                              "Update (small):     | {6:0.00000}ms | {7:0.00000}ms\n" +
+                              "Update (large):     | {8:0.00000}ms | {9:0.00000}ms\n" +
+                              "Remove (high load): | {10:0.00000}ms | {11:0.00000}ms\n" +
+                              "Remove (med. load): | {12:0.00000}ms | {13:0.00000}ms\n" +
+                              "Remove (low load):  | {14:0.00000}ms | {15:0.00000}ms",
                               addTime.Mean(), addTime.StandardDeviation(),
-                              queryTime.Mean(), queryTime.StandardDeviation(),
+                              rangeQueryTime.Mean(), rangeQueryTime.StandardDeviation(),
+                              areaQueryTime.Mean(), areaQueryTime.StandardDeviation(),
                               smallUpdateTime.Mean(), smallUpdateTime.StandardDeviation(),
                               largeUpdateTime.Mean(), largeUpdateTime.StandardDeviation(),
                               highLoadRemoveTime.Mean(), highLoadRemoveTime.StandardDeviation(),
@@ -294,6 +426,18 @@ namespace Tests
         {
             return new Vector2((float)(random.NextDouble() * area - area / 2.0),
                                (float)(random.NextDouble() * area - area / 2.0));
+        }
+
+        public static Rectangle NextRectangle(this IUniformRandom random, int area, int minSize, int maxSize)
+        {
+            var rect = new Rectangle
+                       {
+                           Width = random.NextInt32(minSize, maxSize),
+                           Height = random.NextInt32(minSize, maxSize)
+                       };
+            rect.X = random.NextInt32(-area / 2, area / 2 - rect.Width);
+            rect.Y = random.NextInt32(-area / 2, area / 2 - rect.Height);
+            return rect;
         }
     }
     

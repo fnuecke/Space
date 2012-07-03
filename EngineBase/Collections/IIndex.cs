@@ -22,14 +22,33 @@ namespace Engine.Collections
         #region Accessors
 
         /// <summary>
+        /// Add a new entry to the tree, with the specified bounds, with the
+        /// specified associated value.
+        /// </summary>
+        /// <param name="bounds">The bounds of the entry.</param>
+        /// <param name="value">The value associated with the point.</param>
+        /// <exception cref="ArgumentException">This value is already stored
+        /// in the tree.</exception>
+        void Add(ref Rectangle bounds, T value);
+
+        /// <summary>
         /// Add a new entry to the tree, at the specified position, with the
         /// specified associated value.
         /// </summary>
         /// <param name="point">The point at which to store the entry.</param>
         /// <param name="value">The value associated with the point.</param>
-        /// <exception cref="ArgumentException">This pair of point and value
-        /// are already stored in the tree.</exception>
+        /// <exception cref="ArgumentException">This value is already stored
+        /// in the tree.</exception>
         void Add(Vector2 point, T value);
+
+        /// <summary>
+        /// Update a single entry by changing its bounds. If the entry is not
+        /// already in the tree, this will return <code>false</code>.
+        /// </summary>
+        /// <param name="newBounds">The new bounds of the entry.</param>
+        /// <param name="value">The value of the entry.</param>
+        /// <returns><code>true</code> if the update was successful.</returns>
+        bool Update(ref Rectangle newBounds, T value);
 
         /// <summary>
         /// Update a single entry by changing its position. If the entry is not

@@ -76,6 +76,18 @@ namespace Engine.Collections
             get { return _pointDict.Count; }
         }
 
+        /// <summary>
+        /// Add a new entry to the tree, with the specified bounds, with the
+        /// specified associated value.
+        /// </summary>
+        /// <param name="bounds">The bounds of the entry.</param>
+        /// <param name="value">The value associated with the point.</param>
+        /// <exception cref="ArgumentException">This value is already stored
+        /// in the tree.</exception>
+        public void Add(ref Rectangle bounds, T value)
+        {
+            throw new NotImplementedException();
+        }
 
         public void Add(Vector2 point, T value)
         {
@@ -87,6 +99,19 @@ namespace Engine.Collections
             }
             Insert(entry);
         }
+
+        /// <summary>
+        /// Update a single entry by changing its bounds. If the entry is not
+        /// already in the tree, this will return <code>false</code>.
+        /// </summary>
+        /// <param name="newBounds">The new bounds of the entry.</param>
+        /// <param name="value">The value of the entry.</param>
+        /// <returns><code>true</code> if the update was successful.</returns>
+        public bool Update(ref Rectangle newBounds, T value)
+        {
+            throw new NotImplementedException();
+        }
+
         private void 
             Insert(Entry entry)
         {
