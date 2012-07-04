@@ -152,7 +152,7 @@ namespace Space.ComponentSystem.Factories
                 // Negative damage = healing -> collide will all our allies.
                 collisionIndexGroup |= faction.Inverse().ToCollisionIndexGroup();
             }
-            manager.AddComponent<Index>(entity).Initialize(collisionIndexGroup);
+            manager.AddComponent<Index>(entity).Initialize(collisionIndexGroup, (int)(CollisionRadius + CollisionRadius));
             uint collisionGroup = faction.ToCollisionGroup();
             if (!CanBeShot)
             {

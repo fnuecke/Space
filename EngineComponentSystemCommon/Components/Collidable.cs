@@ -1,5 +1,4 @@
 ﻿using System;
-using Engine.ComponentSystem.Common.Messages;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -69,23 +68,6 @@ namespace Engine.ComponentSystem.Components
 
             CollisionGroups = 0;
             PreviousPosition = Vector2.Zero;
-        }
-
-        /// <summary>
-        /// Sends a <code>CollidableBoundsChanged</code> message, when possible.
-        /// Must be called whenever the collidable's bounds change.
-        /// </summary>
-        protected void SendBoundsChanged()
-        {
-            if (Manager == null)
-            {
-                return;
-            }
-
-            CollidableBoundsChanged message;
-            message.Entity = Entity;
-            message.Bounds = ComputeBounds();
-            Manager.SendMessage(ref message);
         }
 
         #endregion

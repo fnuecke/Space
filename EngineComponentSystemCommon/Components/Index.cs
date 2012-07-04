@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Common.Messages;
 using Engine.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -47,6 +48,20 @@ namespace Engine.ComponentSystem.Components
             }
         }
 
+        /// <summary>
+        /// The bounds used to store the indexable in indexes.
+        /// </summary>
+#if DEBUG // Don't allow changing except for initialization.
+        private Rectangle _bounds;
+        public Rectangle Bounds
+        {
+            get { return _bounds; }
+            private set { _bounds = value; }
+        }
+#else
+        public Rectangle Bounds;
+#endif
+
         #endregion
 
         #region Fields
@@ -71,6 +86,33 @@ namespace Engine.ComponentSystem.Components
         }
 
         /// <summary>
+        /// Initialize with the specified index groups and the specified
+        /// bounds.
+        /// </summary>
+        /// <param name="groups">The index groups.</param>
+        /// <param name="bounds">The bounds for this indexable.</param>
+        public Index Initialize(ulong groups, Rectangle bounds)
+        {
+            IndexGroups = groups;
+            Bounds = bounds;
+
+            SendBoundsChanged();
+
+            return this;
+        }
+
+        /// <summary>
+        /// Initialize with the specified index groups and the specified
+        /// size (width = height = size).
+        /// </summary>
+        /// <param name="groups">The index groups.</param>
+        /// <param name="size">The size for this indexable.</param>
+        public Index Initialize(ulong groups, int size)
+        {
+            return Initialize(groups, new Rectangle {Width = size, Height = size});
+        }
+
+        /// <summary>
         /// Initialize with the specified index groups.
         /// </summary>
         /// <param name="groups">The index groups.</param>
@@ -90,6 +132,26 @@ namespace Engine.ComponentSystem.Components
             base.Reset();
 
             _indexGroups = 0;
+            Bounds = Rectangle.Empty;
+
+            SendBoundsChanged();
+        }
+
+        /// <summary>
+        /// Sends a <code>IndexBoundsChanged</code> message, when possible.
+        /// Must be called whenever the index's bounds change.
+        /// </summary>
+        private void SendBoundsChanged()
+        {
+            if (Manager == null)
+            {
+                return;
+            }
+
+            IndexBoundsChanged message;
+            message.Entity = Entity;
+            message.Bounds = Bounds;
+            Manager.SendMessage(ref message);
         }
 
         #endregion

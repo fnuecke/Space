@@ -288,9 +288,9 @@ namespace Engine.ComponentSystem.Systems
                     }
                 }
             }
-            else if (message is CollidableBoundsChanged)
+            else if (message is IndexBoundsChanged)
             {
-                var changedMessage = (CollidableBoundsChanged)(ValueType)message;
+                var changedMessage = (IndexBoundsChanged)(ValueType)message;
                 
                 // Check if the entity is indexable.
                 var index = Manager.GetComponent<Index>(changedMessage.Entity);

@@ -146,7 +146,8 @@ namespace Space.ComponentSystem.Factories
                 Gravitation.IndexGroup |
                 Sound.IndexGroup |
                 Detectable.IndexGroup |
-                faction.ToCollisionIndexGroup());
+                faction.ToCollisionIndexGroup(),
+                (int)(CollisionRadius + CollisionRadius));
 
             // Collision component, to allow colliding with other entities.
             manager.AddComponent<CollidableSphere>(entity)

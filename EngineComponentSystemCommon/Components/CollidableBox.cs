@@ -37,8 +37,6 @@ namespace Engine.ComponentSystem.Components
 
             Size = ((CollidableBox)other).Size;
 
-            SendBoundsChanged();
-
             return this;
         }
 
@@ -53,8 +51,6 @@ namespace Engine.ComponentSystem.Components
 
             Size = size;
 
-            SendBoundsChanged();
-
             return this;
         }
 
@@ -67,8 +63,6 @@ namespace Engine.ComponentSystem.Components
             base.Reset();
 
             Size = Vector2.Zero;
-
-            SendBoundsChanged();
         }
 
         #endregion

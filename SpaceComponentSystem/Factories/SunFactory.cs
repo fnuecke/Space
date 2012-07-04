@@ -51,16 +51,23 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = manager.AddEntity();
 
-            manager.AddComponent<Transform>(entity).Initialize(SampleOffset(random) + cellCenter);
-            manager.AddComponent<Spin>(entity);
+            // Sample all values in advance, to allow reshuffling component creation
+            // order in case we need to, without influencing the 'random' results.
+            var radius = SampleRadius(random);
+            var offset = SampleOffset(random);
+            var mass = SampleMass(random);
+
+            manager.AddComponent<Transform>(entity).Initialize(offset + cellCenter);
             manager.AddComponent<Index>(entity).Initialize(
                 Detectable.IndexGroup |
                 Sound.IndexGroup |
                 CellSystem.CellDeathAutoRemoveIndex |
-                Factions.Nature.ToCollisionIndexGroup());
-            manager.AddComponent<Gravitation>(entity).Initialize(Gravitation.GravitationTypes.Attractor, SampleMass(random));
-
-            var radius = SampleRadius(random);
+                Factions.Nature.ToCollisionIndexGroup(),
+                (int)(radius + radius));
+            if (mass > 0)
+            {
+                manager.AddComponent<Gravitation>(entity).Initialize(Gravitation.GravitationTypes.Attractor, mass);
+            }
 
             manager.AddComponent<CollidableSphere>(entity).Initialize(radius, Factions.Nature.ToCollisionGroup());
             manager.AddComponent<CollisionDamage>(entity).Initialize(1, float.MaxValue);

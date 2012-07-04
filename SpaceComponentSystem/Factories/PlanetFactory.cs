@@ -98,9 +98,18 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = manager.AddEntity();
 
-            // Scale radii.
+            // Sample all values in advance, to allow reshuffling component creation
+            // order in case we need to, without influencing the 'random' results.
+            var planetRadius = SampleRadius(random);
+            var rotationSpeed = SampleRotationSpeed(random);
+            var mass = SampleMass(random);
             var majorRadius = SampleMajorRadius(random);
             var minorRadius = SampleMinorRadius(random);
+            var angleOffset = SampleAngleOffset(random);
+            var travelSpeed = SampleTravelSpeed(random);
+            var periodOffet = (float)random.NextDouble();
+
+            // Scale radii.
             var radiusScale = (radius + radius) / (majorRadius + minorRadius);
             majorRadius *= radiusScale;
             minorRadius *= radiusScale;
@@ -109,22 +118,23 @@ namespace Space.ComponentSystem.Factories
             var a = majorRadius;
             var b = minorRadius;
             var circumference = MathHelper.Pi * (3 * (a + b) - (float)Math.Sqrt((3 * a + b) * (a + 3 * b)));
-            var period = circumference / SampleTravelSpeed(random) * 60;
+            var period = circumference / travelSpeed * 60;
 
             manager.AddComponent<Transform>(entity).Initialize(manager.GetComponent<Transform>(center).Translation);
-            manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(SampleRotationSpeed(random)) / 60);
-            manager.AddComponent<EllipsePath>(entity).Initialize(center, majorRadius, minorRadius, angle + SampleAngleOffset(random), period, MathHelper.TwoPi * (float)random.NextDouble());
-            manager.AddComponent<Index>(entity).Initialize(Detectable.IndexGroup |
-                Sound.IndexGroup |
-                CellSystem.CellDeathAutoRemoveIndex);
-            var mass = SampleMass(random);
+            manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / 60);
+            manager.AddComponent<EllipsePath>(entity).Initialize(center, majorRadius, minorRadius, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);
+            manager.AddComponent<Index>(entity).
+                Initialize(Detectable.IndexGroup |
+                           Sound.IndexGroup |
+                           CellSystem.CellDeathAutoRemoveIndex,
+                           (int)(planetRadius + planetRadius));
             if (mass > 0)
             {
                 manager.AddComponent<Gravitation>(entity).Initialize(Gravitation.GravitationTypes.Attractor, mass);
             }
 
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
-            manager.AddComponent<PlanetRenderer>(entity).Initialize(Texture, SurfaceTint, SampleRadius(random), AtmosphereTint);
+            manager.AddComponent<PlanetRenderer>(entity).Initialize(Texture, SurfaceTint, planetRadius, AtmosphereTint);
 
             manager.AddComponent<Sound>(entity).Initialize("Planet");
 

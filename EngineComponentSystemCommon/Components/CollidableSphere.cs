@@ -37,8 +37,6 @@ namespace Engine.ComponentSystem.Components
 
             Radius = ((CollidableSphere)other).Radius;
 
-            SendBoundsChanged();
-
             return this;
         }
 
@@ -53,8 +51,6 @@ namespace Engine.ComponentSystem.Components
 
             Radius = radius;
 
-            SendBoundsChanged();
-
             return this;
         }
 
@@ -67,8 +63,6 @@ namespace Engine.ComponentSystem.Components
             base.Reset();
 
             Radius = 0;
-
-            SendBoundsChanged();
         }
 
         #endregion
