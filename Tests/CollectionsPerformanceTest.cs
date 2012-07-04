@@ -298,7 +298,7 @@ namespace Tests
                 watch.Start();
                 for (var j = 0; j < Operations; j++)
                 {
-                    index.RangeQuery(rangeQueries[j].Item1, rangeQueries[j].Item2, ref DummyCollection<int>.Instance);
+                    index.Find(rangeQueries[j].Item1, rangeQueries[j].Item2, ref DummyCollection<int>.Instance);
                 }
                 watch.Stop();
                 rangeQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
@@ -308,7 +308,7 @@ namespace Tests
                 for (var j = 0; j < Operations; j++)
                 {
                     var rect = areaQueries[j];
-                    index.RangeQuery(ref rect, ref DummyCollection<int>.Instance);
+                    index.Find(ref rect, ref DummyCollection<int>.Instance);
                 }
                 watch.Stop();
                 areaQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);

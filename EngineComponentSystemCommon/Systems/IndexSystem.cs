@@ -108,9 +108,9 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range (including the query entity).</returns>
-        public void RangeQuery(int entity, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
+        public void Find(int entity, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
         {
-            RangeQuery(Manager.GetComponent<Transform>(entity).Translation, range, ref list, groups);
+            Find(Manager.GetComponent<Transform>(entity).Translation, range, ref list, groups);
         }
 
         /// <summary>
@@ -121,14 +121,14 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void RangeQuery(Vector2 query, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
+        public void Find(Vector2 query, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
         {
             foreach (var tree in TreesForGroups(groups))
             {
 #if DEBUG
                 ++_numQueriesLastUpdate;
 #endif
-                tree.RangeQuery(query, range, ref list);
+                tree.Find(query, range, ref list);
             }
         }
 
@@ -139,14 +139,14 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void RangeQuery(ref Rectangle query, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
+        public void Find(ref Rectangle query, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
         {
             foreach (var tree in TreesForGroups(groups))
             {
 #if DEBUG
                 ++_numQueriesLastUpdate;
 #endif
-                tree.RangeQuery(ref query, ref list);
+                tree.Find(ref query, ref list);
             }
         }
 

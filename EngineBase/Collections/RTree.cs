@@ -217,12 +217,12 @@ namespace Engine.Collections
             root = new LeafNode();
         }
 
-        public void RangeQuery(Vector2 point, float range, ref ICollection<T> list)
+        public void Find(Vector2 point, float range, ref ICollection<T> list)
         {
             Accumulate(root, ref point, range, list);
         }
 
-        public void RangeQuery(ref Rectangle rectangle, ref ICollection<T> list)
+        public void Find(ref Rectangle rectangle, ref ICollection<T> list)
         {
             Accumulate(root, ref rectangle, list);
         }

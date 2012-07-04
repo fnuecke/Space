@@ -58,7 +58,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var distanceSquared = float.MaxValue;
 
             ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
-            index.RangeQuery(position, ScanRange, ref neighbors, Detectable.IndexGroup);
+            index.Find(position, ScanRange, ref neighbors, Detectable.IndexGroup);
             foreach (var neighbor in neighbors)
             {
                 // See if it's a station.

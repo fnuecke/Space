@@ -84,7 +84,7 @@ namespace Engine.ComponentSystem.Systems
             // entries from all those entries where we're not in
             // that group.
             ICollection<int> neighbors = _reusableNeighborList;
-            index.RangeQuery(component.Entity, _maxCollidableRadius, ref neighbors,
+            index.Find(component.Entity, _maxCollidableRadius, ref neighbors,
                              (ulong)(~component.CollisionGroups) << FirstIndexGroup);
             foreach (var neighbor in neighbors)
             {

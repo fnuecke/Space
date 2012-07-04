@@ -208,7 +208,7 @@ namespace Space.ComponentSystem.Systems
                 cellBounds.Width = CellSize;
                 cellBounds.Height = CellSize;
                 ICollection<int> neighbors = _reusableEntityList;
-                Manager.GetSystem<IndexSystem>().RangeQuery(ref cellBounds, ref neighbors, CellDeathAutoRemoveIndex);
+                Manager.GetSystem<IndexSystem>().Find(ref cellBounds, ref neighbors, CellDeathAutoRemoveIndex);
                 foreach (var neighbor in neighbors)
                 {
                     Manager.RemoveEntity(neighbor);

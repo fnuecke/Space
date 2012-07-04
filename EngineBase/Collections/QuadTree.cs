@@ -277,7 +277,7 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Perform a range query on this tree. This will return all entries
+        /// Perform a circular query on this tree. This will return all entries
         /// in the tree that are in the specified range to the specified point,
         /// using a euclidean distance.
         /// </summary>
@@ -287,7 +287,7 @@ namespace Engine.Collections
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the neighborhood of the query point.</returns>
-        public void RangeQuery(Vector2 point, float range, ref ICollection<T> list)
+        public void Find(Vector2 point, float range, ref ICollection<T> list)
         {
             // Skip if the tree is empty.
             if (Count > 0)
@@ -299,14 +299,14 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Perform a range query on this tree. This will return all entries
+        /// Perform an area query on this tree. This will return all entries
         /// in the tree that are in contained the specified rectangle.
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
         /// <returns>All objects in the query rectangle.</returns>
-        public void RangeQuery(ref Rectangle rectangle, ref ICollection<T> list)
+        public void Find(ref Rectangle rectangle, ref ICollection<T> list)
         {
             // Skip if the tree is empty.
             if (Count > 0)

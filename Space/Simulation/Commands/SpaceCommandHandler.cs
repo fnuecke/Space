@@ -315,7 +315,7 @@ def setBaseStat(type, value):
             lock (ReusableItemList)
             {
                 ICollection<int> neighbors = ReusableItemList;
-                index.RangeQuery(avatar.Value, 100, ref neighbors, Item.IndexGroup);
+                index.Find(avatar.Value, 100, ref neighbors, Item.IndexGroup);
                 foreach (var item in neighbors)
                 {
                     // Pick the item up.

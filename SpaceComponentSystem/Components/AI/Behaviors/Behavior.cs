@@ -289,7 +289,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             // Look for evil neighbors, in particular suns and the like.
             var index = AI.Manager.GetSystem<IndexSystem>();
             ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
-            index.RangeQuery(position, MaxEscapeCheckDistance, ref neighbors, Detectable.IndexGroup);
+            index.Find(position, MaxEscapeCheckDistance, ref neighbors, Detectable.IndexGroup);
             foreach (var neighbor in neighbors)
             {
                 // If it does damage we want to keep our distance.
@@ -331,7 +331,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             
             // Check all neighbors in normal flocking range.
             neighbors.Clear();
-            index.RangeQuery(position, FlockingThreshold, ref neighbors, Detectable.IndexGroup);
+            index.Find(position, FlockingThreshold, ref neighbors, Detectable.IndexGroup);
             foreach (var neighbor in neighbors)
             {
                 // Ignore non-ships.
