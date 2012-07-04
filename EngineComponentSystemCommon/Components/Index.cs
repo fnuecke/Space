@@ -174,7 +174,12 @@ namespace Engine.ComponentSystem.Components
 
             Manager.SendMessage(ref message);
         }
-        
+
+        /// <summary>
+        /// Sets new bounds for the indexable, and emits the corresponding
+        /// message, if possible.
+        /// </summary>
+        /// <param name="bounds">The new bounds for the indexable.</param>
         public void SetBounds(Rectangle bounds)
         {
             SetBounds(ref bounds);

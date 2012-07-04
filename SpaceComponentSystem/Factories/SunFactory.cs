@@ -76,7 +76,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");
 
             // Make it glow.
-            manager.AddComponent<SunRenderer>(entity).Initialize(radius);
+            manager.AddComponent<SunRenderer>(entity).Initialize(radius * 0.95f);
 
             // Make it go whoooosh.
             manager.AddComponent<Sound>(entity).Initialize("Sun");
