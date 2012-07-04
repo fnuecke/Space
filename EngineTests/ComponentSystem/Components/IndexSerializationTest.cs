@@ -29,7 +29,7 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.IndexGroups += 10
+                       instance => instance.IndexGroupsMask += 10
                    }.Concat(base.GetValueChangers());
         }
     }

@@ -237,7 +237,11 @@ namespace Space.Session
                 var profilePath = GetFullProfilePath();
                 try
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(profilePath));
+                    var path = Path.GetDirectoryName(profilePath);
+                    if (path != null)
+                    {
+                        Directory.CreateDirectory(path);
+                    }
 
                     // Make a backup if there's a save already.
                     if (File.Exists(profilePath))
@@ -261,7 +265,10 @@ namespace Space.Session
                     {
                         File.WriteAllBytes(profilePath, encrypted);
 #if DEBUG
-                        File.WriteAllBytes(profilePath + ".raw", plain);
+                        if (plain != null)
+                        {
+                            File.WriteAllBytes(profilePath + ".raw", plain);
+                        }
 #endif
                     }
                     catch (Exception ex)

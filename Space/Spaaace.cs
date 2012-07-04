@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Net;
 using Awesomium.ScreenManagement;
+using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -12,6 +13,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input;
 using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
+using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Session;
 using Space.Util;
@@ -316,14 +318,42 @@ namespace Space
             _console.AddCommand("d_renderindex",
                 args =>
                 {
-                    int index = int.Parse(args[1]);
-                    if (index > 64)
+                    int index;
+                    if (!int.TryParse(args[1], out index))
+                    {
+                        switch (args[1])
+                        {
+                            case "c":
+                            case "collision":
+                            case "collidable":
+                            case "collidables":
+                                _indexGroupMask = CollisionSystem.IndexGroupMask;
+                                break;
+                            case "d":
+                            case "detector":
+                            case "detectable":
+                            case "detectables":
+                                _indexGroupMask = DetectableSystem.IndexGroupMask;
+                                break;
+                            case "g":
+                            case "grav":
+                            case "gravitation":
+                                _indexGroupMask = GravitationSystem.IndexGroupMask;
+                                break;
+                            case "s":
+                            case "sound":
+                            case "sounds":
+                                _indexGroupMask = SoundSystem.IndexGroupMask;
+                                break;
+                        }
+                    }
+                    else if (index > 64)
                     {
                         _console.WriteLine("Invalid index, must be smaller or equal to 64.");
                     }
                     else
                     {
-                        _indexGroup = index;
+                        _indexGroupMask = 1ul << index;
                     }
                 },
                 "Enables rendering of the index with the given index.",
@@ -589,7 +619,7 @@ namespace Space
 #if DEBUG
         private readonly DoubleSampling _fps = new DoubleSampling(30);
         private Engine.Graphics.Rectangle _indexRectangle;
-        private int _indexGroup = -1;
+        private ulong _indexGroupMask = 0;
 
         private void DrawDebugInfo(GameTime gameTime)
         {
@@ -649,11 +679,11 @@ namespace Space
                         var camera = manager.GetSystem<ComponentSystem.Systems.CameraSystem>();
                         if (index != null)
                         {
-                            if (_indexGroup >= 0)
+                            if (_indexGroupMask >= 0)
                             {
                                 _indexRectangle.Scale = camera.Zoom;
                                 var translation = new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon;
-                                index.DrawIndex(1ul << _indexGroup, _indexRectangle, translation);
+                                index.DrawIndex(_indexGroupMask, _indexRectangle, translation);
                             }
                             sb.AppendFormat("Indexes: {0}, Total entries: {1}, Queries: {2}\n", index.NumIndexes, index.Count, index.NumQueriesLastUpdate);
                         }

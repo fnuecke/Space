@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
+using Engine.ComponentSystem.Messages;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
@@ -28,7 +30,7 @@ namespace Engine.ComponentSystem.Systems
         /// The buffer area to use when querying, to take fast moving objects
         /// into account.
         /// </summary>
-        private readonly int _bufferArea;
+        private int _bufferArea;
 
         #endregion
 
@@ -130,6 +132,41 @@ namespace Engine.ComponentSystem.Systems
             _updatingComponents.Clear();
         }
 
+        /// <summary>
+        /// Update the previous position to the current one when adding a component.
+        /// </summary>
+        /// <param name="component">The added component.</param>
+        protected override void OnComponentAdded(Collidable component)
+        {
+            var transform = Manager.GetComponent<Transform>(component.Entity);
+            if (transform != null)
+            {
+                component.PreviousPosition = transform.Translation;
+            }
+        }
+
+        /// <summary>
+        /// Update the previous position when a collidable component changes its position.
+        /// </summary>
+        /// <param name="message">The sent message.</param>
+        public override void Receive<T>(ref T message)
+        {
+            base.Receive(ref message);
+
+            if (message is TranslationChanged)
+            {
+                var changedMessage = (TranslationChanged)(ValueType)message;
+
+                var collidable = Manager.GetComponent<Collidable>(changedMessage.Entity);
+                if (collidable == null)
+                {
+                    return;
+                }
+
+                collidable.PreviousPosition = changedMessage.PreviousPosition;
+            }
+        }
+
         #endregion
 
         #region Copying
@@ -141,6 +178,10 @@ namespace Engine.ComponentSystem.Systems
             if (copy != into)
             {
                 copy._reusableNeighborList = new List<int>();
+            }
+            else
+            {
+                copy._bufferArea = _bufferArea;
             }
 
             return copy;

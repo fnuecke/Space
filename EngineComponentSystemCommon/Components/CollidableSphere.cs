@@ -85,35 +85,23 @@ namespace Engine.ComponentSystem.Components
         /// <returns>Whether the two collide or not.</returns>
         public override bool Intersects(Collidable collidable)
         {
-            if (PreviousPosition == Vector2.Zero)
-            {
-                PreviousPosition = Manager.GetComponent<Transform>(Entity).Translation;
-            }
             var currentPosition = Manager.GetComponent<Transform>(Entity).Translation;
             return collidable.Intersects(Radius, ref PreviousPosition, ref currentPosition);
         }
 
         internal override bool Intersects(ref Vector2 extents, ref Vector2 previousPosition, ref Vector2 position)
         {
-            if (PreviousPosition == Vector2.Zero)
-            {
-                PreviousPosition = Manager.GetComponent<Transform>(Entity).Translation;
-            }
             var currentPosition = Manager.GetComponent<Transform>(Entity).Translation;
             return SphereAABBSweep.Test(
-                this.Radius, ref this.PreviousPosition, ref currentPosition,
+                Radius, ref PreviousPosition, ref currentPosition,
                 ref extents, ref previousPosition, ref position);
         }
 
         internal override bool Intersects(float radius, ref Vector2 previousPosition, ref Vector2 position)
         {
-            if (PreviousPosition == Vector2.Zero)
-            {
-                PreviousPosition = Manager.GetComponent<Transform>(Entity).Translation;
-            }
             var currentPosition = Manager.GetComponent<Transform>(Entity).Translation;
             return SphereSweep.Test(
-                this.Radius, ref this.PreviousPosition, ref currentPosition,
+                Radius, ref PreviousPosition, ref currentPosition,
                 radius, ref previousPosition, ref position);
         }
 
@@ -169,7 +157,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Radius = " + Radius.ToString();
+            return base.ToString() + ", Radius = " + Radius;
         }
 
         #endregion

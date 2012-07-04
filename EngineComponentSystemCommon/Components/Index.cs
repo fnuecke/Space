@@ -19,54 +19,28 @@ namespace Engine.ComponentSystem.Components
         /// There are a total of 64 separate groups, via the 64 bits in a
         /// ulong.
         /// </summary>
-        public ulong IndexGroups
+        public ulong IndexGroupsMask
+#if DEBUG // Don't allow directly changing from outside.
         {
-            get { return _indexGroups; }
-            set
-            {
-                if (value == _indexGroups)
-                {
-                    return;
-                }
-
-                if (Manager != null)
-                {
-                    // Figure out which groups are new.
-                    IndexGroupsChanged message;
-                    message.Entity = Entity;
-                    message.AddedIndexGroups = value & ~_indexGroups;
-                    message.RemovedIndexGroups = _indexGroups & ~value;
-
-                    _indexGroups = value;
-
-                    Manager.SendMessage(ref message);
-                }
-                else
-                {
-                    _indexGroups = value;
-                }
-            }
+            get { return _indexGroupsMask; }
         }
+        private ulong _indexGroupsMask;
+#else
+                     ;
+#endif
 
         /// <summary>
         /// The bounds used to store the indexable in indexes.
         /// </summary>
-#if DEBUG // Don't allow changing except for initialization.
-        private Rectangle _bounds;
         public Rectangle Bounds
+#if DEBUG // Don't allow directly changing from outside.
         {
             get { return _bounds; }
-            private set { _bounds = value; }
         }
+        private Rectangle _bounds;
 #else
-        public Rectangle Bounds;
+                         ;
 #endif
-
-        #endregion
-
-        #region Fields
-
-        private ulong _indexGroups;
 
         #endregion
 
@@ -80,7 +54,9 @@ namespace Engine.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            _indexGroups = ((Index)other).IndexGroups;
+            var otherIndex = (Index)other;
+            SetIndexGroupsMask(otherIndex.IndexGroupsMask);
+            SetBounds(otherIndex.Bounds);
 
             return this;
         }
@@ -93,10 +69,8 @@ namespace Engine.ComponentSystem.Components
         /// <param name="bounds">The bounds for this indexable.</param>
         public Index Initialize(ulong groups, Rectangle bounds)
         {
-            IndexGroups = groups;
-            Bounds = bounds;
-
-            SendBoundsChanged();
+            SetIndexGroupsMask(groups);
+            SetBounds(bounds);
 
             return this;
         }
@@ -118,7 +92,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="groups">The index groups.</param>
         public Index Initialize(ulong groups)
         {
-            IndexGroups = groups;
+            SetIndexGroupsMask(IndexGroupsMask);
 
             return this;
         }
@@ -131,18 +105,64 @@ namespace Engine.ComponentSystem.Components
         {
             base.Reset();
 
-            _indexGroups = 0;
-            Bounds = Rectangle.Empty;
+            SetIndexGroupsMask(0);
+            SetBounds(Rectangle.Empty);
+        }
 
-            SendBoundsChanged();
+        #endregion
+
+        #region Accessors
+
+        /// <summary>
+        /// Sets a new index group mask for this indexable, and emits the
+        /// corresponding message, if possible.
+        /// </summary>
+        /// <param name="groups">The new index groups bit mask.</param>
+        public void SetIndexGroupsMask(ulong groups)
+        {
+            if (groups == IndexGroupsMask)
+            {
+                return;
+            }
+
+            var oldMask = IndexGroupsMask;
+#if DEBUG
+            _indexGroupsMask = groups;
+#else
+            IndexGroupsMask = groups;
+#endif
+
+            if (Manager != null)
+            {
+                IndexGroupsChanged message;
+                message.Entity = Entity;
+
+                // Figure out which groups are new and which fell away.
+                message.AddedIndexGroups = groups & ~oldMask;
+                message.RemovedIndexGroups = oldMask & ~groups;
+
+                Manager.SendMessage(ref message);
+            }
         }
 
         /// <summary>
-        /// Sends a <code>IndexBoundsChanged</code> message, when possible.
-        /// Must be called whenever the index's bounds change.
+        /// Sets new bounds for the indexable, and emits the corresponding
+        /// message, if possible.
         /// </summary>
-        private void SendBoundsChanged()
+        /// <param name="bounds">The new bounds for the indexable.</param>
+        public void SetBounds(ref Rectangle bounds)
         {
+            if (Bounds.Equals(bounds))
+            {
+                return;
+            }
+
+#if DEBUG
+            _bounds = bounds;
+#else
+            Bounds = bounds;
+#endif
+
             if (Manager == null)
             {
                 return;
@@ -151,7 +171,13 @@ namespace Engine.ComponentSystem.Components
             IndexBoundsChanged message;
             message.Entity = Entity;
             message.Bounds = Bounds;
+
             Manager.SendMessage(ref message);
+        }
+        
+        public void SetBounds(Rectangle bounds)
+        {
+            SetBounds(ref bounds);
         }
 
         #endregion
@@ -168,7 +194,8 @@ namespace Engine.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(_indexGroups);
+                .Write(IndexGroupsMask)
+                .Write(Bounds);
         }
 
         /// <summary>
@@ -179,7 +206,8 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            _indexGroups = packet.ReadUInt64();
+            SetIndexGroupsMask(packet.ReadUInt64());
+            SetBounds(packet.ReadRectangle());
         }
 
         /// <summary>
@@ -191,7 +219,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(_indexGroups));
+            hasher.Put(BitConverter.GetBytes(IndexGroupsMask));
         }
 
         #endregion
@@ -206,7 +234,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", IndexGroups = " + _indexGroups;
+            return base.ToString() + ", IndexGroupsMask = " + IndexGroupsMask + ", Bounds = " + Bounds;
         }
 
         #endregion

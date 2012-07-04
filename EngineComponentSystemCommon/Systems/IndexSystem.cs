@@ -15,36 +15,6 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public sealed class IndexSystem : AbstractComponentSystem<Index>
     {
-        #region Constants
-
-        /// <summary>
-        /// The default group used if none is specified.
-        /// </summary>
-        public const byte DefaultIndexGroup = 0;
-
-        /// <summary>
-        /// The default group used if none is specified.
-        /// </summary>
-        public const ulong DefaultIndexGroupMask = 1ul;
-
-        /// <summary>
-        /// Minimum size of a node in our index as the required bit shift, i.e.
-        /// the actual minimum node size is <c>1 &lt;&lt; MinimumNodeSizeShift</c>.
-        /// </summary>
-        public const int MinimumNodeSizeShift = 7;
-
-        /// <summary>
-        /// Minimum size of a node in our index.
-        /// </summary>
-        public const int MinimumNodeSize = 1 << MinimumNodeSizeShift;
-
-        /// <summary>
-        /// Maximum entries per node in our index to use.
-        /// </summary>
-        private const int MaxEntriesPerNode = 30;
-
-        #endregion
-
         #region Group number distribution
 
         /// <summary>
@@ -82,6 +52,17 @@ namespace Engine.ComponentSystem.Systems
         #region Fields
 
         /// <summary>
+        /// The number of items in a single cell allowed before we try splitting it.
+        /// </summary>
+        private int _maxEntriesPerNode;
+
+        /// <summary>
+        /// The minimum bounds size of a node along an axis, used to stop splitting
+        /// at a defined accuracy.
+        /// </summary>
+        private int _minNodeBounds;
+
+        /// <summary>
         /// The actual indexes we're using, mapping entity positions to the
         /// entities, allowing faster range queries.
         /// </summary>
@@ -98,6 +79,24 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
+        #region Constructor
+
+        /// <summary>
+        /// Creates a new index system using the specified constraints for indexes.
+        /// </summary>
+        /// <param name="maxEntriesPerNode">The maximum number of entries per
+        /// node before the node will be split.</param>
+        /// <param name="minNodeBounds">The minimum bounds size of a node, i.e.
+        /// nodes of this size or smaller won't be split regardless of the
+        /// number of entries in them.</param>
+        public IndexSystem(int maxEntriesPerNode, int minNodeBounds)
+        {
+            _maxEntriesPerNode = maxEntriesPerNode;
+            _minNodeBounds = minNodeBounds;
+        }
+
+        #endregion
+
         #region Entity lookup
 
         /// <summary>
@@ -108,7 +107,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void Find(Vector2 query, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
+        public void Find(Vector2 query, float range, ref ICollection<int> list, ulong groups)
         {
             foreach (var tree in TreesForGroups(groups))
             {
@@ -126,7 +125,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void Find(ref Rectangle query, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
+        public void Find(ref Rectangle query, ref ICollection<int> list, ulong groups)
         {
             foreach (var tree in TreesForGroups(groups))
             {
@@ -153,7 +152,7 @@ namespace Engine.ComponentSystem.Systems
             {
                 if ((groups & 1) == 1 && _trees[index] == null)
                 {
-                    _trees[index] = new QuadTree<int>(MaxEntriesPerNode, MinimumNodeSize);
+                    _trees[index] = new QuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
                 }
                 groups = groups >> 1;
                 ++index;
@@ -225,7 +224,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component that was added.</param>
         protected override void OnComponentAdded(Index component)
         {
-            AddEntity(component.Entity, component.IndexGroups);
+            AddEntity(component.Entity, component.IndexGroupsMask);
         }
 
         /// <summary>
@@ -236,7 +235,7 @@ namespace Engine.ComponentSystem.Systems
         protected override void OnComponentRemoved(Index component)
         {
             // Remove from any indexes the entity was part of.
-            foreach (var tree in TreesForGroups(component.IndexGroups))
+            foreach (var tree in TreesForGroups(component.IndexGroupsMask))
             {
                 tree.Remove(component.Entity);
             }
@@ -295,7 +294,7 @@ namespace Engine.ComponentSystem.Systems
                 }
 
                 // Update all indexes the entity is part of.
-                foreach (var tree in TreesForGroups(index.IndexGroups))
+                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
                 {
                     tree.Update(ref bounds, changedMessage.Entity);
                 }
@@ -312,7 +311,7 @@ namespace Engine.ComponentSystem.Systems
                 }
 
                 // Update all indexes the component is part of.
-                foreach (var tree in TreesForGroups(index.IndexGroups))
+                foreach (var tree in TreesForGroups(index.IndexGroupsMask))
                 {
                     tree.Move(changedMessage.CurrentPosition, changedMessage.Entity);
                 }
@@ -337,6 +336,8 @@ namespace Engine.ComponentSystem.Systems
                         tree.Clear();
                     }
                 }
+                copy._maxEntriesPerNode = _maxEntriesPerNode;
+                copy._minNodeBounds = _minNodeBounds;
             }
             else
             {
@@ -353,7 +354,7 @@ namespace Engine.ComponentSystem.Systems
                 {
                     if (copy._trees[i] == null)
                     {
-                        copy._trees[i]  = new QuadTree<int>(MaxEntriesPerNode, MinimumNodeSize);
+                        copy._trees[i]  = new QuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
                     }
                     foreach (var entry in _trees[i])
                     {
@@ -425,9 +426,7 @@ namespace Engine.ComponentSystem.Systems
         {
             base.Update(gameTime, frame);
 
-#if DEBUG
             _numQueriesLastUpdate = 0;
-#endif
         }
 
 #endif

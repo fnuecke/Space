@@ -46,10 +46,10 @@ namespace Engine.Collections
         private readonly int _maxEntriesPerNode;
 
         /// <summary>
-        /// The minimum size of a grid cell, used to stop splitting at a
-        /// defined accuracy.
+        /// The minimum bounds size of a node along an axis, used to stop splitting
+        /// at a defined accuracy.
         /// </summary>
-        private readonly int _minBucketSize;
+        private readonly int _minNodeBounds;
 
         /// <summary>
         /// The current bounds of the tree. This is a dynamic value, adjusted
@@ -82,21 +82,21 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="maxEntriesPerNode">The maximum number of entries per
         /// node before the node will be split.</param>
-        /// <param name="minBucketSize">The minimum size of a bucket, i.e.
+        /// <param name="minNodeBounds">The minimum bounds size of a node, i.e.
         /// nodes of this size or smaller won't be split regardless of the
         /// number of entries in them.</param>
-        public QuadTree(int maxEntriesPerNode, int minBucketSize)
+        public QuadTree(int maxEntriesPerNode, int minNodeBounds)
         {
             if (maxEntriesPerNode < 1)
             {
                 throw new ArgumentException("Split count must be larger than zero.", "maxEntriesPerNode");
             }
-            if (minBucketSize < 1)
+            if (minNodeBounds < 1)
             {
-                throw new ArgumentException("Bucket size must be larger than zero.", "minBucketSize");
+                throw new ArgumentException("Bucket size must be larger than zero.", "minNodeBounds");
             }
             _maxEntriesPerNode = maxEntriesPerNode;
-            _minBucketSize = minBucketSize;
+            _minNodeBounds = minNodeBounds;
             _reusableEntryList = new List<Entry>(_maxEntriesPerNode + 1);
 
             Clear();
@@ -252,8 +252,8 @@ namespace Engine.Collections
             // If the tree is empty, restore the bounds to their defaults.
             if (Count == 0)
             {
-                _bounds.X = _bounds.Y = -_minBucketSize;
-                _bounds.Width = _bounds.Height = _minBucketSize << 1;
+                _bounds.X = _bounds.Y = -_minNodeBounds;
+                _bounds.Width = _bounds.Height = _minNodeBounds << 1;
             }
 
             return true;
@@ -276,8 +276,8 @@ namespace Engine.Collections
         public void Clear()
         {
             _root = new Node();
-            _bounds.X = _bounds.Y = -_minBucketSize;
-            _bounds.Width = _bounds.Height = _minBucketSize << 1;
+            _bounds.X = _bounds.Y = -_minNodeBounds;
+            _bounds.Width = _bounds.Height = _minNodeBounds << 1;
             _values.Clear();
         }
 
@@ -379,8 +379,8 @@ namespace Engine.Collections
             // child nodes.
             while (_bounds.X >= bounds.X ||
                 _bounds.Y >= bounds.Y ||
-                _bounds.Right <= bounds.Right ||
-                _bounds.Bottom <= bounds.Bottom)
+                _bounds.X + _bounds.Width <= bounds.X + bounds.Width ||
+                _bounds.Y + _bounds.Height <= bounds.Y + bounds.Height)
             {
                 // Check sectors for relocations. For existing child nodes
                 // of root (0, 1, 2, null)
@@ -565,7 +565,7 @@ namespace Engine.Collections
             // Should we split?
             if (!node.IsLeaf || // Already is split.
                 node.EntryCount <= _maxEntriesPerNode || // No reason to.
-                nodeBounds.Width <= _minBucketSize) // We can't (too small already).
+                nodeBounds.Width <= _minNodeBounds) // We can't (too small already).
             {
                 return;
             }
@@ -904,72 +904,32 @@ namespace Engine.Collections
 
         private void UpdateBounds(ref Rectangle newBounds, Entry entry)
         {
-            // Do a pre-check, if the node potentially changed.
-            //if (TestSameCell(entry.Bounds.X, entry.Bounds.Y, newBounds.X, newBounds.Y) &&
-            //    TestSameCell(entry.Bounds.X + entry.Bounds.Width, entry.Bounds.Y, newBounds.X + newBounds.Width, newBounds.Y) &&
-            //    TestSameCell(entry.Bounds.X, entry.Bounds.Y + entry.Bounds.Height, newBounds.X, newBounds.Y + newBounds.Height) &&
-            //    TestSameCell(entry.Bounds.X + entry.Bounds.Width, entry.Bounds.Y + entry.Bounds.Height, newBounds.X + newBounds.Width, newBounds.Y + newBounds.Height))
-            //{
-            //    // All corners of the bounds fall into the same minimal nodes, meaning
-            //    // the changes were definitely too small to change the node the entry
-            //    // is stored in. Update the position in the entry.
-            //    entry.Bounds = newBounds;
-            //}
-            //else
+            // Node may have changed. Get the node the entry is currently stored in.
+            var nodeBounds = _bounds;
+            var node = FindNode(ref entry.Bounds, _root, ref nodeBounds);
+
+            // Check if the entry should go to a different node now.
+            if (nodeBounds.X >= newBounds.X ||
+                nodeBounds.Y >= newBounds.Y ||
+                nodeBounds.X + nodeBounds.Width <= newBounds.X + newBounds.Width ||
+                nodeBounds.Y + nodeBounds.Height <= newBounds.Y + newBounds.Height ||
+                (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1))
             {
-                // Node may have changed. Get the node the entry is currently stored in.
-                var nodeBounds = _bounds;
-                var node = FindNode(ref entry.Bounds, _root, ref nodeBounds);
+                // Did not fit in node anymore or can be inserted into child node,
+                // remove from that node.
+                RemoveFromNode(node, entry);
 
-                // Check if the entry should go to a different node now.
-                if (nodeBounds.X >= newBounds.X ||
-                    nodeBounds.Y >= newBounds.Y ||
-                    nodeBounds.Right <= newBounds.Right ||
-                    nodeBounds.Bottom <= newBounds.Bottom ||
-                    (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1))
-                {
-                    // Did not fit in node anymore or can be inserted into child node,
-                    // remove from that node.
-                    RemoveFromNode(node, entry);
+                // Remove the entry from the value lookup.
+                _values.Remove(entry.Value);
 
-                    // Remove the entry from the value lookup.
-                    _values.Remove(entry.Value);
-
-                    // And add again.
-                    Add(ref newBounds, entry.Value);
-                }
-                else
-                {
-                    // Stays in the same node. Update the position in the entry.
-                    entry.Bounds = newBounds;
-                }
+                // And add again.
+                Add(ref newBounds, entry.Value);
             }
-        }
-
-        private bool TestSameCell(int x0, int y0, int x1, int y1)
-        {
-            // Test independently for x and y axis.
-            return TestSameCell(x0, x1) && TestSameCell(y0, y1);
-        }
-
-        private bool TestSameCell(int a, int b)
-        {
-            int na, nb;
-            if (Math.Abs(a - b) >= _minBucketSize - 1 || // Too far away, possibly on next split.
-                ComputeMinimalNode(a, out na) != ComputeMinimalNode(b, out nb)) // One on split, other isn't.
+            else
             {
-                return false;
+                // Stays in the same node. Update the position in the entry.
+                entry.Bounds = newBounds;
             }
-            // Test if the two would be in the same same.
-            return na == nb;
-        }
-
-        private bool ComputeMinimalNode(int x, out int node)
-        {
-            // Compute the minimal node the entry falls into.
-            node = x / _minBucketSize;
-            // And whether it falls on a split.
-            return x % _minBucketSize == 0;
         }
 
         #endregion
@@ -996,13 +956,13 @@ namespace Engine.Collections
 
             // Check if the bounds are on the splits.
             var midX = nodeBounds.X + halfNodeSize;
-            if (IsInInterval(entryBounds.Left, entryBounds.Right, midX))
+            if (IsInInterval(entryBounds.Left, entryBounds.X + entryBounds.Width, midX))
             {
                 // Y split runs through the bounds.
                 return -1;
             }
             var midY = nodeBounds.Y + halfNodeSize;
-            if (IsInInterval(entryBounds.Top, entryBounds.Bottom, midY))
+            if (IsInInterval(entryBounds.Top, entryBounds.Y + entryBounds.Height, midY))
             {
                 // X split runs through the bounds.
                 return -1;
@@ -1290,14 +1250,27 @@ namespace Engine.Collections
         /// <returns>How the two intersect.</returns>
         private static IntersectionType ComputeIntersection(ref Rectangle rectangle, ref Rectangle bounds)
         {
-            bool result;
-            rectangle.Intersects(ref bounds, out result);
-            if (!result)
+            var rr = rectangle.X + rectangle.Width;
+            var rb = rectangle.Y + rectangle.Height;
+            var br = bounds.X + bounds.Width;
+            var bb = bounds.Y + bounds.Height;
+            if (rectangle.X > br ||
+                rectangle.Y > bb ||
+                bounds.X > rr ||
+                bounds.Y > rb)
             {
                 return IntersectionType.Disjoint;
             }
-            rectangle.Contains(ref bounds, out result);
-            return result ? IntersectionType.Contains : IntersectionType.Intersects;
+
+            if (bounds.X >= rectangle.X &&
+                bounds.Y >= rectangle.Y &&
+                br <= rr &&
+                bb <= rb)
+            {
+                return IntersectionType.Contains;
+            }
+
+            return IntersectionType.Intersects;
         }
 
         #endregion

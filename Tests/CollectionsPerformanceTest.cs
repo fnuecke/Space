@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Collections;
-using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
@@ -41,6 +40,11 @@ namespace Tests
         private const int Area = CellSystem.CellSize * 3; // Normally active area.
 
         /// <summary>
+        /// Minimum bounds size to allow for nodes before stopping to split.
+        /// </summary>
+        private const int MinimumNodeSize = 64;
+
+        /// <summary>
         /// The maximum radius of a range query, and half the maximum
         /// extent of an area query.
         /// </summary>
@@ -70,25 +74,25 @@ namespace Tests
                 points.Add(Tuple.Create(i, random.NextVector(Area)));
             }
 
-            Console.WriteLine("Minimum node size for index structures is {0}.", IndexSystem.MinimumNodeSize);
-            Console.WriteLine("Rectangle sizes: {0}-{1}, {2}-{3}, {4}-{5}.", IndexSystem.MinimumNodeSize >> 2,
-                IndexSystem.MinimumNodeSize >> 1, IndexSystem.MinimumNodeSize, IndexSystem.MinimumNodeSize << 1,
-                IndexSystem.MinimumNodeSize << 2, IndexSystem.MinimumNodeSize << 3);
+            Console.WriteLine("Minimum node size for index structures is {0}.", MinimumNodeSize);
+            Console.WriteLine("Rectangle sizes: {0}-{1}, {2}-{3}, {4}-{5}.", MinimumNodeSize >> 2,
+                MinimumNodeSize >> 1, MinimumNodeSize, MinimumNodeSize << 1,
+                MinimumNodeSize << 2, MinimumNodeSize << 3);
 
             var smallRectangles = new List<Tuple<int, Rectangle>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                smallRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, IndexSystem.MinimumNodeSize >> 2, IndexSystem.MinimumNodeSize >> 1)));
+                smallRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, MinimumNodeSize >> 2, MinimumNodeSize >> 1)));
             }
             var mediumRectangles = new List<Tuple<int, Rectangle>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                mediumRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, IndexSystem.MinimumNodeSize, IndexSystem.MinimumNodeSize << 1)));
+                mediumRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, MinimumNodeSize, MinimumNodeSize << 1)));
             }
             var largeRectangles = new List<Tuple<int, Rectangle>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                largeRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, IndexSystem.MinimumNodeSize << 2, IndexSystem.MinimumNodeSize << 3)));
+                largeRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, MinimumNodeSize << 2, MinimumNodeSize << 3)));
             }
 
             // Wait for application to settle in.
@@ -99,7 +103,7 @@ namespace Tests
             foreach (var maxEntriesPerNode in QuadTreeMaxNodeEntries)
             {
                 Console.WriteLine("Running QuadTree test with maximum entries per node = {0}.", maxEntriesPerNode);
-                var tree = new QuadTree<int>(maxEntriesPerNode, IndexSystem.MinimumNodeSize);
+                var tree = new QuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
                 Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
             }
 
@@ -149,12 +153,12 @@ namespace Tests
 
             Console.WriteLine("Testing with medium rectangle data...");
             {
-                RunRectangles(index, smallRectangles);
+                RunRectangles(index, mediumRectangles);
             }
 
             Console.WriteLine("Testing with large rectangle data...");
             {
-                RunRectangles(index, smallRectangles);
+                RunRectangles(index, largeRectangles);
             }
         }
 

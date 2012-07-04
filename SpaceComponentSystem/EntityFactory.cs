@@ -73,7 +73,8 @@ namespace Space.ComponentSystem
             var entity = FactoryLibrary.SampleShip(manager, blueprint, faction, position, random);
 
             // Add to the index from which entities will automatically removed on cell death.
-            manager.GetComponent<Index>(entity).IndexGroups |=  CellSystem.CellDeathAutoRemoveIndexGroupMask;
+            var index = manager.GetComponent<Index>(entity);
+            index.SetIndexGroupsMask(index.IndexGroupsMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
 
             var input = manager.GetComponent<ShipControl>(entity);
             input.Stabilizing = true;

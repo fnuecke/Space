@@ -103,7 +103,7 @@ namespace Space.Control
                     // messages), but make sure we run them relatively early,
                     // because other systems may need their updates.
                     new AvatarSystem(),
-                    new IndexSystem(),
+                    new IndexSystem(30, 64),
                     new CharacterSystem<AttributeType>(),
                     new InventorySystem(), 
                     new StatusEffectSystem(),
