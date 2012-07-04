@@ -84,8 +84,11 @@ namespace Engine.ComponentSystem.Systems
             // entries from all those entries where we're not in
             // that group.
             ICollection<int> neighbors = _reusableNeighborList;
-            index.Find(component.Entity, _maxCollidableRadius, ref neighbors,
-                             (ulong)(~component.CollisionGroups) << FirstIndexGroup);
+            var bounds = component.ComputeBounds();
+            var translation = Manager.GetComponent<Transform>(component.Entity).Translation;
+            bounds.X = (int)translation.X - bounds.Width / 2;
+            bounds.Y = (int)translation.Y - bounds.Height / 2;
+            index.Find(ref bounds, ref neighbors, (ulong)(~component.CollisionGroups) << FirstIndexGroup);
             foreach (var neighbor in neighbors)
             {
                 Debug.Assert(neighbor != component.Entity);

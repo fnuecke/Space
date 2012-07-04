@@ -299,10 +299,18 @@ namespace Engine.ComponentSystem.Systems
                     return;
                 }
 
+                var bounds = changedMessage.Bounds;
+                var transform = Manager.GetComponent<Transform>(changedMessage.Entity);
+                if (transform != null)
+                {
+                    bounds.X = (int)transform.Translation.X - bounds.Width / 2;
+                    bounds.Y = (int)transform.Translation.Y - bounds.Height / 2;
+                }
+
                 // Update all indexes the entity is part of.
                 foreach (var tree in TreesForGroups(index.IndexGroups))
                 {
-                    tree.Update(ref changedMessage.Bounds, changedMessage.Entity);
+                    tree.Update(ref bounds, changedMessage.Entity);
                 }
             }
             else if (message is TranslationChanged)
