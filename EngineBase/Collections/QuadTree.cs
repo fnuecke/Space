@@ -172,34 +172,8 @@ namespace Engine.Collections
             // Get the old position.
             var entry = _values[value];
 
-            // Get the node the entry would be in.
-            var nodeBounds = _bounds;
-            var node = FindNode(ref entry.Bounds, _root, ref nodeBounds);
-
-            // Safety bounds (XNA's contains seems to differ from our definition of
-            // containment when running through FindNode, so if we don't do this we
-            // can get errors due to invalid decisions).
-            nodeBounds.Inflate(-1, -1);
-
-            // Check if the entry should go to a different node now.
-            if (!nodeBounds.Contains(newBounds) ||
-                (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1))
-            {
-                // Did not fit in node anymore or can be inserted into child node,
-                // remove from that node.
-                RemoveFromNode(node, entry);
-
-                // Remove the entry from the value lookup.
-                _values.Remove(entry.Value);
-
-                // And add again.
-                Add(ref newBounds, value);
-            }
-            else
-            {
-                // Stays in the same node. Update the position in the entry.
-                entry.Bounds = newBounds;
-            }
+            // Update tree.
+            UpdateBounds(ref newBounds, entry);
 
             return true;
         }
@@ -219,6 +193,37 @@ namespace Engine.Collections
         {
             var bounds = new Rectangle {X = (int)newPoint.X, Y = (int)newPoint.Y};
             return Update(ref bounds, value);
+        }
+
+        /// <summary>
+        /// Similar to <code>Update</code> this changes an entry's bounds. Unlike
+        /// <code>Update</code>, however, this just moves the bounds to the
+        /// specified location. The specified position is used as the new center
+        /// for the bounds.
+        /// </summary>
+        /// <param name="position">The new position of the bounds.</param>
+        /// <param name="value">The entry for which to update the bounds.</param>
+        /// <returns></returns>
+        public bool Move(Vector2 position, T value)
+        {
+            // Check if we have that entry, if not add it.
+            if (!Contains(value))
+            {
+                return false;
+            }
+
+            // Get the old position.
+            var entry = _values[value];
+
+            // Update bounds.
+            var newBounds = entry.Bounds;
+            newBounds.X = (int)position.X - newBounds.Width / 2;
+            newBounds.Y = (int)position.Y - newBounds.Height / 2;
+
+            // Update tree.
+            UpdateBounds(ref newBounds, entry);
+
+            return true;
         }
 
         /// <summary>
@@ -897,6 +902,76 @@ namespace Engine.Collections
             }
         }
 
+        private void UpdateBounds(ref Rectangle newBounds, Entry entry)
+        {
+            // Do a pre-check, if the node potentially changed.
+            //if (TestSameCell(entry.Bounds.X, entry.Bounds.Y, newBounds.X, newBounds.Y) &&
+            //    TestSameCell(entry.Bounds.X + entry.Bounds.Width, entry.Bounds.Y, newBounds.X + newBounds.Width, newBounds.Y) &&
+            //    TestSameCell(entry.Bounds.X, entry.Bounds.Y + entry.Bounds.Height, newBounds.X, newBounds.Y + newBounds.Height) &&
+            //    TestSameCell(entry.Bounds.X + entry.Bounds.Width, entry.Bounds.Y + entry.Bounds.Height, newBounds.X + newBounds.Width, newBounds.Y + newBounds.Height))
+            //{
+            //    // All corners of the bounds fall into the same minimal nodes, meaning
+            //    // the changes were definitely too small to change the node the entry
+            //    // is stored in. Update the position in the entry.
+            //    entry.Bounds = newBounds;
+            //}
+            //else
+            {
+                // Node may have changed. Get the node the entry is currently stored in.
+                var nodeBounds = _bounds;
+                var node = FindNode(ref entry.Bounds, _root, ref nodeBounds);
+
+                // Check if the entry should go to a different node now.
+                if (nodeBounds.X >= newBounds.X ||
+                    nodeBounds.Y >= newBounds.Y ||
+                    nodeBounds.Right <= newBounds.Right ||
+                    nodeBounds.Bottom <= newBounds.Bottom ||
+                    (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1))
+                {
+                    // Did not fit in node anymore or can be inserted into child node,
+                    // remove from that node.
+                    RemoveFromNode(node, entry);
+
+                    // Remove the entry from the value lookup.
+                    _values.Remove(entry.Value);
+
+                    // And add again.
+                    Add(ref newBounds, entry.Value);
+                }
+                else
+                {
+                    // Stays in the same node. Update the position in the entry.
+                    entry.Bounds = newBounds;
+                }
+            }
+        }
+
+        private bool TestSameCell(int x0, int y0, int x1, int y1)
+        {
+            // Test independently for x and y axis.
+            return TestSameCell(x0, x1) && TestSameCell(y0, y1);
+        }
+
+        private bool TestSameCell(int a, int b)
+        {
+            int na, nb;
+            if (Math.Abs(a - b) >= _minBucketSize - 1 || // Too far away, possibly on next split.
+                ComputeMinimalNode(a, out na) != ComputeMinimalNode(b, out nb)) // One on split, other isn't.
+            {
+                return false;
+            }
+            // Test if the two would be in the same same.
+            return na == nb;
+        }
+
+        private bool ComputeMinimalNode(int x, out int node)
+        {
+            // Compute the minimal node the entry falls into.
+            node = x / _minBucketSize;
+            // And whether it falls on a split.
+            return x % _minBucketSize == 0;
+        }
+
         #endregion
 
         #endregion
@@ -1426,6 +1501,18 @@ namespace Engine.Collections
             shape.SetCenter(translation.X + centerX, translation.Y + centerY);
             shape.SetSize(nodeSize - 1);
             shape.Draw();
+
+            if (node.FirstEntry != null)
+            {
+                var end = node.LastEntry.Next;
+                for (var entry = node.FirstEntry; entry != end; entry = entry.Next)
+                {
+                    var bounds = entry.Bounds;
+                    shape.SetCenter(translation.X + bounds.X + bounds.Width / 2f, translation.Y + bounds.Y + bounds.Height / 2f);
+                    shape.SetSize(bounds.Width, bounds.Height);
+                    shape.Draw();
+                }
+            }
 
             // Check for child nodes.
             for (var i = 0; i < 4; ++i)

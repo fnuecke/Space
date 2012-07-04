@@ -19,7 +19,7 @@ namespace Engine.ComponentSystem.Components
         #region Fields
         
         /// <summary>
-        /// The bounds of this box.
+        /// The bounds of this box. Do not change after initialization.
         /// </summary>
         public Vector2 Size;
 
@@ -37,6 +37,8 @@ namespace Engine.ComponentSystem.Components
 
             Size = ((CollidableBox)other).Size;
 
+            SendBoundsChanged();
+
             return this;
         }
 
@@ -51,6 +53,8 @@ namespace Engine.ComponentSystem.Components
 
             Size = size;
 
+            SendBoundsChanged();
+
             return this;
         }
 
@@ -63,11 +67,22 @@ namespace Engine.ComponentSystem.Components
             base.Reset();
 
             Size = Vector2.Zero;
+
+            SendBoundsChanged();
         }
 
         #endregion
 
         #region Intersection
+
+        /// <summary>
+        /// Computes the current minimal bounding box for this collidable.
+        /// </summary>
+        /// <returns>The minimal boundsing box for this object.</returns>
+        public override Rectangle ComputeBounds()
+        {
+            return new Rectangle { Height = (int)Size.X, Width = (int)Size.Y };
+        }
 
         /// <summary>
         /// Test if this collidable collides with the specified one.

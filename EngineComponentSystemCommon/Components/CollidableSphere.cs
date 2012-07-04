@@ -19,7 +19,7 @@ namespace Engine.ComponentSystem.Components
         #region Fields
         
         /// <summary>
-        /// The radius of this sphere.
+        /// The radius of this sphere. Must not be changed after initialization.
         /// </summary>
         public float Radius;
 
@@ -37,6 +37,8 @@ namespace Engine.ComponentSystem.Components
 
             Radius = ((CollidableSphere)other).Radius;
 
+            SendBoundsChanged();
+
             return this;
         }
 
@@ -49,7 +51,9 @@ namespace Engine.ComponentSystem.Components
         {
             Initialize(groups);
 
-            this.Radius = radius;
+            Radius = radius;
+
+            SendBoundsChanged();
 
             return this;
         }
@@ -63,11 +67,22 @@ namespace Engine.ComponentSystem.Components
             base.Reset();
 
             Radius = 0;
+
+            SendBoundsChanged();
         }
 
         #endregion
 
         #region Intersection
+
+        /// <summary>
+        /// Computes the current minimal bounding box for this collidable.
+        /// </summary>
+        /// <returns>The minimal boundsing box for this object.</returns>
+        public override Rectangle ComputeBounds()
+        {
+            return new Rectangle {Height = (int)(Radius * 2), Width = (int)(Radius * 2)};
+        }
 
         /// <summary>
         /// Test if this collidable collides with the specified one.

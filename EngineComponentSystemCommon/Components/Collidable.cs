@@ -1,4 +1,5 @@
 ﻿using System;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -70,9 +71,32 @@ namespace Engine.ComponentSystem.Components
             PreviousPosition = Vector2.Zero;
         }
 
+        /// <summary>
+        /// Sends a <code>CollidableBoundsChanged</code> message, when possible.
+        /// Must be called whenever the collidable's bounds change.
+        /// </summary>
+        protected void SendBoundsChanged()
+        {
+            if (Manager == null)
+            {
+                return;
+            }
+
+            CollidableBoundsChanged message;
+            message.Entity = Entity;
+            message.Bounds = ComputeBounds();
+            Manager.SendMessage(ref message);
+        }
+
         #endregion
 
         #region Intersection
+
+        /// <summary>
+        /// Computes the current minimal bounding box for this collidable.
+        /// </summary>
+        /// <returns>The minimal boundsing box for this object.</returns>
+        public abstract Rectangle ComputeBounds();
 
         /// <summary>
         /// Test if this collidable collides with the specified one.

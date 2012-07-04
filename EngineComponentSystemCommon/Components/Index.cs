@@ -23,19 +23,26 @@ namespace Engine.ComponentSystem.Components
             get { return _indexGroups; }
             set
             {
-                if (value != _indexGroups)
+                if (value == _indexGroups)
+                {
+                    return;
+                }
+
+                if (Manager != null)
                 {
                     // Figure out which groups are new.
                     IndexGroupsChanged message;
                     message.Entity = Entity;
                     message.AddedIndexGroups = value & ~_indexGroups;
                     message.RemovedIndexGroups = _indexGroups & ~value;
+
                     _indexGroups = value;
 
-                    if (Manager != null)
-                    {
-                        Manager.SendMessage(ref message);
-                    }
+                    Manager.SendMessage(ref message);
+                }
+                else
+                {
+                    _indexGroups = value;
                 }
             }
         }
@@ -69,7 +76,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="groups">The index groups.</param>
         public Index Initialize(ulong groups)
         {
-            this.IndexGroups = groups;
+            IndexGroups = groups;
 
             return this;
         }

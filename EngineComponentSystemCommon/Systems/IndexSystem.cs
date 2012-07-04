@@ -154,6 +154,11 @@ namespace Engine.ComponentSystem.Systems
 
         #region Utility methods
 
+        /// <summary>
+        /// Utility method used to create indexes flagged in the specified bit mask
+        /// if they don't already exist.
+        /// </summary>
+        /// <param name="groups">The groups to create index structures for.</param>
         private void EnsureIndexesExist(ulong groups)
         {
             var index = 0;
@@ -168,6 +173,13 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// Utility method that returns a list of all trees flagged in the
+        /// specified bit mask. Calling this a second time invalidates the
+        /// reference to a list returned by the previous call.
+        /// </summary>
+        /// <param name="groups">The groups to get the indexes for.</param>
+        /// <returns>A list of the specified indexes.</returns>
         private IEnumerable<IIndex<int>> TreesForGroups(ulong groups)
         {
             _reusableTreeList.Clear();
@@ -184,9 +196,50 @@ namespace Engine.ComponentSystem.Systems
             return _reusableTreeList;
         }
 
+        /// <summary>
+        /// Adds the specified entity to all indexes specified in groups.
+        /// </summary>
+        /// <param name="entity">The entity to add.</param>
+        /// <param name="groups">The indexes to add to.</param>
+        private void AddEntity(int entity, ulong groups)
+        {
+            // Make sure the indexes exists.
+            EnsureIndexesExist(groups);
+
+            // Compute the bounds for the indexable as well as possible.
+            var bounds = new Rectangle();
+            var collidable = Manager.GetComponent<Collidable>(entity);
+            if (collidable != null)
+            {
+                bounds = collidable.ComputeBounds();
+            }
+            var transform = Manager.GetComponent<Transform>(entity);
+            if (transform != null)
+            {
+                bounds.X = (int)transform.Translation.X - bounds.Width / 2;
+                bounds.Y = (int)transform.Translation.Y - bounds.Height / 2;
+            }
+
+            // Add the entity to all its indexes.
+            foreach (var tree in TreesForGroups(groups))
+            {
+                // Add to each group.
+                tree.Add(ref bounds, entity);
+            }
+        }
+
         #endregion
 
         #region Component removal handling
+
+        /// <summary>
+        /// Adds entities that got an index component to all their indexes.
+        /// </summary>
+        /// <param name="component">The component that was added.</param>
+        protected override void OnComponentAdded(Index component)
+        {
+            AddEntity(component.Entity, component.IndexGroups);
+        }
 
         /// <summary>
         /// Remove entities that had their index component removed from all
@@ -195,6 +248,7 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="component">The component.</param>
         protected override void OnComponentRemoved(Index component)
         {
+            // Remove from any indexes the entity was part of.
             foreach (var tree in TreesForGroups(component.IndexGroups))
             {
                 tree.Remove(component.Entity);
@@ -221,32 +275,42 @@ namespace Engine.ComponentSystem.Systems
                 // Do we have new groups?
                 if (changedMessage.AddedIndexGroups != 0)
                 {
-                    // Get the position to add at, if we need to add.
-                    var position = Manager.GetComponent<Transform>(changedMessage.Entity).Translation;
-
-                    EnsureIndexesExist(changedMessage.AddedIndexGroups);
-                    foreach (var tree in TreesForGroups(changedMessage.AddedIndexGroups))
-                    {
-                        tree.Add(position, changedMessage.Entity);
-                    }
+                    AddEntity(changedMessage.Entity, changedMessage.AddedIndexGroups);
                 }
 
                 // Do we have deprecated groups?
                 if (changedMessage.RemovedIndexGroups != 0)
                 {
+                    // Remove from each old group.
                     foreach (var tree in TreesForGroups(changedMessage.RemovedIndexGroups))
                     {
                         tree.Remove(changedMessage.Entity);
                     }
                 }
             }
+            else if (message is CollidableBoundsChanged)
+            {
+                var changedMessage = (CollidableBoundsChanged)(ValueType)message;
+                
+                // Check if the entity is indexable.
+                var index = Manager.GetComponent<Index>(changedMessage.Entity);
+                if (index == null)
+                {
+                    return;
+                }
+
+                // Update all indexes the entity is part of.
+                foreach (var tree in TreesForGroups(index.IndexGroups))
+                {
+                    tree.Update(ref changedMessage.Bounds, changedMessage.Entity);
+                }
+            }
             else if (message is TranslationChanged)
             {
-                var translationChanged = (TranslationChanged)(ValueType)message;
+                var changedMessage = (TranslationChanged)(ValueType)message;
 
-                // Get the index component of the object that changed its
-                // position. If it doesn't have one we have nothing to do.
-                var index = Manager.GetComponent<Index>(translationChanged.Entity);
+                // Check if the entity is indexable.
+                var index = Manager.GetComponent<Index>(changedMessage.Entity);
                 if (index == null)
                 {
                     return;
@@ -255,7 +319,7 @@ namespace Engine.ComponentSystem.Systems
                 // Update all indexes the component is part of.
                 foreach (var tree in TreesForGroups(index.IndexGroups))
                 {
-                    tree.Update(translationChanged.CurrentPosition, translationChanged.Entity);
+                    tree.Move(changedMessage.CurrentPosition, changedMessage.Entity);
                 }
             }
         }

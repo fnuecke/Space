@@ -301,6 +301,5 @@ namespace Space.ComponentSystem.Factories
         }
 
         #endregion
-
     }
 }

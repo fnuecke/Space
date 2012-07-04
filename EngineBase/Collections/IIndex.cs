@@ -60,6 +60,17 @@ namespace Engine.Collections
         bool Update(Vector2 newPoint, T value);
 
         /// <summary>
+        /// Similar to <code>Update</code> this changes an entry's bounds. Unlike
+        /// <code>Update</code>, however, this just moves the bounds to the
+        /// specified location. The specified position is used as the new center
+        /// for the bounds.
+        /// </summary>
+        /// <param name="position">The new position of the bounds.</param>
+        /// <param name="value">The entry for which to update the bounds.</param>
+        /// <returns></returns>
+        bool Move(Vector2 position, T value);
+
+        /// <summary>
         /// Remove the specified value from the tree.
         /// </summary>
         /// <param name="value">The value to remove.</param>
