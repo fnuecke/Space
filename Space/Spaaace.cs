@@ -425,6 +425,7 @@ namespace Space
         protected override void Update(GameTime gameTime)
         {
             // Update ingame input, sending commands where necessary.
+            _input.IsEnabled = !_console.IsOpen;
             _input.Update();
 
             // Update the rest of the game.

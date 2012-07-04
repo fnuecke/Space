@@ -39,18 +39,35 @@ namespace Space.Control
             private get { return _client; }
             set
             {
+                if (value == _client)
+                {
+                    return;
+                }
+
                 DetachListeners();
                 _client = value;
-                if (_client != null)
+
+                if (_client == null)
                 {
-                    _keyboard = ((IKeyboard)Client.Game.Services.GetService(typeof(IKeyboard)));
-                    _mouse = ((IMouse)Client.Game.Services.GetService(typeof(IMouse)));
-                    _gamepad = ((IGamePad)Client.Game.Services.GetService(typeof(IGamePad)));
-                    _client.Controller.Session.JoinResponse += (s, e) => AttachListeners();
-                    _client.Controller.Session.Disconnecting += (s, e) => DetachListeners();
-                    _client.Controller.Session.Disconnected += (s, e) => DetachListeners();
+                    return;
                 }
+
+                _keyboard = ((IKeyboard)Client.Game.Services.GetService(typeof(IKeyboard)));
+                _mouse = ((IMouse)Client.Game.Services.GetService(typeof(IMouse)));
+                _gamepad = ((IGamePad)Client.Game.Services.GetService(typeof(IGamePad)));
+                _client.Controller.Session.JoinResponse += (s, e) => AttachListeners();
+                _client.Controller.Session.Disconnecting += (s, e) => DetachListeners();
+                _client.Controller.Session.Disconnected += (s, e) => DetachListeners();
             }
+        }
+
+        /// <summary>
+        /// Whether processing input is currently enabled or not.
+        /// </summary>
+        public bool IsEnabled
+        {
+            get { return _isEnabled && Client != null && Client.Controller.Session.ConnectionState == ClientState.Connected; }
+            set { _isEnabled = value; }
         }
 
         #endregion
@@ -71,6 +88,11 @@ namespace Space.Control
         /// The game pad used for player input.
         /// </summary>
         private IGamePad _gamepad;
+
+        /// <summary>
+        /// Whether processing input is currently enabled or not.
+        /// </summary>
+        private bool _isEnabled;
 
         /// <summary>
         /// The time at which we last check whether the mouse had moved.
@@ -177,7 +199,7 @@ namespace Space.Control
 
         public void Update()
         {
-            if (Client == null || Client.Controller.Session.ConnectionState != ClientState.Connected)
+            if (!IsEnabled)
             {
                 return;
             }
@@ -234,7 +256,7 @@ namespace Space.Control
         /// </summary>
         private void HandleKeyPressed(Keys key)
         {
-            if (Settings.Instance.GameBindings.ContainsKey(key))
+            if (IsEnabled && Settings.Instance.GameBindings.ContainsKey(key))
             {
                 switch (Settings.Instance.GameBindings[key])
                 {
@@ -266,7 +288,7 @@ namespace Space.Control
         /// </summary>
         private void HandleKeyReleased(Keys key)
         {
-            if (Settings.Instance.GameBindings.ContainsKey(key))
+            if (IsEnabled && Settings.Instance.GameBindings.ContainsKey(key))
             {
                 switch (Settings.Instance.GameBindings[key])
                 {
@@ -330,6 +352,11 @@ namespace Space.Control
         /// </summary>
         private void HandleMousePressed(MouseButtons buttons)
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             if (buttons == MouseButtons.Left)
             {
                 Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
@@ -341,6 +368,11 @@ namespace Space.Control
         /// </summary>
         private void HandleMouseReleased(MouseButtons buttons)
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             if (buttons == MouseButtons.Left)
             {
                 Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
@@ -352,6 +384,11 @@ namespace Space.Control
         /// </summary>
         private void HandleMouseMoved(float x, float y)
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             // Get angle to middle of screen (position of our ship), which
             // will be our new target rotation.
             var rx = x - Client.Game.GraphicsDevice.Viewport.Width / 2f;
@@ -366,6 +403,11 @@ namespace Space.Control
         /// <param name="ticks"></param>
         private void HandleMouseWheelRotated(float ticks)
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             if (ticks > 0)
             {
                 Client.GetSystem<CameraSystem>().ZoomIn();
@@ -385,6 +427,11 @@ namespace Space.Control
         /// </summary>
         private void HandleGamePadPressed(Buttons buttons)
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             switch (buttons)
             {
                 case (Buttons.RightShoulder):
@@ -399,6 +446,11 @@ namespace Space.Control
         /// </summary>
         private void HandleGamePadReleased(Buttons buttons)
         {
+            if (!IsEnabled)
+            {
+                return;
+            }
+
             switch (buttons)
             {
                 case (Buttons.RightShoulder):
