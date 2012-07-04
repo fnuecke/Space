@@ -6,6 +6,7 @@ using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
 using Space.Control;
 
 namespace Space.View
@@ -14,7 +15,7 @@ namespace Space.View
     /// Renderer class that's responsible for drawing planet orbits for planets
     /// that are in range of the player's scanners.
     /// </summary>
-    sealed class Orbits
+    public sealed class Orbits
     {
         #region Constants
 
@@ -155,7 +156,7 @@ namespace Space.View
 
             // Loop through all our neighbors.
             ICollection<int> neighbors = _reusableNeighborList;
-            index.Find(position, radarRange, ref neighbors, Detectable.IndexGroupMask);
+            index.Find(position, radarRange, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {
                 // Get the components we need.

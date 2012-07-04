@@ -1,5 +1,4 @@
 ﻿using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -7,15 +6,6 @@ namespace Space.ComponentSystem.Components
 {
     public sealed class Detectable : Component
     {
-        #region Constants
-
-        /// <summary>
-        /// Index group to use for gravitational computations.
-        /// </summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
-
-        #endregion
-
         #region Properties
 
         /// <summary>

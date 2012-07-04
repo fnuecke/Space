@@ -141,7 +141,7 @@ namespace Space.Control
                     new EllipsePathSystem(),
 
                     // Check for collisions after positions have been updated.
-                    new CollisionSystem(1024),
+                    new CollisionSystem(10),
                     
                     // Check which cells are active after updating positions.
                     new CellSystem(),

@@ -1,19 +1,9 @@
-﻿using Engine.ComponentSystem.Systems;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 
 namespace Engine.ComponentSystem.Components
 {
-    public class Sound : Component
+    public sealed class Sound : Component
     {
-        #region Constants
-
-        /// <summary>
-        /// Index group to use for sound computations.
-        /// </summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
-
-        #endregion
-
         #region Fields
 
         /// <summary>

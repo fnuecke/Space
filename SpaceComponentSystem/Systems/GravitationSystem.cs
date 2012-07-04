@@ -12,6 +12,15 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class GravitationSystem : AbstractComponentSystem<Gravitation>
     {
+        #region Constants
+
+        /// <summary>
+        /// Index group to use for gravitational computations.
+        /// </summary>
+        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+
+        #endregion
+
         #region Single-Allocation
 
         /// <summary>
@@ -44,7 +53,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Then check all our neighbors.
                 ICollection<int> neighbors = _reusableNeighborList;
-                index.Find(myTransform.Translation, 2 << 13, ref neighbors, Gravitation.IndexGroupMask);
+                index.Find(myTransform.Translation, 2 << 13, ref neighbors, IndexGroupMask);
                 foreach (var neigbor in neighbors)
                 {
                     // If they have an enabled gravitation component...

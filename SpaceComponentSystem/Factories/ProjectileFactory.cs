@@ -2,6 +2,7 @@
 using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -138,22 +139,12 @@ namespace Space.ComponentSystem.Factories
                 manager.AddComponent<CollisionDamage>(entity).Initialize(weapon.Damage);
             }
 
-            ulong collisionIndexGroup = 0;
-            if (!CanBeShot)
-            {
-                collisionIndexGroup = Factions.Projectiles.ToCollisionIndexGroup();
-            }
-            if (weapon.Damage >= 0)
-            {
-                collisionIndexGroup |= faction.ToCollisionIndexGroup();
-            }
-            else if (weapon.Damage < 0)
-            {
-                // Negative damage = healing -> collide will all our allies.
-                collisionIndexGroup |= faction.Inverse().ToCollisionIndexGroup();
-            }
-            manager.AddComponent<Index>(entity).Initialize(collisionIndexGroup, (int)(CollisionRadius + CollisionRadius));
-            uint collisionGroup = faction.ToCollisionGroup();
+            manager.AddComponent<Index>(entity).
+                Initialize(CollisionSystem.IndexGroupMask,
+                           (int)(CollisionRadius + CollisionRadius));
+            var collisionGroup = (weapon.Damage >= 0)
+                                      ? faction.ToCollisionGroup()
+                                      : faction.Inverse().ToCollisionGroup();
             if (!CanBeShot)
             {
                 collisionGroup |= Factions.Projectiles.ToCollisionGroup();

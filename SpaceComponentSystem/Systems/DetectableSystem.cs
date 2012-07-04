@@ -11,6 +11,15 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class DetectableSystem : AbstractComponentSystem<Detectable>
     {
+        #region Constants
+
+        /// <summary>
+        /// Index group to use for gravitational computations.
+        /// </summary>
+        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+
+        #endregion
+
         #region Fields
         
         /// <summary>

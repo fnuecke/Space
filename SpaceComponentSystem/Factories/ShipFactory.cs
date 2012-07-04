@@ -3,10 +3,12 @@ using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
+using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
 using Space.Data;
 
 namespace Space.ComponentSystem.Factories
@@ -140,15 +142,6 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<TextureRenderer>(entity).Initialize(Texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));
             manager.AddComponent<ParticleEffects>(entity);
 
-            // Index component, to register with indexes used for other
-            // components.
-            manager.AddComponent<Index>(entity).Initialize(
-                Gravitation.IndexGroupMask |
-                Sound.IndexGroupMask |
-                Detectable.IndexGroupMask |
-                faction.ToCollisionIndexGroup(),
-                (int)(CollisionRadius + CollisionRadius));
-
             // Collision component, to allow colliding with other entities.
             manager.AddComponent<CollidableSphere>(entity)
                 .Initialize(CollisionRadius, faction.ToCollisionGroup());
@@ -157,11 +150,11 @@ namespace Space.ComponentSystem.Factories
             // belongs to.
             manager.AddComponent<Faction>(entity).Initialize(faction);
 
+            // Make it detectable by AI and show up on the radar.
+            manager.AddComponent<Detectable>(entity).Initialize("Textures/ship", true);
+
             // Controllers for maneuvering and shooting.
             manager.AddComponent<ShipInfo>(entity);
-
-            // Audio and display components.
-            manager.AddComponent<Detectable>(entity).Initialize("Textures/ship", true);
 
             // Create equipment slots.
             var equipment = manager.AddComponent<Equipment>(entity);
@@ -178,15 +171,24 @@ namespace Space.ComponentSystem.Factories
             // Add some character!
             manager.AddComponent<Character<AttributeType>>(entity);
 
-            // The the sound component for the thruster sound.
-            manager.AddComponent<Sound>(entity).Initialize("Thruster");
-
             // Do we drop stuff?
             if (ItemPool != null)
             {
                 manager.AddComponent<Drops>(entity).Initialize(ItemPool);
             }
-                
+
+            // The the sound component for the thruster sound.
+            manager.AddComponent<Sound>(entity).Initialize("Thruster");
+
+            // Index component, to register with indexes used for other
+            // components.
+            manager.AddComponent<Index>(entity).Initialize(
+                CollisionSystem.IndexGroupMask | // Can bump into other stuff.
+                DetectableSystem.IndexGroupMask | // Can be detected.
+                GravitationSystem.IndexGroupMask | // Can be attracted.
+                SoundSystem.IndexGroupMask, // Can make noise.
+                (int)(CollisionRadius + CollisionRadius));
+
             return entity;
         }
 

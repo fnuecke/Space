@@ -6,6 +6,7 @@ using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Data;
 using Space.Util;
@@ -17,7 +18,7 @@ namespace Space.View
     /// the overlay that displays icons for nearby but out-of-screen objects
     /// of interest (ones with a <c>Detectable</c> component).
     /// </summary>
-    internal sealed class Radar
+    public sealed class Radar
     {
         #region Types
 
@@ -208,7 +209,7 @@ namespace Space.View
 
             // Loop through all our neighbors.
             ICollection<int> neighbors = _reusableNeighborList;
-            index.Find(position, radarRange, ref neighbors, Detectable.IndexGroupMask);
+            index.Find(position, radarRange, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {
                 // Get the components we need.

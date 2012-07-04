@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors
 {
@@ -289,7 +290,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             // Look for evil neighbors, in particular suns and the like.
             var index = AI.Manager.GetSystem<IndexSystem>();
             ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
-            index.Find(position, MaxEscapeCheckDistance, ref neighbors, Detectable.IndexGroupMask);
+            index.Find(position, MaxEscapeCheckDistance, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {
                 // If it does damage we want to keep our distance.
@@ -331,7 +332,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             
             // Check all neighbors in normal flocking range.
             neighbors.Clear();
-            index.Find(position, FlockingThreshold, ref neighbors, Detectable.IndexGroupMask);
+            index.Find(position, FlockingThreshold, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {
                 // Ignore non-ships.

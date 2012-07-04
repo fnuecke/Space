@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
@@ -10,6 +11,20 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public class SoundSystem : AbstractSystem
     {
+        #region Constants
+
+        /// <summary>
+        /// Index group to use for sound computations.
+        /// </summary>
+        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
+
+        /// <summary>
+        /// The maximum distance from which sounds can be heard.
+        /// </summary>
+        private const float MaxSoundDistance = 5000;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -20,12 +35,12 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The sound listener to use for relative position.
         /// </summary>
-        protected readonly AudioListener Listener = new AudioListener();
+        private readonly AudioListener _listener = new AudioListener();
 
         /// <summary>
         /// The sound emitter to use for emitted sound positioning.
         /// </summary>
-        protected readonly AudioEmitter Emitter = new AudioEmitter();
+        private readonly AudioEmitter _emitter = new AudioEmitter();
 
         /// <summary>
         /// Whether this is the sound system thats doing the actual "rendering"
@@ -33,7 +48,28 @@ namespace Engine.ComponentSystem.Systems
         /// Draw is called for this instance. Only that system may actually
         /// play sounds.
         /// </summary>
-        protected bool IsDrawingInstance;
+        private bool _isDrawingInstance;
+
+        /// <summary>
+        /// All Currently playing sounds mapped to the entry id
+        /// </summary>
+        private Dictionary<int, Cue> _playingSounds = new Dictionary<int, Cue>();
+
+        #endregion
+
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused for iterating components. As its only used by the drawing
+        /// instance we don't need to clone it, so it can be readonly.
+        /// </summary>
+        private readonly List<int> _reusableNeighborList = new List<int>();
+
+        /// <summary>
+        /// Used to swap between this dict and the one assigned to _playingSounds
+        /// to avoid reallocating each update.
+        /// </summary>
+        private Dictionary<int, Cue> _reusablePlayingSounds = new Dictionary<int, Cue>();
 
         #endregion
 
@@ -49,13 +85,119 @@ namespace Engine.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
+        /// Check for sound in range and play.
+        /// </summary>
+        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
+        /// <param name="frame">The frame in which the update is applied.</param>
+        public override void Update(GameTime gameTime, long frame)
+        {
+            if (!_isDrawingInstance)
+            {
+                return;
+            }
+
+            var index = Manager.GetSystem<IndexSystem>();
+            if (index == null)
+            {
+                return;
+            }
+
+            // Update listener information.
+            var position = GetListenerPosition();
+            _listener.Position = ToV3(ref position);
+            var velocity = GetListenerVelocity();
+            _listener.Velocity = ToV3(ref velocity);
+
+            // Iterate all sounds in range of the listener. All sounds remaining
+            // in the current list of sounds playing will be stopped, as they are
+            // out of range. The ones in range will be removed from that list and
+            // added to our reusable list.
+            ICollection<int> neighbors = _reusableNeighborList;
+            index.Find(position, MaxSoundDistance, ref neighbors, IndexGroupMask);
+            foreach (var neighbor in neighbors)
+            {
+                // Get the sound component of the neighbor.
+                var sound = Manager.GetComponent<Sound>(neighbor);
+
+                // Skip this neighbor if its sound is not enabled.
+                if (!sound.Enabled)
+                {
+                    continue;
+                }
+
+                // Get sound position and velocity.
+                var emitterPosition = Manager.GetComponent<Transform>(neighbor).Translation;
+                // The velocity is optional, so we must check if it exists.
+                var neighborVelocity = Manager.GetComponent<Velocity>(neighbor);
+                var emitterVelocity = neighborVelocity != null ? neighborVelocity.Value : Vector2.Zero;
+
+                // Check whether to update or start playing.
+                if (_playingSounds.ContainsKey(neighbor))
+                {
+                    // We already know this one so just apply 3d effect.
+                    var cue = _playingSounds[neighbor];
+
+                    // Make sure cue is not stopped (how ever that may have happened...)
+                    if (!cue.IsStopped)
+                    {
+                        // Do not stop it.
+                        _playingSounds.Remove(neighbor);
+
+                        // Get position and velocity of emitter.
+                        _emitter.Position = ToV3(ref emitterPosition);
+                        _emitter.Velocity = ToV3(ref emitterVelocity);
+
+                        // Apply new surround effect.
+                        cue.Apply3D(_listener, _emitter);
+
+                        // Add it to the new list of playing sounds.
+                        _reusablePlayingSounds.Add(neighbor, cue);
+                    }
+                    else
+                    {
+                        // Dispose it. It will be restarted in the next update,
+                        // if still in range.
+                        cue.Dispose();
+                        // Don't dispose it again.
+                        _playingSounds.Remove(neighbor);
+                    }
+                }
+                else
+                {
+                    // Sound is not yet playing, start it.
+                    var cue = Play(sound.SoundName, ref emitterPosition, ref emitterVelocity);
+                    if (cue != null)
+                    {
+                        _reusablePlayingSounds.Add(neighbor, cue);
+                    }
+                }
+            }
+
+            // Clear for next update.
+            _reusableNeighborList.Clear();
+
+            // Stop all sound thats not in range.
+            foreach (var cue in _playingSounds)
+            {
+                cue.Value.Stop(AudioStopOptions.Immediate);
+                cue.Value.Dispose();
+            }
+            _playingSounds.Clear();
+
+            // Swap the two sound dictionaries.
+            var tmp = _reusablePlayingSounds;
+            _reusablePlayingSounds = _playingSounds;
+            _playingSounds = tmp;
+        }
+
+        /// <summary>
         /// Flags our system as the presenting instance.
         /// </summary>
         /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame that should be rendered.</param>
         public sealed override void Draw(GameTime gameTime, long frame)
         {
-            IsDrawingInstance = true;
+            _isDrawingInstance = true;
         }
 
         #endregion
@@ -73,7 +215,7 @@ namespace Engine.ComponentSystem.Systems
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
-            if (!IsDrawingInstance)
+            if (!_isDrawingInstance)
             {
                 return null;
             }
@@ -91,16 +233,16 @@ namespace Engine.ComponentSystem.Systems
                 return null;
             }
 
-            Listener.Position = ToV3(ref listenerPosition);
-            Listener.Velocity = ToV3(ref listenerVelocity);
+            _listener.Position = ToV3(ref listenerPosition);
+            _listener.Velocity = ToV3(ref listenerVelocity);
 
             // Get position and velocity of emitter.
-            Emitter.Position = ToV3(ref position);
-            Emitter.Velocity = ToV3(ref velocity);
+            _emitter.Position = ToV3(ref position);
+            _emitter.Velocity = ToV3(ref velocity);
 
             // Let there be sound!
             var cue = _soundBank.GetCue(soundCue);
-            cue.Apply3D(Listener, Emitter);
+            cue.Apply3D(_listener, _emitter);
             cue.Play();
 
             // Return cue for further usage.
@@ -171,7 +313,7 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         /// <param name="v2">The vector to convert.</param>
         /// <returns>The converted vector.</returns>
-        protected static Vector3 ToV3(ref Vector2 v2)
+        private static Vector3 ToV3(ref Vector2 v2)
         {
             Vector3 result;
             result.X = v2.X;
@@ -189,7 +331,7 @@ namespace Engine.ComponentSystem.Systems
             var copy = (SoundSystem)base.DeepCopy(into);
 
             // Mark as secondary system.
-            copy.IsDrawingInstance = false;
+            copy._isDrawingInstance = false;
 
             return copy;
         }

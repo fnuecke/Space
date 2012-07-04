@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 
 namespace Space.Data
@@ -116,7 +115,7 @@ namespace Space.Data
     {
         #region Lookup tables
 
-        private static Dictionary<Factions, int> _factionToPlayerNumber = new Dictionary<Factions, int>()
+        private static readonly Dictionary<Factions, int> FactionToPlayerNumber = new Dictionary<Factions, int>
         {
             { Factions.Player1, 0 },
             { Factions.Player2, 1 },
@@ -133,7 +132,7 @@ namespace Space.Data
 
         };
 
-        private static Dictionary<Factions, Color> _factionToColor = new Dictionary<Factions, Color>()
+        private static readonly Dictionary<Factions, Color> FactionToColor = new Dictionary<Factions, Color>
         {
             { Factions.Player1, Color.Red },
             { Factions.Player2, Color.Blue },
@@ -153,7 +152,7 @@ namespace Space.Data
             { Factions.Neutral, Color.White }
         };
 
-        private static Factions[] _playerNumberToFaction = new Factions[]
+        private static readonly Factions[] PlayerNumberToFaction = new[]
         {
             Factions.Player1,
             Factions.Player2,
@@ -191,9 +190,9 @@ namespace Space.Data
         /// <returns>The player number the faction represents.</returns>
         public static int ToPlayerNumber(this Factions faction)
         {
-            if (_factionToPlayerNumber.ContainsKey(faction))
+            if (FactionToPlayerNumber.ContainsKey(faction))
             {
-                return _factionToPlayerNumber[faction];
+                return FactionToPlayerNumber[faction];
             }
             else
             {
@@ -208,9 +207,9 @@ namespace Space.Data
         /// <returns>The color for the faction.</returns>
         public static Color ToColor(this Factions faction)
         {
-            if (_factionToColor.ContainsKey(faction))
+            if (FactionToColor.ContainsKey(faction))
             {
-                return _factionToColor[faction];
+                return FactionToColor[faction];
             }
             else
             {
@@ -227,17 +226,6 @@ namespace Space.Data
         public static uint ToCollisionGroup(this Factions factions)
         {
             return (uint)factions;
-        }
-
-        /// <summary>
-        /// Converts one or multiple factions to the collision group
-        /// <em>index</em> they belong to (index groups they belong to).
-        /// </summary>
-        /// <param name="factions">The factions to convert.</param>
-        /// <returns>The collision index group.</returns>
-        public static ulong ToCollisionIndexGroup(this Factions factions)
-        {
-            return (ulong)factions << CollisionSystem.FirstIndexGroup;
         }
 
         /// <summary>
@@ -270,9 +258,9 @@ namespace Space.Data
         /// <returns>The faction representing that player.</returns>
         public static Factions ToFaction(this int playerNumber)
         {
-            if (playerNumber >= 0 && playerNumber < _playerNumberToFaction.Length)
+            if (playerNumber >= 0 && playerNumber < PlayerNumberToFaction.Length)
             {
-                return _playerNumberToFaction[playerNumber];
+                return PlayerNumberToFaction[playerNumber];
             }
             else
             {

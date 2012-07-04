@@ -1,6 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -120,23 +121,36 @@ namespace Space.ComponentSystem.Factories
             var circumference = MathHelper.Pi * (3 * (a + b) - (float)Math.Sqrt((3 * a + b) * (a + 3 * b)));
             var period = circumference / travelSpeed * 60;
 
+            // Give it a position and rotation.
             manager.AddComponent<Transform>(entity).Initialize(manager.GetComponent<Transform>(center).Translation);
+
+            // Make it rotate.
             manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / 60);
+
+            // Make it move around its parent.
             manager.AddComponent<EllipsePath>(entity).Initialize(center, majorRadius, minorRadius, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);
-            manager.AddComponent<Index>(entity).
-                Initialize(Detectable.IndexGroupMask |
-                           Sound.IndexGroupMask |
-                           CellSystem.CellDeathAutoRemoveIndexGroupMask,
-                           (int)(planetRadius + planetRadius));
+
+            // Make it attract stuff if it has mass.
             if (mass > 0)
             {
                 manager.AddComponent<Gravitation>(entity).Initialize(Gravitation.GravitationTypes.Attractor, mass);
             }
 
+            // Make it detectable.
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
+
+            // Make it visible.
             manager.AddComponent<PlanetRenderer>(entity).Initialize(Texture, SurfaceTint, planetRadius, AtmosphereTint);
 
+            // Let it rap.
             manager.AddComponent<Sound>(entity).Initialize("Planet");
+
+            // Add to indexes for lookup.
+            manager.AddComponent<Index>(entity).Initialize(
+                DetectableSystem.IndexGroupMask | // Can be detected.
+                SoundSystem.IndexGroupMask | // Can make noise.
+                CellSystem.CellDeathAutoRemoveIndexGroupMask, // Will be removed when out of bounds.
+                (int)(planetRadius + planetRadius));
 
             return entity;
         }

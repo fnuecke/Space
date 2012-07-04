@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors
 {
@@ -49,7 +50,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
             var index = AI.Manager.GetSystem<IndexSystem>();
             ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
-            index.Find(position, AggroRange, ref neighbors, Detectable.IndexGroupMask);
+            index.Find(position, AggroRange, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {
                 // See if it has health. Otherwise don't bother attacking.

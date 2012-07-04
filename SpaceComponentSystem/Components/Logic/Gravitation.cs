@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -10,7 +9,7 @@ namespace Space.ComponentSystem.Components
     /// Component that takes care of entities working in a gravitational
     /// environment.
     /// </summary>
-    public class Gravitation : Component
+    public sealed class Gravitation : Component
     {
         #region Types
 
@@ -36,15 +35,6 @@ namespace Space.ComponentSystem.Components
             /// </summary>
             Attractee = 1 << 1
         }
-
-        #endregion
-
-        #region Constants
-
-        /// <summary>
-        /// Index group to use for gravitational computations.
-        /// </summary>
-        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 
@@ -87,8 +77,8 @@ namespace Space.ComponentSystem.Components
         /// <param name="mass">The mass.</param>
         public Gravitation Initialize(GravitationTypes type = GravitationTypes.Attractee, float mass = 1)
         {
-            this.GravitationType = type;
-            this.Mass = mass;
+            GravitationType = type;
+            Mass = mass;
 
             return this;
         }

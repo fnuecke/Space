@@ -1,6 +1,7 @@
 ﻿
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
@@ -58,25 +59,35 @@ namespace Space.ComponentSystem.Factories
             var mass = SampleMass(random);
 
             manager.AddComponent<Transform>(entity).Initialize(offset + cellCenter);
-            manager.AddComponent<Index>(entity).Initialize(
-                Detectable.IndexGroupMask |
-                Sound.IndexGroupMask |
-                CellSystem.CellDeathAutoRemoveIndexGroupMask |
-                Factions.Nature.ToCollisionIndexGroup(),
-                (int)(radius + radius));
+
+            // Make it attract stuff if it has mass.
             if (mass > 0)
             {
                 manager.AddComponent<Gravitation>(entity).Initialize(Gravitation.GravitationTypes.Attractor, mass);
             }
 
+            // Make it collidable.
             manager.AddComponent<CollidableSphere>(entity).Initialize(radius, Factions.Nature.ToCollisionGroup());
+
+            // Instantly kill stuff that touches a sun.
             manager.AddComponent<CollisionDamage>(entity).Initialize(1, float.MaxValue);
 
+            // Make it detectable.
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");
 
+            // Make it glow.
             manager.AddComponent<SunRenderer>(entity).Initialize(radius);
 
+            // Make it go whoooosh.
             manager.AddComponent<Sound>(entity).Initialize("Sun");
+
+            // Add to indexes for lookup.
+            manager.AddComponent<Index>(entity).Initialize(
+                CollisionSystem.IndexGroupMask | // Can be bumped into.
+                DetectableSystem.IndexGroupMask | // Can be detected.
+                SoundSystem.IndexGroupMask | // Can make noise.
+                CellSystem.CellDeathAutoRemoveIndexGroupMask, // Will be removed when out of bounds.
+                (int)(radius + radius));
 
             return entity;
         }
