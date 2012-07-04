@@ -417,7 +417,7 @@ namespace Engine.ComponentSystem.Systems
                 var quadTree = tree as QuadTree<int>;
                 if (quadTree != null)
                 {
-                    (quadTree).Draw(shape, translation);
+                    quadTree.Draw(shape, translation);
                 }
             }
         }

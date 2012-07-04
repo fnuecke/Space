@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Components.Logic;
 using Space.ComponentSystem.Messages;
 
 namespace Space.ComponentSystem.Systems
@@ -106,6 +107,13 @@ namespace Space.ComponentSystem.Systems
             else if (message is TranslationChanged)
             {
                 var changedMessage = ((TranslationChanged)(ValueType)message);
+
+                // Only remove entities marked for removal.
+                if (Manager.GetComponent<CellDeath>(changedMessage.Entity) == null)
+                {
+                    return;
+                }
+
                 // Check our new cell after the position change.
                 var position = changedMessage.CurrentPosition;
                 var cellId = CoordinateIds.Combine(

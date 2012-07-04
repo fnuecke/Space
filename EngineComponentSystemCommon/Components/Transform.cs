@@ -22,26 +22,28 @@ namespace Engine.ComponentSystem.Components
         /// make sure the <c>TranslationChanged</c> message is sent whenever
         /// this value changes.
         /// </remarks>
-        public Vector2 Translation { get { return _translation; } }
+        public Vector2 Translation
+#if DEBUG // Don't allow directly changing from outside.
+        {
+            get { return _translation; }
+        }
+        private Vector2 _translation;
+#else
+            ;
+#endif
 
         /// <summary>
         /// The angle of the current orientation.
         /// </summary>
-        public float Rotation { get { return _rotation; } }
-
-        #endregion
-
-        #region Fields
-
-        /// <summary>
-        /// Actual value for <c>Translation</c>.
-        /// </summary>
-        private Vector2 _translation;
-
-        /// <summary>
-        /// Actual value for <c>Rotation</c>.
-        /// </summary>
+        public float Rotation
+#if DEBUG // Don't allow directly changing from outside.
+        {
+            get { return _rotation; }
+        }
         private float _rotation;
+#else
+        ;
+#endif
 
         #endregion
 
@@ -56,8 +58,8 @@ namespace Engine.ComponentSystem.Components
             base.Initialize(other);
 
             var otherTransform = (Transform)other;
-            _translation = otherTransform.Translation;
-            _rotation = otherTransform.Rotation;
+            SetTranslation(otherTransform.Translation);
+            SetRotation(otherTransform.Rotation);
 
             return this;
         }
@@ -71,9 +73,8 @@ namespace Engine.ComponentSystem.Components
         {
             // Don't use setters because we don't want to trigger messages in
             // initialization.
-            _translation.X = translation.X;
-            _translation.Y = translation.Y;
-            _rotation = MathHelper.WrapAngle(rotation);
+            SetTranslation(ref translation);
+            SetRotation(MathHelper.WrapAngle(rotation));
 
             return this;
         }
@@ -108,8 +109,8 @@ namespace Engine.ComponentSystem.Components
         {
             base.Reset();
 
-            _translation = Vector2.Zero;
-            _rotation = 0;
+            SetTranslation(Vector2.Zero);
+            SetRotation(0);
         }
 
         #endregion
@@ -123,7 +124,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="y">The new y translation to add.</param>
         public void AddTranslation(float x, float y)
         {
-            SetTranslation(_translation.X + x, _translation.Y + y);
+            SetTranslation(Translation.X + x, Translation.Y + y);
         }
 
         /// <summary>
@@ -132,7 +133,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="value">The translation to add.</param>
         public void AddTranslation(ref Vector2 value)
         {
-            SetTranslation(_translation.X + value.X, _translation.Y + value.Y);
+            SetTranslation(Translation.X + value.X, Translation.Y + value.Y);
         }
 
         /// <summary>
@@ -155,23 +156,24 @@ namespace Engine.ComponentSystem.Components
         /// <param name="y">The new y coordinate.</param>
         public void SetTranslation(float x, float y)
         {
-#if DEBUG
-            if (float.IsNaN(x) || float.IsNaN(y))
-            {
-                throw new ArgumentException(float.IsNaN(x) ? "x" : "y");
-            }
-#endif
+            System.Diagnostics.Debug.Assert(!float.IsNaN(x));
+            System.Diagnostics.Debug.Assert(!float.IsNaN(y));
 
             if (Translation.X != x || Translation.Y != y)
             {
                 TranslationChanged message;
                 message.Entity = Entity;
-                message.PreviousPosition = _translation;
+                message.PreviousPosition = Translation;
 
+#if DEBUG
                 _translation.X = x;
                 _translation.Y = y;
+#else
+                Translation.X = x;
+                Translation.Y = y;
+#endif
 
-                message.CurrentPosition = _translation;
+                message.CurrentPosition = Translation;
 
                 if (Manager != null)
                 {
@@ -209,7 +211,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="value"></param>
         public void AddRotation(float value)
         {
-            SetRotation(_rotation + value);
+            SetRotation(Rotation + value);
         }
 
         /// <summary>
@@ -219,14 +221,13 @@ namespace Engine.ComponentSystem.Components
         /// <param name="value">The value.</param>
         public void SetRotation(float value)
         {
-#if DEBUG
-            if (float.IsNaN(value))
-            {
-                throw new ArgumentException("value");
-            }
-#endif
+            System.Diagnostics.Debug.Assert(!float.IsNaN(value));
 
+#if DEBUG
             _rotation = MathHelper.WrapAngle(value);
+#else
+            Rotation = MathHelper.WrapAngle(value);
+#endif
         }
 
         #endregion
@@ -243,8 +244,8 @@ namespace Engine.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(_translation)
-                .Write(_rotation);
+                .Write(Translation)
+                .Write(Rotation);
         }
 
         /// <summary>
@@ -255,8 +256,8 @@ namespace Engine.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            _translation = packet.ReadVector2();
-            _rotation = packet.ReadSingle();
+            SetTranslation(packet.ReadVector2());
+            SetRotation(packet.ReadSingle());
         }
 
         /// <summary>
@@ -268,9 +269,9 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
             
-            hasher.Put(BitConverter.GetBytes(_translation.X));
-            hasher.Put(BitConverter.GetBytes(_translation.Y));
-            hasher.Put(BitConverter.GetBytes(_rotation));
+            hasher.Put(BitConverter.GetBytes(Translation.X));
+            hasher.Put(BitConverter.GetBytes(Translation.Y));
+            hasher.Put(BitConverter.GetBytes(Rotation));
         }
 
         #endregion

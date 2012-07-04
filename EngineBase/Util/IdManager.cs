@@ -76,7 +76,7 @@ namespace Engine.Util
                 // now being the last newly created id.
                 // Doing this keeps the memory use of this instance as low as
                 // possible.
-                while (id == _nextId - 1)
+                while (id > 0 && id == _nextId - 1)
                 {
                     _reusableIds.Remove(id);
                     --_nextId;

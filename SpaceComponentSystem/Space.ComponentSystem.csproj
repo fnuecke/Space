@@ -84,6 +84,7 @@
     <Compile Include="Components\Items\ItemInfo.cs" />
     <Compile Include="Components\Items\SpaceItem.cs" />
     <Compile Include="Components\Logic\AbstractRegeneratingValue.cs" />
+    <Compile Include="Components\Logic\CellDeath.cs" />
     <Compile Include="Components\Logic\CollisionDamage.cs" />
     <Compile Include="Components\Logic\Drops.cs" />
     <Compile Include="Components\Logic\PlayerClass.cs" />
@@ -143,7 +144,6 @@
     <Compile Include="Components\Items\Shield.cs" />
     <Compile Include="Components\Items\Thruster.cs" />
     <Compile Include="Components\Items\Weapon.cs" />
-    <Compile Include="Factories\WorldConstraints.cs" />
     <Compile Include="Messages\CellStateChanged.cs" />
     <Compile Include="Messages\EntityDied.cs" />
     <Compile Include="Messages\WeaponFired.cs" />

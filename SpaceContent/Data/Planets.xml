@@ -9,8 +9,7 @@
       <Radius>250 to 550</Radius>
       <Mass>1500 to 2000</Mass>
       <RotationSpeed>1</RotationSpeed>
-      <MajorRadius>1</MajorRadius>
-      <MinorRadius>0.8</MinorRadius>
+      <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>0.1</AngleOffset>
       <TravelSpeed>8 to 12</TravelSpeed>
     </Item>
@@ -19,8 +18,7 @@
       <Texture>Textures/Planets/rock_02</Texture>
       <Radius>30 to 40</Radius>
       <RotationSpeed>0.1</RotationSpeed>
-      <MajorRadius>1</MajorRadius>
-      <MinorRadius>0.8</MinorRadius>
+      <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>0.1</AngleOffset>
       <TravelSpeed>12 to 16</TravelSpeed>
     </Item>
@@ -29,8 +27,7 @@
       <Texture>Textures/Planets/rock_02</Texture>
       <Radius>40 to 60</Radius>
       <RotationSpeed>0.2</RotationSpeed>
-      <MajorRadius>1</MajorRadius>
-      <MinorRadius>0.8</MinorRadius>
+      <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>0.1</AngleOffset>
       <TravelSpeed>8 to 12</TravelSpeed>
     </Item>
@@ -39,8 +36,7 @@
       <Texture>Textures/Planets/rock_02</Texture>
       <Radius>60 to 80</Radius>
       <RotationSpeed>0.3</RotationSpeed>
-      <MajorRadius>1</MajorRadius>
-      <MinorRadius>0.8</MinorRadius>
+      <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>0.1</AngleOffset>
       <TravelSpeed>6 to 8</TravelSpeed>
     </Item>
@@ -49,8 +45,7 @@
       <Texture>Textures/Planets/rock_02</Texture>
       <Radius>80 to 100</Radius>
       <RotationSpeed>0.4</RotationSpeed>
-      <MajorRadius>1</MajorRadius>
-      <MinorRadius>0.8</MinorRadius>
+      <Eccentricity>0.3 to 0.4</Eccentricity>
       <AngleOffset>0.1</AngleOffset>
       <TravelSpeed>4 to 6</TravelSpeed>
     </Item>

@@ -485,79 +485,99 @@ namespace Space.Session
         /// </summary>
         private int Restore0(int playerNumber, IManager manager)
         {
-            // Read the player's class and create the ship.
-            var playerClass = (PlayerClassType)_data.ReadByte();
-            PlayerClass = playerClass;
-
-            // Read the respawn position.
-            var position = _data.ReadVector2();
-
-            // Create the ship.
-            var avatar = EntityFactory.CreatePlayerShip(manager, playerClass, playerNumber, position);
-
-            // Get the elements we need to save.
-            var character = manager.GetComponent<Character<AttributeType>>(avatar);
-            var equipment = manager.GetComponent<Equipment>(avatar);
-            var inventory = manager.GetComponent<Inventory>(avatar);
-
-            // Restore character. Use special packetizer implementation only
-            // adjusting the actual character data, not the base data.
-            character.DepacketizeLocal(_data);
-
-            // Restore equipment.
-            int numItemTypes = _data.ReadInt32();
-            for (int i = 0; i < numItemTypes; i++)
+            int avatar = 0;
+            var items = new List<int>();
+            try
             {
-                var itemType = Type.GetType(_data.ReadString());
-                var slotCount = _data.ReadInt32();
+                // Read the player's class and create the ship.
+                var playerClass = (PlayerClassType)_data.ReadByte();
+                PlayerClass = playerClass;
 
-                // Reset equipment, remove entities that were previously
-                // equipped from the game (can't think of an occasion where
-                // this would happen, now, because this should only be done
-                // on game start, but just be on the safe side).
-                for (int j = 0; j < equipment.GetSlotCount(itemType); j++)
+                // Read the respawn position.
+                var position = _data.ReadVector2();
+
+                // Create the ship.
+                avatar = EntityFactory.CreatePlayerShip(manager, playerClass, playerNumber, position);
+
+                // Get the elements we need to save.
+                var character = manager.GetComponent<Character<AttributeType>>(avatar);
+                var equipment = manager.GetComponent<Equipment>(avatar);
+                var inventory = manager.GetComponent<Inventory>(avatar);
+
+                // Restore character. Use special packetizer implementation only
+                // adjusting the actual character data, not the base data.
+                character.DepacketizeLocal(_data);
+
+                // Restore equipment.
+                int numItemTypes = _data.ReadInt32();
+                for (int i = 0; i < numItemTypes; i++)
                 {
-                    var item = equipment.Unequip(itemType, j);
+                    var itemType = Type.GetType(_data.ReadString());
+                    var slotCount = _data.ReadInt32();
+
+                    // Reset equipment, remove entities that were previously
+                    // equipped from the game (can't think of an occasion where
+                    // this would happen, now, because this should only be done
+                    // on game start, but just be on the safe side).
+                    for (int j = 0; j < equipment.GetSlotCount(itemType); j++)
+                    {
+                        var item = equipment.Unequip(itemType, j);
+                        if (item.HasValue)
+                        {
+                            manager.RemoveEntity(item.Value);
+                        }
+                    }
+
+                    // Set restored slot count.
+                    equipment.SetSlotCount(itemType, slotCount);
+
+                    // Read items and equip them.
+                    int numItemsOfType = _data.ReadInt32();
+                    for (int j = 0; j < numItemsOfType; j++)
+                    {
+                        int slot = _data.ReadInt32();
+                        var item = manager.DepacketizeEntity(_data);
+                        items.Add(item);
+                        equipment.Equip(slot, item);
+                    }
+                }
+
+                // Restore inventory, clear it first. As with the equipment, remove
+                // any old items, if there were any.
+                for (int i = inventory.Capacity - 1; i >= 0; --i)
+                {
+                    var item = inventory[i];
                     if (item.HasValue)
                     {
                         manager.RemoveEntity(item.Value);
                     }
                 }
 
-                // Set restored slot count.
-                equipment.SetSlotCount(itemType, slotCount);
-
-                // Read items and equip them.
-                int numItemsOfType = _data.ReadInt32();
-                for (int j = 0; j < numItemsOfType; j++)
+                // Then read back the stored items.
+                int numInventoryItems = _data.ReadInt32();
+                for (int i = 0; i < numInventoryItems; i++)
                 {
-                    int slot = _data.ReadInt32();
+                    var slot = _data.ReadInt32();
                     var item = manager.DepacketizeEntity(_data);
-                    equipment.Equip(slot, item);
+                    items.Add(item);
+                    inventory.Insert(slot, item);
                 }
-            }
 
-            // Restore inventory, clear it first. As with the equipment, remove
-            // any old items, if there were any.
-            for (int i = inventory.Capacity - 1; i >= 0; --i)
+                return avatar;
+            }
+            catch (Exception)
             {
-                var item = inventory[i];
-                if (item.HasValue)
+                // Clean up what we created.
+                if (avatar > 0)
                 {
-                    manager.RemoveEntity(item.Value);
+                    manager.RemoveEntity(avatar);
                 }
+                foreach (var item in items)
+                {
+                    manager.RemoveEntity(item);
+                }
+                throw;
             }
-
-            // Then read back the stored items.
-            int numInventoryItems = _data.ReadInt32();
-            for (int i = 0; i < numInventoryItems; i++)
-            {
-                var slot = _data.ReadInt32();
-                var item = manager.DepacketizeEntity(_data);
-                inventory.Insert(slot, item);
-            }
-
-            return avatar;
         }
 
         #endregion

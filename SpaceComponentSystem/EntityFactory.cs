@@ -6,6 +6,7 @@ using Engine.ComponentSystem.RPG.Components;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Components.Logic;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
 using Space.ComponentSystem.Util;
@@ -72,9 +73,11 @@ namespace Space.ComponentSystem
         {
             var entity = FactoryLibrary.SampleShip(manager, blueprint, faction, position, random);
 
-            // Add to the index from which entities will automatically removed on cell death.
+            // Add to the index from which entities will automatically removed
+            // on cell death and mark it (for translation checks into empty space).
             var index = manager.GetComponent<Index>(entity);
             index.SetIndexGroupsMask(index.IndexGroupsMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
+            manager.AddComponent<CellDeath>(entity);
 
             var input = manager.GetComponent<ShipControl>(entity);
             input.Stabilizing = true;

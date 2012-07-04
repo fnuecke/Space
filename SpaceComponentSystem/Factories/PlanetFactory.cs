@@ -57,18 +57,10 @@ namespace Space.ComponentSystem.Factories
         public Interval<float> RotationSpeed = Interval<float>.Zero;
 
         /// <summary>
-        /// The major radius of generated planets' orbits. This is scaled
-        /// based on the actual oribiting distance to the sun, which is
-        /// determined in the sun system factory.
+        /// The eccentricity of generated planets' orbits. A value of
+        /// 0 means it's a circle, 1 means it's totally flat (a line).
         /// </summary>
-        public Interval<float> MajorRadius;
-
-        /// <summary>
-        /// The minor radius of generated planets' orbits. This is scaled
-        /// based on the actual oribiting distance to the sun, which is
-        /// determined in the sun system factory.
-        /// </summary>
-        public Interval<float> MinorRadius;
+        public Interval<float> Eccentricity;
 
         /// <summary>
         /// The offset from the base orbiting angle of the sun system.
@@ -104,20 +96,29 @@ namespace Space.ComponentSystem.Factories
             var planetRadius = SampleRadius(random);
             var rotationSpeed = SampleRotationSpeed(random);
             var mass = SampleMass(random);
-            var majorRadius = SampleMajorRadius(random);
-            var minorRadius = SampleMinorRadius(random);
+            var eccentricity = SampleEccentricity(random);
             var angleOffset = SampleAngleOffset(random);
             var travelSpeed = SampleTravelSpeed(random);
             var periodOffet = (float)random.NextDouble();
 
-            // Scale radii.
-            var radiusScale = (radius + radius) / (majorRadius + minorRadius);
-            majorRadius *= radiusScale;
-            minorRadius *= radiusScale;
+            // Compute major radius and focus distance for an ellipse fitting
+            // inside a unit circle with the focus point as its center.
+            // We know that e = f/a and because of the unit circle assumption
+            // with the focus as its center it must follow that a + f = 1.
+            var a = 1 / (1 + eccentricity);
+            var f = 1 - a;
+
+            // We can the compute the minor radius for that very ellipse. We
+            // know that f = sqrt(a * a - b * b), which can be transformed to
+            // b = sqrt(a * a - f * f).
+            var b = (float)Math.Sqrt(a * a - f * f);
+
+            // We then scale the minor and major radii to fit into our actual
+            // orbit radius.
+            a *= radius;
+            b *= radius;
 
             // Get period. Figure out circumference using Ramanujan's approximation.
-            var a = majorRadius;
-            var b = minorRadius;
             var circumference = MathHelper.Pi * (3 * (a + b) - (float)Math.Sqrt((3 * a + b) * (a + 3 * b)));
             var period = circumference / travelSpeed * 60;
 
@@ -128,7 +129,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / 60);
 
             // Make it move around its parent.
-            manager.AddComponent<EllipsePath>(entity).Initialize(center, majorRadius, minorRadius, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);
+            manager.AddComponent<EllipsePath>(entity).Initialize(center, a, b, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);
 
             // Make it attract stuff if it has mass.
             if (mass > 0)
@@ -178,25 +179,14 @@ namespace Space.ComponentSystem.Factories
         }
 
         /// <summary>
-        /// Samples the major radius of this planet's orbit.
+        /// Samples the eccentricity of this planet's orbit.
         /// </summary>
         /// <param name="random">The randomizer to use.</param>
         /// <returns>The sampled major radius.</returns>
-        private float SampleMajorRadius(IUniformRandom random)
+        private float SampleEccentricity(IUniformRandom random)
         {
-            return (random == null) ? MajorRadius.Low
-                : MathHelper.Lerp(MajorRadius.Low, MajorRadius.High, (float)random.NextDouble());
-        }
-
-        /// <summary>
-        /// Samples the minor radius of this planet's orbit.
-        /// </summary>
-        /// <param name="random">The randomizer to use.</param>
-        /// <returns>The sampled minor radius.</returns>
-        private float SampleMinorRadius(IUniformRandom random)
-        {
-            return (random == null) ? MinorRadius.Low
-                : MathHelper.Lerp(MinorRadius.Low, MinorRadius.High, (float)random.NextDouble());
+            return (random == null) ? Eccentricity.Low
+                : MathHelper.Lerp(Eccentricity.Low, Eccentricity.High, (float)random.NextDouble());
         }
 
         /// <summary>
