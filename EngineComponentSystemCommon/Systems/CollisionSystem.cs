@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
@@ -22,6 +20,11 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         public static readonly byte FirstIndexGroup = IndexSystem.GetGroups(32);
 
+        /// <summary>
+        /// The mask covering all indexes that are used by the collision system.
+        /// </summary>
+        public static readonly ulong CollisionIndexGroupMask = 0xFFFFFFFFul << FirstIndexGroup;
+
         #endregion
 
         #region Fields
@@ -40,12 +43,6 @@ namespace Engine.ComponentSystem.Systems
         /// </summary>
         private HashSet<int> _reusableNeighborList = new HashSet<int>();
 
-        /// <summary>
-        /// Used to track which pairs of entities we already checked collision
-        /// for, so as to not do get duplicate messages.
-        /// </summary>
-        private HashSet<ulong> _performedChecks = new HashSet<ulong>();
-        
         #endregion
 
         #region Constructor
@@ -69,68 +66,95 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="frame">The frame.</param>
         public override void Update(GameTime gameTime, long frame)
         {
-            base.Update(gameTime, frame);
-
-            // Clear for next iteration.
-            _performedChecks.Clear();
-        }
-
-        protected override void UpdateComponent(GameTime gameTime, long frame, Collidable component)
-        {
             var index = Manager.GetSystem<IndexSystem>();
-
-            // Get a list of components actually nearby.
-            // Use the inverse of the collision group, i.e. get
-            // entries from all those entries where we're not in
-            // that group.
             ICollection<int> neighbors = _reusableNeighborList;
-            var bounds = component.ComputeBounds();
-            var translation = Manager.GetComponent<Transform>(component.Entity).Translation;
-            bounds.X = (int)translation.X - bounds.Width / 2;
-            bounds.Y = (int)translation.Y - bounds.Height / 2;
-            index.Find(ref bounds, ref neighbors, (ulong)(~component.CollisionGroups) << FirstIndexGroup);
-            foreach (var neighbor in neighbors)
+
+            _updatingComponents.AddRange(_components);
+            for (var i = 0; i < _updatingComponents.Count; ++i)
             {
-                Debug.Assert(neighbor != component.Entity);
-
-                // Test if we really need to do this check, or if it has been
-                // handled before. We do this by keeping track of the paired
-                // entity ids (packed together in one ulong).
-                var permutation = CoordinateIds.Combine(neighbor, component.Entity);
-
-                // We store tuples of (a, b), where a is an entity we already
-                // ran through. So what we need to look for are tuples that
-                // are actually (b, a), because b will be then be an entity
-                // that has *potentially* already been checked.
-                if (_performedChecks.Contains(permutation))
+                var component1 = _updatingComponents[i];
+                if (!component1.Enabled)
                 {
-                    // Already did that check, skip it.
                     continue;
                 }
-
-                // Not checked yet, push this permutation.
-                _performedChecks.Add(CoordinateIds.Combine(component.Entity, neighbor));
-
-                // Then do the actual work.
-                TestCollision(component, Manager.GetComponent<Collidable>(neighbor));
-
-                // Stop if the component was invalidated.
-                if (!component.Enabled)
+                var bounds = component1.ComputeBounds();
+                var translation = Manager.GetComponent<Transform>(component1.Entity).Translation;
+                bounds.X = (int)translation.X - bounds.Width / 2;
+                bounds.Y = (int)translation.Y - bounds.Height / 2;
+                index.Find(ref bounds, ref neighbors, CollisionIndexGroupMask & ((ulong)(~component1.CollisionGroups) << FirstIndexGroup));
+                for (var j = i + 1; j < _updatingComponents.Count; ++j)
                 {
-                    // Clear the list for the next iteration (and after the
-                    // iteration so we don't keep references to stuff).
-                    _reusableNeighborList.Clear();
-                    return;
+                    var component2 = _updatingComponents[j];
+                    if (!component2.Enabled)
+                    {
+                        continue;
+                    }
+                    if (neighbors.Contains(component2.Entity))
+                    {
+                        TestCollision(component1, component2);
+                    }
                 }
+                _reusableNeighborList.Clear();
             }
-
-            // Clear the list for the next iteration (and after the
-            // iteration so we don't keep references to stuff).
-            _reusableNeighborList.Clear();
-
-            // Update the components previous position for the next sweep test.
-            component.PreviousPosition = Manager.GetComponent<Transform>(component.Entity).Translation;
+            _updatingComponents.Clear();
         }
+
+        //protected override void UpdateComponent(GameTime gameTime, long frame, Collidable component)
+        //{
+        //    var index = Manager.GetSystem<IndexSystem>();
+
+        //    // Get a list of components actually nearby.
+        //    // Use the inverse of the collision group, i.e. get
+        //    // entries from all those entries where we're not in
+        //    // that group.
+        //    ICollection<int> neighbors = _reusableNeighborList;
+        //    var bounds = component.ComputeBounds();
+        //    var translation = Manager.GetComponent<Transform>(component.Entity).Translation;
+        //    bounds.X = (int)translation.X - bounds.Width / 2;
+        //    bounds.Y = (int)translation.Y - bounds.Height / 2;
+        //    index.Find(ref bounds, ref neighbors, (ulong)(~component.CollisionGroups) << FirstIndexGroup);
+        //    foreach (var neighbor in neighbors)
+        //    {
+        //        Debug.Assert(neighbor != component.Entity);
+
+        //        // Test if we really need to do this check, or if it has been
+        //        // handled before. We do this by keeping track of the paired
+        //        // entity ids (packed together in one ulong).
+        //        var permutation = CoordinateIds.Combine(neighbor, component.Entity);
+
+        //        // We store tuples of (a, b), where a is an entity we already
+        //        // ran through. So what we need to look for are tuples that
+        //        // are actually (b, a), because b will be then be an entity
+        //        // that has *potentially* already been checked.
+        //        if (_performedChecks.Contains(permutation))
+        //        {
+        //            // Already did that check, skip it.
+        //            continue;
+        //        }
+
+        //        // Not checked yet, push this permutation.
+        //        _performedChecks.Add(CoordinateIds.Combine(component.Entity, neighbor));
+
+        //        // Then do the actual work.
+        //        TestCollision(component, Manager.GetComponent<Collidable>(neighbor));
+
+        //        // Stop if the component was invalidated.
+        //        if (!component.Enabled)
+        //        {
+        //            // Clear the list for the next iteration (and after the
+        //            // iteration so we don't keep references to stuff).
+        //            _reusableNeighborList.Clear();
+        //            return;
+        //        }
+        //    }
+
+        //    // Clear the list for the next iteration (and after the
+        //    // iteration so we don't keep references to stuff).
+        //    _reusableNeighborList.Clear();
+
+        //    // Update the components previous position for the next sweep test.
+        //    component.PreviousPosition = Manager.GetComponent<Transform>(component.Entity).Translation;
+        //}
 
         /// <summary>
         /// Performs a collision check between the two given collidable
@@ -166,7 +190,6 @@ namespace Engine.ComponentSystem.Systems
             if (copy != into)
             {
                 copy._reusableNeighborList = new HashSet<int>();
-                copy._performedChecks = new HashSet<ulong>();
             }
 
             return copy;

@@ -124,9 +124,9 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / 60);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, majorRadius, minorRadius, angle + angleOffset, period, MathHelper.TwoPi * periodOffet);
             manager.AddComponent<Index>(entity).
-                Initialize(Detectable.IndexGroup |
-                           Sound.IndexGroup |
-                           CellSystem.CellDeathAutoRemoveIndex,
+                Initialize(Detectable.IndexGroupMask |
+                           Sound.IndexGroupMask |
+                           CellSystem.CellDeathAutoRemoveIndexGroupMask,
                            (int)(planetRadius + planetRadius));
             if (mass > 0)
             {

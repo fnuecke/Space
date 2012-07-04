@@ -143,9 +143,9 @@ namespace Space.ComponentSystem.Factories
             // Index component, to register with indexes used for other
             // components.
             manager.AddComponent<Index>(entity).Initialize(
-                Gravitation.IndexGroup |
-                Sound.IndexGroup |
-                Detectable.IndexGroup |
+                Gravitation.IndexGroupMask |
+                Sound.IndexGroupMask |
+                Detectable.IndexGroupMask |
                 faction.ToCollisionIndexGroup(),
                 (int)(CollisionRadius + CollisionRadius));
 

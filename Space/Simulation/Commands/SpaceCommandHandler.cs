@@ -309,13 +309,14 @@ def setBaseStat(type, value):
             // Get the inventory of the player and the index system.
             var inventory = manager.GetComponent<Inventory>(avatar.Value);
             var index = manager.GetSystem<IndexSystem>();
+            var transform = manager.GetComponent<Transform>(avatar.Value);
 
             // We may be called from a multi threaded environment (TSS), so
             // lock this shared list.
             lock (ReusableItemList)
             {
                 ICollection<int> neighbors = ReusableItemList;
-                index.Find(avatar.Value, 100, ref neighbors, Item.IndexGroup);
+                index.Find(transform.Translation, 100, ref neighbors, Item.IndexGroupMask);
                 foreach (var item in neighbors)
                 {
                     // Pick the item up.

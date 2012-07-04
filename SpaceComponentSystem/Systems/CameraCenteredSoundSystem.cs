@@ -95,7 +95,7 @@ namespace Space.ComponentSystem.Systems
             // out of range. The ones in range will be removed from that list and
             // added to our reusable list.
             ICollection<int> neighbors = _reusableNeighborList;
-            index.Find(position, MaxSoundDistance, ref neighbors, Sound.IndexGroup);
+            index.Find(position, MaxSoundDistance, ref neighbors, Sound.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {
                 // Get the sound component of the neighbor.

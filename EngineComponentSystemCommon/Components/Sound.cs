@@ -10,7 +10,7 @@ namespace Engine.ComponentSystem.Components
         /// <summary>
         /// Index group to use for sound computations.
         /// </summary>
-        public static readonly ulong IndexGroup = 1ul << IndexSystem.GetGroup();
+        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 

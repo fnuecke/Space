@@ -17,7 +17,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Index group that tracks items
         /// </summary>
-        public static readonly ulong IndexGroup = 1ul << IndexSystem.GetGroup();
+        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 

@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Systems
         /// Index used to track entities that should automatically be removed
         /// when a cell dies, and they are in that cell.
         /// </summary>
-        public static readonly ulong CellDeathAutoRemoveIndex = 1ul << IndexSystem.GetGroup();
+        public static readonly ulong CellDeathAutoRemoveIndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         /// <summary>
         /// The time to wait before actually killing of a cell after it has
@@ -208,7 +208,7 @@ namespace Space.ComponentSystem.Systems
                 cellBounds.Width = CellSize;
                 cellBounds.Height = CellSize;
                 ICollection<int> neighbors = _reusableEntityList;
-                Manager.GetSystem<IndexSystem>().Find(ref cellBounds, ref neighbors, CellDeathAutoRemoveIndex);
+                Manager.GetSystem<IndexSystem>().Find(ref cellBounds, ref neighbors, CellDeathAutoRemoveIndexGroupMask);
                 foreach (var neighbor in neighbors)
                 {
                     Manager.RemoveEntity(neighbor);

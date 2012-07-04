@@ -29,7 +29,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
-        private HashSet<TComponent> _components = new HashSet<TComponent>();
+        protected HashSet<TComponent> _components = new HashSet<TComponent>();
 
         #endregion
 
@@ -39,7 +39,7 @@ namespace Engine.ComponentSystem.Systems
         /// Reused for iterating components when updating, to avoid
         /// modifications to the list of components breaking the update.
         /// </summary>
-        private List<TComponent> _updatingComponents = new List<TComponent>();
+        protected List<TComponent> _updatingComponents = new List<TComponent>();
 
         #endregion
 

@@ -103,19 +103,6 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Get all entities in the specified range of the query point.
         /// </summary>
-        /// <param name="entity">The entity to use as a query point.</param>
-        /// <param name="range">The distance up to which to get neighbors.</param>
-        /// <param name="list">The list to use for storing the results.</param>
-        /// <param name="groups">The bitmask representing the groups to check in.</param>
-        /// <returns>All entities in range (including the query entity).</returns>
-        public void Find(int entity, float range, ref ICollection<int> list, ulong groups = DefaultIndexGroupMask)
-        {
-            Find(Manager.GetComponent<Transform>(entity).Translation, range, ref list, groups);
-        }
-
-        /// <summary>
-        /// Get all entities in the specified range of the query point.
-        /// </summary>
         /// <param name="query">The point to use as a query point.</param>
         /// <param name="range">The distance up to which to get neighbors.</param>
         /// <param name="list">The list to use for storing the results.</param>

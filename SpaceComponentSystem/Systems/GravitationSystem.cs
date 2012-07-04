@@ -34,6 +34,7 @@ namespace Space.ComponentSystem.Systems
                 {
                     return;
                 }
+
                 // And the index.
                 var index = Manager.GetSystem<IndexSystem>();
                 if (index == null)
@@ -43,7 +44,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Then check all our neighbors.
                 ICollection<int> neighbors = _reusableNeighborList;
-                index.Find(component.Entity, 2 << 13, ref neighbors, Gravitation.IndexGroup);
+                index.Find(myTransform.Translation, 2 << 13, ref neighbors, Gravitation.IndexGroupMask);
                 foreach (var neigbor in neighbors)
                 {
                     // If they have an enabled gravitation component...

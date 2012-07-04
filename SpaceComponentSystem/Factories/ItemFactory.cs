@@ -82,7 +82,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Transform>(entity);
             var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(Model);
             renderer.Enabled = false;
-            manager.AddComponent<Index>(entity).Initialize(Item.IndexGroup);
+            manager.AddComponent<Index>(entity).Initialize(Item.IndexGroupMask);
             manager.AddComponent<ItemInfo>(entity);
 
             return entity;

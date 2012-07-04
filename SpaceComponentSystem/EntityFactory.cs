@@ -73,7 +73,7 @@ namespace Space.ComponentSystem
             var entity = FactoryLibrary.SampleShip(manager, blueprint, faction, position, random);
 
             // Add to the index from which entities will automatically removed on cell death.
-            manager.GetComponent<Index>(entity).IndexGroups |=  CellSystem.CellDeathAutoRemoveIndex;
+            manager.GetComponent<Index>(entity).IndexGroups |=  CellSystem.CellDeathAutoRemoveIndexGroupMask;
 
             var input = manager.GetComponent<ShipControl>(entity);
             input.Stabilizing = true;
@@ -114,7 +114,7 @@ namespace Space.ComponentSystem
             manager.AddComponent<Transform>(entity).Initialize(manager.GetComponent<Transform>(center).Translation);
             manager.AddComponent<Spin>(entity).Initialize(((float)Math.PI) / period);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, orbitRadius, orbitRadius, 0, period, 0);
-            manager.AddComponent<Index>(entity).Initialize(Detectable.IndexGroup | CellSystem.CellDeathAutoRemoveIndex);
+            manager.AddComponent<Index>(entity).Initialize(Detectable.IndexGroupMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Stolen/Ships/sensor_array_dish");
             manager.AddComponent<ShipSpawner>(entity);
             manager.AddComponent<TextureRenderer>(entity).Initialize(texture, Color.Lerp(Color.White, faction.ToColor(), 0.5f));

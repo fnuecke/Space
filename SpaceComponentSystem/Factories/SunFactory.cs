@@ -59,9 +59,9 @@ namespace Space.ComponentSystem.Factories
 
             manager.AddComponent<Transform>(entity).Initialize(offset + cellCenter);
             manager.AddComponent<Index>(entity).Initialize(
-                Detectable.IndexGroup |
-                Sound.IndexGroup |
-                CellSystem.CellDeathAutoRemoveIndex |
+                Detectable.IndexGroupMask |
+                Sound.IndexGroupMask |
+                CellSystem.CellDeathAutoRemoveIndexGroupMask |
                 Factions.Nature.ToCollisionIndexGroup(),
                 (int)(radius + radius));
             if (mass > 0)

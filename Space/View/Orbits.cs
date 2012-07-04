@@ -155,7 +155,7 @@ namespace Space.View
 
             // Loop through all our neighbors.
             ICollection<int> neighbors = _reusableNeighborList;
-            index.Find(position, radarRange, ref neighbors, Detectable.IndexGroup);
+            index.Find(position, radarRange, ref neighbors, Detectable.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {
                 // Get the components we need.
