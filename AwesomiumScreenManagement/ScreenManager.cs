@@ -200,7 +200,14 @@ input[type=""text""], input[type=""password""], textarea {
 
                 _session.Dispose();
 
-                _dataSource.Dispose();
+                try
+                {
+                    _dataSource.Dispose();
+                }
+                catch (Exception)
+                {
+                    // bug in 1.7rc1, remove when switching rc2 or later
+                }
 
                 if (_ownsWebCore)
                 {
