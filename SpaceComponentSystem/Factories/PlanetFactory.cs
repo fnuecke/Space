@@ -150,7 +150,8 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Index>(entity).Initialize(
                 DetectableSystem.IndexGroupMask | // Can be detected.
                 SoundSystem.IndexGroupMask | // Can make noise.
-                CellSystem.CellDeathAutoRemoveIndexGroupMask, // Will be removed when out of bounds.
+                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
+                CullingTextureRenderSystem.IndexGroupMask,
                 (int)(planetRadius + planetRadius));
 
             return entity;

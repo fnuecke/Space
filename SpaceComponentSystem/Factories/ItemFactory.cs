@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
+using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
@@ -82,7 +83,9 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Transform>(entity);
             var renderer = manager.AddComponent<TextureRenderer>(entity).Initialize(Model);
             renderer.Enabled = false;
-            manager.AddComponent<Index>(entity).Initialize(Item.IndexGroupMask);
+            manager.AddComponent<Index>(entity).Initialize(
+                Item.IndexGroupMask |
+                CullingTextureRenderSystem.IndexGroupMask);
             manager.AddComponent<ItemInfo>(entity);
 
             return entity;

@@ -1,24 +1,19 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Space.ComponentSystem.Components;
-using Space.Graphics;
 
-namespace Space.ComponentSystem.Systems
+namespace Engine.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Renders suns.
-    /// </summary>
-    public sealed class SunRenderSystem : AbstractComponentSystem<SunRenderer>
+    public abstract class CullingTextureRenderSystem : TextureRenderSystem
     {
-        #region Fields
+        #region Constants
 
         /// <summary>
-        /// The sun renderer we use.
+        /// Index group mask for the index we use to track positions of renderables.
         /// </summary>
-        private static Sun _sun;
+        public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
         #endregion
 
@@ -34,18 +29,9 @@ namespace Space.ComponentSystem.Systems
 
         #region Constructor
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SunRenderSystem"/> class.
-        /// </summary>
-        /// <param name="game">The game to create the system for.</param>
-        /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
-        public SunRenderSystem(Game game, SpriteBatch spriteBatch)
+        protected CullingTextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
+            : base(content, spriteBatch)
         {
-            if (_sun == null)
-            {
-                _sun = new Sun(game);
-                _sun.LoadContent(spriteBatch, game.Content);
-            }
         }
 
         #endregion
@@ -59,11 +45,9 @@ namespace Space.ComponentSystem.Systems
         /// <param name="frame">The frame in which the update is applied.</param>
         public override void Draw(GameTime gameTime, long frame)
         {
-            var camera = Manager.GetSystem<CameraSystem>();
-
             // Get all renderable entities in the viewport.
-            var view = camera.ComputeVisibleBounds(_sun.GraphicsDevice.Viewport);
-            Manager.GetSystem<IndexSystem>().Find(ref view, ref _drawablesInView, CullingTextureRenderSystem.IndexGroupMask);
+            var view = ComputeViewport();
+            Manager.GetSystem<IndexSystem>().Find(ref view, ref _drawablesInView, IndexGroupMask);
 
             // Skip there rest if nothing is visible.
             if (_drawablesInView.Count == 0)
@@ -71,22 +55,17 @@ namespace Space.ComponentSystem.Systems
                 return;
             }
 
-            // Set/get loop invariants.
-            var translation = camera.GetTranslation();
-            _sun.GameTime = gameTime;
-            _sun.Scale = camera.Zoom;
-
             // Iterate over the shorter list.
             if (_drawablesInView.Count < Components.Count)
             {
                 foreach (var entity in _drawablesInView)
                 {
-                    var component = Manager.GetComponent<SunRenderer>(entity);
+                    var component = Manager.GetComponent<TextureRenderer>(entity);
 
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
                     {
-                        RenderSun(component, ref translation);
+                        DrawComponent(gameTime, frame, component);
                     }
                 }
             }
@@ -97,22 +76,20 @@ namespace Space.ComponentSystem.Systems
                     // Skip disabled or invisible entities.
                     if (component.Enabled && _drawablesInView.Contains(component.Entity))
                     {
-                        RenderSun(component, ref translation);
+                        DrawComponent(gameTime, frame, component);
                     }
                 }
             }
 
+            // Clear for next iteration.
             _drawablesInView.Clear();
         }
 
-        private void RenderSun(SunRenderer component, ref Vector2 translation)
-        {
-            var transform = Manager.GetComponent<Transform>(component.Entity);
-
-            _sun.SetSize(component.Radius * 2);
-            _sun.Center = transform.Translation + translation;
-            _sun.Draw();
-        }
+        /// <summary>
+        /// Returns the current bounds of the viewport, i.e. the rectangle of
+        /// the world to actually render.
+        /// </summary>
+        protected abstract Rectangle ComputeViewport();
 
         #endregion
 
@@ -133,7 +110,7 @@ namespace Space.ComponentSystem.Systems
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             // Get something to start with.
-            var copy = (SunRenderSystem)base.DeepCopy(into);
+            var copy = (CullingTextureRenderSystem)base.DeepCopy(into);
 
             if (copy != into)
             {

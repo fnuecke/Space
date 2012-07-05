@@ -3,6 +3,7 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input.Devices;
 using Space.Input;
 using Space.Util;
@@ -150,6 +151,29 @@ namespace Space.ComponentSystem.Systems
         public Matrix GetTransformation()
         {
             return _transform;
+        }
+
+        /// <summary>
+        /// Returns the current bounds of the viewport, i.e. the rectangle of
+        /// the world to actually render.
+        /// </summary>
+        /// <param name="view">The viewport to compute the visible bounds for.</param>
+        public Rectangle ComputeVisibleBounds(Viewport view)
+        {
+            var camera = Manager.GetSystem<CameraSystem>();
+            var center = camera.CameraPositon;
+            var zoom = camera.Zoom;
+            var width = (int)(view.Width / zoom);
+            var height = (int)(view.Height / zoom);
+            // Return scaled viewport bounds, translated to camera position
+            // with a 1 pixel increase as safety against rounding errors.
+            return new Rectangle
+                   {
+                       X = (int)(center.X - (width >> 1)) - 1,
+                       Y = (int)(center.Y - (height >> 1)) - 1,
+                       Width = width + 2,
+                       Height = height + 2
+                   };
         }
 
         /// <summary>

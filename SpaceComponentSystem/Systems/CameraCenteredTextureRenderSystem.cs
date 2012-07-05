@@ -9,7 +9,7 @@ namespace Space.ComponentSystem.Systems
     /// Defines a render system which always translates the view to be
     /// centered to the camera.
     /// </summary>
-    public class CameraCenteredTextureRenderSystem : TextureRenderSystem
+    public sealed class CameraCenteredTextureRenderSystem : CullingTextureRenderSystem
     {
         #region Constructor
         
@@ -23,28 +23,21 @@ namespace Space.ComponentSystem.Systems
         #region Logic
 
         /// <summary>
-        /// Returns the <em>translation</em> for offsetting rendered content.
-        /// </summary>
-        /// <returns>
-        /// The translation.
-        /// </returns>
-        protected virtual Vector2 GetTranslation()
-        {
-            var translation = Manager.GetSystem<CameraSystem>().GetTranslation();
-
-            Vector2 result;
-            result.X = translation.X;
-            result.Y = translation.Y;
-            return result;
-        }
-
-        /// <summary>
         /// Returns the <em>transformation</em> for offsetting and scaling rendered content.
         /// </summary>
         /// <returns>The transformation.</returns>
         protected override Matrix GetTransform()
         {
             return Manager.GetSystem<CameraSystem>().GetTransformation();
+        }
+
+        /// <summary>
+        /// Returns the current bounds of the viewport, i.e. the rectangle of
+        /// the world to actually render.
+        /// </summary>
+        protected override Rectangle ComputeViewport()
+        {
+            return Manager.GetSystem<CameraSystem>().ComputeVisibleBounds(_spriteBatch.GraphicsDevice.Viewport);
         }
 
         #endregion

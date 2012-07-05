@@ -139,9 +139,10 @@ namespace Space.ComponentSystem.Factories
                 manager.AddComponent<CollisionDamage>(entity).Initialize(weapon.Damage);
             }
 
-            manager.AddComponent<Index>(entity).
-                Initialize(CollisionSystem.IndexGroupMask,
-                           (int)(CollisionRadius + CollisionRadius));
+            manager.AddComponent<Index>(entity).Initialize(
+                CollisionSystem.IndexGroupMask |
+                CullingTextureRenderSystem.IndexGroupMask,
+                (int)(CollisionRadius + CollisionRadius));
             var collisionGroup = (weapon.Damage >= 0)
                                       ? faction.ToCollisionGroup()
                                       : faction.Inverse().ToCollisionGroup();

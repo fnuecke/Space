@@ -186,7 +186,8 @@ namespace Space.ComponentSystem.Factories
                 CollisionSystem.IndexGroupMask | // Can bump into other stuff.
                 DetectableSystem.IndexGroupMask | // Can be detected.
                 GravitationSystem.IndexGroupMask | // Can be attracted.
-                SoundSystem.IndexGroupMask, // Can make noise.
+                SoundSystem.IndexGroupMask | // Can make noise.
+                CullingTextureRenderSystem.IndexGroupMask,
                 (int)(CollisionRadius + CollisionRadius));
 
             return entity;

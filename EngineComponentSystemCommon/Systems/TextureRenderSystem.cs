@@ -21,7 +21,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The sprite batch to render textures into.
         /// </summary>
-        private readonly SpriteBatch _spriteBatch;
+        protected readonly SpriteBatch _spriteBatch;
 
         #endregion
 

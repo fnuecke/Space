@@ -89,6 +89,7 @@
     <Compile Include="Systems\AccelerationSystem.cs" />
     <Compile Include="Systems\AvatarSystem.cs" />
     <Compile Include="Systems\CollisionSystem.cs" />
+    <Compile Include="Systems\CullingTextureRenderSystem.cs" />
     <Compile Include="Systems\EllipsePathSystem.cs" />
     <Compile Include="Systems\ExpirationSystem.cs" />
     <Compile Include="Systems\FrictionSystem.cs" />

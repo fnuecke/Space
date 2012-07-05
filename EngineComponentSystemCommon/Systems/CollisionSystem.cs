@@ -67,10 +67,10 @@ namespace Engine.ComponentSystem.Systems
             var index = Manager.GetSystem<IndexSystem>();
             ICollection<int> neighbors = _reusableNeighborList;
 
-            _updatingComponents.AddRange(_components);
-            for (var i = 0; i < _updatingComponents.Count; ++i)
+            UpdatingComponents.AddRange(Components);
+            for (var i = 0; i < UpdatingComponents.Count; ++i)
             {
-                var component1 = _updatingComponents[i];
+                var component1 = UpdatingComponents[i];
 
                 // Skip disabled components.
                 if (!component1.Enabled)
@@ -91,9 +91,9 @@ namespace Engine.ComponentSystem.Systems
                 index.Find(ref bounds, ref neighbors, IndexGroupMask);
 
                 // Iterate over the remaining collidables.
-                for (var j = i + 1; j < _updatingComponents.Count && component1.Enabled; ++j)
+                for (var j = i + 1; j < UpdatingComponents.Count && component1.Enabled; ++j)
                 {
-                    var component2 = _updatingComponents[j];
+                    var component2 = UpdatingComponents[j];
 
                     // Skip disabled components.
                     if (!component2.Enabled)
@@ -129,7 +129,7 @@ namespace Engine.ComponentSystem.Systems
             }
 
             // Clear list for the next update.
-            _updatingComponents.Clear();
+            UpdatingComponents.Clear();
         }
 
         /// <summary>

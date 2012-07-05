@@ -15,21 +15,12 @@ namespace Engine.ComponentSystem.Systems
     public abstract class AbstractComponentSystem<TComponent> : AbstractSystem
         where TComponent : Component
     {
-        #region Properties
-
-        /// <summary>
-        /// A list of components registered in this system.
-        /// </summary>
-        protected IEnumerable<TComponent> Components { get { return _components; } }
-
-        #endregion
-
         #region Fields
 
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
-        protected HashSet<TComponent> _components = new HashSet<TComponent>();
+        protected HashSet<TComponent> Components = new HashSet<TComponent>();
 
         #endregion
 
@@ -39,7 +30,7 @@ namespace Engine.ComponentSystem.Systems
         /// Reused for iterating components when updating, to avoid
         /// modifications to the list of components breaking the update.
         /// </summary>
-        protected List<TComponent> _updatingComponents = new List<TComponent>();
+        protected List<TComponent> UpdatingComponents = new List<TComponent>();
 
         #endregion
 
@@ -52,15 +43,15 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="frame">The frame in which the update is applied.</param>
         public override void Update(GameTime gameTime, long frame)
         {
-            _updatingComponents.AddRange(_components);
-            foreach (var component in _updatingComponents)
+            UpdatingComponents.AddRange(Components);
+            foreach (var component in UpdatingComponents)
             {
                 if (component.Enabled)
                 {
                     UpdateComponent(gameTime, frame, component);
                 }
             }
-            _updatingComponents.Clear();
+            UpdatingComponents.Clear();
         }
 
         /// <summary>
@@ -70,15 +61,13 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="frame">The frame in which the update is applied.</param>
         public override void Draw(GameTime gameTime, long frame)
         {
-            _updatingComponents.AddRange(_components);
-            foreach (var component in _updatingComponents)
+            foreach (var component in Components)
             {
                 if (component.Enabled)
                 {
                     DrawComponent(gameTime, frame, component);
                 }
             }
-            _updatingComponents.Clear();
         }
 
         /// <summary>
@@ -123,9 +112,9 @@ namespace Engine.ComponentSystem.Systems
                 if (component is TComponent)
                 {
                     var typedComponent = (TComponent)component;
-                    if (!_components.Contains(typedComponent))
+                    if (!Components.Contains(typedComponent))
                     {
-                        _components.Add(typedComponent);
+                        Components.Add(typedComponent);
 
                         // Tell subclasses.
                         OnComponentAdded(typedComponent);
@@ -144,7 +133,7 @@ namespace Engine.ComponentSystem.Systems
                 {
                     var typedComponent = (TComponent)component;
 
-                    if (_components.Remove(typedComponent))
+                    if (Components.Remove(typedComponent))
                     {
                         OnComponentRemoved(typedComponent);
                     }
@@ -195,12 +184,12 @@ namespace Engine.ComponentSystem.Systems
 
             if (copy == into)
             {
-                copy._components.Clear();
+                copy.Components.Clear();
             }
             else
             {
-                copy._components = new HashSet<TComponent>();
-                copy._updatingComponents = new List<TComponent>();
+                copy.Components = new HashSet<TComponent>();
+                copy.UpdatingComponents = new List<TComponent>();
             }
 
             return copy;

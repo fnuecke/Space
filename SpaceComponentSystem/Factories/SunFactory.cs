@@ -86,7 +86,8 @@ namespace Space.ComponentSystem.Factories
                 CollisionSystem.IndexGroupMask | // Can be bumped into.
                 DetectableSystem.IndexGroupMask | // Can be detected.
                 SoundSystem.IndexGroupMask | // Can make noise.
-                CellSystem.CellDeathAutoRemoveIndexGroupMask, // Will be removed when out of bounds.
+                CellSystem.CellDeathAutoRemoveIndexGroupMask | // Will be removed when out of bounds.
+                CullingTextureRenderSystem.IndexGroupMask,
                 (int)(radius + radius));
 
             return entity;

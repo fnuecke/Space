@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -24,6 +25,16 @@ namespace Space.ComponentSystem.Systems
         /// The content manager used to load textures.
         /// </summary>
         private readonly ContentManager _content;
+
+        #endregion
+
+        #region Single-Allocation
+
+        /// <summary>
+        /// Reused for iterating components when updating, to avoid
+        /// modifications to the list of components breaking the update.
+        /// </summary>
+        private ICollection<int> _drawablesInView = new HashSet<int>();
 
         #endregion
 
@@ -61,59 +72,88 @@ namespace Space.ComponentSystem.Systems
         }
 
         /// <summary>
-        /// Draws the component.
+        /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
-        /// <param name="gameTime">The game time.</param>
-        /// <param name="frame">The frame.</param>
-        /// <param name="component">The component.</param>
-        protected override void DrawComponent(GameTime gameTime, long frame, PlanetRenderer component)
+        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
+        /// <param name="frame">The frame in which the update is applied.</param>
+        public override void Draw(GameTime gameTime, long frame)
+        {
+            var camera = Manager.GetSystem<CameraSystem>();
+
+            // Get all renderable entities in the viewport.
+            var view = camera.ComputeVisibleBounds(_planet.GraphicsDevice.Viewport);
+            Manager.GetSystem<IndexSystem>().Find(ref view, ref _drawablesInView, CullingTextureRenderSystem.IndexGroupMask);
+
+            // Skip there rest if nothing is visible.
+            if (_drawablesInView.Count == 0)
+            {
+                return;
+            }
+
+            // Set/get loop invariants.
+            var translation = camera.GetTranslation();
+            var zoom = camera.Zoom;
+            _planet.GameTime = gameTime;
+            _planet.Scale = zoom;
+            
+            // Iterate over the shorter list.
+            if (_drawablesInView.Count < Components.Count)
+            {
+                foreach (var entity in _drawablesInView)
+                {
+                    var component = Manager.GetComponent<PlanetRenderer>(entity);
+
+                    // Skip invalid or disabled entities.
+                    if (component != null && component.Enabled)
+                    {
+                        RenderPlanet(component, ref translation);
+                    }
+                }
+            }
+            else
+            {
+                foreach (var component in Components)
+                {
+                    // Skip disabled or invisible entities.
+                    if (component.Enabled && _drawablesInView.Contains(component.Entity))
+                    {
+                        RenderPlanet(component, ref translation);
+                    }
+                }
+            }
+
+            _drawablesInView.Clear();
+        }
+
+        private void RenderPlanet(PlanetRenderer component, ref Vector2 translation)
         {
             // The position and orientation we're rendering at and in.
             var transform = Manager.GetComponent<Transform>(component.Entity);
-            var translation = Manager.GetSystem<CameraSystem>().GetTranslation();
 
-            // Get zoom from camera.
-            var zoom = Manager.GetSystem<CameraSystem>().Zoom;
-
-            // Get the position at which to draw (in screen space).
-            Vector2 position;
-            position.X = transform.Translation.X + translation.X;
-            position.Y = transform.Translation.Y + translation.Y;
-
-            // Check if we're even visible.
-            var clipRectangle = _planet.GraphicsDevice.Viewport.Bounds;
-            // Inflate clip by zoomed amount and object radius.
-            clipRectangle.Inflate((int)(clipRectangle.Width / zoom - clipRectangle.Width + 2 * component.Radius),
-                                  (int)(clipRectangle.Height / zoom - clipRectangle.Height + 2 * component.Radius));
-            if (clipRectangle.Contains((int)position.X, (int)position.Y))
+            // Get position relative to our sun, to rotate atmosphere and shadow.
+            var toSun = Vector2.Zero;
+            var sun = GetSun(component.Entity);
+            if (sun > 0)
             {
-                // Get position relative to our sun, to rotate atmosphere and shadow.
-                var toSun = Vector2.Zero;
-                int sun = GetSun(component.Entity);
-                if (sun > 0)
+                var sunTransform = Manager.GetComponent<Transform>(sun);
+                if (sunTransform != null)
                 {
-                    var sunTransform = Manager.GetComponent<Transform>(sun);
-                    if (sunTransform != null)
-                    {
-                        toSun = sunTransform.Translation - transform.Translation;
-                        var matrix = Matrix.CreateRotationZ(-transform.Rotation);
-                        Vector2.Transform(ref toSun, ref matrix, out toSun);
-                        toSun.Normalize();
-                    }
+                    toSun = sunTransform.Translation - transform.Translation;
+                    var matrix = Matrix.CreateRotationZ(-transform.Rotation);
+                    Vector2.Transform(ref toSun, ref matrix, out toSun);
+                    toSun.Normalize();
                 }
-
-                // Set parameters and draw.
-                _planet.Center = position;
-                _planet.Rotation = transform.Rotation;
-                _planet.SetSize(component.Radius * 2);
-                _planet.SurfaceTexture = component.Texture;
-                _planet.SurfaceTint = component.PlanetTint;
-                _planet.AtmosphereTint = component.AtmosphereTint;
-                _planet.LightDirection = toSun;
-                _planet.GameTime = gameTime;
-                _planet.Scale = zoom;
-                _planet.Draw();
             }
+
+            // Set parameters and draw.
+            _planet.Center = transform.Translation + translation;
+            _planet.Rotation = transform.Rotation;
+            _planet.SetSize(component.Radius * 2);
+            _planet.SurfaceTexture = component.Texture;
+            _planet.SurfaceTint = component.PlanetTint;
+            _planet.AtmosphereTint = component.AtmosphereTint;
+            _planet.LightDirection = toSun;
+            _planet.Draw();
         }
 
         /// <summary>
@@ -122,7 +162,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns></returns>
         private int GetSun(int entity)
         {
-            int sun = 0;
+            var sun = 0;
             var ellipse = Manager.GetComponent<EllipsePath>(entity);
             while (ellipse != null)
             {
@@ -130,6 +170,35 @@ namespace Space.ComponentSystem.Systems
                 ellipse = Manager.GetComponent<EllipsePath>(sun);
             }
             return sun;
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a deep copy, with a component list only containing
+        /// clones of components not bound to an entity. If possible, the
+        /// specified instance will be reused.
+        /// 
+        /// <para>
+        /// Subclasses must take care of duplicating reference types, to complete
+        /// the deep-copy of the object. Caches, i.e. lists / dictionaries / etc.
+        /// to quickly look up components must be reset / rebuilt.
+        /// </para>
+        /// </summary>
+        /// <returns>A deep, with a semi-cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy(AbstractSystem into)
+        {
+            // Get something to start with.
+            var copy = (PlanetRenderSystem)base.DeepCopy(into);
+
+            if (copy != into)
+            {
+                copy._drawablesInView = new HashSet<int>();
+            }
+
+            return copy;
         }
 
         #endregion
