@@ -15,7 +15,7 @@ namespace Engine.Controller
     {
         #region Logger
 
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -178,11 +178,11 @@ namespace Engine.Controller
             }
             catch (PacketException ex)
             {
-                logger.WarnException("Failed parsing received packet.", ex);
+                Logger.WarnException("Failed parsing received packet.", ex);
             }
             catch (ArgumentException ex)
             {
-                logger.WarnException("Failed deserializing unknown type.", ex);
+                Logger.WarnException("Failed deserializing unknown type.", ex);
             }
         }
 

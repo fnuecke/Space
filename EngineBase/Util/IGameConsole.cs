@@ -89,12 +89,6 @@ namespace Engine.Util
         void Execute(string command);
 
         /// <summary>
-        /// Log some text to the console.
-        /// </summary>
-        /// <param name="message">the message to log.</param>
-        void WriteLine(string message);
-        
-        /// <summary>
         /// Log some formatted text to the console.
         /// </summary>
         /// <param name="format">the text format.</param>

@@ -84,14 +84,14 @@ namespace Space.View
             SetCenter(viewport.Width / 2f, viewport.Height / 2f);
 
             // Adjust texture coordinates.
-            _vertices[0].Tex0.X = 0;
-            _vertices[0].Tex0.Y = 0;
-            _vertices[1].Tex0.X = 1;
-            _vertices[1].Tex0.Y = 0;
-            _vertices[2].Tex0.X = 0;
-            _vertices[2].Tex0.Y = 1;
-            _vertices[3].Tex0.X = 1;
-            _vertices[3].Tex0.Y = 1;
+            Vertices[0].Tex0.X = 0;
+            Vertices[0].Tex0.Y = 0;
+            Vertices[1].Tex0.X = 1;
+            Vertices[1].Tex0.Y = 0;
+            Vertices[2].Tex0.X = 0;
+            Vertices[2].Tex0.Y = 1;
+            Vertices[3].Tex0.X = 1;
+            Vertices[3].Tex0.Y = 1;
         }
         
         #endregion

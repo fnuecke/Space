@@ -17,7 +17,7 @@ namespace Engine.Tests.ComponentSystem.Components
                    {
                        instance => instance.Enabled = !instance.Enabled,
                        instance => instance.Name += "b",
-                       instance => instance.IconName += "b",
+                       instance => instance.IconName += "b"
                    }.Concat(base.GetValueChangers());
         }
     }

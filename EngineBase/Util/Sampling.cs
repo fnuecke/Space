@@ -13,18 +13,18 @@ namespace Engine.Util
         /// <summary>
         /// The list of samples.
         /// </summary>
-        protected T[] samples;
+        protected readonly T[] Samples;
 
         /// <summary>
         /// The highest index to which we have samplings. This is used
         /// to avoid bias towards the initial values (0).
         /// </summary>
-        protected int sampleCount = 0;
+        protected int SampleCount;
 
         /// <summary>
         /// Next index to write new values.
         /// </summary>
-        private int _writeIndex = 0;
+        private int _writeIndex;
 
         #endregion
 
@@ -36,7 +36,7 @@ namespace Engine.Util
         /// <param name="samples">number of samples to keep track of.</param>
         protected AbstractSampling(int samples)
         {
-            this.samples = new T[samples];
+            Samples = new T[samples];
         }
 
         #endregion
@@ -49,9 +49,9 @@ namespace Engine.Util
         /// <param name="sample">the sample to push.</param>
         public void Put(T sample)
         {
-            samples[_writeIndex++] = sample;
-            sampleCount = (_writeIndex > sampleCount) ? _writeIndex : sampleCount;
-            if (_writeIndex == samples.Length)
+            Samples[_writeIndex++] = sample;
+            SampleCount = (_writeIndex > SampleCount) ? _writeIndex : SampleCount;
+            if (_writeIndex == Samples.Length)
             {
                 _writeIndex = 0;
             }
@@ -80,42 +80,33 @@ namespace Engine.Util
         /// <returns>the average over the last samples.</returns>
         public T Median()
         {
-            if (sampleCount == 0)
+            if (SampleCount == 0)
             {
                 return default(T);
             }
-            T[] sorted = new T[sampleCount];
-            for (int i = 0; i < sampleCount; i++)
+            var sorted = new T[SampleCount];
+            for (var i = 0; i < SampleCount; i++)
             {
-                sorted[i] = samples[i];
+                sorted[i] = Samples[i];
             }
             Array.Sort(sorted);
-            int mid = sorted.Length / 2;
-            if ((sorted.Length & 1) == 0)
-            {
-                // Even.
-                return MedianEvenImpl(sorted[mid - 1], sorted[mid]);
-            }
-            else
-            {
-                // Odd.
-                return sorted[mid];
-            }
+            var mid = sorted.Length / 2;
+            return (sorted.Length & 1) == 0 ? MedianEvenImpl(sorted[mid - 1], sorted[mid]) : sorted[mid];
         }
 
         public double StandardDeviation()
         {
-            if (sampleCount < 2)
+            if (SampleCount < 2)
             {
                 return 0;
             }
-            double mean = Mean();
+            var mean = Mean();
             double acc = 0;
-            for (int i = 0; i < sampleCount; i++)
+            for (var i = 0; i < SampleCount; i++)
             {
-                acc = StandardDeviationSumImpl(acc, samples[i], mean);
+                acc = StandardDeviationSumImpl(acc, Samples[i], mean);
             }
-            return acc / (double)(sampleCount - 1);
+            return acc / (SampleCount - 1.0);
         }
 
         #endregion
@@ -162,7 +153,7 @@ namespace Engine.Util
         /// <returns>the average over the last samples.</returns>
         public override double Mean()
         {
-            if (sampleCount == 0)
+            if (SampleCount == 0)
             {
                 return 0;
             }
@@ -178,11 +169,11 @@ namespace Engine.Util
         {
             int sum = 0;
             int count = 0;
-            for (int i = 0; i < sampleCount; ++i)
+            for (int i = 0; i < SampleCount; ++i)
             {
-                if (samples[i] >= min && samples[i] <= max)
+                if (Samples[i] >= min && Samples[i] <= max)
                 {
-                    sum += samples[i];
+                    sum += Samples[i];
                     ++count;
                 }
             }
@@ -253,7 +244,7 @@ namespace Engine.Util
         /// <returns>the average over the last samples.</returns>
         public override double Mean()
         {
-            if (sampleCount == 0)
+            if (SampleCount == 0)
             {
                 return 0;
             }
@@ -269,11 +260,11 @@ namespace Engine.Util
         {
             double sum = 0;
             int count = 0;
-            for (int i = 0; i < sampleCount; ++i)
+            for (int i = 0; i < SampleCount; ++i)
             {
-                if (samples[i] >= min && samples[i] <= max)
+                if (Samples[i] >= min && Samples[i] <= max)
                 {
-                    sum += samples[i];
+                    sum += Samples[i];
                     ++count;
                 }
             }

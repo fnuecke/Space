@@ -60,17 +60,17 @@ namespace Engine.Util
         /// <summary>
         /// Constant vector A.
         /// </summary>
-        private const ulong MATRIX_A = 0x9908b0dfUL;
+        private const ulong MatrixA = 0x9908b0dfUL;
 
         /// <summary>
         /// Most significant w-r bits.
         /// </summary>
-        private const ulong UPPER_MASK = 0x80000000UL;
+        private const ulong UpperMask = 0x80000000UL;
 
         /// <summary>
         /// Least significant r bits.
         /// </summary>
-        private const ulong LOWER_MASK = 0x7fffffffUL;
+        private const ulong LowerMask = 0x7fffffffUL;
 
         #endregion
 
@@ -249,20 +249,20 @@ namespace Engine.Util
             ulong y;
             if (_index == N)
             {
-                ulong[] mag01 = new ulong[] { 0x0UL, MATRIX_A };
+                var mag01 = new[] { 0x0UL, MatrixA };
                 // generate N words at one time
                 int kk;
                 for (kk = 0; kk < N - M; kk++)
                 {
-                    y = (_mt[kk] & UPPER_MASK) | (_mt[kk + 1] & LOWER_MASK);
+                    y = (_mt[kk] & UpperMask) | (_mt[kk + 1] & LowerMask);
                     _mt[kk] = _mt[kk + M] ^ (y >> 1) ^ mag01[y & 0x1UL];
                 }
                 for (; kk < N - 1; kk++)
                 {
-                    y = (_mt[kk] & UPPER_MASK) | (_mt[kk + 1] & LOWER_MASK);
+                    y = (_mt[kk] & UpperMask) | (_mt[kk + 1] & LowerMask);
                     _mt[kk] = _mt[kk + (M - N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
                 }
-                y = (_mt[N - 1] & UPPER_MASK) | (_mt[0] & LOWER_MASK);
+                y = (_mt[N - 1] & UpperMask) | (_mt[0] & LowerMask);
                 _mt[N - 1] = _mt[M - 1] ^ (y >> 1) ^ mag01[y & 0x1UL];
                 _index = 0;
             }

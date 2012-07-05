@@ -14,20 +14,20 @@ namespace Engine.Util
         /// <summary>
         /// Number of blocks.
         /// </summary>
-        const int __blockCount = 128;
+        const int BlockCount = 128;
         /// <summary>
         /// Right hand x coord of the base rectangle, thus also the left hand x coord of the tail 
         /// (pre-determined/computed for 128 blocks).
         /// </summary>
-        const double __R = 3.442619855899;
+        const double R = 3.442619855899;
         /// <summary>
         /// Area of each rectangle (pre-determined/computed for 128 blocks).
         /// </summary>
-        const double __A = 9.91256303526217e-3;
+        const double A = 9.91256303526217e-3;
         /// <summary>
         /// Scale factor for converting a UInt with range [0,0xffffffff] to a double with range [0,1].
         /// </summary>
-        const double __UIntToU = 1.0 / (double)uint.MaxValue;
+        const double UIntToU = 1.0 / uint.MaxValue;
 
         #endregion
 
@@ -47,7 +47,7 @@ namespace Engine.Util
         // Useful precomputed values.
         // Area A divided by the height of B0. Note. This is *not* the same as _x[i] because the area 
         // of B0 is __A minus the area of the distribution tail.
-        readonly double _A_Div_Y0;
+        readonly double _aDivY0;
 
         #endregion
 
@@ -65,7 +65,7 @@ namespace Engine.Util
         /// Construct with the specified RNG seed.
         /// </summary>
         public Ziggurat(ulong seed) 
-            : this(new MersenneTwister((ulong)seed))
+            : this(new MersenneTwister(seed))
         {
         }
 
@@ -81,49 +81,49 @@ namespace Engine.Util
 
             // Allocate storage. We add one to the length of _x so that we have an entry at _x[_blockCount], this avoids having 
             // to do a special case test when sampling from the top box.
-            _x = new double[__blockCount + 1];
-            _y = new double[__blockCount];
+            _x = new double[BlockCount + 1];
+            _y = new double[BlockCount];
 
             // Determine top right position of the base rectangle/box (the rectangle with the Gaussian tale attached). 
             // We call this Box 0 or B0 for short.
             // Note. x[0] also describes the right-hand edge of B1. (See diagram).
-            _x[0] = __R; 
-            _y[0] = GaussianPdfDenorm(__R);
+            _x[0] = R; 
+            _y[0] = GaussianPdfDenorm(R);
 
             // The next box (B1) has a right hand X edge the same as B0. 
             // Note. B1's height is the box area divided by its width, hence B1 has a smaller height than B0 because
             // B0's total area includes the attached distribution tail.
-            _x[1] = __R;
-            _y[1] =  _y[0] + (__A / _x[1]);
+            _x[1] = R;
+            _y[1] =  _y[0] + (A / _x[1]);
 
             // Calc positions of all remaining rectangles.
-            for(int i=2; i<__blockCount; i++)
+            for(var i=2; i<BlockCount; i++)
             {
                 _x[i] = GaussianPdfDenormInv(_y[i-1]);
-                _y[i] = _y[i-1] + (__A / _x[i]);   
+                _y[i] = _y[i-1] + (A / _x[i]);   
             }
 
             // For completeness we define the right-hand edge of a notional box 6 as being zero (a box with no area).
-            _x[__blockCount] = 0.0;
+            _x[BlockCount] = 0.0;
 
             // Useful precomputed values.
-            _A_Div_Y0 = __A / _y[0];
-            _xComp = new uint[__blockCount];
+            _aDivY0 = A / _y[0];
+            _xComp = new uint[BlockCount];
 
             // Special case for base box. _xComp[0] stores the area of B0 as a proportion of __R 
             // (recalling that all segments have area __A, but that the base segment is the combination of B0 and the distribution tail).
             // Thus -xComp[0[ is the probability that a sample point is within the box part of the segment.
-            _xComp[0] = (uint)(((__R * _y[0]) / __A) * (double)uint.MaxValue);
+            _xComp[0] = (uint)(((R * _y[0]) / A) * uint.MaxValue);
 
-            for(int i=1; i<__blockCount-1; i++) {
-                _xComp[i] = (uint)((_x[i+1] / _x[i]) * (double)uint.MaxValue);
+            for(var i=1; i<BlockCount-1; i++) {
+                _xComp[i] = (uint)((_x[i+1] / _x[i]) * uint.MaxValue);
             }
-            _xComp[__blockCount-1] = 0;  // Shown for completeness.
+            _xComp[BlockCount-1] = 0;  // Shown for completeness.
 
             // Sanity check. Test that the top edge of the topmost rectangle is at y=1.0.
             // Note. We expect there to be a tiny drift away from 1.0 due to the inexactness of floating
             // point arithmetic.
-            Debug.Assert(Math.Abs(1.0 - _y[__blockCount-1]) < 1e-10);
+            Debug.Assert(Math.Abs(1.0 - _y[BlockCount-1]) < 1e-10);
         }
 
         #endregion
@@ -138,19 +138,19 @@ namespace Engine.Util
             for(;;)
             {
                 // Select box at random.
-                byte u = (byte)_rng.NextUInt32();
-                int i = (int)(u & 0x7F);
-                double sign = ((u & 0x80) == 0) ? -1.0 : 1.0;
+                var u = (byte)_rng.NextUInt32();
+                var i = u & 0x7F;
+                var sign = ((u & 0x80) == 0) ? -1.0 : 1.0;
 
                 // Generate uniform random value with range [0,0xffffffff].
-                uint u2 = _rng.NextUInt32();
+                var u2 = _rng.NextUInt32();
 
                 // Special case for the base segment.
                 if(0 == i)
                 {
                     if(u2 < _xComp[0]) 
                     {   // Generated x is within R0.
-                        return u2 * __UIntToU * _A_Div_Y0 * sign;
+                        return u2 * UIntToU * _aDivY0 * sign;
                     }
                     // Generated x is in the tail of the distribution.
                     return SampleTail() * sign;
@@ -159,14 +159,14 @@ namespace Engine.Util
                 // All other segments.
                 if(u2 < _xComp[i]) 
                 {   // Generated x is within the rectangle.
-                    return u2 * __UIntToU * _x[i] * sign;
+                    return u2 * UIntToU * _x[i] * sign;
                 }
 
                 // Generated x is outside of the rectangle.
                 // Generate a random y coordinate and test if our (x,y) is within the distribution curve.
                 // This execution path is relatively slow/expensive (makes a call to Math.Exp()) but relatively rarely executed,
                 // although more often than the 'tail' path (above).
-                double x = u2 * __UIntToU * _x[i];
+                double x = u2 * UIntToU * _x[i];
                 if(_y[i-1] + ((_y[i] - _y[i-1]) * _rng.NextDouble()) < GaussianPdfDenorm(x) ) {
                     return x * sign;
                 }
@@ -191,7 +191,7 @@ namespace Engine.Util
         /// <param name="sigma">The distribution's standard deviation.</param>
         public double NextSampleClamped(double mu, double sigma)
         {
-            double sample = NextSample();
+            var sample = NextSample();
             if (sample < -1)
             {
                 sample = -1;
@@ -216,17 +216,17 @@ namespace Engine.Util
             double x, y;
             do
             {
-                x = -Math.Log(_rng.NextDouble()) / __R;
+                x = -Math.Log(_rng.NextDouble()) / R;
                 y = -Math.Log(_rng.NextDouble());
             }
             while(y+y < x*x);
-            return __R + x;
+            return R + x;
         }
 
         /// <summary>
-        /// Gaussian probability density function, denormailised, that is, y = e^-(x^2/2).
+        /// Gaussian probability density function, denormalised, that is, y = e^-(x^2/2).
         /// </summary>
-        private double GaussianPdfDenorm(double x)
+        private static double GaussianPdfDenorm(double x)
         {
             return Math.Exp(-(x*x / 2.0));
         }
@@ -234,7 +234,7 @@ namespace Engine.Util
         /// <summary>
         /// Inverse function of GaussianPdfDenorm(x)
         /// </summary>
-        private double GaussianPdfDenormInv(double y)
+        private static double GaussianPdfDenormInv(double y)
         {   
             // Operates over the y range (0,1], which happens to be the y range of the pdf, 
             // with the exception that it does not include y=0, but we would never call with 

@@ -16,7 +16,7 @@ namespace Engine.Util
         /// <summary>
         /// The actual console to log to.
         /// </summary>
-        private IGameConsole _console;
+        private readonly IGameConsole _console;
 
         /// <summary>
         /// Creates a new target, logging to the console of the specified game,

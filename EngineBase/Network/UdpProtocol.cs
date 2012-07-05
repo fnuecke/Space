@@ -12,7 +12,7 @@ namespace Engine.Network
     {
         #region Logger
 
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -49,8 +49,8 @@ namespace Engine.Network
 
             // Register as a local loopback.
             Loopback = new IPEndPoint(IPAddress.Loopback, endPoint.Port);
-            loopbacksByPort[endPoint.Port] = this;
-            boundPorts[endPoint.Port] = true;
+            LoopbacksByPort[endPoint.Port] = this;
+            BoundPorts[endPoint.Port] = true;
 
             // Join multicast group to receive multicast messages.
             _udp.JoinMulticastGroup(endPoint.Address);
@@ -75,9 +75,9 @@ namespace Engine.Network
             {
                 if (Loopback != null)
                 {
-                    ushort port = (ushort)((IPEndPoint)_udp.Client.LocalEndPoint).Port;
-                    loopbacksByPort.Remove(port);
-                    boundPorts[port] = false;
+                    var port = (ushort)((IPEndPoint)_udp.Client.LocalEndPoint).Port;
+                    LoopbacksByPort.Remove(port);
+                    BoundPorts[port] = false;
                 }
 
                 _udp.Close();
@@ -110,7 +110,7 @@ namespace Engine.Network
                     }
                     catch (SocketException ex)
                     {
-                        logger.TraceException("Socket connection died.", ex);
+                        Logger.TraceException("Socket connection died.", ex);
                     }
                 }
             }
@@ -120,16 +120,15 @@ namespace Engine.Network
         /// Use this to implement actual sending of the given data to the given endpoint.
         /// </summary>
         /// <param name="message">the data to send/</param>
-        /// <param name="bytes">the length of the data to send.</param>
         /// <param name="endPoint">the end point to send it to.</param>
         protected override void HandleSend(byte[] message, IPEndPoint endPoint)
         {
             // Are we delivering locally?
             if (IPAddress.IsLoopback(endPoint.Address) &&
-                loopbacksByPort.ContainsKey((ushort)endPoint.Port))
+                LoopbacksByPort.ContainsKey((ushort)endPoint.Port))
             {
                 // Yes, inject directly.
-                loopbacksByPort[(ushort)endPoint.Port].HandleReceive(message, Loopback);
+                LoopbacksByPort[(ushort)endPoint.Port].HandleReceive(message, Loopback);
             }
             else
             {
@@ -146,13 +145,13 @@ namespace Engine.Network
         /// This is used to determine the local loopback address to use for a new
         /// instance.
         /// </summary>
-        private static BitArray boundPorts = new BitArray(ushort.MaxValue);
+        private static readonly BitArray BoundPorts = new BitArray(ushort.MaxValue);
 
         /// <summary>
         /// Lookup table the instances add themselves to. This essentially fakes
         /// a tiny LAN which only exists inside the running program.
         /// </summary>
-        private static Dictionary<int, UdpProtocol> loopbacksByPort = new Dictionary<int, UdpProtocol>();
+        private static readonly Dictionary<int, UdpProtocol> LoopbacksByPort = new Dictionary<int, UdpProtocol>();
 
         #endregion
 

@@ -106,7 +106,7 @@ namespace Engine.Util
             }
             set
             {
-                _bufferSize = System.Math.Max(1, value);
+                _bufferSize = Math.Max(1, value);
                 if (_buffer.Count > _bufferSize)
                 {
                     _buffer.RemoveRange(BufferSize, _buffer.Count - BufferSize);
@@ -168,7 +168,7 @@ namespace Engine.Util
         /// <summary>
         /// Internal line buffer (lines of text).
         /// </summary>
-        private List<string> _buffer = new List<string>();
+        private readonly List<string> _buffer = new List<string>();
 
         /// <summary>
         /// Actual value for the maximum number of lines to keep.
@@ -178,7 +178,7 @@ namespace Engine.Util
         /// <summary>
         /// List of known commands.
         /// </summary>
-        private Dictionary<string, CommandInfo> _commands = new Dictionary<string, CommandInfo>();
+        private readonly Dictionary<string, CommandInfo> _commands = new Dictionary<string, CommandInfo>();
 
         /// <summary>
         /// Default command handler, used when an unknown command is
@@ -189,12 +189,12 @@ namespace Engine.Util
         /// <summary>
         /// Input cursor offset.
         /// </summary>
-        private int _cursor = 0;
+        private int _cursor;
 
         /// <summary>
         /// The history of commands a user entered.
         /// </summary>
-        private List<string> _history = new List<string>();
+        private readonly List<string> _history = new List<string>();
 
         /// <summary>
         /// Which history index we last copied.
@@ -204,7 +204,7 @@ namespace Engine.Util
         /// <summary>
         /// Current user input.
         /// </summary>
-        private StringBuilder _input = new StringBuilder();
+        private readonly StringBuilder _input = new StringBuilder();
 
         /// <summary>
         /// Backup of our last input, before cycling through the history.
@@ -372,10 +372,10 @@ namespace Engine.Util
         /// <param name="gameTime">Unused.</param>
         public override void Draw(GameTime gameTime)
         {
-            if (IsOpen && BackgroundColor != null && SpriteBatch != null && Font != null)
+            if (IsOpen && SpriteBatch != null && Font != null)
             {
-                Rectangle bounds = ComputeBounds();
-                int numBufferLines = ComputeNumberOfVisibleLines() - 1;
+                var bounds = ComputeBounds();
+                var numBufferLines = ComputeNumberOfVisibleLines() - 1;
 
                 SpriteBatch.Begin();
 
@@ -392,7 +392,7 @@ namespace Engine.Util
                     BackgroundColor);
 
                 // Command line. We need to know the number of lines we have to properly render the background.
-                List<String> inputWrapped = WrapText("> " + _input, bounds.Width - Padding * 2);
+                var inputWrapped = WrapText("> " + _input, bounds.Width - Padding * 2);
 
                 SpriteBatch.Draw(_pixelTexture,
                     new Rectangle(bounds.X + Padding, bounds.Y + Padding + (numBufferLines - inputWrapped.Count + 1) * Font.LineSpacing,
@@ -402,11 +402,11 @@ namespace Engine.Util
                 // Draw text. From bottom to top, for line wrapping.
 
                 // Get rendering position.
-                Vector2 position = new Vector2(bounds.X + Padding, bounds.Y + Padding + numBufferLines * Font.LineSpacing);
+                var position = new Vector2(bounds.X + Padding, bounds.Y + Padding + numBufferLines * Font.LineSpacing);
 
                 // Draw the current command line.
                 {
-                    for (int i = inputWrapped.Count - 1; i >= 0 && numBufferLines >= 0; --i, --numBufferLines)
+                    for (var i = inputWrapped.Count - 1; i >= 0 && numBufferLines >= 0; --i, --numBufferLines)
                     {
                         SpriteBatch.DrawString(Font, inputWrapped[i], position, TextColor);
                         position.Y -= Font.LineSpacing;
@@ -416,7 +416,7 @@ namespace Engine.Util
                     if (((int)gameTime.TotalGameTime.TotalSeconds & 1) == 0 || (new TimeSpan(DateTime.Now.Ticks - _lastKeyPress.Ticks).TotalSeconds < 1))
                     {
                         int cursorLine;
-                        int cursorCounter = _cursor + 2;
+                        var cursorCounter = _cursor + 2;
                         for (cursorLine = 0; cursorLine < inputWrapped.Count - 1; ++cursorLine)
                         {
                             if (cursorCounter < inputWrapped[cursorLine].Length)
@@ -425,12 +425,12 @@ namespace Engine.Util
                             }
                             cursorCounter -= inputWrapped[cursorLine].Length;
                         }
-                        int cursorX = bounds.X + Padding + (int)Font.MeasureString(inputWrapped[cursorLine].Substring(0, cursorCounter)).X;
-                        int cursorY = bounds.Y + Padding + (ComputeNumberOfVisibleLines() - (inputWrapped.Count - cursorLine)) * Font.LineSpacing;
+                        var cursorX = bounds.X + Padding + (int)Font.MeasureString(inputWrapped[cursorLine].Substring(0, cursorCounter)).X;
+                        var cursorY = bounds.Y + Padding + (ComputeNumberOfVisibleLines() - (inputWrapped.Count - cursorLine)) * Font.LineSpacing;
                         int cursorWidth;
                         if (inputWrapped[cursorLine].Length > cursorCounter)
                         {
-                            cursorWidth = (int)Font.MeasureString(inputWrapped[cursorLine][cursorCounter].ToString()).X;
+                            cursorWidth = (int)Font.MeasureString(inputWrapped[cursorLine][cursorCounter].ToString(CultureInfo.InvariantCulture)).X;
                         }
                         else
                         {
@@ -442,11 +442,11 @@ namespace Engine.Util
                 }
 
                 // Draw text buffer.
-                for (int j = _buffer.Count - 1 - _scroll; j >= 0 && numBufferLines >= 0; --j)
+                for (var j = _buffer.Count - 1 - _scroll; j >= 0 && numBufferLines >= 0; --j)
                 {
-                    List<String> wrapped = WrapText(_buffer[j], bounds.Width - Padding * 2);
+                    var wrapped = WrapText(_buffer[j], bounds.Width - Padding * 2);
 
-                    for (int i = wrapped.Count - 1; i >= 0 && numBufferLines >= 0; --i, --numBufferLines)
+                    for (var i = wrapped.Count - 1; i >= 0 && numBufferLines >= 0; --i, --numBufferLines)
                     {
                         SpriteBatch.DrawString(Font, wrapped[i], position, TextColor);
                         position.Y -= Font.LineSpacing;
@@ -491,7 +491,7 @@ namespace Engine.Util
             if (Array.TrueForAll(names, s => !String.IsNullOrWhiteSpace(s)) &&
                 handler != null && (help == null || Array.TrueForAll(help, s => !String.IsNullOrWhiteSpace(s))))
             {
-                var info = new CommandInfo((string[])names.Clone(), handler, (string[])help.Clone());
+                var info = new CommandInfo((string[])names.Clone(), handler, help == null ? null : (string[])help.Clone());
                 foreach (var command in names)
                 {
                     // Remove old variant, if there is one.
@@ -549,10 +549,10 @@ namespace Engine.Util
 
             // Parse the input into separate strings, allowing for string literals.
             var matches = ArgPattern.Matches(command);
-            List<string> args = new List<string>();
-            for (int i = 0; i < matches.Count; ++i)
+            var args = new List<string>();
+            for (var i = 0; i < matches.Count; ++i)
             {
-                string match = matches[i].Groups[1].Value;
+                var match = matches[i].Groups[1].Value;
                 if (match.Length > 1 && match[0] == '"' && match[match.Length - 1] == '"')
                 {
                     match = match.Substring(1, match.Length - 2);
@@ -568,12 +568,12 @@ namespace Engine.Util
             {
                 try
                 {
-                    _commands[args[0]].handler(args.ToArray());
+                    _commands[args[0]].Handler(args.ToArray());
                 }
                 catch (Exception e)
                 {
 #if DEBUG
-                    WriteLine("Error: " + e.ToString());
+                    WriteLine("Error: " + e);
 #else
                     WriteLine("Error: " + e.Message);
 #endif
@@ -595,30 +595,6 @@ namespace Engine.Util
         }
 
         /// <summary>
-        /// Log some text to the console.
-        /// </summary>
-        /// <param name="message">the message to log.</param>
-        public void WriteLine(string message)
-        {
-            if (message == null)
-            {
-                return;
-            }
-            message = message.Replace("\r\n", "\n").Replace("\r", "\n");
-            string[] lines = message.Split('\n');
-            _buffer.AddRange(lines);
-            if (_buffer.Count > BufferSize)
-            {
-                _buffer.RemoveRange(0, _buffer.Count - BufferSize);
-            }
-
-            foreach (var line in lines)
-            {
-                OnLineWritten(new LineWrittenEventArgs(line));
-            }
-        }
-
-        /// <summary>
         /// Log some formatted text to the console.
         /// </summary>
         /// <param name="format">the text format.</param>
@@ -629,7 +605,20 @@ namespace Engine.Util
             {
                 return;
             }
-            WriteLine(String.Format(CultureInfo.CurrentCulture, format, args));
+
+            var message = String.Format(CultureInfo.CurrentCulture, format, args).
+                Replace("\r\n", "\n").Replace("\r", "\n");
+            var lines = message.Split('\n');
+            _buffer.AddRange(lines);
+            if (_buffer.Count > BufferSize)
+            {
+                _buffer.RemoveRange(0, _buffer.Count - BufferSize);
+            }
+
+            foreach (var line in lines)
+            {
+                OnLineWritten(new LineWrittenEventArgs(line));
+            }
         }
 
         #endregion
@@ -665,14 +654,7 @@ namespace Engine.Util
                         {
                             --_historyIndex;
                             _input.Clear();
-                            if (_historyIndex == -1)
-                            {
-                                _input.Append(_inputBackup);
-                            }
-                            else
-                            {
-                                _input.Append(_history[_historyIndex]);
-                            }
+                            _input.Append(_historyIndex == -1 ? _inputBackup : _history[_historyIndex]);
                             _cursor = _input.Length;
                             ResetTabCompletion();
                         }
@@ -692,58 +674,37 @@ namespace Engine.Util
                     case Keys.Left:
                         if (IsControlPressed())
                         {
-                            int startIndex = System.Math.Max(0, _cursor - 1);
+                            int startIndex = Math.Max(0, _cursor - 1);
                             while (startIndex > 0 && startIndex < _input.Length && _input[startIndex] == ' ')
                             {
                                 --startIndex;
                             }
-                            int index = _input.ToString().LastIndexOf(' ', startIndex);
-                            if (index == -1)
-                            {
-                                _cursor = 0;
-                            }
-                            else
-                            {
-                                _cursor = System.Math.Min(_input.Length, index + 1);
-                            }
+                            var index = _input.ToString().LastIndexOf(' ', startIndex);
+                            _cursor = index == -1 ? 0 : Math.Min(_input.Length, index + 1);
                         }
                         else
                         {
-                            _cursor = System.Math.Max(0, _cursor - 1);
+                            _cursor = Math.Max(0, _cursor - 1);
                         }
                         ResetTabCompletion();
                         break;
                     case Keys.PageDown:
-                        if (IsShiftPressed())
-                        {
-                            _scroll = 0;
-                        }
-                        else
-                        {
-                            _scroll = System.Math.Max(0, _scroll - EntriesToScroll);
-                        }
+                        _scroll = IsShiftPressed() ? 0 : Math.Max(0, _scroll - EntriesToScroll);
                         break;
                     case Keys.PageUp:
-                        if (IsShiftPressed())
-                        {
-                            _scroll = System.Math.Max(0, _buffer.Count - 1);
-                        }
-                        else
-                        {
-                            _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll + EntriesToScroll));
-                        }
+                        _scroll = IsShiftPressed() ? Math.Max(0, _buffer.Count - 1) : Math.Max(0, Math.Min(_buffer.Count - 1, _scroll + EntriesToScroll));
                         break;
                     case Keys.Right:
                         if (IsControlPressed())
                         {
-                            int index = _input.ToString().IndexOf(' ', _cursor);
+                            var index = _input.ToString().IndexOf(' ', _cursor);
                             if (index == -1)
                             {
                                 _cursor = _input.Length;
                             }
                             else
                             {
-                                _cursor = System.Math.Min(_input.Length, index + 1);
+                                _cursor = Math.Min(_input.Length, index + 1);
                                 while (_cursor < _input.Length && _input[_cursor] == ' ')
                                 {
                                     ++_cursor;
@@ -752,7 +713,7 @@ namespace Engine.Util
                         }
                         else
                         {
-                            _cursor = System.Math.Min(_input.Length, _cursor + 1);
+                            _cursor = Math.Min(_input.Length, _cursor + 1);
                         }
                         ResetTabCompletion();
                         break;
@@ -769,16 +730,16 @@ namespace Engine.Util
                             if (_inputBeforeTab.Length > 0)
                             {
                                 // For looping backwards.
-                                int previousIndex = _tabCompleteIndex;
+                                var previousIndex = _tabCompleteIndex;
                                 // Tracks the index in the command list we're
                                 // currently at.
-                                int numMatches = -1;
+                                var numMatches = -1;
                                 // This flag is set if we find something, and
                                 // unset if we continue iterating. This allows
                                 // us to wrap back to the beginning.
                                 // In reverse search, this flag is used to
                                 // track whether we already had a match.
-                                bool flag = false;
+                                var flag = false;
                                 foreach (var command in _commands)
                                 {
                                     if (command.Key.StartsWith(_inputBeforeTab, StringComparison.Ordinal))
@@ -796,15 +757,12 @@ namespace Engine.Util
                                             {
                                                 break;
                                             }
-                                            else
-                                            {
-                                                // Found a match we can use.
-                                                _input.Clear();
-                                                _input.Append(command.Key);
-                                                _cursor = _input.Length;
-                                                _tabCompleteIndex = numMatches;
-                                                flag = true;
-                                            }
+                                            // Found a match we can use.
+                                            _input.Clear();
+                                            _input.Append(command.Key);
+                                            _cursor = _input.Length;
+                                            _tabCompleteIndex = numMatches;
+                                            flag = true;
                                         }
                                         else
                                         {
@@ -896,19 +854,20 @@ namespace Engine.Util
 
         private void HandleCharacterEntered(char ch)
         {
-            if (IsOpen && !char.IsControl(ch))
+            if (!IsOpen || char.IsControl(ch))
             {
-                // Don't take c and v if control is pressed (clipboard commands).
-                if ((ch == 'c' || ch == 'v') && IsControlPressed())
-                {
-                    return;
-                }
-
-                // Else insert the char into our input.
-                _input.Insert(_cursor, ch);
-                ++_cursor;
-                ResetTabCompletion();
+                return;
             }
+            // Don't take c and v if control is pressed (clipboard commands).
+            if ((ch == 'c' || ch == 'v') && IsControlPressed())
+            {
+                return;
+            }
+
+            // Else insert the char into our input.
+            _input.Insert(_cursor, ch);
+            ++_cursor;
+            ResetTabCompletion();
         }
 
         /// <summary>
@@ -918,7 +877,7 @@ namespace Engine.Util
         {
             if (IsOpen)
             {
-                _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll + System.Math.Sign(ticks) * EntriesToScroll));
+                _scroll = Math.Max(0, Math.Min(_buffer.Count - 1, _scroll + Math.Sign(ticks) * EntriesToScroll));
             }
         }
 
@@ -958,11 +917,11 @@ namespace Engine.Util
 
         private List<string> WrapText(string text, int width)
         {
-            List<string> result = new List<string>();
+            var result = new List<string>();
             do
             {
                 // Use last value as initial guess.
-                int split = FindSplit(text, 0, text.Length, true, width);
+                var split = FindSplit(text, 0, text.Length, true, width);
                 result.Add(text.Substring(0, split));
                 text = text.Substring(split);
             }
@@ -977,15 +936,8 @@ namespace Engine.Util
             {
                 return low;
             }
-            int measure = (int)Font.MeasureString(text.Substring(0, mid)).X;
-            if (measure <= width)
-            {
-                return FindSplit(text, mid, high, true, width);
-            }
-            else
-            {
-                return FindSplit(text, low, mid, false, width);
-            }
+            var measure = (int)Font.MeasureString(text.Substring(0, mid)).X;
+            return measure <= width ? FindSplit(text, mid, high, true, width) : FindSplit(text, low, mid, false, width);
         }
 
         private void ResetInput()
@@ -1019,25 +971,25 @@ namespace Engine.Util
         {
             WriteLine("Known commands:");
 
-            HashSet<string> shown = new HashSet<string>();
+            var shown = new HashSet<string>();
 
             foreach (var command in _commands.Values)
             {
-                if (shown.Contains(command.names[0]))
+                if (shown.Contains(command.Names[0]))
                 {
                     continue;
                 }
 
-                WriteLine(" " + command.names[0] + (command.names.Length > 1 ? (" [" + String.Join(", ", command.names, 1, command.names.Length - 1) + "]") : ""));
-                if (command.help != null)
+                WriteLine(" " + command.Names[0] + (command.Names.Length > 1 ? (" [" + String.Join(", ", command.Names, 1, command.Names.Length - 1) + "]") : ""));
+                if (command.Help != null)
                 {
-                    foreach (var entry in command.help)
+                    foreach (var entry in command.Help)
                     {
                         WriteLine("  " + entry);
                     }
                 }
 
-                foreach (var name in command.names)
+                foreach (var name in command.Names)
                 {
                     shown.Add(name);
                 }
@@ -1068,26 +1020,26 @@ namespace Engine.Util
         /// <summary>
         /// All names for this command.
         /// </summary>
-        public readonly string[] names;
+        public readonly string[] Names;
 
         /// <summary>
         /// The handler method for this command.
         /// </summary>
-        public readonly CommandHandler handler;
+        public readonly CommandHandler Handler;
 
         /// <summary>
         /// Help text to display via the help command.
         /// </summary>
-        public readonly string[] help;
+        public readonly string[] Help;
 
         /// <summary>
         /// Creates a new helper object with the given values.
         /// </summary>
         public CommandInfo(string[] names, CommandHandler handler, string[] help)
         {
-            this.names = names;
-            this.handler = handler;
-            this.help = help;
+            this.Names = names;
+            this.Handler = handler;
+            this.Help = help;
         }
     }
 

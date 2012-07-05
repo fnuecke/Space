@@ -81,7 +81,7 @@ namespace Space.Graphics
         /// <summary>
         /// Rotation direction (and speed) of the base image.
         /// </summary>
-        private Vector2 _surfaceRotation;
+        private readonly Vector2 _surfaceRotation;
 
         /// <summary>
         /// The current game time to base our rotation on.
@@ -96,10 +96,12 @@ namespace Space.Graphics
             : base(game, "Shaders/Planet")
         {
             var random = new Random();
-            _surfaceRotation.X = ((float)random.NextDouble() + 1f) / 2f;
-            _surfaceRotation.Y = ((float)random.NextDouble() + 1f) / 2f;
-            _surfaceRotation.Normalize();
-            _surfaceRotation *= 5 * Math.Sign(random.NextDouble() - 0.5);
+            Vector2 surfaceRotation;
+            surfaceRotation.X = ((float)random.NextDouble() + 1f) / 2f;
+            surfaceRotation.Y = ((float)random.NextDouble() + 1f) / 2f;
+            surfaceRotation.Normalize();
+            surfaceRotation *= 5 * Math.Sign(random.NextDouble() - 0.5);
+            _surfaceRotation = surfaceRotation;
         }
 
         #endregion

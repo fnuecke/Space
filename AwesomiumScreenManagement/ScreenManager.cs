@@ -388,6 +388,11 @@ input[type=""text""], input[type=""password""], textarea {
                 throw new ArgumentException("Invalid name, must not be empty.");
             }
 
+            if (_screens.Count < 1)
+            {
+                return;
+            }
+
             var screen = _screens.Peek();
             if (screen != null && screen.JSMethodHandler != null)
             {

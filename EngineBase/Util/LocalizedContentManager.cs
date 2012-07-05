@@ -26,7 +26,7 @@ namespace Engine.Util
         /// <summary>
         /// Used for locking to support multi-threaded loading.
         /// </summary>
-        private object _lock = new object();
+        private readonly object _lock = new object();
 
         #endregion
 
@@ -93,7 +93,7 @@ namespace Engine.Util
 
         #region Copy-Pasta of non-public XNA stuff -.-
 
-        protected static string GetCleanPath(string path)
+        private static string GetCleanPath(string path)
         {
             path = path.Replace('/', '\\');
             path = path.Replace(@"\.\", @"\");
@@ -103,19 +103,12 @@ namespace Engine.Util
             }
             while (path.EndsWith(@"\."))
             {
-                if (path.Length > @"\.".Length)
-                {
-                    path = path.Substring(0, path.Length - @"\.".Length);
-                }
-                else
-                {
-                    path = @"\";
-                }
+                path = path.Length > @"\.".Length ? path.Substring(0, path.Length - @"\.".Length) : @"\";
             }
-            int startIndex = 1;
+            var startIndex = 1;
             while (startIndex < path.Length)
             {
-                startIndex = path.IndexOf(@"\..\", startIndex);
+                startIndex = path.IndexOf(@"\..\", startIndex, StringComparison.Ordinal);
                 if (startIndex < 0)
                 {
                     break;
@@ -139,9 +132,9 @@ namespace Engine.Util
 
         private static int CollapseParentDirectory(ref string path, int position, int removeLength)
         {
-            int startIndex = path.LastIndexOf('\\', position - 1) + 1;
+            var startIndex = path.LastIndexOf('\\', position - 1) + 1;
             path = path.Remove(startIndex, (position - startIndex) + removeLength);
-            return System.Math.Max(startIndex - 1, 1);
+            return Math.Max(startIndex - 1, 1);
         }
 
         #endregion

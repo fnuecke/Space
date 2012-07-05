@@ -16,7 +16,7 @@
         /// Get the next sample value from the gaussian distribution.
         /// </summary>
         /// <param name="mu">The distribution's mean.</param>
-        /// <param name="mu">The distribution's standard deviation.</param>
+        /// <param name="sigma">The distribution's standard deviation.</param>
         double NextSample(double mu, double sigma);
         
         /// <summary>
@@ -24,7 +24,7 @@
         /// clamp it to the 2*sigma interval around mu.
         /// </summary>
         /// <param name="mu">The distribution's mean.</param>
-        /// <param name="mu">The distribution's standard deviation.</param>
+        /// <param name="sigma">The distribution's standard deviation.</param>
         double NextSampleClamped(double mu, double sigma);
     }
 }

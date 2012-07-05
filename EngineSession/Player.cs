@@ -20,27 +20,24 @@ namespace Engine.Session
         /// <summary>
         /// Some arbitrary data associated with the player.
         /// </summary>
-        public object Data;
+        public readonly object Data;
 
         internal Player(int number, string name, object data)
         {
-            this.Number = number;
-            this.Name = name;
-            this.Data = data;
+            Number = number;
+            Name = name;
+            Data = data;
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is Player)
-            {
-                return ((Player)obj).Number == this.Number;
-            }
-            return false;
+            var player = obj as Player;
+            return player != null && (player).Number == Number;
         }
 
         public override int GetHashCode()
         {
-            return this.Number.GetHashCode();
+            return Number.GetHashCode();
         }
 
         public override string ToString()

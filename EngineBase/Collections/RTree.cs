@@ -325,7 +325,7 @@ namespace Engine.Collections
         private InnerNode ChooseNode(Node node, int parentLevel)
         {
             
-            InnerNode testnode = (InnerNode)root;
+            var testnode = (InnerNode)root;
             while (testnode.Level!=parentLevel)
             {
                 testnode = MMBMinNode(testnode, node.Boundingbox);
@@ -1069,7 +1069,7 @@ namespace Engine.Collections
                     return false;
                 }
 
-                Entry e = obj as Entry;
+                var e = obj as Entry;
                 if (e == null)
                 {
                     return false;

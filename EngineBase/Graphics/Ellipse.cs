@@ -77,17 +77,17 @@ namespace Engine.Graphics
             base.AdjustBounds();
             
             // Top left.
-            _vertices[0].Position.X -= _thickness / 2;
-            _vertices[0].Position.Y += _thickness / 2;
+            Vertices[0].Position.X -= _thickness / 2;
+            Vertices[0].Position.Y += _thickness / 2;
             // Top right.
-            _vertices[1].Position.X += _thickness / 2;
-            _vertices[1].Position.Y += _thickness / 2;
+            Vertices[1].Position.X += _thickness / 2;
+            Vertices[1].Position.Y += _thickness / 2;
             // Bottom left.
-            _vertices[2].Position.X -= _thickness / 2;
-            _vertices[2].Position.Y -= _thickness / 2;
+            Vertices[2].Position.X -= _thickness / 2;
+            Vertices[2].Position.Y -= _thickness / 2;
             // Bottom right.
-            _vertices[3].Position.X += _thickness / 2;
-            _vertices[3].Position.Y -= _thickness / 2;
+            Vertices[3].Position.X += _thickness / 2;
+            Vertices[3].Position.Y -= _thickness / 2;
         }
 
         #endregion

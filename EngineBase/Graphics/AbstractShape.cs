@@ -37,7 +37,7 @@ namespace Engine.Graphics
         /// <summary>
         /// The graphics device to which this shape will be rendered.
         /// </summary>
-        public GraphicsDevice GraphicsDevice { get { return _device; } }
+        public GraphicsDevice GraphicsDevice { get { return Device; } }
 
         /// <summary>
         /// The center for this shape.
@@ -133,19 +133,19 @@ namespace Engine.Graphics
         #region Fields
 
         /// <summary>
+        /// The graphics device we'll be drawing on.
+        /// </summary>
+        protected readonly GraphicsDevice Device;
+
+        /// <summary>
         /// The shader we use to draw the ellipse.
         /// </summary>
         protected readonly Effect Effect;
 
         /// <summary>
-        /// The graphics device we'll be drawing on.
-        /// </summary>
-        protected GraphicsDevice _device;
-
-        /// <summary>
         /// The list of vertices making up our quad.
         /// </summary>
-        protected QuadVertex[] _vertices = new QuadVertex[4];
+        protected readonly QuadVertex[] Vertices = new QuadVertex[4];
 
         /// <summary>
         /// Whether our vertices are valid, i.e. correspond to the set shape
@@ -198,17 +198,17 @@ namespace Engine.Graphics
             {
                 Effect = game.Content.Load<Effect>(effectName);
             }
-            _device = game.GraphicsDevice;
+            Device = game.GraphicsDevice;
 
             // Set texture coordinates.
-            _vertices[0].Tex0.X = -1;
-            _vertices[0].Tex0.Y = -1;
-            _vertices[1].Tex0.X = 1;
-            _vertices[1].Tex0.Y = -1;
-            _vertices[2].Tex0.X = -1;
-            _vertices[2].Tex0.Y = 1;
-            _vertices[3].Tex0.X = 1;
-            _vertices[3].Tex0.Y = 1;
+            Vertices[0].Tex0.X = -1;
+            Vertices[0].Tex0.Y = -1;
+            Vertices[1].Tex0.X = 1;
+            Vertices[1].Tex0.Y = -1;
+            Vertices[2].Tex0.X = -1;
+            Vertices[2].Tex0.Y = 1;
+            Vertices[3].Tex0.X = 1;
+            Vertices[3].Tex0.Y = 1;
         }
 
         #endregion
@@ -279,7 +279,7 @@ namespace Engine.Graphics
             foreach (var pass in Effect.CurrentTechnique.Passes)
             {
                 pass.Apply();
-                _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
+                Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2, VertexDeclaration);
             }
         }
 
@@ -321,17 +321,17 @@ namespace Engine.Graphics
                 // Position to the specified center. Make our coordinate system
                 // start at the top left, so subtract half the screen width,
                 // and invert the y axis (also subtract there).
-                * Matrix.CreateTranslation(_center.X - _device.Viewport.Width / 2f, _device.Viewport.Height / 2f - _center.Y, 0)
+                * Matrix.CreateTranslation(_center.X - Device.Viewport.Width / 2f, Device.Viewport.Height / 2f - _center.Y, 0)
                 // Apply scaling to the object (at this point to scale relative
                 // to its center)
                 * Matrix.CreateScale(_scale)
                 // Finally map what we have to screen space.
-                * Matrix.CreateOrthographic(_device.Viewport.Width, _device.Viewport.Height, _device.Viewport.MinDepth, _device.Viewport.MaxDepth);
+                * Matrix.CreateOrthographic(Device.Viewport.Width, Device.Viewport.Height, Device.Viewport.MinDepth, Device.Viewport.MaxDepth);
             // Apply transform to each corner.
-            Vector3.Transform(ref _vertices[0].Position, ref transform, out _vertices[0].Position);
-            Vector3.Transform(ref _vertices[1].Position, ref transform, out _vertices[1].Position);
-            Vector3.Transform(ref _vertices[2].Position, ref transform, out _vertices[2].Position);
-            Vector3.Transform(ref _vertices[3].Position, ref transform, out _vertices[3].Position);
+            Vector3.Transform(ref Vertices[0].Position, ref transform, out Vertices[0].Position);
+            Vector3.Transform(ref Vertices[1].Position, ref transform, out Vertices[1].Position);
+            Vector3.Transform(ref Vertices[2].Position, ref transform, out Vertices[2].Position);
+            Vector3.Transform(ref Vertices[3].Position, ref transform, out Vertices[3].Position);
 
             _verticesAreValid = true;
         }
@@ -346,21 +346,21 @@ namespace Engine.Graphics
             // Reset corner positions.
 
             // Top left.
-            _vertices[0].Position.X = -_width / 2 - 0.5f;
-            _vertices[0].Position.Y = _height / 2 + 0.5f;
-            _vertices[0].Position.Z = 0;
+            Vertices[0].Position.X = -_width / 2 - 0.5f;
+            Vertices[0].Position.Y = _height / 2 + 0.5f;
+            Vertices[0].Position.Z = 0;
             // Top right.
-            _vertices[1].Position.X = _width / 2 + 0.5f;
-            _vertices[1].Position.Y = _height / 2 + 0.5f;
-            _vertices[1].Position.Z = 0;
+            Vertices[1].Position.X = _width / 2 + 0.5f;
+            Vertices[1].Position.Y = _height / 2 + 0.5f;
+            Vertices[1].Position.Z = 0;
             // Bottom left.
-            _vertices[2].Position.X = -_width / 2 - 0.5f;
-            _vertices[2].Position.Y = -_height / 2 - 0.5f;
-            _vertices[2].Position.Z = 0;
+            Vertices[2].Position.X = -_width / 2 - 0.5f;
+            Vertices[2].Position.Y = -_height / 2 - 0.5f;
+            Vertices[2].Position.Z = 0;
             // Bottom right.
-            _vertices[3].Position.X = _width / 2 + 0.5f;
-            _vertices[3].Position.Y = -_height / 2 - 0.5f;
-            _vertices[3].Position.Z = 0;
+            Vertices[3].Position.X = _width / 2 + 0.5f;
+            Vertices[3].Position.Y = -_height / 2 - 0.5f;
+            Vertices[3].Position.Z = 0;
         }
 
         /// <summary>

@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Util;
 
 namespace Engine.IO
@@ -16,17 +15,17 @@ namespace Engine.IO
         /// as a waterproof security anyways. Just make it easier to stay
         /// honest, so to say ;)
         /// </summary>
-        private static readonly byte[] key = new byte[] { 58, 202, 84, 179, 32, 50, 8, 252, 238, 91, 233, 209, 25, 203, 183, 237, 33, 159, 103, 243, 93, 46, 67, 2, 169, 100, 96, 33, 196, 195, 244, 113 };
+        private static readonly byte[] Key = new byte[] { 58, 202, 84, 179, 32, 50, 8, 252, 238, 91, 233, 209, 25, 203, 183, 237, 33, 159, 103, 243, 93, 46, 67, 2, 169, 100, 96, 33, 196, 195, 244, 113 };
 
         /// <summary>
         /// Globally used initial vector.
         /// </summary>
-        private static readonly byte[] vector = new byte[] { 112, 155, 187, 151, 110, 190, 166, 5, 137, 147, 104, 79, 199, 129, 24, 187 };
+        private static readonly byte[] Vector = new byte[] { 112, 155, 187, 151, 110, 190, 166, 5, 137, 147, 104, 79, 199, 129, 24, 187 };
 
         /// <summary>
         /// Cryptography instance we'll use for mangling our packets.
         /// </summary>
-        private static readonly SimpleCrypto crypto = new SimpleCrypto(key, vector);
+        private static readonly SimpleCrypto Crypto = new SimpleCrypto(Key, Vector);
 
         #endregion
 
@@ -35,7 +34,7 @@ namespace Engine.IO
         /// <summary>
         /// The underlying stream.
         /// </summary>
-        private IPacketStream _stream;
+        private readonly IPacketStream _stream;
 
         #endregion
 
@@ -57,7 +56,7 @@ namespace Engine.IO
         {
             _stream.Dispose();
 
-            GC.SuppressFinalize(this);
+            //GC.SuppressFinalize(this);
         }
         
         #endregion
@@ -78,7 +77,7 @@ namespace Engine.IO
             {
                 if (packet != null)
                 {
-                    return new Packet(crypto.Decrypt(packet.ReadByteArray()));
+                    return new Packet(Crypto.Decrypt(packet.ReadByteArray()));
                 }
             }
             return null;
@@ -97,7 +96,7 @@ namespace Engine.IO
         {
             using (var data = new Packet())
             {
-                return _stream.Write(data.Write(crypto.Encrypt(packet.GetBuffer())));
+                return _stream.Write(data.Write(Crypto.Encrypt(packet.GetBuffer())));
             }
         }
 

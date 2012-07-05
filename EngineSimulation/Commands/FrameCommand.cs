@@ -66,7 +66,7 @@ namespace Engine.Simulation.Commands
         public override bool Equals(Command other)
         {
             return other is FrameCommand && base.Equals(other) &&
-                ((FrameCommand)other).Frame == this.Frame;
+                ((FrameCommand)other).Frame == Frame;
         }
 
         #endregion

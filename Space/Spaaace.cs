@@ -313,7 +313,7 @@ namespace Space
 #if DEBUG
             // Default handler to interpret everything that is not a command
             // as a script.
-            _console.SetDefaultCommandHandler(command => _client.Controller.PushLocalCommand(new Space.Simulation.Commands.ScriptCommand(command)));
+            _console.SetDefaultCommandHandler(command => _client.Controller.PushLocalCommand(new Simulation.Commands.ScriptCommand(command)));
 
             _console.AddCommand("d_renderindex",
                 args =>
@@ -669,14 +669,14 @@ namespace Space
                         _spriteBatch.Begin();
 
                         var position = info.Position;
-                        var cellX = ((int)position.X) >> ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
-                        var cellY = ((int)position.Y) >> ComponentSystem.Systems.CellSystem.CellSizeShiftAmount;
+                        var cellX = ((int)position.X) >> CellSystem.CellSizeShiftAmount;
+                        var cellY = ((int)position.Y) >> CellSystem.CellSizeShiftAmount;
                         sb.AppendFormat("Position: ({0:f}, {1:f}), Cell: ({2}, {3})\n", position.X, position.Y, cellX, cellY);
 
                         sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
 
-                        var index = manager.GetSystem<Engine.ComponentSystem.Systems.IndexSystem>();
-                        var camera = manager.GetSystem<ComponentSystem.Systems.CameraSystem>();
+                        var index = manager.GetSystem<IndexSystem>();
+                        var camera = manager.GetSystem<CameraSystem>();
                         if (index != null)
                         {
                             if (_indexGroupMask >= 0)

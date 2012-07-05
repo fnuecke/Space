@@ -24,7 +24,7 @@ namespace Engine.Network
         /// <summary>
         /// The header we use for all messages.
         /// </summary>
-        private byte[] _header;
+        private readonly byte[] _header;
 
         #endregion
         
@@ -62,17 +62,17 @@ namespace Engine.Network
         /// as a waterproof security anyways. Just make it easier to stay
         /// honest, so to say ;)
         /// </summary>
-        private static readonly byte[] key = new byte[] { 58, 202, 84, 179, 32, 50, 8, 252, 238, 91, 233, 209, 25, 203, 183, 237, 33, 159, 103, 243, 93, 46, 67, 2, 169, 100, 96, 33, 196, 195, 244, 113 };
+        private static readonly byte[] Key = new byte[] { 58, 202, 84, 179, 32, 50, 8, 252, 238, 91, 233, 209, 25, 203, 183, 237, 33, 159, 103, 243, 93, 46, 67, 2, 169, 100, 96, 33, 196, 195, 244, 113 };
 
         /// <summary>
         /// Globally used initial vector.
         /// </summary>
-        private static readonly byte[] vector = new byte[] { 112, 155, 187, 151, 110, 190, 166, 5, 137, 147, 104, 79, 199, 129, 24, 187 };
+        private static readonly byte[] Vector = new byte[] { 112, 155, 187, 151, 110, 190, 166, 5, 137, 147, 104, 79, 199, 129, 24, 187 };
 
         /// <summary>
         /// Cryptography instance we'll use for mangling our packets.
         /// </summary>
-        private static readonly SimpleCrypto crypto = new SimpleCrypto(key, vector);
+        private static readonly SimpleCrypto Crypto = new SimpleCrypto(Key, Vector);
 
         /// <summary>
         /// Bit set to mark a message as compressed.
@@ -103,10 +103,7 @@ namespace Engine.Network
                 throw new ArgumentNullException("endPoint");
             }
 
-            if (packet != null)
-            {
-                HandleSend(MakeMessage(packet), endPoint);
-            }
+            HandleSend(MakeMessage(packet), endPoint);
         }
 
         /// <summary>
@@ -121,7 +118,6 @@ namespace Engine.Network
         /// Use this to implement actual sending of the given data to the given endpoint.
         /// </summary>
         /// <param name="message">the data to send/</param>
-        /// <param name="bytes">the length of the data to send.</param>
         /// <param name="endPoint">the end point to send it to.</param>
         protected abstract void HandleSend(byte[] message, IPEndPoint endPoint);
 
@@ -133,24 +129,21 @@ namespace Engine.Network
         /// Call this to handle a received message.
         /// </summary>
         /// <param name="buffer">the data to inject.</param>
-        /// <param name="remote">the remote host the message was received from.</param>
+        /// <param name="endPoint">the remote host the message was received from.</param>
         /// <returns>whether the message was parsed successfully.</returns>
         protected bool HandleReceive(byte[] buffer, IPEndPoint endPoint)
         {
             // Can we parse it?
             using (var message = ParseMessage(buffer))
             {
-                if (message != null)
-                {
-                    // Yes, so let's pass it on.
-                    OnData(new ProtocolDataEventArgs(endPoint, message));
-                    return true;
-                }
-                else
+                if (message == null)
                 {
                     // Invalid data received.
                     return false;
                 }
+                // Yes, so let's pass it on.
+                OnData(new ProtocolDataEventArgs(endPoint, message));
+                return true;
             }
         }
 
@@ -165,12 +158,12 @@ namespace Engine.Network
             if (IsHeaderValid(message))
             {
                 // Get message length plus compressed bit.
-                uint info = BitConverter.ToUInt32(message, _header.Length);
-                int length = (int)(info & ~CompressedMask);
-                bool flag = (info & CompressedMask) > 0;
+                var info = BitConverter.ToUInt32(message, _header.Length);
+                var length = (int)(info & ~CompressedMask);
+                var flag = (info & CompressedMask) > 0;
 
                 // OK, get the decrypted packet.
-                var data = crypto.Decrypt(message, _header.Length + sizeof(uint), length);
+                var data = Crypto.Decrypt(message, _header.Length + sizeof(uint), length);
 
                 // Is this a compressed message?
                 if (flag)
@@ -211,7 +204,7 @@ namespace Engine.Network
             }
 
             // Encrypt the message.
-            data = crypto.Encrypt(data);
+            data = Crypto.Encrypt(data);
 
             if ((data.Length & CompressedMask) > 0)
             {
@@ -219,7 +212,7 @@ namespace Engine.Network
             }
 
             // Build the final message: header, then length + compressed bit, then data.
-            byte[] result = new byte[_header.Length + sizeof(uint) + data.Length];
+            var result = new byte[_header.Length + sizeof(uint) + data.Length];
             _header.CopyTo(result, 0);
             BitConverter.GetBytes((uint)data.Length | (flag ? CompressedMask : 0u)).CopyTo(result, _header.Length);
             data.CopyTo(result, _header.Length + sizeof(uint));

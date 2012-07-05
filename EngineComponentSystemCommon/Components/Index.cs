@@ -21,12 +21,9 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public ulong IndexGroupsMask
 #if DEBUG // Don't allow directly changing from outside.
-        {
-            get { return _indexGroupsMask; }
-        }
-        private ulong _indexGroupsMask;
+        { get; private set; }
 #else
-                     ;
+        ;
 #endif
 
         /// <summary>
@@ -34,10 +31,7 @@ namespace Engine.ComponentSystem.Components
         /// </summary>
         public Rectangle Bounds
 #if DEBUG // Don't allow directly changing from outside.
-        {
-            get { return _bounds; }
-        }
-        private Rectangle _bounds;
+        { get; private set; }
 #else
                          ;
 #endif
@@ -92,7 +86,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="groups">The index groups.</param>
         public Index Initialize(ulong groups)
         {
-            SetIndexGroupsMask(IndexGroupsMask);
+            SetIndexGroupsMask(groups);
 
             return this;
         }
@@ -126,23 +120,21 @@ namespace Engine.ComponentSystem.Components
             }
 
             var oldMask = IndexGroupsMask;
-#if DEBUG
-            _indexGroupsMask = groups;
-#else
             IndexGroupsMask = groups;
-#endif
 
-            if (Manager != null)
+            if (Manager == null)
             {
-                IndexGroupsChanged message;
-                message.Entity = Entity;
-
-                // Figure out which groups are new and which fell away.
-                message.AddedIndexGroups = groups & ~oldMask;
-                message.RemovedIndexGroups = oldMask & ~groups;
-
-                Manager.SendMessage(ref message);
+                return;
             }
+
+            IndexGroupsChanged message;
+            message.Entity = Entity;
+
+            // Figure out which groups are new and which fell away.
+            message.AddedIndexGroups = groups & ~oldMask;
+            message.RemovedIndexGroups = oldMask & ~groups;
+
+            Manager.SendMessage(ref message);
         }
 
         /// <summary>
@@ -150,18 +142,14 @@ namespace Engine.ComponentSystem.Components
         /// message, if possible.
         /// </summary>
         /// <param name="bounds">The new bounds for the indexable.</param>
-        public void SetBounds(ref Rectangle bounds)
+        private void SetBounds(ref Rectangle bounds)
         {
             if (Bounds.Equals(bounds))
             {
                 return;
             }
 
-#if DEBUG
-            _bounds = bounds;
-#else
             Bounds = bounds;
-#endif
 
             if (Manager == null)
             {
@@ -180,7 +168,7 @@ namespace Engine.ComponentSystem.Components
         /// message, if possible.
         /// </summary>
         /// <param name="bounds">The new bounds for the indexable.</param>
-        public void SetBounds(Rectangle bounds)
+        private void SetBounds(Rectangle bounds)
         {
             SetBounds(ref bounds);
         }

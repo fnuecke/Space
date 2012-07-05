@@ -181,9 +181,9 @@ namespace Awesomium.Xna
         void SetAutoGenFilterType();
         void GetAutoGenFilterType();
         void GenerateMipSubLevels();
-        int GetLevelDesc(uint level, out D3DSURFACE_DESC Desc);
+        int GetLevelDesc(uint level, out D3DSURFACE_DESC desc);
         int GetSurfaceLevel(uint level, out IntPtr surfacePointer);
-        int LockRect(uint level, out D3DLOCKED_RECT LockedRect, RECT rect, int Flags);
+        int LockRect(uint level, out D3DLOCKED_RECT lockedRect, RECT rect, int flags);
         int UnlockRect(uint level);
         int AddDirtyRect(RECT pDirtyRect);
     }
@@ -193,9 +193,6 @@ namespace Awesomium.Xna
     internal static class TextureFormatConverter
     {
         #region XNA To DirectX by Reflection
-
-        [DllImport("msvcrt.dll", EntryPoint = "memcpy")]
-        public unsafe static extern void CopyMemory(IntPtr pDest, IntPtr pSrc, int length);
 
         public static unsafe void DirectBlit(IntPtr buffer, ref Texture2D texture2D)
         {
@@ -209,7 +206,7 @@ namespace Awesomium.Xna
             var size = texture2D.Width * texture2D.Height * 4;
             var src = (long*)buffer;
             var dest = (long*)memBuffer;
-            for (int i = 0; i < size / sizeof(long); i++)
+            for (var i = 0; i < size / sizeof(long); i++)
             {
                 dest[i] = src[i];
             }

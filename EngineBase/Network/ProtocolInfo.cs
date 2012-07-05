@@ -24,7 +24,7 @@ namespace Engine.Network
             get
             {
                 UpdateLists();
-                return inTraffic;
+                return _inTraffic;
             }
         }
 
@@ -36,29 +36,29 @@ namespace Engine.Network
             get
             {
                 UpdateLists();
-                return outTraffic;
+                return _outTraffic;
             }
         }
 
         /// <summary>
         /// Sampling of the sizes of packet sizes of incoming packets.
         /// </summary>
-        public ISampling<int> IncomingPacketSizes { get { return inPacketSizes; } }
+        public ISampling<int> IncomingPacketSizes { get { return _inPacketSizes; } }
 
         /// <summary>
         /// Sampling of the sizes of packet sizes of outgoing packets.
         /// </summary>
-        public ISampling<int> OutgoingPacketSizes { get { return outPacketSizes; } }
+        public ISampling<int> OutgoingPacketSizes { get { return _outPacketSizes; } }
 
         /// <summary>
         /// Sampling of the compression ratio of received packets.
         /// </summary>
-        public ISampling<double> IncomingPacketCompression { get { return inPacketCompression; } }
+        public ISampling<double> IncomingPacketCompression { get { return _inPacketCompression; } }
 
         /// <summary>
         /// Sampling of the compression ratio of sent packets.
         /// </summary>
-        public ISampling<double> OutgoingPacketCompression { get { return outPacketCompression; } }
+        public ISampling<double> OutgoingPacketCompression { get { return _outPacketCompression; } }
 
         #endregion
 
@@ -67,22 +67,22 @@ namespace Engine.Network
         /// <summary>
         /// Keeps track of incoming traffic over a certain interval of time.
         /// </summary>
-        private LinkedList<Dictionary<TrafficTypes, int>> inTraffic = new LinkedList<Dictionary<TrafficTypes, int>>();
+        private readonly LinkedList<Dictionary<TrafficTypes, int>> _inTraffic = new LinkedList<Dictionary<TrafficTypes, int>>();
 
         /// <summary>
         /// Keeps track of outgoing traffic over a certain interval of time.
         /// </summary>
-        private LinkedList<Dictionary<TrafficTypes, int>> outTraffic = new LinkedList<Dictionary<TrafficTypes, int>>();
+        private readonly LinkedList<Dictionary<TrafficTypes, int>> _outTraffic = new LinkedList<Dictionary<TrafficTypes, int>>();
 
         /// <summary>
         /// The time we last added something to the history.
         /// </summary>
-        private long currentSecond = (long)(new TimeSpan(DateTime.Now.Ticks).TotalSeconds);
+        private long _currentSecond = (long)(new TimeSpan(DateTime.Now.Ticks).TotalSeconds);
 
-        private IntSampling inPacketSizes = new IntSampling(100);
-        private IntSampling outPacketSizes = new IntSampling(100);
-        private DoubleSampling inPacketCompression = new DoubleSampling(100);
-        private DoubleSampling outPacketCompression = new DoubleSampling(100);
+        private readonly IntSampling _inPacketSizes = new IntSampling(100);
+        private readonly IntSampling _outPacketSizes = new IntSampling(100);
+        private readonly DoubleSampling _inPacketCompression = new DoubleSampling(100);
+        private readonly DoubleSampling _outPacketCompression = new DoubleSampling(100);
 
         #endregion
 
@@ -102,13 +102,13 @@ namespace Engine.Network
                 dict[TrafficTypes.Protocol] = 0;
                 dict[TrafficTypes.Invalid] = 0;
                 dict[TrafficTypes.Any] = 0;
-                inTraffic.AddLast(dict);
+                _inTraffic.AddLast(dict);
 
                 dict = new Dictionary<TrafficTypes, int>();
                 dict[TrafficTypes.Data] = 0;
                 dict[TrafficTypes.Protocol] = 0;
                 dict[TrafficTypes.Any] = 0;
-                outTraffic.AddLast(dict);
+                _outTraffic.AddLast(dict);
             }
         }
 
@@ -127,18 +127,18 @@ namespace Engine.Network
             switch (type)
             {
                 case TrafficTypes.Protocol:
-                    inTraffic.First.Value[type] += bytes;
+                    _inTraffic.First.Value[type] += bytes;
                     break;
                 case TrafficTypes.Data:
-                    inTraffic.First.Value[type] += bytes;
+                    _inTraffic.First.Value[type] += bytes;
                     break;
                 case TrafficTypes.Invalid:
-                    inTraffic.First.Value[type] += bytes;
+                    _inTraffic.First.Value[type] += bytes;
                     break;
                 case TrafficTypes.Any:
                     throw new ArgumentException("Must be a specific type when adding.");
             }
-            inTraffic.First.Value[TrafficTypes.Any] += bytes;
+            _inTraffic.First.Value[TrafficTypes.Any] += bytes;
         }
 
         /// <summary>
@@ -152,35 +152,35 @@ namespace Engine.Network
             switch (type)
             {
                 case TrafficTypes.Protocol:
-                    outTraffic.First.Value[type] += bytes;
+                    _outTraffic.First.Value[type] += bytes;
                     break;
                 case TrafficTypes.Data:
-                    outTraffic.First.Value[type] += bytes;
+                    _outTraffic.First.Value[type] += bytes;
                     break;
                 case TrafficTypes.Any:
                     throw new ArgumentException("Must be a specific type when adding.");
             }
-            outTraffic.First.Value[TrafficTypes.Any] += bytes;
+            _outTraffic.First.Value[TrafficTypes.Any] += bytes;
         }
 
         public void PutIncomingPacketSize(int size)
         {
-            inPacketSizes.Put(size);
+            _inPacketSizes.Put(size);
         }
 
         public void PutOutgoingPacketSize(int size)
         {
-            outPacketSizes.Put(size);
+            _outPacketSizes.Put(size);
         }
 
         public void PutIncomingPacketCompression(double ratio)
         {
-            inPacketCompression.Put(ratio);
+            _inPacketCompression.Put(ratio);
         }
 
         public void PutOutgoingPacketCompression(double ratio)
         {
-            outPacketCompression.Put(ratio);
+            _outPacketCompression.Put(ratio);
         }
 
         #endregion
@@ -192,13 +192,13 @@ namespace Engine.Network
         /// </summary>
         private void UpdateLists()
         {
-            long nowSecond = (long)(new TimeSpan(DateTime.Now.Ticks).TotalSeconds);
-            for (long createIdx = currentSecond; currentSecond < nowSecond; ++currentSecond)
+            var nowSecond = (long)(new TimeSpan(DateTime.Now.Ticks).TotalSeconds);
+            for (; _currentSecond < nowSecond; ++_currentSecond)
             {
-                Dictionary<TrafficTypes, int> dictInc = inTraffic.Last.Value;
-                Dictionary<TrafficTypes, int> dictOut = outTraffic.Last.Value;
-                inTraffic.RemoveLast();
-                outTraffic.RemoveLast();
+                var dictInc = _inTraffic.Last.Value;
+                var dictOut = _outTraffic.Last.Value;
+                _inTraffic.RemoveLast();
+                _outTraffic.RemoveLast();
                 foreach (var key in new List<TrafficTypes>(dictInc.Keys))
                 {
                     dictInc[key] = 0;
@@ -207,8 +207,8 @@ namespace Engine.Network
                 {
                     dictOut[key] = 0;
                 }
-                inTraffic.AddFirst(dictInc);
-                outTraffic.AddFirst(dictOut);
+                _inTraffic.AddFirst(dictInc);
+                _outTraffic.AddFirst(dictOut);
             }
         }
 

@@ -76,7 +76,9 @@ namespace Space.Simulation.Commands
         public override bool Equals(Command other)
         {
             return base.Equals(other) &&
-                PlayerNumber == ((RestoreProfileCommand)other).PlayerNumber;
+                   (Profile == null
+                        ? ((RestoreProfileCommand)other).Profile == null
+                        : Profile.Equals(((RestoreProfileCommand)other).Profile));
         }
 
         #endregion

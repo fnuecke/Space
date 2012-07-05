@@ -210,30 +210,33 @@ namespace Engine.ComponentSystem.RPG.Components
             var stackable = Manager.GetComponent<Stackable>(item.Value);
             if (stackable != null)
             {
-                for (int i = 0; i < _items.Count; i++)
+                for (var i = 0; i < _items.Count; i++)
                 {
-                    if (_items[i].HasValue)
+                    var itemEntry = _items[i];
+                    if (!itemEntry.HasValue)
                     {
-                        var otherItemType = Manager.GetComponent<Item>(_items[i].Value);
-                        var otherStackable = Manager.GetComponent<Stackable>(_items[i].Value);
-                        if (otherStackable != null &&
-                            otherItemType.Name.Equals(itemType.Name) &&
-                            otherStackable.Count < otherStackable.MaxCount)
-                        {
-                            // Found a non-full stack of matching type, add as many
-                            // as possible.
-                            int toAdd = Math.Min(otherStackable.MaxCount - otherStackable.Count, stackable.Count);
-                            otherStackable.Count += toAdd;
-                            stackable.Count -= toAdd;
+                        continue;
+                    }
 
-                            // We done yet?
-                            if (stackable.Count == 0)
-                            {
-                                // Yes and the stack was used up, delete it.
-                                Manager.RemoveEntity(item.Value);
-                                return;
-                            } // ... else we continue in search of the next stack.
-                        }
+                    var otherItemType = Manager.GetComponent<Item>(itemEntry.Value);
+                    var otherStackable = Manager.GetComponent<Stackable>(itemEntry.Value);
+                    if (otherStackable != null &&
+                        otherItemType.Name.Equals(itemType.Name) &&
+                        otherStackable.Count < otherStackable.MaxCount)
+                    {
+                        // Found a non-full stack of matching type, add as many
+                        // as possible.
+                        var toAdd = Math.Min(otherStackable.MaxCount - otherStackable.Count, stackable.Count);
+                        otherStackable.Count += toAdd;
+                        stackable.Count -= toAdd;
+
+                        // We done yet?
+                        if (stackable.Count == 0)
+                        {
+                            // Yes and the stack was used up, delete it.
+                            Manager.RemoveEntity(item.Value);
+                            return;
+                        } // ... else we continue in search of the next stack.
                     }
                 }
             }
@@ -245,21 +248,23 @@ namespace Engine.ComponentSystem.RPG.Components
             if (_isFixed)
             {
                 // Find the first free slot.
-                for (int i = 0; i < _items.Count; ++i)
+                for (var i = 0; i < _items.Count; ++i)
                 {
-                    if (!_items[i].HasValue)
+                    if (_items[i].HasValue)
                     {
-                        // Found one, store it.
-                        _items[i] = item;
-
-                        // Disable rendering, if available.
-                        var renderer = Manager.GetComponent<TextureRenderer>(item.Value);
-                        if (renderer != null)
-                        {
-                            renderer.Enabled = false;
-                        }
-                        return;
+                        continue;
                     }
+
+                    // Found one, store it.
+                    _items[i] = item;
+
+                    // Disable rendering, if available.
+                    var renderer = Manager.GetComponent<TextureRenderer>(item.Value);
+                    if (renderer != null)
+                    {
+                        renderer.Enabled = false;
+                    }
+                    return;
                 }
 
                 // No free slot found!
@@ -416,7 +421,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             if (_isFixed)
             {
-                for (int i = 0; i < _items.Count; i++)
+                for (var i = 0; i < _items.Count; i++)
                 {
                     if (_items[i] > 0)
                     {
@@ -426,7 +431,7 @@ namespace Engine.ComponentSystem.RPG.Components
             }
             else
             {
-                for (int i = 0; i < _items.Count; i++)
+                for (var i = 0; i < _items.Count; i++)
                 {
                     yield return _items[i];
                 }
@@ -472,7 +477,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
             // Write number of actual items.
             var count = 0;
-            for (int i = 0; i < _items.Count; i++)
+            for (var i = 0; i < _items.Count; i++)
             {
                 if (_items[i].HasValue)
                 {
@@ -482,13 +487,16 @@ namespace Engine.ComponentSystem.RPG.Components
             packet.Write(count);
 
             // Write actual item ids with their positions.
-            for (int i = 0; i < _items.Count; i++)
+            for (var i = 0; i < _items.Count; i++)
             {
-                if (_items[i].HasValue)
+                var itemEntry = _items[i];
+                if (!itemEntry.HasValue)
                 {
-                    packet.Write(i);
-                    packet.Write(_items[i].Value);
+                    continue;
                 }
+
+                packet.Write(i);
+                packet.Write(itemEntry.Value);
             }
 
             packet.Write(_isFixed);
@@ -505,17 +513,17 @@ namespace Engine.ComponentSystem.RPG.Components
             base.Depacketize(packet);
 
             _items.Clear();
-            int capacity = packet.ReadInt32();
+            var capacity = packet.ReadInt32();
             _items.Capacity = capacity;
-            for (int i = 0; i < capacity; i++)
+            for (var i = 0; i < capacity; i++)
             {
                 _items[i] = null;
             }
 
-            int numItems = packet.ReadInt32();
-            for (int i = 0; i < numItems; i++)
+            var numItems = packet.ReadInt32();
+            for (var i = 0; i < numItems; i++)
             {
-                int index = packet.ReadInt32();
+                var index = packet.ReadInt32();
                 _items[index] = packet.ReadInt32();
             }
 

@@ -69,7 +69,7 @@ namespace Engine.Serialization
                 _stream = null;
             }
 
-            GC.SuppressFinalize(this);
+            //GC.SuppressFinalize(this);
         }
 
         #endregion
@@ -368,7 +368,7 @@ namespace Engine.Serialization
         /// Writes the specified collection of objects.
         /// 
         /// <para>
-        /// Must byte read back using <see cref="ReadPacketizables()"/>.
+        /// Must byte read back using <see cref="ReadPacketizables{T}"/>.
         /// </para>
         /// 
         /// <para>
@@ -774,8 +774,13 @@ namespace Engine.Serialization
         public T ReadPacketizableWithTypeInfo<T>()
             where T : IPacketizable
         {
-            var type = ReadString();
-            return ReadPacketizableInto((T)Activator.CreateInstance(Type.GetType(type)));
+            var typeName = ReadString();
+            var type = Type.GetType(typeName);
+            if (type == null)
+            {
+                throw new InvalidOperationException("Trying to read an unknown type '" + typeName + "'.");
+            }
+            return ReadPacketizableInto((T)Activator.CreateInstance(type));
         }
 
         /// <summary>
@@ -1010,7 +1015,7 @@ namespace Engine.Serialization
         {
             if (HasInt32())
             {
-                return Available >= sizeof(int) + System.Math.Max(0, PeekInt32());
+                return Available >= sizeof(int) + Math.Max(0, PeekInt32());
             }
             return false;
         }

@@ -12,23 +12,26 @@ namespace Space.ComponentSystem.Util
     {
         #region Constants
 
-        private static readonly Dictionary<PlayerClassType, string> _shipLookup = new Dictionary<PlayerClassType, string>()
-        {
-            { PlayerClassType.Fighter, "Player" }
-        };
+        private static readonly Dictionary<PlayerClassType, string> ShipLookup =
+            new Dictionary<PlayerClassType, string>
+            {
+                {PlayerClassType.Fighter, "Player"}
+            };
 
-        private static readonly Dictionary<PlayerClassType, Dictionary<Type, string>> _itemLookup = new Dictionary<PlayerClassType, Dictionary<Type, string>>()
-        {
-            { PlayerClassType.Fighter, new Dictionary<Type, string>()
+        private static readonly Dictionary<PlayerClassType, Dictionary<Type, string>> ItemLookup =
+            new Dictionary<PlayerClassType, Dictionary<Type, string>>
+            {
                 {
-                    { typeof(Armor), "StarterArmor" },
-                    { typeof(Reactor), "StarterReactor" },
-                    { typeof(Sensor), "StarterSensor" },
-                    { typeof(Thruster), "StarterThruster" },
-                    { typeof(Weapon), "StarterWeapon" }
-                }
-            }
-        };
+                    PlayerClassType.Fighter, new Dictionary<Type, string>
+                                             {
+                                                 {typeof(Armor), "StarterArmor"},
+                                                 {typeof(Reactor), "StarterReactor"},
+                                                 {typeof(Sensor), "StarterSensor"},
+                                                 {typeof(Thruster), "StarterThruster"},
+                                                 {typeof(Weapon), "StarterWeapon"}
+                                             }
+                    }
+            };
 
         #endregion
 
@@ -42,7 +45,7 @@ namespace Space.ComponentSystem.Util
         /// <returns>The ship constraints.</returns>
         public static string GetShipFactoryName(this PlayerClassType playerClass)
         {
-            return _shipLookup[playerClass];
+            return ShipLookup[playerClass];
         }
 
         /// <summary>
@@ -54,9 +57,9 @@ namespace Space.ComponentSystem.Util
         /// <returns>The item constraints.</returns>
         public static string GetStarterItemFactoryName<T>(this PlayerClassType playerClass)
         {
-            if (_itemLookup[playerClass].ContainsKey(typeof(T)))
+            if (ItemLookup[playerClass].ContainsKey(typeof(T)))
             {
-                return _itemLookup[playerClass][typeof(T)];
+                return ItemLookup[playerClass][typeof(T)];
             }
             else
             {

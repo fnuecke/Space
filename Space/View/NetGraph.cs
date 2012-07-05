@@ -6,51 +6,58 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.View
 {
-    static class NetGraph
+    internal static class NetGraph
     {
-        private static Dictionary<SpriteBatch, Texture2D> pixelTextures = new Dictionary<SpriteBatch, Texture2D>();
+        private static readonly Dictionary<SpriteBatch, Texture2D> PixelTextures =
+            new Dictionary<SpriteBatch, Texture2D>();
 
         public static void Draw(IProtocolInfo info, Vector2 offset, SpriteFont font, SpriteBatch spriteBatch)
         {
-            if (!pixelTextures.ContainsKey(spriteBatch))
+            if (!PixelTextures.ContainsKey(spriteBatch))
             {
                 var pixelTexture = new Texture2D(spriteBatch.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-                pixelTexture.SetData(new[] { Color.White });
-                pixelTextures[spriteBatch] = pixelTexture;
+                pixelTexture.SetData(new[] {Color.White});
+                PixelTextures[spriteBatch] = pixelTexture;
             }
 
             // Settings.
             const int graphWidth = 180, graphHeight = 40;
 
             // Precompute stuff.
-            int minIncoming = int.MaxValue, maxIncoming = 0, avgIncoming = 0,
-                minOutgoing = int.MaxValue, maxOutgoing = 0, avgOutgoing = 0,
-                minTotal = int.MaxValue, maxTotal = 0, avgTotal = 0;
+            int minIncoming = int.MaxValue,
+                maxIncoming = 0,
+                avgIncoming = 0,
+                minOutgoing = int.MaxValue,
+                maxOutgoing = 0,
+                avgOutgoing = 0,
+                minTotal = int.MaxValue,
+                maxTotal = 0,
+                avgTotal = 0;
 
-            var values = new Tuple<int, Color>[System.Math.Max(info.IncomingTraffic.Count, info.OutgoingTraffic.Count) - 1][];
-            for (int i = 0; i < values.Length; ++i)
+            var values = new Tuple<int, Color>[Math.Max(info.IncomingTraffic.Count, info.OutgoingTraffic.Count) - 1][];
+            for (var i = 0; i < values.Length; ++i)
             {
-                values[i] = new Tuple<int, Color>[]
-                {
-                    Tuple.Create(0, Color.White),
-                    Tuple.Create(0, Color.White),
-                    Tuple.Create(0, Color.White),
-                    Tuple.Create(0, Color.White),
-                    Tuple.Create(0, Color.White)
-                };
+                values[i] = new[]
+                            {
+                                Tuple.Create(0, Color.White),
+                                Tuple.Create(0, Color.White),
+                                Tuple.Create(0, Color.White),
+                                Tuple.Create(0, Color.White),
+                                Tuple.Create(0, Color.White)
+                            };
             }
 
             {
                 // Skip first entry, as that one's subject to change.
-                int i = 1;
+                var i = 1;
                 var incoming = info.IncomingTraffic.First.Next;
                 var outgoing = info.OutgoingTraffic.First.Next;
                 while (i < info.IncomingTraffic.Count &&
-                        incoming != null && outgoing != null)
+                       incoming != null && outgoing != null)
                 {
-                    int subTotal = 0;
+                    var subTotal = 0;
                     {
-                        int val = incoming.Value[TrafficTypes.Any];
+                        var val = incoming.Value[TrafficTypes.Any];
                         if (val < minIncoming)
                         {
                             minIncoming = val;
@@ -102,42 +109,44 @@ namespace Space.View
             avgOutgoing /= info.HistoryLength - 1;
             avgTotal /= info.HistoryLength - 1;
 
-            string netInfo = String.Format("in: {0}|{1}|{2}|{3:f2}kB/s\n" +
-                                           "    aps: {12:f2}|apc: {13:f2}\n" +
-                                           "out: {4}|{5}|{6}|{7:f2}kB/s\n" +
-                                           "     aps: {14:f2}|apc: {15:f2}\n" +
-                                           "sum: {8}|{9}|{10}|{11:f2}kB/s",
-                                           minIncoming, maxIncoming, avgIncoming, avgIncoming / 1024f,
-                                           minOutgoing, maxOutgoing, avgOutgoing, avgOutgoing / 1024f,
-                                           minTotal, maxTotal, avgTotal, avgTotal / 1024f,
-                                           info.IncomingPacketSizes.Mean(), info.IncomingPacketCompression.Mean(),
-                                           info.OutgoingPacketSizes.Mean(), info.OutgoingPacketCompression.Mean());
+            var netInfo = String.Format("in: {0}|{1}|{2}|{3:f2}kB/s\n" +
+                                        "    aps: {12:f2}|apc: {13:f2}\n" +
+                                        "out: {4}|{5}|{6}|{7:f2}kB/s\n" +
+                                        "     aps: {14:f2}|apc: {15:f2}\n" +
+                                        "sum: {8}|{9}|{10}|{11:f2}kB/s",
+                                        minIncoming, maxIncoming, avgIncoming, avgIncoming / 1024f,
+                                        minOutgoing, maxOutgoing, avgOutgoing, avgOutgoing / 1024f,
+                                        minTotal, maxTotal, avgTotal, avgTotal / 1024f,
+                                        info.IncomingPacketSizes.Mean(), info.IncomingPacketCompression.Mean(),
+                                        info.OutgoingPacketSizes.Mean(), info.OutgoingPacketCompression.Mean());
             var netInfoMeasure = font.MeasureString(netInfo);
             var netInfoPosition = offset;
             var graphPosition = new Vector2(offset.X, offset.Y + netInfoMeasure.Y + 5);
 
-            float graphNormX = graphWidth / (float)System.Math.Max(info.IncomingTraffic.Count, info.OutgoingTraffic.Count);
-            float graphNormY = graphHeight / (float)System.Math.Max(maxTotal, 1);
+            var graphNormX = graphWidth / (float)Math.Max(info.IncomingTraffic.Count, info.OutgoingTraffic.Count);
+            var graphNormY = graphHeight / (float)Math.Max(maxTotal, 1);
 
             // Draw it.
             spriteBatch.Begin();
             spriteBatch.DrawString(font, netInfo, netInfoPosition, Color.White);
 
             // Draw the bars.
-            int barIdx = 0;
+            var barIdx = 0;
             foreach (var bar in values)
             {
-                int barX = (int)(graphPosition.X + barIdx * graphNormX);
-                float bottom = graphPosition.Y + graphHeight;
+                var barX = (int)(graphPosition.X + barIdx * graphNormX);
+                var bottom = graphPosition.Y + graphHeight;
                 foreach (var segment in bar)
                 {
-                    if (segment.Item1 > 0)
+                    if (segment.Item1 <= 0)
                     {
-                        int top = (int)(bottom - segment.Item1 * graphNormY);
-                        var line = new Rectangle(barX, top, (int)graphNormX, (int)(bottom - top));
-                        spriteBatch.Draw(pixelTextures[spriteBatch], line, segment.Item2);
-                        bottom = top;
+                        continue;
                     }
+
+                    var top = (int)(bottom - segment.Item1 * graphNormY);
+                    var line = new Rectangle(barX, top, (int)graphNormX, (int)(bottom - top));
+                    spriteBatch.Draw(PixelTextures[spriteBatch], line, segment.Item2);
+                    bottom = top;
                 }
                 ++barIdx;
             }

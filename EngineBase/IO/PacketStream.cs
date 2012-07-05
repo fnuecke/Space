@@ -66,17 +66,17 @@ namespace Engine.IO
         /// <summary>
         /// The underlying stream to read data from.
         /// </summary>
-        private T _source;
+        private readonly T _source;
 
         /// <summary>
         /// The underlying stream to write data to.
         /// </summary>
-        private T _sink;
+        private readonly T _sink;
 
         /// <summary>
         /// Buffer for reading from the stream.
         /// </summary>
-        private byte[] _buffer = new byte[512];
+        private readonly byte[] _buffer = new byte[512];
 
         /// <summary>
         /// The actual number of valid bytes in our buffer.
@@ -92,7 +92,7 @@ namespace Engine.IO
         /// Used to store any received data. This is used to build
         /// a single message (over and over).
         /// </summary>
-        private MemoryStream _messageStream = new MemoryStream();
+        private readonly MemoryStream _messageStream = new MemoryStream();
 
         /// <summary>
         /// Used to remember the length for the message we're currently
@@ -204,8 +204,8 @@ namespace Engine.IO
             {
                 // Message size unknown. Figure out how much more we need to read, and
                 // read at most that much.
-                int remainingSizeBytes = sizeof(int) - (int)_messageStream.Position;
-                int sizeBytesToRead = System.Math.Min(Available, remainingSizeBytes);
+                var remainingSizeBytes = sizeof(int) - (int)_messageStream.Position;
+                var sizeBytesToRead = Math.Min(Available, remainingSizeBytes);
                 _messageStream.Write(_buffer, _bufferReadPosition, sizeBytesToRead);
                 _bufferReadPosition += sizeBytesToRead;
 
@@ -233,8 +233,8 @@ namespace Engine.IO
             {
                 // We already know our current message size. See if we can complete the
                 // message.
-                int remainingBodyBytes = _messageLength - (int)_messageStream.Position;
-                int bodyBytesToRead = System.Math.Min(Available, remainingBodyBytes);
+                var remainingBodyBytes = _messageLength - (int)_messageStream.Position;
+                var bodyBytesToRead = Math.Min(Available, remainingBodyBytes);
                 _messageStream.Write(_buffer, _bufferReadPosition, bodyBytesToRead);
                 _bufferReadPosition += bodyBytesToRead;
 
@@ -242,7 +242,7 @@ namespace Engine.IO
                 if (_messageStream.Position == _messageLength)
                 {
                     // Yes. Wrap up a packet, reset and return it.
-                    Packet packet = new Packet(_messageStream.ToArray());
+                    var packet = new Packet(_messageStream.ToArray());
 
                     // Reset for the next message.
                     _messageStream.SetLength(0);

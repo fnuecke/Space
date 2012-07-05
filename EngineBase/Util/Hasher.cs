@@ -28,7 +28,7 @@ namespace Engine.Util
             {
                 unchecked
                 {
-                    int result = hash;
+                    int result = _hash;
                     result += result << 13;
                     result ^= result >> 7;
                     result += result << 3;
@@ -44,14 +44,14 @@ namespace Engine.Util
         #region Fields
         
         /// <summary>
-        /// Multiplicator for single data.
+        /// Multiplicand for single data.
         /// </summary>
-        private const int p = 16777619;
+        private const int P = 16777619;
 
         /// <summary>
         /// Current working value of the hash.
         /// </summary>
-        private int hash;
+        private int _hash;
 
         #endregion
 
@@ -62,7 +62,7 @@ namespace Engine.Util
         {
             unchecked
             {
-                hash = (int)2166136261;
+                _hash = (int)2166136261;
             }
         }
 
@@ -76,7 +76,7 @@ namespace Engine.Util
         {
             unchecked
             {
-                hash = (hash ^ value) * p;
+                _hash = (_hash ^ value) * P;
             }
             return this;
         }

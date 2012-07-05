@@ -13,7 +13,7 @@ namespace Engine.Session
     {
         #region Logger
 
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -97,7 +97,7 @@ namespace Engine.Session
         #region Construction / Destruction
 
         public HybridClientSession()
-            : base(new UdpProtocol(_udpHeader))
+            : base(new UdpProtocol(UdpHeader))
         {
             ConnectionState = ClientState.Unconnected;
             _localPlayerNumber = -1;
@@ -155,21 +155,18 @@ namespace Engine.Session
                                 {
                                     break;
                                 }
-                                else
+                                var type = (SessionMessage)packet.ReadByte();
+
+                                // Statistics.
+                                Info.PutIncomingTraffic(packet.Length,
+                                                        type == SessionMessage.Data
+                                                            ? TrafficTypes.Data
+                                                            : TrafficTypes.Protocol);
+                                Info.PutIncomingPacketSize(packet.Length);
+
+                                using (var data = packet.ReadPacket())
                                 {
-                                    var type = (SessionMessage)packet.ReadByte();
-
-                                    // Statistics.
-                                    _information.PutIncomingTraffic(packet.Length,
-                                                                    type == SessionMessage.Data
-                                                                        ? TrafficTypes.Data
-                                                                        : TrafficTypes.Protocol);
-                                    _information.PutIncomingPacketSize(packet.Length);
-
-                                    using (var data = packet.ReadPacket())
-                                    {
-                                        HandleTcpData(type, data);
-                                    }
+                                    HandleTcpData(type, data);
                                 }
                             }
                         }
@@ -177,13 +174,13 @@ namespace Engine.Session
                     catch (IOException ex)
                     {
                         // Connection failed, disconnect.
-                        logger.TraceException("Socket connection died.", ex);
+                        Logger.TraceException("Socket connection died.", ex);
                         Reset();
                     }
                     catch (PacketException ex)
                     {
                         // Received invalid packet from server.
-                        logger.WarnException("Invalid packet received from server.", ex);
+                        Logger.WarnException("Invalid packet received from server.", ex);
                         Reset();
                     }
                 }
@@ -202,10 +199,10 @@ namespace Engine.Session
         public void Search()
         {
             // Send as a multicast / broadcast.
-            logger.Trace("Sending ping to search for open games.");
+            Logger.Trace("Sending ping to search for open games.");
             using (var packet = new Packet())
             {
-                _udp.Send(packet.Write((byte)SessionMessage.GameInfoRequest), _defaultMulticastEndpoint);
+                Udp.Send(packet.Write((byte)SessionMessage.GameInfoRequest), DefaultMulticastEndpoint);
             }
         }
 
@@ -221,7 +218,7 @@ namespace Engine.Session
             {
                 throw new InvalidOperationException("Must leave the current session first.");
             }
-            logger.Debug("Begin connecting to host at '{0}'.", remote);
+            Logger.Debug("Begin connecting to host at '{0}'.", remote);
             _playerName = playerName;
             _playerData = (TPlayerData)playerData;
             ConnectionState = ClientState.Connecting;
@@ -245,7 +242,7 @@ namespace Engine.Session
             {
                 throw new InvalidOperationException("Incompatible server type.");
             }
-            logger.Debug("Begin connecting to local server.");
+            Logger.Debug("Begin connecting to local server.");
             _playerName = playerName;
             _playerData = (TPlayerData)playerData;
             ConnectionState = ClientState.Connecting;
@@ -253,7 +250,7 @@ namespace Engine.Session
             // Check if the server is already full.
             if (server.NumPlayers >= server.MaxPlayers)
             {
-                logger.Debug("Join failed, server already full.");
+                Logger.Debug("Join failed, server already full.");
                 Reset();
                 return;
             }
@@ -278,9 +275,9 @@ namespace Engine.Session
                     var written = _stream.Write(packet);
 
                     // Statistics.
-                    _information.PutOutgoingTraffic(written, TrafficTypes.Protocol);
-                    _information.PutOutgoingPacketSize(written);
-                    _information.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
+                    Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
+                    Info.PutOutgoingPacketSize(written);
+                    Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
                 }
             }
 
@@ -315,7 +312,7 @@ namespace Engine.Session
         /// </summary>
         /// <param name="type">The type of the message to send.</param>
         /// <param name="packet">The data to send.</param>
-        protected override void Send(SessionMessage type, Packet packet)
+        protected override void Send(SessionMessage type, Packet packet = null)
         {
             if (ConnectionState != ClientState.Connected)
             {
@@ -329,20 +326,20 @@ namespace Engine.Session
                     var written = _stream.Write(wrapper);
 
                     // Statistics.
-                    _information.PutOutgoingTraffic(written,
+                    Info.PutOutgoingTraffic(written,
                                                     type == SessionMessage.Data
                                                         ? TrafficTypes.Data
                                                         : TrafficTypes.Protocol);
-                    _information.PutOutgoingPacketSize(written);
+                    Info.PutOutgoingPacketSize(written);
                     if (packet != null)
                     {
-                        _information.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
+                        Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
                     }
                 }
             }
             catch (IOException ex)
             {
-                logger.TraceException("Socket connection died.", ex);
+                Logger.TraceException("Socket connection died.", ex);
                 Reset();
             }
         }
@@ -364,7 +361,7 @@ namespace Engine.Session
                 }
                 try
                 {
-                    logger.Debug("Connected to host, sending actual join request.");
+                    Logger.Debug("Connected to host, sending actual join request.");
                     _tcp.EndConnect(result);
                     _stream =
                         new EncryptedPacketStream(new CompressedPacketStream(new NetworkPacketStream(_tcp.GetStream())));
@@ -380,16 +377,16 @@ namespace Engine.Session
                             var written = _stream.Write(packet);
 
                             // Statistics.
-                            _information.PutOutgoingTraffic(written, TrafficTypes.Protocol);
-                            _information.PutOutgoingPacketSize(written);
-                            _information.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
+                            Info.PutOutgoingTraffic(written, TrafficTypes.Protocol);
+                            Info.PutOutgoingPacketSize(written);
+                            Info.PutOutgoingPacketCompression((packet.Length / (float)written) - 1f);
                         }
                     }
                 }
                 catch (SocketException ex)
                 {
                     // Connection failed.
-                    logger.DebugException("Join failed.", ex);
+                    Logger.DebugException("Join failed.", ex);
                     _resetRequested = true;
                 }
             }
@@ -403,7 +400,7 @@ namespace Engine.Session
             // Get the message type.
             if (!e.Data.HasByte())
             {
-                logger.Warn("Received invalid packet, no SessionMessage type.");
+                Logger.Warn("Received invalid packet, no SessionMessage type.");
                 return;
             }
             var type = (SessionMessage)e.Data.ReadByte();
@@ -420,7 +417,7 @@ namespace Engine.Session
                             if (packet == null)
                             {
                                 // Bad data.
-                                logger.Warn("Invalid GameInfoResponse (no data).");
+                                Logger.Warn("Invalid GameInfoResponse (no data).");
                             }
                             else
                             {
@@ -435,7 +432,7 @@ namespace Engine.Session
                                     // Get additional data.
                                     using (var customData = packet.ReadPacket())
                                     {
-                                        logger.Trace(
+                                        Logger.Trace(
                                             "Got game info from host '{0}': {1}/{2} players, data of length {3}.",
                                             e.RemoteEndPoint, numPlayers, maxPlayers, customData.Length);
 
@@ -447,7 +444,7 @@ namespace Engine.Session
                                 catch (PacketException ex)
                                 {
                                     // Bad data.
-                                    logger.WarnException("Invalid GameInfoResponse.", ex);
+                                    Logger.WarnException("Invalid GameInfoResponse.", ex);
                                 }
                             }
                         }
@@ -465,14 +462,14 @@ namespace Engine.Session
                             }
                             catch (PacketException ex)
                             {
-                                logger.WarnException("Invalid Data.", ex);
+                                Logger.WarnException("Invalid Data.", ex);
                             }
                         }
                         break;
 
                         // Nothing else is handled via UDP.
                     default:
-                        logger.Debug("Unknown SessionMessage via UDP: {0}.", type);
+                        Logger.Debug("Unknown SessionMessage via UDP: {0}.", type);
                         break;
                 }
             }
@@ -506,7 +503,7 @@ namespace Engine.Session
                         }
 
                         // Allocate array for the players in the session.
-                        _players = new Player[MaxPlayers];
+                        Players = new Player[MaxPlayers];
 
                         // Get other game relevant data (e.g. game state).
                         using (var joinData = packet.ReadPacket())
@@ -518,7 +515,7 @@ namespace Engine.Session
                                 int playerNumber = packet.ReadInt32();
 
                                 // Sanity checks.
-                                if (playerNumber < 0 || playerNumber >= MaxPlayers || _players[playerNumber] != null)
+                                if (playerNumber < 0 || playerNumber >= MaxPlayers || Players[playerNumber] != null)
                                 {
                                     throw new PacketException("Invalid player number.");
                                 }
@@ -530,7 +527,7 @@ namespace Engine.Session
                                 var playerData = packet.ReadPacketizable<TPlayerData>();
 
                                 // All OK, add the player.
-                                _players[playerNumber] = new Player(playerNumber, playerName, playerData);
+                                Players[playerNumber] = new Player(playerNumber, playerName, playerData);
                             }
 
                             // New state :)
@@ -538,12 +535,12 @@ namespace Engine.Session
 
                             if (_tcp != null)
                             {
-                                logger.Debug("Successfully joined game at '{0}'.",
+                                Logger.Debug("Successfully joined game at '{0}'.",
                                              (IPEndPoint)_tcp.Client.RemoteEndPoint);
                             }
                             else
                             {
-                                logger.Debug("Successfully joined local game.");
+                                Logger.Debug("Successfully joined local game.");
                             }
 
                             // OK, let the program know.
@@ -570,7 +567,7 @@ namespace Engine.Session
                         int playerNumber = packet.ReadInt32();
 
                         // Sanity checks.
-                        if (playerNumber < 0 || playerNumber >= MaxPlayers || _players[playerNumber] != null)
+                        if (playerNumber < 0 || playerNumber >= MaxPlayers || Players[playerNumber] != null)
                         {
                             throw new PacketException("Invalid player number.");
                         }
@@ -582,10 +579,10 @@ namespace Engine.Session
                         var playerData = packet.ReadPacketizable<TPlayerData>();
 
                         // All OK, add the player.
-                        _players[playerNumber] = new Player(playerNumber, playerName, playerData);
+                        Players[playerNumber] = new Player(playerNumber, playerName, playerData);
 
                         // The the local program about it.
-                        OnPlayerJoined(new PlayerEventArgs(_players[playerNumber]));
+                        OnPlayerJoined(new PlayerEventArgs(Players[playerNumber]));
                     }
                     break;
 
@@ -610,8 +607,8 @@ namespace Engine.Session
                         else
                         {
                             // OK, remove the player.
-                            var player = _players[playerNumber];
-                            _players[playerNumber] = null;
+                            var player = Players[playerNumber];
+                            Players[playerNumber] = null;
 
                             // Tell the local program about it.
                             OnPlayerLeft(new PlayerEventArgs(player));
@@ -629,7 +626,7 @@ namespace Engine.Session
 
                 default:
                     // Ignore everything else.
-                    logger.Trace("Unknown SessionMessage via TCP: {0}.", type);
+                    Logger.Trace("Unknown SessionMessage via TCP: {0}.", type);
                     break;
             }
         }
@@ -649,11 +646,11 @@ namespace Engine.Session
             {
                 lock (this)
                 {
-                    logger.Debug("Resetting session.");
+                    Logger.Debug("Resetting session.");
 
                     OnDisconnecting(EventArgs.Empty);
 
-                    _players = null;
+                    Players = null;
                     _localPlayerNumber = -1;
                     NumPlayers = 0;
                     MaxPlayers = 0;

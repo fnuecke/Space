@@ -73,8 +73,8 @@ namespace Engine.Simulation.Commands
         /// </returns>
         public virtual bool Equals(Command other)
         {
-            return other != null && other.Type.Equals(this.Type) &&
-                other.PlayerNumber == this.PlayerNumber;
+            return other != null && other.Type.Equals(Type) &&
+                other.PlayerNumber == PlayerNumber;
         }
 
         #endregion

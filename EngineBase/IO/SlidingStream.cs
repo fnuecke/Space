@@ -60,17 +60,17 @@ namespace Engine.IO
                 throw new IOException("Stream has been closed.");
             }
 
-            int currentCount = 0;
+            var currentCount = 0;
 
             // Read until we read all we're allowed to, or have nothing left.
             while (currentCount != count && _pendingSegments.Count > 0)
             {
                 // Get the first available segment.
-                ArraySegment<byte> segment = _pendingSegments.First.Value;
+                var segment = _pendingSegments.First.Value;
                 _pendingSegments.RemoveFirst();
 
                 // Copy from it as much as we need or as much as we can.
-                int toCopy = System.Math.Min(segment.Count, count - currentCount);
+                var toCopy = Math.Min(segment.Count, count - currentCount);
                 Array.Copy(segment.Array, segment.Offset, buffer, offset + currentCount, toCopy);
                 currentCount += toCopy;
 
@@ -91,7 +91,7 @@ namespace Engine.IO
                 throw new IOException("Stream has been closed.");
             }
 
-            byte[] copy = new byte[count];
+            var copy = new byte[count];
             Array.Copy(buffer, offset, copy, 0, count);
             _pendingSegments.AddLast(new ArraySegment<byte>(copy));
         }

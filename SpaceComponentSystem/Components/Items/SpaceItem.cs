@@ -42,9 +42,9 @@ namespace Space.ComponentSystem.Components
         /// <param name="quality">The quality level of the item.</param>
         public SpaceItem Initialize(string name, string iconName, ItemQuality quality)
         {
-            base.Initialize(name, iconName);
+            Initialize(name, iconName);
 
-            this.Quality = quality;
+            Quality = quality;
 
             return this;
         }

@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Util;
 
 namespace Engine.IO
@@ -11,7 +10,7 @@ namespace Engine.IO
         /// <summary>
         /// The underlying stream.
         /// </summary>
-        private IPacketStream _stream;
+        private readonly IPacketStream _stream;
 
         #endregion
 
@@ -33,7 +32,7 @@ namespace Engine.IO
         {
             _stream.Dispose();
 
-            GC.SuppressFinalize(this);
+            //GC.SuppressFinalize(this);
         }
 
         #endregion

@@ -12,6 +12,7 @@ namespace Engine.Session
     {
         #region Types
 
+        /// <summary>
         /// Message types sessions send around for internal logic.
         /// </summary>
         protected enum SessionMessage
@@ -66,12 +67,12 @@ namespace Engine.Session
         /// <summary>
         /// The default multicast group address we'll use for searching games.
         /// </summary>
-        protected static readonly IPEndPoint _defaultMulticastEndpoint = new IPEndPoint(new IPAddress(new byte[] { 224, 1, 33, 7 }), 51337);
+        protected static readonly IPEndPoint DefaultMulticastEndpoint = new IPEndPoint(new IPAddress(new byte[] { 224, 1, 33, 7 }), 51337);
 
         /// <summary>
         /// Udp header to use to identify messages part of our protocol.
         /// </summary>
-        protected static readonly byte[] _udpHeader;
+        protected static readonly byte[] UdpHeader;
 
         #endregion
 
@@ -99,7 +100,7 @@ namespace Engine.Session
         /// <summary>
         /// Get a list of all players in the game.
         /// </summary>
-        public IEnumerable<Player> AllPlayers { get { for (int i = 0; i < MaxPlayers; i++) { if (HasPlayer(i)) { yield return GetPlayer(i); } } } }
+        public IEnumerable<Player> AllPlayers { get { for (var i = 0; i < MaxPlayers; i++) { if (HasPlayer(i)) { yield return GetPlayer(i); } } } }
 
         /// <summary>
         /// Number of players currently in the game.
@@ -114,7 +115,7 @@ namespace Engine.Session
         /// <summary>
         /// Protocol information for this session (TCP only).
         /// </summary>
-        public IProtocolInfo Information { get { return _information; } }
+        public IProtocolInfo Information { get { return Info; } }
 
         #endregion
 
@@ -123,17 +124,17 @@ namespace Engine.Session
         /// <summary>
         /// The connection to the server, used to (unreliably) send data.
         /// </summary>
-        protected UdpProtocol _udp;
+        protected UdpProtocol Udp;
 
         /// <summary>
-        /// Information on data we send and receive via tcp.
+        /// Information on data we send and receive via TCP.
         /// </summary>
-        protected ProtocolInfo _information;
+        protected readonly ProtocolInfo Info;
 
         /// <summary>
         /// List of all players known to be in this session.
         /// </summary>
-        protected Player[] _players;
+        protected Player[] Players;
 
         #endregion
         
@@ -142,19 +143,19 @@ namespace Engine.Session
         static AbstractHybridSession()
         {
             // Get ourselves a unique header, based on the program we're running in.
-            _udpHeader = BitConverter.GetBytes(
+            UdpHeader = BitConverter.GetBytes(
                 new Hasher().
                     Put(Encoding.UTF8.GetBytes(System.Reflection.Assembly.GetExecutingAssembly().GetName().FullName)).
                     Put(Encoding.UTF8.GetBytes(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())).
                     Value);
         }
 
-        public AbstractHybridSession(UdpProtocol udp)
+        protected AbstractHybridSession(UdpProtocol udp)
         {
-            _udp = udp;
-            _udp.Data += HandleUdpData;
+            Udp = udp;
+            Udp.Data += HandleUdpData;
 
-            _information = new ProtocolInfo(60);
+            Info = new ProtocolInfo(60);
         }
 
         public void Dispose()
@@ -168,13 +169,13 @@ namespace Engine.Session
         {
             if (disposing)
             {
-                if (_udp != null)
+                if (Udp != null)
                 {
-                    _udp.Dispose();
-                    _udp = null;
+                    Udp.Dispose();
+                    Udp = null;
                 }
 
-                _players = null;
+                Players = null;
             }
 
             GC.SuppressFinalize(this);
@@ -188,7 +189,7 @@ namespace Engine.Session
         public virtual void Update()
         {
             // Drive UDP network.
-            _udp.Receive();
+            Udp.Receive();
         }
 
         /// <summary>
@@ -202,7 +203,7 @@ namespace Engine.Session
             {
                 throw new ArgumentException("playerNumber");
             }
-            return (_players == null) ? null : _players[playerNumber];
+            return (Players == null) ? null : Players[playerNumber];
         }
 
         /// <summary>
@@ -216,7 +217,7 @@ namespace Engine.Session
             {
                 throw new ArgumentException("playerNumber");
             }
-            return (_players != null) && (_players[playerNumber] != null);
+            return (Players != null) && (Players[playerNumber] != null);
         }
 
         /// <summary>
@@ -250,20 +251,11 @@ namespace Engine.Session
         }
 
         /// <summary>
-        /// Sends a data-less message of the specified type.
-        /// </summary>
-        /// <param name="type">The type of the data-less message to send.</param>
-        protected void Send(SessionMessage type)
-        {
-            Send(type, null);
-        }
-
-        /// <summary>
         /// Sends a message of the specified type, with the specified data.
         /// </summary>
         /// <param name="type">The type of the message to send.</param>
         /// <param name="packet">The data to send.</param>
-        protected abstract void Send(SessionMessage type, Packet packet);
+        protected abstract void Send(SessionMessage type, Packet packet = null);
 
         #endregion
 

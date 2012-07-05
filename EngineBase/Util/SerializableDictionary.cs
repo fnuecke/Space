@@ -93,10 +93,10 @@ namespace Engine.Util
         private SerializableDictionary(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
-            int itemCount = info.GetInt32("itemsCount");
-            for (int i = 0; i < itemCount; i++)
+            var itemCount = info.GetInt32("itemsCount");
+            for (var i = 0; i < itemCount; i++)
             {
-                KeyValuePair<TKey, TVal> kvp = (KeyValuePair<TKey, TVal>)info.GetValue(String.Format(CultureInfo.InvariantCulture, "Item{0}", i), typeof(KeyValuePair<TKey, TVal>));
+                var kvp = (KeyValuePair<TKey, TVal>)info.GetValue(String.Format(CultureInfo.InvariantCulture, "Item{0}", i), typeof(KeyValuePair<TKey, TVal>));
                 Add(kvp.Key, kvp.Value);
             }
         }
@@ -117,7 +117,7 @@ namespace Engine.Util
         void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("itemsCount", Count);
-            int itemIdx = 0;
+            var itemIdx = 0;
             foreach (KeyValuePair<TKey, TVal> kvp in this)
             {
                 info.AddValue(String.Format(CultureInfo.InvariantCulture, "Item{0}", itemIdx), kvp, typeof(KeyValuePair<TKey, TVal>));
@@ -160,8 +160,8 @@ namespace Engine.Util
             }
             while (reader.NodeType != XmlNodeType.EndElement)
             {
-                TKey key = (TKey)KeySerializer.Deserialize(reader);
-                TVal value = (TVal)ValueSerializer.Deserialize(reader);
+                var key = (TKey)KeySerializer.Deserialize(reader);
+                var value = (TVal)ValueSerializer.Deserialize(reader);
                 Add(key, value);
                 reader.MoveToContent();
             }

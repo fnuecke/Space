@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
@@ -450,18 +451,21 @@ def setBaseStat(type, value):
                     inventory.RemoveAt(command.InventoryIndex);
 
                     // Try to find a free slot.
-                    for (int i = 0; i < numSlots; i++)
+                    for (var i = 0; i < numSlots; i++)
                     {
-                        if (!equipment.GetItem(itemType.GetType(), i).HasValue)
+                        if (equipment.GetItem(itemType.GetType(), i).HasValue)
                         {
-                            // Free slot found, equip it there.
-                            equipment.Equip(i, item.Value);
-                            return;
+                            continue;
                         }
+
+                        // Free slot found, equip it there.
+                        equipment.Equip(i, item.Value);
+                        return;
                     }
 
                     // No free slot found, swap with the first slot.
                     var equipped = equipment.Unequip(itemType.GetType(), 0);
+                    Debug.Assert(equipped.HasValue);
                     inventory.Insert(command.InventoryIndex, equipped.Value);
                     equipment.Equip(0, item.Value);
                 }

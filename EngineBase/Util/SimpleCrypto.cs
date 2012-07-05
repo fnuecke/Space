@@ -3,7 +3,8 @@ using System.IO;
 using System.Security.Cryptography;
 
 namespace Engine.Util
-{/// <summary>
+{
+    /// <summary>
     /// Utility class that provides a simplified interface to
     /// encrypting and decrypting data in the form of byte[]
     /// using AES (via the RijndaelManaged class).
@@ -18,7 +19,7 @@ namespace Engine.Util
         /// <returns>a new, random key.</returns>
         static public byte[] GenerateKey()
         {
-            using (RijndaelManaged rm = new RijndaelManaged())
+            using (var rm = new RijndaelManaged())
             {
                 rm.GenerateKey();
                 return rm.Key;
@@ -31,7 +32,7 @@ namespace Engine.Util
         /// <returns>a new, random initialization vector.</returns>
         static public byte[] GenerateVector()
         {
-            using (RijndaelManaged rm = new RijndaelManaged())
+            using (var rm = new RijndaelManaged())
             {
                 rm.GenerateIV();
                 return rm.IV;
@@ -45,12 +46,12 @@ namespace Engine.Util
         /// <summary>
         /// The key to use for encrypting / decrypting data.
         /// </summary>
-        private byte[] key;
+        private readonly byte[] _key;
 
         /// <summary>
         /// The initial vector to use.
         /// </summary>
-        private byte[] vector;
+        private readonly byte[] _vector;
 
         #endregion
 
@@ -71,8 +72,8 @@ namespace Engine.Util
             {
                 throw new ArgumentNullException("vector");
             }
-            this.key = key;
-            this.vector = vector;
+            _key = key;
+            _vector = vector;
         }
 
         #endregion
@@ -102,10 +103,10 @@ namespace Engine.Util
             {
                 throw new ArgumentNullException("value");
             }
-            using (MemoryStream output = new MemoryStream())
+            using (var output = new MemoryStream())
             {
                 using (var rijndael = new RijndaelManaged())
-                using (var transform = rijndael.CreateEncryptor(key, vector))
+                using (var transform = rijndael.CreateEncryptor(_key, _vector))
                 using (var stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
                 {
                     stream.Write(value, offset, length);
@@ -137,12 +138,12 @@ namespace Engine.Util
             {
                 throw new ArgumentNullException("value");
             }
-            using (MemoryStream output = new MemoryStream())
+            using (var output = new MemoryStream())
             {
                 try
                 {
                     using (var rijndael = new RijndaelManaged())
-                    using (var transform = rijndael.CreateDecryptor(key, vector))
+                    using (var transform = rijndael.CreateDecryptor(_key, _vector))
                     using (var stream = new CryptoStream(output, transform, CryptoStreamMode.Write))
                     {
                         stream.Write(value, offset, length);

@@ -55,16 +55,11 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Constructor
 
-        public AttributeModifier(TAttribute type, float value, AttributeComputationType computationType)
+        public AttributeModifier(TAttribute type, float value, AttributeComputationType computationType = AttributeComputationType.Additive)
         {
-            this.Type = type;
-            this.Value = value;
-            this.ComputationType = computationType;
-        }
-
-        public AttributeModifier(TAttribute type, float value)
-            : this(type, value, AttributeComputationType.Additive)
-        {
+            Type = type;
+            Value = value;
+            ComputationType = computationType;
         }
 
         public AttributeModifier()

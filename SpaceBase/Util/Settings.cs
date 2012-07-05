@@ -18,7 +18,7 @@ namespace Space.Util
     {
         #region Logger
 
-        private static NLog.Logger logger = NLog.LogManager.GetCurrentClassLogger();
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -191,8 +191,8 @@ namespace Space.Util
         /// <summary>
         /// Default menu key bindings.
         /// </summary>
-        public static readonly Dictionary<Keys, MenuCommand> DefaultMenuBindings = new Dictionary<Keys, MenuCommand>()
-        {
+        public static readonly Dictionary<Keys, MenuCommand> DefaultMenuBindings = new Dictionary<Keys, MenuCommand>
+                                                                                   {
             { Keys.Up, MenuCommand.Up },
             { Keys.W, MenuCommand.Up },
             { Keys.S, MenuCommand.Down },
@@ -213,7 +213,7 @@ namespace Space.Util
         /// <summary>
         /// Default in game key bindings.
         /// </summary>
-        public static readonly Dictionary<Keys, GameCommand> DefaultGameBindings = new Dictionary<Keys, GameCommand>()
+        public static readonly Dictionary<Keys, GameCommand> DefaultGameBindings = new Dictionary<Keys, GameCommand>
         {
             { Keys.W, GameCommand.Up },
             { Keys.Up, GameCommand.Up },
@@ -233,7 +233,7 @@ namespace Space.Util
         /// <summary>
         /// Default game pad axii (currently for Logitech Rumblepad).
         /// </summary>
-        public static readonly Dictionary<ExtendedAxes, GamePadCommand> DefaultGamePadBindings = new Dictionary<ExtendedAxes, GamePadCommand>()
+        public static readonly Dictionary<ExtendedAxes, GamePadCommand> DefaultGamePadBindings = new Dictionary<ExtendedAxes, GamePadCommand>
         {
             { ExtendedAxes.X, GamePadCommand.AccelerateX },
             { ExtendedAxes.Y, GamePadCommand.AccelerateY },
@@ -501,7 +501,7 @@ namespace Space.Util
             }
             catch (IOException ex)
             {
-                logger.ErrorException("Could not save settings.", ex);
+                Logger.ErrorException("Could not save settings.", ex);
             }
         }
 
@@ -520,7 +520,7 @@ namespace Space.Util
                 {
                     using (Stream stream = File.OpenRead(filename))
                     {
-                        XmlSerializer serializer = new XmlSerializer(typeof(Settings));
+                        var serializer = new XmlSerializer(typeof(Settings));
                         _instance = (Settings)serializer.Deserialize(stream);
                     }
                     _instance.UpdateInverseGameBindings();
@@ -528,11 +528,11 @@ namespace Space.Util
                 }
                 catch (IOException ex)
                 {
-                    logger.ErrorException("Could not load settings.", ex);
+                    Logger.ErrorException("Could not load settings.", ex);
                 }
                 catch (InvalidOperationException ex)
                 {
-                    logger.ErrorException("Could not load settings.", ex);
+                    Logger.ErrorException("Could not load settings.", ex);
                 }
             }
         }
@@ -542,14 +542,7 @@ namespace Space.Util
         /// </summary>
         public static Settings Instance
         {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new Settings();
-                }
-                return _instance;
-            }
+            get { return _instance ?? (_instance = new Settings()); }
         }
 
         /// <summary>

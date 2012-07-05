@@ -18,10 +18,11 @@ namespace Engine.Physics.Intersection
         /// <param name="B1">its current position</param>
         /// <returns>true if the boxes (did) collide.</returns>
         /// <see cref="http://www.gamasutra.com/view/feature/3383/simple_intersection_tests_for_games.php?page=3"/>
-        public static bool Test(ref Vector2 Ea, ref Vector2 A0, ref Vector2 A1, ref Vector2 Eb, ref Vector2 B0, ref Vector2 B1)
+        public static bool Test(ref Vector2 Ea, ref Vector2 A0, ref Vector2 A1, ref Vector2 Eb, ref Vector2 B0,
+                                ref Vector2 B1)
         {
-            Rectangle A = new Rectangle((int)A0.X, (int)A0.Y, (int)Ea.X, (int)Ea.Y);//previous state of AABB A
-            Rectangle B = new Rectangle((int)B0.X, (int)B0.Y, (int)Eb.X, (int)Eb.Y);//previous state of AABB B
+            var A = new Rectangle((int)A0.X, (int)A0.Y, (int)Ea.X, (int)Ea.Y); //previous state of AABB A
+            var B = new Rectangle((int)B0.X, (int)B0.Y, (int)Eb.X, (int)Eb.Y); //previous state of AABB B
 
             //check if they were overlapping
             // on the previous frame
@@ -30,8 +31,8 @@ namespace Engine.Physics.Intersection
                 return true;
             }
 
-            Vector2 va = A1 - A0; //displacement of A
-            Vector2 vb = B1 - B0; //displacement of B 
+            var va = A1 - A0; //displacement of A
+            var vb = B1 - B0; //displacement of B 
 
             //the problem is solved in A's frame of reference
 
@@ -85,14 +86,11 @@ namespace Engine.Physics.Intersection
                 u_1.Y = (A.Bottom - B.Top) / v.Y;
             }
 
-            float u0; //normalized time of first collision
-            float u1; //normalized time of second collision 
-
             //possible first time of overlap
-            u0 = System.Math.Max(u_0.X, u_0.Y);
+            var u0 = System.Math.Max(u_0.X, u_0.Y); //normalized time of first collision
 
             //possible last time of overlap
-            u1 = System.Math.Min(u_1.X, u_1.Y);
+            var u1 = System.Math.Min(u_1.X, u_1.Y); //normalized time of second collision 
 
             //they could have only collided if
             //the first time of overlap occurred

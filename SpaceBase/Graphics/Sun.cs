@@ -80,17 +80,17 @@ namespace Space.Graphics
         /// <summary>
         /// Rotation direction (and speed) of the base image.
         /// </summary>
-        private Vector2 _surfaceRotation;
+        private readonly Vector2 _surfaceRotation;
 
         /// <summary>
         /// Rotation direction (and speed) of the first turbulence.
         /// </summary>
-        private Vector2 _turbulenceOneRotation;
+        private readonly Vector2 _turbulenceOneRotation;
 
         /// <summary>
         /// Rotation direction (and speed) of the second turbulence.
         /// </summary>
-        private Vector2 _turbulenceTwoRotation;
+        private readonly Vector2 _turbulenceTwoRotation;
 
         /// <summary>
         /// The current game time to base our rotation on.
@@ -105,18 +105,22 @@ namespace Space.Graphics
             : base(game, "Shaders/Sun")
         {
             var random = new Random();
-            _surfaceRotation.X = ((float)random.NextDouble() + 1f) / 2f;
-            _surfaceRotation.Y = ((float)random.NextDouble() + 1f) / 2f;
-            _surfaceRotation.Normalize();
-            _surfaceRotation *= 8 * Math.Sign(random.NextDouble() - 0.5);
-            _turbulenceOneRotation.X = ((float)random.NextDouble() + 1f) / 2f;
-            _turbulenceOneRotation.Y = ((float)random.NextDouble() + 1f) / 2f;
-            _turbulenceOneRotation.Normalize();
-            _turbulenceOneRotation *= 6;
-            _turbulenceTwoRotation.X = -((float)random.NextDouble() + 1f) / 2f;
-            _turbulenceTwoRotation.Y = -((float)random.NextDouble() + 1f) / 2f;
-            _turbulenceTwoRotation.Normalize();
-            _turbulenceTwoRotation *= 4;
+            Vector2 tmp;
+            tmp.X = ((float)random.NextDouble() + 1f) / 2f;
+            tmp.Y = ((float)random.NextDouble() + 1f) / 2f;
+            tmp.Normalize();
+            tmp *= 8 * Math.Sign(random.NextDouble() - 0.5);
+            _surfaceRotation = tmp;
+            tmp.X = ((float)random.NextDouble() + 1f) / 2f;
+            tmp.Y = ((float)random.NextDouble() + 1f) / 2f;
+            tmp.Normalize();
+            tmp *= 6;
+            _turbulenceOneRotation = tmp;
+            tmp.X = -((float)random.NextDouble() + 1f) / 2f;
+            tmp.Y = -((float)random.NextDouble() + 1f) / 2f;
+            tmp.Normalize();
+            tmp *= 4;
+            _turbulenceTwoRotation = tmp;
 
         }
 
@@ -130,7 +134,7 @@ namespace Space.Graphics
             {
                 _turbulenceSphere.Dispose();
             }
-            for (int i = 0; i < _mipmaps.Length; i++)
+            for (var i = 0; i < _mipmaps.Length; i++)
             {
                 if (_mipmaps[i] != null)
                 {
@@ -138,7 +142,7 @@ namespace Space.Graphics
                 }
             }
 
-            GC.SuppressFinalize(this);
+            //GC.SuppressFinalize(this);
         }
 
         /// <summary>
@@ -216,7 +220,7 @@ namespace Space.Graphics
 
             // And draw it.
             Effect.CurrentTechnique.Passes[0].Apply();
-            _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, Indices, 0, 2,
+            Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2,
                                               VertexDeclaration);
 
             // Then get the turbulence.
@@ -225,7 +229,7 @@ namespace Space.Graphics
 
             // And draw that, too.
             Effect.CurrentTechnique.Passes[1].Apply();
-            _device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, _vertices, 0, 4, Indices, 0, 2,
+            Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, Vertices, 0, 4, Indices, 0, 2,
                                               VertexDeclaration);
 
             // Create the down-sampled versions.

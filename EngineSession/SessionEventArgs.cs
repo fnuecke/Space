@@ -8,7 +8,7 @@ namespace Engine.Session
     /// Used for <see cref="Engine.Session.ISession#PlayerJoined"/> and
     /// <see cref="Engine.Session.ISession#PlayerLeft"/>.
     /// </summary>
-    public class PlayerEventArgs : EventArgs
+    public sealed class PlayerEventArgs : EventArgs
     {
         /// <summary>
         /// The player the event applies to.
@@ -17,7 +17,7 @@ namespace Engine.Session
 
         public PlayerEventArgs(Player player)
         {
-            this.Player = player;
+            Player = player;
         }
     }
 
@@ -37,14 +37,14 @@ namespace Engine.Session
         /// <param name="data"></param>
         protected SessionDataEventArgs(Packet data)
         {
-            this.Data = data;
+            Data = data;
         }
     }
 
     /// <summary>
     /// Used for a server's <c>Data</c> event.
     /// </summary>
-    public class ServerDataEventArgs : SessionDataEventArgs
+    public sealed class ServerDataEventArgs : SessionDataEventArgs
     {
         /// <summary>
         /// The player the event applies to.
@@ -54,14 +54,14 @@ namespace Engine.Session
         public ServerDataEventArgs(Packet data, Player player)
             : base(data)
         {
-            this.Player = player;
+            Player = player;
         }
     }
 
     /// <summary>
     /// Used for a client's <c>Data</c> event.
     /// </summary>
-    public class ClientDataEventArgs : SessionDataEventArgs
+    public sealed class ClientDataEventArgs : SessionDataEventArgs
     {
         /// <summary>
         /// Whether this is an authoritative message (came from the server)
@@ -72,14 +72,14 @@ namespace Engine.Session
         public ClientDataEventArgs(Packet data, bool isAuthoritative)
             : base(data)
         {
-            this.IsAuthoritative = isAuthoritative;
+            IsAuthoritative = isAuthoritative;
         }
     }
 
     /// <summary>
     /// Used for <see cref="Engine.Session.IClientSession#GameInfoReceived"/>.
     /// </summary>
-    public class GameInfoReceivedEventArgs : EventArgs
+    public sealed class GameInfoReceivedEventArgs : EventArgs
     {
         /// <summary>
         /// The address of the machine hosting the session.
@@ -103,17 +103,17 @@ namespace Engine.Session
 
         public GameInfoReceivedEventArgs(IPEndPoint host, int numPlayers, int maxPlayers, Packet data)
         {
-            this.Host = host;
-            this.NumPlayers = numPlayers;
-            this.MaxPlayers = maxPlayers;
-            this.Data = data;
+            Host = host;
+            NumPlayers = numPlayers;
+            MaxPlayers = maxPlayers;
+            Data = data;
         }
     }
 
     /// <summary>
     /// Used for <see cref="Engine.Session.IClientSession#JoinResponse"/>.
     /// </summary>
-    public class JoinResponseEventArgs : EventArgs
+    public sealed class JoinResponseEventArgs : EventArgs
     {
         /// <summary>
         /// Any additional data the server sent with the answer.
@@ -122,7 +122,7 @@ namespace Engine.Session
 
         public JoinResponseEventArgs(Packet data)
         {
-            this.Data = data;
+            Data = data;
         }
     }
 
@@ -138,7 +138,7 @@ namespace Engine.Session
 
         public RequestEventArgs()
         {
-            this.Data = new Packet();
+            Data = new Packet();
         }
 
         public void Dispose()
@@ -150,18 +150,20 @@ namespace Engine.Session
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing && Data != null)
+            if (!disposing || Data == null)
             {
-                Data.Dispose();
-                Data = null;
+                return;
             }
+
+            Data.Dispose();
+            Data = null;
         }
     }
 
     /// <summary>
     /// Used for <see cref="Engine.Session.IServerSession#JoinRequested"/>.
     /// </summary>
-    public class JoinRequestEventArgs : RequestEventArgs
+    public sealed class JoinRequestEventArgs : RequestEventArgs
     {
         /// <summary>
         /// The player doing the joining.
@@ -175,7 +177,7 @@ namespace Engine.Session
 
         public JoinRequestEventArgs(Player player)
         {
-            this.Player = player;
+            Player = player;
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Engine.Util
         /// Returns a nonnegative random number.
         /// </summary>
         /// <returns>A 32-bit signed integer greater than or equal to zero and
-        /// less than <see cref="MaxValue"/>.</returns>
+        /// less than <see cref="int.MaxValue"/>.</returns>
         int NextInt32();
 
         /// <summary>

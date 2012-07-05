@@ -24,10 +24,11 @@ namespace Engine.Session
         /// </summary>
         /// <param name="player">the player to kick.</param>
         void Disconnect(Player player);
-        
+
         /// <summary>
         /// Sends a data message with the the specified packet as its data to the specified player.
         /// </summary>
+        /// <param name="player">The player to whom to send the packet.</param>
         /// <param name="packet">The data to send.</param>
         void SendTo(Player player, Packet packet);
     }
