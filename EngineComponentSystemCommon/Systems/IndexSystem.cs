@@ -348,21 +348,6 @@ namespace Engine.ComponentSystem.Systems
 #endif
             }
 
-            for (int i = 0; i < _trees.Length; i++)
-            {
-                if (_trees[i] != null)
-                {
-                    if (copy._trees[i] == null)
-                    {
-                        copy._trees[i]  = new QuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
-                    }
-                    foreach (var entry in _trees[i])
-                    {
-                        copy._trees[i].Add(Manager.GetComponent<Transform>(entry).Translation, entry);
-                    }
-                }
-            }
-
             return copy;
         }
 

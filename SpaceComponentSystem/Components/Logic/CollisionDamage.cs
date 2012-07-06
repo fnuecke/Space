@@ -71,8 +71,8 @@ namespace Space.ComponentSystem.Components
         /// <param name="damage">The damage.</param>
         public CollisionDamage Initialize(int cooldown, float damage)
         {
-            this.Cooldown = cooldown;
-            this.Damage = damage;
+            Cooldown = cooldown;
+            Damage = damage;
 
             return this;
         }
@@ -116,18 +116,11 @@ namespace Space.ComponentSystem.Components
 
             packet.Write(Cooldown);
             packet.Write(Damage);
-            if (Cooldowns == null)
+            packet.Write(Cooldowns.Count);
+            foreach (var item in Cooldowns)
             {
-                packet.Write(0);
-            }
-            else
-            {
-                packet.Write(Cooldowns.Count);
-                foreach (var item in Cooldowns)
-                {
-                    packet.Write(item.Key);
-                    packet.Write(item.Value);
-                }
+                packet.Write(item.Key);
+                packet.Write(item.Value);
             }
 
             return packet;
@@ -144,27 +137,13 @@ namespace Space.ComponentSystem.Components
             Cooldown = packet.ReadInt32();
             Damage = packet.ReadSingle();
 
-            int numCooldowns = packet.ReadInt32();
-            if (numCooldowns > 0)
+            Cooldowns.Clear();
+            var numCooldowns = packet.ReadInt32();
+            for (var i = 0; i < numCooldowns; i++)
             {
-                if (Cooldowns != null)
-                {
-                    Cooldowns.Clear();
-                }
-                else
-                {
-                    Cooldowns = new Dictionary<int, int>();
-                }
-                for (int i = 0; i < numCooldowns; i++)
-                {
-                    var key = packet.ReadInt32();
-                    var value = packet.ReadInt32();
-                    Cooldowns.Add(key, value);
-                }
-            }
-            else
-            {
-                Cooldowns = null;
+                var key = packet.ReadInt32();
+                var value = packet.ReadInt32();
+                Cooldowns.Add(key, value);
             }
         }
 

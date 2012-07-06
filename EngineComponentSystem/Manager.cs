@@ -458,8 +458,8 @@ namespace Engine.ComponentSystem
 
             // Read back all components, fill in entity info as well, as that
             // is stored implicitly in the components.
-            int numComponents = packet.ReadInt32();
-            for (int i = 0; i < numComponents; i++)
+            var numComponents = packet.ReadInt32();
+            for (var i = 0; i < numComponents; i++)
             {
                 var type = Type.GetType(packet.ReadString());
                 var component = packet.ReadPacketizableInto(AllocateComponent(type));
@@ -471,7 +471,10 @@ namespace Engine.ComponentSystem
                     _entities.Add(component.Entity, AllocateEntity());
                 }
                 _entities[component.Entity].Add(component);
+            }
 
+            foreach (var component in _components.Values)
+            {
                 // Send a message to all interested systems.
                 ComponentAdded message;
                 message.Component = component;

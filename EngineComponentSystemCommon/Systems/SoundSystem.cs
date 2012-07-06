@@ -215,7 +215,7 @@ namespace Engine.ComponentSystem.Systems
         {
             // Do not play sounds if this isn't the main sound system thats
             // used for the presentation.
-            if (!_isDrawingInstance)
+            if (!_isDrawingInstance || _soundBank == null)
             {
                 return null;
             }
