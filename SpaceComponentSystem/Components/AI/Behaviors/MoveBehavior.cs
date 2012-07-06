@@ -110,16 +110,14 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// Creates a deep copy of the object, reusing the given object.
         /// </summary>
         /// <param name="into">The object to copy into.</param>
-        /// <returns>
-        /// The copy.
-        /// </returns>
+        /// <returns>The copy.</returns>
         public override Behavior CopyInto(Behavior into)
         {
-            base.CopyInto(into);
+            var copy = (MoveBehavior)base.CopyInto(into);
 
-            ((MoveBehavior)into).Target = Target;
+            copy.Target = Target;
 
-            return into;
+            return copy;
         }
 
         #endregion

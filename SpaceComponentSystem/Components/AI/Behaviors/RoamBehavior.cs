@@ -19,7 +19,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <summary>
         /// The randomizer we use to pick where to go next.
         /// </summary>
-        private readonly MersenneTwister _random = new MersenneTwister();
+        private readonly MersenneTwister _random = new MersenneTwister(0);
 
         #endregion
 
@@ -79,6 +79,25 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
 
             Area = packet.ReadRectangle();
             packet.ReadPacketizableInto(_random);
+        }
+
+        #endregion
+
+        #region Copying
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public override Behavior CopyInto(Behavior into)
+        {
+            var copy = (RoamBehavior)base.CopyInto(into);
+
+            copy.Area = Area;
+            _random.CopyInto(copy._random);
+
+            return copy;
         }
 
         #endregion

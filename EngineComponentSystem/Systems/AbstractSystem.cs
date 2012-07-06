@@ -125,6 +125,7 @@ namespace Engine.ComponentSystem.Systems
         public virtual AbstractSystem CopyInto(AbstractSystem into)
         {
             Debug.Assert(into.GetType() == GetType());
+            Debug.Assert(into != this);
 
             // Manager must be re-set to new owner before copying.
             Debug.Assert(into.Manager != null);

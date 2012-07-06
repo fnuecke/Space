@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -104,6 +105,13 @@ namespace Engine.Simulation
         /// given frame.
         /// </summary>
         private readonly Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
+
+#if DEBUG
+        /// <summary>
+        /// Hash of the leading state the last time it reached a check point.
+        /// </summary>
+        private int _leadingHash;
+#endif
 
         #endregion
 
@@ -222,6 +230,24 @@ namespace Engine.Simulation
         {
             // Advance the simulation.
             FastForward(gameTime, ++CurrentFrame);
+
+#if DEBUG
+            if (_simulations[0].CurrentFrame == _delays[_delays.Length - 1] * 2)
+            {
+                var hasher = new Hasher();
+                _simulations[0].Hash(hasher);
+                _leadingHash = hasher.Value;
+            }
+            for (var i = 1; i < _simulations.Length; ++i)
+            {
+                if (_simulations[i].CurrentFrame == _delays[_delays.Length - 1] * 2)
+                {
+                    var hasher = new Hasher();
+                    _simulations[i].Hash(hasher);
+                    Debug.Assert(_leadingHash == hasher.Value, "Simulation not deterministic.");
+                }
+            }
+#endif
         }
 
         #endregion

@@ -45,13 +45,14 @@ namespace Space.ComponentSystem.Components
             base.Initialize(other);
 
             var otherAI = (ArtificialIntelligence)other;
-            foreach (var behavior in otherAI._currentBehaviors)
+            _currentBehaviors.Clear();
+            foreach (var behaviorType in otherAI._currentBehaviors)
             {
-                _currentBehaviors.Push(behavior);
+                _currentBehaviors.Push(behaviorType);
             }
-            foreach (var behavior in otherAI._behaviors)
+            foreach (var entry in otherAI._behaviors)
             {
-                _behaviors[behavior.Key] = behavior.Value.CopyInto(_behaviors[behavior.Key]);
+                _behaviors[entry.Key] = entry.Value.CopyInto(_behaviors[entry.Key]);
             }
 
             return this;

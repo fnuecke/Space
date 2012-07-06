@@ -619,6 +619,7 @@ namespace Engine.ComponentSystem
         public IManager CopyInto(IManager into)
         {
             Debug.Assert(into is Manager);
+            Debug.Assert(into != this);
 
             var copy = (Manager)into;
 

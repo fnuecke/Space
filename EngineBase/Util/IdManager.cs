@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.Serialization;
 
 namespace Engine.Util
@@ -150,6 +151,8 @@ namespace Engine.Util
         /// <returns>The copy.</returns>
         public IdManager CopyInto(IdManager into)
         {
+            Debug.Assert(into != this);
+
             into._reusableIds.Clear();
             into._reusableIds.UnionWith(_reusableIds);
             into._nextId = _nextId;

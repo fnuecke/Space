@@ -185,7 +185,7 @@ namespace Space.ComponentSystem.Systems
         {
             var copy = (ShipSpawnSystem)base.CopyInto(into);
 
-            copy._random = _random.CopyInto(_random);
+            copy._random = _random.CopyInto(copy._random);
 
             return copy;
         }

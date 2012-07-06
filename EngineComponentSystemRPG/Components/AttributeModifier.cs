@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -128,6 +129,8 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <returns>The copy.</returns>
         public AttributeModifier<TAttribute> CopyInto(AttributeModifier<TAttribute> into)
         {
+            Debug.Assert(into != this);
+
             var copy = (AttributeModifier<TAttribute>)MemberwiseClone();
 
             copy.Type = Type;

@@ -36,6 +36,7 @@
 */
 
 using System;
+using System.Diagnostics;
 using Engine.Serialization;
 
 namespace Engine.Util
@@ -343,6 +344,8 @@ namespace Engine.Util
         /// <returns>The copy.</returns>
         public MersenneTwister CopyInto(MersenneTwister into)
         {
+            Debug.Assert(into != this);
+
             var copy = into;
 
             copy._index = _index;

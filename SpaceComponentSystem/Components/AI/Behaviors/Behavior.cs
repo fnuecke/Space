@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -152,7 +153,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <param name="pollRate">The poll rate.</param>
         protected Behavior(ArtificialIntelligence ai, int pollRate)
         {
-            this.AI = ai;
+            AI = ai;
             _pollRate = pollRate;
         }
 
@@ -444,10 +445,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <returns>The copy.</returns>
         public virtual Behavior CopyInto(Behavior into)
         {
-            if (into.GetType() != GetType())
-            {
-                throw new ArgumentException("Invalid instance, type mismatch.", "into");
-            }
+            Debug.Assert(into.GetType() == GetType());
+            Debug.Assert(into != this);
 
             into._ticksToWait = _ticksToWait;
 
