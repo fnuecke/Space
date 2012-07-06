@@ -203,9 +203,10 @@ namespace Space.ComponentSystem.Systems
         {
             base.Hash(hasher);
 
+            hasher.Put(_random);
             foreach (var cooldown in _cooldowns.Values)
             {
-                hasher.Put(BitConverter.GetBytes(cooldown));
+                hasher.Put(cooldown);
             }
         }
 

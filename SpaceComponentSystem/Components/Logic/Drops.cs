@@ -1,6 +1,6 @@
-﻿using System.Text;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 
 namespace Space.ComponentSystem.Components
 {
@@ -90,11 +90,11 @@ namespace Space.ComponentSystem.Components
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Engine.Util.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 
-            hasher.Put(Encoding.UTF8.GetBytes(ItemPool));
+            hasher.Put(ItemPool);
         }
 
         #endregion

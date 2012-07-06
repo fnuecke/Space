@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -121,10 +120,10 @@ namespace Space.ComponentSystem.Components
 
             foreach (var target in Targets)
             {
-                hasher.Put(BitConverter.GetBytes(target));
+                hasher.Put(target);
             }
-            hasher.Put(BitConverter.GetBytes(SpawnInterval));
-            hasher.Put(BitConverter.GetBytes(Cooldown));
+            hasher.Put(SpawnInterval);
+            hasher.Put(Cooldown);
         }
 
         #endregion

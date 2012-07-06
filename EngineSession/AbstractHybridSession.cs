@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using Engine.Network;
 using Engine.Serialization;
 using Engine.Util;
@@ -145,8 +144,8 @@ namespace Engine.Session
             // Get ourselves a unique header, based on the program we're running in.
             UdpHeader = BitConverter.GetBytes(
                 new Hasher().
-                    Put(Encoding.UTF8.GetBytes(System.Reflection.Assembly.GetExecutingAssembly().GetName().FullName)).
-                    Put(Encoding.UTF8.GetBytes(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString())).
+                    Put(System.Reflection.Assembly.GetExecutingAssembly().GetName().FullName).
+                    Put(System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString()).
                     Value);
         }
 

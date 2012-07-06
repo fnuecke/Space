@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -97,8 +96,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Value.X));
-            hasher.Put(BitConverter.GetBytes(Value.Y));
+            hasher.Put(Value);
         }
 
         #endregion
@@ -113,7 +111,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value = " + Value.ToString();
+            return base.ToString() + ", Value = " + Value;
         }
 
         #endregion

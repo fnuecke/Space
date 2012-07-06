@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -130,9 +129,8 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(CollisionGroups));
-            hasher.Put(BitConverter.GetBytes(PreviousPosition.X));
-            hasher.Put(BitConverter.GetBytes(PreviousPosition.Y));
+            hasher.Put(CollisionGroups);
+            hasher.Put(PreviousPosition);
         }
 
         #endregion

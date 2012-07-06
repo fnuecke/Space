@@ -198,12 +198,11 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Delay));
-            hasher.Put(BitConverter.GetBytes(Position.X));
-            hasher.Put(BitConverter.GetBytes(Position.Y));
-            hasher.Put(BitConverter.GetBytes(RelativeEnergy));
-            hasher.Put(BitConverter.GetBytes(RelativeHealth));
-            hasher.Put(BitConverter.GetBytes(TimeToRespawn));
+            hasher.Put(Delay);
+            hasher.Put(Position);
+            hasher.Put(RelativeEnergy);
+            hasher.Put(RelativeHealth);
+            hasher.Put(TimeToRespawn);
         }
 
         #endregion

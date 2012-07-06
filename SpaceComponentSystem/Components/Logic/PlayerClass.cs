@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Space.Data;
 
@@ -93,7 +92,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes((byte)Value));
+            hasher.Put((byte)Value);
         }
 
         #endregion

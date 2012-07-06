@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Messages;
+﻿using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
@@ -269,9 +268,8 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
             
-            hasher.Put(BitConverter.GetBytes(Translation.X));
-            hasher.Put(BitConverter.GetBytes(Translation.Y));
-            hasher.Put(BitConverter.GetBytes(Rotation));
+            hasher.Put(Translation);
+            hasher.Put(Rotation);
         }
 
         #endregion

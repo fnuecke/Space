@@ -274,11 +274,8 @@ namespace Engine.ComponentSystem.RPG.Components
             foreach (var attribute in _modifiedAttributes)
             {
                 packet.Write(Enum.GetName(typeof(TAttribute), attribute.Key));
-                packet.Write(attribute.Value.Length);
-                for (var i = 0; i < attribute.Value.Length; ++i)
-                {
-                    packet.Write(attribute.Value[i]);
-                }
+                packet.Write(attribute.Value[0]);
+                packet.Write(attribute.Value[1]);
             }
 
             return packet;
@@ -313,12 +310,9 @@ namespace Engine.ComponentSystem.RPG.Components
             for (var i = 0; i < numModifiedAttributes; i++)
             {
                 var key = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
-                var numValues = packet.ReadInt32();
-                var values = new float[numValues];
-                for (var j = 0; j < numValues; ++j)
-                {
-                    values[j] = packet.ReadSingle();
-                }
+                var values = new float[2];
+                values[0] = packet.ReadSingle();
+                values[1] = packet.ReadSingle();
                 _modifiedAttributes[key] = values;
             }
         }
@@ -332,10 +326,16 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Hash(hasher);
 
+            foreach (var attribute in _baseAttributes)
+            {
+                hasher.Put(Enum.GetName(typeof(TAttribute), attribute.Key));
+                hasher.Put(attribute.Value);
+            }
             foreach (var attribute in _modifiedAttributes)
             {
-                hasher.Put(BitConverter.GetBytes(attribute.Value[0]));
-                hasher.Put(BitConverter.GetBytes(attribute.Value[1]));
+                hasher.Put(Enum.GetName(typeof(TAttribute), attribute.Key));
+                hasher.Put(attribute.Value[0]);
+                hasher.Put(attribute.Value[1]);
             }
         }
 

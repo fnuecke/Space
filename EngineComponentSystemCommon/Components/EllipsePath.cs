@@ -282,12 +282,12 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(_angle));
-            hasher.Put(BitConverter.GetBytes(_majorRadius));
-            hasher.Put(BitConverter.GetBytes(_minorRadius));
-            hasher.Put(BitConverter.GetBytes(CenterEntityId));
-            hasher.Put(BitConverter.GetBytes(Period));
-            hasher.Put(BitConverter.GetBytes(PeriodOffset));
+            hasher.Put(_angle);
+            hasher.Put(_majorRadius);
+            hasher.Put(_minorRadius);
+            hasher.Put(CenterEntityId);
+            hasher.Put(Period);
+            hasher.Put(PeriodOffset);
         }
 
         #endregion

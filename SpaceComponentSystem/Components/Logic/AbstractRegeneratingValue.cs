@@ -161,11 +161,11 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Value));
-            hasher.Put(BitConverter.GetBytes(TimeToWait));
-            hasher.Put(BitConverter.GetBytes(MaxValue));
-            hasher.Put(BitConverter.GetBytes(Regeneration));
-            hasher.Put(BitConverter.GetBytes(Timeout));
+            hasher.Put(Value);
+            hasher.Put(MaxValue);
+            hasher.Put(Regeneration);
+            hasher.Put(Timeout);
+            hasher.Put(TimeToWait);
         }
 
         #endregion

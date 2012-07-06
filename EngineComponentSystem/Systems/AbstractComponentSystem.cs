@@ -225,7 +225,7 @@ namespace Engine.ComponentSystem.Systems
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Components.Count));
+            hasher.Put(Components.Count);
         }
 
         #endregion

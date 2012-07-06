@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -94,7 +93,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Remaining));
+            hasher.Put(Remaining);
         }
 
         #endregion

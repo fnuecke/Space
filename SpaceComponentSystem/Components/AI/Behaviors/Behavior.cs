@@ -420,7 +420,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <param name="hasher">The hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
-            hasher.Put(BitConverter.GetBytes(_ticksToWait));
+            hasher.Put(_pollRate);
+            hasher.Put(_ticksToWait);
         }
 
         #endregion

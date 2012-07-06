@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -103,9 +102,9 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="hasher">The hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
-            hasher.Put(Encoding.UTF8.GetBytes(Enum.GetName(typeof(TAttribute), Type)));
-            hasher.Put(BitConverter.GetBytes((byte)ComputationType));
-            hasher.Put(BitConverter.GetBytes(Value));
+            hasher.Put(Enum.GetName(typeof(TAttribute), Type));
+            hasher.Put((byte)ComputationType);
+            hasher.Put(Value);
         }
 
         #endregion

@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
@@ -121,8 +120,8 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
             
-            hasher.Put(BitConverter.GetBytes(Value));
-            hasher.Put(BitConverter.GetBytes(StopVelocity));
+            hasher.Put(Value);
+            hasher.Put(StopVelocity);
         }
 
         #endregion

@@ -68,7 +68,7 @@ namespace Space.ComponentSystem.Components
             Texture = otherPlanet.Texture;
             PlanetTint = otherPlanet.PlanetTint;
             AtmosphereTint = otherPlanet.AtmosphereTint;
-            _textureName = otherPlanet._textureName;
+            TextureName = otherPlanet.TextureName;
 
             return this;
         }
@@ -86,7 +86,7 @@ namespace Space.ComponentSystem.Components
             Radius = planetRadius;
             PlanetTint = planetTint;
             AtmosphereTint = atmosphereTint;
-            _textureName = planetTexture;
+            TextureName = planetTexture;
 
             return this;
         }
@@ -119,7 +119,10 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(AtmosphereTint.PackedValue);
+                .Write(Radius)
+                .Write(PlanetTint.PackedValue)
+                .Write(AtmosphereTint.PackedValue)
+                .Write(TextureName);
         }
 
         /// <summary>
@@ -130,8 +133,25 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            var color = new Color { PackedValue = packet.ReadUInt32() };
-            AtmosphereTint = color;
+            Radius = packet.ReadSingle();
+            PlanetTint.PackedValue = packet.ReadUInt32();
+            AtmosphereTint.PackedValue = packet.ReadUInt32();
+            TextureName = packet.ReadString();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Engine.Util.Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put(Radius);
+            hasher.Put(PlanetTint);
+            hasher.Put(AtmosphereTint);
+            hasher.Put(TextureName);
         }
 
         #endregion

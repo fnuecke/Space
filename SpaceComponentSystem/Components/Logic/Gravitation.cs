@@ -135,7 +135,7 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put((byte)GravitationType);
-            hasher.Put(BitConverter.GetBytes(Mass));
+            hasher.Put(Mass);
         }
 
         #endregion

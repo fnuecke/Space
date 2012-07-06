@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Common.Messages;
+﻿using Engine.ComponentSystem.Common.Messages;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -212,7 +211,8 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(IndexGroupsMask));
+            hasher.Put(IndexGroupsMask);
+            hasher.Put(Bounds);
         }
 
         #endregion

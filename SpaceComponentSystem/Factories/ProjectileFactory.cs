@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common;
 using Engine.ComponentSystem.Components;
@@ -277,20 +276,20 @@ namespace Space.ComponentSystem.Factories
         /// <param name="hasher">The hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
-            hasher.Put(Encoding.UTF8.GetBytes(Model));
-            hasher.Put(Encoding.UTF8.GetBytes(Effect));
-            hasher.Put(BitConverter.GetBytes(CollisionRadius));
-            hasher.Put(BitConverter.GetBytes(CanBeShot));
-            hasher.Put(BitConverter.GetBytes(InitialVelocity.Low));
-            hasher.Put(BitConverter.GetBytes(InitialVelocity.High));
-            hasher.Put(BitConverter.GetBytes(InitialDirection.Low));
-            hasher.Put(BitConverter.GetBytes(InitialDirection.High));
-            hasher.Put(BitConverter.GetBytes(InitialRotation.Low));
-            hasher.Put(BitConverter.GetBytes(InitialRotation.High));
-            hasher.Put(BitConverter.GetBytes(AccelerationForce.Low));
-            hasher.Put(BitConverter.GetBytes(AccelerationForce.High));
-            hasher.Put(BitConverter.GetBytes(Friction));
-            hasher.Put(BitConverter.GetBytes(TimeToLive));
+            hasher.Put(Model);
+            hasher.Put(Effect);
+            hasher.Put(CollisionRadius);
+            hasher.Put(CanBeShot);
+            hasher.Put(InitialVelocity.Low);
+            hasher.Put(InitialVelocity.High);
+            hasher.Put(InitialDirection.Low);
+            hasher.Put(InitialDirection.High);
+            hasher.Put(InitialRotation.Low);
+            hasher.Put(InitialRotation.High);
+            hasher.Put(AccelerationForce.Low);
+            hasher.Put(AccelerationForce.High);
+            hasher.Put(Friction);
+            hasher.Put(TimeToLive);
         }
 
         #endregion

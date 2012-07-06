@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Systems;
-using Engine.Tests.Base.Util;
 
 namespace Engine.Tests.ComponentSystem.Common.Systems
 {
-    public sealed class SoundSystemCopyTest : AbstractCopyableTest<AbstractSystem>
+    public sealed class SoundSystemCopyTest : AbstractSystemCopyTest
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the

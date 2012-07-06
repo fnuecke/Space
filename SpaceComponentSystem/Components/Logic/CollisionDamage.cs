@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -156,8 +155,13 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Cooldown));
-            hasher.Put(BitConverter.GetBytes(Damage));
+            hasher.Put(Cooldown);
+            hasher.Put(Damage);
+            foreach (var cooldown in Cooldowns)
+            {
+                hasher.Put(cooldown.Key);
+                hasher.Put(cooldown.Value);
+            }
         }
 
         #endregion

@@ -69,7 +69,7 @@ namespace Space.ComponentSystem.Systems
                 if (info.State)
                 {
                     // Get random generator based on world seed and cell location.
-                    var random = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
+                    var random = new MersenneTwister((ulong)new Hasher().Put(info.Id).Put(WorldSeed).Value);
 
                     // Check if we have a changed cell info.
                     if (!_cellInfo.ContainsKey(info.Id))
@@ -78,7 +78,7 @@ namespace Space.ComponentSystem.Systems
                         // randomizer to avoid different results in other
                         // sampling operations from when we have an existing
                         // cell info.
-                        var independentRandom = new MersenneTwister((ulong)new Hasher().Put(BitConverter.GetBytes(info.Id)).Put(BitConverter.GetBytes(WorldSeed)).Value);
+                        var independentRandom = new MersenneTwister((ulong)new Hasher().Put(info.Id).Put(WorldSeed).Value);
 
                         // Figure out which faction should own this cell.
                         Factions faction;
@@ -125,9 +125,9 @@ namespace Space.ComponentSystem.Systems
                     // and let them know about our existence, as well.
                     var cellSystem = Manager.GetSystem<CellSystem>();
                     var stations = _cellInfo[info.Id].Stations;
-                    for (int ny = info.Y - 1; ny <= info.Y + 1; ny++)
+                    for (var ny = info.Y - 1; ny <= info.Y + 1; ny++)
                     {
-                        for (int nx = info.X - 1; nx <= info.X + 1; nx++)
+                        for (var nx = info.X - 1; nx <= info.X + 1; nx++)
                         {
                             // Don't fly to cells that are diagonal to
                             // ourselves, which we do by checking if the
@@ -227,8 +227,8 @@ namespace Space.ComponentSystem.Systems
             WorldSeed = packet.ReadUInt64();
 
             _cellInfo.Clear();
-            int numCells = packet.ReadInt32();
-            for (int i = 0; i < numCells; i++)
+            var numCells = packet.ReadInt32();
+            for (var i = 0; i < numCells; i++)
             {
                 var key = packet.ReadUInt64();
                 var value = packet.ReadPacketizable<CellInfo>();
@@ -242,11 +242,8 @@ namespace Space.ComponentSystem.Systems
         /// <param name="hasher">The hasher.</param>
         public override void Hash(Hasher hasher)
         {
-            hasher.Put(BitConverter.GetBytes(WorldSeed));
-            foreach (var cellInfo in _cellInfo.Values)
-            {
-                cellInfo.Hash(hasher);
-            }
+            hasher.Put(WorldSeed);
+            hasher.Put(_cellInfo.Values);
         }
 
         #endregion
@@ -418,9 +415,9 @@ namespace Space.ComponentSystem.Systems
             public void Hash(Hasher hasher)
             {
                 hasher
-                    .Put(BitConverter.GetBytes(Dirty))
-                    .Put(BitConverter.GetBytes((int)_faction))
-                    .Put(BitConverter.GetBytes(_techLevel));
+                    .Put(Dirty)
+                    .Put((int)_faction)
+                    .Put(_techLevel);
             }
 
             #endregion

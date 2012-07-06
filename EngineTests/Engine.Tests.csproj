@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;TEST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
@@ -27,7 +27,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;TEST</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>x86</PlatformTarget>
@@ -67,6 +67,7 @@
     <Compile Include="ComponentSystem\Common\Components\TextureRendererSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\TransformSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\VelocitySerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\AbstractSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\AccelerationSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\AvatarSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\CollisionSystemCopyTest.cs" />

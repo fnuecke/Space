@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace Engine.Util
 {
@@ -93,9 +96,202 @@ namespace Engine.Util
             {
                 throw new ArgumentNullException("value");
             }
-            for (int i = 0; i < value.Length; i++)
+            for (var i = 0; i < value.Length; i++)
             {
                 Put(value[i]);
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(bool value)
+        {
+            return Put(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(double value)
+        {
+            return Put(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(Color value)
+        {
+            return Put(value.PackedValue);
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(Vector2 value)
+        {
+            return Put(value.X).Put(value.Y);
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(Vector3 value)
+        {
+            return Put(value.X).Put(value.Y).Put(value.Z);
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(Rectangle value)
+        {
+            return Put(value.X).Put(value.Y).Put(value.Width).Put(value.Height);
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(float value)
+        {
+            return Put(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(int value)
+        {
+            return Put(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(long value)
+        {
+            return Put(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(short value)
+        {
+            return Put(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(uint value)
+        {
+            return Put(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(ulong value)
+        {
+            return Put(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(ushort value)
+        {
+            return Put(BitConverter.GetBytes(value));
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(string value)
+        {
+            return value != null ? Put(Encoding.UTF8.GetBytes(value)) : Put(0);
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(IHashable value)
+        {
+            if (value != null)
+            {
+                value.Hash(this);
+            }
+            else
+            {
+                Put(0);
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Put the specified values to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put<T>(IEnumerable<T> value)
+            where T : IHashable
+        {
+            if (value == null)
+            {
+                return Put(0);
+            }
+            foreach (var hashable in value)
+            {
+                hashable.Hash(this);
             }
             return this;
         }

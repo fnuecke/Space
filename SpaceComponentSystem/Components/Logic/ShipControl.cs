@@ -169,13 +169,12 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(DirectedAcceleration.X));
-            hasher.Put(BitConverter.GetBytes(DirectedAcceleration.Y));
-            hasher.Put(BitConverter.GetBytes(Stabilizing));
-            hasher.Put(BitConverter.GetBytes(TargetRotation));
-            hasher.Put(BitConverter.GetBytes(TargetRotationChanged));
-            hasher.Put(BitConverter.GetBytes(PreviousRotation));
-            hasher.Put(BitConverter.GetBytes(Shooting));
+            hasher.Put(DirectedAcceleration);
+            hasher.Put(Stabilizing);
+            hasher.Put(TargetRotation);
+            hasher.Put(TargetRotationChanged);
+            hasher.Put(PreviousRotation);
+            hasher.Put(Shooting);
         }
 
         #endregion

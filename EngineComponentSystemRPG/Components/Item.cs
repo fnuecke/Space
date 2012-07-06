@@ -1,5 +1,4 @@
-﻿using System.Text;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
@@ -114,22 +113,8 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Hash(hasher);
 
-            if (Name != null)
-            {
-                hasher.Put(Encoding.UTF8.GetBytes(Name));
-            }
-            else
-            {
-                hasher.Put(0);
-            }
-            if (IconName != null)
-            {
-                hasher.Put(Encoding.UTF8.GetBytes(IconName));
-            }
-            else
-            {
-                hasher.Put(0);
-            }
+            hasher.Put(Name);
+            hasher.Put(IconName);
         }
 
         #endregion

@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Systems;
-using Engine.Tests.Base.Util;
 
 namespace Engine.Tests.ComponentSystem.Common.Systems
 {
-    public sealed class AccelerationSystemCopyTest : AbstractCopyableTest<AbstractSystem>
+    public sealed class AccelerationSystemCopyTest : AbstractSystemCopyTest
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the

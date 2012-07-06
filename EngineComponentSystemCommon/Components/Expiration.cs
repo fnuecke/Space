@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace Engine.ComponentSystem.Components
 {
     /// <summary>
@@ -92,7 +91,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
             
-            hasher.Put(BitConverter.GetBytes(TimeToLive));
+            hasher.Put(TimeToLive);
         }
 
         #endregion

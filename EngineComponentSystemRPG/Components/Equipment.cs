@@ -372,7 +372,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
             foreach (var item in AllItems)
             {
-                hasher.Put(BitConverter.GetBytes(item));
+                hasher.Put(item);
             }
         }
 

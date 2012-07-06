@@ -23,8 +23,11 @@ namespace Engine.Tests.Base.Util
                 var hash = GetHash(instance);
 
                 // Test different variants of copying.
+                var copy = instance.NewInstance();
 
-                var copy = instance.CopyInto(instance.NewInstance());
+                InitCopy(copy);
+
+                copy = instance.CopyInto(copy);
 
                 Assert.AreEqual(hash, GetHash(copy));
             }
@@ -44,5 +47,13 @@ namespace Engine.Tests.Base.Util
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
         protected abstract IEnumerable<T> NewInstances();
+
+        /// <summary>
+        /// Initialize a shallow copy before it is used to copy into.
+        /// </summary>
+        /// <param name="copy">The shallow copy.</param>
+        protected virtual void InitCopy(T copy)
+        {
+        }
     }
 }

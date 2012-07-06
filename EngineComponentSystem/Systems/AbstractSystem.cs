@@ -15,7 +15,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The component system manager this system is part of.
         /// </summary>
-        public IManager Manager { get; internal set; }
+        public IManager Manager { get; set; }
 
         #endregion
 

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using Engine.Serialization;
+﻿using Engine.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -146,10 +144,7 @@ namespace Engine.ComponentSystem.Components
 
             // Use setter to null the texture.
             TextureName = packet.ReadString();
-
-            // Properties of value types don't allow changing properties...
-            var color = new Color { PackedValue = packet.ReadUInt32() };
-            Tint = color;
+            Tint.PackedValue = packet.ReadUInt32();
 
             Scale = packet.ReadSingle();
         }
@@ -163,12 +158,9 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            if (TextureName != null)
-            {
-                hasher.Put(Encoding.UTF8.GetBytes(TextureName));
-            }
-            hasher.Put(BitConverter.GetBytes(Scale));
-            hasher.Put(BitConverter.GetBytes(Tint.PackedValue));
+            hasher.Put(TextureName);
+            hasher.Put(Scale);
+            hasher.Put(Tint);
         }
 
         #endregion

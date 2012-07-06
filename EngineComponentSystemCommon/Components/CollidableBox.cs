@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.Physics.Intersection;
+﻿using Engine.Physics.Intersection;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -142,8 +141,7 @@ namespace Engine.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(BitConverter.GetBytes(Size.X));
-            hasher.Put(BitConverter.GetBytes(Size.Y));
+            hasher.Put(Size);
         }
 
         #endregion
