@@ -322,6 +322,8 @@ namespace Engine.ComponentSystem.Systems
 
         #region Copying
 
+        // TODO serialization
+
         /// <summary>
         /// Servers as a copy constructor that returns a new instance of the same
         /// type that is freshly initialized.
@@ -332,9 +334,9 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (IndexSystem)base.DeepCopy();
+            var copy = (IndexSystem)base.NewInstance();
 
             copy._trees = new IIndex<int>[sizeof(ulong) * 8];
             copy._reusableTreeList = new List<IIndex<int>>();
@@ -354,9 +356,9 @@ namespace Engine.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem DeepCopy(AbstractSystem into)
+        public override AbstractSystem CopyInto(AbstractSystem into)
         {
-            var copy = (IndexSystem)base.DeepCopy(into);
+            var copy = (IndexSystem)base.CopyInto(into);
 
             copy._maxEntriesPerNode = _maxEntriesPerNode;
             copy._minNodeBounds = _minNodeBounds;

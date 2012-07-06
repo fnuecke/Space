@@ -160,9 +160,9 @@ namespace Space.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (ShipSpawnSystem)base.DeepCopy();
+            var copy = (ShipSpawnSystem)base.NewInstance();
 
             copy._random = new MersenneTwister(0);
 
@@ -181,11 +181,11 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem DeepCopy(AbstractSystem into)
+        public override AbstractSystem CopyInto(AbstractSystem into)
         {
-            var copy = (ShipSpawnSystem)base.DeepCopy(into);
+            var copy = (ShipSpawnSystem)base.CopyInto(into);
 
-            copy._random = _random.DeepCopy(_random);
+            copy._random = _random.CopyInto(_random);
 
             return copy;
         }

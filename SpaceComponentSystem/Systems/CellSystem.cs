@@ -320,9 +320,9 @@ namespace Space.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (CellSystem)base.DeepCopy();
+            var copy = (CellSystem)base.NewInstance();
 
             copy._livingCells = new HashSet<ulong>();
             copy._pendingCells = new Dictionary<ulong, DateTime>();
@@ -347,9 +347,9 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem DeepCopy(AbstractSystem into)
+        public override AbstractSystem CopyInto(AbstractSystem into)
         {
-            var copy = (CellSystem)base.DeepCopy(into);
+            var copy = (CellSystem)base.CopyInto(into);
 
             copy._livingCells.Clear();
             copy._livingCells.UnionWith(_livingCells);

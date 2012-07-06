@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Engine.Serialization;
 
@@ -8,7 +9,7 @@ namespace Engine.Util
     /// Class that handles giving out unique ids, and releasing old ones so
     /// they may be reused.
     /// </summary>
-    public class IdManager : IPacketizable, ICopyable<IdManager>
+    public sealed class IdManager : IPacketizable, ICopyable<IdManager>, IEnumerable<int>
     {
         #region Fields
         
@@ -93,6 +94,11 @@ namespace Engine.Util
 
         #region Serialization / Cloning
 
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <returns>The packet after writing.</returns>
         public Packet Packetize(Packet packet)
         {
             packet
@@ -106,41 +112,83 @@ namespace Engine.Util
             return packet;
         }
 
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
             _nextId = packet.ReadInt32();
 
             _reusableIds.Clear();
             var numReusableIds = packet.ReadInt32();
-            for (int i = 0; i < numReusableIds; i++)
+            for (var i = 0; i < numReusableIds; i++)
             {
                 _reusableIds.Add(packet.ReadInt32());
             }
         }
 
-        public IdManager DeepCopy()
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public IdManager NewInstance()
         {
-            return DeepCopy(null);
-        }
+            var copy = (IdManager)MemberwiseClone();
 
-        public IdManager DeepCopy(IdManager into)
-        {
-            var copy = into ?? (IdManager)MemberwiseClone();
-
-            if (copy == into)
-            {
-                // Other instance.
-                copy._reusableIds.Clear();
-                copy._reusableIds.UnionWith(_reusableIds);
-                copy._nextId = _nextId;
-            }
-            else
-            {
-                // Shallow copy.
-                copy._reusableIds = new SortedSet<int>(_reusableIds);
-            }
+            _reusableIds = new SortedSet<int>();
+            _nextId = 1;
 
             return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public IdManager CopyInto(IdManager into)
+        {
+            into._reusableIds.Clear();
+            into._reusableIds.UnionWith(_reusableIds);
+            into._nextId = _nextId;
+
+            return into;
+        }
+
+        #endregion
+
+        #region IEnumerable
+
+        /// <summary>
+        /// Returns an enumerator that iterates through the collection.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
+        /// </returns>
+        /// <filterpriority>1</filterpriority>
+        public IEnumerator<int> GetEnumerator()
+        {
+            for (var i = 1; i < _nextId; ++i)
+            {
+                if (InUse(i))
+                {
+                    yield return i;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns an enumerator that iterates through a collection.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+        /// </returns>
+        /// <filterpriority>2</filterpriority>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         #endregion

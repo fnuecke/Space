@@ -181,9 +181,9 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (CollisionSystem)base.DeepCopy();
+            var copy = (CollisionSystem)base.NewInstance();
 
             copy._reusableNeighborList = new List<int>();
 
@@ -202,9 +202,9 @@ namespace Engine.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem DeepCopy(AbstractSystem into)
+        public override AbstractSystem CopyInto(AbstractSystem into)
         {
-            var copy = (CollisionSystem)base.DeepCopy(into);
+            var copy = (CollisionSystem)base.CopyInto(into);
 
             copy._bufferArea = _bufferArea;
 

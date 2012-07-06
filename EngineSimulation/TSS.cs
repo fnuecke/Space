@@ -339,26 +339,26 @@ namespace Engine.Simulation
             PrunePastEvents();
 
             // Continue with reading the list of removes.
-            int numRemoves = packet.ReadInt32();
-            for (int removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
+            var numRemoves = packet.ReadInt32();
+            for (var removeIdx = 0; removeIdx < numRemoves; ++removeIdx)
             {
-                long key = packet.ReadInt64();
+                var key = packet.ReadInt64();
                 if (!_removes.ContainsKey(key))
                 {
                     _removes.Add(key, new List<int>());
                 }
-                int numValues = packet.ReadInt32();
-                for (int valueIdx = 0; valueIdx < numValues; ++valueIdx)
+                var numValues = packet.ReadInt32();
+                for (var valueIdx = 0; valueIdx < numValues; ++valueIdx)
                 {
                     _removes[key].Add(packet.ReadInt32());
                 }
             }
 
             // And finally the commands.
-            int numCommands = packet.ReadInt32();
-            for (int commandIdx = 0; commandIdx < numCommands; ++commandIdx)
+            var numCommands = packet.ReadInt32();
+            for (var commandIdx = 0; commandIdx < numCommands; ++commandIdx)
             {
-                long key = packet.ReadInt64();
+                var key = packet.ReadInt64();
                 if (!_commands.ContainsKey(key))
                 {
                     _commands.Add(key, new List<Command>());
@@ -385,7 +385,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Not available for TSS.
         /// </summary>
-        public ISimulation DeepCopy()
+        public ISimulation NewInstance()
         {
             throw new NotSupportedException();
         }
@@ -393,7 +393,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Not available for TSS.
         /// </summary>
-        public ISimulation DeepCopy(ISimulation into)
+        public ISimulation CopyInto(ISimulation into)
         {
             throw new NotSupportedException();
         }
@@ -497,10 +497,10 @@ namespace Engine.Simulation
         /// that frame, as well as adding and removing entities.
         /// </summary>
         /// <param name="simulation">The simulation to prepare.</param>
-        private void PrepareForUpdate(IAuthoritativeSimulation simulation)
+        private void PrepareForUpdate(ISimulation simulation)
         {
             // The frame the state is now in, and that will be executed.
-            long frame = simulation.CurrentFrame;
+            var frame = simulation.CurrentFrame;
 
             // Check if we need to remove objects.
             if (_removes.ContainsKey(frame))
@@ -568,7 +568,7 @@ namespace Engine.Simulation
         private void Rewind(long frame)
         {
             // Find first state that's not past the frame.
-            for (int i = 0; i < _simulations.Length; ++i)
+            for (var i = 0; i < _simulations.Length; ++i)
             {
                 if (_simulations[i].CurrentFrame <= frame)
                 {
@@ -587,12 +587,12 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="state">the state to mirror.</param>
         /// <param name="start">the index to start at.</param>
-        private void MirrorSimulation(IAuthoritativeSimulation state, int start)
+        private void MirrorSimulation(ICopyable<ISimulation> state, int start)
         {
             for (var i = start; i >= 0; --i)
             {
-                _simulations[i] = _simulations[i] ?? (IAuthoritativeSimulation)state.DeepCopy();
-                _simulations[i] = (IAuthoritativeSimulation)state.DeepCopy(_simulations[i]);
+                _simulations[i] = _simulations[i] ?? (IAuthoritativeSimulation)state.NewInstance();
+                _simulations[i] = (IAuthoritativeSimulation)state.CopyInto(_simulations[i]);
             }
         }
 
@@ -841,6 +841,19 @@ namespace Engine.Simulation
             }
 
             /// <summary>
+            /// Creates a new component for the specified entity.
+            /// </summary>
+            /// <param name="type">The type of component to create.</param>
+            /// <param name="entity">The entity to attach the component to.</param>
+            /// <returns>
+            /// The new component.
+            /// </returns>
+            public Component AddComponent(Type type, int entity)
+            {
+                throw new NotImplementedException();
+            }
+
+            /// <summary>
             /// Test whether the component with the specified id exists.
             /// </summary>
             /// <param name="componentId">The id of the component to check for.</param>
@@ -999,26 +1012,22 @@ namespace Engine.Simulation
             #region Copying
 
             /// <summary>
-            /// Creates a deep copy of the object.
+            /// Creates a shallow copy of the object.
             /// </summary>
-            /// <returns>
-            /// The copy.
-            /// </returns>
-            public IManager DeepCopy()
+            /// <returns>The copy.</returns>
+            public IManager NewInstance()
             {
-                return _tss.LeadingSimulation.Manager.DeepCopy();
+                return _tss.LeadingSimulation.Manager.NewInstance();
             }
 
             /// <summary>
             /// Creates a deep copy of the object, reusing the given object.
             /// </summary>
             /// <param name="into">The object to copy into.</param>
-            /// <returns>
-            /// The copy.
-            /// </returns>
-            public IManager DeepCopy(IManager into)
+            /// <returns>The copy.</returns>
+            public IManager CopyInto(IManager into)
             {
-                return _tss.LeadingSimulation.Manager.DeepCopy(into);
+                return _tss.LeadingSimulation.Manager.CopyInto(into);
             }
 
             #endregion

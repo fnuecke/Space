@@ -431,7 +431,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// Creates a deep copy of the object.
         /// </summary>
         /// <returns>The copy.</returns>
-        public Behavior DeepCopy()
+        public Behavior NewInstance()
         {
             throw new NotSupportedException();
         }
@@ -441,7 +441,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public virtual Behavior DeepCopy(Behavior into)
+        public virtual Behavior CopyInto(Behavior into)
         {
             if (into.GetType() != GetType())
             {

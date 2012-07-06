@@ -166,15 +166,16 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Creates a new copy of the same type as the object.
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
         /// </summary>
         /// <returns>The copy.</returns>
-        public ISimulation DeepCopy()
+        public ISimulation NewInstance()
         {
             var copy = (AbstractSimulation)MemberwiseClone();
 
             copy.CurrentFrame = 0;
-            copy.Manager = Manager.DeepCopy();
+            copy.Manager = Manager.NewInstance();
             copy.Commands = new List<Command>();
 
             return copy;
@@ -185,14 +186,14 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public virtual ISimulation DeepCopy(ISimulation into)
+        public virtual ISimulation CopyInto(ISimulation into)
         {
             Debug.Assert(into.GetType() == GetType());
 
             var copy = (AbstractSimulation)into;
 
             copy.CurrentFrame = CurrentFrame;
-            copy.Manager = Manager.DeepCopy(copy.Manager);
+            copy.Manager = Manager.CopyInto(copy.Manager);
             copy.Commands.Clear();
             copy.Commands.AddRange(Commands);
 

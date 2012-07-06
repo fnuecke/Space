@@ -98,16 +98,10 @@ namespace Engine.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
+        /// Creates a shallow copy of the object.
         /// </summary>
-        /// <returns>A cleared copy of this system.</returns>
-        public virtual AbstractSystem DeepCopy()
+        /// <returns>The copy.</returns>
+        public virtual AbstractSystem NewInstance()
         {
             var copy = (AbstractSystem)MemberwiseClone();
 
@@ -128,7 +122,7 @@ namespace Engine.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public virtual AbstractSystem DeepCopy(AbstractSystem into)
+        public virtual AbstractSystem CopyInto(AbstractSystem into)
         {
             Debug.Assert(into.GetType() == GetType());
 

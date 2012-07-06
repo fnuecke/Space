@@ -7,16 +7,17 @@
     public interface ICopyable<T>
     {
         /// <summary>
-        /// Creates a new copy of the same type as the object.
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
         /// </summary>
         /// <returns>The copy.</returns>
-        T DeepCopy();
+        T NewInstance();
 
         /// <summary>
         /// Creates a deep copy of the object, reusing the given object.
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        T DeepCopy(T into);
+        T CopyInto(T into);
     }
 }

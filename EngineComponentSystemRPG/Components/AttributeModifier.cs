@@ -112,21 +112,28 @@ namespace Engine.ComponentSystem.RPG.Components
 
         #region Copying
 
-        public AttributeModifier<TAttribute> DeepCopy()
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public AttributeModifier<TAttribute> NewInstance()
         {
-            return DeepCopy(null);
+            return (AttributeModifier<TAttribute>)MemberwiseClone();
         }
 
-        public AttributeModifier<TAttribute> DeepCopy(AttributeModifier<TAttribute> into)
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public AttributeModifier<TAttribute> CopyInto(AttributeModifier<TAttribute> into)
         {
-            var copy = into ?? (AttributeModifier<TAttribute>)MemberwiseClone();
+            var copy = (AttributeModifier<TAttribute>)MemberwiseClone();
 
-            if (copy == into)
-            {
-                copy.Type = Type;
-                copy.ComputationType = ComputationType;
-                copy.Value = Value;
-            }
+            copy.Type = Type;
+            copy.ComputationType = ComputationType;
+            copy.Value = Value;
 
             return copy;
         }

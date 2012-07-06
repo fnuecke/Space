@@ -113,9 +113,9 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <returns>
         /// The copy.
         /// </returns>
-        public override Behavior DeepCopy(Behavior into)
+        public override Behavior CopyInto(Behavior into)
         {
-            base.DeepCopy(into);
+            base.CopyInto(into);
 
             ((MoveBehavior)into).Target = Target;
 

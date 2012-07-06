@@ -51,7 +51,7 @@ namespace Space.ComponentSystem.Components
             }
             foreach (var behavior in otherAI._behaviors)
             {
-                _behaviors[behavior.Key] = behavior.Value.DeepCopy(_behaviors[behavior.Key]);
+                _behaviors[behavior.Key] = behavior.Value.CopyInto(_behaviors[behavior.Key]);
             }
 
             return this;
@@ -193,7 +193,7 @@ namespace Space.ComponentSystem.Components
 
             _currentBehaviors.Clear();
             var numBehaviors = packet.ReadInt32();
-            for (int i = 0; i < numBehaviors; i++)
+            for (var i = 0; i < numBehaviors; i++)
             {
                 _currentBehaviors.Push((Behavior.BehaviorType)packet.ReadByte());
             }

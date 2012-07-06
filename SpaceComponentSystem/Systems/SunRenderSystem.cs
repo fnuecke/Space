@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Engine.ComponentSystem.Common;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
@@ -128,9 +129,9 @@ namespace Space.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (SunRenderSystem)base.DeepCopy();
+            var copy = (SunRenderSystem)base.NewInstance();
 
             copy._drawablesInView = new HashSet<int>();
 

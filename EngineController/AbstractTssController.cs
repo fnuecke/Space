@@ -368,7 +368,7 @@ namespace Engine.Controller
             /// Creates a deep copy of the object.
             /// </summary>
             /// <returns>The copy.</returns>
-            public ISimulation DeepCopy()
+            public ISimulation NewInstance()
             {
                 throw new NotSupportedException();
             }
@@ -378,7 +378,7 @@ namespace Engine.Controller
             /// </summary>
             /// <param name="into">The object to copy into.</param>
             /// <returns>The copy.</returns>
-            public ISimulation DeepCopy(ISimulation into)
+            public ISimulation CopyInto(ISimulation into)
             {
                 throw new NotSupportedException();
             }
@@ -397,7 +397,7 @@ namespace Engine.Controller
             Tss.Manager.Hash(hasher);
             var hash1 = hasher.Value;
 
-            var copy = Tss.Manager.DeepCopy(Tss.Manager.DeepCopy());
+            var copy = Tss.Manager.CopyInto(Tss.Manager.NewInstance());
             hasher = new Hasher();
             copy.Hash(hasher);
             var hash2 = hasher.Value;
@@ -407,6 +407,8 @@ namespace Engine.Controller
                 // All is well.
                 return;
             }
+
+            // Check components to isolate faulty one.
             var i = 1;
             for (; Tss.Manager.HasComponent(i); i++)
             {
@@ -425,19 +427,20 @@ namespace Engine.Controller
             }
             Debug.Assert(!copy.HasComponent(i));
 
-            foreach (var entry in ((Manager)copy)._systems)
-            {
-                var s1 = Tss.Manager.GetSystem(entry.Key);
-                var s2 = entry.Value;
+            // Check systems to isolate faulty one.
+            //foreach (var entry in ((Manager)copy)._systems)
+            //{
+            //    var s1 = Tss.Manager.GetSystem(entry.Key);
+            //    var s2 = entry.Value;
 
-                var h1 = new Hasher();
-                var h2 = new Hasher();
+            //    var h1 = new Hasher();
+            //    var h2 = new Hasher();
 
-                s1.Hash(h1);
-                s2.Hash(h2);
+            //    s1.Hash(h1);
+            //    s2.Hash(h2);
 
-                Debug.Assert(h1.Value == h2.Value);
-            }
+            //    Debug.Assert(h1.Value == h2.Value);
+            //}
 
             // Deep copy with new instance broken.
             throw new InvalidProgramException("DeepCopy() implementation resulted in invalid copy.");

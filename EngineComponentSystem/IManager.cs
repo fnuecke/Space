@@ -119,6 +119,16 @@ namespace Engine.ComponentSystem
         T AddComponent<T>(int entity) where T : Component, new();
 
         /// <summary>
+        /// Creates a new component for the specified entity.
+        /// </summary>
+        /// <param name="type">The type of component to create.</param>
+        /// <param name="entity">The entity to attach the component to.</param>
+        /// <returns>
+        /// The new component.
+        /// </returns>
+        Component AddComponent(Type type, int entity);
+
+        /// <summary>
         /// Test whether the component with the specified id exists.
         /// </summary>
         /// <param name="componentId">The id of the component to check for.</param>

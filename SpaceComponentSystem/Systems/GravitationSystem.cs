@@ -146,9 +146,9 @@ namespace Space.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (GravitationSystem)base.DeepCopy();
+            var copy = (GravitationSystem)base.NewInstance();
 
             copy._reusableNeighborList = new HashSet<int>();
 

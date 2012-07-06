@@ -101,7 +101,6 @@ namespace Engine.ComponentSystem.Components
         /// <param name="packet">The packet to read from.</param>
         public virtual void Depacketize(Packet packet)
         {
-            Manager = null;
             Id = packet.ReadInt32();
             Entity = packet.ReadInt32();
             Enabled = packet.ReadBoolean();

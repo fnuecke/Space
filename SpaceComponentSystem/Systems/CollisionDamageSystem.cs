@@ -151,9 +151,9 @@ namespace Space.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (CollisionDamageSystem)base.DeepCopy();
+            var copy = (CollisionDamageSystem)base.NewInstance();
 
             copy._reusableCooldownList = new List<int>();
 

@@ -327,6 +327,25 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
+        /// Creates a shallow copy of the object.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public override AbstractSystem NewInstance()
+        {
+            var copy = (CameraSystem)base.NewInstance();
+
+            copy._lastFrame = 0;
+            copy._currentOffset = Vector2.Zero;
+            copy._cameraPosition = Vector2.Zero;
+            copy._customCameraPosition = null;
+            copy._targetZoom = MaximumZoom;
+            copy._currentZoom = MaximumZoom;
+            copy._transform = Matrix.Identity;
+
+            return copy;
+        }
+
+        /// <summary>
         /// Creates a deep copy of the system. The passed system must be of the
         /// same type.
         /// 
@@ -338,16 +357,17 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem DeepCopy(AbstractSystem into)
+        public override AbstractSystem CopyInto(AbstractSystem into)
         {
-            var copy = (CameraSystem)base.DeepCopy(into);
+            var copy = (CameraSystem)base.CopyInto(into);
 
             copy._lastFrame = _lastFrame;
             copy._currentOffset = _currentOffset;
             copy._cameraPosition = _cameraPosition;
             copy._customCameraPosition = _customCameraPosition;
-            // Do not copy zoom, as it's set locally, and we never want to
-            // overwrite the leading one.
+            // Do NOT copy zoom, as it's set locally, and we never want to
+            // overwrite the leading one. Otherwise the zoom would change
+            // on rollbacks, which is very irritating.
             //copy._targetZoom = _targetZoom;
             //copy._currentZoom = _currentZoom;
             copy._transform = _transform;

@@ -288,7 +288,7 @@ namespace Engine.Util
         /// </returns>
         public Packet Packetize(Packet packet)
         {
-            for (int i = 0; i < N; i++)
+            for (var i = 0; i < N; i++)
             {
                 packet.Write(_mt[i]);
             }
@@ -301,7 +301,7 @@ namespace Engine.Util
         /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
-            for (int i = 0; i < N; i++)
+            for (var i = 0; i < N; i++)
             {
                 _mt[i] = packet.ReadUInt64();
             }
@@ -315,7 +315,7 @@ namespace Engine.Util
         /// <param name="hasher">The hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
-            for (int i = 0; i < N; i++)
+            for (var i = 0; i < N; i++)
             {
                 hasher.Put(BitConverter.GetBytes(_mt[i]));
             }
@@ -326,23 +326,26 @@ namespace Engine.Util
 
         #region Copying
 
-        public MersenneTwister DeepCopy()
+        /// <summary>
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public MersenneTwister NewInstance()
         {
-            return DeepCopy(null);
+            return new MersenneTwister(0);
         }
 
-        public MersenneTwister DeepCopy(MersenneTwister into)
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public MersenneTwister CopyInto(MersenneTwister into)
         {
-            var copy = into ?? (MersenneTwister)MemberwiseClone();
+            var copy = into;
 
-            if (copy == into)
-            {
-                copy._index = _index;
-            }
-            else
-            {
-                copy._mt = new ulong[N];
-            }
+            copy._index = _index;
             _mt.CopyTo(copy._mt, 0);
 
             return copy;

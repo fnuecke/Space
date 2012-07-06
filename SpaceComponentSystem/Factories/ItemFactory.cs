@@ -1,8 +1,8 @@
 ﻿using Engine.ComponentSystem;
+using Engine.ComponentSystem.Common;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
-using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;

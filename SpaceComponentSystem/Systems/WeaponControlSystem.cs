@@ -223,9 +223,9 @@ namespace Space.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (WeaponControlSystem)base.DeepCopy();
+            var copy = (WeaponControlSystem)base.NewInstance();
 
             copy._cooldowns = new Dictionary<int, int>();
             copy._random = new MersenneTwister(0);
@@ -246,16 +246,16 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem DeepCopy(AbstractSystem into)
+        public override AbstractSystem CopyInto(AbstractSystem into)
         {
-            var copy = (WeaponControlSystem)base.DeepCopy(into);
+            var copy = (WeaponControlSystem)base.CopyInto(into);
 
             copy._cooldowns.Clear();
             foreach (var item in _cooldowns)
             {
                 copy._cooldowns.Add(item.Key, item.Value);
             }
-            copy._random = _random.DeepCopy(copy._random);
+            copy._random = _random.CopyInto(copy._random);
 
             return copy;
         }

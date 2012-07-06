@@ -24,7 +24,7 @@ namespace Engine.Tests.Base.Util
 
                 // Test different variants of copying.
 
-                var copy = instance.DeepCopy(instance.DeepCopy());
+                var copy = instance.CopyInto(instance.NewInstance());
 
                 Assert.AreEqual(hash, GetHash(copy));
             }

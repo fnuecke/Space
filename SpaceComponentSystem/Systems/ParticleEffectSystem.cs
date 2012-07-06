@@ -257,9 +257,9 @@ namespace Space.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (ParticleEffectSystem)base.DeepCopy();
+            var copy = (ParticleEffectSystem)base.NewInstance();
 
             // Mark as secondary system.
             copy._isDrawingInstance = false;
@@ -279,9 +279,9 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem DeepCopy(AbstractSystem into)
+        public override AbstractSystem CopyInto(AbstractSystem into)
         {
-            var copy = (ParticleEffectSystem)base.DeepCopy(into);
+            var copy = (ParticleEffectSystem)base.CopyInto(into);
 
             // Mark as secondary system.
             copy._isDrawingInstance = false;

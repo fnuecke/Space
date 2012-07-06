@@ -21,7 +21,7 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Lookup table for quick access to component by type.
         /// </summary>
-        public Dictionary<Type, AbstractSystem> _systems = new Dictionary<Type, AbstractSystem>();
+        private Dictionary<Type, AbstractSystem> _systems = new Dictionary<Type, AbstractSystem>();
 
         /// <summary>
         /// Keeps track of entity->component relationships.
@@ -117,10 +117,11 @@ namespace Engine.ComponentSystem
             var type = system.GetType();
             if (!_systems.ContainsKey(type))
             {
-                _systems.Add(type, system.DeepCopy());
+                var systemCopy = system.NewInstance();
+                systemCopy.Manager = this;
+                _systems.Add(type, systemCopy);
             }
-            _systems[type].Manager = this;
-            _systems[type] = system.DeepCopy(_systems[type]);
+            _systems[type] = system.CopyInto(_systems[type]);
         }
 
         /// <summary>
@@ -236,17 +237,16 @@ namespace Engine.ComponentSystem
         {
             return (T)AddComponent(typeof(T), entity);
         }
-        
+
         /// <summary>
-        /// Creates a new component for the specified entity. The component must have
-        /// a parameterless constructor and be a descendant of Component.
+        /// Creates a new component for the specified entity.
         /// </summary>
-        /// <param name="componentType">The type of component to create.</param>
+        /// <param name="type">The type of component to create.</param>
         /// <param name="entity">The entity to attach the component to.</param>
         /// <returns>
         /// The new component.
         /// </returns>
-        public Component AddComponent(Type componentType, int entity)
+        public Component AddComponent(Type type, int entity)
         {
             // Make sure that entity exists.
             if (!HasEntity(entity))
@@ -255,7 +255,7 @@ namespace Engine.ComponentSystem
             }
 
             // The create the component and set it up.
-            var component = AllocateComponent(componentType);
+            var component = AllocateComponent(type);
             component.Manager = this;
             component.Id = _componentIds.GetId();
             component.Entity = entity;
@@ -417,16 +417,6 @@ namespace Engine.ComponentSystem
         /// </returns>
         public Packet Packetize(Packet packet)
         {
-            // Write systems, with their types, as these will only be read back
-            // via <c>ReadPacketizableInto()</c> to keep some variables that
-            // can only passed in the constructor.
-            packet.Write(_systems.Count);
-            foreach (var system in _systems.Values)
-            {
-                packet.Write(system.GetType().AssemblyQualifiedName);
-                packet.Write(system);
-            }
-
             // Write the managers for used ids.
             packet.Write(_entityIds);
             packet.Write(_componentIds);
@@ -441,6 +431,16 @@ namespace Engine.ComponentSystem
                 packet.Write(component);
             }
 
+            // Write systems, with their types, as these will only be read back
+            // via <c>ReadPacketizableInto()</c> to keep some variables that
+            // can only passed in the constructor.
+            packet.Write(_systems.Count);
+            foreach (var system in _systems.Values)
+            {
+                packet.Write(system.GetType().AssemblyQualifiedName);
+                packet.Write(system);
+            }
+
             return packet;
         }
 
@@ -450,19 +450,6 @@ namespace Engine.ComponentSystem
         /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
-            var numSystems = packet.ReadInt32();
-            for (var i = 0; i < numSystems; i++)
-            {
-                var typeName = packet.ReadString();
-                var type = Type.GetType(typeName);
-                if (type == null)
-                {
-                    throw new PacketException(string.Format("Invalid system type, not known locally: {0}.", typeName));
-                }
-                packet.ReadPacketizableInto(_systems[type]);
-                _systems[type].Manager = this;
-            }
-
             // Release all current objects.
             foreach (var entity in _entities.Values)
             {
@@ -482,12 +469,19 @@ namespace Engine.ComponentSystem
             // Read back all components, fill in entity info as well, as that
             // is stored implicitly in the components.
             var numComponents = packet.ReadInt32();
-            for (var i = 0; i < numComponents; i++)
+            for (var i = 0; i < numComponents; ++i)
             {
-                var type = Type.GetType(packet.ReadString());
+                var typeName = packet.ReadString();
+                var type = Type.GetType(typeName);
+                if (type == null)
+                {
+                    throw new PacketException(string.Format("Invalid component type, not known locally: {0}.", typeName));
+                }
+
                 var component = packet.ReadPacketizableInto(AllocateComponent(type));
                 component.Manager = this;
                 _components.Add(component.Id, component);
+
                 // Add to entity mapping, create entries as necessary.
                 if (!_entities.ContainsKey(component.Entity))
                 {
@@ -495,13 +489,31 @@ namespace Engine.ComponentSystem
                 }
                 _entities[component.Entity].Add(component);
             }
-
-            foreach (var component in _components.Values)
+            // Fill in empty entities. This is to re-create empty entities, i.e.
+            // entities with no components.
+            foreach (var entityId in _entityIds)
             {
-                // Send a message to all interested systems.
-                ComponentAdded message;
-                message.Component = component;
-                SendMessage(ref message);
+                if (!_entities.ContainsKey(entityId))
+                {
+                    _entities.Add(entityId, AllocateEntity());
+                }
+            }
+
+            // Read back all systems. This must be done after reading the components,
+            // because the systems will fetch their components again at this point.
+            var numSystems = packet.ReadInt32();
+            for (var i = 0; i < numSystems; ++i)
+            {
+                var typeName = packet.ReadString();
+                var type = Type.GetType(typeName);
+                if (type == null)
+                {
+                    throw new PacketException(string.Format("Invalid system type, not known locally: {0}.", typeName));
+                }
+
+                Debug.Assert(_systems.ContainsKey(type));
+
+                packet.ReadPacketizableInto(_systems[type]);
             }
         }
 
@@ -583,19 +595,29 @@ namespace Engine.ComponentSystem
 
         #region Copying
 
-        public IManager DeepCopy()
+        /// <summary>
+        /// Creates a new copy of the same type as the object.
+        /// </summary>
+        /// <returns>The copy.</returns>
+        public IManager NewInstance()
         {
             return new Manager();
         }
 
-        public IManager DeepCopy(IManager into)
+        /// <summary>
+        /// Creates a deep copy of the object, reusing the given object.
+        /// </summary>
+        /// <param name="into">The object to copy into.</param>
+        /// <returns>The copy.</returns>
+        public IManager CopyInto(IManager into)
         {
             Debug.Assert(into is Manager);
+
             var copy = (Manager)into;
 
             // Copy id managers.
-            copy._entityIds = _entityIds.DeepCopy(copy._entityIds);
-            copy._componentIds = _componentIds.DeepCopy(copy._componentIds);
+            copy._entityIds = _entityIds.CopyInto(copy._entityIds);
+            copy._componentIds = _componentIds.CopyInto(copy._componentIds);
 
             // Copy components and entities.
             copy._components.Clear();
@@ -608,6 +630,7 @@ namespace Engine.ComponentSystem
                 componentCopy.Manager = copy;
                 copy._components.Add(component.Key, componentCopy);
             }
+
             copy._entities.Clear();
             foreach (var entity in _entities)
             {

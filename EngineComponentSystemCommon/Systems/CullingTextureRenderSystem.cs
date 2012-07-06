@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Engine.ComponentSystem.Systems
+namespace Engine.ComponentSystem.Common
 {
     public abstract class CullingTextureRenderSystem : TextureRenderSystem
     {
@@ -105,9 +106,9 @@ namespace Engine.ComponentSystem.Systems
         /// </para>
         /// </summary>
         /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy()
+        public override AbstractSystem NewInstance()
         {
-            var copy = (CullingTextureRenderSystem)base.DeepCopy();
+            var copy = (CullingTextureRenderSystem)base.NewInstance();
 
             copy._drawablesInView = new HashSet<int>();
 
