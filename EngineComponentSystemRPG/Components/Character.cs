@@ -73,7 +73,6 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 _baseAttributes.Add(baseAttribute.Key, baseAttribute.Value);
             }
-            RecomputeAttributes();
 
             return this;
         }
@@ -224,7 +223,7 @@ namespace Engine.ComponentSystem.RPG.Components
             message.Entity = Entity;
             Manager.SendMessage(ref message);
         }
-        
+
         #endregion
 
         #region Serialization

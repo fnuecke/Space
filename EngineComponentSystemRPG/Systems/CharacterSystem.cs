@@ -13,6 +13,16 @@ namespace Engine.ComponentSystem.RPG.Systems
         where TAttribute : struct
     {
         /// <summary>
+        /// Handles adds to trigger recomputation of modified attribute
+        /// values.
+        /// </summary>
+        /// <param name="component">The component that was added.</param>
+        protected override void OnComponentAdded(Character<TAttribute> component)
+        {
+            component.RecomputeAttributes();
+        }
+
+        /// <summary>
         /// Handles messages to trigger recomputation of modified attribute
         /// values.
         /// </summary>

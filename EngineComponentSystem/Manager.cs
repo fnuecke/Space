@@ -602,11 +602,8 @@ namespace Engine.ComponentSystem
             foreach (var component in _components.Values)
             {
                 // The create the component and set it up.
-                var componentCopy = AllocateComponent(component.GetType());
+                var componentCopy = AllocateComponent(component.GetType()).Initialize(component);
                 componentCopy.Manager = copy;
-                componentCopy.Id = component.Id;
-                componentCopy.Entity = component.Entity;
-                componentCopy.Enabled = true;
                 copy._components[componentCopy.Id] = componentCopy;
 
                 // Add to entity index.
@@ -629,15 +626,6 @@ namespace Engine.ComponentSystem
                 ComponentAdded message;
                 message.Component = component;
                 copy.SendMessage(ref message);   
-            }
-
-            // Finally, initialize the components. We do this here to be
-            // consistent with initialization when adding from the outside,
-            // via AddComponent. Also, all entities that may be needed in
-            // the initialization will be registered at this point.
-            foreach (var component in _components)
-            {
-                copy._components[component.Key].Initialize(component.Value);
             }
 
             return copy;

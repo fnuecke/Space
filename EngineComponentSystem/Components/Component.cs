@@ -60,6 +60,8 @@ namespace Engine.ComponentSystem.Components
                 throw new ArgumentException("Invalid type.", "other");
             }
 
+            Id = other.Id;
+            Entity = other.Entity;
             Enabled = other.Enabled;
 
             return this;
