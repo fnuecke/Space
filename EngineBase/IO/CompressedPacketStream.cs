@@ -53,8 +53,8 @@ namespace Engine.IO
             {
                 if (packet != null)
                 {
-                    bool compressed = packet.ReadBoolean();
-                    byte[] data = packet.ReadByteArray();
+                    var compressed = packet.ReadBoolean();
+                    var data = packet.ReadByteArray();
                     if (compressed)
                     {
                         data = SimpleCompression.Decompress(data);

@@ -404,6 +404,10 @@ namespace Engine.ComponentSystem
                 packet.Write(system);
             }
 
+            // Write the managers for used ids.
+            packet.Write(_entityIds);
+            packet.Write(_componentIds);
+
             // Write the components, which are enough to implicitly restore the
             // entity to component mapping as well, so we don't need to write
             // the entity mapping.
@@ -413,10 +417,6 @@ namespace Engine.ComponentSystem
                 packet.Write(component.GetType().AssemblyQualifiedName);
                 packet.Write(component);
             }
-
-            // And finally, the managers for used ids.
-            packet.Write(_entityIds);
-            packet.Write(_componentIds);
 
             return packet;
         }
@@ -452,6 +452,10 @@ namespace Engine.ComponentSystem
             }
             _components.Clear();
 
+            // Get the managers for ids (restores "known" ids before restoring components).
+            packet.ReadPacketizableInto(_entityIds);
+            packet.ReadPacketizableInto(_componentIds);
+
             // Read back all components, fill in entity info as well, as that
             // is stored implicitly in the components.
             int numComponents = packet.ReadInt32();
@@ -473,10 +477,6 @@ namespace Engine.ComponentSystem
                 message.Component = component;
                 SendMessage(ref message);
             }
-
-            // And finally, the managers for ids.
-            packet.ReadPacketizableInto(_entityIds);
-            packet.ReadPacketizableInto(_componentIds);
         }
 
         /// <summary>
