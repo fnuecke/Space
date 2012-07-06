@@ -21,12 +21,18 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// The number of base attributes of this character.
         /// </summary>
-        public int BaseAttributeCount { get { return _baseAttributes.Count; } }
+        public int BaseAttributeCount
+        {
+            get { return _baseAttributes.Count; }
+        }
 
         /// <summary>
         /// The types of base attributes of this character.
         /// </summary>
-        public IEnumerable<TAttribute> BaseAttributeTypes { get { return _baseAttributes.Keys; } }
+        public IEnumerable<TAttribute> BaseAttributeTypes
+        {
+            get { return _baseAttributes.Keys; }
+        }
 
         #endregion
 
@@ -49,12 +55,14 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// Reusable list for modifier computation.
         /// </summary>
-        private readonly List<AttributeModifier<TAttribute>> _reusableAdditiveList = new List<AttributeModifier<TAttribute>>();
+        private readonly List<AttributeModifier<TAttribute>> _reusableAdditiveList =
+            new List<AttributeModifier<TAttribute>>();
 
         /// <summary>
         /// Reusable list for modifier computation.
         /// </summary>
-        private readonly List<AttributeModifier<TAttribute>> _reusableMultiplicativeList = new List<AttributeModifier<TAttribute>>();
+        private readonly List<AttributeModifier<TAttribute>> _reusableMultiplicativeList =
+            new List<AttributeModifier<TAttribute>>();
 
         #endregion
 
@@ -76,7 +84,7 @@ namespace Engine.ComponentSystem.RPG.Components
             foreach (var attribute in otherCharacter._modifiedAttributes)
             {
                 var values = new float[attribute.Value.Length];
-                attribute.Value.CopyTo(values, 0); 
+                attribute.Value.CopyTo(values, 0);
                 _modifiedAttributes.Add(attribute.Key, values);
             }
 
@@ -205,7 +213,7 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 if (!_modifiedAttributes.ContainsKey(modifier.Type))
                 {
-                    _modifiedAttributes[modifier.Type] = new[] { modifier.Value, 1f };
+                    _modifiedAttributes[modifier.Type] = new[] {modifier.Value, 1f};
                 }
                 else
                 {
@@ -253,7 +261,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// of the base class. Used for saving.
         /// </summary>
         /// <param name="packet">The packet to write to.</param>
-        /// <returns>The writting to packet.</returns>
+        /// <returns>The written to packet.</returns>
         public Packet PacketizeLocal(Packet packet)
         {
             packet.Write(_baseAttributes.Count);
@@ -261,6 +269,16 @@ namespace Engine.ComponentSystem.RPG.Components
             {
                 packet.Write(Enum.GetName(typeof(TAttribute), attribute.Key));
                 packet.Write(attribute.Value);
+            }
+            packet.Write(_modifiedAttributes.Count);
+            foreach (var attribute in _modifiedAttributes)
+            {
+                packet.Write(Enum.GetName(typeof(TAttribute), attribute.Key));
+                packet.Write(attribute.Value.Length);
+                for (var i = 0; i < attribute.Value.Length; ++i)
+                {
+                    packet.Write(attribute.Value[i]);
+                }
             }
 
             return packet;
@@ -278,18 +296,30 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>
-        /// Pendant to <c>PacketizeLocal</c>, only reads own data and leaves
+        /// Corresponds to <c>PacketizeLocal</c>, only reads own data and leaves
         /// the base class alone.
         /// </summary>
         /// <param name="packet">The packet to read from.</param>
         public void DepacketizeLocal(Packet packet)
         {
             var numBaseAttributes = packet.ReadInt32();
-            for (int i = 0; i < numBaseAttributes; i++)
+            for (var i = 0; i < numBaseAttributes; i++)
             {
                 var key = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
                 var value = packet.ReadSingle();
                 _baseAttributes[key] = value;
+            }
+            var numModifiedAttributes = packet.ReadInt32();
+            for (var i = 0; i < numModifiedAttributes; i++)
+            {
+                var key = (TAttribute)Enum.Parse(typeof(TAttribute), packet.ReadString());
+                var numValues = packet.ReadInt32();
+                var values = new float[numValues];
+                for (var j = 0; j < numValues; ++j)
+                {
+                    values[j] = packet.ReadSingle();
+                }
+                _modifiedAttributes[key] = values;
             }
         }
 

@@ -985,7 +985,7 @@ namespace Engine.Simulation
             /// </returns>
             public Packet Packetize(Packet packet)
             {
-                throw new NotSupportedException();
+                return _tss.LeadingSimulation.Manager.Packetize(packet);
             }
 
             /// <summary>

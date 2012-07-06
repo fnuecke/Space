@@ -93,8 +93,8 @@ namespace Space.ComponentSystem.Components
         /// <param name="relativeEnergy">The relative energy.</param>
         public Respawn Initialize(int delay, IEnumerable<Type> disableComponents, Vector2 position, float relativeHealth = 1f, float relativeEnergy = 1f)
         {
-            this.Delay = delay;
-            this.Position = position;
+            Delay = delay;
+            Position = position;
             if (disableComponents != null)
             {
                 foreach (var type in disableComponents)
@@ -102,8 +102,8 @@ namespace Space.ComponentSystem.Components
                     ComponentsToDisable.Add(type);
                 }
             }
-            this.RelativeHealth = relativeHealth;
-            this.RelativeEnergy = relativeEnergy;
+            RelativeHealth = relativeHealth;
+            RelativeEnergy = relativeEnergy;
 
             return this;
         }
@@ -150,6 +150,8 @@ namespace Space.ComponentSystem.Components
 
             packet.Write(Delay);
             packet.Write(Position);
+            packet.Write(RelativeHealth);
+            packet.Write(RelativeEnergy);
 
             packet.Write(ComponentsToDisable.Count);
             foreach (var componentType in ComponentsToDisable)
@@ -170,6 +172,8 @@ namespace Space.ComponentSystem.Components
 
             Delay = packet.ReadInt32();
             Position = packet.ReadVector2();
+            RelativeHealth = packet.ReadSingle();
+            RelativeEnergy = packet.ReadSingle();
 
             ComponentsToDisable.Clear();
             var numComponents = packet.ReadInt32();

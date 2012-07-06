@@ -601,7 +601,14 @@ namespace Engine.ComponentSystem
         /// <returns>The copy.</returns>
         public IManager NewInstance()
         {
-            return new Manager();
+            var copy = new Manager();
+
+            foreach (var system in _systems.Values)
+            {
+                copy.AddSystem(system.NewInstance());
+            }
+
+            return copy;
         }
 
         /// <summary>
@@ -890,6 +897,12 @@ namespace Engine.ComponentSystem
             #endregion
         }
 
+        #endregion
+
+        #region Debugging
+#if DEBUG
+        public ICollection<AbstractSystem> Systems { get { return _systems.Values; } } 
+#endif
         #endregion
     }
 }
