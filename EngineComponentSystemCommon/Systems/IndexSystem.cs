@@ -356,9 +356,11 @@ namespace Engine.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem CopyInto(AbstractSystem into)
+        public override void CopyInto(AbstractSystem into)
         {
-            var copy = (IndexSystem)base.CopyInto(into);
+            base.CopyInto(into);
+
+            var copy = (IndexSystem)into;
 
             copy._maxEntriesPerNode = _maxEntriesPerNode;
             copy._minNodeBounds = _minNodeBounds;
@@ -387,8 +389,6 @@ namespace Engine.ComponentSystem.Systems
                     copy._trees[i].Add(ref bounds, entry.Item2);
                 }
             }
-
-            return copy;
         }
 
         #endregion

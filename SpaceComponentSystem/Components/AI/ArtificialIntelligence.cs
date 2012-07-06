@@ -52,7 +52,7 @@ namespace Space.ComponentSystem.Components
             }
             foreach (var entry in otherAI._behaviors)
             {
-                _behaviors[entry.Key] = entry.Value.CopyInto(_behaviors[entry.Key]);
+                entry.Value.CopyInto(_behaviors[entry.Key]);
             }
 
             return this;

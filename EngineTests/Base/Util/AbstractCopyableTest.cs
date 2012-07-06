@@ -27,7 +27,7 @@ namespace Engine.Tests.Base.Util
 
                 InitCopy(copy);
 
-                copy = instance.CopyInto(copy);
+                instance.CopyInto(copy);
 
                 Assert.AreEqual(hash, GetHash(copy));
             }

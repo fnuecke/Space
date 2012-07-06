@@ -181,13 +181,13 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem CopyInto(AbstractSystem into)
+        public override void CopyInto(AbstractSystem into)
         {
-            var copy = (ShipSpawnSystem)base.CopyInto(into);
+            base.CopyInto(into);
 
-            copy._random = _random.CopyInto(copy._random);
+            var copy = (ShipSpawnSystem)into;
 
-            return copy;
+            _random.CopyInto(copy._random);
         }
 
         #endregion

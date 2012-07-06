@@ -21,27 +21,27 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Lookup table for quick access to component by type.
         /// </summary>
-        private Dictionary<Type, AbstractSystem> _systems = new Dictionary<Type, AbstractSystem>();
+        private readonly Dictionary<Type, AbstractSystem> _systems = new Dictionary<Type, AbstractSystem>();
 
         /// <summary>
         /// Keeps track of entity->component relationships.
         /// </summary>
-        private Dictionary<int, Entity> _entities = new Dictionary<int, Entity>();
+        private readonly Dictionary<int, Entity> _entities = new Dictionary<int, Entity>();
 
         /// <summary>
         /// Component mapping id to instance (because there can be gaps
         /// </summary>
-        private Dictionary<int, Component> _components = new Dictionary<int, Component>();
+        private readonly Dictionary<int, Component> _components = new Dictionary<int, Component>();
 
         /// <summary>
         /// Manager for entity ids.
         /// </summary>
-        private IdManager _entityIds = new IdManager();
+        private readonly IdManager _entityIds = new IdManager();
 
         /// <summary>
         /// Manager for entity ids.
         /// </summary>
-        private IdManager _componentIds = new IdManager();
+        private readonly IdManager _componentIds = new IdManager();
 
         #endregion
 
@@ -121,7 +121,7 @@ namespace Engine.ComponentSystem
                 systemCopy.Manager = this;
                 _systems.Add(type, systemCopy);
             }
-            _systems[type] = system.CopyInto(_systems[type]);
+            system.CopyInto(_systems[type]);
         }
 
         /// <summary>
@@ -616,7 +616,7 @@ namespace Engine.ComponentSystem
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public IManager CopyInto(IManager into)
+        public void CopyInto(IManager into)
         {
             Debug.Assert(into is Manager);
             Debug.Assert(into != this);
@@ -624,8 +624,8 @@ namespace Engine.ComponentSystem
             var copy = (Manager)into;
 
             // Copy id managers.
-            copy._entityIds = _entityIds.CopyInto(copy._entityIds);
-            copy._componentIds = _componentIds.CopyInto(copy._componentIds);
+            _entityIds.CopyInto(copy._entityIds);
+            _componentIds.CopyInto(copy._componentIds);
 
             // Copy components and entities.
             copy._components.Clear();
@@ -659,8 +659,6 @@ namespace Engine.ComponentSystem
             {
                 copy.CopySystem(item.Value);
             }
-
-            return copy;
         }
 
         #endregion
@@ -902,7 +900,10 @@ namespace Engine.ComponentSystem
 
         #region Debugging
 #if DEBUG
-        public ICollection<AbstractSystem> Systems { get { return _systems.Values; } } 
+        /// <summary>
+        /// To allow per-system hash validity (serialization validation).
+        /// </summary>
+        public IEnumerable<AbstractSystem> Systems { get { return _systems.Values; } } 
 #endif
         #endregion
     }

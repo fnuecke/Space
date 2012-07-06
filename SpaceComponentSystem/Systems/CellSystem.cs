@@ -353,9 +353,11 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem CopyInto(AbstractSystem into)
+        public override void CopyInto(AbstractSystem into)
         {
-            var copy = (CellSystem)base.CopyInto(into);
+            base.CopyInto(into);
+
+            var copy = (CellSystem)into;
 
             copy._livingCells.Clear();
             copy._livingCells.UnionWith(_livingCells);
@@ -364,8 +366,6 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._pendingCells.Add(item.Key, item.Value);
             }
-
-            return copy;
         }
 
         #endregion

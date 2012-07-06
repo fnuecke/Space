@@ -127,7 +127,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public AttributeModifier<TAttribute> CopyInto(AttributeModifier<TAttribute> into)
+        public void CopyInto(AttributeModifier<TAttribute> into)
         {
             Debug.Assert(into != this);
 
@@ -136,8 +136,6 @@ namespace Engine.ComponentSystem.RPG.Components
             copy.Type = Type;
             copy.ComputationType = ComputationType;
             copy.Value = Value;
-
-            return copy;
         }
 
         #endregion

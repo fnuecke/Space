@@ -378,7 +378,7 @@ namespace Engine.Controller
             /// </summary>
             /// <param name="into">The object to copy into.</param>
             /// <returns>The copy.</returns>
-            public ISimulation CopyInto(ISimulation into)
+            public void CopyInto(ISimulation into)
             {
                 throw new NotSupportedException();
             }
@@ -397,7 +397,8 @@ namespace Engine.Controller
             Tss.Manager.Hash(hasher);
             var hash1 = hasher.Value;
 
-            var copy = Tss.Manager.CopyInto(Tss.Manager.NewInstance());
+            var copy = Tss.Manager.NewInstance();
+            Tss.Manager.CopyInto(copy);
             hasher = new Hasher();
             copy.Hash(hasher);
             var hash2 = hasher.Value;

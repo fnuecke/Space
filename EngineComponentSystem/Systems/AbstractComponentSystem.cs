@@ -264,10 +264,11 @@ namespace Engine.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem CopyInto(AbstractSystem into)
+        public override void CopyInto(AbstractSystem into)
         {
-            // Get something to start with.
-            var copy = (AbstractComponentSystem<TComponent>)base.CopyInto(into);
+            base.CopyInto(into);
+
+            var copy = (AbstractComponentSystem<TComponent>)into;
 
             copy.Components.Clear();
             foreach (var component in Components)
@@ -276,8 +277,6 @@ namespace Engine.ComponentSystem.Systems
                 Debug.Assert(componentCopy is TComponent);
                 copy.Components.Add((TComponent)componentCopy);
             }
-
-            return copy;
         }
 
         #endregion

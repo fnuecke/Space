@@ -419,7 +419,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Not available for TSS.
         /// </summary>
-        public ISimulation CopyInto(ISimulation into)
+        public void CopyInto(ISimulation into)
         {
             throw new NotSupportedException();
         }
@@ -618,7 +618,7 @@ namespace Engine.Simulation
             for (var i = start; i >= 0; --i)
             {
                 _simulations[i] = _simulations[i] ?? (IAuthoritativeSimulation)state.NewInstance();
-                _simulations[i] = (IAuthoritativeSimulation)state.CopyInto(_simulations[i]);
+                state.CopyInto(_simulations[i]);
             }
         }
 
@@ -1051,9 +1051,9 @@ namespace Engine.Simulation
             /// </summary>
             /// <param name="into">The object to copy into.</param>
             /// <returns>The copy.</returns>
-            public IManager CopyInto(IManager into)
+            public void CopyInto(IManager into)
             {
-                return _tss.LeadingSimulation.Manager.CopyInto(into);
+                _tss.LeadingSimulation.Manager.CopyInto(into);
             }
 
             #endregion

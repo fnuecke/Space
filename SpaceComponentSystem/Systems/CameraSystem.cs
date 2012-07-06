@@ -357,9 +357,11 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem CopyInto(AbstractSystem into)
+        public override void CopyInto(AbstractSystem into)
         {
-            var copy = (CameraSystem)base.CopyInto(into);
+            base.CopyInto(into);
+
+            var copy = (CameraSystem)into;
 
             copy._lastFrame = _lastFrame;
             copy._currentOffset = _currentOffset;
@@ -371,8 +373,6 @@ namespace Space.ComponentSystem.Systems
             //copy._targetZoom = _targetZoom;
             //copy._currentZoom = _currentZoom;
             copy._transform = _transform;
-
-            return copy;
         }
 
         #endregion

@@ -229,14 +229,14 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public override Behavior CopyInto(Behavior into)
+        public override void CopyInto(Behavior into)
         {
-            var copy = (AttackBehavior)base.CopyInto(into);
+            base.CopyInto(into);
+
+            var copy = (AttackBehavior)into;
 
             copy.Target = Target;
             copy._start = _start != null ? _start.Value : (Vector2?)null;
-
-            return copy;
         }
 
         #endregion

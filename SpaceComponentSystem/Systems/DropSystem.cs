@@ -199,9 +199,11 @@ namespace Space.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public override AbstractSystem CopyInto(AbstractSystem into)
+        public override void CopyInto(AbstractSystem into)
         {
-            var copy = (DropSystem)base.CopyInto(into);
+            base.CopyInto(into);
+            
+            var copy = (DropSystem)into;
 
             // Copy for shuffling.
             copy._itemPools.Clear();
@@ -209,9 +211,7 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._itemPools.Add(item.Key, item.Value);
             }
-            copy._random = _random.CopyInto(copy._random);
-
-            return copy;
+            _random.CopyInto(copy._random);
         }
 
         #endregion

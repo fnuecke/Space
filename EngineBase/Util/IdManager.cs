@@ -149,15 +149,13 @@ namespace Engine.Util
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public IdManager CopyInto(IdManager into)
+        public void CopyInto(IdManager into)
         {
             Debug.Assert(into != this);
 
             into._reusableIds.Clear();
             into._reusableIds.UnionWith(_reusableIds);
             into._nextId = _nextId;
-
-            return into;
         }
 
         #endregion

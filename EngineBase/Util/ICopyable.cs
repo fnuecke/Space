@@ -18,6 +18,6 @@
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        T CopyInto(T into);
+        void CopyInto(T into);
     }
 }

@@ -443,14 +443,12 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public virtual Behavior CopyInto(Behavior into)
+        public virtual void CopyInto(Behavior into)
         {
             Debug.Assert(into.GetType() == GetType());
             Debug.Assert(into != this);
 
             into._ticksToWait = _ticksToWait;
-
-            return into;
         }
 
         #endregion

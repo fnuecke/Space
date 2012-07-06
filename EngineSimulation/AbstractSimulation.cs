@@ -186,7 +186,7 @@ namespace Engine.Simulation
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public virtual ISimulation CopyInto(ISimulation into)
+        public virtual void CopyInto(ISimulation into)
         {
             Debug.Assert(into.GetType() == GetType());
             Debug.Assert(into != this);
@@ -194,11 +194,9 @@ namespace Engine.Simulation
             var copy = (AbstractSimulation)into;
 
             copy.CurrentFrame = CurrentFrame;
-            copy.Manager = Manager.CopyInto(copy.Manager);
+            Manager.CopyInto(copy.Manager);
             copy.Commands.Clear();
             copy.Commands.AddRange(Commands);
-
-            return copy;
         }
 
         #endregion

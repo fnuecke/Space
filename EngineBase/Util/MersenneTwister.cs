@@ -342,16 +342,12 @@ namespace Engine.Util
         /// </summary>
         /// <param name="into">The object to copy into.</param>
         /// <returns>The copy.</returns>
-        public MersenneTwister CopyInto(MersenneTwister into)
+        public void CopyInto(MersenneTwister into)
         {
             Debug.Assert(into != this);
 
-            var copy = into;
-
-            copy._index = _index;
-            _mt.CopyTo(copy._mt, 0);
-
-            return copy;
+            into._index = _index;
+            _mt.CopyTo(into._mt, 0);
         }
 
         #endregion

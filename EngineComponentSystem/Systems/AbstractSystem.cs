@@ -122,7 +122,7 @@ namespace Engine.ComponentSystem.Systems
         /// <remarks>The manager for the system to copy into must be set to the
         /// manager into which the system is being copied.</remarks>
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
-        public virtual AbstractSystem CopyInto(AbstractSystem into)
+        public virtual void CopyInto(AbstractSystem into)
         {
             Debug.Assert(into.GetType() == GetType());
             Debug.Assert(into != this);
@@ -130,8 +130,6 @@ namespace Engine.ComponentSystem.Systems
             // Manager must be re-set to new owner before copying.
             Debug.Assert(into.Manager != null);
             Debug.Assert(into.Manager != Manager);
-
-            return into;
         }
 
         #endregion
