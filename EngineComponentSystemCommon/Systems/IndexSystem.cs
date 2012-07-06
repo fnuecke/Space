@@ -4,6 +4,8 @@ using Engine.Collections;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
+using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
@@ -320,9 +322,100 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Copying
+        #region Serialization / Hashing
 
-        // TODO serialization
+        /// <summary>
+        /// Write the object's state to the given packet.
+        /// </summary>
+        /// <param name="packet">The packet to write the data to.</param>
+        /// <remarks>
+        /// Must be overridden in subclasses setting <c>ShouldSynchronize</c>
+        /// to true.
+        /// </remarks>
+        /// <returns>
+        /// The packet after writing.
+        /// </returns>
+        public override Packet Packetize(Packet packet)
+        {
+            base.Packetize(packet);
+
+            for (var i = 0; i < _trees.Length; ++i)
+            {
+                var tree = _trees[i];
+                if (tree == null)
+                {
+                    packet.Write(0);
+                    continue;
+                }
+
+                packet.Write(tree.Count);
+                foreach (var tuple in tree)
+                {
+                    packet.Write(tuple.Item1);
+                    packet.Write(tuple.Item2);
+                }
+            }
+
+            return packet;
+        }
+
+        /// <summary>
+        /// Bring the object to the state in the given packet.
+        /// </summary>
+        /// <remarks>
+        /// Must be overridden in subclasses setting <c>ShouldSynchronize</c>
+        /// to true.
+        /// </remarks>
+        /// <param name="packet">The packet to read from.</param>
+        public override void Depacketize(Packet packet)
+        {
+            base.Depacketize(packet);
+
+            for (var i = 0; i < _trees.Length; ++i)
+            {
+                if (_trees[i] != null)
+                {
+                    _trees[i].Clear();
+                }
+                var count = packet.ReadInt32();
+                if (count <= 0)
+                {
+                    continue;
+                }
+                if (_trees[i] == null)
+                {
+                    _trees[i] = new QuadTree<int>(_maxEntriesPerNode, _minNodeBounds);
+                }
+                for (var j = 0; j < count; ++j)
+                {
+                    var bounds = packet.ReadRectangle();
+                    var entity = packet.ReadInt32();
+                    _trees[i].Add(ref bounds, entity);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put(_maxEntriesPerNode);
+            hasher.Put(_minNodeBounds);
+
+            foreach (var tree in _trees)
+            {
+                hasher.Put(tree == null ? 0 : tree.Count);
+            }
+        }
+
+        #endregion
+
+        #region Copying
 
         /// <summary>
         /// Servers as a copy constructor that returns a new instance of the same

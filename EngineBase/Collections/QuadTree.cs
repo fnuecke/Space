@@ -118,7 +118,7 @@ namespace Engine.Collections
         {
             if (Contains(value))
             {
-                throw new ArgumentException("Entry is already in the tree at the specified point.", "value");
+                throw new ArgumentException("Entry is already in the tree.", "value");
             }
 
             // Create the entry to add.
