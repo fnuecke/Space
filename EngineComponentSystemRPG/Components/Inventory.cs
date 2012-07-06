@@ -517,7 +517,7 @@ namespace Engine.ComponentSystem.RPG.Components
             _items.Capacity = capacity;
             for (var i = 0; i < capacity; i++)
             {
-                _items[i] = null;
+                _items.Add(null);
             }
 
             var numItems = packet.ReadInt32();
