@@ -75,7 +75,7 @@ namespace Engine.ComponentSystem.Systems
 
         #region Constructor
 
-        protected SoundSystem(SoundBank soundBank)
+        public SoundSystem(SoundBank soundBank)
         {
             _soundBank = soundBank;
         }
@@ -326,6 +326,38 @@ namespace Engine.ComponentSystem.Systems
 
         #region Copying
 
+        /// <summary>
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
+        /// 
+        /// <para>
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
+        /// </para>
+        /// </summary>
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy()
+        {
+            var copy = (SoundSystem)base.DeepCopy();
+
+            // Mark as secondary system.
+            copy._isDrawingInstance = false;
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// 
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <remarks>The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.</remarks>
+        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (SoundSystem)base.DeepCopy(into);

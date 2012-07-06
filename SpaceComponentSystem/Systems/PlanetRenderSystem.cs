@@ -177,26 +177,20 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Creates a deep copy, with a component list only containing
-        /// clones of components not bound to an entity. If possible, the
-        /// specified instance will be reused.
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
         /// 
         /// <para>
-        /// Subclasses must take care of duplicating reference types, to complete
-        /// the deep-copy of the object. Caches, i.e. lists / dictionaries / etc.
-        /// to quickly look up components must be reset / rebuilt.
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
         /// </para>
         /// </summary>
-        /// <returns>A deep, with a semi-cleared copy of this system.</returns>
-        public override AbstractSystem DeepCopy(AbstractSystem into)
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy()
         {
-            // Get something to start with.
-            var copy = (PlanetRenderSystem)base.DeepCopy(into);
+            var copy = (PlanetRenderSystem)base.DeepCopy();
 
-            if (copy != into)
-            {
-                copy._drawablesInView = new HashSet<int>();
-            }
+            copy._drawablesInView = new HashSet<int>();
 
             return copy;
         }

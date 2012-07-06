@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Text;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 
 namespace Space.ComponentSystem.Components
@@ -82,6 +83,18 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             ItemPool = packet.ReadString();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Engine.Util.Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put(Encoding.UTF8.GetBytes(ItemPool));
         }
 
         #endregion

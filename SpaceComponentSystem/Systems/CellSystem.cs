@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -258,7 +259,7 @@ namespace Space.ComponentSystem.Systems
 
         #endregion
 
-        #region Serialization / Hashing / Cloning
+        #region Serialization / Hashing
 
         /// <summary>
         /// Write the object's state to the given packet.
@@ -305,31 +306,54 @@ namespace Space.ComponentSystem.Systems
             }
         }
 
+        #endregion
+
+        #region Copying
+
         /// <summary>
-        /// Creates a deep copy of this system.
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
+        /// 
+        /// <para>
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
+        /// </para>
         /// </summary>
-        /// <returns>A deep copy of this system.</returns>
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy()
+        {
+            var copy = (CellSystem)base.DeepCopy();
+
+            copy._livingCells = new HashSet<ulong>();
+            copy._pendingCells = new Dictionary<ulong, DateTime>();
+            copy._reusableNewCellIds = new HashSet<ulong>();
+            copy._reusableBornCellsIds = new HashSet<ulong>();
+            copy._reusableDeceasedCellsIds = new HashSet<ulong>();
+            copy._reusablePendingList = new List<ulong>();
+            copy._reusableEntityList = new HashSet<int>();
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// 
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <remarks>The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.</remarks>
+        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (CellSystem)base.DeepCopy(into);
 
-            if (copy == into)
-            {
-                copy._livingCells.Clear();
-                copy._livingCells.UnionWith(_livingCells);
-                copy._pendingCells.Clear();
-            }
-            else
-            {
-                copy._livingCells = new HashSet<ulong>(_livingCells);
-                copy._pendingCells = new Dictionary<ulong, DateTime>();
-                copy._reusableNewCellIds = new HashSet<ulong>();
-                copy._reusableBornCellsIds = new HashSet<ulong>();
-                copy._reusableDeceasedCellsIds = new HashSet<ulong>();
-                copy._reusablePendingList = new List<ulong>();
-                copy._reusableEntityList = new HashSet<int>();
-            }
-
+            copy._livingCells.Clear();
+            copy._livingCells.UnionWith(_livingCells);
+            copy._pendingCells.Clear();
             foreach (var item in _pendingCells)
             {
                 copy._pendingCells.Add(item.Key, item.Value);

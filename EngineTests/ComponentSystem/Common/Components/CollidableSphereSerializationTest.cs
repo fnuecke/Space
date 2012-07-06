@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Components;
-using Microsoft.Xna.Framework;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public class AccelerationSerializationTest : AbstractComponentSerializationTest<Acceleration>
+    public sealed class CollidableSphereSerializationTest : AbstractCollidableSerializationTest<CollidableSphere>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the
@@ -13,12 +12,12 @@ namespace Engine.Tests.ComponentSystem.Components
         /// least return one instance per initializer.
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
-        protected override IEnumerable<Acceleration> NewInstances()
+        protected override IEnumerable<CollidableSphere> NewInstances()
         {
             return new[]
                    {
-                       new Acceleration(), 
-                       new Acceleration().Initialize(new Vector2(1, 0))
+                       new CollidableSphere(), 
+                       new CollidableSphere().Initialize(5, 1 | 2 | 3)
                    };
         }
 
@@ -30,7 +29,7 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.Value += new Vector2(0, 1)
+                       instance => instance.Radius += 10
                    }.Concat(base.GetValueChangers());
         }
     }

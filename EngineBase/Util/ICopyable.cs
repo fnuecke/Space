@@ -7,7 +7,7 @@
     public interface ICopyable<T>
     {
         /// <summary>
-        /// Creates a deep copy of the object.
+        /// Creates a new copy of the same type as the object.
         /// </summary>
         /// <returns>The copy.</returns>
         T DeepCopy();

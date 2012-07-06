@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Components;
-using Microsoft.Xna.Framework;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public class TextureRendererSerializationTest : AbstractComponentSerializationTest<TextureRenderer>
+    public sealed class EllipsePathSerializationTest : AbstractComponentSerializationTest<EllipsePath>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the
@@ -13,14 +12,12 @@ namespace Engine.Tests.ComponentSystem.Components
         /// least return one instance per initializer.
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
-        protected override IEnumerable<TextureRenderer> NewInstances()
+        protected override IEnumerable<EllipsePath> NewInstances()
         {
             return new[]
                    {
-                       new TextureRenderer(), 
-                       new TextureRenderer().Initialize("textureName"),
-                       new TextureRenderer().Initialize("tn2", 1),
-                       new TextureRenderer().Initialize("tn3", Color.Gray, 2)
+                       new EllipsePath(), 
+                       new EllipsePath().Initialize(1, 10, 20, 5, 6, 7)
                    };
         }
 
@@ -32,9 +29,12 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.Scale += 10,
-                       instance => instance.TextureName += "b",
-                       instance => instance.Tint = Color.Pink
+                       instance => instance.CenterEntityId += 1,
+                       instance => instance.Angle += 10,
+                       instance => instance.MajorRadius += 10,
+                       instance => instance.MinorRadius += 10,
+                       instance => instance.Period += 10,
+                       instance => instance.PeriodOffset += 10
                    }.Concat(base.GetValueChangers());
         }
     }

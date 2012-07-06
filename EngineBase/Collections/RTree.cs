@@ -54,11 +54,11 @@ namespace Engine.Collections
 
         #region Implementation of IEnumerable
 
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<Tuple<Rectangle, T>> GetEnumerator()
         {
             foreach (var entry in _pointDict)
             {
-                yield return entry.Key;
+                yield return Tuple.Create(Rectangle.Empty, entry.Key);
             }
         }
 

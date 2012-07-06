@@ -214,32 +214,48 @@ namespace Space.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Creates a deep copy of this instance by reusing the specified
-        /// instance, if possible.
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
+        /// 
+        /// <para>
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
+        /// </para>
         /// </summary>
-        /// <param name="into"></param>
-        /// <returns>
-        /// An independent (deep) clone of this instance.
-        /// </returns>
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy()
+        {
+            var copy = (WeaponControlSystem)base.DeepCopy();
+
+            copy._cooldowns = new Dictionary<int, int>();
+            copy._random = new MersenneTwister(0);
+            copy._reusableEntities = new List<int>();
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// 
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <remarks>The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.</remarks>
+        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (WeaponControlSystem)base.DeepCopy(into);
 
-            if (copy == into)
+            copy._cooldowns.Clear();
+            foreach (var item in _cooldowns)
             {
-                copy._cooldowns.Clear();
-                foreach (var item in _cooldowns)
-                {
-                    copy._cooldowns.Add(item.Key, item.Value);
-                }
-                copy._random = _random.DeepCopy(copy._random);
+                copy._cooldowns.Add(item.Key, item.Value);
             }
-            else
-            {
-                copy._cooldowns = new Dictionary<int, int>(_cooldowns);
-                copy._random = _random.DeepCopy();
-                copy._reusableEntities = new List<int>();
-            }
+            copy._random = _random.DeepCopy(copy._random);
 
             return copy;
         }

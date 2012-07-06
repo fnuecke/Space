@@ -589,8 +589,9 @@ namespace Engine.Simulation
         /// <param name="start">the index to start at.</param>
         private void MirrorSimulation(IAuthoritativeSimulation state, int start)
         {
-            for (int i = start; i >= 0; --i)
+            for (var i = start; i >= 0; --i)
             {
+                _simulations[i] = _simulations[i] ?? (IAuthoritativeSimulation)state.DeepCopy();
                 _simulations[i] = (IAuthoritativeSimulation)state.DeepCopy(_simulations[i]);
             }
         }
@@ -727,7 +728,7 @@ namespace Engine.Simulation
 
                 foreach (var state in _tss._simulations)
                 {
-                    state.Manager.AddSystem(system.DeepCopy());
+                    state.Manager.CopySystem(system);
                 }
 
                 return this;
@@ -743,6 +744,15 @@ namespace Engine.Simulation
                 {
                     AddSystem(system);
                 }
+            }
+
+            /// <summary>
+            /// Adds a copy of the specified system.
+            /// </summary>
+            /// <param name="system">The system to copy.</param>
+            public void CopySystem(ICopyable<AbstractSystem> system)
+            {
+                throw new NotImplementedException();
             }
 
             /// <summary>
@@ -767,6 +777,18 @@ namespace Engine.Simulation
             public T GetSystem<T>() where T : AbstractSystem
             {
                 return _tss.LeadingSimulation.Manager.GetSystem<T>();
+            }
+
+            /// <summary>
+            /// Get a system of the specified type.
+            /// </summary>
+            /// <param name="type">The type of the system to get.</param>
+            /// <returns>
+            /// The system with the specified type.
+            /// </returns>
+            public AbstractSystem GetSystem(Type type)
+            {
+                return _tss.LeadingSimulation.Manager.GetSystem(type);
             }
 
             #endregion
@@ -984,7 +1006,7 @@ namespace Engine.Simulation
             /// </returns>
             public IManager DeepCopy()
             {
-                return DeepCopy(null);
+                return _tss.LeadingSimulation.Manager.DeepCopy();
             }
 
             /// <summary>

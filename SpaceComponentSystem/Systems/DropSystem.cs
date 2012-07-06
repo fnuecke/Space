@@ -15,7 +15,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages Item Drops
     /// </summary>
-    public class DropSystem : AbstractComponentSystem<Drops>
+    public sealed class DropSystem : AbstractComponentSystem<Drops>
     {
         #region Fields
 
@@ -27,7 +27,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Randomizer used for sampling of items.
         /// </summary>
-        private MersenneTwister _random;
+        private MersenneTwister _random = new MersenneTwister(0);
 
         #endregion
 
@@ -48,7 +48,6 @@ namespace Space.ComponentSystem.Systems
         /// <param name="content"></param>
         public DropSystem(ContentManager content)
         {
-            _random = new MersenneTwister();
             foreach (var itemPool in content.Load<ItemPool[]>("Data/Items"))
             {
                 _itemPools.Add(itemPool.Name, itemPool);
@@ -167,27 +166,50 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
+        /// <summary>
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
+        /// 
+        /// <para>
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
+        /// </para>
+        /// </summary>
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy()
+        {
+            var copy = (DropSystem)base.DeepCopy();
+
+            copy._itemPools = new Dictionary<string, ItemPool>();
+            copy._random = new MersenneTwister(0);
+            copy._reusableDropInfo = new List<ItemPool.DropInfo>();
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// 
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <remarks>The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.</remarks>
+        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (DropSystem)base.DeepCopy(into);
 
-            if (copy == into)
+            // Copy for shuffling.
+            copy._itemPools.Clear();
+            foreach (var item in _itemPools)
             {
-                // Copy for shuffling.
-                copy._itemPools.Clear();
-                foreach (var item in _itemPools)
-                {
-                    copy._itemPools[item.Key] = item.Value;
-                }
-                copy._random = _random.DeepCopy(copy._random);
+                copy._itemPools.Add(item.Key, item.Value);
             }
-            else
-            {
-                // Copy for shuffling.
-                copy._itemPools = new Dictionary<string, ItemPool>(_itemPools);
-                copy._random = _random.DeepCopy();
-                copy._reusableDropInfo = new List<ItemPool.DropInfo>();
-            }
+            copy._random = _random.DeepCopy(copy._random);
 
             return copy;
         }

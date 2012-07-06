@@ -1428,9 +1428,12 @@ namespace Engine.Collections
         /// Get an enumerator over the values in this tree.
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<Tuple<Rectangle, T>> GetEnumerator()
         {
-            return _values.Keys.GetEnumerator();
+            foreach (var entry in _values)
+            {
+                yield return Tuple.Create(entry.Value.Bounds, entry.Key);
+            }
         }
 
         /// <summary>

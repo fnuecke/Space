@@ -2,9 +2,9 @@
 using System.Linq;
 using Engine.ComponentSystem.Components;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public class SpinSerializationTest : AbstractComponentSerializationTest<Spin>
+    public sealed class FrictionSerializationTest : AbstractComponentSerializationTest<Friction>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the
@@ -12,12 +12,13 @@ namespace Engine.Tests.ComponentSystem.Components
         /// least return one instance per initializer.
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
-        protected override IEnumerable<Spin> NewInstances()
+        protected override IEnumerable<Friction> NewInstances()
         {
             return new[]
                    {
-                       new Spin(), 
-                       new Spin().Initialize(5)
+                       new Friction(), 
+                       new Friction().Initialize(10),
+                       new Friction().Initialize(20, 5)
                    };
         }
 
@@ -29,7 +30,8 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.Value += 5
+                       instance => instance.Value += 10,
+                       instance => instance.StopVelocity += 5
                    }.Concat(base.GetValueChangers());
         }
     }

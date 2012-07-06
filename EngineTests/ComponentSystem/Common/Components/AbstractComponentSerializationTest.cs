@@ -2,7 +2,7 @@
 using Engine.ComponentSystem.Components;
 using Engine.Tests.Base.Serialization;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
     public abstract class AbstractComponentSerializationTest<T> : AbstractSerializationTest<T>
         where T : Component, new()

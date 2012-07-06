@@ -3,9 +3,9 @@ using System.Linq;
 using Engine.ComponentSystem.Components;
 using Microsoft.Xna.Framework;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public class VelocitySerializationTest : AbstractComponentSerializationTest<Velocity>
+    public sealed class VelocitySerializationTest : AbstractComponentSerializationTest<Velocity>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the

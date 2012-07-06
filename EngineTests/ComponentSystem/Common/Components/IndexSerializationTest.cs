@@ -2,9 +2,9 @@
 using System.Linq;
 using Engine.ComponentSystem.Components;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public class ExpirationSerializationTest : AbstractComponentSerializationTest<Expiration>
+    public sealed class IndexSerializationTest : AbstractComponentSerializationTest<Index>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the
@@ -12,12 +12,12 @@ namespace Engine.Tests.ComponentSystem.Components
         /// least return one instance per initializer.
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
-        protected override IEnumerable<Expiration> NewInstances()
+        protected override IEnumerable<Index> NewInstances()
         {
             return new[]
                    {
-                       new Expiration(), 
-                       new Expiration().Initialize(10)
+                       new Index(), 
+                       new Index().Initialize(5)
                    };
         }
 
@@ -29,7 +29,7 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.TimeToLive += 10
+                       instance => instance.SetIndexGroupsMask(instance.IndexGroupsMask + 10)
                    }.Concat(base.GetValueChangers());
         }
     }

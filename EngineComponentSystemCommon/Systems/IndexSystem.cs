@@ -322,30 +322,68 @@ namespace Engine.ComponentSystem.Systems
 
         #region Copying
 
+        /// <summary>
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
+        /// 
+        /// <para>
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
+        /// </para>
+        /// </summary>
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy()
+        {
+            var copy = (IndexSystem)base.DeepCopy();
+
+            copy._trees = new IIndex<int>[sizeof(ulong) * 8];
+            copy._reusableTreeList = new List<IIndex<int>>();
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// 
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <remarks>The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.</remarks>
+        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (IndexSystem)base.DeepCopy(into);
 
-            // Create own index. Will be filled when re-adding components.
-            if (copy == into)
+            copy._maxEntriesPerNode = _maxEntriesPerNode;
+            copy._minNodeBounds = _minNodeBounds;
+
+            foreach (var tree in copy._trees)
             {
-                foreach (var tree in copy._trees)
+                if (tree != null)
                 {
-                    if (tree != null)
-                    {
-                        tree.Clear();
-                    }
+                    tree.Clear();
                 }
-                copy._maxEntriesPerNode = _maxEntriesPerNode;
-                copy._minNodeBounds = _minNodeBounds;
             }
-            else
+
+            for (var i = 0; i < _trees.Length; i++)
             {
-                copy._trees = new IIndex<int>[sizeof(ulong) * 8];
-                copy._reusableTreeList = new List<IIndex<int>>();
-#if DEBUG
-                copy._numQueriesLastUpdate = _numQueriesLastUpdate;
-#endif
+                if (_trees[i] == null)
+                {
+                    continue;
+                }
+                if (copy._trees[i] == null)
+                {
+                    copy._trees[i] = new QuadTree<int>(copy._maxEntriesPerNode, copy._minNodeBounds);
+                }
+                foreach (var entry in _trees[i])
+                {
+                    var bounds = entry.Item1;
+                    copy._trees[i].Add(ref bounds, entry.Item2);
+                }
             }
 
             return copy;

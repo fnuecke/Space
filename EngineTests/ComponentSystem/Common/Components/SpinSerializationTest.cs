@@ -2,9 +2,9 @@
 using System.Linq;
 using Engine.ComponentSystem.Components;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public class AvatarSerializationTest : AbstractComponentSerializationTest<Avatar>
+    public sealed class SpinSerializationTest : AbstractComponentSerializationTest<Spin>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the
@@ -12,12 +12,12 @@ namespace Engine.Tests.ComponentSystem.Components
         /// least return one instance per initializer.
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
-        protected override IEnumerable<Avatar> NewInstances()
+        protected override IEnumerable<Spin> NewInstances()
         {
             return new[]
                    {
-                       new Avatar(), 
-                       new Avatar().Initialize(1)
+                       new Spin(), 
+                       new Spin().Initialize(5)
                    };
         }
 
@@ -29,7 +29,7 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.PlayerNumber += 2
+                       instance => instance.Value += 5
                    }.Concat(base.GetValueChangers());
         }
     }

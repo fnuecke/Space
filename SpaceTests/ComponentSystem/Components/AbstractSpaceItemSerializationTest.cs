@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Engine.Tests.ComponentSystem.Components;
+using Engine.Tests.ComponentSystem.Common.Components;
 using Space.ComponentSystem.Components;
 
 namespace SpaceTests.ComponentSystem.Components

@@ -119,6 +119,10 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
+            foreach (var target in Targets)
+            {
+                hasher.Put(BitConverter.GetBytes(target));
+            }
             hasher.Put(BitConverter.GetBytes(SpawnInterval));
             hasher.Put(BitConverter.GetBytes(Cooldown));
         }

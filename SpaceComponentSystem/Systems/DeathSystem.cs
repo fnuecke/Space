@@ -23,42 +23,44 @@ namespace Space.ComponentSystem.Systems
         /// <param name="component">The component.</param>
         protected override void UpdateComponent(GameTime gameTime, long frame, Respawn component)
         {
-            if (component.TimeToRespawn > 0 && --component.TimeToRespawn == 0)
+            if (component.TimeToRespawn <= 0 || --component.TimeToRespawn != 0)
             {
-                // Respawn.
+                return;
+            }
 
-                // Try to position.
-                var transform = Manager.GetComponent<Transform>(component.Entity);
-                if (transform != null)
-                {
-                    transform.SetTranslation(ref component.Position);
-                    transform.SetRotation(0);
-                }
+            // Respawn.
 
-                // Kill of remainder velocity.
-                var velocity = Manager.GetComponent<Velocity>(component.Entity);
-                if (velocity != null)
-                {
-                    velocity.Value = Vector2.Zero;
-                }
+            // Try to position.
+            var transform = Manager.GetComponent<Transform>(component.Entity);
+            if (transform != null)
+            {
+                transform.SetTranslation(ref component.Position);
+                transform.SetRotation(0);
+            }
 
-                // Fill up health / energy.
-                var health = Manager.GetComponent<Health>(component.Entity);
-                if (health != null)
-                {
-                    health.SetValue(health.MaxValue * component.RelativeHealth);
-                }
-                var energy = Manager.GetComponent<Energy>(component.Entity);
-                if (energy != null)
-                {
-                    energy.SetValue(energy.MaxValue * component.RelativeEnergy);
-                }
+            // Kill of remainder velocity.
+            var velocity = Manager.GetComponent<Velocity>(component.Entity);
+            if (velocity != null)
+            {
+                velocity.Value = Vector2.Zero;
+            }
 
-                // Enable components.
-                foreach (var componentType in component.ComponentsToDisable)
-                {
-                    Manager.GetComponent(component.Entity, componentType).Enabled = true;
-                }
+            // Fill up health / energy.
+            var health = Manager.GetComponent<Health>(component.Entity);
+            if (health != null)
+            {
+                health.SetValue(health.MaxValue * component.RelativeHealth);
+            }
+            var energy = Manager.GetComponent<Energy>(component.Entity);
+            if (energy != null)
+            {
+                energy.SetValue(energy.MaxValue * component.RelativeEnergy);
+            }
+
+            // Enable components.
+            foreach (var componentType in component.ComponentsToDisable)
+            {
+                Manager.GetComponent(component.Entity, componentType).Enabled = true;
             }
         }
 

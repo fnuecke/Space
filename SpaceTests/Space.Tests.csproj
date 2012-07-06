@@ -46,7 +46,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ComponentSystem\Components\CellDeathSerializationTest.cs" />
     <Compile Include="ComponentSystem\Components\AbstractSpaceItemSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\ArmorSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\ReactorSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\SensorSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\ShieldSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Components\ThrusterSerializationTest.cs" />
     <Compile Include="ComponentSystem\Components\WeaponSerializationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

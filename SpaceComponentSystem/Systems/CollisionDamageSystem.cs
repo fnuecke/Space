@@ -141,14 +141,21 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
-        public override AbstractSystem DeepCopy(AbstractSystem into)
+        /// <summary>
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
+        /// 
+        /// <para>
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
+        /// </para>
+        /// </summary>
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy()
         {
-            var copy = (CollisionDamageSystem)base.DeepCopy(into);
+            var copy = (CollisionDamageSystem)base.DeepCopy();
 
-            if (copy != into)
-            {
-                copy._reusableCooldownList = new List<int>();
-            }
+            copy._reusableCooldownList = new List<int>();
 
             return copy;
         }

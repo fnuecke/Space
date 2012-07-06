@@ -69,9 +69,15 @@ namespace Engine.ComponentSystem.RPG.Components
             base.Initialize(other);
 
             var otherCharacter = (Character<TAttribute>)other;
-            foreach (var baseAttribute in otherCharacter._baseAttributes)
+            foreach (var attribute in otherCharacter._baseAttributes)
             {
-                _baseAttributes.Add(baseAttribute.Key, baseAttribute.Value);
+                _baseAttributes.Add(attribute.Key, attribute.Value);
+            }
+            foreach (var attribute in otherCharacter._modifiedAttributes)
+            {
+                var values = new float[attribute.Value.Length];
+                attribute.Value.CopyTo(values, 0); 
+                _modifiedAttributes.Add(attribute.Key, values);
             }
 
             return this;

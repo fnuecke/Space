@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Components;
+using Microsoft.Xna.Framework;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public class EllipsePathSerializationTest : AbstractComponentSerializationTest<EllipsePath>
+    public sealed class AccelerationSerializationTest : AbstractComponentSerializationTest<Acceleration>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the
@@ -12,12 +13,12 @@ namespace Engine.Tests.ComponentSystem.Components
         /// least return one instance per initializer.
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
-        protected override IEnumerable<EllipsePath> NewInstances()
+        protected override IEnumerable<Acceleration> NewInstances()
         {
             return new[]
                    {
-                       new EllipsePath(), 
-                       new EllipsePath().Initialize(1, 10, 20, 5, 6, 7)
+                       new Acceleration(), 
+                       new Acceleration().Initialize(new Vector2(1, 0))
                    };
         }
 
@@ -29,12 +30,7 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.CenterEntityId += 1,
-                       instance => instance.Angle += 10,
-                       instance => instance.MajorRadius += 10,
-                       instance => instance.MinorRadius += 10,
-                       instance => instance.Period += 10,
-                       instance => instance.PeriodOffset += 10
+                       instance => instance.Value += new Vector2(0, 1)
                    }.Concat(base.GetValueChangers());
         }
     }

@@ -37,7 +37,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         protected override Rectangle ComputeViewport()
         {
-            return Manager.GetSystem<CameraSystem>().ComputeVisibleBounds(_spriteBatch.GraphicsDevice.Viewport);
+            return Manager.GetSystem<CameraSystem>().ComputeVisibleBounds(SpriteBatch.GraphicsDevice.Viewport);
         }
 
         #endregion

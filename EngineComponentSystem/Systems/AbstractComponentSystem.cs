@@ -166,30 +166,48 @@ namespace Engine.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Creates a deep copy, with a component list only containing
-        /// clones of components not bound to an entity. If possible, the
-        /// specified instance will be reused.
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
         /// 
         /// <para>
-        /// Subclasses must take care of duplicating reference types, to complete
-        /// the deep-copy of the object. Caches, i.e. lists / dictionaries / etc.
-        /// to quickly look up components must be reset / rebuilt.
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
         /// </para>
         /// </summary>
-        /// <returns>A deep, with a semi-cleared copy of this system.</returns>
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy()
+        {
+            var copy = (AbstractComponentSystem<TComponent>)base.DeepCopy();
+
+            copy.Components = new HashSet<TComponent>();
+            copy.UpdatingComponents = new List<TComponent>();
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// 
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <remarks>The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.</remarks>
+        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             // Get something to start with.
             var copy = (AbstractComponentSystem<TComponent>)base.DeepCopy(into);
 
-            if (copy == into)
+            copy.Components.Clear();
+            foreach (var component in Components)
             {
-                copy.Components.Clear();
-            }
-            else
-            {
-                copy.Components = new HashSet<TComponent>();
-                copy.UpdatingComponents = new List<TComponent>();
+                var componentCopy = copy.Manager.GetComponentById(component.Id);
+                Debug.Assert(componentCopy is TComponent);
+                copy.Components.Add((TComponent)componentCopy);
             }
 
             return copy;

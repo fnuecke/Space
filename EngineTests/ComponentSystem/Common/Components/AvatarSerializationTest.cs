@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Components;
-using Microsoft.Xna.Framework;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public class CollidableBoxSerializationTest : AbstractCollidableSerializationTest<CollidableBox>
+    public sealed class AvatarSerializationTest : AbstractComponentSerializationTest<Avatar>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the
@@ -13,12 +12,12 @@ namespace Engine.Tests.ComponentSystem.Components
         /// least return one instance per initializer.
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
-        protected override IEnumerable<CollidableBox> NewInstances()
+        protected override IEnumerable<Avatar> NewInstances()
         {
             return new[]
                    {
-                       new CollidableBox(), 
-                       new CollidableBox().Initialize(new Vector2(1, 1), 1 | 2 | 3)
+                       new Avatar(), 
+                       new Avatar().Initialize(1)
                    };
         }
 
@@ -30,7 +29,7 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.Size += new Vector2(1, 1)
+                       instance => instance.PlayerNumber += 2
                    }.Concat(base.GetValueChangers());
         }
     }

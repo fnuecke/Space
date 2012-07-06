@@ -173,9 +173,15 @@ namespace Space.ComponentSystem.Components
 
             ComponentsToDisable.Clear();
             var numComponents = packet.ReadInt32();
-            for (int i = 0; i < numComponents; i++)
+            for (var i = 0; i < numComponents; i++)
             {
-                ComponentsToDisable.Add(Type.GetType(packet.ReadString()));
+                var typeName = packet.ReadString();
+                var type = Type.GetType(typeName);
+                if (type == null)
+                {
+                    throw new InvalidOperationException("Unknown type.");
+                }
+                ComponentsToDisable.Add(type);
             }
         }
 
@@ -188,6 +194,11 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
+            hasher.Put(BitConverter.GetBytes(Delay));
+            hasher.Put(BitConverter.GetBytes(Position.X));
+            hasher.Put(BitConverter.GetBytes(Position.Y));
+            hasher.Put(BitConverter.GetBytes(RelativeEnergy));
+            hasher.Put(BitConverter.GetBytes(RelativeHealth));
             hasher.Put(BitConverter.GetBytes(TimeToRespawn));
         }
 

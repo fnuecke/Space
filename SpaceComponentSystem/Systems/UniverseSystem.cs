@@ -253,20 +253,44 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
+        /// <summary>
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
+        /// 
+        /// <para>
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
+        /// </para>
+        /// </summary>
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem DeepCopy()
+        {
+            var copy = (UniverseSystem)base.DeepCopy();
+
+            copy._cellInfo = new Dictionary<ulong, CellInfo>();
+
+            return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// 
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <remarks>The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.</remarks>
+        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (UniverseSystem)base.DeepCopy(into);
 
-            if (copy == into)
-            {
-                copy.WorldSeed = WorldSeed;
-                copy._cellInfo.Clear();
-            }
-            else
-            {
-                copy._cellInfo = new Dictionary<ulong, CellInfo>();
-            }
+            copy.WorldSeed = WorldSeed;
 
+            copy._cellInfo.Clear();
             foreach (var cellInfo in _cellInfo)
             {
                 copy._cellInfo.Add(cellInfo.Key, cellInfo.Value.DeepCopy());
@@ -282,7 +306,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Class used to track persistent information on a single cell.
         /// </summary>
-        public sealed class CellInfo : IPacketizable, IHashable, ICopyable<CellInfo>
+        public sealed class CellInfo : IPacketizable, IHashable
         {
             #region Properties
 
@@ -403,25 +427,11 @@ namespace Space.ComponentSystem.Systems
 
             #region Copying
 
-            public CellInfo DeepCopy()
+            internal CellInfo DeepCopy()
             {
-                return DeepCopy(null);
-            }
-
-            public CellInfo DeepCopy(CellInfo into)
-            {
-                var copy = into ?? (CellInfo)MemberwiseClone();
-
-                if (copy == into)
-                {
-                    copy.Dirty = Dirty;
-                    copy._faction = _faction;
-                    copy._techLevel = _techLevel;
-                }
-                else
-                {
-                    Stations = new List<int>();
-                }
+                var copy = (CellInfo)MemberwiseClone();
+                
+                copy.Stations = new List<int>(Stations);
 
                 return copy;
             }

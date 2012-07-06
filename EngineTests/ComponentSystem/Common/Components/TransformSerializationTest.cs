@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Engine.ComponentSystem.Components;
+using Microsoft.Xna.Framework;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public class IndexSerializationTest : AbstractComponentSerializationTest<Index>
+    public sealed class TransformSerializationTest : AbstractComponentSerializationTest<Transform>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the
@@ -12,12 +13,14 @@ namespace Engine.Tests.ComponentSystem.Components
         /// least return one instance per initializer.
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
-        protected override IEnumerable<Index> NewInstances()
+        protected override IEnumerable<Transform> NewInstances()
         {
             return new[]
                    {
-                       new Index(), 
-                       new Index().Initialize(5)
+                       new Transform(), 
+                       new Transform().Initialize(new Vector2(1, 0)),
+                       new Transform().Initialize(2),
+                       new Transform().Initialize(new Vector2(100, 5), 51)
                    };
         }
 
@@ -29,7 +32,10 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.SetIndexGroupsMask(instance.IndexGroupsMask + 10)
+                       instance => instance.AddTranslation(new Vector2(12, 34)),
+                       instance => instance.SetTranslation(new Vector2(-10, 34)),
+                       instance => instance.AddRotation(5),
+                       instance => instance.SetRotation(-2)
                    }.Concat(base.GetValueChangers());
         }
     }

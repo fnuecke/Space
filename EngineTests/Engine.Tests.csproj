@@ -35,6 +35,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Graphics, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
+    <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="NSubstitute">
       <HintPath>..\Libraries\NSubstitute.dll</HintPath>
     </Reference>
@@ -49,21 +51,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Base\Serialization\AbstractSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\AbstractCollidableSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\AbstractComponentSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\AbstractItemSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\AccelerationSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\AvatarSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\CollidableBoxSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\CollidableSphereSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\EllipsePathSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\ExpirationSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\FrictionSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\IndexSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\SpinSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\TextureRendererSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\TransformSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Components\VelocitySerializationTest.cs" />
+    <Compile Include="Base\Util\AbstractCopyableTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\AbstractCollidableSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\AbstractComponentSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\AbstractItemSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\AccelerationSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\AvatarSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\CollidableBoxSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\CollidableSphereSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\EllipsePathSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\ExpirationSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\FrictionSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\IndexSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\SpinSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\TextureRendererSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\TransformSerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Components\VelocitySerializationTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\AccelerationSystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\AvatarSystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\CollisionSystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\VelocitySystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\EllipsePathSystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\ExpirationSystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\FrictionSystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\IndexSystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\SoundSystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\SpinSystemCopyTest.cs" />
+    <Compile Include="ComponentSystem\Common\Systems\TextureRenderSystemCopyTest.cs" />
     <Compile Include="ComponentSystem\ManagerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

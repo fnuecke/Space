@@ -1,4 +1,5 @@
-﻿using Engine.Serialization;
+﻿using System.Diagnostics;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -97,45 +98,45 @@ namespace Engine.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Creates a deep copy, with a component list only containing
-        /// clones of components not bound to an entity.
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
         /// 
         /// <para>
-        /// Subclasses must take care of duplicating reference types, to complete
-        /// the deep-copy of the object. Caches, i.e. lists / dictionaries / etc.
-        /// to quickly look up components must be reset / rebuilt.
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
         /// </para>
         /// </summary>
-        /// <returns>A deep, with a semi-cleared copy of this system.</returns>
-        public AbstractSystem DeepCopy()
+        /// <returns>A cleared copy of this system.</returns>
+        public virtual AbstractSystem DeepCopy()
         {
-            return DeepCopy(null);
-        }
+            var copy = (AbstractSystem)MemberwiseClone();
 
-        /// <summary>
-        /// Creates a deep copy, with a component list only containing
-        /// clones of components not bound to an entity. If possible, the
-        /// specified instance will be reused.
-        /// 
-        /// <para>
-        /// Subclasses must take care of duplicating reference types, to complete
-        /// the deep-copy of the object. Caches, i.e. lists / dictionaries / etc.
-        /// to quickly look up components must be reset / rebuilt.
-        /// </para>
-        /// </summary>
-        /// <returns>A deep, with a semi-cleared copy of this system.</returns>
-        public virtual AbstractSystem DeepCopy(AbstractSystem into)
-        {
-            // Get something to start with.
-            var copy = (AbstractSystem)
-                ((into != null && into.GetType() == GetType())
-                ? into
-                : MemberwiseClone());
-
-            // No manager at first. Must be re-set (e.g. in cloned manager).
             copy.Manager = null;
 
             return copy;
+        }
+
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// 
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <remarks>The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.</remarks>
+        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
+        public virtual AbstractSystem DeepCopy(AbstractSystem into)
+        {
+            Debug.Assert(into.GetType() == GetType());
+
+            // Manager must be re-set to new owner before copying.
+            Debug.Assert(into.Manager != null);
+            Debug.Assert(into.Manager != Manager);
+
+            return into;
         }
 
         #endregion

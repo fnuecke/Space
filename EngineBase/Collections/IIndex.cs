@@ -8,7 +8,7 @@ namespace Engine.Collections
     /// Interface for index structures.
     /// </summary>
     /// <typeparam name="T">The type of the values stored in this index.</typeparam>
-    public interface IIndex<T> : IEnumerable<T>
+    public interface IIndex<T> : IEnumerable<Tuple<Rectangle, T>>
     {
         #region Properties
 

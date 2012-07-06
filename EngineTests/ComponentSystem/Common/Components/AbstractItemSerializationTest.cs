@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Engine.ComponentSystem.Components;
-using Microsoft.Xna.Framework;
+using Engine.ComponentSystem.RPG.Components;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace Engine.Tests.ComponentSystem.Common.Components
 {
-    public abstract class AbstractCollidableSerializationTest<T> : AbstractComponentSerializationTest<T>
-        where T : Collidable, new()
+    public abstract class AbstractItemSerializationTest<T> : AbstractComponentSerializationTest<T>
+        where T : Item, new()
     {
         /// <summary>
         /// Returns a list of methods that change a value of an instance so
@@ -16,8 +15,9 @@ namespace Engine.Tests.ComponentSystem.Components
         {
             return new ValueChanger[]
                    {
-                       instance => instance.CollisionGroups += 1,
-                       instance => instance.PreviousPosition += new Vector2(1, 2)
+                       instance => instance.Enabled = !instance.Enabled,
+                       instance => instance.Name += "b",
+                       instance => instance.IconName += "b"
                    }.Concat(base.GetValueChangers());
         }
     }

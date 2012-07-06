@@ -326,18 +326,31 @@ namespace Space.ComponentSystem.Systems
 
         #region Copying
 
+        /// <summary>
+        /// Creates a deep copy of the system. The passed system must be of the
+        /// same type.
+        /// 
+        /// <para>
+        /// This clones any contained data types to return an instance that
+        /// represents a complete copy of the one passed in.
+        /// </para>
+        /// </summary>
+        /// <remarks>The manager for the system to copy into must be set to the
+        /// manager into which the system is being copied.</remarks>
+        /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public override AbstractSystem DeepCopy(AbstractSystem into)
         {
             var copy = (CameraSystem)base.DeepCopy(into);
 
-            if (copy == into)
-            {
-                copy._currentOffset = _currentOffset;
-                copy._cameraPosition = _cameraPosition;
-                copy._customCameraPosition = _customCameraPosition;
-                copy._targetZoom = _targetZoom;
-                copy._currentZoom = _currentZoom;
-            }
+            copy._lastFrame = _lastFrame;
+            copy._currentOffset = _currentOffset;
+            copy._cameraPosition = _cameraPosition;
+            copy._customCameraPosition = _customCameraPosition;
+            // Do not copy zoom, as it's set locally, and we never want to
+            // overwrite the leading one.
+            //copy._targetZoom = _targetZoom;
+            //copy._currentZoom = _currentZoom;
+            copy._transform = _transform;
 
             return copy;
         }

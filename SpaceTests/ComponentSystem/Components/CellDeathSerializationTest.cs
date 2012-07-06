@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using Engine.ComponentSystem.Components;
+using Engine.Tests.Base.Serialization;
+using Space.ComponentSystem.Components.Logic;
 
-namespace Engine.Tests.ComponentSystem.Components
+namespace SpaceTests.ComponentSystem.Components
 {
-    public class CollidableSphereSerializationTest : AbstractCollidableSerializationTest<CollidableSphere>
+    public sealed class CellDeathSerializationTest : AbstractSerializationTest<CellDeath>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the
@@ -12,12 +12,11 @@ namespace Engine.Tests.ComponentSystem.Components
         /// least return one instance per initializer.
         /// </summary>
         /// <returns>A list of instances to test with.</returns>
-        protected override IEnumerable<CollidableSphere> NewInstances()
+        protected override IEnumerable<CellDeath> NewInstances()
         {
             return new[]
                    {
-                       new CollidableSphere(), 
-                       new CollidableSphere().Initialize(5, 1 | 2 | 3)
+                       new CellDeath()
                    };
         }
 
@@ -27,10 +26,7 @@ namespace Engine.Tests.ComponentSystem.Components
         /// </summary>
         protected override IEnumerable<ValueChanger> GetValueChangers()
         {
-            return new ValueChanger[]
-                   {
-                       instance => instance.Radius += 10
-                   }.Concat(base.GetValueChangers());
+            return new ValueChanger[] {};
         }
     }
 }

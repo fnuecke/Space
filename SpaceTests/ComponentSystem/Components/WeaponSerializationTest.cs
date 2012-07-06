@@ -7,7 +7,7 @@ using Space.Data;
 
 namespace SpaceTests.ComponentSystem.Components
 {
-    public class WeaponSerializationTest : AbstractSpaceItemSerializationTest<Weapon>
+    public sealed class WeaponSerializationTest : AbstractSpaceItemSerializationTest<Weapon>
     {
         /// <summary>
         /// Generates a list of instances to test. The validity of the

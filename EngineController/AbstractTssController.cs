@@ -397,28 +397,50 @@ namespace Engine.Controller
             Tss.Manager.Hash(hasher);
             var hash1 = hasher.Value;
 
-            var copy = Tss.Manager.DeepCopy();
+            var copy = Tss.Manager.DeepCopy(Tss.Manager.DeepCopy());
             hasher = new Hasher();
             copy.Hash(hasher);
             var hash2 = hasher.Value;
 
-            Tss.Manager.DeepCopy(copy);
-            hasher = new Hasher();
-            copy.Hash(hasher);
-            var hash3 = hasher.Value;
-
-            if (hash1 != hash2)
+            if (hash1 == hash2)
             {
-                // Deep copy with new instance broken.
-                throw new InvalidProgramException("DeepCopy() implementation resulted in invalid copy.");
+                // All is well.
+                return;
             }
-            if (hash1 != hash3)
+            var i = 1;
+            for (; Tss.Manager.HasComponent(i); i++)
             {
-                // Deep copy with existing instance broken.
-                throw new InvalidProgramException("DeepCopy(into) implementation resulted in invalid copy.");
+                Debug.Assert(copy.HasComponent(i));
+
+                var c1 = Tss.Manager.GetComponentById(i);
+                var c2 = copy.GetComponentById(i);
+
+                var h1 = new Hasher();
+                var h2 = new Hasher();
+
+                c1.Hash(h1);
+                c2.Hash(h2);
+
+                Debug.Assert(h1.Value == h2.Value);
+            }
+            Debug.Assert(!copy.HasComponent(i));
+
+            foreach (var entry in ((Manager)copy)._systems)
+            {
+                var s1 = Tss.Manager.GetSystem(entry.Key);
+                var s2 = entry.Value;
+
+                var h1 = new Hasher();
+                var h2 = new Hasher();
+
+                s1.Hash(h1);
+                s2.Hash(h2);
+
+                Debug.Assert(h1.Value == h2.Value);
             }
 
-            // Else all is well.
+            // Deep copy with new instance broken.
+            throw new InvalidProgramException("DeepCopy() implementation resulted in invalid copy.");
         }
 
         [Conditional("DEBUG")]

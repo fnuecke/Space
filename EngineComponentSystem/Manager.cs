@@ -21,17 +21,17 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Lookup table for quick access to component by type.
         /// </summary>
-        private readonly Dictionary<Type, AbstractSystem> _systems = new Dictionary<Type, AbstractSystem>();
+        public Dictionary<Type, AbstractSystem> _systems = new Dictionary<Type, AbstractSystem>();
 
         /// <summary>
         /// Keeps track of entity->component relationships.
         /// </summary>
-        private readonly Dictionary<int, Entity> _entities = new Dictionary<int, Entity>();
+        private Dictionary<int, Entity> _entities = new Dictionary<int, Entity>();
 
         /// <summary>
         /// Component mapping id to instance (because there can be gaps
         /// </summary>
-        private readonly Dictionary<int, Component> _components = new Dictionary<int, Component>();
+        private Dictionary<int, Component> _components = new Dictionary<int, Component>();
 
         /// <summary>
         /// Manager for entity ids.
@@ -109,6 +109,21 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
+        /// Adds a copy of the specified system.
+        /// </summary>
+        /// <param name="system">The system to copy.</param>
+        public void CopySystem(ICopyable<AbstractSystem> system)
+        {
+            var type = system.GetType();
+            if (!_systems.ContainsKey(type))
+            {
+                _systems.Add(type, system.DeepCopy());
+            }
+            _systems[type].Manager = this;
+            _systems[type] = system.DeepCopy(_systems[type]);
+        }
+
+        /// <summary>
         /// Removes the specified system from this manager.
         /// </summary>
         /// <param name="system">The system to remove.</param>
@@ -117,15 +132,12 @@ namespace Engine.ComponentSystem
         /// </returns>
         public bool RemoveSystem(AbstractSystem system)
         {
-            if (_systems.Remove(system.GetType()))
-            {
-                system.Manager = null;
-                return true;
-            }
-            else
+            if (!_systems.Remove(system.GetType()))
             {
                 return false;
             }
+            system.Manager = null;
+            return true;
         }
 
         /// <summary>
@@ -137,8 +149,19 @@ namespace Engine.ComponentSystem
         /// </returns>
         public T GetSystem<T>() where T : AbstractSystem
         {
-            var type = typeof(T);
-            return _systems.ContainsKey(type) ? (T)_systems[type] : null;
+            return (T)GetSystem(typeof(T));
+        }
+
+        /// <summary>
+        /// Get a system of the specified type.
+        /// </summary>
+        /// <param name="type">The type of the system to get.</param>
+        /// <returns>
+        /// The system with the specified type.
+        /// </returns>
+        public AbstractSystem GetSystem(Type type)
+        {
+            return _systems.ContainsKey(type) ? _systems[type] : null;
         }
 
         #endregion
@@ -427,8 +450,8 @@ namespace Engine.ComponentSystem
         /// <param name="packet">The packet to read from.</param>
         public void Depacketize(Packet packet)
         {
-            int numSystems = packet.ReadInt32();
-            for (int i = 0; i < numSystems; i++)
+            var numSystems = packet.ReadInt32();
+            for (var i = 0; i < numSystems; i++)
             {
                 var typeName = packet.ReadString();
                 var type = Type.GetType(typeName);
@@ -540,9 +563,9 @@ namespace Engine.ComponentSystem
             var components = packet.ReadPacketizablesWithTypeInfo<Component>();
             foreach (var component in components)
             {
-                component.Manager = this;
                 component.Id = _componentIds.GetId();
                 component.Entity = entity;
+                component.Manager = this;
                 _components[component.Id] = component;
 
                 // Add to entity index.
@@ -562,73 +585,48 @@ namespace Engine.ComponentSystem
 
         public IManager DeepCopy()
         {
-            return DeepCopy(null);
+            return new Manager();
         }
 
         public IManager DeepCopy(IManager into)
         {
-            var copy = (Manager)((into is Manager) ? into : new Manager());
-
-            if (copy == into)
-            {
-                // Copy systems.
-                foreach (var item in _systems)
-                {
-                    copy._systems[item.Key] = item.Value.DeepCopy(copy._systems[item.Key]);
-                    copy._systems[item.Key].Manager = copy;
-                }
-
-                // Free all instances.
-                foreach (var entity in copy._entities.Values)
-                {
-                    ReleaseEntity(entity);
-                }
-                copy._entities.Clear();
-                foreach (var component in copy._components.Values)
-                {
-                    copy.ReleaseComponent(component);
-                }
-                copy._components.Clear();
-            }
-            else
-            {
-                // Copy systems.
-                foreach (var system in _systems)
-                {
-                    var systemCopy = system.Value.DeepCopy();
-                    systemCopy.Manager = copy;
-                    copy._systems.Add(system.Key, systemCopy);
-                }
-            }
-
-            // Copy components and entity mapping.
-            foreach (var component in _components.Values)
-            {
-                // The create the component and set it up.
-                var componentCopy = AllocateComponent(component.GetType()).Initialize(component);
-                componentCopy.Manager = copy;
-                copy._components[componentCopy.Id] = componentCopy;
-
-                // Add to entity index.
-                if (!copy._entities.ContainsKey(componentCopy.Entity))
-                {
-                    copy._entities.Add(componentCopy.Entity, AllocateEntity());
-                }
-                copy._entities[componentCopy.Entity].Add(componentCopy);
-            }
+            Debug.Assert(into is Manager);
+            var copy = (Manager)into;
 
             // Copy id managers.
             copy._entityIds = _entityIds.DeepCopy(copy._entityIds);
             copy._componentIds = _componentIds.DeepCopy(copy._componentIds);
 
-            // Send a message to all interested systems. Do this after adding
-            // all components, to avoid with event handlers adding their own
-            // components (which they should not, anyway, but still).
-            foreach (var component in copy._components.Values)
+            // Copy components and entities.
+            copy._components.Clear();
+            foreach (var component in _components)
             {
-                ComponentAdded message;
-                message.Component = component;
-                copy.SendMessage(ref message);   
+                // The create the component and set it up.
+                var componentCopy = AllocateComponent(component.Value.GetType()).Initialize(component.Value);
+                componentCopy.Id = component.Value.Id;
+                componentCopy.Entity = component.Value.Entity;
+                componentCopy.Manager = copy;
+                copy._components.Add(component.Key, componentCopy);
+            }
+            copy._entities.Clear();
+            foreach (var entity in _entities)
+            {
+                // Create copy.
+                var entityCopy = AllocateEntity();
+                copy._entities.Add(entity.Key, entityCopy);
+
+                // Assign copied components.
+                foreach (var component in entity.Value.Components)
+                {
+                    entityCopy.Add(copy.GetComponentById(component.Id));
+                }
+            }
+
+            // Copy systems after copying components so they can fetch their
+            // components again.
+            foreach (var item in _systems)
+            {
+                copy.CopySystem(item.Value);
             }
 
             return copy;

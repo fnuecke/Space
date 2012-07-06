@@ -49,6 +49,12 @@ namespace Engine.ComponentSystem
         void AddSystems(IEnumerable<AbstractSystem> systems);
 
         /// <summary>
+        /// Adds a copy of the specified system.
+        /// </summary>
+        /// <param name="system">The system to copy.</param>
+        void CopySystem(ICopyable<AbstractSystem> system);
+
+        /// <summary>
         /// Removes the specified system from this manager.
         /// </summary>
         /// <param name="system">The system to remove.</param>
@@ -65,7 +71,16 @@ namespace Engine.ComponentSystem
         /// The system with the specified type.
         /// </returns>
         T GetSystem<T>() where T : AbstractSystem;
-        
+
+        /// <summary>
+        /// Get a system of the specified type.
+        /// </summary>
+        /// <param name="type">The type of the system to get.</param>
+        /// <returns>
+        /// The system with the specified type.
+        /// </returns>
+        AbstractSystem GetSystem(Type type);
+
         #endregion
 
         #region Entities and Components

@@ -19,6 +19,23 @@ namespace Space.ComponentSystem.Components
 
         #endregion
 
+        #region Initialization
+
+        /// <summary>
+        /// Initialize the component by using another instance of its type.
+        /// </summary>
+        /// <param name="other">The component to copy the values from.</param>
+        public override Component Initialize(Component other)
+        {
+            base.Initialize(other);
+
+            Shooting = ((WeaponControl)other).Shooting;
+
+            return this;
+        }
+
+        #endregion
+
         #region Serialization / Hashing
 
         /// <summary>

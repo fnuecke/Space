@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
@@ -165,12 +166,18 @@ namespace Engine.Simulation
         }
 
         /// <summary>
-        /// Implements deep cloning.
+        /// Creates a new copy of the same type as the object.
         /// </summary>
-        /// <returns>A deep copy of this simulation.</returns>
+        /// <returns>The copy.</returns>
         public ISimulation DeepCopy()
         {
-            return DeepCopy(null);
+            var copy = (AbstractSimulation)MemberwiseClone();
+
+            copy.CurrentFrame = 0;
+            copy.Manager = Manager.DeepCopy();
+            copy.Commands = new List<Command>();
+
+            return copy;
         }
 
         /// <summary>
@@ -180,26 +187,14 @@ namespace Engine.Simulation
         /// <returns>The copy.</returns>
         public virtual ISimulation DeepCopy(ISimulation into)
         {
-            // Get something to start with.
-            var copy = (AbstractSimulation)
-                ((into != null && into.GetType() == this.GetType())
-                ? into
-                : MemberwiseClone());
-            if (copy == into)
-            {
-                copy.CurrentFrame = CurrentFrame;
-                // Clone system manager.
-                copy.Manager = Manager.DeepCopy(copy.Manager);
-                copy.Commands.Clear();
-                copy.Commands.AddRange(Commands);
-            }
-            else
-            {
-                // Clone system manager.
-                copy.Manager = Manager.DeepCopy();
-                // Copy commands directly (they are immutable).
-                copy.Commands = new List<Command>(Commands);
-            }
+            Debug.Assert(into.GetType() == GetType());
+
+            var copy = (AbstractSimulation)into;
+
+            copy.CurrentFrame = CurrentFrame;
+            copy.Manager = Manager.DeepCopy(copy.Manager);
+            copy.Commands.Clear();
+            copy.Commands.AddRange(Commands);
 
             return copy;
         }

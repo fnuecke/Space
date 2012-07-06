@@ -21,7 +21,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// The sprite batch to render textures into.
         /// </summary>
-        protected readonly SpriteBatch _spriteBatch;
+        protected readonly SpriteBatch SpriteBatch;
 
         #endregion
 
@@ -30,7 +30,7 @@ namespace Engine.ComponentSystem.Systems
         public TextureRenderSystem(ContentManager content, SpriteBatch spriteBatch)
         {
             _content = content;
-            _spriteBatch = spriteBatch;
+            SpriteBatch = spriteBatch;
         }
 
         #endregion
@@ -69,9 +69,9 @@ namespace Engine.ComponentSystem.Systems
 
             // Draw. Use transformation of the camera for sprites drawn, so no transformation
             // for the sprite itself is needed.
-            _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, GetTransform());
-            _spriteBatch.Draw(component.Texture, transform.Translation, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
-            _spriteBatch.End();
+            SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, null, null, null, null, GetTransform());
+            SpriteBatch.Draw(component.Texture, transform.Translation, null, component.Tint, transform.Rotation, origin, component.Scale, SpriteEffects.None, 0);
+            SpriteBatch.End();
         }
 
         /// <summary>
