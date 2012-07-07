@@ -206,8 +206,14 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </returns>
         public override Packet Packetize(Packet packet)
         {
-            return base.Packetize(packet)
-                .Write(Target);
+            base.Packetize(packet)
+                .Write(Target)
+                .Write(_start.HasValue);
+            if (_start.HasValue)
+            {
+                packet.Write(_start.Value);
+            }
+            return packet;
         }
 
         /// <summary>
@@ -219,6 +225,10 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             base.Depacketize(packet);
 
             Target = packet.ReadInt32();
+            if (packet.ReadBoolean())
+            {
+                _start = packet.ReadVector2();
+            }
         }
 
         /// <summary>
@@ -250,7 +260,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var copy = (AttackBehavior)into;
 
             copy.Target = Target;
-            copy._start = _start != null ? _start.Value : (Vector2?)null;
+            copy._start = _start;
         }
 
         #endregion

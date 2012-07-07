@@ -393,26 +393,26 @@ namespace Engine.Controller
         [Conditional("DEBUG")]
         public void ValidateSerialization()
         {
+            var m1 = Tss.Manager;
+
+            var m2 = Tss.Manager.NewInstance();
+            m1.CopyInto(m2);
+
             var hasher = new Hasher();
-            Tss.Manager.Hash(hasher);
+            m1.Hash(hasher);
             var hash1 = hasher.Value;
 
-            var copy = Tss.Manager.NewInstance();
-            Tss.Manager.CopyInto(copy);
             hasher = new Hasher();
-            copy.Hash(hasher);
+            m2.Hash(hasher);
             var hash2 = hasher.Value;
 
             if (hash1 != hash2)
             {
                 // Check components to isolate faulty one.
-                var i = 1;
-                for (; Tss.Manager.HasComponent(i); i++)
+                foreach (var c1 in ((Manager)m2).Components)
                 {
-                    Debug.Assert(copy.HasComponent(i));
-
-                    var c1 = Tss.Manager.GetComponentById(i);
-                    var c2 = copy.GetComponentById(i);
+                    Debug.Assert(m1.HasComponent(c1.Id));
+                    var c2 = m1.GetComponentById(c1.Id);
 
                     var h1 = new Hasher();
                     var h2 = new Hasher();
@@ -422,12 +422,11 @@ namespace Engine.Controller
 
                     Debug.Assert(h1.Value == h2.Value);
                 }
-                Debug.Assert(!copy.HasComponent(i));
 
                 // Check systems to isolate faulty one.
-                foreach (var system in ((Manager)copy).Systems)
+                foreach (var system in ((Manager)m2).Systems)
                 {
-                    var s1 = Tss.Manager.GetSystem(system.GetType());
+                    var s1 = m1.GetSystem(system.GetType());
                     var s2 = system;
 
                     var h1 = new Hasher();
@@ -445,51 +444,51 @@ namespace Engine.Controller
 
             using (var packet = new Packet())
             {
-                packet.Write(Tss.Manager);
+                packet.Write(m1);
                 packet.Reset();
-                copy = Tss.Manager.NewInstance();
-                packet.ReadPacketizableInto(copy);
+                m2 = m1.NewInstance();
+                packet.ReadPacketizableInto(m2);
+
                 hasher = new Hasher();
-                copy.Hash(hasher);
+                m2.Hash(hasher);
                 hash2 = hasher.Value;
-                if (hash1 != hash2)
+
+                if (hash1 == hash2)
                 {
-                    // Check components to isolate faulty one.
-                    var i = 1;
-                    for (; Tss.Manager.HasComponent(i); i++)
-                    {
-                        Debug.Assert(copy.HasComponent(i));
-
-                        var c1 = Tss.Manager.GetComponentById(i);
-                        var c2 = copy.GetComponentById(i);
-
-                        var h1 = new Hasher();
-                        var h2 = new Hasher();
-
-                        c1.Hash(h1);
-                        c2.Hash(h2);
-
-                        Debug.Assert(h1.Value == h2.Value);
-                    }
-                    Debug.Assert(!copy.HasComponent(i));
-
-                    // Check systems to isolate faulty one.
-                    foreach (var system in ((Manager)copy).Systems)
-                    {
-                        var s1 = Tss.Manager.GetSystem(system.GetType());
-                        var s2 = system;
-
-                        var h1 = new Hasher();
-                        var h2 = new Hasher();
-
-                        s1.Hash(h1);
-                        s2.Hash(h2);
-
-                        Debug.Assert(h1.Value == h2.Value);
-                    }
-
-                    throw new InvalidProgramException("Serialization implementation resulted in invalid copy.");
+                    return;
                 }
+
+                // Check components to isolate faulty one.
+                foreach (var c1 in ((Manager)m2).Components)
+                {
+                    Debug.Assert(m1.HasComponent(c1.Id));
+                    var c2 = m1.GetComponentById(c1.Id);
+
+                    var h1 = new Hasher();
+                    var h2 = new Hasher();
+
+                    c1.Hash(h1);
+                    c2.Hash(h2);
+
+                    Debug.Assert(h1.Value == h2.Value);
+                }
+
+                // Check systems to isolate faulty one.
+                foreach (var system in ((Manager)m2).Systems)
+                {
+                    var s1 = m1.GetSystem(system.GetType());
+                    var s2 = system;
+
+                    var h1 = new Hasher();
+                    var h2 = new Hasher();
+
+                    s1.Hash(h1);
+                    s2.Hash(h2);
+
+                    Debug.Assert(h1.Value == h2.Value);
+                }
+
+                Debug.Assert(false, "Serialization implementation resulted in invalid copy.");
             }
         }
 

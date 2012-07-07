@@ -111,6 +111,12 @@ namespace Engine.Simulation
         /// Hash of the leading state the last time it reached a check point.
         /// </summary>
         private int _leadingHash;
+
+        /// <summary>
+        /// Copy of the leading simulation at the time of hashing, to allow
+        /// comparing components / systems on check fail.
+        /// </summary>
+        private ISimulation _leadingSnapshot;
 #endif
 
         #endregion
@@ -237,15 +243,61 @@ namespace Engine.Simulation
                 var hasher = new Hasher();
                 _simulations[0].Hash(hasher);
                 _leadingHash = hasher.Value;
+                _leadingSnapshot = _leadingSnapshot ?? _simulations[0].NewInstance();
+                _simulations[0].CopyInto(_leadingSnapshot);
             }
             for (var i = 1; i < _simulations.Length; ++i)
             {
-                if (_simulations[i].CurrentFrame > 0 && _simulations[i].CurrentFrame % (_delays[_delays.Length - 1] * 40) == 0)
+                var simulation = _simulations[i];
+
+                if (simulation.CurrentFrame <= 0 ||
+                    simulation.CurrentFrame % (_delays[_delays.Length - 1] * 40) != 0)
                 {
-                    var hasher = new Hasher();
-                    _simulations[i].Hash(hasher);
-                    Debug.Assert(_leadingHash == hasher.Value, "Simulation not deterministic.");
+                    continue;
                 }
+
+                var hasher = new Hasher();
+                simulation.Hash(hasher);
+                if (_leadingHash == hasher.Value)
+                {
+                    continue;
+                }
+
+                // Check components to isolate faulty one.
+                foreach (var c1 in ((Manager)simulation.Manager).Components)
+                {
+                    Debug.Assert(_leadingSnapshot.Manager.HasComponent(c1.Id));
+                    var c2 = _leadingSnapshot.Manager.GetComponentById(c1.Id);
+
+                    var h1 = new Hasher();
+                    var h2 = new Hasher();
+
+                    c1.Hash(h1);
+                    c2.Hash(h2);
+
+                    Debug.Assert(h1.Value == h2.Value);
+                }
+                foreach (var c in ((Manager)_leadingSnapshot.Manager).Components)
+                {
+                    Debug.Assert(simulation.Manager.HasComponent(c.Id));
+                }
+
+                // Check systems to isolate faulty one.
+                foreach (var s1 in ((Manager)simulation.Manager).Systems)
+                {
+                    var s2 = _leadingSnapshot.Manager.GetSystem(s1.GetType());
+                    Debug.Assert(s2 != null);
+
+                    var h1 = new Hasher();
+                    var h2 = new Hasher();
+
+                    s1.Hash(h1);
+                    s2.Hash(h2);
+
+                    Debug.Assert(h1.Value == h2.Value);
+                }
+
+                Debug.Assert(_leadingHash == hasher.Value, "Simulation not deterministic.");
             }
 #endif
         }

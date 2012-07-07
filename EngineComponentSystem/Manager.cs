@@ -901,6 +901,11 @@ namespace Engine.ComponentSystem
         #region Debugging
 #if DEBUG
         /// <summary>
+        /// To allow per-component hash validity (serialization validation).
+        /// </summary>
+        public IEnumerable<Component> Components { get { return _components.Values; } } 
+
+        /// <summary>
         /// To allow per-system hash validity (serialization validation).
         /// </summary>
         public IEnumerable<AbstractSystem> Systems { get { return _systems.Values; } } 
