@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components.AI.Behaviors;
 
@@ -46,9 +47,12 @@ namespace Space.ComponentSystem.Components
 
             var otherAI = (ArtificialIntelligence)other;
             _currentBehaviors.Clear();
-            foreach (var behaviorType in otherAI._currentBehaviors)
+            var behaviorTypes = otherAI._currentBehaviors.ToArray();
+            // Stacks iterators work backwards (first is the last pushed element),
+            // so we need to iterate backwards.
+            for (var i = behaviorTypes.Length; i > 0; --i)
             {
-                _currentBehaviors.Push(behaviorType);
+                _currentBehaviors.Push(behaviorTypes[i - 1]);
             }
             foreach (var entry in otherAI._behaviors)
             {
@@ -171,9 +175,12 @@ namespace Space.ComponentSystem.Components
             base.Packetize(packet);
 
             packet.Write(_currentBehaviors.Count);
-            foreach (var behavior in _currentBehaviors)
+            var behaviorTypes = _currentBehaviors.ToArray();
+            // Stacks iterators work backwards (first is the last pushed element),
+            // so we need to iterate backwards.
+            for (var i = behaviorTypes.Length; i > 0; --i)
             {
-                packet.Write((byte)behavior);
+                packet.Write((byte)behaviorTypes[i - 1]);
             }
 
             foreach (var behavior in _behaviors.Values)
@@ -203,6 +210,22 @@ namespace Space.ComponentSystem.Components
             {
                 packet.ReadPacketizableInto(behavior);
             }
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            foreach (var behaviorType in _currentBehaviors)
+            {
+                hasher.Put((byte)behaviorType);
+            }
+            hasher.Put(_behaviors.Values);
         }
 
         #endregion

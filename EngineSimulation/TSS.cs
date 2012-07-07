@@ -232,7 +232,7 @@ namespace Engine.Simulation
             FastForward(gameTime, ++CurrentFrame);
 
 #if DEBUG
-            if (_simulations[0].CurrentFrame == _delays[_delays.Length - 1] * 2)
+            if (_simulations[0].CurrentFrame > 0 && _simulations[0].CurrentFrame % (_delays[_delays.Length - 1] * 40) == 0)
             {
                 var hasher = new Hasher();
                 _simulations[0].Hash(hasher);
@@ -240,7 +240,7 @@ namespace Engine.Simulation
             }
             for (var i = 1; i < _simulations.Length; ++i)
             {
-                if (_simulations[i].CurrentFrame == _delays[_delays.Length - 1] * 2)
+                if (_simulations[i].CurrentFrame > 0 && _simulations[i].CurrentFrame % (_delays[_delays.Length - 1] * 40) == 0)
                 {
                     var hasher = new Hasher();
                     _simulations[i].Hash(hasher);

@@ -419,7 +419,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public void Hash(Hasher hasher)
+        public virtual void Hash(Hasher hasher)
         {
             hasher.Put(_pollRate);
             hasher.Put(_ticksToWait);

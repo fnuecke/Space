@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors
@@ -100,6 +101,18 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             base.Depacketize(packet);
 
             Target = packet.ReadVector2();
+        }
+
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put(Target);
         }
 
         #endregion
