@@ -528,9 +528,9 @@ namespace Engine.ComponentSystem
             {
                 system.Hash(hasher);
             }
-            foreach (var component in _components.Values)
+            foreach (var componentId in _componentIds)
             {
-                component.Hash(hasher);
+                _components[componentId].Hash(hasher);
             }
         }
 

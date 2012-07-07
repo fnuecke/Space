@@ -250,7 +250,7 @@ namespace Engine.Simulation
 
                 // Get leading hash.
                 var hasher = new Hasher();
-                _simulations[0].Hash(hasher);
+                _simulations[0].Manager.Hash(hasher);
                 _leadingSnapshotHash = hasher.Value;
 
                 // Get copy of leading state.
@@ -259,7 +259,7 @@ namespace Engine.Simulation
 
                 // Validate.
                 hasher = new Hasher();
-                _leadingSnapshot.Hash(hasher);
+                _leadingSnapshot.Manager.Hash(hasher);
                 Debug.Assert(hasher.Value == _leadingSnapshotHash);
             }
             // If we joined a game we might trigger a check before generating a checkpoint.
@@ -277,7 +277,7 @@ namespace Engine.Simulation
                 }
 
                 var hasher = new Hasher();
-                simulation.Hash(hasher);
+                simulation.Manager.Hash(hasher);
                 if (_leadingSnapshotHash == hasher.Value)
                 {
                     continue;
