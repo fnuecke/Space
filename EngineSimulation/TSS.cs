@@ -110,13 +110,18 @@ namespace Engine.Simulation
         /// <summary>
         /// Hash of the leading state the last time it reached a check point.
         /// </summary>
-        private int _leadingHash;
+        private int _leadingSnapshotHash;
 
         /// <summary>
         /// Copy of the leading simulation at the time of hashing, to allow
         /// comparing components / systems on check fail.
         /// </summary>
         private ISimulation _leadingSnapshot;
+
+        /// <summary>
+        /// The frame in which the snapshot of the leading simulation was made.
+        /// </summary>
+        private long _leadingSnapshotFrame;
 #endif
 
         #endregion
@@ -240,25 +245,40 @@ namespace Engine.Simulation
 #if DEBUG
             if (_simulations[0].CurrentFrame > 0 && _simulations[0].CurrentFrame % (_delays[_delays.Length - 1] * 40) == 0)
             {
+                // Remember the frame.
+                _leadingSnapshotFrame = _simulations[0].CurrentFrame;
+
+                // Get leading hash.
                 var hasher = new Hasher();
                 _simulations[0].Hash(hasher);
-                _leadingHash = hasher.Value;
+                _leadingSnapshotHash = hasher.Value;
+
+                // Get copy of leading state.
                 _leadingSnapshot = _leadingSnapshot ?? _simulations[0].NewInstance();
                 _simulations[0].CopyInto(_leadingSnapshot);
+
+                // Validate.
+                hasher = new Hasher();
+                _leadingSnapshot.Hash(hasher);
+                Debug.Assert(hasher.Value == _leadingSnapshotHash);
+            }
+            // If we joined a game we might trigger a check before generating a checkpoint.
+            if (_leadingSnapshot == null)
+            {
+                return;
             }
             for (var i = 1; i < _simulations.Length; ++i)
             {
                 var simulation = _simulations[i];
 
-                if (simulation.CurrentFrame <= 0 ||
-                    simulation.CurrentFrame % (_delays[_delays.Length - 1] * 40) != 0)
+                if (simulation.CurrentFrame != _leadingSnapshotFrame)
                 {
                     continue;
                 }
 
                 var hasher = new Hasher();
                 simulation.Hash(hasher);
-                if (_leadingHash == hasher.Value)
+                if (_leadingSnapshotHash == hasher.Value)
                 {
                     continue;
                 }
@@ -297,7 +317,7 @@ namespace Engine.Simulation
                     Debug.Assert(h1.Value == h2.Value);
                 }
 
-                Debug.Assert(_leadingHash == hasher.Value, "Simulation not deterministic.");
+                Debug.Assert(_leadingSnapshotHash == hasher.Value, "Simulation not deterministic.");
             }
 #endif
         }
@@ -672,6 +692,10 @@ namespace Engine.Simulation
                 _simulations[i] = _simulations[i] ?? (IAuthoritativeSimulation)state.NewInstance();
                 state.CopyInto(_simulations[i]);
             }
+#if DEBUG
+            _leadingSnapshotFrame = 0;
+            _leadingSnapshot = null;
+#endif
         }
 
         /// <summary>
