@@ -51,12 +51,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Screens\css\default.css">
-      <Name>default</Name>
+    <Compile Include="Screens\MainMenu\Stylesheet.css">
+      <Name>Stylesheet</Name>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Screens\Ingame.html">
+    <Compile Include="Screens\Ingame\Ingame.html">
       <Name>Ingame</Name>
     </Compile>
   </ItemGroup>
@@ -66,7 +66,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Screens\MainMenu.html">
+    <Compile Include="Screens\MainMenu\MainMenu.html">
       <Name>MainMenu</Name>
     </Compile>
   </ItemGroup>
@@ -99,8 +99,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Screens\css\Ingame.css">
-      <Name>Ingame</Name>
+    <Compile Include="Screens\Ingame\Stylesheet.css">
+      <Name>Stylesheet</Name>
       <Importer>AwesomiumImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
@@ -376,6 +376,16 @@
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Screens\js\jquery-1.7.2.js">
+      <Name>jquery-1.7.2</Name>
+      <Importer>AwesomiumImporter</Importer>
+      <Processor>PassThroughProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Screens\css\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

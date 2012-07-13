@@ -435,7 +435,7 @@ namespace Space
         {
             _screenManager = new ScreenManager(this, _spriteBatch, _inputManager);
             new JSCallbacks(this);
-            _screenManager.PushScreen("MainMenu");
+            _screenManager.PushScreen("MainMenu/MainMenu");
             Components.Add(_screenManager);
 
             _input = new InputHandler();
