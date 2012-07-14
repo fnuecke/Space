@@ -12,6 +12,11 @@ namespace Space.ComponentSystem.Components
         #region Fields
 
         /// <summary>
+        /// The randomizer we use to make pseudo random decisions.
+        /// </summary>
+        private readonly MersenneTwister _random = new MersenneTwister(0);
+
+        /// <summary>
         /// The currently running behaviors, ordered as they were issued.
         /// </summary>
         private readonly Stack<Behavior.BehaviorType> _currentBehaviors = new Stack<Behavior.BehaviorType>();
@@ -30,10 +35,10 @@ namespace Space.ComponentSystem.Components
 
         public ArtificialIntelligence()
         {
-            _behaviors.Add(Behavior.BehaviorType.Roam, new RoamBehavior(this));
-            _behaviors.Add(Behavior.BehaviorType.Attack, new AttackBehavior(this));
-            _behaviors.Add(Behavior.BehaviorType.Move, new MoveBehavior(this));
-            _behaviors.Add(Behavior.BehaviorType.AttackMove, new AttackMoveBehavior(this));
+            _behaviors.Add(Behavior.BehaviorType.Roam, new RoamBehavior(this, _random));
+            _behaviors.Add(Behavior.BehaviorType.Attack, new AttackBehavior(this, _random));
+            _behaviors.Add(Behavior.BehaviorType.Move, new MoveBehavior(this, _random));
+            _behaviors.Add(Behavior.BehaviorType.AttackMove, new AttackMoveBehavior(this, _random));
         }
 
         /// <summary>
@@ -46,6 +51,7 @@ namespace Space.ComponentSystem.Components
             base.Initialize(other);
 
             var otherAI = (ArtificialIntelligence)other;
+            otherAI._random.CopyInto(_random);
             _currentBehaviors.Clear();
             var behaviorTypes = otherAI._currentBehaviors.ToArray();
             // Stacks iterators work backwards (first is the last pushed element),
@@ -63,6 +69,18 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>
+        /// Initializes the AI with the specified random seed.
+        /// </summary>
+        /// <param name="seed">The seed to use.</param>
+        /// <returns>This instance.</returns>
+        public ArtificialIntelligence Initialize(ulong seed)
+        {
+            _random.Seed(seed);
+
+            return this;
+        }
+
+        /// <summary>
         /// Reset the component to its initial state, so that it may be reused
         /// without side effects.
         /// </summary>
@@ -71,6 +89,10 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             _currentBehaviors.Clear();
+            foreach (var behavior in _behaviors.Values)
+            {
+                behavior.Reset();
+            }
         }
 
         #endregion
@@ -174,6 +196,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Packetize(packet);
 
+            packet.Write(_random);
             packet.Write(_currentBehaviors.Count);
             var behaviorTypes = _currentBehaviors.ToArray();
             // Stacks iterators work backwards (first is the last pushed element),
@@ -199,6 +222,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
+            packet.ReadPacketizableInto(_random);
             _currentBehaviors.Clear();
             var numBehaviors = packet.ReadInt32();
             for (var i = 0; i < numBehaviors; i++)
@@ -221,6 +245,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
+            hasher.Put(_random);
             foreach (var behaviorType in _currentBehaviors)
             {
                 hasher.Put((byte)behaviorType);

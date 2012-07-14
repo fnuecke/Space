@@ -20,21 +20,12 @@ namespace Engine.Controller
 
         #endregion
 
-        #region Constants
-
-        /// <summary>
-        /// The interval in milliseconds after which to send a hash check to the clients.
-        /// </summary>
-        private const int HashInterval = 10000;
-
-        #endregion
-
         #region Fields
 
         /// <summary>
-        /// Last time we sent a hash check to our clients.
+        /// Trailing we last did a hash check in, to avoid doing them twice.
         /// </summary>
-        private long _lastHashTime;
+        private long _lastHashCheck;
 
         /// <summary>
         /// Keeping track of how stressed each client is. If all have idle time
@@ -68,6 +59,9 @@ namespace Engine.Controller
             Session.PlayerLeft += HandlePlayerLeft;
         }
 
+        /// <summary>
+        /// Remove ourselves as listeners.
+        /// </summary>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -93,7 +87,7 @@ namespace Engine.Controller
 
             // Also take the possibility of the server slowing down the game
             // into account.
-            double serverSpeed = 1f / SafeLoad;
+            var serverSpeed = 1f / SafeLoad;
             if (SafeLoad >= 1f && serverSpeed < AdjustedSpeed)
             {
                 AdjustedSpeed = serverSpeed;
@@ -107,20 +101,28 @@ namespace Engine.Controller
             }
 
             // Send hash check every now and then, to check for loss of synchronization.
-            if (new TimeSpan(DateTime.Now.Ticks - _lastHashTime).TotalMilliseconds > HashInterval)
+            // We want to use the trailing frame for this because at this point it's
+            // guaranteed not to change anymore (from incoming commands -- they will be
+            // discarded now).
+            if (Tss.TrailingFrame <= _lastHashCheck || ((Tss.TrailingFrame % HashInterval) != 0))
             {
-                _lastHashTime = DateTime.Now.Ticks;
+                return;
+            }
 
-                var hasher = new Hasher();
-                Tss.Hash(hasher);
+            // Update last checked frame.
+            _lastHashCheck = Tss.TrailingFrame;
 
-                using (var packet = new Packet())
-                {
-                    Session.Send(packet
-                        .Write((byte)TssControllerMessage.HashCheck)
-                        .Write(Tss.TrailingFrame)
-                        .Write(hasher.Value));
-                }
+            // Generate hash.
+            var hasher = new Hasher();
+            Tss.Hash(hasher);
+
+            // Send message.
+            using (var packet = new Packet())
+            {
+                Session.Send(packet
+                                 .Write((byte)TssControllerMessage.HashCheck)
+                                 .Write(Tss.TrailingFrame)
+                                 .Write(hasher.Value));
             }
         }
         
@@ -132,9 +134,9 @@ namespace Engine.Controller
         private void AdjustSpeed()
         {
             // Find the participant with the worst update load.
-            double worstLoad = SafeLoad;
+            var worstLoad = SafeLoad;
             _serverIsSlowing = (SafeLoad >= 1f);
-            for (int i = 0; i < _clientLoads.Length; i++)
+            for (var i = 0; i < _clientLoads.Length; i++)
             {
                 if (_clientLoads[i] > worstLoad)
                 {
@@ -223,15 +225,15 @@ namespace Engine.Controller
                     // Client re-synchronizing.
                     {
                         // Get the frame the client's at.
-                        long clientFrame = args.Data.ReadInt64();
+                        var clientFrame = args.Data.ReadInt64();
 
                         // Get performance information of the client.
-                        int player = args.Player.Number;
+                        var player = args.Player.Number;
                         _clientLoads[player] = args.Data.ReadSingle();
 
                         // Adjust our desired game speed to accommodate slowest
                         // client machine. Is this the slowest client so far?
-                        double clientSpeed = 1.0 / _clientLoads[player];
+                        var clientSpeed = 1.0 / _clientLoads[player];
                         if (_clientLoads[player] >= 1f && clientSpeed < AdjustedSpeed)
                         {
                             AdjustedSpeed = clientSpeed;

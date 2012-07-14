@@ -69,7 +69,7 @@ namespace Space.Control
 
             // Check if the server has all the services we need (enough to
             // check for one, because we only add all at once -- here).
-            if (server.Simulation.Manager.GetSystem<CameraCenteredTextureRenderSystem>() == null)
+            if (server.Simulation.Manager.GetSystem<CameraSystem>() == null)
             {
                 // Needed by some systems. Add all systems we need in
                 // *addition* to the ones the server already has.
@@ -87,6 +87,9 @@ namespace Space.Control
         /// <param name="game">The game.</param>
         private static void AddSpaceServerSystems(IManager manager, Game game)
         {
+            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
+            var graphicsDevice = ((Spaaace)game).GraphicsDeviceManager;
+
             manager.AddSystems(
                 new AbstractSystem[]
                 {
@@ -161,7 +164,13 @@ namespace Space.Control
                     new RegeneratingValueSystem(),
                     
                     // AI should react after everything else had its turn.
-                    new AISystem()
+                    new AISystem(),
+                    
+                    // Planets below suns below normal objects below particle effects.
+                    new PlanetRenderSystem(game),
+                    new SunRenderSystem(game, spriteBatch),
+                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
+                    new CameraCenteredParticleEffectSystem(game, graphicsDevice)
                 });
         }
 
@@ -174,20 +183,11 @@ namespace Space.Control
         private static void AddSpaceClientSystems(IManager manager, Game game, IClientSession session)
         {
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
-            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
-            var graphicsDevice = ((Spaaace)game).GraphicsDeviceManager;
 
             manager.AddSystems(
                 new AbstractSystem[]
                 {
                     new CameraSystem(game, session),
-
-                    // Planets below suns below normal objects below particle effects.
-                    new PlanetRenderSystem(game),
-                    new SunRenderSystem(game, spriteBatch),
-                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
-                    new CameraCenteredParticleEffectSystem(game, graphicsDevice),
-
                     new CameraCenteredSoundSystem(soundBank, session)
                 });
         }

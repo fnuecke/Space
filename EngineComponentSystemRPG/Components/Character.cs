@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.Serialization;
@@ -160,10 +161,14 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             // Find all additive and multiplicative modifiers.
 
+            // Use deterministic order.
+            var baseAttributeTypes = _baseAttributes.Keys.ToArray();
+            Array.Sort(baseAttributeTypes);
+
             // Push base values as additive modifiers.
-            foreach (var attribute in _baseAttributes)
+            for (var i = 0; i < baseAttributeTypes.Length; i++)
             {
-                _reusableAdditiveList.Add(new AttributeModifier<TAttribute>(attribute.Key, attribute.Value));
+                _reusableAdditiveList.Add(new AttributeModifier<TAttribute>(baseAttributeTypes[i], _baseAttributes[baseAttributeTypes[i]]));
             }
 
             // Parse all items.

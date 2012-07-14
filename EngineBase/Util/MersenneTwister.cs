@@ -108,6 +108,17 @@ namespace Engine.Util
         /// the pseudo-random number sequence.</param>
         public MersenneTwister(ulong seed)
         {
+            Seed(seed);
+        }
+
+        /// <summary>
+        /// Reinitializes this instance of the <c>MersenneTwister</c> class,
+        /// using the specified seed value.
+        /// </summary>
+        /// <param name="seed">A number used to calculate a starting value for
+        /// the pseudo-random number sequence.</param>
+        public void Seed(ulong seed)
+        {
             _mt[0] = seed & 0xffffffffUL;
             for (_index = 1; _index < N; _index++)
             {
@@ -120,7 +131,7 @@ namespace Engine.Util
                 /* for >32 bit machines */
             }
         }
-        
+
         #endregion
 
         #region Public API

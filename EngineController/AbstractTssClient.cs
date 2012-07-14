@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
@@ -47,14 +49,16 @@ namespace Engine.Controller
         private readonly IntSampling _frameDiff = new IntSampling(5);
 
         /// <summary>
-        /// The last frame we know the server's state hash of.
+        /// Keeping track of hashes to compare to reference hashes from
+        /// server (to detect desyncs).
         /// </summary>
-        private long _hashFrame = -1;
+        private readonly Dictionary<long, int> _hashes = new Dictionary<long, int>();
 
         /// <summary>
-        /// The hash value of the server's state.
+        /// The frame of the latest hash we got from the server (don't store
+        /// hashes from before that).
         /// </summary>
-        private int _hashValue;
+        private long _lastServerHashFrame;
 
         #endregion
 
@@ -100,35 +104,50 @@ namespace Engine.Controller
         /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         public override void Update(GameTime gameTime)
         {
-            if (Session.ConnectionState == ClientState.Connected && !Tss.WaitingForSynchronization)
+            if (Session.ConnectionState != ClientState.Connected || Tss.WaitingForSynchronization)
             {
-                // Drive game logic.
-                UpdateSimulation(gameTime, AdjustedSpeed);
+                return;
+            }
 
-                // Hash test.
-                if (Tss.TrailingFrame == _hashFrame)
+            // Drive game logic.
+            UpdateSimulation(gameTime, AdjustedSpeed);
+
+            // Hash test.
+            if (Tss.TrailingFrame % HashInterval == 0)
+            {
+                // Generate hash.
+                var hasher = new Hasher();
+                Tss.Hash(hasher);
+
+                // Check if we have that frame, meaning we have to compare to it now.
+                if (_hashes.ContainsKey(Tss.TrailingFrame))
                 {
-                    var hasher = new Hasher();
-                    Tss.Hash(hasher);
-                    if (hasher.Value != _hashValue)
+                    // Got a server hash, check it.
+                    if (hasher.Value != _hashes[Tss.TrailingFrame])
                     {
-                        Logger.Debug("Hash mismatch: {0} != {1} ", _hashValue, hasher.Value);
+                        Logger.Warn("Hash mismatch! Resynchronizing...");
                         Tss.Invalidate();
                     }
                 }
-
-                // Send sync command every now and then, to keep game clock synchronized.
-                // No need to sync for a server that runs in the same program, though.
-                if (new TimeSpan(DateTime.Now.Ticks - _lastSyncTime).TotalMilliseconds > SyncInterval)
+                else if (Tss.TrailingFrame > _lastServerHashFrame)
                 {
-                    _lastSyncTime = DateTime.Now.Ticks;
-                    using (var packet = new Packet())
-                    {
-                        Session.Send(packet
-                            .Write((byte)TssControllerMessage.Synchronize)
-                            .Write(Tss.CurrentFrame)
-                            .Write((float)SafeLoad));
-                    }
+                    // Otherwise store it, but only if it's newer than what we
+                    // got from the server.
+                    _hashes[Tss.TrailingFrame] = hasher.Value;
+                }
+            }
+
+            // Send sync command every now and then, to keep game clock synchronized.
+            // No need to sync for a server that runs in the same program, though.
+            if (new TimeSpan(DateTime.Now.Ticks - _lastSyncTime).TotalMilliseconds > SyncInterval)
+            {
+                _lastSyncTime = DateTime.Now.Ticks;
+                using (var packet = new Packet())
+                {
+                    Session.Send(packet
+                                     .Write((byte)TssControllerMessage.Synchronize)
+                                     .Write(Tss.CurrentFrame)
+                                     .Write((float)SafeLoad));
                 }
             }
         }
@@ -252,8 +271,28 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
-                        _hashFrame = args.Data.ReadInt64();
-                        _hashValue = args.Data.ReadInt32();
+                        var hashFrame = args.Data.ReadInt64();
+                        var hashValue = args.Data.ReadInt32();
+
+                        Debug.Assert(hashFrame > _lastServerHashFrame);
+                        _lastServerHashFrame = hashFrame;
+
+                        // See if we can test right away or have to store it to wait
+                        // until the local trailing simulation reaches that frame.
+                        if (_hashes.ContainsKey(hashFrame))
+                        {
+                            // Check now.
+                            if (hashValue != _hashes[hashFrame])
+                            {
+                                Logger.Warn("Hash mismatch! Resynchronizing...");
+                                Tss.Invalidate();
+                            }
+                        }
+                        else
+                        {
+                            // Store for later.
+                            _hashes[hashFrame] = hashValue;
+                        }
                     }
                     break;
 
@@ -263,8 +302,11 @@ namespace Engine.Controller
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
+                        // Read data.
                         var serverHash = args.Data.ReadInt32();
                         args.Data.ReadPacketizableInto(Tss);
+
+                        // Validate the data we got.
                         var hasher = new Hasher();
                         Tss.Hash(hasher);
                         if (hasher.Value != serverHash)

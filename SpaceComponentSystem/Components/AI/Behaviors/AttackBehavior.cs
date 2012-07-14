@@ -43,10 +43,26 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         #endregion
 
         #region Constructor
-        
-        public AttackBehavior(ArtificialIntelligence ai)
-            : base(ai, 10)
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttackBehavior"/> class.
+        /// </summary>
+        /// <param name="ai">The ai component this behavior belongs to.</param>
+        /// <param name="random">The randomizer to use for decision making.</param>
+        public AttackBehavior(ArtificialIntelligence ai, IUniformRandom random)
+            : base(ai, random, 10)
         {
+        }
+
+        /// <summary>
+        /// Reset this behavior so it can be reused later on.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            Target = 0;
+            _start = null;
         }
 
         #endregion

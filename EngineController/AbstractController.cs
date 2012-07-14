@@ -170,7 +170,7 @@ namespace Engine.Controller
             {
                 // Delegate unwrapping of the message, and if this yields a command object
                 // try to handle it.
-                TCommand command = UnwrapDataForReceive(e);
+                var command = UnwrapDataForReceive(e);
                 if (command != null)
                 {
                     HandleRemoteCommand(command);
@@ -182,7 +182,7 @@ namespace Engine.Controller
             }
             catch (ArgumentException ex)
             {
-                Logger.WarnException("Failed deserializing unknown type.", ex);
+                Logger.WarnException("Failed deserializing data.", ex);
             }
         }
 

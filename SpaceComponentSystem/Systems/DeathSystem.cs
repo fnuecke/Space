@@ -79,7 +79,11 @@ namespace Space.ComponentSystem.Systems
 
                 // Play explosion effect at point of death.
                 Manager.GetSystem<CameraCenteredParticleEffectSystem>().Play("Effects/BasicExplosion", entity);
-                Manager.GetSystem<CameraCenteredSoundSystem>().Play("Explosion", entity);
+                var soundSystem = Manager.GetSystem<CameraCenteredSoundSystem>();
+                if (soundSystem != null)
+                {
+                    soundSystem.Play("Explosion", entity);
+                }
 
                 // See if the entity respawns.
                 var respawn = Manager.GetComponent<Respawn>(entity);

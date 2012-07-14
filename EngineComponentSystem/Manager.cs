@@ -16,12 +16,42 @@ namespace Engine.ComponentSystem
     /// </summary>
     public sealed class Manager : IManager
     {
+
+        #region Properties
+
+        /// <summary>
+        /// A list of all components currently registered with this manager,
+        /// in order of their ID.
+        /// </summary>
+        public IEnumerable<Component> Components
+        {
+            get
+            {
+                foreach (var componentId in _componentIds)
+                {
+                    yield return _components[componentId];
+                }
+            }
+        }
+
+        /// <summary>
+        /// A list of all systems registered with this manager.
+        /// </summary>
+        public IEnumerable<AbstractSystem> Systems { get { return _systems; } }
+
+        #endregion
+
         #region Fields
 
         /// <summary>
-        /// Lookup table for quick access to component by type.
+        /// Manager for entity ids.
         /// </summary>
-        private readonly Dictionary<Type, AbstractSystem> _systems = new Dictionary<Type, AbstractSystem>();
+        private readonly IdManager _entityIds = new IdManager();
+
+        /// <summary>
+        /// Manager for entity ids.
+        /// </summary>
+        private readonly IdManager _componentIds = new IdManager();
 
         /// <summary>
         /// Keeps track of entity->component relationships.
@@ -34,14 +64,14 @@ namespace Engine.ComponentSystem
         private readonly Dictionary<int, Component> _components = new Dictionary<int, Component>();
 
         /// <summary>
-        /// Manager for entity ids.
+        /// List of systems registered with this manager.
         /// </summary>
-        private readonly IdManager _entityIds = new IdManager();
+        private readonly List<AbstractSystem> _systems = new List<AbstractSystem>(); 
 
         /// <summary>
-        /// Manager for entity ids.
+        /// Lookup table for quick access to component by type.
         /// </summary>
-        private readonly IdManager _componentIds = new IdManager();
+        private readonly Dictionary<Type, AbstractSystem> _systemsByType = new Dictionary<Type, AbstractSystem>();
 
         #endregion
 
@@ -54,7 +84,7 @@ namespace Engine.ComponentSystem
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(GameTime gameTime, long frame)
         {
-            foreach (var system in _systems.Values)
+            foreach (var system in _systems)
             {
                 system.Update(gameTime, frame);
             }
@@ -72,7 +102,7 @@ namespace Engine.ComponentSystem
         /// <param name="frame">The frame to render.</param>
         public void Draw(GameTime gameTime, long frame)
         {
-            foreach (var system in _systems.Values)
+            foreach (var system in _systems)
             {
                 system.Draw(gameTime, frame);
             }
@@ -91,7 +121,8 @@ namespace Engine.ComponentSystem
         /// </returns>
         public IManager AddSystem(AbstractSystem system)
         {
-            _systems.Add(system.GetType(), system);
+            _systemsByType.Add(system.GetType(), system);
+            _systems.Add(system);
             system.Manager = this;
             return this;
         }
@@ -115,13 +146,14 @@ namespace Engine.ComponentSystem
         public void CopySystem(ICopyable<AbstractSystem> system)
         {
             var type = system.GetType();
-            if (!_systems.ContainsKey(type))
+            if (!_systemsByType.ContainsKey(type))
             {
                 var systemCopy = system.NewInstance();
                 systemCopy.Manager = this;
-                _systems.Add(type, systemCopy);
+                _systemsByType.Add(type, systemCopy);
+                _systems.Add(systemCopy);
             }
-            system.CopyInto(_systems[type]);
+            system.CopyInto(_systemsByType[type]);
         }
 
         /// <summary>
@@ -133,10 +165,11 @@ namespace Engine.ComponentSystem
         /// </returns>
         public bool RemoveSystem(AbstractSystem system)
         {
-            if (!_systems.Remove(system.GetType()))
+            if (!_systemsByType.Remove(system.GetType()))
             {
                 return false;
             }
+            _systems.Remove(system);
             system.Manager = null;
             return true;
         }
@@ -162,7 +195,9 @@ namespace Engine.ComponentSystem
         /// </returns>
         public AbstractSystem GetSystem(Type type)
         {
-            return _systems.ContainsKey(type) ? _systems[type] : null;
+            AbstractSystem result;
+            _systemsByType.TryGetValue(type, out result);
+            return result;
         }
 
         #endregion
@@ -398,7 +433,7 @@ namespace Engine.ComponentSystem
         /// <param name="message">The sent message.</param>
         public void SendMessage<T>(ref T message) where T : struct
         {
-            foreach (var system in _systems.Values)
+            foreach (var system in _systems)
             {
                 system.Receive(ref message);
             }
@@ -425,7 +460,7 @@ namespace Engine.ComponentSystem
             // entity to component mapping as well, so we don't need to write
             // the entity mapping.
             packet.Write(_components.Count);
-            foreach (var component in _components.Values)
+            foreach (var component in Components)
             {
                 packet.Write(component.GetType().AssemblyQualifiedName);
                 packet.Write(component);
@@ -435,7 +470,7 @@ namespace Engine.ComponentSystem
             // via <c>ReadPacketizableInto()</c> to keep some variables that
             // can only passed in the constructor.
             packet.Write(_systems.Count);
-            foreach (var system in _systems.Values)
+            foreach (var system in _systems)
             {
                 packet.Write(system.GetType().AssemblyQualifiedName);
                 packet.Write(system);
@@ -511,9 +546,9 @@ namespace Engine.ComponentSystem
                     throw new PacketException(string.Format("Invalid system type, not known locally: {0}.", typeName));
                 }
 
-                Debug.Assert(_systems.ContainsKey(type));
+                Debug.Assert(_systemsByType.ContainsKey(type));
 
-                packet.ReadPacketizableInto(_systems[type]);
+                packet.ReadPacketizableInto(_systemsByType[type]);
             }
         }
 
@@ -524,7 +559,7 @@ namespace Engine.ComponentSystem
         /// <param name="hasher">The hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
-            foreach (var system in _systems.Values)
+            foreach (var system in _systems)
             {
                 system.Hash(hasher);
             }
@@ -603,7 +638,7 @@ namespace Engine.ComponentSystem
         {
             var copy = new Manager();
 
-            foreach (var system in _systems.Values)
+            foreach (var system in _systems)
             {
                 copy.AddSystem(system.NewInstance());
             }
@@ -657,7 +692,7 @@ namespace Engine.ComponentSystem
             // components again.
             foreach (var item in _systems)
             {
-                copy.CopySystem(item.Value);
+                copy.CopySystem(item);
             }
         }
 
@@ -770,6 +805,7 @@ namespace Engine.ComponentSystem
             {
                 cache.Clear();
             }
+            entity.TypeCache.Clear();
             lock (EntityPool)
             {
                 EntityPool.Push(entity);
@@ -816,9 +852,18 @@ namespace Engine.ComponentSystem
                 // Add to all relevant caches.
                 foreach (var entry in TypeCache)
                 {
-                    if (entry.Key.IsInstanceOfType(component))
+                    if (!entry.Key.IsInstanceOfType(component))
                     {
-                        entry.Value.Add(component);
+                        continue;
+                    }
+
+                    entry.Value.Add(component);
+                    // Keep components in type caches sorted, to keep looping
+                    // over them deterministic (otherwise recently deserialized
+                    // instances may behave differently).
+                    if (entry.Value.Count > 1)
+                    {
+                        entry.Value.Sort((a, b) => a.Id - b.Id);
                     }
                 }
             }
@@ -890,26 +935,19 @@ namespace Engine.ComponentSystem
                         cache.Add(component);
                     }
                 }
+                // Keep components in type caches sorted, to keep looping
+                // over them deterministic (otherwise recently deserialized
+                // instances may behave differently).
+                if (cache.Count > 1)
+                {
+                    cache.Sort((a, b) => a.Id - b.Id);
+                }
                 TypeCache.Add(type, cache);
             }
 
             #endregion
         }
 
-        #endregion
-
-        #region Debugging
-#if DEBUG
-        /// <summary>
-        /// To allow per-component hash validity (serialization validation).
-        /// </summary>
-        public IEnumerable<Component> Components { get { return _components.Values; } } 
-
-        /// <summary>
-        /// To allow per-system hash validity (serialization validation).
-        /// </summary>
-        public IEnumerable<AbstractSystem> Systems { get { return _systems.Values; } } 
-#endif
         #endregion
     }
 }

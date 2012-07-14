@@ -48,7 +48,9 @@ namespace Engine.Simulation.Commands
         /// </returns>
         public virtual Packet Packetize(Packet packet)
         {
-            return packet.Write(PlayerNumber);
+            return packet
+                .Write(IsAuthoritative)
+                .Write(PlayerNumber);
         }
 
         /// <summary>
@@ -57,6 +59,7 @@ namespace Engine.Simulation.Commands
         /// <param name="packet">The packet to read from.</param>
         public virtual void Depacketize(Packet packet)
         {
+            IsAuthoritative = packet.ReadBoolean();
             PlayerNumber = packet.ReadInt32();
         }
 

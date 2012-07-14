@@ -138,7 +138,7 @@ namespace Engine.Session
             // Check for incoming connections.
             while (NumPlayers < MaxPlayers && _tcp.Pending())
             {
-                TcpClient client = _tcp.AcceptTcpClient();
+                var client = _tcp.AcceptTcpClient();
                 client.NoDelay = true;
 
                 // Do not allow connections from the same IP twice, to avoid
@@ -242,7 +242,7 @@ namespace Engine.Session
                 // Not timed out yet. Read a *single* packet from the stream, which
                 // should be the login packet. We don't read as much as we can here,
                 // because we can only handle a single packet anyway.
-                IPacketStream stream = _pending[i].Stream;
+                var stream = _pending[i].Stream;
                 try
                 {
                     using (var packet = stream.Read())

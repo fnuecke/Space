@@ -1,4 +1,5 @@
 ﻿using Engine.ComponentSystem.Components;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -81,6 +82,18 @@ namespace Engine.ComponentSystem.Systems
         protected virtual Matrix GetTransform()
         {
             return Matrix.Identity;
+        }
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// We're purely visual, so don't hash anything.
+        /// </summary>
+        /// <param name="hasher">The hasher to use.</param>
+        public override void Hash(Hasher hasher)
+        {
         }
 
         #endregion

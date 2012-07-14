@@ -35,10 +35,21 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <summary>
         /// Initializes a new instance of the <see cref="MoveBehavior"/> class.
         /// </summary>
-        /// <param name="ai">The ai.</param>
-        public MoveBehavior(ArtificialIntelligence ai)
-            : base(ai, 180)
+        /// <param name="ai">The ai component this behavior belongs to.</param>
+        /// <param name="random">The randomizer to use for decision making.</param>
+        public MoveBehavior(ArtificialIntelligence ai, IUniformRandom random)
+            : base(ai, random, 180)
         {
+        }
+
+        /// <summary>
+        /// Reset this behavior so it can be reused later on.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            Target = Vector2.Zero;
         }
 
         #endregion

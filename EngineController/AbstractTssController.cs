@@ -68,6 +68,11 @@ namespace Engine.Controller
         protected const double TargetElapsedMilliseconds = 1000.0 / 60.0;
 
         /// <summary>
+        /// The interval in ticks after which to send a hash check to the clients.
+        /// </summary>
+        protected const int HashInterval = (int)(10 * TargetElapsedMilliseconds); // ~10 seconds
+
+        /// <summary>
         /// The actual load is multiplied with this factor to provide a little
         /// buffer, allowing server/clients to react to slow downs before the
         /// game becomes unresponsive.
@@ -87,10 +92,6 @@ namespace Engine.Controller
         /// The current 'load', i.e. how much of the available time is actually
         /// needed to perform an update.
         /// </summary>
-        /// <remarks>
-        /// The factor represents a buffer, to start slowing down the
-        /// simulation before it's too late.
-        /// </remarks>
         public override double CurrentLoad { get { return _updateLoad.Mean(); } }
 
         /// <summary>
@@ -169,7 +170,7 @@ namespace Engine.Controller
         protected void UpdateSimulation(GameTime gameTime, double targetSpeed = 1.0)
         {
             // We can run at least one frame, so do the update(s).
-            long begin = DateTime.Now.Ticks;
+            var begin = DateTime.Now.Ticks;
 
             // Time we spent updating. We don't want to take longer than
             // one update should take (i.e. targetTime), to avoid the game
@@ -178,8 +179,8 @@ namespace Engine.Controller
             double timePassed = 0;
 
             // Compensate for dynamic time step.
-            double elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder;
-            double targetFrequency = TargetElapsedMilliseconds / targetSpeed;
+            var elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder;
+            var targetFrequency = TargetElapsedMilliseconds / targetSpeed;
             if (elapsed < targetFrequency)
             {
                 // If we can't actually run to the next frame, at least update
@@ -198,7 +199,7 @@ namespace Engine.Controller
                 // This is how much time we have to catch up for. The number
                 // simulation frames this equates to is:
                 //     remainingTime / targetTime.
-                double remainingTime = elapsed;
+                var remainingTime = elapsed;
 
                 // Do as many updates as we can.
                 while (remainingTime >= targetFrequency && timePassed < targetFrequency)
@@ -439,7 +440,7 @@ namespace Engine.Controller
                 }
 
                 // Deep copy with new instance broken.
-                throw new InvalidProgramException("DeepCopy() implementation resulted in invalid copy.");
+                throw new InvalidProgramException("Copyable implementation resulted in invalid copy.");
             }
 
             using (var packet = new Packet())

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -215,15 +214,17 @@ namespace Engine.Simulation
                     // No such command yet, push it.
                     _commands.Add(frame, new List<Command>());
                 }
-                // We don't need to check for duplicate / replacing authoritative here,
-                // because the sub-simulation will do that itself.
-                _commands[frame].Add(command);
 
-                // Rewind to the frame to retroactively apply changes.
-                if (frame < CurrentFrame)
+                // Rewind to the frame to retroactively apply changes. Only if
+                // necessary, though.
+                if (frame < CurrentFrame && !_commands[frame].Contains(command))
                 {
                     Rewind(frame);
                 }
+
+                // We don't need to check for duplicate / replacing authoritative here,
+                // because the sub-simulation will do that itself.
+                _commands[frame].Add(command);
             }
             else if (command.IsAuthoritative)
             {
@@ -241,85 +242,6 @@ namespace Engine.Simulation
         {
             // Advance the simulation.
             FastForward(gameTime, ++CurrentFrame);
-
-#if DEBUG
-            if (_simulations[0].CurrentFrame > 0 && _simulations[0].CurrentFrame % (_delays[_delays.Length - 1] * 40) == 0)
-            {
-                // Remember the frame.
-                _leadingSnapshotFrame = _simulations[0].CurrentFrame;
-
-                // Get leading hash.
-                var hasher = new Hasher();
-                _simulations[0].Manager.Hash(hasher);
-                _leadingSnapshotHash = hasher.Value;
-
-                // Get copy of leading state.
-                _leadingSnapshot = _leadingSnapshot ?? _simulations[0].NewInstance();
-                _simulations[0].CopyInto(_leadingSnapshot);
-
-                // Validate.
-                hasher = new Hasher();
-                _leadingSnapshot.Manager.Hash(hasher);
-                Debug.Assert(hasher.Value == _leadingSnapshotHash);
-            }
-            // If we joined a game we might trigger a check before generating a checkpoint.
-            if (_leadingSnapshot == null)
-            {
-                return;
-            }
-            for (var i = 1; i < _simulations.Length; ++i)
-            {
-                var simulation = _simulations[i];
-
-                if (simulation.CurrentFrame != _leadingSnapshotFrame)
-                {
-                    continue;
-                }
-
-                var hasher = new Hasher();
-                simulation.Manager.Hash(hasher);
-                if (_leadingSnapshotHash == hasher.Value)
-                {
-                    continue;
-                }
-
-                // Check components to isolate faulty one.
-                foreach (var c1 in ((Manager)simulation.Manager).Components)
-                {
-                    Debug.Assert(_leadingSnapshot.Manager.HasComponent(c1.Id));
-                    var c2 = _leadingSnapshot.Manager.GetComponentById(c1.Id);
-
-                    var h1 = new Hasher();
-                    var h2 = new Hasher();
-
-                    c1.Hash(h1);
-                    c2.Hash(h2);
-
-                    Debug.Assert(h1.Value == h2.Value);
-                }
-                foreach (var c in ((Manager)_leadingSnapshot.Manager).Components)
-                {
-                    Debug.Assert(simulation.Manager.HasComponent(c.Id));
-                }
-
-                // Check systems to isolate faulty one.
-                foreach (var s1 in ((Manager)simulation.Manager).Systems)
-                {
-                    var s2 = _leadingSnapshot.Manager.GetSystem(s1.GetType());
-                    Debug.Assert(s2 != null);
-
-                    var h1 = new Hasher();
-                    var h2 = new Hasher();
-
-                    s1.Hash(h1);
-                    s2.Hash(h2);
-
-                    Debug.Assert(h1.Value == h2.Value);
-                }
-
-                Debug.Assert(_leadingSnapshotHash == hasher.Value, "Simulation not deterministic.");
-            }
-#endif
         }
 
         #endregion
@@ -396,9 +318,14 @@ namespace Engine.Simulation
         /// <param name="packet">the packet to write the data to.</param>
         public Packet Packetize(Packet packet)
         {
-            packet.Write(CurrentFrame)
-                .Write(_simulations[_simulations.Length - 1]);
+            // Write the frame to fast forward to, after unwrapping.
+            packet.Write(CurrentFrame);
 
+            // Write the trailing simulation. We can reconstruct the newer ones
+            // from there.
+            packet.Write(_simulations[_simulations.Length - 1]);
+
+            // Write pending object removals.
             packet.Write(_removes.Count);
             foreach (var remove in _removes)
             {
@@ -410,6 +337,7 @@ namespace Engine.Simulation
                 }
             }
 
+            // Write pending simulation commands.
             packet.Write(_commands.Count);
             foreach (var command in _commands)
             {
@@ -433,7 +361,8 @@ namespace Engine.Simulation
             packet.ReadPacketizableInto(_simulations[_simulations.Length - 1]);
             MirrorSimulation(_simulations[_simulations.Length - 1], _simulations.Length - 2);
 
-            // Find adds / removes / commands that our out of date now, but keep newer ones.
+            // Find adds / removes / commands that our out of date now, but keep
+            // newer ones (that might be locally generated).
             PrunePastEvents();
 
             // Continue with reading the list of removes.
@@ -467,6 +396,7 @@ namespace Engine.Simulation
                 }
             }
 
+            // Got a valid state.
             WaitingForSynchronization = false;
         }
 

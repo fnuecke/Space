@@ -21,17 +21,6 @@ namespace Engine.Simulation
     /// </summary>
     public sealed class DefaultSimulation : AbstractSimulation, IAuthoritativeSimulation
     {
-        #region Logger
-
-#if DEBUG && GAMELOG
-        /// <summary>
-        /// Logger for game log (i.e. steps happening in a simulation).
-        /// </summary>
-        private static NLog.Logger gamelog = NLog.LogManager.GetLogger("GameLog.Simulation");
-#endif
-
-        #endregion
-
         #region Events
 
         /// <summary>

@@ -22,7 +22,7 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// List of all currently registered components.
         /// </summary>
-        protected HashSet<TComponent> Components = new HashSet<TComponent>();
+        protected List<TComponent> Components = new List<TComponent>();
 
         #endregion
 
@@ -114,13 +114,12 @@ namespace Engine.ComponentSystem.Systems
                 if (component is TComponent)
                 {
                     var typedComponent = (TComponent)component;
-                    if (!Components.Contains(typedComponent))
-                    {
-                        Components.Add(typedComponent);
 
-                        // Tell subclasses.
-                        OnComponentAdded(typedComponent);
-                    }
+                    Debug.Assert(!Components.Contains(typedComponent));
+                    Components.Add(typedComponent);
+
+                    // Tell subclasses.
+                    OnComponentAdded(typedComponent);
                 }
             }
             else if (message is ComponentRemoved)
@@ -246,7 +245,7 @@ namespace Engine.ComponentSystem.Systems
         {
             var copy = (AbstractComponentSystem<TComponent>)base.NewInstance();
 
-            copy.Components = new HashSet<TComponent>();
+            copy.Components = new List<TComponent>();
             copy.UpdatingComponents = new List<TComponent>();
 
             return copy;

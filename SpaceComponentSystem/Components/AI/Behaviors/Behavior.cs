@@ -133,6 +133,15 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         protected readonly ArtificialIntelligence AI;
 
         /// <summary>
+        /// The randomizer we use to make pseudo random decisions.
+        /// </summary>
+        /// <remarks>
+        /// The "owner" of this instance is the AI component we belong to,
+        /// so we do not need to take care of serialization or copying.
+        /// </remarks>
+        protected readonly IUniformRandom Random;
+
+        /// <summary>
         /// The poll rate in ticks how often to update this behavior.
         /// </summary>
         private readonly int _pollRate;
@@ -150,11 +159,21 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// Initializes a new instance of the <see cref="Behavior"/> class.
         /// </summary>
         /// <param name="ai">The AI component.</param>
+        /// <param name="random">The randomizer to use for decision making.</param>
         /// <param name="pollRate">The poll rate.</param>
-        protected Behavior(ArtificialIntelligence ai, int pollRate)
+        protected Behavior(ArtificialIntelligence ai, IUniformRandom random, int pollRate)
         {
             AI = ai;
+            Random = random;
             _pollRate = pollRate;
+        }
+
+        /// <summary>
+        /// Reset this behavior so it can be reused later on.
+        /// </summary>
+        public virtual void Reset()
+        {
+            _ticksToWait = 0;
         }
 
         #endregion
@@ -183,7 +202,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             }
 
             // No change, wait a bit with the next update.
-            _ticksToWait = _pollRate;
+            _ticksToWait = _pollRate / 2 + Random.NextInt32(_pollRate);
 
             // Figure out where we want to go.
             var targetPosition = GetTargetPosition();

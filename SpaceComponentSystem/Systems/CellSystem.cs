@@ -275,6 +275,12 @@ namespace Space.ComponentSystem.Systems
             {
                 packet.Write(cellId);
             }
+            packet.Write(_pendingCells.Count);
+            foreach (var pending in _pendingCells)
+            {
+                packet.Write(pending.Key);
+                packet.Write(pending.Value.Ticks);
+            }
 
             return packet;
         }
@@ -286,10 +292,18 @@ namespace Space.ComponentSystem.Systems
         public override void Depacketize(Packet packet)
         {
             _livingCells.Clear();
-            int numCells = packet.ReadInt32();
-            for (int i = 0; i < numCells; i++)
+            var numLiving = packet.ReadInt32();
+            for (var i = 0; i < numLiving; i++)
             {
                 _livingCells.Add(packet.ReadUInt64());
+            }
+            _pendingCells.Clear();
+            var numPending = packet.ReadInt32();
+            for (var i = 0; i < numPending; i++)
+            {
+                var cell = packet.ReadUInt64();
+                var time = new DateTime(packet.ReadInt64());
+                _pendingCells.Add(cell, time);
             }
         }
 

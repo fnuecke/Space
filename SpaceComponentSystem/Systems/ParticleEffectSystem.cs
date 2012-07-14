@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -241,6 +242,18 @@ namespace Space.ComponentSystem.Systems
                 _effects.Add(effectName, effect);
             }
             return _effects[effectName];
+        }
+
+        #endregion
+
+        #region Serialization
+
+        /// <summary>
+        /// We're purely visual, so don't hash anything.
+        /// </summary>
+        /// <param name="hasher">The hasher to use.</param>
+        public override void Hash(Hasher hasher)
+        {
         }
 
         #endregion

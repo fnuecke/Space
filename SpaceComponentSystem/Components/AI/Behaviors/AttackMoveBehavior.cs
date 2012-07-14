@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Util;
 using Space.ComponentSystem.Systems;
 
 namespace Space.ComponentSystem.Components.AI.Behaviors
@@ -26,9 +27,10 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <summary>
         /// Initializes a new instance of the <see cref="AttackMoveBehavior"/> class.
         /// </summary>
-        /// <param name="ai">The ai.</param>
-        public AttackMoveBehavior(ArtificialIntelligence ai)
-            : base(ai)
+        /// <param name="ai">The ai component this behavior belongs to.</param>
+        /// <param name="random">The randomizer to use for decision making.</param>
+        public AttackMoveBehavior(ArtificialIntelligence ai, IUniformRandom random)
+            : base(ai, random)
         {
         }
 

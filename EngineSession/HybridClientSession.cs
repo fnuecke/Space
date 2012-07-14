@@ -505,14 +505,14 @@ namespace Engine.Session
                         // Allocate array for the players in the session.
                         Players = new Player[MaxPlayers];
 
-                        // Get other game relevant data (e.g. game state).
+                        // Get other game relevant data.
                         using (var joinData = packet.ReadPacket())
                         {
                             // Get info on players already in the session, including us.
-                            for (int i = 0; i < NumPlayers; i++)
+                            for (var i = 0; i < NumPlayers; i++)
                             {
                                 // Get player number.
-                                int playerNumber = packet.ReadInt32();
+                                var playerNumber = packet.ReadInt32();
 
                                 // Sanity checks.
                                 if (playerNumber < 0 || playerNumber >= MaxPlayers || Players[playerNumber] != null)
@@ -521,7 +521,7 @@ namespace Engine.Session
                                 }
 
                                 // Get player name.
-                                string playerName = packet.ReadString();
+                                var playerName = packet.ReadString();
 
                                 // Get additional player data.
                                 var playerData = packet.ReadPacketizable<TPlayerData>();
@@ -564,7 +564,7 @@ namespace Engine.Session
                     if (ConnectionState == ClientState.Connected)
                     {
                         // Get player number.
-                        int playerNumber = packet.ReadInt32();
+                        var playerNumber = packet.ReadInt32();
 
                         // Sanity checks.
                         if (playerNumber < 0 || playerNumber >= MaxPlayers || Players[playerNumber] != null)
@@ -591,7 +591,7 @@ namespace Engine.Session
                     if (ConnectionState == ClientState.Connected)
                     {
                         // Get player number.
-                        int playerNumber = packet.ReadInt32();
+                        var playerNumber = packet.ReadInt32();
 
                         // Sanity checks.
                         if (!HasPlayer(playerNumber))

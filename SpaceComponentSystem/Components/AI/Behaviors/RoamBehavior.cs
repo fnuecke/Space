@@ -16,18 +16,28 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </summary>
         public Rectangle Area;
 
-        /// <summary>
-        /// The randomizer we use to pick where to go next.
-        /// </summary>
-        private readonly MersenneTwister _random = new MersenneTwister(0);
-
         #endregion
 
         #region Constructor
-        
-        public RoamBehavior(ArtificialIntelligence ai)
-            : base(ai, 0)
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RoamBehavior"/> class.
+        /// </summary>
+        /// <param name="ai">The ai component this behavior belongs to.</param>
+        /// <param name="random">The randomizer to use for decision making.</param>
+        public RoamBehavior(ArtificialIntelligence ai, IUniformRandom random)
+            : base(ai, random, 0)
         {
+        }
+
+        /// <summary>
+        /// Reset this behavior so it can be reused later on.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            Area = Rectangle.Empty;
         }
 
         #endregion
@@ -45,8 +55,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         {
             // We got here, so we have to pick a new destination.
             Vector2 target;
-            target.X = _random.NextInt32(Area.Left, Area.Right);
-            target.Y = _random.NextInt32(Area.Top, Area.Bottom);
+            target.X = Random.NextInt32(Area.Left, Area.Right);
+            target.Y = Random.NextInt32(Area.Top, Area.Bottom);
 
             // And move towards it.
             AI.AttackMove(ref target);
@@ -69,8 +79,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Area)
-                .Write(_random);
+                .Write(Area);
         }
 
         /// <summary>
@@ -82,7 +91,6 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             base.Depacketize(packet);
 
             Area = packet.ReadRectangle();
-            packet.ReadPacketizableInto(_random);
         }
 
         /// <summary>
@@ -95,7 +103,6 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             base.Hash(hasher);
 
             hasher.Put(Area);
-            hasher.Put(_random);
         }
 
         #endregion
@@ -114,7 +121,6 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var copy = (RoamBehavior)into;
 
             copy.Area = Area;
-            _random.CopyInto(copy._random);
         }
 
         #endregion
