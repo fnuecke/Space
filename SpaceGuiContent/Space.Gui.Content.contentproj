@@ -61,11 +61,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Screens\js\jquery-1.7.1.js">
-      <Name>jquery-1.7.1</Name>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Screens\MainMenu\MainMenu.html">
       <Name>MainMenu</Name>
     </Compile>
@@ -378,14 +373,18 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Screens\js\jquery-1.7.2.js">
+    <Compile Include="Screens\General\jquery-1.7.2.js">
       <Name>jquery-1.7.2</Name>
       <Importer>AwesomiumImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Screens\css\" />
+    <Content Include="Screens\General\Reset.css">
+      <Name>Reset</Name>
+      <Importer>AwesomiumImporter</Importer>
+      <Processor>PassThroughProcessor</Processor>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
