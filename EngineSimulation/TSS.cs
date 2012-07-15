@@ -63,7 +63,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Get the trailing simulation.
         /// </summary>
-        private IAuthoritativeSimulation TrailingSimulation { get { return _simulations[_simulations.Length - 1]; } }
+        public IAuthoritativeSimulation TrailingSimulation { get { return _simulations[_simulations.Length - 1]; } }
 
         /// <summary>
         /// Get the leading simulation.
@@ -104,24 +104,6 @@ namespace Engine.Simulation
         /// given frame.
         /// </summary>
         private readonly Dictionary<long, List<Command>> _commands = new Dictionary<long, List<Command>>();
-
-#if DEBUG
-        /// <summary>
-        /// Hash of the leading state the last time it reached a check point.
-        /// </summary>
-        private int _leadingSnapshotHash;
-
-        /// <summary>
-        /// Copy of the leading simulation at the time of hashing, to allow
-        /// comparing components / systems on check fail.
-        /// </summary>
-        private ISimulation _leadingSnapshot;
-
-        /// <summary>
-        /// The frame in which the snapshot of the leading simulation was made.
-        /// </summary>
-        private long _leadingSnapshotFrame;
-#endif
 
         #endregion
 
@@ -222,9 +204,27 @@ namespace Engine.Simulation
                     Rewind(frame);
                 }
 
-                // We don't need to check for duplicate / replacing authoritative here,
-                // because the sub-simulation will do that itself.
-                _commands[frame].Add(command);
+                // Sort the commands by their ID, to get a deterministic order of
+                // command execution.
+                var index = _commands[frame].BinarySearch(command);
+                if (index < 0)
+                {
+                    // Command is not yet known, just insert it.
+                    _commands[frame].Insert(~index, command);
+                }
+                else
+                {
+                    // Command is already known, see if we can replace it because the
+                    // new command is authoritative and the old one wasn't.
+                    if (!_commands[frame][index].IsAuthoritative && command.IsAuthoritative)
+                    {
+                        // We already have that command, but it's not authoritative,
+                        // yet this one is, so we'll replace it.
+                        _commands[frame].Insert(index, command);
+                        _commands[frame].RemoveAt(index + 1);
+                    }
+                    // else: we already have an authoritative one!
+                }
             }
             else if (command.IsAuthoritative)
             {
@@ -390,10 +390,7 @@ namespace Engine.Simulation
                 {
                     _commands.Add(key, new List<Command>());
                 }
-                foreach (var command in packet.ReadPacketizablesWithTypeInfo<Command>())
-                {
-                    _commands[key].Add(command);
-                }
+                _commands[key].AddRange(packet.ReadPacketizablesWithTypeInfo<Command>());
             }
 
             // Got a valid state.
@@ -622,10 +619,6 @@ namespace Engine.Simulation
                 _simulations[i] = _simulations[i] ?? (IAuthoritativeSimulation)state.NewInstance();
                 state.CopyInto(_simulations[i]);
             }
-#if DEBUG
-            _leadingSnapshotFrame = 0;
-            _leadingSnapshot = null;
-#endif
         }
 
         /// <summary>
@@ -700,6 +693,43 @@ namespace Engine.Simulation
         /// </summary>
         private sealed class TSSEntityManager : IManager
         {
+            #region Properties
+
+            /// <summary>
+            /// A list of all components currently registered with this manager,
+            /// in order of their ID.
+            /// </summary>
+            public IEnumerable<Component> Components
+            {
+                get { return _tss.LeadingSimulation.Manager.Components; }
+            }
+
+            /// <summary>
+            /// The number of components registered with this manager.
+            /// </summary>
+            public int NumComponents
+            {
+                get { return _tss.LeadingSimulation.Manager.NumComponents; }
+            }
+
+            /// <summary>
+            /// A list of all systems registered with this manager.
+            /// </summary>
+            public IEnumerable<AbstractSystem> Systems
+            {
+                get { return _tss.LeadingSimulation.Manager.Systems; }
+            }
+
+            /// <summary>
+            /// The number of systems registered with this manager.
+            /// </summary>
+            public int NumSystems
+            {
+                get { return _tss.LeadingSimulation.Manager.NumSystems; }
+            }
+
+            #endregion
+
             #region Fields
 
             /// <summary>
@@ -1026,7 +1056,6 @@ namespace Engine.Simulation
             /// <param name="packet">The packet to read from.</param>
             public void Depacketize(Packet packet)
             {
-                throw new NotSupportedException();
             }
 
             /// <summary>
@@ -1036,7 +1065,7 @@ namespace Engine.Simulation
             /// <param name="hasher">The hasher to push data to.</param>
             public void Hash(Hasher hasher)
             {
-                _tss.LeadingSimulation.Manager.Hash(hasher);
+                throw new NotSupportedException();
             }
 
             #endregion

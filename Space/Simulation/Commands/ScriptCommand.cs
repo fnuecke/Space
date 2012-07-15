@@ -1,6 +1,5 @@
 ﻿namespace Space.Simulation.Commands
 {
-#if DEBUG
     /// <summary>
     /// Used to inject debugging commands into the simulation.
     /// </summary>
@@ -71,22 +70,5 @@
         }
 
         #endregion
-
-        #region Equality
-
-        /// <summary>
-        /// Tests for equality with the specified object.
-        /// </summary>
-        /// <param name="other">The object to test for equality with.</param>
-        /// <returns>Whether this and the specified object are equal.</returns>
-        public override bool Equals(Engine.Simulation.Commands.Command other)
-        {
-            return other is ScriptCommand &&
-                base.Equals(other) &&
-                ((ScriptCommand)other).Script.Equals(this.Script);
-        }
-
-        #endregion
     }
-#endif
 }

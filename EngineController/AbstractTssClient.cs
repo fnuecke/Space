@@ -30,11 +30,18 @@ namespace Engine.Controller
         /// server. The lower the value the better the synchronization, but, obviously, also
         /// more network traffic.
         /// </summary>
-        private const int SyncInterval = 500;
+        private const int SyncInterval = 1000;
 
         #endregion
 
         #region Fields
+
+        /// <summary>
+        /// Next unique command ID to use. It's OK if this overflows, because any commands
+        /// that old will no longer be relevant (it's unlikely this will happen in a single
+        /// game, anyway).
+        /// </summary>
+        private int _nextCommandId = int.MinValue;
 
         /// <summary>
         /// Last time we sent a sync command to the server.
@@ -53,6 +60,12 @@ namespace Engine.Controller
         /// server (to detect desyncs).
         /// </summary>
         private readonly Dictionary<long, int> _hashes = new Dictionary<long, int>();
+
+        /// <summary>
+        /// Only used for debugging, allows comparing individual system and
+        /// component hashes to figure out where the hashing failed.
+        /// </summary>
+        private readonly Dictionary<long, Tuple<List<int>, List<int>>> _individualHashes = new Dictionary<long, Tuple<List<int>, List<int>>>();
 
         /// <summary>
         /// The frame of the latest hash we got from the server (don't store
@@ -118,38 +131,142 @@ namespace Engine.Controller
                 // Generate hash.
                 var hasher = new Hasher();
                 Tss.Hash(hasher);
-
-                // Check if we have that frame, meaning we have to compare to it now.
-                if (_hashes.ContainsKey(Tss.TrailingFrame))
-                {
-                    // Got a server hash, check it.
-                    if (hasher.Value != _hashes[Tss.TrailingFrame])
-                    {
-                        Logger.Warn("Hash mismatch! Resynchronizing...");
-                        Tss.Invalidate();
-                    }
-                }
-                else if (Tss.TrailingFrame > _lastServerHashFrame)
-                {
-                    // Otherwise store it, but only if it's newer than what we
-                    // got from the server.
-                    _hashes[Tss.TrailingFrame] = hasher.Value;
-                }
+                PerformHashCheck(hasher.Value, Tss.TrailingFrame, Tss.TrailingFrame > _lastServerHashFrame, GenerateSingleHashes);
             }
 
             // Send sync command every now and then, to keep game clock synchronized.
             // No need to sync for a server that runs in the same program, though.
             if (new TimeSpan(DateTime.Now.Ticks - _lastSyncTime).TotalMilliseconds > SyncInterval)
             {
-                _lastSyncTime = DateTime.Now.Ticks;
-                using (var packet = new Packet())
-                {
-                    Session.Send(packet
-                                     .Write((byte)TssControllerMessage.Synchronize)
-                                     .Write(Tss.CurrentFrame)
-                                     .Write((float)SafeLoad));
-                }
+                PerformSync();
             }
+        }
+
+        private delegate Tuple<List<int>, List<int>> SingleHashesGenerator();
+
+        /// <summary>
+        /// Perform a hash check by hashing the local simulation and testing against
+        /// the value of our server (or vice versa).
+        /// </summary>
+        /// <returns>Whether the hash was <b>stored</b> or not.</returns>
+        private void PerformHashCheck(int hashValue, long hashFrame, bool store, SingleHashesGenerator generator)
+        {
+            // See if we have that frame, meaning we have to compare to it now.
+            if (_hashes.ContainsKey(hashFrame))
+            {
+                // Got a hash, check it.
+                if (hashValue != _hashes[hashFrame])
+                {
+                    Logger.Warn("Hash mismatch! Resynchronizing...");
+                    CompareSingleHashes(hashFrame, generator);
+                    Tss.Invalidate();
+                }
+                _individualHashes.Remove(hashFrame);
+                _hashes.Remove(hashFrame);
+            }
+            else if (store)
+            {
+                // Otherwise store it, but only if it's newer than what we
+                // got from the server.
+                _hashes[hashFrame] = hashValue;
+                WriteSingleHashes(hashFrame, generator);
+            }
+        }
+        
+        /// <summary>
+        /// Initialize a synchronization with the server by sending our current
+        /// frame and load.
+        /// </summary>
+        private void PerformSync()
+        {
+            _lastSyncTime = DateTime.Now.Ticks;
+            using (var packet = new Packet())
+            {
+                packet
+                    .Write((byte)TssControllerMessage.Synchronize)
+                    .Write(Tss.CurrentFrame)
+                    .Write((float)SafeLoad);
+                Session.Send(packet);
+            }
+        }
+
+        /// <summary>
+        /// Compare individual hashes for the specified frame.
+        /// </summary>
+        /// <param name="hashFrame">The frame to compare for.</param>
+        /// <param name="generator">The method to use to get hashes to compare the known hashes to.</param>
+        [Conditional("DEBUG")]
+        private void CompareSingleHashes(long hashFrame, SingleHashesGenerator generator)
+        {
+            var hashes = generator();
+            var otherHashes = _individualHashes[hashFrame];
+            for (var i = 0; i < Math.Min(hashes.Item1.Count, otherHashes.Item1.Count); ++i)
+            {
+                Debug.Assert(hashes.Item1[i] == otherHashes.Item1[i]);
+            }
+            for (var i = 0; i < Math.Min(hashes.Item2.Count, otherHashes.Item2.Count); ++i)
+            {
+                Debug.Assert(hashes.Item2[i] == otherHashes.Item2[i]);
+            }
+        }
+
+        /// <summary>
+        /// Wrapped into own method for conditional execution.
+        /// </summary>
+        /// <param name="hashFrame">The frame to write the hashes for.</param>
+        /// <param name="generator">The generator to use for getting the hashes.</param>
+        [Conditional("DEBUG")]
+        private void WriteSingleHashes(long hashFrame, SingleHashesGenerator generator)
+        {
+            _individualHashes[hashFrame] = generator();
+        }
+
+        /// <summary>
+        /// Generate individual hashes from local simulation if we reach a hash
+        /// frame before we get the reference value from the server.
+        /// </summary>
+        /// <returns>The system and component hashes.</returns>
+        private Tuple<List<int>, List<int>> GenerateSingleHashes()
+        {
+            var systemHashes = new List<int>(Tss.TrailingSimulation.Manager.NumSystems);
+            foreach (var system in Tss.TrailingSimulation.Manager.Systems)
+            {
+                var hasher = new Hasher();
+                system.Hash(hasher);
+                systemHashes.Add(hasher.Value);
+            }
+            var componentHashes = new List<int>(Tss.TrailingSimulation.Manager.NumSystems);
+            foreach (var component in Tss.TrailingSimulation.Manager.Components)
+            {
+                var hasher = new Hasher();
+                component.Hash(hasher);
+                componentHashes.Add(hasher.Value);
+            }
+            return Tuple.Create(systemHashes, componentHashes);
+        }
+
+        /// <summary>
+        /// Reads individual hashes from packet in case we get server hash frame
+        /// before we reach it locally.
+        /// </summary>
+        /// <param name="packet">The packet to read from.</param>
+        /// <returns>The system and component hashes.</returns>
+        private static Tuple<List<int>, List<int>> ReadSingleHashes( Packet packet)
+        {
+            var numSystems = packet.ReadInt32();
+            var serverHashes = new List<int>(numSystems);
+            for (var i = 0; i < numSystems; ++i)
+            {
+                serverHashes.Add(packet.ReadInt32());
+            }
+            var numComponents = packet.ReadInt32();
+            var componentHashes = new List<int>(numComponents);
+            for (var i = 0; i < numComponents; ++i)
+            {
+                componentHashes.Add(packet.ReadInt32());
+            }
+
+            return Tuple.Create(serverHashes, componentHashes);
         }
 
         #endregion
@@ -163,6 +280,7 @@ namespace Engine.Controller
         /// </summary>
         public void PushLocalCommand(FrameCommand command)
         {
+            command.Id = _nextCommandId++;
             command.PlayerNumber = Session.LocalPlayer.Number;
             command.Frame = Tss.CurrentFrame + 1;
             Apply(command);
@@ -262,7 +380,8 @@ namespace Engine.Controller
                         {
                             Logger.Debug("Correcting for {0} frames.", frameDelta);
                             // Adjust the current frame of the simulation.
-                            Tss.RunToFrame(new GameTime(), Tss.CurrentFrame + frameDelta);
+                            //Tss.RunToFrame(new GameTime(), Tss.CurrentFrame + frameDelta);
+                            ScheduleFrameskip(frameDelta);
                         }
                     }
                     break;
@@ -277,22 +396,7 @@ namespace Engine.Controller
                         Debug.Assert(hashFrame > _lastServerHashFrame);
                         _lastServerHashFrame = hashFrame;
 
-                        // See if we can test right away or have to store it to wait
-                        // until the local trailing simulation reaches that frame.
-                        if (_hashes.ContainsKey(hashFrame))
-                        {
-                            // Check now.
-                            if (hashValue != _hashes[hashFrame])
-                            {
-                                Logger.Warn("Hash mismatch! Resynchronizing...");
-                                Tss.Invalidate();
-                            }
-                        }
-                        else
-                        {
-                            // Store for later.
-                            _hashes[hashFrame] = hashValue;
-                        }
+                        PerformHashCheck(hashValue, hashFrame, Tss.TrailingFrame < _lastServerHashFrame, () => ReadSingleHashes(args.Data));
                     }
                     break;
 

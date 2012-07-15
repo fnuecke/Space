@@ -329,9 +329,9 @@ namespace Engine.Util
         {
             for (var i = 0; i < N; i++)
             {
-                hasher.Put(BitConverter.GetBytes(_mt[i]));
+                hasher.Put(_mt[i]);
             }
-            hasher.Put(BitConverter.GetBytes(_index));
+            hasher.Put(_index);
         }
 
         #endregion

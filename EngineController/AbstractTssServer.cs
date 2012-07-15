@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
@@ -104,11 +105,19 @@ namespace Engine.Controller
             // We want to use the trailing frame for this because at this point it's
             // guaranteed not to change anymore (from incoming commands -- they will be
             // discarded now).
-            if (Tss.TrailingFrame <= _lastHashCheck || ((Tss.TrailingFrame % HashInterval) != 0))
+            if (Tss.TrailingFrame > _lastHashCheck && ((Tss.TrailingFrame % HashInterval) == 0))
             {
-                return;
+                PerformHashCheck();
             }
+        }
 
+        /// <summary>
+        /// Perform a hash check by hashing the local simulation and sending the value
+        /// to our clients so they can compare it to the hash of their simulation at
+        /// that frame.
+        /// </summary>
+        private void PerformHashCheck()
+        {
             // Update last checked frame.
             _lastHashCheck = Tss.TrailingFrame;
 
@@ -119,10 +128,36 @@ namespace Engine.Controller
             // Send message.
             using (var packet = new Packet())
             {
-                Session.Send(packet
-                                 .Write((byte)TssControllerMessage.HashCheck)
-                                 .Write(Tss.TrailingFrame)
-                                 .Write(hasher.Value));
+                packet
+                    .Write((byte)TssControllerMessage.HashCheck)
+                    .Write(Tss.TrailingFrame)
+                    .Write(hasher.Value);
+                WriteSingleHashes(packet);
+                Session.Send(packet);
+            }
+        }
+
+        /// <summary>
+        /// For debugging only, writes the hashes for the individual systems and components,
+        /// to figure out where the hash check failed.
+        /// </summary>
+        /// <param name="packet">The packet to write the hashes to.</param>
+        [Conditional("DEBUG")]
+        private void WriteSingleHashes(Packet packet)
+        {
+            packet.Write(Tss.TrailingSimulation.Manager.NumSystems);
+            foreach (var system in Tss.TrailingSimulation.Manager.Systems)
+            {
+                var hasher = new Hasher();
+                system.Hash(hasher);
+                packet.Write(hasher.Value);
+            }
+            packet.Write(Tss.TrailingSimulation.Manager.NumComponents);
+            foreach (var component in Tss.TrailingSimulation.Manager.Components)
+            {
+                var hasher = new Hasher();
+                component.Hash(hasher);
+                packet.Write(hasher.Value);
             }
         }
         

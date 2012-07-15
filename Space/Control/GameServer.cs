@@ -113,7 +113,10 @@ namespace Space.Control
 
             // Push the command to restore the player's profile. This will
             // create the player's avatar and restore his stats and items.
-            Controller.Simulation.PushCommand(new RestoreProfileCommand(e.Player.Number, profile, Controller.Simulation.CurrentFrame));
+            // We use the bitwise complement of the player number while storing
+            // it in the command, so as not to interfere with sorting (as we
+            // won't assign an id to the command).
+            Controller.Simulation.PushCommand(new RestoreProfileCommand(~e.Player.Number, profile, Controller.Simulation.CurrentFrame));
         }
 
         #endregion

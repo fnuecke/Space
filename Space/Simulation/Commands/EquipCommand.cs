@@ -67,23 +67,5 @@ namespace Space.Simulation.Commands
         }
 
         #endregion
-
-        #region Equals
-
-        /// <summary>
-        /// Indicates whether the current object is equal to another object of the same type.
-        /// </summary>
-        /// <param name="other">An object to compare with this object.</param>
-        /// <returns>
-        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
-        /// </returns>
-        public override bool Equals(Command other)
-        {
-            return base.Equals(other) &&
-                InventoryIndex == ((EquipCommand)other).InventoryIndex &&
-                Slot == ((EquipCommand)other).Slot;
-        }
-
-        #endregion
     }
 }

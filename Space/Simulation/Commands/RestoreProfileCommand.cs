@@ -24,9 +24,9 @@ namespace Space.Simulation.Commands
         public RestoreProfileCommand(int playerNumber, Profile profile, long frame)
             : base(SpaceCommandType.RestoreProfile)
         {
-            this.PlayerNumber = playerNumber;
-            this.Frame = frame;
-            this.Profile = profile;
+            PlayerNumber = playerNumber;
+            Frame = frame;
+            Profile = profile;
         }
 
         public RestoreProfileCommand()
@@ -60,25 +60,6 @@ namespace Space.Simulation.Commands
             base.Depacketize(packet);
 
             Profile = packet.ReadPacketizable<Profile>();
-        }
-
-        #endregion
-
-        #region Equality
-
-        /// <summary>
-        /// Indicates whether the current object is equal to another object of the same type.
-        /// </summary>
-        /// <param name="other">An object to compare with this object.</param>
-        /// <returns>
-        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
-        /// </returns>
-        public override bool Equals(Command other)
-        {
-            return base.Equals(other) &&
-                   (Profile == null
-                        ? ((RestoreProfileCommand)other).Profile == null
-                        : Profile.Equals(((RestoreProfileCommand)other).Profile));
         }
 
         #endregion

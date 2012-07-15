@@ -80,8 +80,8 @@ namespace Space.Simulation.Commands
         public PlayerInputCommand(PlayerInputCommandType input, Vector2 value)
             : base(SpaceCommandType.PlayerInput)
         {
-            this.Input = input;
-            this.Value = value;
+            Input = input;
+            Value = value;
         }
 
         /// <summary>
@@ -132,23 +132,6 @@ namespace Space.Simulation.Commands
 
             Input = (PlayerInputCommandType)packet.ReadByte();
             Value = packet.ReadVector2();
-        }
-
-        #endregion
-
-        #region Equality
-
-        /// <summary>
-        /// Tests for equality with the specified object.
-        /// </summary>
-        /// <param name="other">The object to test for equality with.</param>
-        /// <returns>Whether this and the specified object are equal.</returns>
-        public override bool Equals(Command other)
-        {
-            return other is PlayerInputCommand &&
-                base.Equals(other) &&
-                ((PlayerInputCommand)other).Input == this.Input &&
-                ((PlayerInputCommand)other).Value == this.Value;
         }
 
         #endregion

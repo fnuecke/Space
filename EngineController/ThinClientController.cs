@@ -51,6 +51,13 @@ namespace Engine.Controller
         /// </summary>
         private readonly ISimulationController<IServerSession> _server;
 
+        /// <summary>
+        /// Next unique command ID to use. It's OK if this overflows, because any commands
+        /// that old will no longer be relevant (it's unlikely this will happen in a single
+        /// game, anyway).
+        /// </summary>
+        private int _nextCommandId = int.MinValue;
+
         #endregion
 
         #region Constructor
@@ -125,6 +132,7 @@ namespace Engine.Controller
         /// <param name="command">The command.</param>
         public void PushLocalCommand(FrameCommand command)
         {
+            command.Id = _nextCommandId++;
             command.PlayerNumber = Session.LocalPlayer.Number;
             command.Frame = _server.Simulation.CurrentFrame + 1;
             Send(command);

@@ -60,22 +60,8 @@ namespace Engine.Simulation
         /// <param name="command">the command to apply.</param>
         public virtual void PushCommand(Command command)
         {
-            // There's a chance we have that command in a tentative version. Let's check.
-            int index = Commands.FindIndex(x => x.Equals(command));
-            if (index >= 0)
-            {
-                // Already there! Use the authoritative one (or if neither is do nothing).
-                if (!Commands[index].IsAuthoritative && command.IsAuthoritative)
-                {
-                    Commands.RemoveAt(index);
-                    Commands.Insert(index, command);
-                }
-            }
-            else
-            {
-                // New one, append.
-                Commands.Add(command);
-            }
+            Debug.Assert(!Commands.Contains(command));
+            Commands.Add(command);
         }
 
         #endregion

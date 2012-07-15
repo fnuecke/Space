@@ -5,7 +5,6 @@ namespace Space.Simulation.Commands
 {
     public sealed class DropCommand : FrameCommand
     {
-        
         #region Fields
 
         /// <summary>
@@ -17,23 +16,24 @@ namespace Space.Simulation.Commands
         /// The Source of the command
         /// </summary>
         public Source Source;
-        
+
         #endregion
 
-        public DropCommand(int slot,Source source)
-            :base(SpaceCommandType.DropItem)
+        #region Constructor
+
+        public DropCommand(int slot, Source source)
+            : base(SpaceCommandType.DropItem)
         {
             InventoryIndex = slot;
             Source = source;
         }
 
         public DropCommand()
-            :this(-1,Source.None)
+            : this(-1, Source.None)
         {
-            
         }
 
-
+        #endregion
 
         #region Serialization
 
@@ -61,24 +61,6 @@ namespace Space.Simulation.Commands
 
             InventoryIndex = packet.ReadInt32();
             Source = (Source)packet.ReadInt32();
-        }
-
-        #endregion
-
-        #region Equals
-
-        /// <summary>
-        /// Indicates whether the current object is equal to another object of the same type.
-        /// </summary>
-        /// <param name="other">An object to compare with this object.</param>
-        /// <returns>
-        /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
-        /// </returns>
-        public override bool Equals(Command other)
-        {
-            return base.Equals(other) &&
-                InventoryIndex == ((DropCommand)other).InventoryIndex &&
-                Source == ((DropCommand)other).Source;
         }
 
         #endregion

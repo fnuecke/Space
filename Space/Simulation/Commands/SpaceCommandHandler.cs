@@ -155,7 +155,7 @@ def setBaseStat(type, value):
         private static void RestoreProfile(RestoreProfileCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(~command.PlayerNumber);
 
             // Only allow loading once a session, so skip if he already has an avatar.
             if (avatar.HasValue)
@@ -166,7 +166,7 @@ def setBaseStat(type, value):
             {
                 lock (command.Profile)
                 {
-                    command.Profile.Restore(command.PlayerNumber, manager);
+                    command.Profile.Restore(~command.PlayerNumber, manager);
                 }
             }
         }

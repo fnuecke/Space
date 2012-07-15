@@ -278,8 +278,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         protected virtual float GetTargetRotation(ref Vector2 direction)
         {
             // Per default just head the way we're flying.
-            var flightDirection = direction - AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
-            return (float)Math.Atan2(flightDirection.Y, flightDirection.X);
+            return (float)Math.Atan2(direction.Y, direction.X);
         }
 
         #endregion

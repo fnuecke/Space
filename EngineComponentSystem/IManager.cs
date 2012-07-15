@@ -13,6 +13,31 @@ namespace Engine.ComponentSystem
     /// </summary>
     public interface IManager : IPacketizable, IHashable, ICopyable<IManager>
     {
+        #region Properties
+
+        /// <summary>
+        /// A list of all components currently registered with this manager,
+        /// in order of their ID.
+        /// </summary>
+        IEnumerable<Component> Components { get; }
+
+        /// <summary>
+        /// The number of components registered with this manager.
+        /// </summary>
+        int NumComponents { get; }
+
+        /// <summary>
+        /// A list of all systems registered with this manager.
+        /// </summary>
+        IEnumerable<AbstractSystem> Systems { get; }
+
+        /// <summary>
+        /// The number of systems registered with this manager.
+        /// </summary>
+        int NumSystems { get; }
+
+        #endregion
+
         #region Logic
 
         /// <summary>

@@ -8,6 +8,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+
 namespace Engine.ComponentSystem
 {
     /// <summary>
@@ -16,7 +17,6 @@ namespace Engine.ComponentSystem
     /// </summary>
     public sealed class Manager : IManager
     {
-
         #region Properties
 
         /// <summary>
@@ -25,19 +25,32 @@ namespace Engine.ComponentSystem
         /// </summary>
         public IEnumerable<Component> Components
         {
-            get
-            {
-                foreach (var componentId in _componentIds)
-                {
-                    yield return _components[componentId];
-                }
-            }
+            get { return _components; }
+        }
+
+        /// <summary>
+        /// The number of components registered with this manager.
+        /// </summary>
+        public int NumComponents
+        {
+            get { return _components.Count; }
         }
 
         /// <summary>
         /// A list of all systems registered with this manager.
         /// </summary>
-        public IEnumerable<AbstractSystem> Systems { get { return _systems; } }
+        public IEnumerable<AbstractSystem> Systems
+        {
+            get { return _systems; }
+        }
+
+        /// <summary>
+        /// The number of systems registered with this manager.
+        /// </summary>
+        public int NumSystems
+        {
+            get { return _systems.Count; }
+        }
 
         #endregion
 
@@ -59,9 +72,9 @@ namespace Engine.ComponentSystem
         private readonly Dictionary<int, Entity> _entities = new Dictionary<int, Entity>();
 
         /// <summary>
-        /// Component mapping id to instance (because there can be gaps
+        /// List of all components in this system, sorted by id.
         /// </summary>
-        private readonly Dictionary<int, Component> _components = new Dictionary<int, Component>();
+        private readonly List<Component> _components = new List<Component>();
 
         /// <summary>
         /// List of systems registered with this manager.
@@ -295,7 +308,7 @@ namespace Engine.ComponentSystem
             component.Id = _componentIds.GetId();
             component.Entity = entity;
             component.Enabled = true;
-            _components[component.Id] = component;
+            _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
 
             // Add to entity index.
             _entities[entity].Add(component);
@@ -339,7 +352,7 @@ namespace Engine.ComponentSystem
 
             // Remove it from the mapping and release the id for reuse.
             _entities[component.Entity].Remove(component);
-            _components.Remove(component.Id);
+            _components.RemoveAt(_components.BinarySearch(component, ComponentComparer.Instance));
             _componentIds.ReleaseId(component.Id);
 
             // Send a message to all interested systems.
@@ -400,7 +413,34 @@ namespace Engine.ComponentSystem
                 throw new ArgumentException("No such component in the system.", "componentId");
             }
 
-            return _components[componentId];
+            // Manual binary search because we don't have an actual component,
+            // and the list built-in one requires the search arg to be the
+            // same type as the stored value.
+            // Implementation from https://en.wikibooks.org/wiki/Algorithm_Implementation/Search/Binary_search#C.23_.28common_Algorithm.29
+            int low = 0, high = _components.Count - 1;
+            while (low <= high)
+            {
+                var midpoint = low + (high - low) / 2;
+
+                // Check to see if value is equal to item in array.
+                if (componentId == _components[midpoint].Id)
+                {
+                    return _components[midpoint];
+                }
+
+                // Otherwise continue search in respective array segment.
+                if (componentId < _components[midpoint].Id)
+                {
+                    high = midpoint - 1;
+                }
+                else
+                {
+                    low = midpoint + 1;
+                }
+            }
+
+            // This should never ever happen.
+            throw new InvalidOperationException("Manager is broken: component not found even though it should exist.");
         }
 
         /// <summary>
@@ -460,7 +500,7 @@ namespace Engine.ComponentSystem
             // entity to component mapping as well, so we don't need to write
             // the entity mapping.
             packet.Write(_components.Count);
-            foreach (var component in Components)
+            foreach (var component in _components)
             {
                 packet.Write(component.GetType().AssemblyQualifiedName);
                 packet.Write(component);
@@ -491,7 +531,7 @@ namespace Engine.ComponentSystem
                 ReleaseEntity(entity);
             }
             _entities.Clear();
-            foreach (var component in _components.Values)
+            foreach (var component in _components)
             {
                 ReleaseComponent(component);
             }
@@ -515,7 +555,7 @@ namespace Engine.ComponentSystem
 
                 var component = packet.ReadPacketizableInto(AllocateComponent(type));
                 component.Manager = this;
-                _components.Add(component.Id, component);
+                _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
 
                 // Add to entity mapping, create entries as necessary.
                 if (!_entities.ContainsKey(component.Entity))
@@ -563,9 +603,9 @@ namespace Engine.ComponentSystem
             {
                 system.Hash(hasher);
             }
-            foreach (var componentId in _componentIds)
+            foreach (var component in _components)
             {
-                _components[componentId].Hash(hasher);
+                component.Hash(hasher);
             }
         }
 
@@ -613,7 +653,7 @@ namespace Engine.ComponentSystem
                 component.Id = _componentIds.GetId();
                 component.Entity = entity;
                 component.Manager = this;
-                _components[component.Id] = component;
+                _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
 
                 // Add to entity index.
                 _entities[entity].Add(component);
@@ -667,11 +707,11 @@ namespace Engine.ComponentSystem
             foreach (var component in _components)
             {
                 // The create the component and set it up.
-                var componentCopy = AllocateComponent(component.Value.GetType()).Initialize(component.Value);
-                componentCopy.Id = component.Value.Id;
-                componentCopy.Entity = component.Value.Entity;
+                var componentCopy = AllocateComponent(component.GetType()).Initialize(component);
+                componentCopy.Id = component.Id;
+                componentCopy.Entity = component.Entity;
                 componentCopy.Manager = copy;
-                copy._components.Add(component.Key, componentCopy);
+                copy._components.Insert(~copy._components.BinarySearch(componentCopy, ComponentComparer.Instance), componentCopy);
             }
 
             copy._entities.Clear();
@@ -815,6 +855,30 @@ namespace Engine.ComponentSystem
         #endregion
 
         #region Utility types
+
+        /// <summary>
+        /// Comparer implementation for components, to allow sorted inserting
+        /// in the component list.
+        /// </summary>
+        private sealed class ComponentComparer : IComparer<Component>
+        {
+            /// <summary>
+            /// Reusable static instance of this comparer.
+            /// </summary>
+            public static readonly ComponentComparer Instance = new ComponentComparer();
+
+            /// <summary>
+            /// Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
+            /// </summary>
+            /// <returns>
+            /// A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>, as shown in the following table.Value Meaning Less than zero<paramref name="x"/> is less than <paramref name="y"/>.Zero<paramref name="x"/> equals <paramref name="y"/>.Greater than zero<paramref name="x"/> is greater than <paramref name="y"/>.
+            /// </returns>
+            /// <param name="x">The first object to compare.</param><param name="y">The second object to compare.</param>
+            public int Compare(Component x, Component y)
+            {
+                return x.Id - y.Id;
+            }
+        }
 
         /// <summary>
         /// Represents an entity, for easier internal access. We do not expose

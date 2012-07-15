@@ -156,11 +156,7 @@ namespace Space.ComponentSystem.Factories
         public static int SampleShip(IManager manager, string name, Factions faction, Vector2 position, IUniformRandom random)
         {
             var factory = Factories[name] as ShipFactory;
-            if (factory != null)
-            {
-                return factory.SampleShip(manager, faction, position, random);
-            }
-            return 0;
+            return factory != null ? factory.SampleShip(manager, faction, position, random) : 0;
         }
 
         /// <summary>

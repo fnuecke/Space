@@ -79,6 +79,11 @@ namespace Engine.Controller
         /// </summary>
         private const double LoadBufferFactor = 1.8;
 
+        /// <summary>
+        /// Amount of time allowed for applying frame skips per update.
+        /// </summary>
+        private const double MaxFrameskipAmountPerUpdate = TargetElapsedMilliseconds / 10;
+
         #endregion
 
         #region Properties
@@ -135,6 +140,11 @@ namespace Engine.Controller
         private double _lastUpdateRemainder;
 
         /// <summary>
+        /// Remaining time to be compensated for as requested via frame skipping.
+        /// </summary>
+        private double _frameskipRemainder;
+
+        /// <summary>
         /// Used to sample how long it takes for us to perform our simulation
         /// updates in relation to the available time.
         /// </summary>
@@ -171,6 +181,18 @@ namespace Engine.Controller
         {
             // We can run at least one frame, so do the update(s).
             var begin = DateTime.Now.Ticks;
+
+            // Incorporate frame skip.
+            if (_frameskipRemainder > 0)
+            {
+                _lastUpdateRemainder += MaxFrameskipAmountPerUpdate;
+                _frameskipRemainder = Math.Max(0, _frameskipRemainder - MaxFrameskipAmountPerUpdate);
+            }
+            else if (_frameskipRemainder < 0)
+            {
+                _lastUpdateRemainder -= MaxFrameskipAmountPerUpdate;
+                _frameskipRemainder = Math.Min(0, _frameskipRemainder + MaxFrameskipAmountPerUpdate);
+            }
 
             // Time we spent updating. We don't want to take longer than
             // one update should take (i.e. targetTime), to avoid the game
@@ -226,6 +248,16 @@ namespace Engine.Controller
             {
                 _updateLoad.Put(timePassed / TargetElapsedMilliseconds);
             }
+        }
+
+        /// <summary>
+        /// Allows subclasses to request skipping frames / waiting for a
+        /// specific number of frames.
+        /// </summary>
+        /// <param name="frames">The number of frames to skip, positive or negative.</param>
+        protected void ScheduleFrameskip(long frames)
+        {
+            _frameskipRemainder = frames * TargetElapsedMilliseconds;
         }
 
         #endregion
@@ -407,6 +439,28 @@ namespace Engine.Controller
             m2.Hash(hasher);
             var hash2 = hasher.Value;
 
+            if (hash1 == hash2)
+            {
+                m1 = Tss.Manager.NewInstance();
+                m2.CopyInto(m1);
+
+                var gt = new GameTime(TimeSpan.Zero, TimeSpan.Zero);
+                var frame = 0;
+                for (var i = 0; i < 10; ++i)
+                {
+                    m1.Update(gt, frame);
+                    m2.Update(gt, frame++);
+                }
+
+                hasher = new Hasher();
+                m1.Hash(hasher);
+                hash1 = hasher.Value;
+
+                hasher = new Hasher();
+                m2.Hash(hasher);
+                hash2 = hasher.Value;
+            }
+
             if (hash1 != hash2)
             {
                 // Check components to isolate faulty one.
@@ -456,40 +510,60 @@ namespace Engine.Controller
 
                 if (hash1 == hash2)
                 {
-                    return;
+                    m1 = Tss.Manager.NewInstance();
+                    m2.CopyInto(m1);
+
+                    var gt = new GameTime(TimeSpan.Zero, TimeSpan.Zero);
+                    var frame = 0;
+                    for (var i = 0; i < 10; ++i)
+                    {
+                        m1.Update(gt, frame);
+                        m2.Update(gt, frame++);
+                    }
+
+                    hasher = new Hasher();
+                    m1.Hash(hasher);
+                    hash1 = hasher.Value;
+
+                    hasher = new Hasher();
+                    m2.Hash(hasher);
+                    hash2 = hasher.Value;
                 }
 
-                // Check components to isolate faulty one.
-                foreach (var c1 in ((Manager)m2).Components)
+                if (hash1 != hash2)
                 {
-                    Debug.Assert(m1.HasComponent(c1.Id));
-                    var c2 = m1.GetComponentById(c1.Id);
+                    // Check components to isolate faulty one.
+                    foreach (var c1 in ((Manager)m2).Components)
+                    {
+                        Debug.Assert(m1.HasComponent(c1.Id));
+                        var c2 = m1.GetComponentById(c1.Id);
 
-                    var h1 = new Hasher();
-                    var h2 = new Hasher();
+                        var h1 = new Hasher();
+                        var h2 = new Hasher();
 
-                    c1.Hash(h1);
-                    c2.Hash(h2);
+                        c1.Hash(h1);
+                        c2.Hash(h2);
 
-                    Debug.Assert(h1.Value == h2.Value);
+                        Debug.Assert(h1.Value == h2.Value);
+                    }
+
+                    // Check systems to isolate faulty one.
+                    foreach (var system in ((Manager)m2).Systems)
+                    {
+                        var s1 = m1.GetSystem(system.GetType());
+                        var s2 = system;
+
+                        var h1 = new Hasher();
+                        var h2 = new Hasher();
+
+                        s1.Hash(h1);
+                        s2.Hash(h2);
+
+                        Debug.Assert(h1.Value == h2.Value);
+                    }
+
+                    Debug.Assert(false, "Serialization implementation resulted in invalid copy.");
                 }
-
-                // Check systems to isolate faulty one.
-                foreach (var system in ((Manager)m2).Systems)
-                {
-                    var s1 = m1.GetSystem(system.GetType());
-                    var s2 = system;
-
-                    var h1 = new Hasher();
-                    var h2 = new Hasher();
-
-                    s1.Hash(h1);
-                    s2.Hash(h2);
-
-                    Debug.Assert(h1.Value == h2.Value);
-                }
-
-                Debug.Assert(false, "Serialization implementation resulted in invalid copy.");
             }
         }
 
