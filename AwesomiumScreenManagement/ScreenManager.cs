@@ -157,6 +157,7 @@ input[type=""text""], input[type=""password""], textarea {
             _session = WebCore.CreateWebSession(new WebPreferences
             {
                 CustomCSS = DefaultCSS,
+                WebSecurity = false,
                 ProxyConfig = "none"
             });
 
