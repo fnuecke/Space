@@ -380,11 +380,29 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Screens\General\Reset.css">
+    <Compile Include="Screens\General\Reset.css">
       <Name>Reset</Name>
       <Importer>AwesomiumImporter</Importer>
       <Processor>PassThroughProcessor</Processor>
-    </Content>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Screens\Ingame\Elements\Template\Animation.js">
+      <Name>Animation</Name>
+      <Importer>AwesomiumImporter</Importer>
+      <Processor>PassThroughProcessor</Processor>
+      <SubType>Designer</SubType>
+    </Compile>
+    <Compile Include="Screens\Ingame\Elements\Template\Stylesheet.css">
+      <Name>Stylesheet</Name>
+      <Importer>AwesomiumImporter</Importer>
+      <Processor>PassThroughProcessor</Processor>
+    </Compile>
+    <Compile Include="Screens\Ingame\Elements\Template\Template.html">
+      <Name>Template</Name>
+      <Importer>AwesomiumImporter</Importer>
+      <Processor>PassThroughProcessor</Processor>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

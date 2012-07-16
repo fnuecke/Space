@@ -2,11 +2,50 @@
     <head>
         <title>Ingame.html</title>
 		<base href=".." />
-<!--		<link type="text/css" rel="stylesheet" href="asset://xna/Screens/General/Reset.css" /> -->
+		<link type="text/css" rel="stylesheet" href="asset://xna/Screens/General/Reset.css" />
 		<link type="text/css" rel="stylesheet" href="asset://xna/Screens/Ingame/Stylesheet.css" />
 		<script type="text/javascript" src="asset://xna/Screens/General/jquery-1.7.2.js"></script>
+
+        <!-- ------------------------------------------------------ -->
+        <!-- Insert CSS stylesheet import for each sub element here -->
+        <!-- ------------------------------------------------------ -->
+		<link type="text/css" rel="stylesheet" href="asset://xna/Screens/Ingame/Elements/Template/Stylesheet.css" />
+        <!-- End -->
+
+        <!-- -------------------------------------------------- -->
+        <!-- Insert JavaScript import for each sub element here -->
+        <!-- -------------------------------------------------- -->
+		<script type="text/javascript" src="asset://xna/Screens/Ingame/Elements/Template/Animation.js"></script>
+        <!-- End -->
+
 	</head>
 	<body>
+        <!-- -------------------------------------- -->
+        <!-- Insert a div for each sub element here -->
+        <!-- -------------------------------------- -->
+        <div id="test"></div>
+        <!-- End -->
+
+        <script type="text/javascript">
+            $(document).ready(function () {
+                /* ************************************************* */
+                /* Import the HTML document of each sub element here */
+                /* ************************************************* */
+                $("#test").load("asset://xna/Screens/Ingame/Elements/Template/Template.html");
+                /* End */
+            });
+        </script>
+
+
+
+
+
+
+
+
+
+
+
 
         <!-- GUI Element in the top-left corner -->
         <div style="position:absolute; top: 200px; left:60px;">
@@ -49,4 +88,5 @@
 		</script>
 	
     
-</body></html>
+    </body>
+</html>
