@@ -600,12 +600,12 @@ input[type=""text""], input[type=""password""], textarea {
 
             public override void OnRequest(int requestId, string path)
             {
+                var url = path;
+                var extIndex = url.LastIndexOf(".", StringComparison.InvariantCulture);
+                var assetName = url.Substring(0, extIndex);
+                var assetExtension = url.Substring(extIndex + 1);
                 try
                 {
-                    var url = path;
-                    var extIndex = url.LastIndexOf(".", StringComparison.InvariantCulture);
-                    var assetName = url.Substring(0, extIndex);
-                    var assetExtension = url.Substring(extIndex + 1);
                     switch (assetExtension)
                     {
                         case "png":
@@ -634,9 +634,10 @@ input[type=""text""], input[type=""password""], textarea {
                 catch (ContentLoadException ex)
                 {
                     // Failed loading that asset, return null.
-                    Logger.WarnException("Failed loading a resource for a web view.", ex);
+                    Logger.WarnException("Failed loading a resource for a web view: '" + path + "'. Is the file registered in the content project?", ex);
                 }
                 // We cannot handle that request, abort it.
+                SendResponse(requestId, 0, IntPtr.Zero, string.Empty);
             }
 
             private void SendResponse(int requestId, byte[] buffer, string mimeType)
