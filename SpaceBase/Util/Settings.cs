@@ -14,7 +14,7 @@ namespace Space.Util
     /// All the game settings that can be changed and saved. Also provides
     /// utility methods for saving to and loading from XML files.
     /// </summary>
-    public class Settings
+    public sealed class Settings
     {
         #region Logger
 
@@ -191,55 +191,58 @@ namespace Space.Util
         /// <summary>
         /// Default menu key bindings.
         /// </summary>
-        public static readonly Dictionary<Keys, MenuCommand> DefaultMenuBindings = new Dictionary<Keys, MenuCommand>
-                                                                                   {
-            { Keys.Up, MenuCommand.Up },
-            { Keys.W, MenuCommand.Up },
-            { Keys.S, MenuCommand.Down },
-            { Keys.Down, MenuCommand.Down},
-            { Keys.A, MenuCommand.Previous },
-            { Keys.Left, MenuCommand.Previous },
-            { Keys.D, MenuCommand.Next },
-            { Keys.Right, MenuCommand.Next },
-            { Keys.E, MenuCommand.Select },
-            { Keys.Enter, MenuCommand.Select },
-            { Keys.Back, MenuCommand.Back },
-            { Keys.Escape, MenuCommand.Back },
-            { Keys.Pause, MenuCommand.Pause },
-            { Keys.F10, MenuCommand.Pause },
-            { Keys.OemTilde, MenuCommand.Console }
-        };
+        public static readonly Dictionary<Keys, MenuCommand> DefaultGuiBindings =
+            new Dictionary<Keys, MenuCommand>
+            {
+                {Keys.Up, MenuCommand.Up},
+                {Keys.W, MenuCommand.Up},
+                {Keys.S, MenuCommand.Down},
+                {Keys.Down, MenuCommand.Down},
+                {Keys.A, MenuCommand.Previous},
+                {Keys.Left, MenuCommand.Previous},
+                {Keys.D, MenuCommand.Next},
+                {Keys.Right, MenuCommand.Next},
+                {Keys.E, MenuCommand.Select},
+                {Keys.Enter, MenuCommand.Select},
+                {Keys.Back, MenuCommand.Back},
+                {Keys.Escape, MenuCommand.Back},
+                {Keys.Pause, MenuCommand.Pause},
+                {Keys.F10, MenuCommand.Pause},
+                {Keys.OemTilde, MenuCommand.Console}
+            };
 
         /// <summary>
         /// Default in game key bindings.
         /// </summary>
-        public static readonly Dictionary<Keys, GameCommand> DefaultGameBindings = new Dictionary<Keys, GameCommand>
-        {
-            { Keys.W, GameCommand.Up },
-            { Keys.Up, GameCommand.Up },
-            { Keys.S, GameCommand.Down },
-            { Keys.Down, GameCommand.Down },
-            { Keys.A, GameCommand.Left },
-            { Keys.Left, GameCommand.Left },
-            { Keys.D, GameCommand.Right },
-            { Keys.Right, GameCommand.Right },
-            { Keys.E, GameCommand.Use },
-            { Keys.Enter, GameCommand.Use },
-            { Keys.F, GameCommand.PickUp },
-            { Keys.LeftShift, GameCommand.Stabilize },
-            { Keys.RightShift, GameCommand.Stabilize }
-        };
+        public static readonly Dictionary<Keys, GameCommand> DefaultGameBindings =
+            new Dictionary<Keys, GameCommand>
+            {
+                {Keys.W, GameCommand.Up},
+                {Keys.Up, GameCommand.Up},
+                {Keys.S, GameCommand.Down},
+                {Keys.Down, GameCommand.Down},
+                {Keys.A, GameCommand.Left},
+                {Keys.Left, GameCommand.Left},
+                {Keys.D, GameCommand.Right},
+                {Keys.Right, GameCommand.Right},
+                {Keys.E, GameCommand.Use},
+                {Keys.Enter, GameCommand.Use},
+                {Keys.F, GameCommand.PickUp},
+                {Keys.LeftShift, GameCommand.Stabilize},
+                {Keys.RightShift, GameCommand.Stabilize}
+            };
 
         /// <summary>
         /// Default game pad axii (currently for Logitech Rumblepad).
         /// </summary>
-        public static readonly Dictionary<ExtendedAxes, GamePadCommand> DefaultGamePadBindings = new Dictionary<ExtendedAxes, GamePadCommand>
-        {
-            { ExtendedAxes.X, GamePadCommand.AccelerateX },
-            { ExtendedAxes.Y, GamePadCommand.AccelerateY },
-            { ExtendedAxes.Z, GamePadCommand.LookX },
-            { ExtendedAxes.RotationZ, GamePadCommand.LookY }
-        };
+        public static readonly Dictionary<ExtendedAxes, GamePadCommand> DefaultGamePadBindings =
+            new Dictionary<ExtendedAxes, GamePadCommand>
+            {
+                {ExtendedAxes.X, GamePadCommand.AccelerateX},
+                {ExtendedAxes.Y, GamePadCommand.AccelerateY},
+                {ExtendedAxes.Z, GamePadCommand.LookX},
+                {ExtendedAxes.RotationZ, GamePadCommand.LookY}
+            };
 
         #endregion
 
@@ -248,16 +251,19 @@ namespace Space.Util
         /// <summary>
         /// The horizontal display resolution to use.
         /// </summary>
+        [ScriptAccess("resolutionX")]
         public int ScreenWidth = 1280;
 
         /// <summary>
         /// The vertical display resolution to use.
         /// </summary>
+        [ScriptAccess("resolutionY")]
         public int ScreenHeight = 720;
 
         /// <summary>
         /// Run full screen mode or not.
         /// </summary>
+        [ScriptAccess("fullscreen")]
         public bool Fullscreen = false;
 
         /// <summary>
@@ -269,6 +275,7 @@ namespace Space.Util
         /// Compute the distance displayed in radar icons as the distance of
         /// the object to the screen edge instead of to the player ship.
         /// </summary>
+        [ScriptAccess("radarDistanceType")]
         public bool RadarDistanceFromBorder = true;
 
         #endregion
@@ -278,6 +285,7 @@ namespace Space.Util
         /// <summary>
         /// The locale to use for localized content.
         /// </summary>
+        [ScriptAccess("language")]
         public string Language = "en";
 
         #endregion
@@ -287,11 +295,13 @@ namespace Space.Util
         /// <summary>
         /// The Name of the Player
         /// </summary>
+        [ScriptAccess("playerName")]
         public string PlayerName = "Player";
 
         /// <summary>
         /// The name of the profile currently in use.
         /// </summary>
+        [ScriptAccess("profile")]
         public string CurrentProfileName = string.Empty;
 
         /// <summary>
@@ -328,11 +338,13 @@ namespace Space.Util
         /// Whether to toggle stabilizer functionality or keep it active only
         /// while the key is pressed.
         /// </summary>
+        [ScriptAccess("stabilizeToggles")]
         public bool ToggleStabilize = false;
 
         /// <summary>
         /// Whether to use a game pad, if attached, for input.
         /// </summary>
+        [ScriptAccess("useGamepad")]
         public bool EnableGamepad = true;
 
         /// <summary>
@@ -364,7 +376,9 @@ namespace Space.Util
         /// <summary>
         /// Key bindings for menu control as set by the player.
         /// </summary>
-        public SerializableDictionary<Keys, MenuCommand> MenuBindings = new SerializableDictionary<Keys, MenuCommand>(DefaultMenuBindings);
+        [ScriptAccess("bindings")]
+        public SerializableDictionary<Keys, MenuCommand> GuiBindings =
+            new SerializableDictionary<Keys, MenuCommand>(DefaultGuiBindings);
 
         /// <summary>
         /// Key bindings for in game ship control as set by the player.
@@ -373,7 +387,8 @@ namespace Space.Util
         /// Make sure to call <c>UpdateInversGameBindings</c> after modifying
         /// the <c>GameBindings</c>.
         /// </remarks>
-        public SerializableDictionary<Keys, GameCommand> GameBindings = new SerializableDictionary<Keys, GameCommand>(DefaultGameBindings);
+        public SerializableDictionary<Keys, GameCommand> GameBindings =
+            new SerializableDictionary<Keys, GameCommand>(DefaultGameBindings);
 
         /// <summary>
         /// Game pad axis bindings for in game ship control as set by the
@@ -383,7 +398,8 @@ namespace Space.Util
         /// Make sure to call <c>UpdateInversGamePadBindings</c> after modifying
         /// the <c>GamePadBindings</c>.
         /// </remarks>
-        public SerializableDictionary<ExtendedAxes, GamePadCommand> GamePadBindings = new SerializableDictionary<ExtendedAxes, GamePadCommand>(DefaultGamePadBindings);
+        public SerializableDictionary<ExtendedAxes, GamePadCommand> GamePadBindings =
+            new SerializableDictionary<ExtendedAxes, GamePadCommand>(DefaultGamePadBindings);
 
         /// <summary>
         /// Inverse game key bindings, mapping commands to keys. This is used
@@ -449,7 +465,7 @@ namespace Space.Util
             {
                 result.Add(item.Key, item.Value.ToArray());
             }
-            
+
             return result;
         }
 
@@ -493,10 +509,10 @@ namespace Space.Util
             try
             {
                 // Produce minimal XML, so strip away the <?xml ... ?> header.
-                using (XmlWriter writer = XmlWriter.Create(File.Create(filename), new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true }))
+                using (var writer = XmlWriter.Create(File.Create(filename), new XmlWriterSettings {OmitXmlDeclaration = true, Indent = true}))
                 {
                     // And strip away namespaces, we don't want those.
-                    new XmlSerializer(typeof(Settings)).Serialize(writer, _instance, new XmlSerializerNamespaces(new XmlSerializerNamespaces(new[] { new XmlQualifiedName("", "") })));
+                    new XmlSerializer(typeof(Settings)).Serialize(writer, _instance, new XmlSerializerNamespaces(new XmlSerializerNamespaces(new[] {new XmlQualifiedName("", "")})));
                 }
             }
             catch (IOException ex)
@@ -514,26 +530,28 @@ namespace Space.Util
         /// <param name="filename">the path to the file to load the settings from.</param>
         public static void Load(string filename)
         {
-            if (File.Exists(filename))
+            if (!File.Exists(filename))
             {
-                try
+                Logger.Info("No existing settings found, using defaults.");
+                return;
+            }
+            try
+            {
+                using (Stream stream = File.OpenRead(filename))
                 {
-                    using (Stream stream = File.OpenRead(filename))
-                    {
-                        var serializer = new XmlSerializer(typeof(Settings));
-                        _instance = (Settings)serializer.Deserialize(stream);
-                    }
-                    _instance.UpdateInverseGameBindings();
-                    _instance.UpdateInverseGamePadBindings();
+                    var serializer = new XmlSerializer(typeof(Settings));
+                    _instance = (Settings)serializer.Deserialize(stream);
                 }
-                catch (IOException ex)
-                {
-                    Logger.ErrorException("Could not load settings.", ex);
-                }
-                catch (InvalidOperationException ex)
-                {
-                    Logger.ErrorException("Could not load settings.", ex);
-                }
+                _instance.UpdateInverseGameBindings();
+                _instance.UpdateInverseGamePadBindings();
+            }
+            catch (IOException ex)
+            {
+                Logger.ErrorException("Could not load settings.", ex);
+            }
+            catch (InvalidOperationException ex)
+            {
+                Logger.ErrorException("Could not load settings.", ex);
             }
         }
 

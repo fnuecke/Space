@@ -39,11 +39,9 @@
         /// </summary>
         UseItem,
 
-#if DEBUG
         /// <summary>
         /// A debugging command issued by a player.
         /// </summary>
         ScriptCommand
-#endif
     }
 }

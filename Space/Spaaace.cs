@@ -293,7 +293,7 @@ namespace Space
             _consoleLoggerTarget = new GameConsoleTarget(this, NLog.LogLevel.Debug);
 
             // More console setup. Only one console key is supported.
-            _console.Hotkey = Settings.Instance.MenuBindings.First(binding => binding.Value == Settings.MenuCommand.Console).Key;
+            _console.Hotkey = Settings.Instance.GuiBindings.First(binding => binding.Value == Settings.MenuCommand.Console).Key;
 
             _console.AddCommand(new[] { "fullscreen", "fs" },
                 args => GraphicsDeviceManager.ToggleFullScreen(),

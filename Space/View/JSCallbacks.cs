@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Reflection;
 using Awesomium.Core;
 using Engine.Session;
 using Space.Util;
@@ -96,6 +100,10 @@ namespace Space.View
             s.AddCallback("Space", "leaveGame", LeaveGame);
             s.AddCallback("Space", "searchGames", SearchGames);
 
+            s.AddCallbackWithReturnValue("Space", "getSettingNames", GetSettingNames);
+            s.AddCallbackWithReturnValue("Space", "getSetting", GetSetting);
+            s.AddCallback("Space", "setSetting", SetSetting);
+
             s.AddCallbackWithReturnValue("Space", "getNumPlayers", GetNumPlayers);
             s.AddCallbackWithReturnValue("Space", "getMaxPlayers", GetMaxPlayers);
             s.AddCallbackWithReturnValue("Space", "getLocalPlayerNumber", GetLocalPlayerNumber);
@@ -114,7 +122,13 @@ namespace Space.View
         private void HostGame(JSValue[] args)
         {
             _game.RestartServer();
+            //*
             _game.RestartClient(true);
+            /*/
+            _game.RestartClient();
+            _game.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777),
+                                                 Settings.Instance.PlayerName, Settings.Instance.CurrentProfile);
+            //*/
         }
 
         private void JoinGame(JSValue[] args)
@@ -140,8 +154,92 @@ namespace Space.View
 
         #endregion
 
+        #region Settings
+
+        private static Dictionary<string, string> _settings = InitSettings();
+
+        private static Dictionary<string, string> InitSettings()
+        {
+            var settings = new Dictionary<string, string>();
+            var info = typeof(Settings);
+            foreach (var field in info.GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (!field.IsDefined(typeof(ScriptAccessAttribute), false))
+                {
+                    continue;
+                }
+                var attributes = field.GetCustomAttributes(typeof(ScriptAccessAttribute), false);
+                if (attributes.Length > 0)
+                {
+                    settings.Add(((ScriptAccessAttribute)attributes[0]).Name, field.Name);
+                }
+            }
+            return settings;
+        }
+
+        private static JSValue GetSettingNames(JSValue[] args)
+        {
+            var settings = new List<JSValue>();
+            foreach (var setting in _settings.Keys)
+            {
+                settings.Add(new JSValue(setting));
+            }
+            return new JSValue(settings.ToArray());
+        }
+
+        private JSValue GetSetting(JSValue[] args)
+        {
+            if (args.Length != 1 || !args[0].IsString)
+            {
+                return JSValue.CreateUndefined();
+            }
+            string fieldName;
+            if (!_settings.TryGetValue(args[0].ToString(), out fieldName))
+            {
+                return JSValue.CreateUndefined();
+            }
+            var info = typeof(Settings);
+            var fieldInfo = info.GetField(fieldName);
+            var fieldType = fieldInfo.FieldType;
+            if (fieldType == typeof(string))
+            {
+                return new JSValue((string)fieldInfo.GetValue(Settings.Instance));
+            }
+            else if (fieldType == typeof(int) || fieldType == typeof(short) || fieldType == typeof(ushort) || fieldType == typeof(byte))
+            {
+                return new JSValue((int)fieldInfo.GetValue(Settings.Instance));
+            }
+            else if (fieldType == typeof(float) || fieldType == typeof(double))
+            {
+                return new JSValue((double)fieldInfo.GetValue(Settings.Instance));
+            }
+            else if (fieldType == typeof(bool))
+            {
+                return new JSValue((bool)fieldInfo.GetValue(Settings.Instance));
+            }
+            else if (fieldType.GetInterfaces().Contains(typeof(IDictionary)))
+            {
+                var result = new JSObject();
+                var dict = (IDictionary)fieldInfo.GetValue(Settings.Instance);
+                foreach (var key in dict.Keys)
+                {
+                    result[key.ToString()] = new JSValue(dict[key].ToString());
+                }
+                return new JSValue(result);
+            }
+            // Cannot handle this field type.
+            return JSValue.CreateUndefined();
+        }
+
+        private void SetSetting(JSValue[] args)
+        {
+            // TODO
+        }
+
+        #endregion
+
         #region Ingame
-        
+
         private JSValue GetNumPlayers(JSValue[] args)
         {
             var session = _game.Client.Controller.Session;

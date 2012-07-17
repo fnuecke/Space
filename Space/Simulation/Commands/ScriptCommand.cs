@@ -27,7 +27,7 @@
         public ScriptCommand(string script)
             : base(SpaceCommandType.ScriptCommand)
         {
-            this.Script = script;
+            Script = script;
         }
 
         /// <summary>

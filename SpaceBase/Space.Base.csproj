@@ -107,6 +107,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>QualityNames.resx</DependentUpon>
     </Compile>
+    <Compile Include="Util\ScriptAccessAttribute.cs" />
     <Compile Include="Util\Settings.cs" />
   </ItemGroup>
   <ItemGroup>
