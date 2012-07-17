@@ -1,0 +1,27 @@
+﻿<!-- ---------------------- -->
+<!-- Insert HTML code below -->
+<!-- ---------------------- -->
+
+<div class="wrapper_fps">
+    <p>Please press 'm'</p>
+</div>
+
+<!-- ------------------------------ -->
+<!-- Insert JavaScript action below -->
+<!-- ------------------------------ -->
+
+<script type="text/javascript">
+    $(document).ready(function () {
+//        $('.wrapper_fps').css('left', '600px');
+//        $('.wrapper_fps').css('top', '0px');
+//        $('.wrapper_fps_out').css('left', '600px');
+//        $('.wrapper_fps_out').css('top', '300px');
+
+    });
+
+    $(document).keypress(function (e) {
+        if (e.which == 109) { // m
+            $('.wrapper_fps').toggleClass('wrapper_fps_out');
+        }
+    });
+</script>

@@ -9,31 +9,37 @@
         <!-- ------------------------------------------------------ -->
         <!-- Insert CSS stylesheet import for each sub element here -->
         <!-- ------------------------------------------------------ -->
-		<link type="text/css" rel="stylesheet" href="asset://xna/Screens/Ingame/Elements/Template/Stylesheet.css" />
-        <!-- End -->
-
-        <!-- -------------------------------------------------- -->
-        <!-- Insert JavaScript import for each sub element here -->
-        <!-- -------------------------------------------------- -->
-		<script type="text/javascript" src="asset://xna/Screens/Ingame/Elements/Template/Animation.js"></script>
+		<link type="text/css" rel="stylesheet" href="asset://xna/Screens/Ingame/Elements/TemplateStyle.css" />
+		<link type="text/css" rel="stylesheet" href="asset://xna/Screens/Ingame/Elements/DebugFPSStyle.css" />
         <!-- End -->
 
 	</head>
 	<body>
-        <!-- -------------------------------------- -->
-        <!-- Insert a div for each sub element here -->
-        <!-- -------------------------------------- -->
-        <div id="test"></div>
-        <!-- End -->
-
         <script type="text/javascript">
             $(document).ready(function () {
+
                 /* ************************************************* */
                 /* Import the HTML document of each sub element here */
                 /* ************************************************* */
-                $("#test").load("asset://xna/Screens/Ingame/Elements/Template/Template.html");
+                appendToBody("asset://xna/Screens/Ingame/Elements/Template.html");
+                appendToBody("asset://xna/Screens/Ingame/Elements/DebugFPS.html");
                 /* End */
+
             });
+
+            /**
+             * Appends a specific HTML document to the body element.
+             *
+             * @param asset
+             *     The path to the HTML File as a String.
+             */
+            function appendToBody(asset) {
+                $.ajax({
+                    url: ("" + asset),
+                    success: function (data) { $('body').append(data); },
+                    dataType: 'html'
+                });
+            }
         </script>
 
 

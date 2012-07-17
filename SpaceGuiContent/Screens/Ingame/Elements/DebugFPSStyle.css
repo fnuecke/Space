@@ -1,0 +1,25 @@
+﻿.wrapper_fps 
+{
+    background-color: yellow;
+    position: absolute;
+    left: 600px;
+    top: 0px;
+    width: 100px;
+    height: 200px;
+    -webkit-transition:
+        left 1s ease,
+        top 1s ease;
+    -webkit-animation: myfirst 1s;
+}
+
+.wrapper_fps_out
+{
+    left: 600px;
+    top: -200px;
+}
+
+.wrapper_fps p, 
+.wrapper_fps_out p
+{
+    padding: 30px 5px 2px;
+}
