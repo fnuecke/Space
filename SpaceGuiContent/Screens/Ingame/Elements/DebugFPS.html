@@ -20,7 +20,7 @@
     (function ($) {
         setInterval(function () {
             $(".fps-value").html(
-                "FPS: XX.XX"
+                "FPS: " + Space.getFps()
             );
         }, 500);
     }) (jQuery);
