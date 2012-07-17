@@ -1,0 +1,34 @@
+﻿<!-- ---------------------- -->
+<!-- Insert HTML code below -->
+<!-- ---------------------- -->
+
+<div class="westbox debug_textfield">
+    <p class="debug_textfield-value"></p>
+</div>
+
+<!-- ------------------------------ -->
+<!-- Insert JavaScript action below -->
+<!-- ------------------------------ -->
+
+<script type="text/javascript">
+    $(document).keypress(function (e) {
+        if (e.which == 109) { // m
+            $('.debug_textfield').toggleClass('debug_textfield_hidden');
+        }
+    });
+
+    (function ($) {
+        setInterval(function () {
+            $(".debug_textfield-value").html(
+                "Position:  (XXXXX.XX, XXXXX.XX), Cell: (X, X)<br />" +
+                "Update Load: X.XX, Speed: X,XX<br />" +
+                "Indexes: X, Total entries: XXXX, Queries: XXX<br />" +
+                "Speed: X,XX/XX,XX, Maximum acceleration: X,XX<br />" +
+                "Mass: XX,XX<br />" +
+                "Health: " + Math.round(Space.getHealth()) + "/" + Math.round(Space.getMaxHealth()) + "<br />" +
+                "Energy: " + Math.round(Space.getEnergy()) + "/" + Math.round(Space.getMaxEnergy())
+            );
+        }, 500);
+    }) (jQuery);
+
+</script>

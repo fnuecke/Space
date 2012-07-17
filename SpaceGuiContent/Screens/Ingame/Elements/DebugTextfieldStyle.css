@@ -1,0 +1,28 @@
+﻿.debug_textfield 
+{
+    position:absolute; 
+    width: 350px;
+    top: 300px;
+    left: 0px;
+    
+    -webkit-transition:
+        top 1s ease,
+        left 1s ease;
+    -webkit-animation: myfirst 1s;
+}
+
+.debug_textfield_hidden
+{
+    top: 300px;
+    left: -350px;
+}
+
+.debug_textfield p, 
+.debug_textfield hidden p
+{
+    width: 100%;
+    margin: 10px 0 10px 10px;
+    text-align: left;
+    color: white;
+    font: bold 10px Verdana;
+}

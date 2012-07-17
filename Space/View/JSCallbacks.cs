@@ -310,6 +310,12 @@ namespace Space.View
             return new JSValue(info.MaxEnergy);
         }
 
+        private JSValue GetFps(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("XX.XX");
+        }
+
         #endregion
 
         #endregion

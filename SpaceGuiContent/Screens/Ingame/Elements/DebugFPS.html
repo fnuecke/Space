@@ -2,9 +2,8 @@
 <!-- Insert HTML code below -->
 <!-- ---------------------- -->
 
-<div class="wrapper_fps">
-    <p>Please press 'm'</p>
-    <p>For scaling press '1' to '0'</p>
+<div class="northbox wrapper_fps">
+    <p class="fps-value"></p>
 </div>
 
 <!-- ------------------------------ -->
@@ -12,13 +11,18 @@
 <!-- ------------------------------ -->
 
 <script type="text/javascript">
-    $(document).ready(function () {
-
-    });
-
     $(document).keypress(function (e) {
         if (e.which == 109) { // m
-            $('.wrapper_fps').toggleClass('wrapper_fps_out');
+            $('.wrapper_fps').toggleClass('wrapper_fps_hidden');
         }
     });
+
+    (function ($) {
+        setInterval(function () {
+            $(".fps-value").html(
+                "FPS: XX.XX"
+            );
+        }, 500);
+    }) (jQuery);
+
 </script>
