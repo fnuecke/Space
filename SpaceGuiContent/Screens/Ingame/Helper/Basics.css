@@ -1,0 +1,13 @@
+﻿/* ************************************************** */
+/* Holds styles which are used by several UI elements */
+/* ************************************************** */
+
+.northbox
+{
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.westbox
+{
+    background-color: rgba(0, 0, 0, 0.75);
+}

@@ -1,25 +1,29 @@
 ﻿.wrapper_fps 
 {
-    background-color: yellow;
-    position: absolute;
-    left: 600px;
-    top: 0px;
+    position:absolute; 
     width: 100px;
-    height: 200px;
+    height: 40px;
+    top: 0px;
+    right: 20px;
+    
     -webkit-transition:
-        left 1s ease,
-        top 1s ease;
+        top 1s ease,
+        right 1s ease;
     -webkit-animation: myfirst 1s;
 }
 
-.wrapper_fps_out
+.wrapper_fps_hidden
 {
-    left: 600px;
-    top: -200px;
+    top: -40px;
+    right: 20px;
 }
 
 .wrapper_fps p, 
-.wrapper_fps_out p
+.wrapper_fps_hidden p
 {
-    padding: 30px 5px 2px;
+    width: 100%;
+    margin: 20px 0 10px 0;
+    text-align: center;
+    color: white;
+    font: bold 10px Verdana;
 }
