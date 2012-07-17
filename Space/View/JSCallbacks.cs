@@ -156,7 +156,7 @@ namespace Space.View
 
         #region Settings
 
-        private static Dictionary<string, string> _settings = InitSettings();
+        private static readonly Dictionary<string, string> SettingNames = InitSettings();
 
         private static Dictionary<string, string> InitSettings()
         {
@@ -180,21 +180,21 @@ namespace Space.View
         private static JSValue GetSettingNames(JSValue[] args)
         {
             var settings = new List<JSValue>();
-            foreach (var setting in _settings.Keys)
+            foreach (var setting in SettingNames.Keys)
             {
                 settings.Add(new JSValue(setting));
             }
             return new JSValue(settings.ToArray());
         }
 
-        private JSValue GetSetting(JSValue[] args)
+        private static JSValue GetSetting(JSValue[] args)
         {
             if (args.Length != 1 || !args[0].IsString)
             {
                 return JSValue.CreateUndefined();
             }
             string fieldName;
-            if (!_settings.TryGetValue(args[0].ToString(), out fieldName))
+            if (!SettingNames.TryGetValue(args[0].ToString(), out fieldName))
             {
                 return JSValue.CreateUndefined();
             }
