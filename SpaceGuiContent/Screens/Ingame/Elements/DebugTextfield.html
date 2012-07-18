@@ -20,11 +20,11 @@
     (function ($) {
         setInterval(function () {
             $(".debug_textfield-value").html(
-                "Position:  (XXXXX.XX, XXXXX.XX), Cell: (X, X)<br />" +
-                "Update Load: X.XX, Speed: X,XX<br />" +
-                "Indexes: X, Total entries: XXXX, Queries: XXX<br />" +
-                "Speed: X,XX/XX,XX, Maximum acceleration: X,XX<br />" +
-                "Mass: XX,XX<br />" +
+                "Position:  (" + Space.getXCoordinate() + ", " + Space.getYCoordinate() + "), Cell: (" + Space.getXCell() + ", " + Space.getYCell() + ")<br />" +
+                "Update Load: " + Space.getUpdateLoad() + ", Speed: " + Space.getUpdateSpeed() + "<br />" +
+                "Indexes: " + Space.getIndexes() + ", Total entries: " + Space.getTotalEntries() + ", Queries: " + Space.getQueries() + "<br />" +
+                "Speed: " + Space.getSpeed() + "/" + Space.getMaxSpeed() + ", Maximum acceleration: " + Space.getMaxAcceleration() + "<br />" +
+                "Mass: " + Space.getMass() + "<br />" +
                 "Health: " + Math.round(Space.getHealth()) + "/" + Math.round(Space.getMaxHealth()) + "<br />" +
                 "Energy: " + Math.round(Space.getEnergy()) + "/" + Math.round(Space.getMaxEnergy())
             );

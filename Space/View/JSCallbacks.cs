@@ -155,6 +155,21 @@ namespace Space.View
             s.AddCallbackWithReturnValue("Space", "getMaxHealth", GetMaxHealth);
             s.AddCallbackWithReturnValue("Space", "getEnergy", GetEnergy);
             s.AddCallbackWithReturnValue("Space", "getMaxEnergy", GetMaxEnergy);
+
+            s.AddCallbackWithReturnValue("Space", "getFps", GetFps);
+            s.AddCallbackWithReturnValue("Space", "getXCoordinate", GetXCoordinate);
+            s.AddCallbackWithReturnValue("Space", "getYCoordinate", GetYCoordinate);
+            s.AddCallbackWithReturnValue("Space", "getXCell", GetXCell);
+            s.AddCallbackWithReturnValue("Space", "getYCell", GetYCell);
+            s.AddCallbackWithReturnValue("Space", "getUpdateLoad", GetUpdateLoad);
+            s.AddCallbackWithReturnValue("Space", "getUpdateSpeed", GetUpdateSpeed);
+            s.AddCallbackWithReturnValue("Space", "getIndexes", GetIndexes);
+            s.AddCallbackWithReturnValue("Space", "getTotalEntries", GetTotalEntries);
+            s.AddCallbackWithReturnValue("Space", "getQueries", GetQueries);
+            s.AddCallbackWithReturnValue("Space", "getSpeed", GetSpeed);
+            s.AddCallbackWithReturnValue("Space", "getMaxSpeed", GetMaxSpeed);
+            s.AddCallbackWithReturnValue("Space", "getMaxAcceleration", GetMaxAcceleration);
+            s.AddCallbackWithReturnValue("Space", "getMass", GetMass);
         }
 
         #endregion
@@ -435,6 +450,84 @@ namespace Space.View
         {
             // TODO:
             return new JSValue("XX.XX");
+        }
+
+        private JSValue GetXCoordinate(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("XXXXX.XX");
+        }
+
+        private JSValue GetYCoordinate(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("XXXXX.XX");
+        }
+
+        private JSValue GetXCell(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X");
+        }
+
+        private JSValue GetYCell(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X");
+        }
+
+        private JSValue GetUpdateLoad(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X.XX");
+        }
+
+        private JSValue GetUpdateSpeed(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X.XX");
+        }
+
+        private JSValue GetIndexes(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X");
+        }
+
+        private JSValue GetTotalEntries(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X");
+        }
+
+        private JSValue GetQueries(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X");
+        }
+
+        private JSValue GetSpeed(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X.XX");
+        }
+
+        private JSValue GetMaxSpeed(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X.XX");
+        }
+
+        private JSValue GetMaxAcceleration(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X.XX");
+        }
+
+        private JSValue GetMass(JSValue[] args)
+        {
+            // TODO:
+            return new JSValue("X.XX");
         }
 
         #endregion
