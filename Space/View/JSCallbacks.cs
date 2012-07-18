@@ -42,6 +42,12 @@ namespace Space.View
 
         #region Events
 
+        /// <summary>
+        /// Handle client re-initialization, which means we have a new session
+        /// to which to add listeners for forwarding events.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="Space.ClientInitializedEventArgs"/> instance containing the event data.</param>
         private void HandleClientInitialized(object sender, ClientInitializedEventArgs e)
         {
             var session = e.Client.Controller.Session;
@@ -52,6 +58,11 @@ namespace Space.View
             session.PlayerLeft += SessionOnPlayerLeft;
         }
 
+        /// <summary>
+        /// Forwards info received on a running game session.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="Engine.Session.GameInfoReceivedEventArgs"/> instance containing the event data.</param>
         private void SessionOnGameInfoReceived(object sender, GameInfoReceivedEventArgs e)
         {
             var args = new JSObject();
@@ -62,16 +73,31 @@ namespace Space.View
             _game.ScreenManager.Call("Space", "onGameInfoReceived", new[] {new JSValue(args)});
         }
 
+        /// <summary>
+        /// Forwards the info that we successfully connected to a game.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="Engine.Session.JoinResponseEventArgs"/> instance containing the event data.</param>
         private void SessionOnJoinResponse(object sender, JoinResponseEventArgs e)
         {
-            _game.ScreenManager.Call("Space", "onConnected", new JSValue[0]);
+            _game.ScreenManager.Call("Space", "onConnected");
         }
 
+        /// <summary>
+        /// Forwards the info that we have been disconnected from a gaem.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
         private void SessionOnDisconnected(object sender, EventArgs e)
         {
-            _game.ScreenManager.Call("Space", "onDisconnected", new JSValue[0]);
+            _game.ScreenManager.Call("Space", "onDisconnected");
         }
 
+        /// <summary>
+        /// Forwards the info that another player has joined the game.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="Engine.Session.PlayerEventArgs"/> instance containing the event data.</param>
         private void SessionOnPlayerJoined(object sender, PlayerEventArgs e)
         {
             var args = new JSObject();
@@ -80,6 +106,11 @@ namespace Space.View
             _game.ScreenManager.Call("Space", "onPlayerJoined", new[] { new JSValue(args) });
         }
 
+        /// <summary>
+        /// Forwards the info that another player has left the game.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="Engine.Session.PlayerEventArgs"/> instance containing the event data.</param>
         private void SessionOnPlayerLeft(object sender, PlayerEventArgs e)
         {
             var args = new JSObject();
@@ -92,18 +123,31 @@ namespace Space.View
 
         #region Setup
 
+        /// <summary>
+        /// Registers all callbacks for the JavaScript API.
+        /// </summary>
         private void SetupJavaScriptApi()
         {
+            // Shorthand.
             var s = _game.ScreenManager;
+
+            // Localization.
+            s.AddCallbackWithReturnValue("window", "L", GetGuiString);
+
+            // Global menu options.
             s.AddCallback("Space", "hostGame", HostGame);
             s.AddCallback("Space", "joinGame", JoinGame);
             s.AddCallback("Space", "leaveGame", LeaveGame);
             s.AddCallback("Space", "searchGames", SearchGames);
 
+            // Settings related callbacks.
             s.AddCallbackWithReturnValue("Space", "getSettingNames", GetSettingNames);
             s.AddCallbackWithReturnValue("Space", "getSetting", GetSetting);
             s.AddCallback("Space", "setSetting", SetSetting);
+            s.AddCallbackWithReturnValue("Space", "getGuiCommands", GetGuiCommands);
+            s.AddCallbackWithReturnValue("Space", "getGameCommands", GetGameCommands);
 
+            // Ingame information.
             s.AddCallbackWithReturnValue("Space", "getNumPlayers", GetNumPlayers);
             s.AddCallbackWithReturnValue("Space", "getMaxPlayers", GetMaxPlayers);
             s.AddCallbackWithReturnValue("Space", "getLocalPlayerNumber", GetLocalPlayerNumber);
@@ -117,8 +161,31 @@ namespace Space.View
 
         #region Javascript API
 
+        #region Localization
+
+        /// <summary>
+        /// Gets the GUI string for the specified id.
+        /// </summary>
+        /// <param name="args">The name of the GUI string to get.</param>
+        /// <returns>The value for that string for the current language setting.</returns>
+        private static JSValue GetGuiString(JSValue[] args)
+        {
+            if (args.Length != 1 || !args[0].IsString)
+            {
+                return JSValue.CreateUndefined();
+            }
+            var s = GuiStrings.ResourceManager.GetString(args[0].ToString());
+            return new JSValue(s ?? ("!!" + args[0] + "!!"));
+        }
+
+        #endregion
+
         #region Main Menu
-        
+
+        /// <summary>
+        /// Hosts a new game, launching a local server and connecting to it.
+        /// </summary>
+        /// <param name="args">The args.</param>
         private void HostGame(JSValue[] args)
         {
             _game.RestartServer();
@@ -131,6 +198,10 @@ namespace Space.View
             //*/
         }
 
+        /// <summary>
+        /// Joins a game running on the specified server.
+        /// </summary>
+        /// <param name="args">The args.</param>
         private void JoinGame(JSValue[] args)
         {
             if (args.Length == 1 && args[0].IsString)
@@ -142,11 +213,19 @@ namespace Space.View
             }
         }
 
+        /// <summary>
+        /// Leaves the game we are currently in, if any.
+        /// </summary>
+        /// <param name="args">The args.</param>
         private void LeaveGame(JSValue[] args)
         {
             _game.DisposeControllers();
         }
 
+        /// <summary>
+        /// Searches for games in the local network.
+        /// </summary>
+        /// <param name="args">The args.</param>
         private void SearchGames(JSValue[] args)
         {
             _game.Client.Controller.Session.Search();
@@ -156,8 +235,15 @@ namespace Space.View
 
         #region Settings
 
+        /// <summary>
+        /// The name of settings exposed to the scripting environment.
+        /// </summary>
         private static readonly Dictionary<string, string> SettingNames = InitSettings();
 
+        /// <summary>
+        /// Inits the setting names dictionary.
+        /// </summary>
+        /// <returns></returns>
         private static Dictionary<string, string> InitSettings()
         {
             var settings = new Dictionary<string, string>();
@@ -177,6 +263,11 @@ namespace Space.View
             return settings;
         }
 
+        /// <summary>
+        /// Gets the setting names available for scripting environment.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>An array with available setting names.</returns>
         private static JSValue GetSettingNames(JSValue[] args)
         {
             var settings = new List<JSValue>();
@@ -187,6 +278,12 @@ namespace Space.View
             return new JSValue(settings.ToArray());
         }
 
+        /// <summary>
+        /// Gets the current value of the setting with the specified name,
+        /// which must be one of the array that can be read via GetSettingNames.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns>The current value for that setting.</returns>
         private static JSValue GetSetting(JSValue[] args)
         {
             if (args.Length != 1 || !args[0].IsString)
@@ -231,9 +328,33 @@ namespace Space.View
             return JSValue.CreateUndefined();
         }
 
+        /// <summary>
+        /// Sets a new value for a setting.
+        /// </summary>
+        /// <param name="args">The args.</param>
         private void SetSetting(JSValue[] args)
         {
             // TODO
+        }
+
+        /// <summary>
+        /// Gets a list of all commands that can be handled in the GUI.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
+        private static JSValue GetGuiCommands(JSValue[] args)
+        {
+            return new JSValue(Enum.GetNames(typeof(Settings.GuiCommand)).Select(name => new JSValue(name)).ToArray());
+        }
+
+        /// <summary>
+        /// Gets a list of all commands that can be handled in the GUI.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        /// <returns></returns>
+        private static JSValue GetGameCommands(JSValue[] args)
+        {
+            return new JSValue(Enum.GetNames(typeof(Settings.GameCommand)).Select(name => new JSValue(name)).ToArray());
         }
 
         #endregion

@@ -279,7 +279,12 @@ namespace Space
                 culture = CultureInfo.InvariantCulture;
                 Settings.Instance.Language = culture.Name;
             }
-            MenuStrings.Culture = culture;
+            GuiStrings.Culture = culture;
+            AttributeNames.Culture = culture;
+            AttributePrefixes.Culture = culture;
+            ItemDescriptions.Culture = culture;
+            ItemNames.Culture = culture;
+            QualityNames.Culture = culture;
             ((LocalizedContentManager)Content).Culture = culture;
         }
 
@@ -293,7 +298,7 @@ namespace Space
             _consoleLoggerTarget = new GameConsoleTarget(this, NLog.LogLevel.Debug);
 
             // More console setup. Only one console key is supported.
-            _console.Hotkey = Settings.Instance.GuiBindings.First(binding => binding.Value == Settings.MenuCommand.Console).Key;
+            _console.Hotkey = Settings.Instance.GuiBindings.First(binding => binding.Value == Settings.GuiCommand.Console).Key;
 
             _console.AddCommand(new[] { "fullscreen", "fs" },
                 args => GraphicsDeviceManager.ToggleFullScreen(),

@@ -248,7 +248,7 @@ namespace Awesomium.ScreenManagement
         /// <param name="nameSpace">The namespace the method to call resides in.</param>
         /// <param name="name">The name of the method to call.</param>
         /// <param name="args">The arguments to pass to the called method.</param>
-        public void Call(string nameSpace, string name, JSValue[] args)
+        public void Call(string nameSpace, string name, params JSValue[] args)
         {
             // Ignore if we're not ready for JS yet.
             if (_webView.IsDocumentReady)

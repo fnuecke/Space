@@ -378,7 +378,7 @@ input[type=""text""], input[type=""password""], textarea {
         /// <param name="nameSpace">The name of the global object in which the method resides.</param>
         /// <param name="name">The name of the method to call.</param>
         /// <param name="args">The arguments to pass to the method.</param>
-        public void Call(string nameSpace, string name, JSValue[] args)
+        public void Call(string nameSpace, string name, params JSValue[] args)
         {
             if (String.IsNullOrWhiteSpace(nameSpace))
             {

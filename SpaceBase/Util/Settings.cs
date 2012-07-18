@@ -27,7 +27,7 @@ namespace Space.Util
         /// <summary>
         /// Possible commands in the game's menu.
         /// </summary>
-        public enum MenuCommand
+        public enum GuiCommand
         {
             /// <summary>
             /// Move one entry up.
@@ -62,7 +62,17 @@ namespace Space.Util
             /// <summary>
             /// Pause the game to open the ingame menu.
             /// </summary>
-            Pause,
+            Menu,
+
+            /// <summary>
+            /// Open the inventory.
+            /// </summary>
+            Inventory,
+
+            /// <summary>
+            /// Open the character sheet.
+            /// </summary>
+            Character,
 
             /// <summary>
             /// Open up the console.
@@ -191,24 +201,26 @@ namespace Space.Util
         /// <summary>
         /// Default menu key bindings.
         /// </summary>
-        public static readonly Dictionary<Keys, MenuCommand> DefaultGuiBindings =
-            new Dictionary<Keys, MenuCommand>
+        public static readonly Dictionary<Keys, GuiCommand> DefaultGuiBindings =
+            new Dictionary<Keys, GuiCommand>
             {
-                {Keys.Up, MenuCommand.Up},
-                {Keys.W, MenuCommand.Up},
-                {Keys.S, MenuCommand.Down},
-                {Keys.Down, MenuCommand.Down},
-                {Keys.A, MenuCommand.Previous},
-                {Keys.Left, MenuCommand.Previous},
-                {Keys.D, MenuCommand.Next},
-                {Keys.Right, MenuCommand.Next},
-                {Keys.E, MenuCommand.Select},
-                {Keys.Enter, MenuCommand.Select},
-                {Keys.Back, MenuCommand.Back},
-                {Keys.Escape, MenuCommand.Back},
-                {Keys.Pause, MenuCommand.Pause},
-                {Keys.F10, MenuCommand.Pause},
-                {Keys.OemTilde, MenuCommand.Console}
+                {Keys.Up, GuiCommand.Up},
+                {Keys.W, GuiCommand.Up},
+                {Keys.S, GuiCommand.Down},
+                {Keys.Down, GuiCommand.Down},
+                {Keys.A, GuiCommand.Previous},
+                {Keys.Left, GuiCommand.Previous},
+                {Keys.D, GuiCommand.Next},
+                {Keys.Right, GuiCommand.Next},
+                {Keys.E, GuiCommand.Select},
+                {Keys.Enter, GuiCommand.Select},
+                {Keys.Back, GuiCommand.Back},
+                {Keys.Escape, GuiCommand.Back},
+                {Keys.Pause, GuiCommand.Menu},
+                {Keys.F10, GuiCommand.Menu},
+                {Keys.I, GuiCommand.Inventory},
+                {Keys.C, GuiCommand.Character},
+                {Keys.OemTilde, GuiCommand.Console}
             };
 
         /// <summary>
@@ -377,8 +389,8 @@ namespace Space.Util
         /// Key bindings for menu control as set by the player.
         /// </summary>
         [ScriptAccess("bindings")]
-        public SerializableDictionary<Keys, MenuCommand> GuiBindings =
-            new SerializableDictionary<Keys, MenuCommand>(DefaultGuiBindings);
+        public SerializableDictionary<Keys, GuiCommand> GuiBindings =
+            new SerializableDictionary<Keys, GuiCommand>(DefaultGuiBindings);
 
         /// <summary>
         /// Key bindings for in game ship control as set by the player.

@@ -147,10 +147,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Simulation\Commands\UseCommand.cs" />
     <Compile Include="Spaaace.cs" />
-    <Compile Include="MenuStrings.Designer.cs">
+    <Compile Include="GuiStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>MenuStrings.resx</DependentUpon>
+      <DependentUpon>GuiStrings.resx</DependentUpon>
     </Compile>
     <Compile Include="View\NetGraph.cs" />
     <Compile Include="View\SessionInfo.cs" />
@@ -246,10 +246,10 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="MenuStrings.de.resx" />
-    <EmbeddedResource Include="MenuStrings.resx">
+    <EmbeddedResource Include="GuiStrings.de.resx" />
+    <EmbeddedResource Include="GuiStrings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>MenuStrings.Designer.cs</LastGenOutput>
+      <LastGenOutput>GuiStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
