@@ -284,6 +284,12 @@ namespace Space.Util
         public bool PostProcessing = true;
 
         /// <summary>
+        /// The scaling of the GUI.
+        /// </summary>
+        [ScriptAccess("guiScale")]
+        public float GuiScale = 1.0f;
+
+        /// <summary>
         /// Compute the distance displayed in radar icons as the distance of
         /// the object to the screen edge instead of to the player ship.
         /// </summary>

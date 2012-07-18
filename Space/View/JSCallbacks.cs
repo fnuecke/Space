@@ -317,11 +317,27 @@ namespace Space.View
             {
                 return new JSValue((string)fieldInfo.GetValue(Settings.Instance));
             }
-            else if (fieldType == typeof(int) || fieldType == typeof(short) || fieldType == typeof(ushort) || fieldType == typeof(byte))
+            else if (fieldType == typeof(int))
             {
                 return new JSValue((int)fieldInfo.GetValue(Settings.Instance));
             }
-            else if (fieldType == typeof(float) || fieldType == typeof(double))
+            else if (fieldType == typeof(short))
+            {
+                return new JSValue((short)fieldInfo.GetValue(Settings.Instance));
+            }
+            else if (fieldType == typeof(ushort))
+            {
+                return new JSValue((ushort)fieldInfo.GetValue(Settings.Instance));
+            }
+            else if (fieldType == typeof(byte))
+            {
+                return new JSValue((byte)fieldInfo.GetValue(Settings.Instance));
+            }
+            else if (fieldType == typeof(float))
+            {
+                return new JSValue((float)fieldInfo.GetValue(Settings.Instance));
+            }
+            else if (fieldType == typeof(double))
             {
                 return new JSValue((double)fieldInfo.GetValue(Settings.Instance));
             }

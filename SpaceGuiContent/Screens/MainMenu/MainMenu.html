@@ -15,6 +15,9 @@
 		<script type="text/javascript">
 			var Space = {};
 			(function($) {
+                // Set scaling retrieved from settings.
+                setTimeout(function() { $("body").css("zoom", Space.getSetting("guiScale")); }, 500);
+
 				Space.onGameInfoReceived = function(e) {
 						$("#info").css("color", "#c33");
 						$("#info").text("Got some game info: " + e.host + " (" + e.numPlayers + "/" + e.maxPlayers + ")");

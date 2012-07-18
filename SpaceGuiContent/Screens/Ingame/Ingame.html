@@ -19,6 +19,8 @@
 	<body>
         <script type="text/javascript">
             $(document).ready(function () {
+                // Set scaling retrieved from settings.
+                setTimeout(function() { $("body").css("zoom", Space.getSetting("guiScale")); }, 500);
 
                 /* ************************************************* */
                 /* Import the HTML document of each sub element here */
