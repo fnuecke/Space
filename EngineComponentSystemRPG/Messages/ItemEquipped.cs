@@ -3,7 +3,7 @@
     /// <summary>
     /// Sent by the <c>Equipment</c> component when an item is equipped.
     /// </summary>
-    public struct ItemAdded
+    public struct ItemEquipped
     {
         /// <summary>
         /// The entity for which the item was equipped.

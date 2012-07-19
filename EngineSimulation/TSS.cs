@@ -1065,7 +1065,7 @@ namespace Engine.Simulation
             /// <param name="hasher">The hasher to push data to.</param>
             public void Hash(Hasher hasher)
             {
-                throw new NotSupportedException();
+                _tss.LeadingSimulation.Manager.Hash(hasher);
             }
 
             #endregion

@@ -133,6 +133,9 @@ namespace Awesomium.ScreenManagement
                     SetCallbackWithReturnValue(nameSpace.Key, name);
                 }
             }
+
+            // Trigger init event.
+            Call("Screens", "onInit");
         }
 
         #endregion

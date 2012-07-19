@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="German" xml:space="preserve">
+  <data name="Language_de" xml:space="preserve">
     <value>German</value>
   </data>
-  <data name="English" xml:space="preserve">
+  <data name="Language_en" xml:space="preserve">
     <value>English</value>
   </data>
   <data name="MainMenu" xml:space="preserve">
@@ -150,17 +150,11 @@
   <data name="ConnectionFailed" xml:space="preserve">
     <value>Connection to server could not be established.</value>
   </data>
-  <data name="Exit" xml:space="preserve">
-    <value>Exit</value>
-  </data>
   <data name="InvalidAddress" xml:space="preserve">
     <value>Invalid Host or IP Adress</value>
   </data>
   <data name="ScreenResolution" xml:space="preserve">
     <value>Resolution</value>
-  </data>
-  <data name="Fullscreen" xml:space="preserve">
-    <value>Fullscreen</value>
   </data>
   <data name="Off" xml:space="preserve">
     <value>Off</value>
@@ -179,5 +173,20 @@
   </data>
   <data name="PostProcessing" xml:space="preserve">
     <value>Post processing</value>
+  </data>
+  <data name="Accept" xml:space="preserve">
+    <value>Accept</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Fullscreen" xml:space="preserve">
+    <value>Fullscreen</value>
+  </data>
+  <data name="GuiScale" xml:space="preserve">
+    <value>Gui scaling</value>
   </data>
 </root>

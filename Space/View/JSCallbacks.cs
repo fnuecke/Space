@@ -141,7 +141,7 @@ namespace Space.View
             s.AddCallback("Space", "searchGames", SearchGames);
 
             // Settings related callbacks.
-            s.AddCallbackWithReturnValue("Space", "getSettingNames", GetSettingNames);
+            s.AddCallbackWithReturnValue("Space", "getSettingInfos", GetSettingInfos);
             s.AddCallbackWithReturnValue("Space", "getSetting", GetSetting);
             s.AddCallback("Space", "setSetting", SetSetting);
             s.AddCallbackWithReturnValue("Space", "getGuiCommands", GetGuiCommands);
@@ -253,15 +253,15 @@ namespace Space.View
         /// <summary>
         /// The name of settings exposed to the scripting environment.
         /// </summary>
-        private static readonly Dictionary<string, string> SettingNames = InitSettings();
+        private static readonly Dictionary<string, Tuple<string, ScriptAccessAttribute>> SettingInfo = InitSettings();
 
         /// <summary>
         /// Inits the setting names dictionary.
         /// </summary>
         /// <returns></returns>
-        private static Dictionary<string, string> InitSettings()
+        private static Dictionary<string, Tuple<string, ScriptAccessAttribute>> InitSettings()
         {
-            var settings = new Dictionary<string, string>();
+            var settings = new Dictionary<string, Tuple<string, ScriptAccessAttribute>>();
             var info = typeof(Settings);
             foreach (var field in info.GetFields(BindingFlags.Public | BindingFlags.Instance))
             {
@@ -272,7 +272,8 @@ namespace Space.View
                 var attributes = field.GetCustomAttributes(typeof(ScriptAccessAttribute), false);
                 if (attributes.Length > 0)
                 {
-                    settings.Add(((ScriptAccessAttribute)attributes[0]).Name, field.Name);
+                    var sa = (ScriptAccessAttribute)attributes[0];
+                    settings.Add(sa.Name, Tuple.Create(field.Name, sa));
                 }
             }
             return settings;
@@ -283,12 +284,51 @@ namespace Space.View
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns>An array with available setting names.</returns>
-        private static JSValue GetSettingNames(JSValue[] args)
+        private static JSValue GetSettingInfos(JSValue[] args)
         {
             var settings = new List<JSValue>();
-            foreach (var setting in SettingNames.Keys)
+            foreach (var setting in SettingInfo)
             {
-                settings.Add(new JSValue(setting));
+                var obj = new JSObject();
+                obj["name"] = new JSValue(setting.Key);
+
+                // Write meta info for this setting.
+                var attribute = setting.Value.Item2;
+
+                // Write options, if there are any.
+                if (attribute.Options != null && attribute.Options.Length > 0)
+                {
+                    var options = new JSValue[attribute.Options.Length];
+                    for (var i = 0; i < attribute.Options.Length; i++)
+                    {
+                        options[i] = ObjectToJSValue(options[i]);
+                    }
+                    obj["options"] = new JSValue(options);
+                }
+
+                // Value ranges, if applicable.
+                if (attribute.MinValue != null)
+                {
+                    obj["min"] = ObjectToJSValue(attribute.MinValue);
+                }
+                if (attribute.MaxValue != null)
+                {
+                    obj["max"] = ObjectToJSValue(attribute.MaxValue);
+                }
+
+                // Should we list the setting?
+                obj["show"] = new JSValue(attribute.ShouldList);
+
+                // Localized strings.
+                obj["title"] = new JSValue(GuiStrings.ResourceManager.
+                    GetString(attribute.TitleLocalizationId) ?? ("!!" + attribute.TitleLocalizationId + "!!"));
+                var description = GuiStrings.ResourceManager.GetString(attribute.DescriptionLocalizationId);
+                if (description != null)
+                {
+                    obj["description"] = new JSValue(description);
+                }
+
+                settings.Add(new JSValue(obj));
             }
             return new JSValue(settings.ToArray());
         }
@@ -305,57 +345,66 @@ namespace Space.View
             {
                 return JSValue.CreateUndefined();
             }
-            string fieldName;
-            if (!SettingNames.TryGetValue(args[0].ToString(), out fieldName))
+            Tuple<string, ScriptAccessAttribute> fieldData;
+            if (!SettingInfo.TryGetValue(args[0].ToString(), out fieldData))
             {
                 return JSValue.CreateUndefined();
             }
             var info = typeof(Settings);
-            var fieldInfo = info.GetField(fieldName);
-            var fieldType = fieldInfo.FieldType;
-            if (fieldType == typeof(string))
+            var fieldInfo = info.GetField(fieldData.Item1);
+            return ObjectToJSValue(fieldInfo.GetValue(Settings.Instance));
+        }
+
+        private static JSValue ObjectToJSValue(object obj)
+        {
+            if (obj == null)
             {
-                return new JSValue((string)fieldInfo.GetValue(Settings.Instance));
+                return JSValue.CreateNull();
             }
-            else if (fieldType == typeof(int))
+            var type = obj.GetType();
+            if (type == typeof(string))
             {
-                return new JSValue((int)fieldInfo.GetValue(Settings.Instance));
+                return new JSValue((string)obj);
             }
-            else if (fieldType == typeof(short))
+            else if (type == typeof(int))
             {
-                return new JSValue((short)fieldInfo.GetValue(Settings.Instance));
+                return new JSValue((int)obj);
             }
-            else if (fieldType == typeof(ushort))
+            else if (type == typeof(short))
             {
-                return new JSValue((ushort)fieldInfo.GetValue(Settings.Instance));
+                return new JSValue((short)obj);
             }
-            else if (fieldType == typeof(byte))
+            else if (type == typeof(ushort))
             {
-                return new JSValue((byte)fieldInfo.GetValue(Settings.Instance));
+                return new JSValue((ushort)obj);
             }
-            else if (fieldType == typeof(float))
+            else if (type == typeof(byte))
             {
-                return new JSValue((float)fieldInfo.GetValue(Settings.Instance));
+                return new JSValue((byte)obj);
             }
-            else if (fieldType == typeof(double))
+            else if (type == typeof(float))
             {
-                return new JSValue((double)fieldInfo.GetValue(Settings.Instance));
+                return new JSValue((float)obj);
             }
-            else if (fieldType == typeof(bool))
+            else if (type == typeof(double))
             {
-                return new JSValue((bool)fieldInfo.GetValue(Settings.Instance));
+                return new JSValue((double)obj);
             }
-            else if (fieldType.GetInterfaces().Contains(typeof(IDictionary)))
+            else if (type == typeof(bool))
+            {
+                return new JSValue((bool)obj);
+            }
+            else if (type.GetInterfaces().Contains(typeof(IDictionary)))
             {
                 var result = new JSObject();
-                var dict = (IDictionary)fieldInfo.GetValue(Settings.Instance);
+                var dict = (IDictionary)obj;
                 foreach (var key in dict.Keys)
                 {
                     result[key.ToString()] = new JSValue(dict[key].ToString());
                 }
                 return new JSValue(result);
             }
-            // Cannot handle this field type.
+            // Cannot handle this type.
             return JSValue.CreateUndefined();
         }
 

@@ -61,11 +61,29 @@ namespace Space {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Accept.
+        /// </summary>
+        internal static string Accept {
+            get {
+                return ResourceManager.GetString("Accept", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Back.
         /// </summary>
         internal static string Back {
             get {
                 return ResourceManager.GetString("Back", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string Cancel {
+            get {
+                return ResourceManager.GetString("Cancel", resourceCulture);
             }
         }
         
@@ -88,15 +106,6 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to English.
-        /// </summary>
-        internal static string English {
-            get {
-                return ResourceManager.GetString("English", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Exit.
         /// </summary>
         internal static string Exit {
@@ -115,11 +124,11 @@ namespace Space {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to German.
+        ///   Looks up a localized string similar to Gui scaling.
         /// </summary>
-        internal static string German {
+        internal static string GuiScale {
             get {
-                return ResourceManager.GetString("German", resourceCulture);
+                return ResourceManager.GetString("GuiScale", resourceCulture);
             }
         }
         
@@ -156,6 +165,24 @@ namespace Space {
         internal static string Language {
             get {
                 return ResourceManager.GetString("Language", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to German.
+        /// </summary>
+        internal static string Language_de {
+            get {
+                return ResourceManager.GetString("Language_de", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to English.
+        /// </summary>
+        internal static string Language_en {
+            get {
+                return ResourceManager.GetString("Language_en", resourceCulture);
             }
         }
         

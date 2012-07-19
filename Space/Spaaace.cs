@@ -154,8 +154,8 @@ namespace Space
             // Set up display.
             GraphicsDeviceManager = new GraphicsDeviceManager(this)
                                     {
-                                        PreferredBackBufferWidth = Settings.Instance.ScreenWidth,
-                                        PreferredBackBufferHeight = Settings.Instance.ScreenHeight,
+                                        PreferredBackBufferWidth = Settings.Instance.ScreenResolution.X,
+                                        PreferredBackBufferHeight = Settings.Instance.ScreenResolution.Y,
                                         IsFullScreen = Settings.Instance.Fullscreen,
                                         SynchronizeWithVerticalRetrace = true
                                     };

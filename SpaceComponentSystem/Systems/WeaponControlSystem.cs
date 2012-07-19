@@ -127,18 +127,18 @@ namespace Space.ComponentSystem.Systems
         {
             base.Receive(ref message);
 
-            if (message is ItemAdded)
+            if (message is ItemEquipped)
             {
-                var added = (ItemAdded)(ValueType)message;
+                var added = (ItemEquipped)(ValueType)message;
                 if (Manager.GetComponent<Item>(added.Item) is Weapon)
                 {
                     // Weapon was equipped, track a cooldown for it.
                     _cooldowns.Add(added.Item, 0);
                 }
             }
-            else if (message is ItemRemoved)
+            else if (message is ItemUnequipped)
             {
-                var removed = (ItemRemoved)(ValueType)message;
+                var removed = (ItemUnequipped)(ValueType)message;
                 if (Manager.GetComponent<Item>(removed.Item) is Weapon)
                 {
                     // Weapon was unequipped, stop tracking.

@@ -32,10 +32,10 @@ namespace Engine.ComponentSystem.RPG.Systems
         {
             base.Receive(ref message);
             
-            if (message is ItemAdded)
+            if (message is ItemEquipped)
             {
                 // Recompute if an item with attribute modifiers was added.
-                var added = (ItemAdded)(ValueType)message;
+                var added = (ItemEquipped)(ValueType)message;
                 if (Manager.GetComponent<Attribute<TAttribute>>(added.Item) != null)
                 {
                     var character = Manager.GetComponent<Character<TAttribute>>(added.Entity);
@@ -45,10 +45,10 @@ namespace Engine.ComponentSystem.RPG.Systems
                     }
                 }
             }
-            else if (message is ItemRemoved)
+            else if (message is ItemUnequipped)
             {
                 // Recompute if an item with attribute modifiers was removed.
-                var removed = (ItemRemoved)(ValueType)message;
+                var removed = (ItemUnequipped)(ValueType)message;
                 if (Manager.GetComponent<Attribute<TAttribute>>(removed.Item) != null)
                 {
                     var character = Manager.GetComponent<Character<TAttribute>>(removed.Entity);

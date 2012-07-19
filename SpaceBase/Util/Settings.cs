@@ -4,6 +4,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using Engine.Util;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input.Devices;
 using Space.Data;
@@ -263,19 +264,13 @@ namespace Space.Util
         /// <summary>
         /// The horizontal display resolution to use.
         /// </summary>
-        [ScriptAccess("resolutionX")]
-        public int ScreenWidth = 1280;
-
-        /// <summary>
-        /// The vertical display resolution to use.
-        /// </summary>
-        [ScriptAccess("resolutionY")]
-        public int ScreenHeight = 720;
+        [ScriptAccess("ScreenResolution")]
+        public Point ScreenResolution = new Point(1280, 720);
 
         /// <summary>
         /// Run full screen mode or not.
         /// </summary>
-        [ScriptAccess("fullscreen")]
+        [ScriptAccess("Fullscreen")]
         public bool Fullscreen = false;
 
         /// <summary>
@@ -286,14 +281,14 @@ namespace Space.Util
         /// <summary>
         /// The scaling of the GUI.
         /// </summary>
-        [ScriptAccess("guiScale")]
+        [ScriptAccess("GuiScale", MinValue = 0.25, MaxValue = 2.0)]
         public float GuiScale = 1.0f;
 
         /// <summary>
         /// Compute the distance displayed in radar icons as the distance of
         /// the object to the screen edge instead of to the player ship.
         /// </summary>
-        [ScriptAccess("radarDistanceType")]
+        [ScriptAccess("RadarDistanceType")]
         public bool RadarDistanceFromBorder = true;
 
         #endregion
@@ -303,7 +298,7 @@ namespace Space.Util
         /// <summary>
         /// The locale to use for localized content.
         /// </summary>
-        [ScriptAccess("language")]
+        [ScriptAccess("Language", Options = new object[] {"en", "de"})]
         public string Language = "en";
 
         #endregion
@@ -313,13 +308,13 @@ namespace Space.Util
         /// <summary>
         /// The Name of the Player
         /// </summary>
-        [ScriptAccess("playerName")]
+        [ScriptAccess("PlayerName")]
         public string PlayerName = "Player";
 
         /// <summary>
         /// The name of the profile currently in use.
         /// </summary>
-        [ScriptAccess("profile")]
+        [ScriptAccess("Profile")]
         public string CurrentProfileName = string.Empty;
 
         /// <summary>
@@ -356,13 +351,13 @@ namespace Space.Util
         /// Whether to toggle stabilizer functionality or keep it active only
         /// while the key is pressed.
         /// </summary>
-        [ScriptAccess("stabilizeToggles")]
+        [ScriptAccess("StabilizeToggles")]
         public bool ToggleStabilize = false;
 
         /// <summary>
         /// Whether to use a game pad, if attached, for input.
         /// </summary>
-        [ScriptAccess("useGamepad")]
+        [ScriptAccess("UseGamepad")]
         public bool EnableGamepad = true;
 
         /// <summary>
@@ -394,7 +389,7 @@ namespace Space.Util
         /// <summary>
         /// Key bindings for menu control as set by the player.
         /// </summary>
-        [ScriptAccess("bindings")]
+        [ScriptAccess("Bindings")]
         public SerializableDictionary<Keys, GuiCommand> GuiBindings =
             new SerializableDictionary<Keys, GuiCommand>(DefaultGuiBindings);
 

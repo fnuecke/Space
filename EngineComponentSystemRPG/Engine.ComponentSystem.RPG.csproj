@@ -73,8 +73,8 @@
     <Compile Include="Components\Usable.cs" />
     <Compile Include="Constraints\AttributeModifierConstraint.cs" />
     <Compile Include="Messages\CharacterStatsInvalidated.cs" />
-    <Compile Include="Messages\ItemAdded.cs" />
-    <Compile Include="Messages\ItemRemoved.cs" />
+    <Compile Include="Messages\ItemEquipped.cs" />
+    <Compile Include="Messages\ItemUnequipped.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\CharacterSystem.cs" />
     <Compile Include="Systems\InventorySystem.cs" />

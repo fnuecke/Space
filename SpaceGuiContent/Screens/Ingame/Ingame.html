@@ -19,8 +19,11 @@
 	<body>
         <script type="text/javascript">
             $(document).ready(function () {
-                // Set scaling retrieved from settings.
-                setTimeout(function() { $("body").css("zoom", Space.getSetting("guiScale")); }, 500);
+                // Wait for init to make sure callbacks are registered.
+                Screens.onInit = function() {
+                    // Set scaling retrieved from settings.
+                    $("body").css("zoom", Space.getSetting("GuiScale"));
+                };
 
                 /* ************************************************* */
                 /* Import the HTML document of each sub element here */

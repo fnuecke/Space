@@ -14,7 +14,7 @@ namespace Engine.ComponentSystem.RPG.Components
     /// </summary>
     /// <typeparam name="TAttribute">The enum that holds the possible types of
     /// attributes.</typeparam>
-    public class Character<TAttribute> : Component
+    public sealed class Character<TAttribute> : Component
         where TAttribute : struct
     {
         #region Properties

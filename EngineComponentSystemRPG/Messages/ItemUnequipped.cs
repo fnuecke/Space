@@ -3,7 +3,7 @@
     /// <summary>
     /// Sent by the <c>Equipment</c> component when an item is unequipped.
     /// </summary>
-    public struct ItemRemoved
+    public struct ItemUnequipped
     {
         /// <summary>
         /// The entity for which the item was removed.
