@@ -288,7 +288,7 @@ input[type=""text""], input[type=""password""], textarea {
             screen.DocumentReady += (s, e) => ((WebView)s).IsTransparent = true;
 
             // Load the HTML for that screen and focus it.
-            screen.LoadHTML(Game.Content.Load<string>("Screens/" + screenName));
+            screen.LoadURL(new Uri("asset://xna/Screens/" + screenName));
             screen.FocusView();
             _screens.Push(screen);
         }
@@ -603,8 +603,20 @@ input[type=""text""], input[type=""password""], textarea {
             {
                 var url = path;
                 var extIndex = url.LastIndexOf(".", StringComparison.InvariantCulture);
-                var assetName = url.Substring(0, extIndex);
-                var assetExtension = url.Substring(extIndex + 1);
+                string assetName;
+                string assetExtension;
+                if (extIndex < 0)
+                {
+                    // In case we have no extension we fall back to assuming it's HTML,
+                    // so use the entire string as the url.
+                    assetName = url;
+                    assetExtension = string.Empty;
+                }
+                else
+                {
+                    assetName = url.Substring(0, extIndex);
+                    assetExtension = url.Substring(extIndex + 1);
+                }
                 try
                 {
                     switch (assetExtension)
@@ -623,12 +635,15 @@ input[type=""text""], input[type=""password""], textarea {
                         case "css":
                             SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/css");
                             return;
-                        case "html":
-                        case "xhtml":
-                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/html");
-                            return;
                         case "js":
-                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/javascript");
+                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "application/x-javascript");
+                            return;
+                        case "xml":
+                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "application/xml");
+                            return;
+                        //case "html":
+                        default:
+                            SendResponse(requestId, Encoding.UTF8.GetBytes(_content.Load<string>(assetName)), "text/html");
                             return;
                     }
                 }

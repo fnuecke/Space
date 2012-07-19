@@ -6,6 +6,7 @@ using System.Net;
 using System.Reflection;
 using Awesomium.Core;
 using Engine.Session;
+using Microsoft.Xna.Framework;
 using Space.Util;
 
 namespace Space.View
@@ -15,8 +16,14 @@ namespace Space.View
     /// </summary>
     internal sealed class JSCallbacks
     {
+        #region Logger
+
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Fields
-        
+
         /// <summary>
         /// The game we work for.
         /// </summary>
@@ -187,6 +194,7 @@ namespace Space.View
         {
             if (args.Length != 1 || !args[0].IsString)
             {
+                Logger.Warn("Invalid call to 'L', must specify one string argument.");
                 return JSValue.CreateUndefined();
             }
             var s = GuiStrings.ResourceManager.GetString(args[0].ToString());
@@ -219,13 +227,15 @@ namespace Space.View
         /// <param name="args">The args.</param>
         private void JoinGame(JSValue[] args)
         {
-            if (args.Length == 1 && args[0].IsString)
+            if (args.Length != 1 || !args[0].IsString)
             {
-                _game.DisposeServer();
-                _game.RestartClient();
-                _game.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[0].ToString()), 7777),
-                                                     Settings.Instance.PlayerName, Settings.Instance.CurrentProfile);
+                Logger.Warn("Invalid call to 'Space.joinGame', must specify one string argument.");
+                return;
             }
+            _game.DisposeServer();
+            _game.RestartClient();
+            _game.Client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[0].ToString()), 7777),
+                                                 Settings.Instance.PlayerName, Settings.Instance.CurrentProfile);
         }
 
         /// <summary>
@@ -286,7 +296,7 @@ namespace Space.View
         /// <returns>An array with available setting names.</returns>
         private static JSValue GetSettingInfos(JSValue[] args)
         {
-            var settings = new List<JSValue>();
+            var settings = new JSObject();
             foreach (var setting in SettingInfo)
             {
                 var obj = new JSObject();
@@ -301,7 +311,7 @@ namespace Space.View
                     var options = new JSValue[attribute.Options.Length];
                     for (var i = 0; i < attribute.Options.Length; i++)
                     {
-                        options[i] = ObjectToJSValue(options[i]);
+                        options[i] = ObjectToJSValue(attribute.Options[i]);
                     }
                     obj["options"] = new JSValue(options);
                 }
@@ -328,9 +338,9 @@ namespace Space.View
                     obj["description"] = new JSValue(description);
                 }
 
-                settings.Add(new JSValue(obj));
+                settings[setting.Key] = new JSValue(obj);
             }
-            return new JSValue(settings.ToArray());
+            return new JSValue(settings);
         }
 
         /// <summary>
@@ -343,17 +353,85 @@ namespace Space.View
         {
             if (args.Length != 1 || !args[0].IsString)
             {
+                Logger.Warn("Invalid call to 'Space.getSetting', must specify one string argument.");
                 return JSValue.CreateUndefined();
             }
-            Tuple<string, ScriptAccessAttribute> fieldData;
-            if (!SettingInfo.TryGetValue(args[0].ToString(), out fieldData))
+            Tuple<string, ScriptAccessAttribute> settingInfo;
+            if (!SettingInfo.TryGetValue(args[0].ToString(), out settingInfo))
             {
+                Logger.Warn("Invalid call to 'Space.getSetting', unknown setting.");
                 return JSValue.CreateUndefined();
             }
             var info = typeof(Settings);
-            var fieldInfo = info.GetField(fieldData.Item1);
+            var fieldInfo = info.GetField(settingInfo.Item1);
             return ObjectToJSValue(fieldInfo.GetValue(Settings.Instance));
         }
+
+        /// <summary>
+        /// Sets a new value for a setting.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        private static void SetSetting(JSValue[] args)
+        {
+            if (args.Length != 2 || !args[0].IsString)
+            {
+                Logger.Warn("Invalid call to 'Space.setSetting', must specify two arguments, of which the first must be a string.");
+                return;
+            }
+
+            Tuple<string, ScriptAccessAttribute> settingInfo;
+            if (!SettingInfo.TryGetValue(args[0].ToString(), out settingInfo))
+            {
+                Logger.Warn("Invalid call to 'Space.setSetting', unknown setting.");
+                return;
+            }
+
+            var info = typeof(Settings);
+            var fieldInfo = info.GetField(settingInfo.Item1);
+            try
+            {
+                fieldInfo.SetValue(Settings.Instance, JSValueToObject(fieldInfo.FieldType, args[1]));
+            }
+            catch (Exception)
+            {
+                Logger.Warn("Invalid call to 'Space.setSetting', invalid value for this setting.");
+            }
+        }
+
+        private delegate JSValue ToJSValue(object o);
+
+        private delegate object FromJSValue(JSValue v);
+
+        private static readonly Dictionary<Type, ToJSValue> ToJSValueConverters =
+            new Dictionary<Type, ToJSValue>
+            {
+                {typeof(string), o => new JSValue((string)o)},
+                {typeof(int), o => new JSValue((int)o)},
+                {typeof(short), o => new JSValue((short)o)},
+                {typeof(ushort), o => new JSValue((ushort)o)},
+                {typeof(byte), o => new JSValue((byte)o)},
+                {typeof(float), o => new JSValue((float)o)},
+                {typeof(double), o => new JSValue((double)o)},
+                {typeof(bool), o => new JSValue((bool)o)},
+                {typeof(Point), o => new JSValue(((Point)o).X + "x" + ((Point)o).Y)},
+            };
+
+        private static readonly Dictionary<Type, FromJSValue> FromJSValueConverters =
+            new Dictionary<Type, FromJSValue>
+            {
+                {typeof(string), v => v.ToString()},
+                {typeof(int), v => v.ToInteger()},
+                {typeof(short), v => (short)v.ToInteger()},
+                {typeof(ushort), v => (ushort)v.ToInteger()},
+                {typeof(byte), v => (byte)v.ToInteger()},
+                {typeof(float), v => (float)v.ToDouble()},
+                {typeof(double), v => v.ToDouble()},
+                {typeof(bool), v => v.ToBoolean()},
+                {typeof(Point), v => {
+                    var a = v.ToString().Split('x');
+                    return new Point(int.Parse(a[0]), int.Parse(a[1]));
+                }},
+            };
 
         private static JSValue ObjectToJSValue(object obj)
         {
@@ -362,39 +440,11 @@ namespace Space.View
                 return JSValue.CreateNull();
             }
             var type = obj.GetType();
-            if (type == typeof(string))
+            if (ToJSValueConverters.ContainsKey(type))
             {
-                return new JSValue((string)obj);
+                return ToJSValueConverters[type](obj);
             }
-            else if (type == typeof(int))
-            {
-                return new JSValue((int)obj);
-            }
-            else if (type == typeof(short))
-            {
-                return new JSValue((short)obj);
-            }
-            else if (type == typeof(ushort))
-            {
-                return new JSValue((ushort)obj);
-            }
-            else if (type == typeof(byte))
-            {
-                return new JSValue((byte)obj);
-            }
-            else if (type == typeof(float))
-            {
-                return new JSValue((float)obj);
-            }
-            else if (type == typeof(double))
-            {
-                return new JSValue((double)obj);
-            }
-            else if (type == typeof(bool))
-            {
-                return new JSValue((bool)obj);
-            }
-            else if (type.GetInterfaces().Contains(typeof(IDictionary)))
+            if (type.GetInterfaces().Contains(typeof(IDictionary)))
             {
                 var result = new JSObject();
                 var dict = (IDictionary)obj;
@@ -408,13 +458,22 @@ namespace Space.View
             return JSValue.CreateUndefined();
         }
 
-        /// <summary>
-        /// Sets a new value for a setting.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        private void SetSetting(JSValue[] args)
+        private static object JSValueToObject(Type fieldType, JSValue value)
         {
-            // TODO
+            if (value.IsNull || value.IsUndefined)
+            {
+                return null;
+            }
+            if (FromJSValueConverters.ContainsKey(fieldType))
+            {
+                return FromJSValueConverters[fieldType](value);
+            }
+            if (fieldType.GetInterfaces().Contains(typeof(IDictionary)))
+            {
+                // TODO
+            }
+            // Cannot handle this type.
+            throw new ArgumentException("Unhandled value type.");
         }
 
         /// <summary>
