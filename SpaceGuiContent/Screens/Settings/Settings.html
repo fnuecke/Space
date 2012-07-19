@@ -67,7 +67,6 @@
 	            };
 				
 				$("#accept").click(function() {
-					// TODO write changes back
 	                var settings = Space.getSettingInfos();
 	                $.each(settings, function(name, setting) {
 	                	Space.setSetting(name, $("#Setting_" + name + " .setting").val());

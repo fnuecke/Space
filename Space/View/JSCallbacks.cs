@@ -398,84 +398,6 @@ namespace Space.View
             }
         }
 
-        private delegate JSValue ToJSValue(object o);
-
-        private delegate object FromJSValue(JSValue v);
-
-        private static readonly Dictionary<Type, ToJSValue> ToJSValueConverters =
-            new Dictionary<Type, ToJSValue>
-            {
-                {typeof(string), o => new JSValue((string)o)},
-                {typeof(int), o => new JSValue((int)o)},
-                {typeof(short), o => new JSValue((short)o)},
-                {typeof(ushort), o => new JSValue((ushort)o)},
-                {typeof(byte), o => new JSValue((byte)o)},
-                {typeof(float), o => new JSValue((float)o)},
-                {typeof(double), o => new JSValue((double)o)},
-                {typeof(bool), o => new JSValue((bool)o)},
-                {typeof(Point), o => new JSValue(((Point)o).X + "x" + ((Point)o).Y)},
-            };
-
-        private static readonly Dictionary<Type, FromJSValue> FromJSValueConverters =
-            new Dictionary<Type, FromJSValue>
-            {
-                {typeof(string), v => v.ToString()},
-                {typeof(int), v => v.ToInteger()},
-                {typeof(short), v => (short)v.ToInteger()},
-                {typeof(ushort), v => (ushort)v.ToInteger()},
-                {typeof(byte), v => (byte)v.ToInteger()},
-                {typeof(float), v => (float)v.ToDouble()},
-                {typeof(double), v => v.ToDouble()},
-                {typeof(bool), v => v.ToBoolean()},
-                {typeof(Point), v => {
-                    var a = v.ToString().Split('x');
-                    return new Point(int.Parse(a[0]), int.Parse(a[1]));
-                }},
-            };
-
-        private static JSValue ObjectToJSValue(object obj)
-        {
-            if (obj == null)
-            {
-                return JSValue.CreateNull();
-            }
-            var type = obj.GetType();
-            if (ToJSValueConverters.ContainsKey(type))
-            {
-                return ToJSValueConverters[type](obj);
-            }
-            if (type.GetInterfaces().Contains(typeof(IDictionary)))
-            {
-                var result = new JSObject();
-                var dict = (IDictionary)obj;
-                foreach (var key in dict.Keys)
-                {
-                    result[key.ToString()] = new JSValue(dict[key].ToString());
-                }
-                return new JSValue(result);
-            }
-            // Cannot handle this type.
-            return JSValue.CreateUndefined();
-        }
-
-        private static object JSValueToObject(Type fieldType, JSValue value)
-        {
-            if (value.IsNull || value.IsUndefined)
-            {
-                return null;
-            }
-            if (FromJSValueConverters.ContainsKey(fieldType))
-            {
-                return FromJSValueConverters[fieldType](value);
-            }
-            if (fieldType.GetInterfaces().Contains(typeof(IDictionary)))
-            {
-                // TODO
-            }
-            // Cannot handle this type.
-            throw new ArgumentException("Unhandled value type.");
-        }
-
         /// <summary>
         /// Gets a list of all commands that can be handled in the GUI.
         /// </summary>
@@ -495,6 +417,128 @@ namespace Space.View
         {
             return new JSValue(Enum.GetNames(typeof(Settings.GameCommand)).Select(name => new JSValue(name)).ToArray());
         }
+
+        #region Value conversion
+
+        /// <summary>
+        /// Method that converts a C# value to a JSValue.
+        /// </summary>
+        /// <param name="o">The object to convert.</param>
+        /// <returns>The JSValue wrapper for that type.</returns>
+        private delegate JSValue ToJSValue(object o);
+
+        /// <summary>
+        /// Method that converts a JSValue to a C# value.
+        /// </summary>
+        /// <param name="v">The value to convert.</param>
+        /// <returns>The C# value for that wrapper.</returns>
+        private delegate object FromJSValue(JSValue v);
+
+        /// <summary>
+        /// Simple type conversions, mapping type to converter, object->JSValue.
+        /// </summary>
+        private static readonly Dictionary<Type, ToJSValue> ToJSValueConverters =
+            new Dictionary<Type, ToJSValue>
+            {
+                {typeof(string), o => new JSValue((string)o)},
+                {typeof(int), o => new JSValue((int)o)},
+                {typeof(short), o => new JSValue((short)o)},
+                {typeof(ushort), o => new JSValue((ushort)o)},
+                {typeof(byte), o => new JSValue((byte)o)},
+                {typeof(float), o => new JSValue((float)o)},
+                {typeof(double), o => new JSValue((double)o)},
+                {typeof(bool), o => new JSValue((bool)o)},
+                {typeof(Point), o => new JSValue(((Point)o).X + "x" + ((Point)o).Y)},
+            };
+
+        /// <summary>
+        /// Simple type conversions, mapping type to converter, JSValue->object.
+        /// </summary>
+        private static readonly Dictionary<Type, FromJSValue> FromJSValueConverters =
+            new Dictionary<Type, FromJSValue>
+            {
+                {typeof(string), v => v.ToString()},
+                {typeof(int), v => v.ToInteger()},
+                {typeof(short), v => (short)v.ToInteger()},
+                {typeof(ushort), v => (ushort)v.ToInteger()},
+                {typeof(byte), v => (byte)v.ToInteger()},
+                {typeof(float), v => (float)v.ToDouble()},
+                {typeof(double), v => v.ToDouble()},
+                {typeof(bool), v => v.ToBoolean()},
+                {typeof(Point), v => {
+                    var a = v.ToString().Split('x');
+                    return new Point(int.Parse(a[0]), int.Parse(a[1]));
+                }},
+            };
+
+        /// <summary>
+        /// Converts an object to a JSValue, based on the object's type.
+        /// </summary>
+        /// <param name="obj">The object to wrap.</param>
+        /// <returns>The JSValue wrapper, or undefined if there is no converter.</returns>
+        private static JSValue ObjectToJSValue(object obj)
+        {
+            // Null is a special case.
+            if (obj == null)
+            {
+                return JSValue.CreateNull();
+            }
+
+            // Check if we have a simple converter for this type.
+            var type = obj.GetType();
+            if (ToJSValueConverters.ContainsKey(type))
+            {
+                return ToJSValueConverters[type](obj);
+            }
+
+            // Custom conversions.
+            if (type.GetInterfaces().Contains(typeof(IDictionary)))
+            {
+                var result = new JSObject();
+                var dict = (IDictionary)obj;
+                foreach (var key in dict.Keys)
+                {
+                    result[key.ToString()] = new JSValue(dict[key].ToString());
+                }
+                return new JSValue(result);
+            }
+
+            // Cannot handle this type.
+            Logger.Warn("Cannot convert C# object of type '" + type.Name + "' to JSValue.");
+            return JSValue.CreateUndefined();
+        }
+
+        private static object JSValueToObject(Type fieldType, JSValue value)
+        {
+            // We have no equivalent for undefined.
+            if (value.IsUndefined)
+            {
+                throw new ArgumentException("Invalid value, must not be 'undefined'.");
+            }
+
+            // Null is a special case.
+            if (value.IsNull)
+            {
+                return null;
+            }
+
+            // Check for simple converter.
+            if (FromJSValueConverters.ContainsKey(fieldType))
+            {
+                return FromJSValueConverters[fieldType](value);
+            }
+
+            // Custom conversions.
+            if (fieldType.GetInterfaces().Contains(typeof(IDictionary)))
+            {
+                // TODO
+            }
+
+            // Cannot handle this type.
+            throw new ArgumentException("Unhandled value type.");
+        }
+
+        #endregion
 
         #endregion
 
