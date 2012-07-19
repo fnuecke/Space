@@ -285,7 +285,7 @@ input[type=""text""], input[type=""password""], textarea {
             }
 
             // Force screen to be transparent.
-            screen.DocumentReady += (s, e) => ((WebView)s).IsTransparent = true;
+            screen.ProcessCreated += (s, e) => ((WebView)s).IsTransparent = true;
 
             // Load the HTML for that screen and focus it.
             screen.LoadURL(new Uri("asset://xna/Screens/" + screenName));
