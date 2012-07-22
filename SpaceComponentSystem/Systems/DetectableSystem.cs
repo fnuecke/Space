@@ -1,5 +1,4 @@
 ﻿using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
@@ -40,7 +39,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
         
-        protected override void UpdateComponent(GameTime gameTime, long frame, Detectable component)
+        protected override void UpdateComponent(long frame, Detectable component)
         {
             // Load our texture, if it's not set.
             if (component.Texture == null)

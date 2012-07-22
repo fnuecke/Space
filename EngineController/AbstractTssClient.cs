@@ -5,7 +5,6 @@ using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
@@ -30,6 +29,10 @@ namespace Engine.Controller
         /// server. The lower the value the better the synchronization, but, obviously, also
         /// more network traffic.
         /// </summary>
+        /// <remarks>
+        /// This refers to the synchronization of game time, i.e. it ensures the server and
+        /// client run at approximately the same speed / the times do not diverge.
+        /// </remarks>
         private const int SyncInterval = 1000;
 
         #endregion
@@ -46,7 +49,7 @@ namespace Engine.Controller
         /// <summary>
         /// Last time we sent a sync command to the server.
         /// </summary>
-        private long _lastSyncTime;
+        private DateTime _lastSyncTime;
 
         /// <summary>
         /// Difference in current frame to server, as determined by the
@@ -54,6 +57,12 @@ namespace Engine.Controller
         /// caused e.g. by resent TCP packets).
         /// </summary>
         private readonly IntSampling _frameDiff = new IntSampling(5);
+
+        /// <summary>
+        /// The frame of the latest hash we got from the server (don't store
+        /// hashes from before that).
+        /// </summary>
+        private long _lastServerHashedFrame = 1;
 
         /// <summary>
         /// Keeping track of hashes to compare to reference hashes from
@@ -67,12 +76,6 @@ namespace Engine.Controller
         /// </summary>
         private readonly Dictionary<long, Tuple<List<int>, List<int>>> _individualHashes = new Dictionary<long, Tuple<List<int>, List<int>>>();
 
-        /// <summary>
-        /// The frame of the latest hash we got from the server (don't store
-        /// hashes from before that).
-        /// </summary>
-        private long _lastServerHashFrame;
-
         #endregion
 
         #region Construction / Destruction
@@ -84,7 +87,7 @@ namespace Engine.Controller
         protected AbstractTssClient(IClientSession session)
             : base(session, new[] {
                 (uint)Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
-                (uint)Math.Ceiling(500 / TargetElapsedMilliseconds) //< High, to avoid resyncs.
+                (uint)Math.Ceiling(500 / TargetElapsedMilliseconds) //< High, to avoid full resyncs.
             })
         {
             Session.JoinResponse += HandleJoinResponse;
@@ -114,31 +117,37 @@ namespace Engine.Controller
         /// in the base class. Also part of synchronizing run speeds on
         /// server and client by sending sync requests in certain intervals.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
-        public override void Update(GameTime gameTime)
+        public override void Update()
         {
-            if (Session.ConnectionState != ClientState.Connected || Tss.WaitingForSynchronization)
+            // Skip updates if we're waiting for the game state or were disconnected.
+            if (Tss.WaitingForSynchronization || Session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
 
             // Drive game logic.
-            UpdateSimulation(gameTime, AdjustedSpeed);
-
-            // Hash test.
-            if (Tss.TrailingFrame % HashInterval == 0)
-            {
-                // Generate hash.
-                var hasher = new Hasher();
-                Tss.Hash(hasher);
-                PerformHashCheck(hasher.Value, Tss.TrailingFrame, Tss.TrailingFrame > _lastServerHashFrame, GenerateSingleHashes);
-            }
+            UpdateSimulation(AdjustedSpeed);
 
             // Send sync command every now and then, to keep game clock synchronized.
             // No need to sync for a server that runs in the same program, though.
-            if (new TimeSpan(DateTime.Now.Ticks - _lastSyncTime).TotalMilliseconds > SyncInterval)
+            if (!Tss.WaitingForSynchronization && (DateTime.Now - _lastSyncTime).TotalMilliseconds > SyncInterval)
             {
                 PerformSync();
+            }
+        }
+
+        /// <summary>
+        /// Do hash checking if the frame is frame in which hash checking should be applied.
+        /// </summary>
+        protected override void PerformAdditionalUpdateActions()
+        {
+            // Hash test.
+            if (Tss.TrailingFrame > 0 && (Tss.TrailingFrame % HashInterval) == 0)
+            {
+                // Generate hash.
+                var hasher = new Hasher();
+                Tss.TrailingSimulation.Hash(hasher);
+                PerformHashCheck(hasher.Value, Tss.TrailingFrame, Tss.TrailingFrame >= _lastServerHashedFrame, GenerateSingleHashes);
             }
         }
 
@@ -179,7 +188,7 @@ namespace Engine.Controller
         /// </summary>
         private void PerformSync()
         {
-            _lastSyncTime = DateTime.Now.Ticks;
+            _lastSyncTime = DateTime.Now;
             using (var packet = new Packet())
             {
                 packet
@@ -280,6 +289,7 @@ namespace Engine.Controller
         /// </summary>
         public void PushLocalCommand(FrameCommand command)
         {
+            // Fill in / override data to be correct.
             command.Id = _nextCommandId++;
             command.PlayerNumber = Session.LocalPlayer.Number;
             command.Frame = Tss.CurrentFrame + 1;
@@ -308,7 +318,7 @@ namespace Engine.Controller
                 // Send command to host.
                 Send(command);
             }
-            else if (Tss.WaitingForSynchronization && command.Frame <= Tss.TrailingFrame)
+            else if (Tss.WaitingForSynchronization && command.Frame <= Tss.TrailingFrame) // TODO think this through again
             {
                 // We're waiting for a sync, and our trailing frame wasn't enough, so
                 // we just skip any commands whatsoever that are from before it.
@@ -347,13 +357,18 @@ namespace Engine.Controller
             switch (type)
             {
                 case TssControllerMessage.Command:
+                {
                     // Normal command, forward it.
                     var command = base.UnwrapDataForReceive(e);
+
                     // Test if we got the message from the server, to mark the command accordingly.
                     command.IsAuthoritative = args.IsAuthoritative;
-                    return command;
 
+                    // Return the deserialized command.
+                    return command;
+                }
                 case TssControllerMessage.Synchronize:
+                {
                     // Answer to a synchronization request.
                     // Only accept these when they come from the server, and disregard if
                     // we're waiting for a snapshot of the simulation.
@@ -385,22 +400,27 @@ namespace Engine.Controller
                         }
                     }
                     break;
-
+                }
                 case TssControllerMessage.HashCheck:
+                {
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
+                        // Get the frame this hash data is for.
                         var hashFrame = args.Data.ReadInt64();
+                        Debug.Assert(hashFrame > _lastServerHashedFrame);
+                        _lastServerHashedFrame = hashFrame;
+
+                        // Read hash values.
                         var hashValue = args.Data.ReadInt32();
 
-                        Debug.Assert(hashFrame > _lastServerHashFrame);
-                        _lastServerHashFrame = hashFrame;
-
-                        PerformHashCheck(hashValue, hashFrame, Tss.TrailingFrame < _lastServerHashFrame, () => ReadSingleHashes(args.Data));
+                        // And perform hash check.
+                        PerformHashCheck(hashValue, hashFrame, Tss.TrailingFrame < _lastServerHashedFrame, () => ReadSingleHashes(args.Data));
                     }
                     break;
-
-                case TssControllerMessage.GameStateResponse:
+                }
+                case TssControllerMessage.GameState:
+                {
                     // Got a simulation snap shot (normally after requesting it due to
                     // our simulation going out of scope for an older event).
                     // Only accept these when they come from the server.
@@ -412,7 +432,7 @@ namespace Engine.Controller
 
                         // Validate the data we got.
                         var hasher = new Hasher();
-                        Tss.Hash(hasher);
+                        Tss.TrailingSimulation.Hash(hasher);
                         if (hasher.Value != serverHash)
                         {
                             Logger.Error("Hash mismatch after deserialization.");
@@ -420,8 +440,9 @@ namespace Engine.Controller
                         }
                     }
                     break;
-
+                }
                 case TssControllerMessage.RemoveGameObject:
+                {
                     // Only accept these when they come from the server.
                     if (args.IsAuthoritative)
                     {
@@ -430,6 +451,7 @@ namespace Engine.Controller
                         Tss.RemoveEntity(entityUid, removeFrame);
                     }
                     break;
+                }
             }
             return null;
         }
@@ -448,7 +470,8 @@ namespace Engine.Controller
             Logger.Debug("Simulation invalidated, requesting server state.");
             using (var packet = new Packet())
             {
-                Session.Send(packet.Write((byte)TssControllerMessage.GameStateRequest));
+                packet.Write((byte)TssControllerMessage.GameState);
+                Session.Send(packet);
             }
         }
 

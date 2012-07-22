@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Simulation.Commands;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Simulation
 {
@@ -10,7 +9,7 @@ namespace Engine.Simulation
     /// pushed that was issued earlier than the current frame (if the command
     /// was authoritative, i.e. not tentative).
     /// </summary>
-    interface IReversibleSimulation : ISimulation
+    public interface IReversibleSimulation : ISimulation
     {
         /// <summary>
         /// Dispatched when the state needs to roll back further than it can
@@ -34,9 +33,8 @@ namespace Engine.Simulation
         /// <summary>
         /// Run the simulation to the given frame, which may be in the past.
         /// </summary>
-        /// <param name="gameTime">The elapsed time since the last call.</param>
         /// <param name="frame">the frame to run to.</param>
-        void RunToFrame(GameTime gameTime, long frame);
+        void RunToFrame(long frame);
 
         /// <summary>
         /// Push a command to be executed at the given frame.  This will roll

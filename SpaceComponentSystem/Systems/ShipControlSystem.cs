@@ -17,7 +17,7 @@ namespace Space.ComponentSystem.Systems
     {
         #region Logic
         
-        protected override void UpdateComponent(GameTime gameTime, long frame, ShipControl component)
+        protected override void UpdateComponent(long frame, ShipControl component)
         {
             // Get components we depend upon / modify.
             var transform = Manager.GetComponent<Transform>(component.Entity);

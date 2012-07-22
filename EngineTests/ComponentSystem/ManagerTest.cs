@@ -3,7 +3,6 @@ using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
-using Microsoft.Xna.Framework;
 using NSubstitute;
 
 namespace Engine.Tests.ComponentSystem
@@ -44,13 +43,13 @@ namespace Engine.Tests.ComponentSystem
 
             manager.AddSystem(system);
 
-            manager.Update(new GameTime(), 0);
+            manager.Update(0);
             
-            system.Received().Update(Arg.Any<GameTime>(), Arg.Any<long>());
+            system.Received().Update(Arg.Any<long>());
 
-            manager.Draw(new GameTime(), 0);
+            manager.Draw(0);
 
-            system.Received().Draw(Arg.Any<GameTime>(), Arg.Any<long>());
+            system.Received().Draw(Arg.Any<long>());
         }
 
         [Test]

@@ -5,7 +5,6 @@ using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Messages;
 using Space.Data;
@@ -42,7 +41,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        public override void Update(GameTime gameTime, long frame)
+        public override void Update(long frame)
         {
             // Reduce cooldowns.
             _reusableEntities.AddRange(_cooldowns.Keys);
@@ -55,10 +54,10 @@ namespace Space.ComponentSystem.Systems
             }
             _reusableEntities.Clear();
 
-            base.Update(gameTime, frame);
+            base.Update(frame);
         }
 
-        protected override void UpdateComponent(GameTime gameTime, long frame, WeaponControl component)
+        protected override void UpdateComponent(long frame, WeaponControl component)
         {
             // Nothing to do if we're not shooting.
             if (!component.Shooting)

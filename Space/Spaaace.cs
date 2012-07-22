@@ -510,7 +510,7 @@ namespace Space
             // Draw world elements if we're in a game.
             if (_client != null && _client.Controller.Session.ConnectionState == ClientState.Connected)
             {
-                _client.Controller.Draw(gameTime);
+                _client.Controller.Draw();
             }
 
             // Draw other stuff (GUI for example).

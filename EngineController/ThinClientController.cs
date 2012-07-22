@@ -2,7 +2,6 @@
 using Engine.Session;
 using Engine.Simulation;
 using Engine.Simulation.Commands;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
@@ -99,13 +98,12 @@ namespace Engine.Controller
         #endregion
 
         #region Logic
-        
+
         /// <summary>
         /// Update the underlying session. Incoming stuff isn't used, but
         /// avoids clotting of the received message buffer.
         /// </summary>
-        /// <param name="gameTime">Unused.</param>
-        public override void Update(GameTime gameTime)
+        public override void Update()
         {
             Session.Update();
         }
@@ -113,12 +111,11 @@ namespace Engine.Controller
         /// <summary>
         /// Render the server game state.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
-        public override void Draw(GameTime gameTime)
+        public override void Draw()
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                Simulation.Manager.Draw(gameTime, Simulation.CurrentFrame);
+                Simulation.Manager.Draw(Simulation.CurrentFrame);
             }
         }
 

@@ -42,9 +42,8 @@ namespace Engine.ComponentSystem.Common
         /// <summary>
         /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Draw(GameTime gameTime, long frame)
+        public override void Draw(long frame)
         {
             // Get all renderable entities in the viewport.
             var view = ComputeViewport();
@@ -66,7 +65,7 @@ namespace Engine.ComponentSystem.Common
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
                     {
-                        DrawComponent(gameTime, frame, component);
+                        DrawComponent(frame, component);
                     }
                 }
             }
@@ -77,7 +76,7 @@ namespace Engine.ComponentSystem.Common
                     // Skip disabled or invisible entities.
                     if (component.Enabled && _drawablesInView.Contains(component.Entity))
                     {
-                        DrawComponent(gameTime, frame, component);
+                        DrawComponent(frame, component);
                     }
                 }
             }

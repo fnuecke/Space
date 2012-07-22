@@ -6,7 +6,6 @@ using Engine.Session;
 using Engine.Simulation;
 using Engine.Simulation.Commands;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
@@ -25,7 +24,7 @@ namespace Engine.Controller
         internal enum TssControllerMessage
         {
             /// <summary>
-            /// Normal game command, handled in base class.
+            /// Normal simulation command, handled in base class.
             /// </summary>
             Command,
 
@@ -39,12 +38,7 @@ namespace Engine.Controller
             /// Client requested the game state, e.g. because it could not
             /// roll back to a required state.
             /// </summary>
-            GameStateRequest,
-
-            /// <summary>
-            /// Server sends game state to client in response to <c>GameStateRequest</c>.
-            /// </summary>
-            GameStateResponse,
+            GameState,
 
             /// <summary>
             /// Server tells players to remove an object from the simulation.
@@ -70,7 +64,7 @@ namespace Engine.Controller
         /// <summary>
         /// The interval in ticks after which to send a hash check to the clients.
         /// </summary>
-        protected const int HashInterval = (int)(10 * TargetElapsedMilliseconds); // ~10 seconds
+        protected const int HashInterval = (int)(10000 / TargetElapsedMilliseconds); // ~10s
 
         /// <summary>
         /// The actual load is multiplied with this factor to provide a little
@@ -131,7 +125,12 @@ namespace Engine.Controller
         /// <summary>
         /// Wrapper to restrict interaction with TSS.
         /// </summary>
-        private readonly SimulationWrapper _simulation;
+        private readonly ISimulation _simulation;
+
+        /// <summary>
+        /// The time we performed our last update.
+        /// </summary>
+        private DateTime _lastUpdate;
 
         /// <summary>
         /// The remainder of time we did not update last frame, which we'll add to the
@@ -163,7 +162,7 @@ namespace Engine.Controller
             : base(session)
         {
             Tss = new TSS(delays);
-            _simulation = new SimulationWrapper(this);
+            _simulation = new TssSimulationWrapper(this);
         }
 
         #endregion
@@ -174,13 +173,11 @@ namespace Engine.Controller
         /// Update the simulation. This determines how many steps to perform,
         /// based on the elapsed time.
         /// </summary>
-        /// <param name="gameTime">the game time information for the current
-        /// update.</param>
         /// <param name="targetSpeed">The target speed.</param>
-        protected void UpdateSimulation(GameTime gameTime, double targetSpeed = 1.0)
+        protected void UpdateSimulation(double targetSpeed = 1.0)
         {
             // We can run at least one frame, so do the update(s).
-            var begin = DateTime.Now.Ticks;
+            var begin = DateTime.Now;
 
             // Incorporate frame skip.
             if (_frameskipRemainder > 0)
@@ -201,17 +198,18 @@ namespace Engine.Controller
             double timePassed = 0;
 
             // Compensate for dynamic time step.
-            var elapsed = gameTime.ElapsedGameTime.TotalMilliseconds + _lastUpdateRemainder;
+            var elapsed = (DateTime.Now - _lastUpdate).TotalMilliseconds + _lastUpdateRemainder;
+            _lastUpdate = DateTime.Now;
             var targetFrequency = TargetElapsedMilliseconds / targetSpeed;
             if (elapsed < targetFrequency)
             {
                 // If we can't actually run to the next frame, at least update
                 // back to the current frame in case rollbacks were made to
                 // accommodate player commands.
-                Tss.RunToFrame(gameTime, Tss.CurrentFrame);
+                Tss.RunToFrame(Tss.CurrentFrame);
 
                 // Track how much time we spent in this update.
-                timePassed = new TimeSpan(DateTime.Now.Ticks - begin).TotalMilliseconds;
+                timePassed = (DateTime.Now - begin).TotalMilliseconds;
 
                 // Carry this to the next frame, for uncapped frame rates.
                 _lastUpdateRemainder = elapsed;
@@ -226,18 +224,20 @@ namespace Engine.Controller
                 // Do as many updates as we can.
                 while (remainingTime >= targetFrequency && timePassed < targetFrequency)
                 {
-                    Tss.Update(gameTime);
+                    Tss.Update();
+
+                    PerformAdditionalUpdateActions();
 
                     // One less to do.
                     remainingTime -= targetFrequency;
 
                     // Track how much time we spent in this update.
-                    timePassed = new TimeSpan(DateTime.Now.Ticks - begin).TotalMilliseconds;
+                    timePassed = (DateTime.Now - begin).TotalMilliseconds;
                 }
 
                 // Keep a carry for the next update. But never try to catch up
                 // on frames while we took too long, as this'll lead to the
-                // simulation running to fast when catching up.
+                // simulation running too fast when catching up.
                 _lastUpdateRemainder = Math.Min(remainingTime, targetFrequency);
             }
 
@@ -248,6 +248,14 @@ namespace Engine.Controller
             {
                 _updateLoad.Put(timePassed / TargetElapsedMilliseconds);
             }
+        }
+
+        /// <summary>
+        /// Callback that allows subclasses to perform additional logic that
+        /// should be executed per actual simulation update.
+        /// </summary>
+        protected virtual void PerformAdditionalUpdateActions()
+        {
         }
 
         /// <summary>
@@ -302,7 +310,11 @@ namespace Engine.Controller
 
         #region Simulation wrapper
 
-        private sealed class SimulationWrapper : ISimulation
+        /// <summary>
+        /// Wrapper for the encapsulated simulation, to minimize points in API
+        /// that could corrupt the simulation.
+        /// </summary>
+        private sealed class TssSimulationWrapper : ISimulation
         {
             #region Properties
 
@@ -333,7 +345,7 @@ namespace Engine.Controller
             /// Creates a new wrapper for the specified controller.
             /// </summary>
             /// <param name="controller">The controller.</param>
-            public SimulationWrapper(AbstractTssController<TSession> controller)
+            public TssSimulationWrapper(AbstractTssController<TSession> controller)
             {
                 _controller = controller;
             }
@@ -341,14 +353,13 @@ namespace Engine.Controller
             #endregion
 
             #region Logic
-            
+
             /// <summary>
             /// Advance the simulation by one frame.
             /// </summary>
-            /// <param name="gameTime">The elapsed time since the last call to Update.</param>
-            public void Update(GameTime gameTime)
+            public void Update()
             {
-                _controller.Tss.Update(gameTime);
+                _controller.Tss.Update();
             }
 
             /// <summary>
@@ -444,12 +455,11 @@ namespace Engine.Controller
                 m1 = Tss.Manager.NewInstance();
                 m2.CopyInto(m1);
 
-                var gt = new GameTime(TimeSpan.Zero, TimeSpan.Zero);
                 var frame = 0;
                 for (var i = 0; i < 10; ++i)
                 {
-                    m1.Update(gt, frame);
-                    m2.Update(gt, frame++);
+                    m1.Update(frame);
+                    m2.Update(frame++);
                 }
 
                 hasher = new Hasher();
@@ -513,12 +523,11 @@ namespace Engine.Controller
                     m1 = Tss.Manager.NewInstance();
                     m2.CopyInto(m1);
 
-                    var gt = new GameTime(TimeSpan.Zero, TimeSpan.Zero);
                     var frame = 0;
                     for (var i = 0; i < 10; ++i)
                     {
-                        m1.Update(gt, frame);
-                        m2.Update(gt, frame++);
+                        m1.Update(frame);
+                        m2.Update(frame++);
                     }
 
                     hasher = new Hasher();
@@ -570,7 +579,7 @@ namespace Engine.Controller
         [Conditional("DEBUG")]
         public void ValidateRollback()
         {
-            Tss.RunToFrame(new GameTime(), Tss.TrailingFrame);
+            Tss.RunToFrame(Tss.TrailingFrame);
         }
 
         #endregion

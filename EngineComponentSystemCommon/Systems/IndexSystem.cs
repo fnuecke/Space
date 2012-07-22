@@ -540,9 +540,9 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
-        public override void Update(GameTime gameTime, long frame)
+        public override void Update(long frame)
         {
-            base.Update(gameTime, frame);
+            base.Update(frame);
 
             _numQueriesLastUpdate = 0;
         }

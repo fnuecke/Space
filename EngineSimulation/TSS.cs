@@ -6,7 +6,6 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Simulation
 {
@@ -237,11 +236,10 @@ namespace Engine.Simulation
         /// Advance leading simulation to <c>CurrentFrame + 1</c> and update
         /// all trailing simulations accordingly.
         /// </summary>
-        /// <param name="gameTime">The elapsed time since the last call to Update.</param>
-        public void Update(GameTime gameTime)
+        public void Update()
         {
             // Advance the simulation.
-            FastForward(gameTime, ++CurrentFrame);
+            FastForward(++CurrentFrame);
         }
 
         #endregion
@@ -285,9 +283,8 @@ namespace Engine.Simulation
         /// means that no adds/removes/commands/update will be applied to that
         /// actual frame just yet.
         /// </summary>
-        /// <param name="gameTime">The elapsed time since the last call to Update.</param>
         /// <param name="frame">the frame to run to.</param>
-        public void RunToFrame(GameTime gameTime, long frame)
+        public void RunToFrame(long frame)
         {
             // Do not allow changes while waiting for synchronization.
             if (WaitingForSynchronization)
@@ -298,7 +295,7 @@ namespace Engine.Simulation
             if (frame >= CurrentFrame)
             {
                 // Moving forward, just run.
-                FastForward(gameTime, frame);
+                FastForward(frame);
             }
             else
             {
@@ -404,7 +401,7 @@ namespace Engine.Simulation
         /// <param name="hasher">the hasher to push data to.</param>
         public void Hash(Hasher hasher)
         {
-            TrailingSimulation.Hash(hasher);
+            throw new NotSupportedException();
         }
 
         /// <summary>
@@ -442,9 +439,8 @@ namespace Engine.Simulation
         /// be applied to the given frame, and its <c>Update()</c> method will
         /// *not* be called once it reaches the given frame).
         /// </summary>
-        /// <param name="gameTime">The time that elapsed since the last call.</param>
         /// <param name="frame">The frame up to which to run.</param>
-        private void FastForward(GameTime gameTime, long frame)
+        private void FastForward(long frame)
         {
             // Start threads for the non-trailing frames.
 #if TSS_THREADING
@@ -459,7 +455,7 @@ namespace Engine.Simulation
 #endif
 
             // Process the trailing state, see if we need a roll-back.
-            bool needsRewind = false;
+            var needsRewind = false;
             while (TrailingSimulation.CurrentFrame < frame - _delays[_simulations.Length - 1])
             {
                 // It needs running, so prepare it for that.
@@ -472,7 +468,7 @@ namespace Engine.Simulation
                 }
 
                 // Do the actual stepping for the state.
-                TrailingSimulation.Update(gameTime);
+                TrailingSimulation.Update();
             }
 
 #if TSS_THREADING
@@ -503,12 +499,12 @@ namespace Engine.Simulation
 
             // Fast-forward the remaining states. Do not log in those, we only
             // want to log the trailing state.
-            for (int i = 0; i < _simulations.Length - 1; i++)
+            for (var i = 0; i < _simulations.Length - 1; i++)
             {
                 while (_simulations[i].CurrentFrame < frame - _delays[i])
                 {
                     PrepareForUpdate(_simulations[i]);
-                    _simulations[i].Update(gameTime);
+                    _simulations[i].Update();
                 }
             }
 
@@ -701,7 +697,7 @@ namespace Engine.Simulation
             /// </summary>
             public IEnumerable<Component> Components
             {
-                get { return _tss.LeadingSimulation.Manager.Components; }
+                get { throw new NotSupportedException(); }
             }
 
             /// <summary>
@@ -709,7 +705,7 @@ namespace Engine.Simulation
             /// </summary>
             public int NumComponents
             {
-                get { return _tss.LeadingSimulation.Manager.NumComponents; }
+                get { throw new NotSupportedException(); }
             }
 
             /// <summary>
@@ -717,7 +713,7 @@ namespace Engine.Simulation
             /// </summary>
             public IEnumerable<AbstractSystem> Systems
             {
-                get { return _tss.LeadingSimulation.Manager.Systems; }
+                get { throw new NotSupportedException(); }
             }
 
             /// <summary>
@@ -725,7 +721,7 @@ namespace Engine.Simulation
             /// </summary>
             public int NumSystems
             {
-                get { return _tss.LeadingSimulation.Manager.NumSystems; }
+                get { throw new NotSupportedException(); }
             }
 
             #endregion
@@ -753,9 +749,8 @@ namespace Engine.Simulation
             /// <summary>
             /// Update all registered systems.
             /// </summary>
-            /// <param name="gameTime">Time elapsed since the last call to Update.</param>
             /// <param name="frame">The frame in which the update is applied.</param>
-            public void Update(GameTime gameTime, long frame)
+            public void Update(long frame)
             {
                 throw new NotSupportedException();
             }
@@ -763,11 +758,10 @@ namespace Engine.Simulation
             /// <summary>
             /// Renders all registered systems.
             /// </summary>
-            /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
             /// <param name="frame">The frame to render.</param>
-            public void Draw(GameTime gameTime, long frame)
+            public void Draw(long frame)
             {
-                _tss.LeadingSimulation.Manager.Draw(gameTime, frame);
+                _tss.LeadingSimulation.Manager.Draw(frame);
             }
 
             #endregion

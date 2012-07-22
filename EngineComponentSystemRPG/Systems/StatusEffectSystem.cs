@@ -1,6 +1,5 @@
 ﻿using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.RPG.Systems
 {
@@ -10,7 +9,7 @@ namespace Engine.ComponentSystem.RPG.Systems
     /// </summary>
     public sealed class StatusEffectSystem : AbstractComponentSystem<StatusEffect>
     {
-        protected override void UpdateComponent(GameTime gameTime, long frame, StatusEffect component)
+        protected override void UpdateComponent(long frame, StatusEffect component)
         {
             if (component.Remaining > 0)
             {

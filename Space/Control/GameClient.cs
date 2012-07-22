@@ -260,7 +260,7 @@ namespace Space.Control
         {
             base.Update(gameTime);
 
-            Controller.Update(gameTime);
+            Controller.Update();
 
             if ((DateTime.Now - _lastSave).TotalSeconds > SaveInterval)
             {

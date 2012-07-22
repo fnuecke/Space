@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Components.Messages;
 using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
@@ -22,14 +21,13 @@ namespace Space.ComponentSystem.Systems
         #endregion
 
         #region Logic
-        
+
         /// <summary>
         /// Decrements cooldowns, clears entries for expired cooldown.
         /// </summary>
-        /// <param name="gameTime">The game time.</param>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
-        protected override void UpdateComponent(GameTime gameTime, long frame, CollisionDamage component)
+        protected override void UpdateComponent(long frame, CollisionDamage component)
         {
             // Decrement, remove if run out.
             _reusableCooldownList.AddRange(component.Cooldowns.Keys);

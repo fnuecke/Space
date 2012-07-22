@@ -2,7 +2,6 @@
 using Engine.Serialization;
 using Engine.Simulation.Commands;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Simulation
 {
@@ -24,8 +23,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Advance the simulation by one frame.
         /// </summary>
-        /// <param name="gameTime">The elapsed time since the last call to Update.</param>
-        void Update(GameTime gameTime);
+        void Update();
 
         /// <summary>
         /// Apply a given command to the simulation state.

@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using ProjectMercury;
 using ProjectMercury.Renderers;
+using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
@@ -66,11 +67,10 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Updates all particle effects.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Update(GameTime gameTime, long frame)
+        public override void Update(long frame)
         {
-            base.Update(gameTime, frame);
+            base.Update(frame);
 
             // Only update in the main instance, otherwise effects play too fast.
             if (!_isDrawingInstance)
@@ -88,11 +88,10 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Flags our system as the presenting instance and renders all effects.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame that should be rendered.</param>
-        public override void Draw(GameTime gameTime, long frame)
+        public override void Draw(long frame)
         {
-            base.Draw(gameTime, frame);
+            base.Draw(frame);
 
             _isDrawingInstance = true;
 
@@ -107,10 +106,9 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Emits particles for enabled particle effects.
         /// </summary>
-        /// <param name="gameTime"></param>
         /// <param name="frame"></param>
         /// <param name="component"></param>
-        protected override void UpdateComponent(GameTime gameTime, long frame, Components.ParticleEffects component)
+        protected override void UpdateComponent(long frame, ParticleEffects component)
         {
             foreach (var effect in component.Effects)
             {

@@ -57,9 +57,8 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Draw(GameTime gameTime, long frame)
+        public override void Draw(long frame)
         {
             var camera = Manager.GetSystem<CameraSystem>();
 
@@ -75,7 +74,7 @@ namespace Space.ComponentSystem.Systems
 
             // Set/get loop invariants.
             var translation = camera.GetTranslation();
-            _sun.GameTime = gameTime;
+            _sun.Time = frame;
             _sun.Scale = camera.Zoom;
 
             // Iterate over the shorter list.

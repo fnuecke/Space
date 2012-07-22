@@ -303,6 +303,23 @@ namespace Engine.Serialization
         }
 
         /// <summary>
+        /// Writes the specified type using its assembly qualified name.
+        /// </summary>
+        /// <param name="type">The value to write.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Write(Type type)
+        {
+            if (type == null)
+            {
+                return Write((string)null);
+            }
+            else
+            {
+                return Write(type.AssemblyQualifiedName);
+            }
+        }
+
+        /// <summary>
         /// Writes the specified packet.
         /// 
         /// <para>
@@ -361,7 +378,14 @@ namespace Engine.Serialization
         /// <returns>This packet, for call chaining.</returns>
         public Packet WriteWithTypeInfo(IPacketizable data)
         {
-            return Write(data.GetType().AssemblyQualifiedName).Write(data);
+            if (data == null)
+            {
+                return Write((Type)null);
+            }
+            else
+            {
+                return Write(data.GetType()).Write(data);   
+            }
         }
 
         /// <summary>
@@ -696,6 +720,27 @@ namespace Engine.Serialization
         }
 
         /// <summary>
+        /// Reads a type value using its assembly qualified name for lookup.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The type is not known in the
+        /// local assembly.</exception>
+        public Type ReadType()
+        {
+            var typeName = ReadString();
+            if (typeName == null)
+            {
+                return null;
+            }
+            var type = Type.GetType(typeName);
+            if (type == null)
+            {
+                throw new PacketException("Cannot read unkown Type ('" + typeName + "').");
+            }
+            return type;
+        }
+
+        /// <summary>
         /// Reads a packet.
         /// 
         /// <para>
@@ -774,13 +819,15 @@ namespace Engine.Serialization
         public T ReadPacketizableWithTypeInfo<T>()
             where T : IPacketizable
         {
-            var typeName = ReadString();
-            var type = Type.GetType(typeName);
+            var type = ReadType();
             if (type == null)
             {
-                throw new InvalidOperationException("Trying to read an unknown type '" + typeName + "'.");
+                return default(T);
             }
-            return ReadPacketizableInto((T)Activator.CreateInstance(type));
+            else
+            {
+                return ReadPacketizableInto((T)Activator.CreateInstance(type));
+            }
         }
 
         /// <summary>

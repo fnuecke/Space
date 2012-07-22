@@ -1,5 +1,4 @@
 ﻿using Engine.ComponentSystem.Components;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -9,7 +8,7 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public sealed class ExpirationSystem : AbstractComponentSystem<Expiration>
     {
-        protected override void UpdateComponent(GameTime gameTime, long frame, Expiration component)
+        protected override void UpdateComponent(long frame, Expiration component)
         {
             if (component.TimeToLive > 0)
             {

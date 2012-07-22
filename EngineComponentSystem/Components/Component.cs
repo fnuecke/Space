@@ -113,6 +113,7 @@ namespace Engine.ComponentSystem.Components
         /// <param name="hasher">The hasher to push data to.</param>
         public virtual void Hash(Hasher hasher)
         {
+            hasher.Put(GetType().AssemblyQualifiedName);
             hasher.Put(Id);
             hasher.Put(Entity);
             hasher.Put(Enabled);

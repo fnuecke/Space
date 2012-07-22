@@ -62,10 +62,9 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Load surface texture if necessary.
         /// </summary>
-        /// <param name="gameTime">The game time.</param>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
-        protected override void UpdateComponent(GameTime gameTime, long frame, PlanetRenderer component)
+        protected override void UpdateComponent(long frame, PlanetRenderer component)
         {
             if (component.Texture == null)
             {
@@ -76,9 +75,8 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Draw(GameTime gameTime, long frame)
+        public override void Draw(long frame)
         {
             var camera = Manager.GetSystem<CameraSystem>();
 
@@ -95,7 +93,7 @@ namespace Space.ComponentSystem.Systems
             // Set/get loop invariants.
             var translation = camera.GetTranslation();
             var zoom = camera.Zoom;
-            _planet.GameTime = gameTime;
+            _planet.Time = frame;
             _planet.Scale = zoom;
             
             // Iterate over the shorter list.

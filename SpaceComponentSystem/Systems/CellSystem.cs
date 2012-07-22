@@ -145,9 +145,8 @@ namespace Space.ComponentSystem.Systems
         /// Checks all players' positions to determine which cells are active
         /// and which are not. Sends messages if a cell's state changes.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame the update applies to.</param>
-        public override void Update(GameTime gameTime, long frame)
+        public override void Update(long frame)
         {
             // Check the positions of all avatars to check which cells
             // should live, and which should die / stay dead.

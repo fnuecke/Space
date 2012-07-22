@@ -4,7 +4,6 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem
 {
@@ -43,16 +42,14 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Update all registered systems.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        void Update(GameTime gameTime, long frame);
+        void Update(long frame);
 
         /// <summary>
         /// Renders all registered systems.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame to render.</param>
-        void Draw(GameTime gameTime, long frame);
+        void Draw(long frame);
         
         #endregion
 

@@ -13,7 +13,7 @@ namespace Engine.Util
     public sealed class IdManager : IPacketizable, ICopyable<IdManager>, IEnumerable<int>
     {
         #region Fields
-        
+
         /// <summary>
         /// The list of ids that were released and may be reused.
         /// </summary>

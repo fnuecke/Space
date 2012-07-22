@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        protected override void UpdateComponent(GameTime gameTime, long frame, ShipSpawner component)
+        protected override void UpdateComponent(long frame, ShipSpawner component)
         {
             if (component.Cooldown > 0)
             {

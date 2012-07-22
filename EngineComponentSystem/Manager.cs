@@ -7,7 +7,6 @@ using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem
 {
@@ -77,6 +76,11 @@ namespace Engine.ComponentSystem
         private readonly List<Component> _components = new List<Component>();
 
         /// <summary>
+        /// For faster lookup (than binary search).
+        /// </summary>
+        private readonly Dictionary<int, Component> _componentsById = new Dictionary<int, Component>();
+
+        /// <summary>
         /// List of systems registered with this manager.
         /// </summary>
         private readonly List<AbstractSystem> _systems = new List<AbstractSystem>(); 
@@ -93,13 +97,12 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Update all registered systems.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public void Update(GameTime gameTime, long frame)
+        public void Update(long frame)
         {
             foreach (var system in _systems)
             {
-                system.Update(gameTime, frame);
+                system.Update(frame);
             }
 
             // Make released component instances from the last update available
@@ -111,13 +114,12 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Renders all registered systems.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame to render.</param>
-        public void Draw(GameTime gameTime, long frame)
+        public void Draw(long frame)
         {
             foreach (var system in _systems)
             {
-                system.Draw(gameTime, frame);
+                system.Draw(frame);
             }
         }
 
@@ -309,6 +311,7 @@ namespace Engine.ComponentSystem
             component.Entity = entity;
             component.Enabled = true;
             _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
+            _componentsById[component.Id] = component;
 
             // Add to entity index.
             _entities[entity].Add(component);
@@ -353,6 +356,7 @@ namespace Engine.ComponentSystem
             // Remove it from the mapping and release the id for reuse.
             _entities[component.Entity].Remove(component);
             _components.RemoveAt(_components.BinarySearch(component, ComponentComparer.Instance));
+            _componentsById.Remove(component.Id);
             _componentIds.ReleaseId(component.Id);
 
             // Send a message to all interested systems.
@@ -413,34 +417,7 @@ namespace Engine.ComponentSystem
                 throw new ArgumentException("No such component in the system.", "componentId");
             }
 
-            // Manual binary search because we don't have an actual component,
-            // and the list built-in one requires the search arg to be the
-            // same type as the stored value.
-            // Implementation from https://en.wikibooks.org/wiki/Algorithm_Implementation/Search/Binary_search#C.23_.28common_Algorithm.29
-            int low = 0, high = _components.Count - 1;
-            while (low <= high)
-            {
-                var midpoint = low + (high - low) / 2;
-
-                // Check to see if value is equal to item in array.
-                if (componentId == _components[midpoint].Id)
-                {
-                    return _components[midpoint];
-                }
-
-                // Otherwise continue search in respective array segment.
-                if (componentId < _components[midpoint].Id)
-                {
-                    high = midpoint - 1;
-                }
-                else
-                {
-                    low = midpoint + 1;
-                }
-            }
-
-            // This should never ever happen.
-            throw new InvalidOperationException("Manager is broken: component not found even though it should exist.");
+            return _componentsById[componentId];
         }
 
         /// <summary>
@@ -536,6 +513,7 @@ namespace Engine.ComponentSystem
                 ReleaseComponent(component);
             }
             _components.Clear();
+            _componentsById.Clear();
 
             // Get the managers for ids (restores "known" ids before restoring components).
             packet.ReadPacketizableInto(_entityIds);
@@ -556,6 +534,7 @@ namespace Engine.ComponentSystem
                 var component = packet.ReadPacketizableInto(AllocateComponent(type));
                 component.Manager = this;
                 _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
+                _componentsById[component.Id] = component;
 
                 // Add to entity mapping, create entries as necessary.
                 if (!_entities.ContainsKey(component.Entity))
@@ -654,6 +633,7 @@ namespace Engine.ComponentSystem
                 component.Entity = entity;
                 component.Manager = this;
                 _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
+                _componentsById[component.Id] = component;
 
                 // Add to entity index.
                 _entities[entity].Add(component);
@@ -704,6 +684,7 @@ namespace Engine.ComponentSystem
 
             // Copy components and entities.
             copy._components.Clear();
+            copy._componentsById.Clear();
             foreach (var component in _components)
             {
                 // The create the component and set it up.
@@ -711,7 +692,8 @@ namespace Engine.ComponentSystem
                 componentCopy.Id = component.Id;
                 componentCopy.Entity = component.Entity;
                 componentCopy.Manager = copy;
-                copy._components.Insert(~copy._components.BinarySearch(componentCopy, ComponentComparer.Instance), componentCopy);
+                copy._components.Add(componentCopy);
+                copy._componentsById[componentCopy.Id] = componentCopy;
             }
 
             copy._entities.Clear();

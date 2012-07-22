@@ -71,7 +71,7 @@ namespace Space.Control
         {
             base.Update(gameTime);
             
-            Controller.Update(gameTime);
+            Controller.Update();
         }
         
         #endregion

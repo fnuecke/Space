@@ -2,7 +2,6 @@
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
@@ -42,7 +41,7 @@ namespace Engine.Controller
         /// <param name="session">The session to use.</param>
         protected AbstractController(TSession session)
         {
-            this.Session = session;
+            Session = session;
             Session.Data += HandlePlayerData;
         }
 
@@ -67,20 +66,18 @@ namespace Engine.Controller
         #endregion
 
         #region Logic
-        
+
         /// <summary>
         /// Called when the controller needs to be updated.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
-        public virtual void Update(GameTime gameTime)
+        public virtual void Update()
         {
         }
 
         /// <summary>
         /// Called when the controller needs to be rendered.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
-        public virtual void Draw(GameTime gameTime)
+        public virtual void Draw()
         {
         }
 
@@ -180,7 +177,7 @@ namespace Engine.Controller
             {
                 Logger.WarnException("Failed parsing received packet.", ex);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
                 Logger.WarnException("Failed deserializing data.", ex);
             }

@@ -5,7 +5,6 @@ using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -41,16 +40,15 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Loops over all components and calls <c>UpdateComponent()</c>.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Update(GameTime gameTime, long frame)
+        public override void Update(long frame)
         {
             UpdatingComponents.AddRange(Components);
             foreach (var component in UpdatingComponents)
             {
                 if (component.Enabled)
                 {
-                    UpdateComponent(gameTime, frame, component);
+                    UpdateComponent(frame, component);
                 }
             }
             UpdatingComponents.Clear();
@@ -59,15 +57,14 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Loops over all components and calls <c>DrawComponent()</c>.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Draw(GameTime gameTime, long frame)
+        public override void Draw(long frame)
         {
             foreach (var component in Components)
             {
                 if (component.Enabled)
                 {
-                    DrawComponent(gameTime, frame, component);
+                    DrawComponent(frame, component);
                 }
             }
         }
@@ -75,20 +72,18 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Applies the system's logic to the specified component.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
         /// <param name="component">The component to update.</param>
-        protected virtual void UpdateComponent(GameTime gameTime, long frame, TComponent component)
+        protected virtual void UpdateComponent(long frame, TComponent component)
         {
         }
 
         /// <summary>
         /// Applies the system's rendering to the specified component.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
         /// <param name="component">The component to draw.</param>
-        protected virtual void DrawComponent(GameTime gameTime, long frame, TComponent component)
+        protected virtual void DrawComponent(long frame, TComponent component)
         {
         }
 

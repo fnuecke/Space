@@ -32,7 +32,7 @@ namespace Space.ComponentSystem.Systems
 
         #region Logic
 
-        protected override void UpdateComponent(GameTime gameTime, long frame, Gravitation component)
+        protected override void UpdateComponent(long frame, Gravitation component)
         {
             // Only do something if we're attracting stuff.
             if ((component.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)

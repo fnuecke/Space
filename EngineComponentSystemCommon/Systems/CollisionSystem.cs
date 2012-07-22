@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Components.Messages;
 using Engine.ComponentSystem.Messages;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -60,9 +59,8 @@ namespace Engine.ComponentSystem.Systems
         /// Does a normal update but clears the list of performed checks
         /// afterwards..
         /// </summary>
-        /// <param name="gameTime">The game time.</param>
         /// <param name="frame">The frame.</param>
-        public override void Update(GameTime gameTime, long frame)
+        public override void Update(long frame)
         {
             var index = Manager.GetSystem<IndexSystem>();
             ICollection<int> neighbors = _reusableNeighborList;

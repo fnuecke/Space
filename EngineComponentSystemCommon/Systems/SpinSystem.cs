@@ -1,5 +1,4 @@
 ﻿using Engine.ComponentSystem.Components;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -8,7 +7,7 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public sealed class SpinSystem : AbstractComponentSystem<Spin>
     {
-        protected override void UpdateComponent(GameTime gameTime, long frame, Spin component)
+        protected override void UpdateComponent(long frame, Spin component)
         {
             Manager.GetComponent<Transform>(component.Entity).AddRotation(component.Value);
         }

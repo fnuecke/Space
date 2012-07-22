@@ -13,7 +13,7 @@ namespace Engine.ComponentSystem.Components
     /// Requires: <c>Transform</c>.
     /// </para>
     /// </summary>
-    public class CollidableSphere : Collidable
+    public sealed class CollidableSphere : Collidable
     {
         #region Fields
         

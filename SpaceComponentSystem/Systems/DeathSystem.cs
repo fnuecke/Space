@@ -18,10 +18,9 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Checks for entities to respawn.
         /// </summary>
-        /// <param name="gameTime">The game time.</param>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
-        protected override void UpdateComponent(GameTime gameTime, long frame, Respawn component)
+        protected override void UpdateComponent(long frame, Respawn component)
         {
             if (component.TimeToRespawn <= 0 || --component.TimeToRespawn != 0)
             {

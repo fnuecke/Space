@@ -1,7 +1,6 @@
 ﻿using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
@@ -52,12 +51,11 @@ namespace Engine.Controller
         /// <summary>
         /// Update session and self.
         /// </summary>
-        /// <param name="gameTime"></param>
-        public override void Update(GameTime gameTime)
+        public override void Update()
         {
             Session.Update();
             
-            base.Update(gameTime);
+            base.Update();
         }
 
         #endregion

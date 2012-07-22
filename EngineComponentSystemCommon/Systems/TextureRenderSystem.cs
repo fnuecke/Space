@@ -41,10 +41,9 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Loads texture, if it's not set.
         /// </summary>
-        /// <param name="gameTime">The game time.</param>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
-        protected override void UpdateComponent(GameTime gameTime, long frame, TextureRenderer component)
+        protected override void UpdateComponent(long frame, TextureRenderer component)
         {
             if (component.Texture == null)
             {
@@ -55,10 +54,9 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Draws the component.
         /// </summary>
-        /// <param name="gameTime">The game time.</param>
         /// <param name="frame">The frame.</param>
         /// <param name="component">The component.</param>
-        protected override void DrawComponent(GameTime gameTime, long frame, TextureRenderer component)
+        protected override void DrawComponent(long frame, TextureRenderer component)
         {
             // Draw the texture based on its position.
             var transform = Manager.GetComponent<Transform>(component.Entity);

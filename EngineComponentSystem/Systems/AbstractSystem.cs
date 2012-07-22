@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Systems
 {
@@ -24,18 +23,16 @@ namespace Engine.ComponentSystem.Systems
         /// <summary>
         /// Default implementation does nothing.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame in which the update is applied.</param>
-        public virtual void Update(GameTime gameTime, long frame)
+        public virtual void Update(long frame)
         {
         }
 
         /// <summary>
         /// Default implementation does nothing.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
         /// <param name="frame">The frame that should be rendered.</param>
-        public virtual void Draw(GameTime gameTime, long frame)
+        public virtual void Draw(long frame)
         {
         }
 

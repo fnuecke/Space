@@ -1,7 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
@@ -11,7 +10,7 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class RegeneratingValueSystem : AbstractComponentSystem<AbstractRegeneratingValue>
     {
-        protected override void UpdateComponent(GameTime gameTime, long frame, AbstractRegeneratingValue component)
+        protected override void UpdateComponent(long frame, AbstractRegeneratingValue component)
         {
             if (component.TimeToWait > 0)
             {

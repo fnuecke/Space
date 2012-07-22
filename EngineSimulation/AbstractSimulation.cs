@@ -4,7 +4,6 @@ using Engine.ComponentSystem;
 using Engine.Serialization;
 using Engine.Simulation.Commands;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Simulation
 {
@@ -71,7 +70,7 @@ namespace Engine.Simulation
         /// <summary>
         /// Advance the simulation by one frame.
         /// </summary>
-        public void Update(GameTime gameTime)
+        public void Update()
         {
             // Increment frame number.
             ++CurrentFrame;
@@ -84,7 +83,7 @@ namespace Engine.Simulation
             Commands.Clear();
 
             // Update all systems.
-            Manager.Update(gameTime, CurrentFrame);
+            Manager.Update(CurrentFrame);
         }
 
         /// <summary>

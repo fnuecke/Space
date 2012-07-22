@@ -11,7 +11,7 @@ namespace Engine.ComponentSystem.Systems
     {
         #region Logic
 
-        protected override void UpdateComponent(GameTime gameTime, long frame, EllipsePath component)
+        protected override void UpdateComponent(long frame, EllipsePath component)
         {
             // Get the center, the position of the entity we're rotating around.
             var center = Manager.GetComponent<Transform>(component.CenterEntityId).Translation;

@@ -8,7 +8,7 @@ namespace Engine.ComponentSystem.Systems
     /// </summary>
     public sealed class FrictionSystem : AbstractComponentSystem<Friction>
     {
-        protected override void UpdateComponent(GameTime gameTime, long frame, Friction component)
+        protected override void UpdateComponent(long frame, Friction component)
         {
             // Apply friction only if set to a positive value.
             if (component.Value > 0)

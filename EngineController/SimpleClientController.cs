@@ -1,7 +1,6 @@
 ﻿using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
@@ -51,26 +50,24 @@ namespace Engine.Controller
         /// in the base class. Also part of synchronizing run speeds on
         /// server and client by sending sync requests in certain intervals.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
-        public override void Update(GameTime gameTime)
+        public override void Update()
         {
             Session.Update();
 
             if (Session.ConnectionState == ClientState.Connected)
             {
-                base.Update(gameTime);
+                base.Update();
             }
         }
 
         /// <summary>
         /// Draws the current state of the simulation.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
-        public override void Draw(GameTime gameTime)
+        public override void Draw()
         {
             if (Session.ConnectionState == ClientState.Connected)
             {
-                Simulation.Manager.Draw(gameTime, Simulation.CurrentFrame);
+                Simulation.Manager.Draw(Simulation.CurrentFrame);
             }
         }
 

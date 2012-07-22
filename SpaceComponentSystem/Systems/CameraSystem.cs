@@ -219,9 +219,8 @@ namespace Space.ComponentSystem.Systems
         /// to make sure it's up-to-date before *anything* else is drawn,
         /// especially stuff outside the simulation, to avoid "lagging".
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
         /// <param name="frame">The frame the update applies to.</param>
-        public override void Update(GameTime gameTime, long frame)
+        public override void Update(long frame)
         {
             // Only update the offset if we didn't roll-back.
             if (frame > _lastFrame)
@@ -258,7 +257,7 @@ namespace Space.ComponentSystem.Systems
                 _lastFrame = frame;
             }
 
-            base.Update(gameTime, frame);
+            base.Update(frame);
         }
 
         /// <summary>

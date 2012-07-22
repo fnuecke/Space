@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.Session;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
@@ -24,13 +23,11 @@ namespace Engine.Controller
         /// <summary>
         /// Called when the controller needs to be updated.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Update.</param>
-        void Update(GameTime gameTime);
+        void Update();
 
         /// <summary>
         /// Called when the controller needs to be rendered.
         /// </summary>
-        /// <param name="gameTime">Time elapsed since the last call to Draw.</param>
-        void Draw(GameTime gameTime);
+        void Draw();
     }
 }

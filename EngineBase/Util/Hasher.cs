@@ -63,6 +63,14 @@ namespace Engine.Util
         /// </summary>
         public Hasher()
         {
+            Reset();
+        }
+
+        /// <summary>
+        /// Reset this hasher to allow reusing it.
+        /// </summary>
+        public void Reset()
+        {
             unchecked
             {
                 _hash = (int)2166136261;

@@ -17,10 +17,10 @@ namespace Space.Graphics
         /// The current game time, which is used to determine the current
         /// rotation of the sun.
         /// </summary>
-        public GameTime GameTime
+        public long Time
         {
-            get { return _gameTime; }
-            set { _gameTime = value; }
+            get { return _time; }
+            set { _time = value; }
         }
 
         #endregion
@@ -95,7 +95,7 @@ namespace Space.Graphics
         /// <summary>
         /// The current game time to base our rotation on.
         /// </summary>
-        private GameTime _gameTime;
+        private long _time;
 
         #endregion
 
@@ -211,7 +211,7 @@ namespace Space.Graphics
             GraphicsDevice.SetRenderTarget(_surfaceSphere);
             GraphicsDevice.Clear(Color.Transparent);
 
-            var offset = (float)_gameTime.TotalGameTime.TotalSeconds / Width;
+            var offset = _time / Width;
             Effect.Parameters["SurfaceOffset"].SetValue(_surfaceRotation * offset);
             Effect.Parameters["TurbulenceOneOffset"].SetValue(_turbulenceOneRotation * offset);
             Effect.Parameters["TurbulenceTwoOffset"].SetValue(_turbulenceTwoRotation * offset);

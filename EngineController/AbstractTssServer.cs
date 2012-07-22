@@ -4,7 +4,6 @@ using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Controller
 {
@@ -21,23 +20,29 @@ namespace Engine.Controller
 
         #endregion
 
+        #region Constants
+
+        /// <summary>
+        /// The number of frames a command may be ahead of the server's current frame
+        /// to still allow it to be applied. Anything further ahead is considered
+        /// invalid/cheating.
+        /// </summary>
+        private const long MaxCommandLead = 50;
+
+        #endregion
+
         #region Fields
 
         /// <summary>
-        /// Trailing we last did a hash check in, to avoid doing them twice.
-        /// </summary>
-        private long _lastHashCheck;
-
-        /// <summary>
-        /// Keeping track of how stressed each client is. If all have idle time
-        /// and our speed is lowered, speed up again.
+        /// Keeping track of how stressed each client is. This is used to figure
+        /// out the "weakest link" to adjust the game speed accordingly.
         /// </summary>
         private readonly float[] _clientLoads;
 
         /// <summary>
-        /// Keeping track of whether we might be the one slowing the game.
+        /// Trailing frame we last did a hash check in, to avoid doing them twice.
         /// </summary>
-        private bool _serverIsSlowing;
+        private long _lastHashedFrame;
 
         #endregion
 
@@ -56,7 +61,7 @@ namespace Engine.Controller
         {
             _clientLoads = new float[Session.MaxPlayers];
 
-            // To reset the speed and load info upon player leaves.
+            // Update the load info (and game speed) upon player departures.
             Session.PlayerLeft += HandlePlayerLeft;
         }
 
@@ -81,49 +86,45 @@ namespace Engine.Controller
         /// Drives the game loop, right after driving the network protocol
         /// in the base class.
         /// </summary>
-        public override void Update(GameTime gameTime)
+        public override void Update()
         {
             // Drive game logic.
-            UpdateSimulation(gameTime, AdjustedSpeed);
+            UpdateSimulation(AdjustedSpeed);
 
-            // Also take the possibility of the server slowing down the game
-            // into account.
-            var serverSpeed = 1f / SafeLoad;
-            if (SafeLoad >= 1f && serverSpeed < AdjustedSpeed)
-            {
-                AdjustedSpeed = serverSpeed;
-                _serverIsSlowing = true;
-            }
-            else if (_serverIsSlowing)
-            {
-                // We're not, but we might have been, so check if we got
-                // faster again.
-                AdjustSpeed();
-            }
+            // The server might have been the slowing factor, so try updating
+            // the game speed. This is relatively cheap, so we can just do this
+            // each update (no need to check if we're actually the slowest).
+            AdjustSpeed();
+        }
 
+        /// <summary>
+        /// Do hash checking if the frame is one in which hashing should be performed.
+        /// </summary>
+        protected override void PerformAdditionalUpdateActions()
+        {
             // Send hash check every now and then, to check for loss of synchronization.
             // We want to use the trailing frame for this because at this point it's
             // guaranteed not to change anymore (from incoming commands -- they will be
             // discarded now).
-            if (Tss.TrailingFrame > _lastHashCheck && ((Tss.TrailingFrame % HashInterval) == 0))
+            if (Tss.TrailingFrame > _lastHashedFrame && ((Tss.TrailingFrame % HashInterval) == 0))
             {
                 PerformHashCheck();
             }
         }
 
         /// <summary>
-        /// Perform a hash check by hashing the local simulation and sending the value
+        /// Perform a hash check by hashing the local simulation and sending the values
         /// to our clients so they can compare it to the hash of their simulation at
         /// that frame.
         /// </summary>
         private void PerformHashCheck()
         {
             // Update last checked frame.
-            _lastHashCheck = Tss.TrailingFrame;
+            _lastHashedFrame = Tss.TrailingFrame;
 
             // Generate hash.
             var hasher = new Hasher();
-            Tss.Hash(hasher);
+            Tss.TrailingSimulation.Hash(hasher);
 
             // Send message.
             using (var packet = new Packet())
@@ -170,13 +171,11 @@ namespace Engine.Controller
         {
             // Find the participant with the worst update load.
             var worstLoad = SafeLoad;
-            _serverIsSlowing = (SafeLoad >= 1f);
             for (var i = 0; i < _clientLoads.Length; i++)
             {
                 if (_clientLoads[i] > worstLoad)
                 {
                     worstLoad = _clientLoads[i];
-                    _serverIsSlowing = false;
                 }
             }
 
@@ -201,7 +200,15 @@ namespace Engine.Controller
         /// <param name="command">the command to send.</param>
         protected override void Apply(FrameCommand command)
         {
-            if (command.Frame >= Tss.TrailingFrame)
+            if (command.Frame < Tss.TrailingFrame)
+            {
+                Logger.Trace("Client command too old: {0} < {1}. Ignoring.", command.Frame, Tss.TrailingFrame);
+            }
+            else if (command.Frame > Tss.CurrentFrame + MaxCommandLead)
+            {
+                Logger.Trace("Client command too far into the future: {0} > {1}. Ignoring.", command.Frame, Tss.CurrentFrame + MaxCommandLead);
+            }
+            else
             {
                 // All commands we apply are authoritative.
                 command.IsAuthoritative = true;
@@ -209,10 +216,6 @@ namespace Engine.Controller
 
                 // As a server we resend all commands.
                 Send(command);
-            }
-            else
-            {
-                Logger.Trace("Client command too old: {0} < {1}. Ignoring.", command.Frame, Tss.TrailingFrame);
             }
         }
 
@@ -248,63 +251,72 @@ namespace Engine.Controller
             switch (type)
             {
                 case TssControllerMessage.Command:
-                    // Normal command, forward it.
+                {
+                    // Normal command, forward it if it's valid.
                     var command = base.UnwrapDataForReceive(e);
-                    // We're the server and we received it, so it's definitely not authoritative.
-                    command.IsAuthoritative = false;
-                    // Validate player number (avoid command injection for other players).
-                    command.PlayerNumber = args.Player.Number;
-                    return command;
 
-                case TssControllerMessage.Synchronize:
-                    // Client re-synchronizing.
+                    // Validate player number (avoid command injection for
+                    // other players).
+                    if (command.PlayerNumber == args.Player.Number)
                     {
-                        // Get the frame the client's at.
-                        var clientFrame = args.Data.ReadInt64();
+                        // All green.
+                        return command;
+                    }
 
-                        // Get performance information of the client.
-                        var player = args.Player.Number;
-                        _clientLoads[player] = args.Data.ReadSingle();
+                    Logger.Warn("Received invalid packet (player number mismatch).");
 
-                        // Adjust our desired game speed to accommodate slowest
-                        // client machine. Is this the slowest client so far?
-                        var clientSpeed = 1.0 / _clientLoads[player];
-                        if (_clientLoads[player] >= 1f && clientSpeed < AdjustedSpeed)
-                        {
-                            AdjustedSpeed = clientSpeed;
-                            _serverIsSlowing = false;
-                        }
-                        else
-                        {
-                            // We potentially got faster as a collective,
-                            // re-evaluate at what speed we want to run.
-                            AdjustSpeed();
-                        }
+                    // Disconnect the player, as this might have been a
+                    // hacking attempt.
+                    Session.Disconnect(Session.GetPlayer(args.Player.Number));
 
-                        // Send our reply.
-                        using (var packet = new Packet())
-                        {
-                            Session.SendTo(args.Player, packet
-                                .Write((byte)TssControllerMessage.Synchronize)
-                                .Write(clientFrame)
-                                .Write(Tss.CurrentFrame)
-                                .Write((float)AdjustedSpeed));
-                        }
+                    // Ignore the command.
+                    return null;
+                }
+                case TssControllerMessage.Synchronize:
+                {
+                    // Client re-synchronizing.
+
+                    // Get the frame the client is at.
+                    var clientFrame = args.Data.ReadInt64();
+
+                    // Get performance information of the client.
+                    _clientLoads[args.Player.Number] = args.Data.ReadSingle();
+
+                    // Re-evaluate at what speed we want to run.
+                    AdjustSpeed();
+
+                    // Send our reply.
+                    using (var packet = new Packet())
+                    {
+                        packet
+                            // Message type.
+                            .Write((byte)TssControllerMessage.Synchronize)
+                            // For reference, the frame the client sent this message.
+                            .Write(clientFrame)
+                            // The current server frame, to allow the client to compute
+                            // the round trip time.
+                            .Write(Tss.CurrentFrame)
+                            // The current speed the game should run at.
+                            .Write((float)AdjustedSpeed);
+                        Session.SendTo(args.Player, packet);
                     }
                     break;
+                }
 
-                case TssControllerMessage.GameStateRequest:
+                case TssControllerMessage.GameState:
+                {
                     // Client needs game state.
                     var hasher = new Hasher();
-                    Tss.Hash(hasher);
+                    Tss.TrailingSimulation.Hash(hasher);
                     using (var packet = new Packet())
                     {
                         Session.SendTo(args.Player, packet
-                            .Write((byte)TssControllerMessage.GameStateResponse)
+                            .Write((byte)TssControllerMessage.GameState)
                             .Write(hasher.Value)
                             .Write(Tss));
                     }
                     break;
+                }
             }
             return null;
         }
