@@ -88,7 +88,7 @@ namespace Engine.Simulation.Commands
         public bool Equals(Command other)
         {
             return other != null &&
-                other.Type == Type &&
+                other.Type.Equals(Type) &&
                 other.PlayerNumber == PlayerNumber &&
                 other.Id == Id;
         }

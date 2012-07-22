@@ -1,5 +1,7 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
+using Microsoft.Xna.Framework;
 
 namespace Space.ComponentSystem.Components
 {
@@ -15,6 +17,21 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public float Radius;
 
+        /// <summary>
+        /// Surface rotation of the sun.
+        /// </summary>
+        public Vector2 SurfaceRotation;
+
+        /// <summary>
+        /// Rotational direction of primary surface turbulence.
+        /// </summary>
+        public Vector2 PrimaryTurbulenceRotation;
+
+        /// <summary>
+        /// Rotational direction of secondary surface turbulence.
+        /// </summary>
+        public Vector2 SecondaryTurbulenceRotation;
+
         #endregion
 
         #region Initialization
@@ -27,7 +44,11 @@ namespace Space.ComponentSystem.Components
         {
             base.Initialize(other);
 
-            Radius = ((SunRenderer)other).Radius;
+            var otherSun = (SunRenderer)other;
+            Radius = otherSun.Radius;
+            SurfaceRotation = otherSun.SurfaceRotation;
+            PrimaryTurbulenceRotation = otherSun.PrimaryTurbulenceRotation;
+            SecondaryTurbulenceRotation = otherSun.SecondaryTurbulenceRotation;
 
             return this;
         }
@@ -36,9 +57,16 @@ namespace Space.ComponentSystem.Components
         /// Initialize with the specified radius.
         /// </summary>
         /// <param name="radius">The radius of the sun.</param>
-        public SunRenderer Initialize(float radius)
+        /// <param name="surfaceRotation">Surface rotation of the sun.</param>
+        /// <param name="primaryTurbulenceRotation">Rotational direction of primary surface turbulence.</param>
+        /// <param name="secondaryTurbulenceRotation">Rotational direction of secondary surface turbulence.</param>
+        /// <returns></returns>
+        public SunRenderer Initialize(float radius, Vector2 surfaceRotation, Vector2 primaryTurbulenceRotation, Vector2 secondaryTurbulenceRotation)
         {
             Radius = radius;
+            SurfaceRotation = surfaceRotation;
+            PrimaryTurbulenceRotation = primaryTurbulenceRotation;
+            SecondaryTurbulenceRotation = secondaryTurbulenceRotation;
 
             return this;
         }
@@ -52,6 +80,9 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             Radius = 0;
+            SurfaceRotation = Vector2.Zero;
+            PrimaryTurbulenceRotation = Vector2.Zero;
+            SecondaryTurbulenceRotation = Vector2.Zero;
         }
 
         #endregion
@@ -68,7 +99,10 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Radius);
+                .Write(Radius)
+                .Write(SurfaceRotation)
+                .Write(PrimaryTurbulenceRotation)
+                .Write(SecondaryTurbulenceRotation);
         }
 
         /// <summary>
@@ -80,7 +114,27 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Radius = packet.ReadInt32();
+            SurfaceRotation = packet.ReadVector2();
+            PrimaryTurbulenceRotation = packet.ReadVector2();
+            SecondaryTurbulenceRotation = packet.ReadVector2();
         }
+
+#if DEBUG
+        /// <summary>
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
+        /// </summary>
+        /// <param name="hasher">The hasher to push data to.</param>
+        public override void Hash(Hasher hasher)
+        {
+            base.Hash(hasher);
+
+            hasher.Put(Radius);
+            hasher.Put(SurfaceRotation);
+            hasher.Put(PrimaryTurbulenceRotation);
+            hasher.Put(SecondaryTurbulenceRotation);
+        }
+#endif
 
         #endregion
     }

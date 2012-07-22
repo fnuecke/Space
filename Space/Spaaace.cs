@@ -11,7 +11,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Nuclex.Input;
-using Nuclex.Input.Devices;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
 using Space.Control;
@@ -408,32 +407,7 @@ namespace Space
             // Initialize input.
             _inputManager = new InputManager(Services, Window.Handle);
             Components.Add(_inputManager);
-
-            // Get our input devices.
-            foreach (var keyboard in _inputManager.Keyboards)
-            {
-                if (keyboard.IsAttached)
-                {
-                    Services.AddService(typeof(IKeyboard), keyboard);
-                    break;
-                }
-            }
-            foreach (var mouse in _inputManager.Mice)
-            {
-                if (mouse.IsAttached)
-                {
-                    Services.AddService(typeof(IMouse), mouse);
-                    break;
-                }
-            }
-            foreach (var gamepad in _inputManager.GamePads)
-            {
-                if (gamepad.IsAttached)
-                {
-                    Services.AddService(typeof(IGamePad), gamepad);
-                    break;
-                }
-            }
+            Services.AddService(typeof(InputManager), _inputManager);
         }
 
         private void SetupGui()

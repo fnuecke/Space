@@ -102,6 +102,12 @@ namespace Space.ComponentSystem.Factories
             var travelSpeed = SampleTravelSpeed(random);
             var periodOffet = (float)random.NextDouble();
 
+            Vector2 surfaceRotation;
+            surfaceRotation.X = (float)(random.NextDouble() - 0.5);
+            surfaceRotation.Y = (float)(random.NextDouble() - 0.5);
+            surfaceRotation.Normalize();
+            surfaceRotation *= rotationSpeed;
+
             // Compute major radius and focus distance for an ellipse fitting
             // inside a unit circle with the focus point as its center.
             // We know that e = f/a and because of the unit circle assumption
@@ -142,7 +148,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_planet");
 
             // Make it visible.
-            manager.AddComponent<PlanetRenderer>(entity).Initialize(Texture, SurfaceTint, planetRadius, AtmosphereTint);
+            manager.AddComponent<PlanetRenderer>(entity).Initialize(Texture, SurfaceTint, planetRadius, AtmosphereTint, surfaceRotation);
 
             // Let it rap.
             manager.AddComponent<Sound>(entity).Initialize("Planet");

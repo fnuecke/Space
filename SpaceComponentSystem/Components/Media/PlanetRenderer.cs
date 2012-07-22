@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -19,7 +20,15 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The name of the texture to use for rendering the physics object.
         /// </summary>
-        public string TextureName { get { return _textureName; } set { _textureName = value; Texture = null; } }
+        public string TextureName
+        {
+            get { return _textureName; }
+            set
+            {
+                _textureName = value;
+                Texture = null;
+            }
+        }
 
         #endregion
 
@@ -46,6 +55,11 @@ namespace Space.ComponentSystem.Components
         public Color AtmosphereTint;
 
         /// <summary>
+        /// The rotation direction of the planet's surface.
+        /// </summary>
+        public Vector2 SurfaceRotation;
+
+        /// <summary>
         /// Actual texture name. Setter is used to invalidate the actual texture reference,
         /// so we need to store this ourselves.
         /// </summary>
@@ -68,6 +82,7 @@ namespace Space.ComponentSystem.Components
             Texture = otherPlanet.Texture;
             PlanetTint = otherPlanet.PlanetTint;
             AtmosphereTint = otherPlanet.AtmosphereTint;
+            SurfaceRotation = otherPlanet.SurfaceRotation;
             TextureName = otherPlanet.TextureName;
 
             return this;
@@ -80,12 +95,14 @@ namespace Space.ComponentSystem.Components
         /// <param name="planetTint">The planet tint.</param>
         /// <param name="planetRadius">The planet radius.</param>
         /// <param name="atmosphereTint">The atmosphere tint.</param>
+        /// <param name="surfaceRotation">The rotation direction of the planet's surface</param>
         public PlanetRenderer Initialize(string planetTexture, Color planetTint,
-            float planetRadius, Color atmosphereTint)
+            float planetRadius, Color atmosphereTint, Vector2 surfaceRotation)
         {
             Radius = planetRadius;
             PlanetTint = planetTint;
             AtmosphereTint = atmosphereTint;
+            SurfaceRotation = surfaceRotation;
             TextureName = planetTexture;
 
             return this;
@@ -103,6 +120,7 @@ namespace Space.ComponentSystem.Components
             Texture = null;
             PlanetTint = Color.White;
             AtmosphereTint = Color.Transparent;
+            SurfaceRotation = Vector2.Zero;
         }
 
         #endregion
@@ -122,6 +140,7 @@ namespace Space.ComponentSystem.Components
                 .Write(Radius)
                 .Write(PlanetTint.PackedValue)
                 .Write(AtmosphereTint.PackedValue)
+                .Write(SurfaceRotation)
                 .Write(TextureName);
         }
 
@@ -136,23 +155,27 @@ namespace Space.ComponentSystem.Components
             Radius = packet.ReadSingle();
             PlanetTint.PackedValue = packet.ReadUInt32();
             AtmosphereTint.PackedValue = packet.ReadUInt32();
+            SurfaceRotation = packet.ReadVector2();
             TextureName = packet.ReadString();
         }
 
+#if DEBUG
         /// <summary>
         /// Push some unique data of the object to the given hasher,
         /// to contribute to the generated hash.
         /// </summary>
         /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Engine.Util.Hasher hasher)
+        public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
 
             hasher.Put(Radius);
             hasher.Put(PlanetTint);
             hasher.Put(AtmosphereTint);
+            hasher.Put(SurfaceRotation);
             hasher.Put(TextureName);
         }
+#endif
 
         #endregion
     }

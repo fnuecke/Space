@@ -152,6 +152,7 @@ namespace Space.ComponentSystem.Systems
             _planet.SurfaceTexture = component.Texture;
             _planet.SurfaceTint = component.PlanetTint;
             _planet.AtmosphereTint = component.AtmosphereTint;
+            _planet.SurfaceRotation = component.SurfaceRotation;
             _planet.LightDirection = toSun;
             _planet.Draw();
         }

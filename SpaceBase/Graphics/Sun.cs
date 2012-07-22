@@ -14,6 +14,33 @@ namespace Space.Graphics
         #region Properties
 
         /// <summary>
+        /// The rotational direction of the sun's surface.
+        /// </summary>
+        public Vector2 SurfaceRotation
+        {
+            get { return _surfaceRotation; }
+            set { _surfaceRotation = value; }
+        }
+
+        /// <summary>
+        /// The rotational direction of the sun's primary turbulence layer.
+        /// </summary>
+        public Vector2 PrimaryTurbulenceRotation
+        {
+            get { return _turbulenceOneRotation; }
+            set { _turbulenceOneRotation = value; }
+        }
+
+        /// <summary>
+        /// The rotational direction of the sun's secondary turbulence layer.
+        /// </summary>
+        public Vector2 SecondaryTurbulenceRotation
+        {
+            get { return _turbulenceTwoRotation; }
+            set { _turbulenceTwoRotation = value; }
+        }
+
+        /// <summary>
         /// The current game time, which is used to determine the current
         /// rotation of the sun.
         /// </summary>
@@ -80,17 +107,17 @@ namespace Space.Graphics
         /// <summary>
         /// Rotation direction (and speed) of the base image.
         /// </summary>
-        private readonly Vector2 _surfaceRotation;
+        private Vector2 _surfaceRotation;
 
         /// <summary>
         /// Rotation direction (and speed) of the first turbulence.
         /// </summary>
-        private readonly Vector2 _turbulenceOneRotation;
+        private Vector2 _turbulenceOneRotation;
 
         /// <summary>
         /// Rotation direction (and speed) of the second turbulence.
         /// </summary>
-        private readonly Vector2 _turbulenceTwoRotation;
+        private Vector2 _turbulenceTwoRotation;
 
         /// <summary>
         /// The current game time to base our rotation on.
@@ -104,24 +131,6 @@ namespace Space.Graphics
         public Sun(Game game)
             : base(game, "Shaders/Sun")
         {
-            var random = new Random();
-            Vector2 tmp;
-            tmp.X = ((float)random.NextDouble() + 1f) / 2f;
-            tmp.Y = ((float)random.NextDouble() + 1f) / 2f;
-            tmp.Normalize();
-            tmp *= 8 * Math.Sign(random.NextDouble() - 0.5);
-            _surfaceRotation = tmp;
-            tmp.X = ((float)random.NextDouble() + 1f) / 2f;
-            tmp.Y = ((float)random.NextDouble() + 1f) / 2f;
-            tmp.Normalize();
-            tmp *= 6;
-            _turbulenceOneRotation = tmp;
-            tmp.X = -((float)random.NextDouble() + 1f) / 2f;
-            tmp.Y = -((float)random.NextDouble() + 1f) / 2f;
-            tmp.Normalize();
-            tmp *= 4;
-            _turbulenceTwoRotation = tmp;
-
         }
 
         public void Dispose()
@@ -211,10 +220,10 @@ namespace Space.Graphics
             GraphicsDevice.SetRenderTarget(_surfaceSphere);
             GraphicsDevice.Clear(Color.Transparent);
 
-            var offset = _time / Width;
-            Effect.Parameters["SurfaceOffset"].SetValue(_surfaceRotation * offset);
-            Effect.Parameters["TurbulenceOneOffset"].SetValue(_turbulenceOneRotation * offset);
-            Effect.Parameters["TurbulenceTwoOffset"].SetValue(_turbulenceTwoRotation * offset);
+            var offset = _time / 17f / Width;
+            Effect.Parameters["SurfaceOffset"].SetValue(_surfaceRotation * 8 * offset);
+            Effect.Parameters["TurbulenceOneOffset"].SetValue(_turbulenceOneRotation * 6 * offset);
+            Effect.Parameters["TurbulenceTwoOffset"].SetValue(_turbulenceTwoRotation * 4 * offset);
             Effect.Parameters["RenderRadius"].SetValue(Width / 2);
             Effect.Parameters["TextureScale"].SetValue(_surface.Width / (2 * Width));
 

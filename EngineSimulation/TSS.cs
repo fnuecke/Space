@@ -449,7 +449,6 @@ namespace Engine.Simulation
             {
                 _threadData[i].Simulation = _simulations[i];
                 _threadData[i].Frame = frame - _delays[i];
-                _threadData[i].GameTime = gameTime;
                 tasks[i] = TaskStarter(_threadData[i]);
             }
 #endif
@@ -482,7 +481,7 @@ namespace Engine.Simulation
                 MirrorSimulation(TrailingSimulation, _simulations.Length - 2);
 
                 // Update the other states once more.
-                FastForward(gameTime, frame);
+                FastForward(frame);
             }
             else
             {
@@ -567,7 +566,7 @@ namespace Engine.Simulation
                 while (info.Simulation.CurrentFrame < info.Frame)
                 {
                     PrepareForUpdate(info.Simulation);
-                    info.Simulation.Update(info.GameTime);
+                    info.Simulation.Update();
                 }
             }
             catch (Exception ex)
@@ -669,11 +668,6 @@ namespace Engine.Simulation
             /// The frame to run to.
             /// </summary>
             public long Frame;
-
-            /// <summary>
-            /// The current game time.
-            /// </summary>
-            public GameTime GameTime;
         }
 
         #endregion

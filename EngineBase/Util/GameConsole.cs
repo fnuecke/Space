@@ -7,7 +7,7 @@ using System.Windows;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Nuclex.Input.Devices;
+using Nuclex.Input;
 
 namespace Engine.Util
 {
@@ -294,17 +294,22 @@ namespace Engine.Util
         /// </summary>
         public override void Initialize()
         {
-            var keyboard = (IKeyboard)Game.Services.GetService(typeof(IKeyboard));
-            if (keyboard != null)
+            var inputManager = (InputManager)Game.Services.GetService(typeof(InputManager));
+            foreach (var keyboard in inputManager.Keyboards)
             {
-                keyboard.KeyPressed += HandleKeyPressed;
-                keyboard.CharacterEntered += HandleCharacterEntered;
+                if (keyboard.IsAttached)
+                {
+                    keyboard.KeyPressed += HandleKeyPressed;
+                    keyboard.CharacterEntered += HandleCharacterEntered;
+                }
             }
 
-            var mouse = (IMouse)Game.Services.GetService(typeof(IMouse));
-            if (mouse != null)
+            foreach (var mouse in inputManager.Mice)
             {
-                mouse.MouseWheelRotated += HandleMouseScrolled;
+                if (mouse.IsAttached)
+                {
+                    mouse.MouseWheelRotated += HandleMouseScrolled;
+                }
             }
 
             base.Initialize();
@@ -329,17 +334,22 @@ namespace Engine.Util
         {
             if (disposing)
             {
-                var keyboard = (IKeyboard)Game.Services.GetService(typeof(IKeyboard));
-                if (keyboard != null)
+                var inputManager = (InputManager)Game.Services.GetService(typeof(InputManager));
+                foreach (var keyboard in inputManager.Keyboards)
                 {
-                    keyboard.KeyPressed -= HandleKeyPressed;
-                    keyboard.CharacterEntered -= HandleCharacterEntered;
+                    if (keyboard.IsAttached)
+                    {
+                        keyboard.KeyPressed -= HandleKeyPressed;
+                        keyboard.CharacterEntered -= HandleCharacterEntered;
+                    }
                 }
 
-                var mouse = (IMouse)Game.Services.GetService(typeof(IMouse));
-                if (mouse != null)
+                foreach (var mouse in inputManager.Mice)
                 {
-                    mouse.MouseWheelRotated -= HandleMouseScrolled;
+                    if (mouse.IsAttached)
+                    {
+                        mouse.MouseWheelRotated -= HandleMouseScrolled;
+                    }
                 }
 
                 if (_pixelTexture != null)
@@ -887,14 +897,36 @@ namespace Engine.Util
 
         private bool IsControlPressed()
         {
-            var state = ((IKeyboard)Game.Services.GetService(typeof(IKeyboard))).GetState();
-            return state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl);
+            var inputManager = (InputManager)Game.Services.GetService(typeof(InputManager));
+            foreach (var keyboard in inputManager.Keyboards)
+            {
+                if (keyboard.IsAttached)
+                {
+                    var state = keyboard.GetState();
+                    if (state.IsKeyDown(Keys.LeftControl) || state.IsKeyDown(Keys.RightControl))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private bool IsShiftPressed()
         {
-            var state = ((IKeyboard)Game.Services.GetService(typeof(IKeyboard))).GetState();
-            return state.IsKeyDown(Keys.LeftShift) || state.IsKeyDown(Keys.RightShift);
+            var inputManager = (InputManager)Game.Services.GetService(typeof(InputManager));
+            foreach (var keyboard in inputManager.Keyboards)
+            {
+                if (keyboard.IsAttached)
+                {
+                    var state = keyboard.GetState();
+                    if (state.IsKeyDown(Keys.LeftShift) || state.IsKeyDown(Keys.RightShift))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private Rectangle ComputeBounds()

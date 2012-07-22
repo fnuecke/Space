@@ -112,6 +112,9 @@ namespace Space.ComponentSystem.Systems
 
             _sun.SetSize(component.Radius * 2);
             _sun.Center = transform.Translation + translation;
+            _sun.SurfaceRotation = component.SurfaceRotation;
+            _sun.PrimaryTurbulenceRotation = component.PrimaryTurbulenceRotation;
+            _sun.SecondaryTurbulenceRotation = component.SecondaryTurbulenceRotation;
             _sun.Draw();
         }
 

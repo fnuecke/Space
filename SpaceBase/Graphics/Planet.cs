@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.Graphics;
+﻿using Engine.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -37,6 +36,15 @@ namespace Space.Graphics
         {
             get { return _atmosphereTint; }
             set { _atmosphereTint = value; }
+        }
+
+        /// <summary>
+        /// The rotational direction of the planet's surface.
+        /// </summary>
+        public Vector2 SurfaceRotation
+        {
+            get { return _surfaceRotation; }
+            set { _surfaceRotation = value; }
         }
 
         /// <summary>
@@ -81,7 +89,7 @@ namespace Space.Graphics
         /// <summary>
         /// Rotation direction (and speed) of the base image.
         /// </summary>
-        private readonly Vector2 _surfaceRotation;
+        private Vector2 _surfaceRotation;
 
         /// <summary>
         /// The current game time to base our rotation on.
@@ -95,13 +103,6 @@ namespace Space.Graphics
         public Planet(Game game)
             : base(game, "Shaders/Planet")
         {
-            var random = new Random();
-            Vector2 surfaceRotation;
-            surfaceRotation.X = ((float)random.NextDouble() + 1f) / 2f;
-            surfaceRotation.Y = ((float)random.NextDouble() + 1f) / 2f;
-            surfaceRotation.Normalize();
-            surfaceRotation *= 5 * Math.Sign(random.NextDouble() - 0.5);
-            _surfaceRotation = surfaceRotation;
         }
 
         #endregion
@@ -121,7 +122,7 @@ namespace Space.Graphics
             Effect.Parameters["RenderRadius"].SetValue(Width / 2f);
             Effect.Parameters["EmbossScale"].SetValue(1f / Width);
 
-            Effect.Parameters["TextureOffset"].SetValue(_surfaceRotation * (_time / Width));
+            Effect.Parameters["TextureOffset"].SetValue(_surfaceRotation * (_time / 17f / Width));
             Effect.Parameters["TextureScale"].SetValue(_surface.Width / (2f * Width));
         }
 

@@ -59,6 +59,21 @@ namespace Space.ComponentSystem.Factories
             var offset = SampleOffset(random);
             var mass = SampleMass(random);
 
+            Vector2 surfaceRotation;
+            surfaceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
+            surfaceRotation.Y = (float)(random.NextDouble() - 0.5) * 2;
+            surfaceRotation.Normalize();
+
+            Vector2 primaryTurbulenceRotation;
+            primaryTurbulenceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
+            primaryTurbulenceRotation.Y = (float)(random.NextDouble() - 0.5) * 2;
+            primaryTurbulenceRotation.Normalize();
+
+            Vector2 secondaryTurbulenceRotation;
+            secondaryTurbulenceRotation.X = (float)(random.NextDouble() - 0.5) * 2;
+            secondaryTurbulenceRotation.Y = (float)(random.NextDouble() - 0.5) * 2;
+            secondaryTurbulenceRotation.Normalize();
+
             manager.AddComponent<Transform>(entity).Initialize(offset + cellCenter);
 
             // Make it attract stuff if it has mass.
@@ -77,7 +92,7 @@ namespace Space.ComponentSystem.Factories
             manager.AddComponent<Detectable>(entity).Initialize("Textures/Radar/Icons/radar_sun");
 
             // Make it glow.
-            manager.AddComponent<SunRenderer>(entity).Initialize(radius * 0.95f);
+            manager.AddComponent<SunRenderer>(entity).Initialize(radius * 0.95f, surfaceRotation, primaryTurbulenceRotation, secondaryTurbulenceRotation);
 
             // Make it go whoooosh.
             manager.AddComponent<Sound>(entity).Initialize("Sun");

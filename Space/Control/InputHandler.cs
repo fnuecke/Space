@@ -5,7 +5,6 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
-using Nuclex.Input.Devices;
 using Space.ComponentSystem.Systems;
 using Space.Input;
 using Space.Simulation.Commands;
@@ -26,6 +25,11 @@ namespace Space.Control
         /// based on mouse movement.
         /// </summary>
         private const int MousePollInterval = 50;
+
+        /// <summary>
+        /// The interval in seconds in which to scan input devices.
+        /// </summary>
+        private const int InputDeviceScanInterval = 5;
 
         #endregion
 
@@ -52,9 +56,7 @@ namespace Space.Control
                     return;
                 }
 
-                _keyboard = ((IKeyboard)Client.Game.Services.GetService(typeof(IKeyboard)));
-                _mouse = ((IMouse)Client.Game.Services.GetService(typeof(IMouse)));
-                _gamepad = ((IGamePad)Client.Game.Services.GetService(typeof(IGamePad)));
+                _inputManager = (InputManager)Client.Game.Services.GetService(typeof(InputManager));
                 _client.Controller.Session.JoinResponse += (s, e) => AttachListeners();
                 _client.Controller.Session.Disconnecting += (s, e) => DetachListeners();
                 _client.Controller.Session.Disconnected += (s, e) => DetachListeners();
@@ -77,22 +79,27 @@ namespace Space.Control
         /// <summary>
         /// The keyboard used for player input.
         /// </summary>
-        private IKeyboard _keyboard;
+        //private IKeyboard _keyboard;
 
         /// <summary>
         /// The mouse used for player input.
         /// </summary>
-        private IMouse _mouse;
+        //private IMouse _mouse;
 
         /// <summary>
         /// The game pad used for player input.
         /// </summary>
-        private IGamePad _gamepad;
+        //private IGamePad _gamepad;
 
         /// <summary>
         /// Whether processing input is currently enabled or not.
         /// </summary>
         private bool _isEnabled;
+
+        /// <summary>
+        /// The time at which we last scanned for input devices.
+        /// </summary>
+        private DateTime _lastInputDeviceScan;
 
         /// <summary>
         /// The time at which we last check whether the mouse had moved.
@@ -141,6 +148,11 @@ namespace Space.Control
         /// </summary>
         private GameClient _client;
 
+        /// <summary>
+        /// The input manager we use to get input devices.
+        /// </summary>
+        private InputManager _inputManager;
+
         #endregion
 
         /// <summary>
@@ -148,50 +160,96 @@ namespace Space.Control
         /// </summary>
         private void AttachListeners()
         {
-            // Register for key presses and releases (movement).
-            if (_keyboard != null)
+            if (_inputManager == null)
             {
-                _keyboard.KeyPressed += HandleKeyPressed;
-                _keyboard.KeyReleased += HandleKeyReleased;
+                return;
+            }
+
+            // Register for key presses and releases (movement).
+            if (_inputManager.Keyboards != null)
+            {
+                foreach (var keyboard in _inputManager.Keyboards)
+                {
+                    if (keyboard.IsAttached)
+                    {
+                        keyboard.KeyPressed += HandleKeyPressed;
+                        keyboard.KeyReleased += HandleKeyReleased;
+                    }
+                }
             }
 
             // Register for mouse movement (orientation) and buttons (shooting).
-            if (_mouse != null)
+            if (_inputManager.Mice != null)
             {
-                _mouse.MouseMoved += HandleMouseMoved;
-                _mouse.MouseButtonPressed += HandleMousePressed;
-                _mouse.MouseButtonReleased += HandleMouseReleased;
-                _mouse.MouseWheelRotated += HandleMouseWheelRotated;
+                foreach (var mouse in _inputManager.Mice)
+                {
+                    if (mouse.IsAttached)
+                    {
+                        mouse.MouseMoved += HandleMouseMoved;
+                        mouse.MouseButtonPressed += HandleMousePressed;
+                        mouse.MouseButtonReleased += HandleMouseReleased;
+                        mouse.MouseWheelRotated += HandleMouseWheelRotated;
+                    }
+                }
             }
 
             // Register for game pad buttons. Sticks are handled in update.
-            if (_gamepad != null)
+            if (_inputManager.GamePads != null)
             {
-                _gamepad.ButtonPressed += HandleGamePadPressed;
-                _gamepad.ButtonReleased += HandleGamePadReleased;
+                foreach (var gamepad in _inputManager.GamePads)
+                {
+                    if (gamepad.IsAttached)
+                    {
+                        gamepad.ButtonPressed += HandleGamePadPressed;
+                        gamepad.ButtonReleased += HandleGamePadReleased;
+                    }
+                }
             }
         }
 
         private void DetachListeners()
         {
-            if (_keyboard != null)
+            if (_inputManager == null)
             {
-                _keyboard.KeyPressed -= HandleKeyPressed;
-                _keyboard.KeyReleased -= HandleKeyReleased;
+                return;
             }
 
-            if (_mouse != null)
+            if (_inputManager.Keyboards != null)
             {
-                _mouse.MouseMoved -= HandleMouseMoved;
-                _mouse.MouseButtonPressed -= HandleMousePressed;
-                _mouse.MouseButtonReleased -= HandleMouseReleased;
-                _mouse.MouseWheelRotated -= HandleMouseWheelRotated;
+                foreach (var keyboard in _inputManager.Keyboards)
+                {
+                    if (keyboard.IsAttached)
+                    {
+                        keyboard.KeyPressed -= HandleKeyPressed;
+                        keyboard.KeyReleased -= HandleKeyReleased;
+                    }
+                }
             }
 
-            if (_gamepad != null)
+            if (_inputManager.Mice != null)
             {
-                _gamepad.ButtonPressed -= HandleGamePadPressed;
-                _gamepad.ButtonReleased -= HandleGamePadReleased;
+                foreach (var mouse in _inputManager.Mice)
+                {
+                    if (mouse.IsAttached)
+                    {
+                        mouse.MouseMoved -= HandleMouseMoved;
+                        mouse.MouseButtonPressed -= HandleMousePressed;
+                        mouse.MouseButtonReleased -= HandleMouseReleased;
+                        mouse.MouseWheelRotated -= HandleMouseWheelRotated;
+                    }
+                }
+            }
+
+            if (_inputManager.GamePads != null)
+            {
+                foreach (var gamepad in _inputManager.GamePads)
+                {
+                    if (gamepad.IsAttached)
+                    {
+                        gamepad.ButtonPressed -= HandleGamePadPressed;
+                        gamepad.ButtonReleased -= HandleGamePadReleased;
+                    }
+                }
             }
         }
 
@@ -205,26 +263,35 @@ namespace Space.Control
             }
 
             // Handle game pad input that we can't properly handle via events.
-            if (Settings.Instance.EnableGamepad && _gamepad != null)
+            if (Settings.Instance.EnableGamepad)
             {
-                // Handle movement of the left stick, which controls our movement.
-                var gamepadAcceleration = GamePadHelper.GetAcceleration(_gamepad);
-                if (gamepadAcceleration != _previousGamepadAcceleration)
+                foreach (var gamepad in _inputManager.GamePads)
                 {
-                    _accelerationDirection = gamepadAcceleration;
-                    _accelerationDirection.Y = -_accelerationDirection.Y;
-                    _accelerationChanged = DateTime.Now;
-                }
-                _previousGamepadAcceleration = gamepadAcceleration;
+                    if (gamepad.IsAttached)
+                    {
+                        // Handle movement of the left stick, which controls our movement.
+                        var gamepadAcceleration = GamePadHelper.GetAcceleration(gamepad);
+                        if (gamepadAcceleration != _previousGamepadAcceleration)
+                        {
+                            _accelerationDirection = gamepadAcceleration;
+                            _accelerationDirection.Y = -_accelerationDirection.Y;
+                            _accelerationChanged = DateTime.Now;
+                        }
+                        _previousGamepadAcceleration = gamepadAcceleration;
 
-                // Handle movement of the right stick, which controls our direction.
-                var gamepadLook = GamePadHelper.GetLook(_gamepad);
-                if (gamepadLook != _previousGamepadLook && gamepadLook != Vector2.Zero)
-                {
-                    _targetRotation = (float)Math.Atan2(gamepadLook.Y, gamepadLook.X);
-                    _rotationChanged = DateTime.Now;
+                        // Handle movement of the right stick, which controls our direction.
+                        var gamepadLook = GamePadHelper.GetLook(gamepad);
+                        if (gamepadLook != _previousGamepadLook && gamepadLook != Vector2.Zero)
+                        {
+                            _targetRotation = (float)Math.Atan2(gamepadLook.Y, gamepadLook.X);
+                            _rotationChanged = DateTime.Now;
+                        }
+                        _previousGamepadLook = gamepadLook;
+
+                        // Only use the first gamepad we can find.
+                        break;
+                    }
                 }
-                _previousGamepadLook = gamepadLook;
             }
 
             // Only check every so often, as slight delays here will not be as
@@ -242,6 +309,17 @@ namespace Space.Control
                     Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, _accelerationDirection));
                 }
                 _lastUpdate = DateTime.Now;
+            }
+
+            // Rescan input devices periodically, e.g. to accept newly connected gamepads.
+            if (Client.Controller.Session.ConnectionState == ClientState.Connected)
+            {
+                if ((DateTime.Now - _lastInputDeviceScan).TotalSeconds > InputDeviceScanInterval)
+                {
+                    DetachListeners(); // Detach first to avoid getting events multiple times.
+                    AttachListeners();
+                }
+                _lastInputDeviceScan = DateTime.Now;
             }
         }
 
@@ -261,13 +339,7 @@ namespace Space.Control
                 switch (Settings.Instance.GameBindings[key])
                 {
                     case Settings.GameCommand.Stabilize:
-                        if (Settings.Instance.ToggleStabilize)
-                        {
-                            // Toggle stabilizers.
-                            _stabilizing = !_stabilizing;
-                            Client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
-                        }
-                        else
+                        if (!Settings.Instance.ToggleStabilize)
                         {
                             // Just enable stabilizers.
                             Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginStabilizing));
@@ -293,7 +365,13 @@ namespace Space.Control
                 switch (Settings.Instance.GameBindings[key])
                 {
                     case Settings.GameCommand.Stabilize:
-                        if (!Settings.Instance.ToggleStabilize)
+                        if (Settings.Instance.ToggleStabilize)
+                        {
+                            // Toggle stabilizers.
+                            _stabilizing = !_stabilizing;
+                            Client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
+                        }
+                        else
                         {
                             // Disable stabilizers if not toggling.
                             Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
@@ -311,7 +389,7 @@ namespace Space.Control
         /// </summary>
         private void UpdateKeyboardAcceleration()
         {
-            var state = _keyboard.GetState();
+            var state = _inputManager.GetKeyboard().GetState();
             var direction = Directions.None;
             if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Down].Any(state.IsKeyDown))
             {

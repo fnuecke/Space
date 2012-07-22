@@ -4,7 +4,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Nuclex.Input.Devices;
+using Nuclex.Input;
 using Space.Input;
 using Space.Util;
 
@@ -275,13 +275,22 @@ namespace Space.ComponentSystem.Systems
             var viewport = _game.GraphicsDevice.Viewport;
             var offsetScale = (float)(Math.Sqrt(viewport.Width * viewport.Width + viewport.Height * viewport.Height) / 6.0);
 
-            var mouse = (IMouse)_game.Services.GetService(typeof(IMouse));
-            var gamePad = (IGamePad)_game.Services.GetService(typeof(IGamePad));
+            var inputManager = (InputManager)_game.Services.GetService(typeof(InputManager));
+            var mouse = inputManager.GetMouse();
 
             // If we have a game pad attached, get the stick tilt.
-            if (Settings.Instance.EnableGamepad && gamePad != null)
+            if (Settings.Instance.EnableGamepad)
             {
-                offset = GamePadHelper.GetLook(gamePad);
+                foreach (var gamepad in inputManager.GamePads)
+                {
+                    if (gamepad.IsAttached)
+                    {
+                        offset = GamePadHelper.GetLook(gamepad);
+
+                        // Only use the first gamepad we can find.
+                        break;
+                    }
+                }
             }
             else if (mouse != null)
             {
