@@ -1,4 +1,4 @@
-﻿using Engine.ComponentSystem.Systems;
+﻿using Engine.ComponentSystem.Common.Systems;
 using Engine.Controller;
 using Engine.Session;
 using Microsoft.Xna.Framework;

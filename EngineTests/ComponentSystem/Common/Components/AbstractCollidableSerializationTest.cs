@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Common.Components;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Tests.ComponentSystem.Common.Components

@@ -1,7 +1,8 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 
-namespace Engine.ComponentSystem.Systems
+namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
     /// Applies a component's friction to its velocity.

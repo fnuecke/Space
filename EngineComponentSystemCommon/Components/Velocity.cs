@@ -1,8 +1,9 @@
-﻿using Engine.Serialization;
+﻿using Engine.ComponentSystem.Components;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
-namespace Engine.ComponentSystem.Components
+namespace Engine.ComponentSystem.Common.Components
 {
     /// <summary>
     /// Represents the velocity of an object.

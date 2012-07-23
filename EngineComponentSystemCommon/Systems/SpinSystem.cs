@@ -1,6 +1,7 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Systems;
 
-namespace Engine.ComponentSystem.Systems
+namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
     /// Applies a component's spin to its transform.

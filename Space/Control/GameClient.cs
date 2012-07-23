@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Controller;
@@ -45,6 +46,11 @@ namespace Space.Control
         #region Fields
 
         /// <summary>
+        /// Whether autoexec should run as soon as we have our avatar.
+        /// </summary>
+        private bool _shouldRunAutoexec;
+
+        /// <summary>
         /// The time we last saved our profile.
         /// </summary>
         private DateTime _lastSave = DateTime.Now;
@@ -82,8 +88,9 @@ namespace Space.Control
         {
             base.Initialize();
 
-            Controller.Session.JoinResponse += ConsoleAutoexec;
-            Controller.Session.Disconnecting += (sender, e) => Save();
+            Controller.Session.JoinResponse += HandleJoinResponse;
+            Controller.Session.Disconnecting += HandleDisconnecting;
+            Controller.Session.Disconnected += HandleDisconnected;
         }
 
         /// <summary>
@@ -94,7 +101,7 @@ namespace Space.Control
         {
             if (disposing)
             {
-                Controller.Session.JoinResponse -= ConsoleAutoexec;
+                Controller.Session.JoinResponse -= HandleJoinResponse;
 
                 Controller.Dispose();
             }
@@ -260,11 +267,20 @@ namespace Space.Control
         {
             base.Update(gameTime);
 
+            // Update our local simulation.
             Controller.Update();
 
+            // Save periodically.
             if ((DateTime.Now - _lastSave).TotalSeconds > SaveInterval)
             {
                 Save();
+            }
+
+            // Should we run some console commands? If so, and we have our avatar
+            // (which signifies we successfully joined) run them.
+            if (_shouldRunAutoexec && GetSystem<AvatarSystem>().GetAvatar(Controller.Session.LocalPlayer.Number) != null)
+            {
+                ConsoleAutoexec();
             }
         }
 
@@ -273,13 +289,49 @@ namespace Space.Control
         #region Event handlers
 
         /// <summary>
-        /// Join complete, run our autoexec file, if we have one.
+        /// Successfully joined a game, schedule console autoexec.
         /// </summary>
-        private void ConsoleAutoexec(object sender, JoinResponseEventArgs e)
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="Engine.Session.JoinResponseEventArgs"/> instance containing the event data.</param>
+        private void HandleJoinResponse(object sender, JoinResponseEventArgs e)
         {
+            _shouldRunAutoexec = true;
+        }
+
+        /// <summary>
+        /// We are being disconnected from the server, do a last save.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        private void HandleDisconnecting(object sender, EventArgs e)
+        {
+            _shouldRunAutoexec = false;
+            Save();
+        }
+
+        /// <summary>
+        /// We have been disconnected, cancel console autoexec if it was set.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        private void HandleDisconnected(object sender, EventArgs e)
+        {
+            _shouldRunAutoexec = false;
+        }
+
+        /// <summary>
+        /// Run our autoexec file, if we have one.
+        /// </summary>
+        private void ConsoleAutoexec()
+        {
+            // Only run once.
+            _shouldRunAutoexec = false;
+
+            // Get the console to run the commands in.
             var console = (IGameConsole)Game.Services.GetService(typeof(IGameConsole));
             if (console != null)
             {
+                // Get the file, if possible.
                 if (File.Exists(Settings.Instance.AutoexecFilename))
                 {
                     Logger.Info("Found autoexec file at '{0}', running it now...", Settings.Instance.AutoexecFilename);

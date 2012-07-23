@@ -1,6 +1,6 @@
 ﻿using System;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;

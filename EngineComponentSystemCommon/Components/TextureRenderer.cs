@@ -1,9 +1,10 @@
-﻿using Engine.Serialization;
+﻿using Engine.ComponentSystem.Components;
+using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Engine.ComponentSystem.Components
+namespace Engine.ComponentSystem.Common.Components
 {
     /// <summary>
     /// Graphics object holding information about a texture and how it should

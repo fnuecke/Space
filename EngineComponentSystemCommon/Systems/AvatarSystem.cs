@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Systems;
 
-namespace Engine.ComponentSystem.Systems
+namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
     /// Look-up system which allows fetching avatars for individual players.
     /// </summary>
-    public class AvatarSystem : AbstractComponentSystem<Avatar>
+    public sealed class AvatarSystem : AbstractComponentSystem<Avatar>
     {
         #region Properties
 

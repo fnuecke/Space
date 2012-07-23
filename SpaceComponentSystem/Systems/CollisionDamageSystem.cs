@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Components.Messages;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Space.ComponentSystem.Components;
 

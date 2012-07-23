@@ -1,5 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
+﻿using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 

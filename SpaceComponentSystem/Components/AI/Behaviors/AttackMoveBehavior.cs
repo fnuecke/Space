@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.Util;
 using Space.ComponentSystem.Systems;
 

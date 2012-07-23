@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.Util;
 using Microsoft.Xna.Framework;

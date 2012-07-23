@@ -1,7 +1,8 @@
-﻿using Engine.Serialization;
+﻿using Engine.ComponentSystem.Components;
+using Engine.Serialization;
 using Engine.Util;
 
-namespace Engine.ComponentSystem.Components
+namespace Engine.ComponentSystem.Common.Components
 {
     /// <summary>
     /// Represents friction for an object.

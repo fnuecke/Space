@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Components.Messages;
-using Engine.ComponentSystem.Messages;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Systems;
 
-namespace Engine.ComponentSystem.Systems
+namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
     /// This system takes care of components that support collision (anything

@@ -1,8 +1,7 @@
-﻿
-using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common;
+﻿using Engine.ComponentSystem;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;

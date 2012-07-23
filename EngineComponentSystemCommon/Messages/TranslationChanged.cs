@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Engine.ComponentSystem.Messages
+namespace Engine.ComponentSystem.Common.Messages
 {
     /// <summary>
     /// Sent by the <c>Transform</c> component, to notify others that the

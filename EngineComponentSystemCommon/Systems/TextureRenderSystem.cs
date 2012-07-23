@@ -1,10 +1,11 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Engine.ComponentSystem.Systems
+namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
     /// Basic implementation of a render system. Subclasses may override the

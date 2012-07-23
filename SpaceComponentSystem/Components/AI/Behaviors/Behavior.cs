@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;

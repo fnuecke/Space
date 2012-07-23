@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Engine.ComponentSystem.Common
+namespace Engine.ComponentSystem.Common.Systems
 {
     public abstract class CullingTextureRenderSystem : TextureRenderSystem
     {

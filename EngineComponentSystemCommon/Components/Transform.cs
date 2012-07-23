@@ -1,8 +1,9 @@
-﻿using Engine.ComponentSystem.Messages;
+﻿using Engine.ComponentSystem.Common.Messages;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
 
-namespace Engine.ComponentSystem.Components
+namespace Engine.ComponentSystem.Common.Components
 {
     /// <summary>
     /// Represents transformation of a 2d object (position/translation + rotation).

@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
-namespace Engine.ComponentSystem.Systems
+namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
     /// System that manages sound components, querying them for cue names to play

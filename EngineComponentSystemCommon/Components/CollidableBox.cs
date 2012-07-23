@@ -1,9 +1,10 @@
-﻿using Engine.Physics.Intersection;
+﻿using Engine.ComponentSystem.Components;
+using Engine.Physics.Intersection;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
-namespace Engine.ComponentSystem.Components
+namespace Engine.ComponentSystem.Common.Components
 {
     /// <summary>
     /// Implements a box, which has a size which is used to

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Components;
+using Engine.ComponentSystem.Common.Components;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
-using Engine.ComponentSystem.Systems;
 using Engine.Simulation.Commands;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
@@ -56,7 +56,10 @@ namespace Space.Simulation.Commands
 from Engine.ComponentSystem import *
 from Engine.ComponentSystem.Components import *
 from Engine.ComponentSystem.Systems import *
+from Engine.ComponentSystem.Common.Components import *
+from Engine.ComponentSystem.Common.Systems import *
 from Engine.ComponentSystem.RPG.Components import *
+from Engine.ComponentSystem.RPG.Systems import *
 from Space.ComponentSystem.Components import *
 from Space.ComponentSystem.Factories import *
 from Space.ComponentSystem.Systems import *

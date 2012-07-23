@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using Engine.Collections;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Messages;
+using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
-namespace Engine.ComponentSystem.Systems
+namespace Engine.ComponentSystem.Common.Systems
 {
     /// <summary>
     /// This class represents a simple index structure for nearest neighbor

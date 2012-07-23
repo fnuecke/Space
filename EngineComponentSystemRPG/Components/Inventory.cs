@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 

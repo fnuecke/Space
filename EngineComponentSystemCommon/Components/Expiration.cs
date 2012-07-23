@@ -1,5 +1,6 @@
-﻿
-namespace Engine.ComponentSystem.Components
+﻿using Engine.ComponentSystem.Components;
+
+namespace Engine.ComponentSystem.Common.Components
 {
     /// <summary>
     /// Entities with this component have an expiration date, after which they

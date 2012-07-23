@@ -1,8 +1,9 @@
 ﻿using System;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 
-namespace Engine.ComponentSystem.Components
+namespace Engine.ComponentSystem.Common.Components
 {
     /// <summary>
     /// When attached to a component with a transform, this will automatically

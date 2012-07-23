@@ -1,9 +1,10 @@
-﻿using Engine.Physics.Intersection;
+﻿using Engine.ComponentSystem.Components;
+using Engine.Physics.Intersection;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
-namespace Engine.ComponentSystem.Components
+namespace Engine.ComponentSystem.Common.Components
 {
     /// <summary>
     /// Implements a sphere, which has a radius which is used to

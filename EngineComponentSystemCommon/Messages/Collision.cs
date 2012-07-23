@@ -1,4 +1,4 @@
-﻿namespace Engine.ComponentSystem.Components.Messages
+﻿namespace Engine.ComponentSystem.Common.Messages
 {
     /// <summary>
     /// Used to indicate a collision occurred.
