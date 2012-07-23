@@ -119,22 +119,14 @@ namespace Space.ComponentSystem.Components
             SecondaryTurbulenceRotation = packet.ReadVector2();
         }
 
-#if DEBUG
         /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
+        /// Suppress hashing as this component has no influence on other
+        /// components and actual simulation logic.
         /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
+        /// <param name="hasher"></param>
         public override void Hash(Hasher hasher)
         {
-            base.Hash(hasher);
-
-            hasher.Put(Radius);
-            hasher.Put(SurfaceRotation);
-            hasher.Put(PrimaryTurbulenceRotation);
-            hasher.Put(SecondaryTurbulenceRotation);
         }
-#endif
 
         #endregion
     }

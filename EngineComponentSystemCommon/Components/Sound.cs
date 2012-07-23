@@ -1,4 +1,5 @@
 ﻿using Engine.Serialization;
+using Engine.Util;
 
 namespace Engine.ComponentSystem.Components
 {
@@ -78,6 +79,15 @@ namespace Engine.ComponentSystem.Components
             base.Depacketize(packet);
 
             SoundName = packet.ReadString();
+        }
+
+        /// <summary>
+        /// Suppress hashing as this component has no influence on other
+        /// components and actual simulation logic.
+        /// </summary>
+        /// <param name="hasher"></param>
+        public override void Hash(Hasher hasher)
+        {
         }
 
         #endregion

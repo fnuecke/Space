@@ -368,6 +368,7 @@ namespace Engine.Controller
             /// <param name="command">the command to apply.</param>
             public void PushCommand(Command command)
             {
+                Debug.Assert(command is FrameCommand);
                 _controller.Apply((FrameCommand)command);
             }
 

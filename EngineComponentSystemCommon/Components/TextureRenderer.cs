@@ -1,4 +1,5 @@
 ﻿using Engine.Serialization;
+using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -150,17 +151,12 @@ namespace Engine.ComponentSystem.Components
         }
 
         /// <summary>
-        /// Push some unique data of the object to the given hasher,
-        /// to contribute to the generated hash.
+        /// Suppress hashing as this component has no influence on other
+        /// components and actual simulation logic.
         /// </summary>
-        /// <param name="hasher">The hasher to push data to.</param>
-        public override void Hash(Util.Hasher hasher)
+        /// <param name="hasher"></param>
+        public override void Hash(Hasher hasher)
         {
-            base.Hash(hasher);
-
-            hasher.Put(TextureName);
-            hasher.Put(Scale);
-            hasher.Put(Tint);
         }
 
         #endregion

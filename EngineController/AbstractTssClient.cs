@@ -303,27 +303,25 @@ namespace Engine.Controller
         /// <param name="command">The command to apply.</param>
         protected override void Apply(FrameCommand command)
         {
+            // If we're waiting for a sync, so we just skip any commands whatsoever
+            // because the server will send them to us again after completing the
+            // transfer of the game state. Also don't issue new commands ourselves
+            // during that waiting period.
+            if (Tss.WaitingForSynchronization)
+            {
+                return;
+            }
+
             // As a client we only send commands that are our own AND have not been sent
             // back to us by the server, acknowledging our actions. I.e. only send our
             // own, tentative commands.
             if (!command.IsAuthoritative && command.PlayerNumber == Session.LocalPlayer.Number)
             {
-                // If we're waiting for a snapshot, don't continue spamming commands for
-                // the very frame we're stuck in.
-                if (Tss.WaitingForSynchronization)
-                {
-                    return;
-                }
-
                 // Send command to host.
                 Send(command);
             }
-            else if (Tss.WaitingForSynchronization && command.Frame <= Tss.TrailingFrame) // TODO think this through again
-            {
-                // We're waiting for a sync, and our trailing frame wasn't enough, so
-                // we just skip any commands whatsoever that are from before it.
-                return;
-            }
+
+            // Apply the command to our simulation.
             base.Apply(command);
         }
 
