@@ -5,8 +5,11 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using Awesomium.Core;
+using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Space.ComponentSystem.Systems;
 using Space.Util;
 
 namespace Space.View
@@ -625,80 +628,143 @@ namespace Space.View
 
         private JSValue GetXCoordinate(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("XXXXX.XX");
+            
+            var info = _game.Client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            
+            return new JSValue(Math.Round(info.Position.X,2));
         }
 
         private JSValue GetYCoordinate(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("XXXXX.XX");
+            var info = _game.Client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+
+            return new JSValue(Math.Round(info.Position.Y,2));
         }
 
         private JSValue GetXCell(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("X");
+            var info = _game.Client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            var pos = info.Position.X;
+            var cellX = ((int)pos) >> CellSystem.CellSizeShiftAmount;
+            return new JSValue(cellX);
         }
 
         private JSValue GetYCell(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("X");
+            var info = _game.Client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+
+            var pos = info.Position.Y;
+            var cell = ((int)pos) >> CellSystem.CellSizeShiftAmount;
+            return new JSValue(cell);
         }
 
         private JSValue GetUpdateLoad(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("X.XX");
+            
+            return new JSValue(Math.Round(_game.Client.Controller.CurrentLoad,2));
         }
 
         private JSValue GetUpdateSpeed(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("X.XX");
+            return new JSValue(_game.Client.Controller.ActualSpeed);
         }
 
         private JSValue GetIndexes(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("X");
+            var manager = _game.Client.Controller.Simulation.Manager;
+            var index = manager.GetSystem<IndexSystem>();
+            if (index != null)
+            {
+                
+               
+                return new JSValue(index.NumIndexes);
+            }
+            // TODO: Flo schau mal ob das so past da oben und unten mit den indexen usw da ich was rausgenommen hab aber irgendwie das selbe angezeigt wird
+            return JSValue.CreateUndefined();
         }
 
         private JSValue GetTotalEntries(JSValue[] args)
         {
+            var manager = _game.Client.Controller.Simulation.Manager;
+            var index = manager.GetSystem<IndexSystem>();
+            if (index != null)
+            {
+
+                
+                return new JSValue(index.Count);
+            }
             // TODO:
-            return new JSValue("X");
+            return JSValue.CreateUndefined();
         }
 
         private JSValue GetQueries(JSValue[] args)
         {
+            var manager = _game.Client.Controller.Simulation.Manager;
+            var index = manager.GetSystem<IndexSystem>();
+            if (index != null)
+            {
+
+                //, , );
+                return new JSValue(index.NumQueriesLastUpdate);
+            }
             // TODO:
-            return new JSValue("X");
+            return JSValue.CreateUndefined();
         }
 
         private JSValue GetSpeed(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("X.XX");
+            var info = _game.Client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(Math.Round(info.Speed,1));
         }
 
         private JSValue GetMaxSpeed(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("X.XX");
+            var info = _game.Client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(Math.Round(info.MaxSpeed,1));
         }
 
         private JSValue GetMaxAcceleration(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("X.XX");
+            var info = _game.Client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(Math.Round(info.MaxAcceleration,1));
         }
 
         private JSValue GetMass(JSValue[] args)
         {
-            // TODO:
-            return new JSValue("X.XX");
+            var info = _game.Client.GetPlayerShipInfo();
+            if (info == null)
+            {
+                return JSValue.CreateUndefined();
+            }
+            return new JSValue(info.Mass);
         }
 
         #endregion
