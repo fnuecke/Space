@@ -5,10 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using Awesomium.Core;
-using Engine.ComponentSystem.Systems;
+using Engine.ComponentSystem.Common.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Systems;
 using Space.Util;
 
@@ -696,6 +695,7 @@ namespace Space.View
                 return new JSValue(index.NumIndexes);
             }
             // TODO: Flo schau mal ob das so past da oben und unten mit den indexen usw da ich was rausgenommen hab aber irgendwie das selbe angezeigt wird
+            //FN: i don't care :P abgesehen davon dass ich das ned fuer sinnvoll halt das ueber awe anzuzeigen
             return JSValue.CreateUndefined();
         }
 
@@ -721,6 +721,7 @@ namespace Space.View
             {
 
                 //, , );
+                // \o\  \o/  /o/ ... /o\
                 return new JSValue(index.NumQueriesLastUpdate);
             }
             // TODO:
