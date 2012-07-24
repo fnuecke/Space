@@ -91,6 +91,7 @@
     <Compile Include="Graphics\Sun.cs" />
     <Compile Include="Input\GamePadHelper.cs" />
     <Compile Include="Data\ItemQuality.cs" />
+    <Compile Include="Input\MouseWheel.cs" />
     <Compile Include="ItemDescriptions.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -107,6 +108,8 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>QualityNames.resx</DependentUpon>
     </Compile>
+    <Compile Include="Util\InputBindings.cs" />
+    <Compile Include="Util\InputCommands.cs" />
     <Compile Include="Util\ScriptAccessAttribute.cs" />
     <Compile Include="Util\Settings.cs" />
   </ItemGroup>

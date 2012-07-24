@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Nuclex.Input;
 using Nuclex.Input.Devices;
 using Space.Data;
+using Space.Input;
 
 namespace Space.Util
 {
@@ -20,242 +20,6 @@ namespace Space.Util
         #region Logger
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-
-        #endregion
-
-        #region Types
-
-        /// <summary>
-        /// Possible commands in the game's menu.
-        /// </summary>
-        public enum GuiCommand
-        {
-            /// <summary>
-            /// Move one entry up.
-            /// </summary>
-            Up,
-
-            /// <summary>
-            /// Move one entry down.
-            /// </summary>
-            Down,
-
-            /// <summary>
-            /// Toggle to the next option.
-            /// </summary>
-            Next,
-
-            /// <summary>
-            /// Toggle to the previous option.
-            /// </summary>
-            Previous,
-
-            /// <summary>
-            /// Select an entry or confirm option.
-            /// </summary>
-            Select,
-
-            /// <summary>
-            /// Go back in the menu, or abort editing (text fields).
-            /// </summary>
-            Back,
-
-            /// <summary>
-            /// Pause the game to open the ingame menu.
-            /// </summary>
-            Menu,
-
-            /// <summary>
-            /// Open the inventory.
-            /// </summary>
-            Inventory,
-
-            /// <summary>
-            /// Open the character sheet.
-            /// </summary>
-            Character,
-
-            /// <summary>
-            /// Open up the console.
-            /// </summary>
-            Console
-        }
-
-        /// <summary>
-        /// Possible command type in the game (ship control essentially).
-        /// </summary>
-        public enum GameCommand
-        {
-            /// <summary>
-            /// Accelerate up.
-            /// </summary>
-            Up,
-
-            /// <summary>
-            /// Accelerate down.
-            /// </summary>
-            Down,
-
-            /// <summary>
-            /// Accelerate left.
-            /// </summary>
-            Left,
-
-            /// <summary>
-            /// Accelerate right.
-            /// </summary>
-            Right,
-
-            /// <summary>
-            /// Use object in game (e.g. space station for trading).
-            /// </summary>
-            Use,
-
-            /// <summary>
-            /// Stabilize the ship's position.
-            /// </summary>
-            Stabilize,
-
-            /// <summary>
-            /// Pick up nearby items.
-            /// </summary>
-            PickUp,
-
-            /// <summary>
-            /// Untargets whatever we're currently targeting.
-            /// </summary>
-            ClearTarget,
-
-            /// <summary>
-            /// Select the next target (further away from our ship than the
-            /// current target).
-            /// </summary>
-            NextTarget,
-
-            /// <summary>
-            /// Select the previous target (closer to our ship than the current
-            /// target).
-            /// </summary>
-            PreviousTarget,
-
-            /// <summary>
-            /// Select the next enemy target (further away from our ship than
-            /// our current target, closest one if the current target is
-            /// friendly).
-            /// </summary>
-            NextEnemyTarget,
-
-            /// <summary>
-            /// Select the previous enemy target (closer to our ship than
-            /// our current target, furthest one if the current target is
-            /// friendly).
-            /// </summary>
-            PreviousEnemyTarget,
-
-            /// <summary>
-            /// Select the next friendly target (further away from our ship than
-            /// our current target, closest one if the current target is
-            /// an enemy).
-            /// </summary>
-            NextFriendlyTarget,
-
-            /// <summary>
-            /// Select the previous enemy target (closer to our ship than
-            /// our current target, furthest one if the current target is
-            /// an enemy).
-            /// </summary>
-            PreviousFriendlyTarget,
-
-            /// <summary>
-            /// Target the element closest to the current cursor position.
-            /// </summary>
-            CursorTarget
-        }
-
-        public enum GamePadCommand
-        {
-            /// <summary>
-            /// Horizontal acceleration axis.
-            /// </summary>
-            AccelerateX,
-
-            /// <summary>
-            /// Vertical acceleration axis.
-            /// </summary>
-            AccelerateY,
-
-            /// <summary>
-            /// Horizontal look axis.
-            /// </summary>
-            LookX,
-
-            /// <summary>
-            /// Vertical look axis.
-            /// </summary>
-            LookY
-        }
-
-        #endregion
-
-        #region Constants
-
-        /// <summary>
-        /// Default menu key bindings.
-        /// </summary>
-        public static readonly Dictionary<Keys, GuiCommand> DefaultGuiBindings =
-            new Dictionary<Keys, GuiCommand>
-            {
-                {Keys.Up, GuiCommand.Up},
-                {Keys.W, GuiCommand.Up},
-                {Keys.S, GuiCommand.Down},
-                {Keys.Down, GuiCommand.Down},
-                {Keys.A, GuiCommand.Previous},
-                {Keys.Left, GuiCommand.Previous},
-                {Keys.D, GuiCommand.Next},
-                {Keys.Right, GuiCommand.Next},
-                {Keys.E, GuiCommand.Select},
-                {Keys.Enter, GuiCommand.Select},
-                {Keys.Back, GuiCommand.Back},
-                {Keys.Escape, GuiCommand.Back},
-                {Keys.Pause, GuiCommand.Menu},
-                {Keys.F10, GuiCommand.Menu},
-                {Keys.I, GuiCommand.Inventory},
-                {Keys.C, GuiCommand.Character},
-                {Keys.OemTilde, GuiCommand.Console}
-            };
-
-        /// <summary>
-        /// Default in game key bindings.
-        /// </summary>
-        public static readonly Dictionary<Keys, GameCommand> DefaultGameBindings =
-            new Dictionary<Keys, GameCommand>
-            {
-                {Keys.W, GameCommand.Up},
-                {Keys.Up, GameCommand.Up},
-                {Keys.S, GameCommand.Down},
-                {Keys.Down, GameCommand.Down},
-                {Keys.A, GameCommand.Left},
-                {Keys.Left, GameCommand.Left},
-                {Keys.D, GameCommand.Right},
-                {Keys.Right, GameCommand.Right},
-                {Keys.E, GameCommand.Use},
-                {Keys.Enter, GameCommand.Use},
-                {Keys.F, GameCommand.PickUp},
-                {Keys.LeftShift, GameCommand.Stabilize},
-                {Keys.RightShift, GameCommand.Stabilize}
-            };
-
-        /// <summary>
-        /// Default game pad axii (currently for Logitech Rumblepad).
-        /// </summary>
-        public static readonly Dictionary<ExtendedAxes, GamePadCommand> DefaultGamePadBindings =
-            new Dictionary<ExtendedAxes, GamePadCommand>
-            {
-                {ExtendedAxes.X, GamePadCommand.AccelerateX},
-                {ExtendedAxes.Y, GamePadCommand.AccelerateY},
-                {ExtendedAxes.Z, GamePadCommand.LookX},
-                {ExtendedAxes.RotationZ, GamePadCommand.LookY}
-            };
 
         #endregion
 
@@ -295,7 +59,7 @@ namespace Space.Util
         /// Run full screen mode or not.
         /// </summary>
         [ScriptAccess("Fullscreen")]
-        public bool Fullscreen = false;
+        public bool Fullscreen;
 
         /// <summary>
         /// Whether to enable post processing effects.
@@ -372,11 +136,23 @@ namespace Space.Util
         #region Input
 
         /// <summary>
+        /// Input bindings for game control as set by the player.
+        /// </summary>
+        [ScriptAccess("GameBindings")]
+        public InputBindings<GameCommand> GameBindings = new InputBindings<GameCommand>();
+
+        /// <summary>
+        /// Input bindings for gamepad axis control as set by the player.
+        /// </summary>
+        [ScriptAccess("AxisBindings")]
+        public InputBindings<GamePadCommand> AxisBindings = new InputBindings<GamePadCommand>();
+
+        /// <summary>
         /// Whether to toggle stabilizer functionality or keep it active only
         /// while the key is pressed.
         /// </summary>
         [ScriptAccess("StabilizeToggles")]
-        public bool ToggleStabilize = false;
+        public bool StabilizeToggles;
 
         /// <summary>
         /// Whether to use a game pad, if attached, for input.
@@ -385,150 +161,84 @@ namespace Space.Util
         public bool EnableGamepad = true;
 
         /// <summary>
-        /// Invert the horizontal acceleration axis.
-        /// </summary>
-        public bool InvertGamepadAccelerationAxisX = false;
-
-        /// <summary>
-        /// Invert the vertical acceleration axis.
-        /// </summary>
-        public bool InvertGamepadAccelerationAxisY = false;
-
-        /// <summary>
-        /// Invert the horizontal look axis.
-        /// </summary>
-        public bool InvertGamepadLookAxisX = false;
-
-        /// <summary>
-        /// Invert the vertical look axis.
-        /// </summary>
-        public bool InvertGamepadLookAxisY = true;
-
-        /// <summary>
         /// Epsilon value below which to ignore axis values (to compensate for
         /// construction based inaccuracies in game pads).
         /// </summary>
         public float GamePadDetectionEpsilon = 0.15f;
 
         /// <summary>
-        /// Key bindings for menu control as set by the player.
+        /// Invert the horizontal acceleration axis.
         /// </summary>
-        [ScriptAccess("Bindings")]
-        public SerializableDictionary<Keys, GuiCommand> GuiBindings =
-            new SerializableDictionary<Keys, GuiCommand>(DefaultGuiBindings);
+        public bool InvertGamepadAccelerationAxisX;
 
         /// <summary>
-        /// Key bindings for in game ship control as set by the player.
+        /// Invert the vertical acceleration axis.
         /// </summary>
-        /// <remarks>
-        /// Make sure to call <c>UpdateInversGameBindings</c> after modifying
-        /// the <c>GameBindings</c>.
-        /// </remarks>
-        public SerializableDictionary<Keys, GameCommand> GameBindings =
-            new SerializableDictionary<Keys, GameCommand>(DefaultGameBindings);
+        public bool InvertGamepadAccelerationAxisY = true;
 
         /// <summary>
-        /// Game pad axis bindings for in game ship control as set by the
-        /// player.
+        /// Invert the horizontal look axis.
         /// </summary>
-        /// <remarks>
-        /// Make sure to call <c>UpdateInversGamePadBindings</c> after modifying
-        /// the <c>GamePadBindings</c>.
-        /// </remarks>
-        public SerializableDictionary<ExtendedAxes, GamePadCommand> GamePadBindings =
-            new SerializableDictionary<ExtendedAxes, GamePadCommand>(DefaultGamePadBindings);
+        public bool InvertGamepadLookAxisX;
 
         /// <summary>
-        /// Inverse game key bindings, mapping commands to keys. This is used
-        /// when looking up whether an action should be taken based on the
-        /// current keyboard state (as opposed to reacting to a key press
-        /// event).
+        /// Invert the vertical look axis.
         /// </summary>
-        /// <remarks>
-        /// Make sure to call <c>UpdateInversGameBindings</c> after modifying
-        /// the <c>GameBindings</c>.
-        /// </remarks>
-        [XmlIgnore]
-        public Dictionary<GameCommand, Keys[]> InverseGameBindings;
-
-        /// <summary>
-        /// Inverse game pad axis bindings, mapping commands to keys. This is
-        /// used when looking up whether an action should be taken based on the
-        /// current game pad state.
-        /// </summary>
-        /// <remarks>
-        /// Make sure to call <c>UpdateInversGamePadBindings</c> after modifying
-        /// the <c>GamePadBindings</c>.
-        /// </remarks>
-        [XmlIgnore]
-        public Dictionary<GamePadCommand, ExtendedAxes[]> InverseGamePadBindings;
+        public bool InvertGamepadLookAxisY = true;
 
         #region Update Methods
 
         /// <summary>
-        /// Updates the inverse game key bindings.
+        /// Restores the default input bindings for ingame commands.
         /// </summary>
-        public void UpdateInverseGameBindings()
+        public void SetDefaultGameBindings()
         {
-            InverseGameBindings = BuildInverseGameBindings();
+            GameBindings.Clear();
+            GameBindings.Add(GameCommand.Up, Keys.W);
+            GameBindings.Add(GameCommand.Up, Keys.Up);
+            GameBindings.Add(GameCommand.Down, Keys.S);
+            GameBindings.Add(GameCommand.Down, Keys.Down);
+            GameBindings.Add(GameCommand.Left, Keys.A);
+            GameBindings.Add(GameCommand.Left, Keys.Left);
+            GameBindings.Add(GameCommand.Right, Keys.D);
+            GameBindings.Add(GameCommand.Right, Keys.Right);
+            GameBindings.Add(GameCommand.Stabilize, Keys.LeftShift);
+            GameBindings.Add(GameCommand.Stabilize, Keys.RightShift);
+            GameBindings.Add(GameCommand.Stabilize, Buttons.LeftShoulder);
+            GameBindings.Add(GameCommand.ZoomIn, MouseWheel.Up);
+            GameBindings.Add(GameCommand.ZoomIn, Buttons.LeftTrigger);
+            GameBindings.Add(GameCommand.ZoomOut, MouseWheel.Down);
+            GameBindings.Add(GameCommand.ZoomOut, Buttons.RightTrigger);
+
+            GameBindings.Add(GameCommand.Shoot, MouseButtons.Left);
+            GameBindings.Add(GameCommand.Shoot, Buttons.RightShoulder);
+            GameBindings.Add(GameCommand.Use, Keys.E);
+            GameBindings.Add(GameCommand.Use, Keys.Enter);
+            GameBindings.Add(GameCommand.PickUp, Keys.F);
+
+            GameBindings.Add(GameCommand.Back, Keys.Back);
+            GameBindings.Add(GameCommand.Back, Keys.Escape);
+            GameBindings.Add(GameCommand.Menu, Keys.Pause);
+            GameBindings.Add(GameCommand.Menu, Keys.F10);
+            GameBindings.Add(GameCommand.Inventory, Keys.I);
+            GameBindings.Add(GameCommand.Character, Keys.C);
+            GameBindings.Add(GameCommand.Console, Keys.OemTilde);
         }
 
         /// <summary>
-        /// Updates the inverse game key bindings.
+        /// Restores the default input bindings for gamepad axii.
         /// </summary>
-        public void UpdateInverseGamePadBindings()
+        public void SetDefaultAxisBindings()
         {
-            InverseGamePadBindings = BuildInverseGamePadBindings();
-        }
+            AxisBindings.Clear();
+            AxisBindings.Add(GamePadCommand.AccelerateX, ExtendedAxes.X);
+            AxisBindings.Add(GamePadCommand.AccelerateY, ExtendedAxes.Y);
+            AxisBindings.Add(GamePadCommand.LookX, ExtendedAxes.RotationX);
+            AxisBindings.Add(GamePadCommand.LookY, ExtendedAxes.RotationY);
 
-        /// <summary>
-        /// Builds the actual inverse dictionary.
-        /// </summary>
-        private Dictionary<GameCommand, Keys[]> BuildInverseGameBindings()
-        {
-            var buffer = new Dictionary<GameCommand, List<Keys>>();
-
-            foreach (var item in GameBindings)
-            {
-                if (!buffer.ContainsKey(item.Value))
-                {
-                    buffer.Add(item.Value, new List<Keys>());
-                }
-                buffer[item.Value].Add(item.Key);
-            }
-
-            var result = new Dictionary<GameCommand, Keys[]>();
-            foreach (var item in buffer)
-            {
-                result.Add(item.Key, item.Value.ToArray());
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Builds the actual inverse dictionary.
-        /// </summary>
-        private Dictionary<GamePadCommand, ExtendedAxes[]> BuildInverseGamePadBindings()
-        {
-            var buffer = new Dictionary<GamePadCommand, List<ExtendedAxes>>();
-
-            foreach (var item in GamePadBindings)
-            {
-                if (!buffer.ContainsKey(item.Value))
-                {
-                    buffer.Add(item.Value, new List<ExtendedAxes>());
-                }
-                buffer[item.Value].Add(item.Key);
-            }
-
-            var result = new Dictionary<GamePadCommand, ExtendedAxes[]>();
-            foreach (var item in buffer)
-            {
-                result.Add(item.Key, item.Value.ToArray());
-            }
-
-            return result;
+            // For Logitech Rumblepad
+            AxisBindings.Add(GamePadCommand.LookX, ExtendedAxes.Z);
+            AxisBindings.Add(GamePadCommand.LookY, ExtendedAxes.RotationZ);
         }
 
         #endregion
@@ -579,8 +289,6 @@ namespace Space.Util
                     var serializer = new XmlSerializer(typeof(Settings));
                     _instance = (Settings)serializer.Deserialize(stream);
                 }
-                _instance.UpdateInverseGameBindings();
-                _instance.UpdateInverseGamePadBindings();
             }
             catch (IOException ex)
             {
@@ -610,8 +318,8 @@ namespace Space.Util
         /// </summary>
         private Settings()
         {
-            UpdateInverseGameBindings();
-            UpdateInverseGamePadBindings();
+            SetDefaultGameBindings();
+            SetDefaultAxisBindings();
         }
 
         #endregion

@@ -24,6 +24,8 @@ namespace Space.View
 
         #region Fields
 
+        private static JSCallbacks _instance;
+
         /// <summary>
         /// The game we work for.
         /// </summary>
@@ -36,13 +38,25 @@ namespace Space.View
         /// <summary>
         /// Registers all callbacks for the specified game.
         /// </summary>
-        /// <param name="game"></param>
-        public JSCallbacks(Spaaace game)
+        /// <param name="game">The instance of the game to initialize for.</param>
+        private JSCallbacks(Spaaace game)
         {
             _game = game;
             _game.ClientInitialized += HandleClientInitialized;
 
             SetupJavaScriptApi();
+        }
+
+        /// <summary>
+        /// Registers all callbacks for the specified game.
+        /// </summary>
+        /// <param name="game">The instance of the game to initialize for.</param>
+        public static void Initialize(Spaaace game)
+        {
+            if (_instance == null)
+            {
+                _instance = new JSCallbacks(game);
+            }
         }
 
         #endregion
@@ -151,7 +165,6 @@ namespace Space.View
             s.AddCallbackWithReturnValue("Space", "getSettingInfos", GetSettingInfos);
             s.AddCallbackWithReturnValue("Space", "getSetting", GetSetting);
             s.AddCallback("Space", "setSetting", SetSetting);
-            s.AddCallbackWithReturnValue("Space", "getGuiCommands", GetGuiCommands);
             s.AddCallbackWithReturnValue("Space", "getGameCommands", GetGameCommands);
 
             // Ingame information.
@@ -212,7 +225,7 @@ namespace Space.View
         private void HostGame(JSValue[] args)
         {
             _game.RestartServer();
-            /*
+            //*
             _game.RestartClient(true);
             /*/
             _game.RestartClient();
@@ -403,19 +416,9 @@ namespace Space.View
         /// </summary>
         /// <param name="args">The args.</param>
         /// <returns></returns>
-        private static JSValue GetGuiCommands(JSValue[] args)
-        {
-            return new JSValue(Enum.GetNames(typeof(Settings.GuiCommand)).Select(name => new JSValue(name)).ToArray());
-        }
-
-        /// <summary>
-        /// Gets a list of all commands that can be handled in the GUI.
-        /// </summary>
-        /// <param name="args">The args.</param>
-        /// <returns></returns>
         private static JSValue GetGameCommands(JSValue[] args)
         {
-            return new JSValue(Enum.GetNames(typeof(Settings.GameCommand)).Select(name => new JSValue(name)).ToArray());
+            return new JSValue(Enum.GetNames(typeof(GameCommand)).Select(name => new JSValue(name)).ToArray());
         }
 
         #region Value conversion

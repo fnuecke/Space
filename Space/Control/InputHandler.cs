@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Linq;
 using Engine.Session;
+using Engine.Simulation.Commands;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
+using Nuclex.Input.Devices;
 using Space.ComponentSystem.Systems;
 using Space.Input;
 using Space.Simulation.Commands;
@@ -15,16 +16,15 @@ namespace Space.Control
     /// <summary>
     /// Handles player input and converts it to simulation commands.
     /// </summary>
-    public sealed class InputHandler
+    public sealed class InputHandler : GameComponent
     {
-
         #region Constants
 
         /// <summary>
         /// The interval in milliseconds in which to check for new rotation
         /// based on mouse movement.
         /// </summary>
-        private const int MousePollInterval = 50;
+        private const int AnalogPollInterval = 50;
 
         /// <summary>
         /// The interval in seconds in which to scan input devices.
@@ -36,40 +36,11 @@ namespace Space.Control
         #region Properties
 
         /// <summary>
-        /// The game client to inject commands into.
+        /// Returns whether we are currently in a game.
         /// </summary>
-        public GameClient Client
+        private bool IsConnected
         {
-            private get { return _client; }
-            set
-            {
-                if (value == _client)
-                {
-                    return;
-                }
-
-                DetachListeners();
-                _client = value;
-
-                if (_client == null)
-                {
-                    return;
-                }
-
-                _inputManager = (InputManager)Client.Game.Services.GetService(typeof(InputManager));
-                _client.Controller.Session.JoinResponse += (s, e) => AttachListeners();
-                _client.Controller.Session.Disconnecting += (s, e) => DetachListeners();
-                _client.Controller.Session.Disconnected += (s, e) => DetachListeners();
-            }
-        }
-
-        /// <summary>
-        /// Whether processing input is currently enabled or not.
-        /// </summary>
-        public bool IsEnabled
-        {
-            get { return _isEnabled && Client != null && Client.Controller.Session.ConnectionState == ClientState.Connected; }
-            set { _isEnabled = value; }
+            get { return _game.Client != null && _game.Client.Controller.Session.ConnectionState == ClientState.Connected; }
         }
 
         #endregion
@@ -77,24 +48,14 @@ namespace Space.Control
         #region Fields
 
         /// <summary>
-        /// The keyboard used for player input.
+        /// The game we belong to.
         /// </summary>
-        //private IKeyboard _keyboard;
+        private readonly Spaaace _game;
 
         /// <summary>
-        /// The mouse used for player input.
+        /// The current primary gamepad.
         /// </summary>
-        //private IMouse _mouse;
-
-        /// <summary>
-        /// The game pad used for player input.
-        /// </summary>
-        //private IGamePad _gamepad;
-
-        /// <summary>
-        /// Whether processing input is currently enabled or not.
-        /// </summary>
-        private bool _isEnabled;
+        private IGamePad _gamePad;
 
         /// <summary>
         /// The time at which we last scanned for input devices.
@@ -107,9 +68,15 @@ namespace Space.Control
         private DateTime _lastUpdate;
 
         /// <summary>
-        /// The current player acceleration.
+        /// The current player acceleration direction.
         /// </summary>
-        private Vector2 _accelerationDirection;
+        private Directions _accelerationDirection;
+
+        /// <summary>
+        /// The current player acceleration vector (converted from
+        /// direction or read from gamepad).
+        /// </summary>
+        private Vector2 _accelerationVector;
 
         /// <summary>
         /// The last registered time that the mouse has moved.
@@ -143,32 +110,105 @@ namespace Space.Control
         /// </summary>
         private Vector2 _previousGamepadLook;
 
-        /// <summary>
-        /// The game client we're currently handling input for.
-        /// </summary>
-        private GameClient _client;
+        #endregion
 
-        /// <summary>
-        /// The input manager we use to get input devices.
-        /// </summary>
-        private InputManager _inputManager;
+        #region Constructor
+
+        public InputHandler(Spaaace game)
+            : base(game)
+        {
+            _game = game;
+        }
 
         #endregion
 
-        /// <summary>
-        /// Set whether to accept player input or not.
-        /// </summary>
-        private void AttachListeners()
+        #region Logic
+
+        public override void Update(GameTime gameTime)
         {
-            if (_inputManager == null)
+            base.Update(gameTime);
+
+            // Rescan input devices periodically, e.g. to accept newly connected gamepads.
+            if ((DateTime.Now - _lastInputDeviceScan).TotalSeconds > InputDeviceScanInterval)
             {
+                AttachListeners();
+                _lastInputDeviceScan = DateTime.Now;
+            }
+
+            // Disregard the rest if we're not connected.
+            if (!IsConnected)
+            {
+                // Reset periodic update values.
+                _accelerationDirection = Directions.None;
+                _accelerationVector = Vector2.Zero;
+                _accelerationChanged = DateTime.MinValue;
+                _targetRotation = 0;
+                _rotationChanged = DateTime.MinValue;
+                _lastUpdate = DateTime.MinValue;
                 return;
             }
 
-            // Register for key presses and releases (movement).
-            if (_inputManager.Keyboards != null)
+            // Handle game pad input that we can't properly handle via events.
+            if (Settings.Instance.EnableGamepad && _gamePad != null && _gamePad.IsAttached)
             {
-                foreach (var keyboard in _inputManager.Keyboards)
+                // Handle movement of the left stick, which controls our movement.
+                var gamepadAcceleration = GamePadHelper.GetAcceleration(_gamePad);
+                if (gamepadAcceleration != _previousGamepadAcceleration)
+                {
+                    _accelerationVector = gamepadAcceleration;
+                    _accelerationChanged = DateTime.Now;
+                }
+                _previousGamepadAcceleration = gamepadAcceleration;
+
+                // Handle movement of the right stick, which controls our direction.
+                var gamepadLook = GamePadHelper.GetLook(_gamePad);
+                if (gamepadLook != _previousGamepadLook && gamepadLook != Vector2.Zero)
+                {
+                    _targetRotation = (float)Math.Atan2(gamepadLook.Y, gamepadLook.X);
+                    _rotationChanged = DateTime.Now;
+                }
+                _previousGamepadLook = gamepadLook;
+            }
+
+            // See if we want to re-orientate the ship and whether the acceleration
+            // changed. Only check every so often, as slight delays here will not be
+            // as noticeable, due to the ship's slow turn/acceleration speed.
+            if ((DateTime.Now - _lastUpdate).TotalMilliseconds > AnalogPollInterval)
+            {
+                // Has the mouse moved since the last update?
+                if (_rotationChanged >= _lastUpdate)
+                {
+                    // Yes, push command.
+                    _game.Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, new Vector2(_targetRotation, 0)));
+                }
+                // Has the acceleration changed since the last update?
+                if (_accelerationChanged >= _lastUpdate)
+                {
+                    // Yes, push command.
+                    _game.Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, _accelerationVector));
+                }
+                _lastUpdate = DateTime.Now;
+            }
+        }
+
+        #endregion
+
+        #region Listener registration/removal
+
+        /// <summary>
+        /// Attach listeners to all known devices.
+        /// </summary>
+        private void AttachListeners()
+        {
+            // Detach first, to avoid multiple registrations.
+            DetachListeners();
+
+            var im = _game.InputManager;
+
+            // Register for key presses and releases (movement).
+            if (im.Keyboards != null)
+            {
+                foreach (var keyboard in im.Keyboards)
                 {
                     if (keyboard.IsAttached)
                     {
@@ -179,9 +219,9 @@ namespace Space.Control
             }
 
             // Register for mouse movement (orientation) and buttons (shooting).
-            if (_inputManager.Mice != null)
+            if (im.Mice != null)
             {
-                foreach (var mouse in _inputManager.Mice)
+                foreach (var mouse in im.Mice)
                 {
                     if (mouse.IsAttached)
                     {
@@ -194,29 +234,34 @@ namespace Space.Control
             }
 
             // Register for game pad buttons. Sticks are handled in update.
-            if (_inputManager.GamePads != null)
+            _gamePad = null;
+            if (Settings.Instance.EnableGamepad && im.GamePads != null)
             {
-                foreach (var gamepad in _inputManager.GamePads)
+                foreach (var gamepad in im.GamePads)
                 {
                     if (gamepad.IsAttached)
                     {
+                        _gamePad = gamepad;
                         gamepad.ButtonPressed += HandleGamePadPressed;
                         gamepad.ButtonReleased += HandleGamePadReleased;
+
+                        // Only use the first gamepad.
+                        break;
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// Remove listeners from all known devices.
+        /// </summary>
         private void DetachListeners()
         {
-            if (_inputManager == null)
-            {
-                return;
-            }
+            var im = _game.InputManager;
 
-            if (_inputManager.Keyboards != null)
+            if (im.Keyboards != null)
             {
-                foreach (var keyboard in _inputManager.Keyboards)
+                foreach (var keyboard in im.Keyboards)
                 {
                     if (keyboard.IsAttached)
                     {
@@ -226,9 +271,9 @@ namespace Space.Control
                 }
             }
 
-            if (_inputManager.Mice != null)
+            if (im.Mice != null)
             {
-                foreach (var mouse in _inputManager.Mice)
+                foreach (var mouse in im.Mice)
                 {
                     if (mouse.IsAttached)
                     {
@@ -240,9 +285,10 @@ namespace Space.Control
                 }
             }
 
-            if (_inputManager.GamePads != null)
+            _gamePad = null;
+            if (im.GamePads != null)
             {
-                foreach (var gamepad in _inputManager.GamePads)
+                foreach (var gamepad in im.GamePads)
                 {
                     if (gamepad.IsAttached)
                     {
@@ -253,79 +299,7 @@ namespace Space.Control
             }
         }
 
-        #region Logic
-
-        public void Update()
-        {
-            if (!IsEnabled)
-            {
-                return;
-            }
-
-            // Handle game pad input that we can't properly handle via events.
-            if (Settings.Instance.EnableGamepad)
-            {
-                foreach (var gamepad in _inputManager.GamePads)
-                {
-                    if (gamepad.IsAttached)
-                    {
-                        // Handle movement of the left stick, which controls our movement.
-                        var gamepadAcceleration = GamePadHelper.GetAcceleration(gamepad);
-                        if (gamepadAcceleration != _previousGamepadAcceleration)
-                        {
-                            _accelerationDirection = gamepadAcceleration;
-                            _accelerationDirection.Y = -_accelerationDirection.Y;
-                            _accelerationChanged = DateTime.Now;
-                        }
-                        _previousGamepadAcceleration = gamepadAcceleration;
-
-                        // Handle movement of the right stick, which controls our direction.
-                        var gamepadLook = GamePadHelper.GetLook(gamepad);
-                        if (gamepadLook != _previousGamepadLook && gamepadLook != Vector2.Zero)
-                        {
-                            _targetRotation = (float)Math.Atan2(gamepadLook.Y, gamepadLook.X);
-                            _rotationChanged = DateTime.Now;
-                        }
-                        _previousGamepadLook = gamepadLook;
-
-                        // Only use the first gamepad we can find.
-                        break;
-                    }
-                }
-            }
-
-            // Only check every so often, as slight delays here will not be as
-            // noticeable, due to the ship's slow turn speed.
-            if ((DateTime.Now - _lastUpdate).TotalMilliseconds > MousePollInterval)
-            {
-                // Has the mouse moved since the last update?
-                if (_rotationChanged >= _lastUpdate)
-                {
-                    // Yes, push command.
-                    Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Rotate, new Vector2(_targetRotation, 0)));
-                }
-                if (_accelerationChanged >= _lastUpdate)
-                {
-                    Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.Accelerate, _accelerationDirection));
-                }
-                _lastUpdate = DateTime.Now;
-            }
-
-            // Rescan input devices periodically, e.g. to accept newly connected gamepads.
-            if (Client.Controller.Session.ConnectionState == ClientState.Connected)
-            {
-                if ((DateTime.Now - _lastInputDeviceScan).TotalSeconds > InputDeviceScanInterval)
-                {
-                    DetachListeners(); // Detach first to avoid getting events multiple times.
-                    AttachListeners();
-                }
-                _lastInputDeviceScan = DateTime.Now;
-            }
-        }
-
         #endregion
-
-        #region Player input
 
         #region Keyboard
 
@@ -334,25 +308,7 @@ namespace Space.Control
         /// </summary>
         private void HandleKeyPressed(Keys key)
         {
-            if (IsEnabled && Settings.Instance.GameBindings.ContainsKey(key))
-            {
-                switch (Settings.Instance.GameBindings[key])
-                {
-                    case Settings.GameCommand.Stabilize:
-                        if (!Settings.Instance.ToggleStabilize)
-                        {
-                            // Just enable stabilizers.
-                            Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginStabilizing));
-                        }
-                        break;
-                    case Settings.GameCommand.PickUp:
-                        Client.Controller.PushLocalCommand(new PickUpCommand());
-                        break;
-                    default:
-                        UpdateKeyboardAcceleration();
-                        break;
-                }
-            }
+            BeginCommand(Settings.Instance.GameBindings.GetCommand(key));
         }
 
         /// <summary>
@@ -360,65 +316,7 @@ namespace Space.Control
         /// </summary>
         private void HandleKeyReleased(Keys key)
         {
-            if (IsEnabled && Settings.Instance.GameBindings.ContainsKey(key))
-            {
-                switch (Settings.Instance.GameBindings[key])
-                {
-                    case Settings.GameCommand.Stabilize:
-                        if (Settings.Instance.ToggleStabilize)
-                        {
-                            // Toggle stabilizers.
-                            _stabilizing = !_stabilizing;
-                            Client.Controller.PushLocalCommand(new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
-                        }
-                        else
-                        {
-                            // Disable stabilizers if not toggling.
-                            Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopStabilizing));
-                        }
-                        break;
-                    default:
-                        UpdateKeyboardAcceleration();
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates acceleration direction based on key presses.
-        /// </summary>
-        private void UpdateKeyboardAcceleration()
-        {
-            var state = _inputManager.GetKeyboard().GetState();
-            var direction = Directions.None;
-            if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Down].Any(state.IsKeyDown))
-            {
-                // Accelerate downwards.
-                direction |= Directions.Down;
-            }
-            if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Left].Any(state.IsKeyDown))
-            {
-                // Accelerate left.
-                direction |= Directions.Left;
-            }
-            if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Right].Any(state.IsKeyDown))
-            {
-                // Accelerate right.
-                direction |= Directions.Right;
-            }
-            if (Settings.Instance.InverseGameBindings[Settings.GameCommand.Up].Any(state.IsKeyDown))
-            {
-                // Accelerate upwards.
-                direction |= Directions.Up;
-            }
-
-            var acceleration = DirectionConversion.DirectionToVector(direction);
-            if (acceleration != _accelerationDirection)
-            {
-                // Only update if something changed.
-                _accelerationDirection = acceleration;
-                _accelerationChanged = DateTime.Now;
-            }
+            EndCommand(Settings.Instance.GameBindings.GetCommand(key));
         }
 
         #endregion
@@ -430,15 +328,7 @@ namespace Space.Control
         /// </summary>
         private void HandleMousePressed(MouseButtons buttons)
         {
-            if (!IsEnabled)
-            {
-                return;
-            }
-
-            if (buttons == MouseButtons.Left)
-            {
-                Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
-            }
+            BeginCommand(Settings.Instance.GameBindings.GetCommand(buttons));
         }
 
         /// <summary>
@@ -446,15 +336,16 @@ namespace Space.Control
         /// </summary>
         private void HandleMouseReleased(MouseButtons buttons)
         {
-            if (!IsEnabled)
-            {
-                return;
-            }
+            EndCommand(Settings.Instance.GameBindings.GetCommand(buttons));
+        }
 
-            if (buttons == MouseButtons.Left)
-            {
-                Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
-            }
+        /// <summary>
+        /// Handle mouse wheel rotation.
+        /// </summary>
+        /// <param name="ticks"></param>
+        private void HandleMouseWheelRotated(float ticks)
+        {
+            BeginCommand(Settings.Instance.GameBindings.GetCommand(ticks > 0 ? MouseWheel.Up : MouseWheel.Down));
         }
 
         /// <summary>
@@ -462,38 +353,12 @@ namespace Space.Control
         /// </summary>
         private void HandleMouseMoved(float x, float y)
         {
-            if (!IsEnabled)
-            {
-                return;
-            }
-
             // Get angle to middle of screen (position of our ship), which
             // will be our new target rotation.
-            var rx = x - Client.Game.GraphicsDevice.Viewport.Width / 2f;
-            var ry = y - Client.Game.GraphicsDevice.Viewport.Height / 2f;
+            var rx = x - _game.GraphicsDevice.Viewport.Width / 2f;
+            var ry = y - _game.GraphicsDevice.Viewport.Height / 2f;
             _targetRotation = (float)Math.Atan2(ry, rx);
             _rotationChanged = DateTime.Now;
-        }
-
-        /// <summary>
-        /// Update zoom on mouse wheel rotation.
-        /// </summary>
-        /// <param name="ticks"></param>
-        private void HandleMouseWheelRotated(float ticks)
-        {
-            if (!IsEnabled)
-            {
-                return;
-            }
-
-            if (ticks > 0)
-            {
-                Client.GetSystem<CameraSystem>().ZoomIn();
-            }
-            else
-            {
-                Client.GetSystem<CameraSystem>().ZoomOut();
-            }
         }
 
         #endregion
@@ -505,18 +370,7 @@ namespace Space.Control
         /// </summary>
         private void HandleGamePadPressed(Buttons buttons)
         {
-            if (!IsEnabled)
-            {
-                return;
-            }
-
-            switch (buttons)
-            {
-                case (Buttons.RightShoulder):
-                    // Shoot.
-                    Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting));
-                    break;
-            }
+            BeginCommand(Settings.Instance.GameBindings.GetCommand(buttons));
         }
 
         /// <summary>
@@ -524,21 +378,187 @@ namespace Space.Control
         /// </summary>
         private void HandleGamePadReleased(Buttons buttons)
         {
-            if (!IsEnabled)
-            {
-                return;
-            }
-
-            switch (buttons)
-            {
-                case (Buttons.RightShoulder):
-                    // Stop shooting.
-                    Client.Controller.PushLocalCommand(new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting));
-                    break;
-            }
+            EndCommand(Settings.Instance.GameBindings.GetCommand(buttons));
         }
 
         #endregion
+
+        #region Command handling
+        
+        private void BeginCommand(GameCommand gameCommand)
+        {
+            // Figure out what to do.
+            FrameCommand command = null;
+            switch (gameCommand)
+            {
+                case GameCommand.Up:
+                    // Started accelerating upwards, update directions if something changed.
+                    AddAccelerationDirection(Directions.Up);
+                    break;
+
+                case GameCommand.Down:
+                    // Started accelerating downwards, update directions if something changed.
+                    AddAccelerationDirection(Directions.Down);
+                    break;
+
+                case GameCommand.Left:
+                    // Started accelerating leftwards, update directions if something changed.
+                    AddAccelerationDirection(Directions.Left);
+                    break;
+
+                case GameCommand.Right:
+                    // Started accelerating rightwards, update directions if something changed.
+                    AddAccelerationDirection(Directions.Right);
+                    break;
+
+                case GameCommand.Stabilize:
+                    // Enable stabilizers if not toggling.
+                    if (!Settings.Instance.StabilizeToggles)
+                    {
+                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginStabilizing);
+                    }
+                    break;
+
+                case GameCommand.ZoomIn:
+                    // Zoom camera in.
+                    if (IsConnected)
+                    {
+                        _game.Client.GetSystem<CameraSystem>().ZoomIn();
+                    }
+                    break;
+
+                case GameCommand.ZoomOut:
+                    // Zoom camera out.
+                    if (IsConnected)
+                    {
+                        _game.Client.GetSystem<CameraSystem>().ZoomOut();
+                    }
+                    break;
+
+                case GameCommand.Shoot:
+                    // Shoot.
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting);
+                    break;
+
+                case GameCommand.Use:
+                    // TODO
+                    break;
+
+                case GameCommand.PickUp:
+                    // Pick up nearby items.
+                    command = new PickUpCommand();
+                    break;
+
+                case GameCommand.Back:
+                    // TODO
+                    break;
+
+                case GameCommand.Menu:
+                    // TODO
+                    break;
+
+                case GameCommand.Inventory:
+                    // TODO
+                    break;
+
+                case GameCommand.Character:
+                    // TODO
+                    break;
+
+                case GameCommand.Console:
+                    // Toggle console.
+                    _game.GameConsole.IsOpen = !_game.GameConsole.IsOpen;
+                    break;
+            }
+
+            // If we did something, push it.
+            if (command != null && IsConnected)
+            {
+                _game.Client.Controller.PushLocalCommand(command);
+            }
+        }
+
+        private void EndCommand(GameCommand gameCommand)
+        {
+            // Figure out what to do.
+            FrameCommand command = null;
+            switch (gameCommand)
+            {
+                case GameCommand.Up:
+                    // Stopped accelerating upwards, update directions if something changed.
+                    RemoveAccelerationDirection(Directions.Up);
+                    break;
+
+                case GameCommand.Down:
+                    // Stopped accelerating downwards, update directions if something changed.
+                    RemoveAccelerationDirection(Directions.Down);
+                    break;
+
+                case GameCommand.Left:
+                    // Stopped accelerating leftwards, update directions if something changed.
+                    RemoveAccelerationDirection(Directions.Left);
+                    break;
+
+                case GameCommand.Right:
+                    // Stopped accelerating rightwards, update directions if something changed.
+                    RemoveAccelerationDirection(Directions.Right);
+                    break;
+
+                case GameCommand.Stabilize:
+                    // Stopped stabilizing, should we toggle?
+                    if (Settings.Instance.StabilizeToggles)
+                    {
+                        // Toggle stabilizers.
+                        _stabilizing = !_stabilizing;
+                        command = new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing);
+                    }
+                    else
+                    {
+                        // Disable stabilizers if not toggling.
+                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopStabilizing);
+                    }
+                    break;
+
+                case GameCommand.Shoot:
+                    // Stop shooting.
+                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting);
+                    break;
+            }
+
+            // If we did something, push it.
+            if (command != null && IsConnected)
+            {
+                _game.Client.Controller.PushLocalCommand(command);
+            }
+        }
+
+        /// <summary>
+        /// Begin accelerating in the specified direction.
+        /// </summary>
+        /// <param name="direction">The direcion to begin accelerating into.</param>
+        private void AddAccelerationDirection(Directions direction)
+        {
+            if ((_accelerationDirection & direction) == Directions.None)
+            {
+                _accelerationDirection = (_accelerationDirection | direction);
+                _accelerationVector = DirectionConversion.DirectionToVector(_accelerationDirection);
+                _accelerationChanged = DateTime.Now;
+            }
+        }
+
+        /// <summary>
+        /// Stop accelerating in the specified direction.
+        /// </summary>
+        /// <param name="direction">The direcion to stop accelerating into.</param>
+        private void RemoveAccelerationDirection(Directions direction)
+        {
+            if ((_accelerationDirection & direction) != Directions.None)
+            {
+                _accelerationDirection = (_accelerationDirection & ~direction);
+                _accelerationVector = DirectionConversion.DirectionToVector(_accelerationDirection);
+                _accelerationChanged = DateTime.Now;
+            }
+        }
 
         #endregion
     }

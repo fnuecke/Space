@@ -1,21 +1,23 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 using Awesomium.ScreenManagement;
 using Engine.ComponentSystem.Common.Systems;
-using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
 using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
 using Space.Control;
 using Space.Session;
+using Space.Simulation.Commands;
 using Space.Util;
 using Space.View;
 
@@ -34,14 +36,12 @@ namespace Space
         [STAThread]
         static void Main(string[] args)
         {
-            Logger.Info("Starting up program...");
-
             using (var game = new Spaaace())
             {
+                Logger.Info("Starting up program...");
                 game.Run();
+                Logger.Info("Shutting down program...");
             }
-
-            Logger.Info("Shutting down program...");
         }
 
         #endregion
@@ -82,6 +82,22 @@ namespace Space
         public GameClient Client
         {
             get { return _client; }
+        }
+
+        /// <summary>
+        /// The game console we use.
+        /// </summary>
+        public IGameConsole GameConsole
+        {
+            get { return _console; }
+        }
+
+        /// <summary>
+        /// The input manager in use.
+        /// </summary>
+        public InputManager InputManager
+        {
+            get { return _inputManager; }
         }
 
         /// <summary>
@@ -162,10 +178,6 @@ namespace Space
 
             // Create our own, localized content manager.
             Content = new LocalizedContentManager(Services) { RootDirectory = "data" };
-
-            SetupLocalization();
-            SetupInput();
-            SetupConsole();
         }
 
         protected override void Dispose(bool disposing)
@@ -203,70 +215,26 @@ namespace Space
             base.Dispose(disposing);
         }
 
+        protected override void Initialize()
+        {
+            // Initialize the console as soon as possible.
+            InitializeConsole();
+
+            // Initialize localization. Anything after this loaded via the content
+            // manager will be localized.
+            InitializeLocalization();
+
+            // Set up input to allow interaction with the game.
+            InitializeInput();
+
+            base.Initialize();
+        }
+
         /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
+        /// Initialize the localization by figuring out which to use, either by getting
+        /// it from the settings, or by falling back to the default one instead.
         /// </summary>
-        protected override void LoadContent()
-        {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-            Services.AddService(typeof(SpriteBatch), _spriteBatch);
-
-            // Finishing touches to console setup.
-            _console.SpriteBatch = _spriteBatch;
-            _console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
-            _console.WriteLine("Game Console. Type 'help' for available commands.");
-
-            // Load generator constraints.
-            FactoryLibrary.Initialize(Content);
-
-            // Create the profile implementation.
-            Settings.Instance.CurrentProfile = new Profile();
-
-            // Load / create profile.
-            if (Settings.Instance.CurrentProfile.Profiles.Contains(Settings.Instance.CurrentProfileName))
-            {
-                Settings.Instance.CurrentProfile.Load(Settings.Instance.CurrentProfileName);
-            }
-            else
-            {
-                // TODO: create profile selection screen, show it if no or an invalid profile is active.
-                Settings.Instance.CurrentProfile.Create("Default", Data.PlayerClassType.Default);
-                Settings.Instance.CurrentProfileName = "Default";
-                Settings.Instance.CurrentProfile.Save();
-            }
-
-            // Set up the render target into which we'll draw everything (to
-            // allow switching to and from it for certain effects).
-            var pp = GraphicsDevice.PresentationParameters;
-            _scene = new RenderTarget2D(GraphicsDevice, pp.BackBufferWidth, pp.BackBufferHeight, false, pp.BackBufferFormat, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
-
-            SetupAudio();
-
-            SetupGui();
-        }
-
-        private void SetupAudio()
-        {
-            // Set up audio stuff.
-            try
-            {
-                _audioEngine = new AudioEngine("data/Audio/SpaceAudio.xgs");
-                _waveBank = new WaveBank(_audioEngine, "data/Audio/Wave Bank.xwb");
-                _soundBank = new SoundBank(_audioEngine, "data/Audio/Sound Bank.xsb");
-
-                // Do a first update, as recommended in the documentation.
-                _audioEngine.Update();
-                Services.AddService(typeof(SoundBank), _soundBank);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Logger.ErrorException("Failed initializing AudioEngine.", ex);
-            }
-        }
-
-        private void SetupLocalization()
+        private void InitializeLocalization()
         {
             // Get locale for localized content.
             CultureInfo culture;
@@ -279,26 +247,48 @@ namespace Space
                 culture = CultureInfo.InvariantCulture;
                 Settings.Instance.Language = culture.Name;
             }
+
+            // Set up resources.
             GuiStrings.Culture = culture;
             AttributeNames.Culture = culture;
             AttributePrefixes.Culture = culture;
             ItemDescriptions.Culture = culture;
             ItemNames.Culture = culture;
             QualityNames.Culture = culture;
+
+            // Set up content loader.
             ((LocalizedContentManager)Content).Culture = culture;
         }
 
-        private void SetupConsole()
+        /// <summary>
+        /// Initialize input logic.
+        /// </summary>
+        private void InitializeInput()
         {
-            // Add some more utility components.
+            // Initialize input.
+            _inputManager = new InputManager(Services, Window.Handle);
+            Components.Add(_inputManager);
+            Services.AddService(typeof(InputManager), _inputManager);
+
+            // Create the input handler that converts input to ingame commands.
+            _input = new InputHandler(this);
+            Components.Add(_input);
+        }
+
+        /// <summary>
+        /// Initialize the console, adding commands and making the logger write to it.
+        /// </summary>
+        private void InitializeConsole()
+        {
+            // Create the console and add it as a component.
             _console = new GameConsole(this);
             Components.Add(_console);
 
+            // We do this in the input handler.
+            _console.Hotkey = Keys.None;
+
             // Add a logging target that'll write to our console.
             _consoleLoggerTarget = new GameConsoleTarget(this, NLog.LogLevel.Debug);
-
-            // More console setup. Only one console key is supported.
-            _console.Hotkey = Settings.Instance.GuiBindings.First(binding => binding.Value == Settings.GuiCommand.Console).Key;
 
             _console.AddCommand(new[] { "fullscreen", "fs" },
                 args => GraphicsDeviceManager.ToggleFullScreen(),
@@ -314,11 +304,33 @@ namespace Space
             _console.AddCommand("leave",
                 args => DisposeClient(),
                 "Leave the current game.");
-            
-#if DEBUG
+
+            // Register debug commands.
+            InitializeConsoleForDebug();
+
+            // Say hi.
+            _console.WriteLine("Console initialized. Type 'help' for available commands.");
+        }
+
+        /// <summary>
+        /// Debug commands for the console, that won't be available in release builds.
+        /// </summary>
+        [Conditional("DEBUG")]
+        private void InitializeConsoleForDebug()
+        {
             // Default handler to interpret everything that is not a command
             // as a script.
-            _console.SetDefaultCommandHandler(command => _client.Controller.PushLocalCommand(new Simulation.Commands.ScriptCommand(command)));
+            _console.SetDefaultCommandHandler(command =>
+                                              {
+                                                  if (_client != null)
+                                                  {
+                                                      _client.Controller.PushLocalCommand(new ScriptCommand(command));
+                                                  }
+                                                  else
+                                                  {
+                                                      _console.WriteLine("Unknown command.");
+                                                  }
+                                              });
 
             _console.AddCommand("d_renderindex",
                 args =>
@@ -395,7 +407,6 @@ namespace Space
                 "Verifies the simulation's serialization works by creating a",
                 "snapshot and deserializing it again, then compares the hash",
                 "values of the two simulations.");
-#endif
 
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after
@@ -403,22 +414,108 @@ namespace Space
             _console.LineWritten += (sender, e) => Console.WriteLine(((LineWrittenEventArgs)e).Message);
         }
 
-        private void SetupInput()
+        /// <summary>
+        /// LoadContent will be called once per game and is the place to load
+        /// all of your content.
+        /// </summary>
+        protected override void LoadContent()
         {
-            // Initialize input.
-            _inputManager = new InputManager(Services, Window.Handle);
-            Components.Add(_inputManager);
-            Services.AddService(typeof(InputManager), _inputManager);
+            base.LoadContent();
+
+            // Create a new SpriteBatch, which can be used to draw textures.
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+            Services.AddService(typeof(SpriteBatch), _spriteBatch);
+
+            // Tell the console how to render itself.
+            LoadConsole();
+
+            // Initialize scripting environment for debugging.
+            SpaceCommandHandler.InitializeScriptEnvironment(Content);
+
+            // Load generator constraints.
+            FactoryLibrary.Initialize(Content);
+
+            // Create the profile implementation.
+            Settings.Instance.CurrentProfile = new Profile();
+
+            // Load / create profile.
+            if (Settings.Instance.CurrentProfile.Profiles.Contains(Settings.Instance.CurrentProfileName))
+            {
+                Settings.Instance.CurrentProfile.Load(Settings.Instance.CurrentProfileName);
+            }
+            else
+            {
+                // TODO: create profile selection screen, show it if no or an invalid profile is active.
+                Settings.Instance.CurrentProfile.Create("Default", Data.PlayerClassType.Default);
+                Settings.Instance.CurrentProfileName = "Default";
+                Settings.Instance.CurrentProfile.Save();
+            }
+
+            // Set up the render target into which we'll draw everything (to
+            // allow switching to and from it for certain effects).
+            var pp = GraphicsDevice.PresentationParameters;
+            _scene = new RenderTarget2D(GraphicsDevice, pp.BackBufferWidth, pp.BackBufferHeight, false, pp.BackBufferFormat, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
+
+            // Set up audio data (load wave/sound bank).
+            LoadAudio();
+
+            // Set up graphical user interface.
+            LoadGui();
         }
 
-        private void SetupGui()
+        /// <summary>
+        /// Tell our console how to render itself.
+        /// </summary>
+        private void LoadConsole()
         {
+            _console.SpriteBatch = _spriteBatch;
+            _console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
+        }
+
+        /// <summary>
+        /// Set up audio by loading the XACT generated files.
+        /// </summary>
+        private void LoadAudio()
+        {
+            // Set up audio stuff by loading our XACT project files.
+            try
+            {
+                // Load data.
+                _audioEngine = new AudioEngine("data/Audio/SpaceAudio.xgs");
+                _waveBank = new WaveBank(_audioEngine, "data/Audio/Wave Bank.xwb");
+                _soundBank = new SoundBank(_audioEngine, "data/Audio/Sound Bank.xsb");
+
+                // Do a first update, as recommended in the documentation.
+                _audioEngine.Update();
+
+                // Make the sound and wave bank available as a service.
+                Services.AddService(typeof(SoundBank), _soundBank);
+                Services.AddService(typeof(WaveBank), _waveBank);
+            }
+            catch (Exception ex)
+            {
+                Logger.ErrorException("Failed initializing AudioEngine.", ex);
+            }
+        }
+
+        /// <summary>
+        /// Initialize the gui by creating our screen manager an pushing the main
+        /// menu screen to it.
+        /// </summary>
+        private void LoadGui()
+        {
+            // Create the screen manager.
             _screenManager = new ScreenManager(this, _spriteBatch, _inputManager);
-            new JSCallbacks(this);
-            _screenManager.PushScreen("MainMenu/MainMenu");
             Components.Add(_screenManager);
 
-            _input = new InputHandler();
+            // Initialize our scripting API for the GUI.
+            JSCallbacks.Initialize(this);
+
+            // Push the main menu.
+            _screenManager.PushScreen("MainMenu/MainMenu");
+
+            // Create ingame graphics stuff.
+            // TODO make it so this is rendered inside the simulation (e.g. own render systems)
             _background = new Background(this, _spriteBatch);
             _orbits = new Orbits(this, _spriteBatch);
             _radar = new Radar(this, _spriteBatch);
@@ -434,10 +531,6 @@ namespace Space
         /// <param name="gameTime">Time passed since the last call to Update.</param>
         protected override void Update(GameTime gameTime)
         {
-            // Update ingame input, sending commands where necessary.
-            _input.IsEnabled = !_console.IsOpen;
-            _input.Update();
-
             // Update the rest of the game.
             base.Update(gameTime);
 
@@ -524,7 +617,6 @@ namespace Space
             _client.UpdateOrder = 25;
             Components.Add(_client);
 
-            _input.Client = _client;
             _background.Client = _client;
             _radar.Client = _client;
             _orbits.Client = _client;
@@ -562,7 +654,6 @@ namespace Space
             }
             _client = null;
 
-            _input.Client = null;
             _background.Client = null;
             _radar.Client = null;
             _orbits.Client = null;
@@ -599,13 +690,15 @@ namespace Space
 #if DEBUG
         private readonly DoubleSampling _fps = new DoubleSampling(30);
         private Engine.Graphics.Rectangle _indexRectangle;
-        private ulong _indexGroupMask = 0;
+        private ulong _indexGroupMask;
+        private SpriteFont _debugFont;
 
         private void DrawDebugInfo(GameTime gameTime)
         {
             if (_indexRectangle == null)
             {
                 _indexRectangle = new Engine.Graphics.Rectangle(this) {Color = Color.LightGreen * 0.25f, Thickness = 2f};
+                _debugFont = Content.Load<SpriteFont>("Fonts/ConsoleFont");
             }
 
             _fps.Put(1 / gameTime.ElapsedGameTime.TotalSeconds);
@@ -613,9 +706,9 @@ namespace Space
             _spriteBatch.Begin();
 
             var fps = String.Format("FPS: {0:f}", Math.Ceiling(_fps.Mean()));
-            var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - _console.Font.MeasureString(fps).X, 10);
+            var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - _debugFont.MeasureString(fps).X, 10);
 
-            _spriteBatch.DrawString(_console.Font, fps, infoPosition, Color.White);
+            _spriteBatch.DrawString(_debugFont, fps, infoPosition, Color.White);
 
             _spriteBatch.End();
 
@@ -640,8 +733,8 @@ namespace Space
                     var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 370,
                                                     GraphicsDevice.Viewport.Height - 180);
 
-                    SessionInfo.Draw("Client", session, sessionOffset, _console.Font, _spriteBatch);
-                    NetGraph.Draw(session.Information, ngOffset, _console.Font, _spriteBatch);
+                    SessionInfo.Draw("Client", session, sessionOffset, _debugFont, _spriteBatch);
+                    NetGraph.Draw(session.Information, ngOffset, _debugFont, _spriteBatch);
 
                     // Draw planet arrows and stuff.
                     if (session.ConnectionState == ClientState.Connected)
@@ -671,7 +764,7 @@ namespace Space
                         sb.AppendFormat("Speed: {0:f}/{1:f}, Maximum acceleration: {2:f}\n", info.Speed, info.MaxSpeed, info.MaxAcceleration);
                         sb.AppendFormat("Mass: {0:f}", info.Mass);
 
-                        _spriteBatch.DrawString(_console.Font, sb.ToString(), new Vector2(60, 60), Color.White);
+                        _spriteBatch.DrawString(_debugFont, sb.ToString(), new Vector2(60, 60), Color.White);
 
                         _spriteBatch.End();
                     }
@@ -685,8 +778,8 @@ namespace Space
                     var ngOffset = new Vector2(180, GraphicsDevice.Viewport.Height - 180);
                     var sessionOffset = new Vector2(60, GraphicsDevice.Viewport.Height - 180);
 
-                    SessionInfo.Draw("Server", session, sessionOffset, _console.Font, _spriteBatch);
-                    NetGraph.Draw(session.Information, ngOffset, _console.Font, _spriteBatch);
+                    SessionInfo.Draw("Server", session, sessionOffset, _debugFont, _spriteBatch);
+                    NetGraph.Draw(session.Information, ngOffset, _debugFont, _spriteBatch);
                 }
             }
         }

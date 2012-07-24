@@ -1,6 +1,6 @@
 using Microsoft.Xna.Framework.Content.Pipeline;
 
-namespace Awesomium.ContentPipeline
+namespace Space.ContentPipeline
 {
     /// <summary>
     /// This class will be instantiated by the XNA Framework Content Pipeline
@@ -8,8 +8,8 @@ namespace Awesomium.ContentPipeline
     /// 
     /// This should be part of a Content Pipeline Extension Library project.
     /// </summary>
-    [ContentImporter(".xhtml", ".html", ".css", ".js", DefaultProcessor = "PassThroughProcessor", DisplayName = "HTML / CSS / JS - Awesomium")]
-    public class AwesomiumImporter : ContentImporter<string>
+    [ContentImporter(".txt", ".cfg", ".py", DefaultProcessor = "PassThroughProcessor", DisplayName = "Plain Text File")]
+    public class PlainTextImporter : ContentImporter<string>
     {
         public override string Import(string filename, ContentImporterContext context)
         {

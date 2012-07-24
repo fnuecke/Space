@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Nuclex.Input.Devices;
 using Space.Util;
 
@@ -19,9 +20,11 @@ namespace Space.Input
         {
             Vector2 result;
 
-            result.X = ComputeAxis(gamePad, Settings.GamePadCommand.AccelerateX);
-            result.Y = ComputeAxis(gamePad, Settings.GamePadCommand.AccelerateY);
+            // Get X and Y acceleration.
+            result.X = ComputeAxis(gamePad, GamePadCommand.AccelerateX);
+            result.Y = ComputeAxis(gamePad, GamePadCommand.AccelerateY);
 
+            // See if we want to invert any axis.
             if (Settings.Instance.InvertGamepadAccelerationAxisX)
             {
                 result.X = -result.X;
@@ -43,9 +46,11 @@ namespace Space.Input
         {
             Vector2 result;
 
-            result.X = ComputeAxis(gamePad, Settings.GamePadCommand.LookX);
-            result.Y = ComputeAxis(gamePad, Settings.GamePadCommand.LookY);
+            // Get X and Y look direction.
+            result.X = ComputeAxis(gamePad, GamePadCommand.LookX);
+            result.Y = ComputeAxis(gamePad, GamePadCommand.LookY);
 
+            // See if we want to invert any axis.
             if (Settings.Instance.InvertGamepadLookAxisX)
             {
                 result.X = -result.X;
@@ -64,23 +69,15 @@ namespace Space.Input
         /// <param name="gamePad">The gamepad to read the state from.</param>
         /// <param name="command">The command / axis for which to get the value.</param>
         /// <returns>The value along that single axis.</returns>
-        private static float ComputeAxis(IGamePad gamePad, Settings.GamePadCommand command)
+        private static float ComputeAxis(IGamePad gamePad, GamePadCommand command)
         {
-            if (Settings.Instance.InverseGamePadBindings.ContainsKey(command))
+            var state = gamePad.GetExtendedState();
+            var value = Settings.Instance.AxisBindings.Test(command, state.GetAxis);
+            if (Math.Abs(value) < Settings.Instance.GamePadDetectionEpsilon)
             {
-                var state = gamePad.GetExtendedState();
-                float value = 0;
-                foreach (var axis in Settings.Instance.InverseGamePadBindings[command])
-                {
-                    value += state.GetAxis(axis);
-                }
-                if (System.Math.Abs(value) < Settings.Instance.GamePadDetectionEpsilon)
-                {
-                    value = 0;
-                }
-                return value;
+                value = 0;
             }
-            return 0;
+            return value;
         }
     }
 }

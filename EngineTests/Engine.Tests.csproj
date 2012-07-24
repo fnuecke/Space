@@ -64,7 +64,6 @@
     <Compile Include="ComponentSystem\Common\Components\FrictionSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\IndexSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\SpinSerializationTest.cs" />
-    <Compile Include="ComponentSystem\Common\Components\TextureRendererSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\TransformSerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Components\VelocitySerializationTest.cs" />
     <Compile Include="ComponentSystem\Common\Systems\AbstractSystemCopyTest.cs" />

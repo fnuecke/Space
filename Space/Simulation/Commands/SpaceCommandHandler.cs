@@ -1,10 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Simulation.Commands;
+using IronPython.Hosting;
+using Microsoft.Scripting.Hosting;
+using Microsoft.Xna.Framework.Content;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Systems;
 using Space.Data;
@@ -24,35 +29,11 @@ namespace Space.Simulation.Commands
 
         #region Scripting environment
 
-#if DEBUG
         /// <summary>
-        /// The global scripting engine we'll be using.
+        /// Symbol imports for scripting convenience.
         /// </summary>
-        private static readonly Microsoft.Scripting.Hosting.ScriptEngine Script = IronPython.Hosting.Python.CreateEngine();
-
-        /// <summary>
-        /// Used to keep multiple threads (TSS) from trying to execute
-        /// scripts at the same time.
-        /// </summary>
-        private static readonly object ScriptLock = new object();
-
-        /// <summary>
-        /// Set up scripting environment.
-        /// </summary>
-        static SpaceCommandHandler()
-        {
-            var executingAssembly = System.Reflection.Assembly.GetExecutingAssembly();
-            Script.Runtime.LoadAssembly(executingAssembly);
-            foreach (var assembly in executingAssembly.GetReferencedAssemblies())
-            {
-                Script.Runtime.LoadAssembly(System.Reflection.Assembly.Load(assembly));
-            }
-
-            try
-            {
-                // Register some macros in our scripting environment.
-                Script.Execute(
-    @"
+        private const string ScriptNamespaces =
+@"
 from Engine.ComponentSystem import *
 from Engine.ComponentSystem.Components import *
 from Engine.ComponentSystem.Systems import *
@@ -64,15 +45,41 @@ from Space.ComponentSystem.Components import *
 from Space.ComponentSystem.Factories import *
 from Space.ComponentSystem.Systems import *
 from Space.Data import *
+";
 
-def goto(x, y):
-    manager.GetComponent[Transform](avatar).SetTranslation(x, y)
+        /// <summary>
+        /// The global scripting engine we'll be using.
+        /// </summary>
+        private static readonly ScriptEngine Script = Python.CreateEngine();
 
-def setBaseStat(type, value):
-    character.SetBaseValue(type, value)
-", Script.Runtime.Globals);
+        /// <summary>
+        /// Used to keep multiple threads (TSS) from trying to execute
+        /// scripts at the same time.
+        /// </summary>
+        private static readonly object ScriptLock = new object();
+
+        /// <summary>
+        /// We only use this in debug mode, so don't even bother setting
+        /// it up in if we're not debugging.
+        /// </summary>
+        [Conditional("DEBUG")]
+        public static void InitializeScriptEnvironment(ContentManager content)
+        {
+            // Load the executing and all referenced assemblies into the script
+            // environment so they can be used for debugging.
+            var executingAssembly = Assembly.GetExecutingAssembly();
+            Script.Runtime.LoadAssembly(executingAssembly);
+            foreach (var assembly in executingAssembly.GetReferencedAssemblies())
+            {
+                Script.Runtime.LoadAssembly(Assembly.Load(assembly));
             }
-            catch (System.Exception ex)
+
+            // Also import all symbols from the namespaces we might need.
+            try
+            {
+                Script.Execute(ScriptNamespaces, Script.Runtime.Globals);
+            }
+            catch (Exception ex)
             {
                 Logger.WarnException("Failed initializing script engine.", ex);
             }
@@ -82,6 +89,16 @@ def setBaseStat(type, value):
             var errorStream = new System.IO.MemoryStream();
             Script.Runtime.IO.SetOutput(infoStream, new InfoStreamWriter(infoStream));
             Script.Runtime.IO.SetErrorOutput(errorStream, new ErrorStreamWriter(errorStream));
+
+            // Register some macros in our scripting environment.
+            try
+            {
+                Script.Execute(content.Load<string>("Misc/ScriptInit"), Script.Runtime.Globals);
+            }
+            catch (Exception ex)
+            {
+                Logger.WarnException("Failed initializing script engine.", ex);
+            }
         }
 
         /// <summary>
@@ -93,13 +110,12 @@ def setBaseStat(type, value):
         /// Whether to currently ignore script output.
         /// </summary>
         private static bool _ignoreScriptOutput;
-#endif
 
         #endregion
 
         #region Single allocation
 
-        private static readonly HashSet<int> ReusableItemList = new HashSet<int>();
+        private static readonly List<int> ReusableItemList = new List<int>();
 
         #endregion
 
@@ -143,11 +159,9 @@ def setBaseStat(type, value):
                     UseItem((UseCommand)command, manager);
                     break;
 
-#if DEBUG
                 case SpaceCommandType.ScriptCommand:
                     ScriptCommand((ScriptCommand)command, manager);
                     break;
-#endif
             }
         }
 
@@ -475,7 +489,13 @@ def setBaseStat(type, value):
             }
         }
 
-#if DEBUG
+        /// <summary>
+        /// Handles scripting commands. These are ignored in release mode, as
+        /// they would essentially allow uncontrolled cheating.
+        /// </summary>
+        /// <param name="command">The command to execute.</param>
+        /// <param name="manager">The manager to apply the command to.</param>
+        [Conditional("DEBUG")]
         private static void ScriptCommand(ScriptCommand command, IManager manager)
         {
             // Get the avatar of the related player.
@@ -504,22 +524,24 @@ def setBaseStat(type, value):
                     _ignoreScriptOutput = true;
                 }
 
-                // Set context.
-                var globals = Script.Runtime.Globals;
+                // Create context. This is again the case because of TSS,
+                // so that the different simulations don't interfere with
+                // each other.
+                var scope = Script.Runtime.Globals;
 
                 // Some more utility variables used frequently.
-                globals.SetVariable("manager", manager);
-                globals.SetVariable("avatar", avatar);
-                globals.SetVariable("character", manager.GetComponent<Character<AttributeType>>(avatar.Value));
-                globals.SetVariable("inventory", manager.GetComponent<Inventory>(avatar.Value));
-                globals.SetVariable("equipment", manager.GetComponent<Equipment>(avatar.Value));
+                scope.SetVariable("manager", manager);
+                scope.SetVariable("avatar", avatar);
+                scope.SetVariable("character", manager.GetComponent<Character<AttributeType>>(avatar.Value));
+                scope.SetVariable("inventory", manager.GetComponent<Inventory>(avatar.Value));
+                scope.SetVariable("equipment", manager.GetComponent<Equipment>(avatar.Value));
 
                 // Try executing our script.
                 try
                 {
-                    Script.Execute(command.Script, Script.Runtime.Globals);
+                    Script.Execute(command.Script, scope);
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
                     if (!_ignoreScriptOutput)
                     {
@@ -528,21 +550,22 @@ def setBaseStat(type, value):
                 }
                 finally
                 {
-                    globals.RemoveVariable("manager");
-                    globals.RemoveVariable("avatar");
-                    globals.RemoveVariable("character");
-                    globals.RemoveVariable("inventory");
-                    globals.RemoveVariable("equipment");
+                    scope.RemoveVariable("manager");
+                    scope.RemoveVariable("avatar");
+                    scope.RemoveVariable("character");
+                    scope.RemoveVariable("inventory");
+                    scope.RemoveVariable("equipment");
                 }
             }
         }
-#endif
 
         #endregion
 
         #region Stream classes for script IO
 
-#if DEBUG
+        /// <summary>
+        /// Writes informational messages from the scripting VM to the log.
+        /// </summary>
         private sealed class InfoStreamWriter : System.IO.StreamWriter
         {
             public InfoStreamWriter(System.IO.Stream stream)
@@ -559,6 +582,9 @@ def setBaseStat(type, value):
             }
         }
 
+        /// <summary>
+        /// Writes error messages from the scripting VM to the log.
+        /// </summary>
         private sealed class ErrorStreamWriter : System.IO.StreamWriter
         {
             public ErrorStreamWriter(System.IO.Stream stream)
@@ -574,7 +600,6 @@ def setBaseStat(type, value):
                 }
             }
         }
-#endif
 
         #endregion
     }

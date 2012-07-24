@@ -8,7 +8,7 @@ namespace Awesomium.ContentPipeline
     /// files of any format, even if they are handled somewhere else (in our
     /// case image data for Awesomium), through XNAs content pipeline.
     /// </summary>
-    [ContentImporter(".gif", DisplayName = "Raw Data Importer", DefaultProcessor = "PassThroughProcessor")]
+    [ContentImporter(".gif", ".jpg", ".jpeg", ".png", DisplayName = "Raw Data Importer", DefaultProcessor = "PassThroughProcessor")]
     public class GifImporter : ContentImporter<byte[]>
     {
         public override byte[] Import(string filename, ContentImporterContext context)

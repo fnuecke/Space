@@ -49,7 +49,7 @@ namespace Engine.Util
     ///   }
     /// </code>
     /// </example>
-    public class GameConsole : DrawableGameComponent, IGameConsole
+    public sealed class GameConsole : DrawableGameComponent, IGameConsole
     {
         #region Constants
 
@@ -149,7 +149,18 @@ namespace Engine.Util
         /// <summary>
         /// Whether the console is currently open (visible) or not.
         /// </summary>
-        public bool IsOpen { get; set; }
+        public bool IsOpen
+        {
+            get { return _isOpen; }
+            set
+            {
+                _shouldOpen = value;
+                if (!value)
+                {
+                    _isOpen = false;
+                }
+            }
+        }
 
         /// <summary>
         /// SpriteBatch used for rendering.
@@ -248,6 +259,11 @@ namespace Engine.Util
         /// hot key from being printed in the console.
         /// </summary>
         private bool _shouldOpen;
+
+        /// <summary>
+        /// Whether the console actually is open at the moment.
+        /// </summary>
+        private bool _isOpen;
 
         #endregion
 
@@ -371,7 +387,7 @@ namespace Engine.Util
 
             if (_shouldOpen)
             {
-                IsOpen = true;
+                _isOpen = true;
                 _shouldOpen = false;
             }
         }

@@ -44,13 +44,18 @@ namespace Engine.Util
     /// </list>
     /// </para>
     /// </summary>
-    public interface IGameConsole
+    public interface IGameConsole : IDisposable
     {
         /// <summary>
         /// Fired when an entry is added via WriteLine(). Event args are of type
         /// <see cref="LineWrittenEventArgs"/>.
         /// </summary>
         event EventHandler<EventArgs> LineWritten;
+
+        /// <summary>
+        /// Whether the console is currently open (visible) or not.
+        /// </summary>
+        bool IsOpen { get; set; }
 
         /// <summary>
         /// Register a new command with the given name.
