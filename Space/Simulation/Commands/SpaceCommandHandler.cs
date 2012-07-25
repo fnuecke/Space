@@ -102,6 +102,15 @@ from Space.Data import *
         }
 
         /// <summary>
+        /// Gets the global names currently registered in the scripting environment.
+        /// </summary>
+        /// <returns>List of global variable names.</returns>
+        public static IEnumerable<string> GetGlobalNames()
+        {
+            return Script.Runtime.Globals.GetVariableNames();
+        }
+
+        /// <summary>
         /// The frame number in which we executed the last command.
         /// </summary>
         private static long _lastScriptFrame;

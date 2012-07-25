@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Engine.Util
 {
@@ -81,6 +82,18 @@ namespace Engine.Util
         /// <param name="handler">The command handler to use for unknown
         /// commands.</param>
         void SetDefaultCommandHandler(DefaultHandler handler);
+
+        /// <summary>
+        /// Registers a callback that can be used to query names for
+        /// auto completion. This method will be called each time we need
+        /// to complete the input, i.e. the result is not cached.
+        /// </summary>
+        /// <remarks>
+        /// This is intended to allow providing auto completion hints
+        /// for commands handled in a custom default command handler.
+        /// </remarks>
+        /// <param name="getGlobalNames">Callback used to get available commands.</param>
+        void AddAutoCompletionLookup(Func<IEnumerable<string>> getGlobalNames);
 
         /// <summary>
         /// Clears the complete buffer.

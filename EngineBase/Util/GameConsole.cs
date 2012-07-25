@@ -192,6 +192,11 @@ namespace Engine.Util
         private readonly Dictionary<string, CommandInfo> _commands = new Dictionary<string, CommandInfo>();
 
         /// <summary>
+        /// List of additional callbacks to query for possible input.
+        /// </summary>
+        private readonly List<Func<IEnumerable<string>>> _additionalCommandNameGetters = new List<Func<IEnumerable<string>>>();
+
+        /// <summary>
         /// Default command handler, used when an unknown command is
         /// encountered.
         /// </summary>
@@ -544,6 +549,21 @@ namespace Engine.Util
         }
 
         /// <summary>
+        /// Registers a callback that can be used to query names for
+        /// auto completion. This method will be called each time we need
+        /// to complete the input, i.e. the result is not cached.
+        /// </summary>
+        /// <remarks>
+        /// This is intended to allow providing auto completion hints
+        /// for commands handled in a custom default command handler.
+        /// </remarks>
+        /// <param name="getGlobalNames">Callback used to get available commands.</param>
+        public void AddAutoCompletionLookup(Func<IEnumerable<string>> getGlobalNames)
+        {
+            _additionalCommandNameGetters.Add(getGlobalNames);
+        }
+
+        /// <summary>
         /// Clears the complete buffer.
         /// </summary>
         public void Clear()
@@ -766,9 +786,22 @@ namespace Engine.Util
                                 // In reverse search, this flag is used to
                                 // track whether we already had a match.
                                 var flag = false;
+                                // Build a list of all available terms.
+                                var commands = new HashSet<string>();
                                 foreach (var command in _commands)
                                 {
-                                    if (command.Key.StartsWith(_inputBeforeTab, StringComparison.Ordinal))
+                                    commands.Add(command.Key);
+                                }
+                                foreach (var callback in _additionalCommandNameGetters)
+                                {
+                                    foreach (var command in callback())
+                                    {
+                                        commands.Add(command);
+                                    }
+                                }
+                                foreach (var command in commands)
+                                {
+                                    if (command.StartsWith(_inputBeforeTab, StringComparison.Ordinal))
                                     {
                                         // Got a match.
                                         ++numMatches;
@@ -785,7 +818,7 @@ namespace Engine.Util
                                             }
                                             // Found a match we can use.
                                             _input.Clear();
-                                            _input.Append(command.Key);
+                                            _input.Append(command);
                                             _cursor = _input.Length;
                                             _tabCompleteIndex = numMatches;
                                             flag = true;
@@ -797,7 +830,7 @@ namespace Engine.Util
                                             {
                                                 // Found a match we can use.
                                                 _input.Clear();
-                                                _input.Append(command.Key);
+                                                _input.Append(command);
                                                 _cursor = _input.Length;
                                                 _tabCompleteIndex = numMatches;
                                                 flag = true;

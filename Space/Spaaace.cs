@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using Awesomium.ScreenManagement;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.Session;
@@ -38,9 +39,22 @@ namespace Space
         {
             using (var game = new Spaaace())
             {
-                Logger.Info("Starting up program...");
+                // Get some general system information, for reference.
+                var assembly = Assembly.GetExecutingAssembly().GetName();
+#if DEBUG
+                const string build = "Debug";
+#else
+            const string build = "Release";
+#endif
+                Logger.Info("--------------------------------------------------------------------------------");
+                Logger.Info("{0} {1} (Attached debugger: {2}) running under {3}",
+                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
+                Logger.Info("Build Version: {0}", assembly.Version);
+                Logger.Info("CLR Version: {0}", Environment.Version);
+                Logger.Info("CPU Processors: {0}", Environment.ProcessorCount);
+                Logger.Info("Starting up...");
                 game.Run();
-                Logger.Info("Shutting down program...");
+                Logger.Info("Shutting down...");
             }
         }
 
@@ -163,7 +177,7 @@ namespace Space
             Settings.Load(SettingsFile);
             Exiting += (sender, e) =>
             {
-                Logger.Info("Shutting down program...");
+                Logger.Info("Saving settings.");
                 Settings.Save(SettingsFile);
             };
 
@@ -320,17 +334,21 @@ namespace Space
         {
             // Default handler to interpret everything that is not a command
             // as a script.
-            _console.SetDefaultCommandHandler(command =>
-                                              {
-                                                  if (_client != null)
-                                                  {
-                                                      _client.Controller.PushLocalCommand(new ScriptCommand(command));
-                                                  }
-                                                  else
-                                                  {
-                                                      _console.WriteLine("Unknown command.");
-                                                  }
-                                              });
+            _console.SetDefaultCommandHandler(
+                command =>
+                {
+                    if (_client != null)
+                    {
+                        _client.Controller.PushLocalCommand(new ScriptCommand(command));
+                    }
+                    else
+                    {
+                        _console.WriteLine("Unknown command.");
+                    }
+                });
+
+            // Add hints for autocompletion to also complete python methods.
+            _console.AddAutoCompletionLookup(SpaceCommandHandler.GetGlobalNames);
 
             _console.AddCommand("d_renderindex",
                 args =>
