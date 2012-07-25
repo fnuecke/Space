@@ -111,7 +111,7 @@ namespace Engine.Controller
         /// </summary>
         protected long FramesToSkip
         {
-            get { return (long)(_frameskipRemainder / TargetElapsedMilliseconds); }
+            get { return (long)((_frameskipRemainder + _lastUpdateRemainder) / TargetElapsedMilliseconds); }
         }
 
         #endregion
