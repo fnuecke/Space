@@ -254,7 +254,7 @@ namespace Space.ComponentSystem.Components
         /// <summary>
         /// The distance our highest range weapon can shoot.
         /// </summary>
-        public double WeaponRange { get; internal set; }
+        public float WeaponRange { get; internal set; }
 
         #endregion
 

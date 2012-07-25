@@ -24,12 +24,11 @@ namespace Space.ComponentSystem.Systems
         {
             if (message is CharacterStatsInvalidated)
             {
-                int entity = ((CharacterStatsInvalidated)(ValueType)message).Entity;
+                var entity = ((CharacterStatsInvalidated)(ValueType)message).Entity;
                 var shipInfo = Manager.GetComponent<ShipInfo>(entity);
 
                 // Get ship modules.
                 var character = Manager.GetComponent<Character<AttributeType>>(entity);
-                var equipment = Manager.GetComponent<Equipment>(entity);
 
                 // Get the mass of the ship and return it.
                 shipInfo.Mass = character.GetValue(AttributeType.Mass);
