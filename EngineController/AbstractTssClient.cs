@@ -259,11 +259,15 @@ namespace Engine.Controller
         /// </summary>
         public void PushLocalCommand(FrameCommand command)
         {
-            // Fill in / override data to be correct.
-            command.Id = _nextCommandId++;
-            command.PlayerNumber = Session.LocalPlayer.Number;
-            command.Frame = Tss.CurrentFrame + 1;
-            Apply(command);
+            // Skip commands that will be rolled back anyway us again.
+            if (FramesToSkip < 10)
+            {
+                // Fill in / override data to be correct.
+                command.Id = _nextCommandId++;
+                command.PlayerNumber = Session.LocalPlayer.Number;
+                command.Frame = Tss.CurrentFrame + 1;
+                Apply(command);
+            }
         }
 
         /// <summary>

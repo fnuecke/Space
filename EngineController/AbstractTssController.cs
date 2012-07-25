@@ -105,6 +105,15 @@ namespace Engine.Controller
         /// </summary>
         protected double SafeLoad { get { return CurrentLoad * LoadBufferFactor; } }
 
+        /// <summary>
+        /// Get the number of frames that we're supposed to skip to get to
+        /// where the server is, time-wise.
+        /// </summary>
+        protected long FramesToSkip
+        {
+            get { return (long)(_frameskipRemainder / TargetElapsedMilliseconds); }
+        }
+
         #endregion
 
         #region Fields
