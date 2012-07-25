@@ -105,15 +105,6 @@ namespace Engine.Controller
         /// </summary>
         protected double SafeLoad { get { return CurrentLoad * LoadBufferFactor; } }
 
-        /// <summary>
-        /// Get the number of frames that we're supposed to skip to get to
-        /// where the server is, time-wise.
-        /// </summary>
-        protected long FramesToSkip
-        {
-            get { return (long)((_frameskipRemainder + _lastUpdateRemainder) / TargetElapsedMilliseconds); }
-        }
-
         #endregion
 
         #region Fields
@@ -267,7 +258,17 @@ namespace Engine.Controller
         /// <param name="frames">The number of frames to skip, positive or negative.</param>
         protected void ScheduleFrameskip(long frames)
         {
-            _frameskipRemainder = frames * TargetElapsedMilliseconds;
+            // Try to interpolate smoothly when the gap is not too large, otherwise
+            // force it to the specified frame immediately.
+            if (Math.Abs(frames) > 10)
+            {
+                Tss.RunToFrame(Tss.CurrentFrame + frames);
+                _frameskipRemainder = 0;
+            }
+            else
+            {
+                _frameskipRemainder = frames * TargetElapsedMilliseconds;
+            }
         }
 
         #endregion
