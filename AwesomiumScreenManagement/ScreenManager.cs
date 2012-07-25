@@ -146,7 +146,7 @@ input[type=""text""], input[type=""password""], textarea {
 #else
                                        LogLevel = LogLevel.None,
 #endif
-                                       LogPath = Environment.CurrentDirectory,
+                                       LogPath = Environment.CurrentDirectory + "\\awesomium.log",
                                        RemoteDebuggingPort = 1337
                                    });
                 // If we created it, we shut it down on disposal, too.

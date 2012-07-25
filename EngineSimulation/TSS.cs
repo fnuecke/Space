@@ -396,6 +396,9 @@ namespace Engine.Simulation
 
             // Got a valid state.
             WaitingForSynchronization = false;
+
+            // Run to current frame to avoid interpolation to current frame.
+            RunToFrame(CurrentFrame);
         }
 
         /// <summary>

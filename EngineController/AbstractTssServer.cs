@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -371,7 +370,7 @@ namespace Engine.Controller
                     var serverDump = _gameStateDumps[frame];
 
                     // Get a (relatively) unique base name for the files.
-                    var dumpId = "desync_" + DateTime.Now.ToString(CultureInfo.InvariantCulture);
+                    var dumpId = "desync_" + DateTime.Now.Ticks;
 
                     // Write the dumps.
                     try
