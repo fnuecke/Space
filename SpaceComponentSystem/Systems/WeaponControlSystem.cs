@@ -183,14 +183,14 @@ namespace Space.ComponentSystem.Systems
 
             _cooldowns.Clear();
             var numCooldowns = packet.ReadInt32();
-            for (int i = 0; i < numCooldowns; i++)
+            for (var i = 0; i < numCooldowns; i++)
             {
-                int key = packet.ReadInt32();
+                var key = packet.ReadInt32();
                 var value = packet.ReadInt32();
                 _cooldowns.Add(key, value);
             }
 
-            _random = packet.ReadPacketizableInto(_random);
+            packet.ReadPacketizableInto(_random);
         }
 
         /// <summary>

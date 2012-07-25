@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Common.Components;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Serialization;
@@ -342,12 +343,46 @@ namespace Space.ComponentSystem.Components
         }
 
         /// <summary>
-        /// Suppress hashing as this component has no influence on other
-        /// components and actual simulation logic.
+        /// Push some unique data of the object to the given hasher,
+        /// to contribute to the generated hash.
         /// </summary>
-        /// <param name="hasher"></param>
+        /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
+            hasher.Put(IsAlive);
+            hasher.Put(Health);
+            hasher.Put(MaxHealth);
+            hasher.Put(RelativeHealth);
+            hasher.Put(Energy);
+            hasher.Put(MaxEnergy);
+            hasher.Put(RelativeEnergy);
+            hasher.Put(Position);
+            hasher.Put(Rotation);
+            hasher.Put(IsAccelerating);
+            hasher.Put(IsStabilizing);
+            hasher.Put(Speed);
+            hasher.Put(MaxSpeed);
+            hasher.Put(MaxAcceleration);
+            hasher.Put(RotationSpeed);
+            hasher.Put(Mass);
+            hasher.Put(RadarRange);
+            hasher.Put(WeaponRange);
+            hasher.Put(InventoryCapacity);
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + ", IsAlive=" + IsAlive + ", Health=" + Health.ToString(CultureInfo.InvariantCulture) + ", MaxHealth=" + MaxHealth.ToString(CultureInfo.InvariantCulture) + ", RelativeHealth=" + RelativeHealth.ToString(CultureInfo.InvariantCulture) + ", Energy=" + Energy.ToString(CultureInfo.InvariantCulture) + ", MaxEnergy=" + MaxEnergy.ToString(CultureInfo.InvariantCulture) + ", RelativeEnergy=" + RelativeEnergy.ToString(CultureInfo.InvariantCulture) + ", Position=" + Position.X.ToString(CultureInfo.InvariantCulture) + ":" + Position.Y.ToString(CultureInfo.InvariantCulture) + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture) + ", IsAccelerating=" + IsAccelerating + ", IsStabilizing=" + IsStabilizing + ", Speed=" + Speed.ToString(CultureInfo.InvariantCulture) + ", MaxSpeed=" + MaxSpeed.ToString(CultureInfo.InvariantCulture) + ", MaxAcceleration=" + MaxAcceleration.ToString(CultureInfo.InvariantCulture) + ", RotationSpeed=" + RotationSpeed.ToString(CultureInfo.InvariantCulture) + ", Mass=" + Mass.ToString(CultureInfo.InvariantCulture) + ", RadarRange=" + RadarRange.ToString(CultureInfo.InvariantCulture) + ", WeaponRange=" + WeaponRange.ToString(CultureInfo.InvariantCulture) + "InventoryCapacity=" + InventoryCapacity;
         }
 
         #endregion

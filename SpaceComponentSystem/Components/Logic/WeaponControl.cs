@@ -33,6 +33,17 @@ namespace Space.ComponentSystem.Components
             return this;
         }
 
+        /// <summary>
+        /// Reset the component to its initial state, so that it may be reused
+        /// without side effects.
+        /// </summary>
+        public override void Reset()
+        {
+            base.Reset();
+
+            Shooting = false;
+        }
+
         #endregion
 
         #region Serialization / Hashing

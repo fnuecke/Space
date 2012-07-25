@@ -72,12 +72,6 @@ namespace Engine.Controller
         /// </summary>
         private readonly Dictionary<long, int> _hashes = new Dictionary<long, int>();
 
-        /// <summary>
-        /// Only used for debugging, allows comparing individual system and
-        /// component hashes to figure out where the hashing failed.
-        /// </summary>
-        private readonly Dictionary<long, Tuple<List<int>, List<int>>> _individualHashes = new Dictionary<long, Tuple<List<int>, List<int>>>();
-
         #endregion
 
         #region Construction / Destruction
@@ -151,7 +145,7 @@ namespace Engine.Controller
                 // Generate hash.
                 var hasher = new Hasher();
                 Tss.TrailingSimulation.Hash(hasher);
-                PerformHashCheck(hasher.Value, Tss.TrailingFrame, Tss.TrailingFrame >= _lastServerHashedFrame, GenerateSingleHashes);
+                PerformHashCheck(hasher.Value, Tss.TrailingFrame, Tss.TrailingFrame >= _lastServerHashedFrame);
             }
         }
 
@@ -174,14 +168,12 @@ namespace Engine.Controller
             }
         }
 
-        private delegate Tuple<List<int>, List<int>> SingleHashesGenerator();
-
         /// <summary>
         /// Perform a hash check by hashing the local simulation and testing against
         /// the value of our server (or vice versa).
         /// </summary>
         /// <returns>Whether the hash was <b>stored</b> or not.</returns>
-        private void PerformHashCheck(int hashValue, long hashFrame, bool store, SingleHashesGenerator generator)
+        private void PerformHashCheck(int hashValue, long hashFrame, bool store)
         {
             // See if we have that frame, meaning we have to compare to it now.
             if (_hashes.ContainsKey(hashFrame))
@@ -190,11 +182,9 @@ namespace Engine.Controller
                 if (hashValue != _hashes[hashFrame])
                 {
                     Logger.Warn("Hash mismatch!");
-                    CompareSingleHashes(hashFrame, generator);
                     //Tss.Invalidate();
                     Session.Leave();
                 }
-                _individualHashes.Remove(hashFrame);
                 _hashes.Remove(hashFrame);
             }
             else if (store)
@@ -202,7 +192,6 @@ namespace Engine.Controller
                 // Otherwise store it, but only if it's newer than what we
                 // got from the server.
                 _hashes[hashFrame] = hashValue;
-                WriteSingleHashes(hashFrame, generator);
             }
         }
         
@@ -221,85 +210,6 @@ namespace Engine.Controller
                     .Write((float)SafeLoad);
                 Session.Send(packet);
             }
-        }
-
-        /// <summary>
-        /// Compare individual hashes for the specified frame.
-        /// </summary>
-        /// <param name="hashFrame">The frame to compare for.</param>
-        /// <param name="generator">The method to use to get hashes to compare the known hashes to.</param>
-        [Conditional("DEBUG")]
-        private void CompareSingleHashes(long hashFrame, SingleHashesGenerator generator)
-        {
-            var hashes = generator();
-            var otherHashes = _individualHashes[hashFrame];
-            for (var i = 0; i < Math.Min(hashes.Item1.Count, otherHashes.Item1.Count); ++i)
-            {
-                Debug.Assert(hashes.Item1[i] == otherHashes.Item1[i]);
-            }
-            for (var i = 0; i < Math.Min(hashes.Item2.Count, otherHashes.Item2.Count); ++i)
-            {
-                Debug.Assert(hashes.Item2[i] == otherHashes.Item2[i]);
-            }
-        }
-
-        /// <summary>
-        /// Wrapped into own method for conditional execution.
-        /// </summary>
-        /// <param name="hashFrame">The frame to write the hashes for.</param>
-        /// <param name="generator">The generator to use for getting the hashes.</param>
-        [Conditional("DEBUG")]
-        private void WriteSingleHashes(long hashFrame, SingleHashesGenerator generator)
-        {
-            _individualHashes[hashFrame] = generator();
-        }
-
-        /// <summary>
-        /// Generate individual hashes from local simulation if we reach a hash
-        /// frame before we get the reference value from the server.
-        /// </summary>
-        /// <returns>The system and component hashes.</returns>
-        private Tuple<List<int>, List<int>> GenerateSingleHashes()
-        {
-            var systemHashes = new List<int>(Tss.TrailingSimulation.Manager.NumSystems);
-            foreach (var system in Tss.TrailingSimulation.Manager.Systems)
-            {
-                var hasher = new Hasher();
-                system.Hash(hasher);
-                systemHashes.Add(hasher.Value);
-            }
-            var componentHashes = new List<int>(Tss.TrailingSimulation.Manager.NumSystems);
-            foreach (var component in Tss.TrailingSimulation.Manager.Components)
-            {
-                var hasher = new Hasher();
-                component.Hash(hasher);
-                componentHashes.Add(hasher.Value);
-            }
-            return Tuple.Create(systemHashes, componentHashes);
-        }
-
-        /// <summary>
-        /// Reads individual hashes from packet in case we get server hash frame
-        /// before we reach it locally.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        /// <returns>The system and component hashes.</returns>
-        private static Tuple<List<int>, List<int>> ReadSingleHashes( Packet packet)
-        {
-            var numSystems = packet.ReadInt32();
-            var serverHashes = new List<int>(numSystems);
-            for (var i = 0; i < numSystems; ++i)
-            {
-                serverHashes.Add(packet.ReadInt32());
-            }
-            var numComponents = packet.ReadInt32();
-            var componentHashes = new List<int>(numComponents);
-            for (var i = 0; i < numComponents; ++i)
-            {
-                componentHashes.Add(packet.ReadInt32());
-            }
-
-            return Tuple.Create(serverHashes, componentHashes);
         }
 
         #endregion
@@ -437,7 +347,7 @@ namespace Engine.Controller
                         var hashValue = args.Data.ReadInt32();
 
                         // And perform hash check.
-                        PerformHashCheck(hashValue, hashFrame, Tss.TrailingFrame < _lastServerHashedFrame, () => ReadSingleHashes(args.Data));
+                        PerformHashCheck(hashValue, hashFrame, Tss.TrailingFrame < _lastServerHashedFrame);
                     }
                     break;
                 }

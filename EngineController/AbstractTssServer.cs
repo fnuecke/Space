@@ -155,35 +155,10 @@ namespace Engine.Controller
                     .Write((byte)TssControllerMessage.HashCheck)
                     .Write(Tss.TrailingFrame)
                     .Write(hasher.Value);
-                WriteSingleHashes(packet);
                 Session.Send(packet);
             }
         }
 
-        /// <summary>
-        /// For debugging only, writes the hashes for the individual systems and components,
-        /// to figure out where the hash check failed.
-        /// </summary>
-        /// <param name="packet">The packet to write the hashes to.</param>
-        [Conditional("DEBUG")]
-        private void WriteSingleHashes(Packet packet)
-        {
-            packet.Write(Tss.TrailingSimulation.Manager.NumSystems);
-            foreach (var system in Tss.TrailingSimulation.Manager.Systems)
-            {
-                var hasher = new Hasher();
-                system.Hash(hasher);
-                packet.Write(hasher.Value);
-            }
-            packet.Write(Tss.TrailingSimulation.Manager.NumComponents);
-            foreach (var component in Tss.TrailingSimulation.Manager.Components)
-            {
-                var hasher = new Hasher();
-                component.Hash(hasher);
-                packet.Write(hasher.Value);
-            }
-        }
-        
         /// <summary>
         /// Adjust the game speed by finding the slowest participant (the one
         /// with the highest load), and adjusting the speed so that he will

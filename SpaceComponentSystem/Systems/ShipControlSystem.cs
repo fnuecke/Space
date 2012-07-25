@@ -1,6 +1,5 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;

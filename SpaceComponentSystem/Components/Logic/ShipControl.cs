@@ -62,12 +62,12 @@ namespace Space.ComponentSystem.Components
             base.Initialize(other);
 
             var otherControl = (ShipControl)other;
-            DirectedAcceleration = otherControl.DirectedAcceleration;
             Stabilizing = otherControl.Stabilizing;
+            Shooting = otherControl.Shooting;
+            DirectedAcceleration = otherControl.DirectedAcceleration;
             TargetRotation = otherControl.TargetRotation;
             TargetRotationChanged = otherControl.TargetRotationChanged;
             PreviousRotation = otherControl.PreviousRotation;
-            Shooting = otherControl.Shooting;
 
             return this;
         }
@@ -137,12 +137,12 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(DirectedAcceleration)
                 .Write(Stabilizing)
+                .Write(Shooting)
+                .Write(DirectedAcceleration)
                 .Write(TargetRotation)
                 .Write(TargetRotationChanged)
-                .Write(PreviousRotation)
-                .Write(Shooting);
+                .Write(PreviousRotation);
         }
 
         /// <summary>
@@ -153,12 +153,12 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            DirectedAcceleration = packet.ReadVector2();
             Stabilizing = packet.ReadBoolean();
+            Shooting = packet.ReadBoolean();
+            DirectedAcceleration = packet.ReadVector2();
             TargetRotation = packet.ReadSingle();
             TargetRotationChanged = packet.ReadBoolean();
             PreviousRotation = packet.ReadSingle();
-            Shooting = packet.ReadBoolean();
         }
 
         /// <summary>
@@ -170,12 +170,12 @@ namespace Space.ComponentSystem.Components
         {
             base.Hash(hasher);
 
-            hasher.Put(DirectedAcceleration);
             hasher.Put(Stabilizing);
+            hasher.Put(Shooting);
+            hasher.Put(DirectedAcceleration);
             hasher.Put(TargetRotation);
             hasher.Put(TargetRotationChanged);
             hasher.Put(PreviousRotation);
-            hasher.Put(Shooting);
         }
 
         #endregion
