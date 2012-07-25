@@ -325,7 +325,8 @@ namespace Space.ComponentSystem.Components
                 .Write(MaxAcceleration)
                 .Write(MaxSpeed)
                 .Write(Mass)
-                .Write(RadarRange);
+                .Write(RadarRange)
+                .Write(WeaponRange);
         }
 
         /// <summary>
@@ -340,6 +341,7 @@ namespace Space.ComponentSystem.Components
             MaxSpeed = packet.ReadSingle();
             Mass = packet.ReadSingle();
             RadarRange = packet.ReadSingle();
+            WeaponRange = packet.ReadSingle();
         }
 
         /// <summary>
@@ -349,7 +351,6 @@ namespace Space.ComponentSystem.Components
         /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
-            /*
             hasher.Put(IsAlive);
             hasher.Put(Health);
             hasher.Put(MaxHealth);
@@ -369,7 +370,6 @@ namespace Space.ComponentSystem.Components
             hasher.Put(RadarRange);
             hasher.Put(WeaponRange);
             hasher.Put(InventoryCapacity);
-            */
         }
 
         #endregion
@@ -384,7 +384,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", IsAlive=" + IsAlive + ", Health=" + Health.ToString(CultureInfo.InvariantCulture) + ", MaxHealth=" + MaxHealth.ToString(CultureInfo.InvariantCulture) + ", RelativeHealth=" + RelativeHealth.ToString(CultureInfo.InvariantCulture) + ", Energy=" + Energy.ToString(CultureInfo.InvariantCulture) + ", MaxEnergy=" + MaxEnergy.ToString(CultureInfo.InvariantCulture) + ", RelativeEnergy=" + RelativeEnergy.ToString(CultureInfo.InvariantCulture) + ", Position=" + Position.X.ToString(CultureInfo.InvariantCulture) + ":" + Position.Y.ToString(CultureInfo.InvariantCulture) + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture) + ", IsAccelerating=" + IsAccelerating + ", IsStabilizing=" + IsStabilizing + ", Speed=" + Speed.ToString(CultureInfo.InvariantCulture) + ", MaxSpeed=" + MaxSpeed.ToString(CultureInfo.InvariantCulture) + ", MaxAcceleration=" + MaxAcceleration.ToString(CultureInfo.InvariantCulture) + ", RotationSpeed=" + RotationSpeed.ToString(CultureInfo.InvariantCulture) + ", Mass=" + Mass.ToString(CultureInfo.InvariantCulture) + ", RadarRange=" + RadarRange.ToString(CultureInfo.InvariantCulture) + ", WeaponRange=" + WeaponRange.ToString(CultureInfo.InvariantCulture) + "InventoryCapacity=" + InventoryCapacity;
+            return base.ToString() + ", IsAlive=" + IsAlive + ", Health=" + Health.ToString(CultureInfo.InvariantCulture) + ", MaxHealth=" + MaxHealth.ToString(CultureInfo.InvariantCulture) + ", RelativeHealth=" + RelativeHealth.ToString(CultureInfo.InvariantCulture) + ", Energy=" + Energy.ToString(CultureInfo.InvariantCulture) + ", MaxEnergy=" + MaxEnergy.ToString(CultureInfo.InvariantCulture) + ", RelativeEnergy=" + RelativeEnergy.ToString(CultureInfo.InvariantCulture) + ", Position=" + Position.X.ToString(CultureInfo.InvariantCulture) + ":" + Position.Y.ToString(CultureInfo.InvariantCulture) + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture) + ", IsAccelerating=" + IsAccelerating + ", IsStabilizing=" + IsStabilizing + ", Speed=" + Speed.ToString(CultureInfo.InvariantCulture) + ", MaxSpeed=" + MaxSpeed.ToString(CultureInfo.InvariantCulture) + ", MaxAcceleration=" + MaxAcceleration.ToString(CultureInfo.InvariantCulture) + ", RotationSpeed=" + RotationSpeed.ToString(CultureInfo.InvariantCulture) + ", Mass=" + Mass.ToString(CultureInfo.InvariantCulture) + ", RadarRange=" + RadarRange.ToString(CultureInfo.InvariantCulture) + ", WeaponRange=" + WeaponRange.ToString(CultureInfo.InvariantCulture) + ", InventoryCapacity=" + InventoryCapacity;
         }
 
         #endregion
