@@ -37,6 +37,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using Engine.Serialization;
 
 namespace Engine.Util
@@ -80,7 +81,7 @@ namespace Engine.Util
         /// <summary>
         /// The array for the state vector.
         /// </summary>
-        private ulong[] _mt = new ulong[N];
+        private readonly ulong[] _mt = new ulong[N];
 
         /// <summary>
         /// 
@@ -359,6 +360,23 @@ namespace Engine.Util
 
             into._index = _index;
             _mt.CopyTo(into._mt, 0);
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            var hasher = new Hasher();
+            Hash(hasher);
+            return hasher.Value.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

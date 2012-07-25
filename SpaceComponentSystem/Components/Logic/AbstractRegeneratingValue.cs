@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -180,7 +181,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value = " + Value + ", MaxValue = " + MaxValue + ", Regeneration = " + Regeneration + ", Timeout = " + Timeout + ", TimeToWait = " + TimeToWait;
+            return base.ToString() + ", Value=" + Value.ToString(CultureInfo.InvariantCulture) + ", MaxValue=" + MaxValue.ToString(CultureInfo.InvariantCulture) + ", Regeneration=" + Regeneration.ToString(CultureInfo.InvariantCulture) + ", Timeout=" + Timeout + ", TimeToWait=" + TimeToWait;
         }
 
         #endregion

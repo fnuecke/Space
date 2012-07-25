@@ -107,7 +107,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", TimeToLive = " + TimeToLive;
+            return base.ToString() + ", TimeToLive=" + TimeToLive;
         }
 
         #endregion

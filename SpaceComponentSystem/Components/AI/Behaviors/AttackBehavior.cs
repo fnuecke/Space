@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Engine.ComponentSystem.Common.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -277,6 +278,21 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
 
             copy.Target = Target;
             copy._start = _start;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + ", Target=" + Target + ", Start=" + (_start.HasValue ? (_start.Value.X.ToString(CultureInfo.InvariantCulture) + ": " + _start.Value.Y.ToString(CultureInfo.InvariantCulture)) : "null");
         }
 
         #endregion

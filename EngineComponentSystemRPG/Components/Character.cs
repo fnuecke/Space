@@ -179,7 +179,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 {
                     foreach (var component in Manager.GetComponents<Attribute<TAttribute>>(item))
                     {
-                        var modifier = component.Modifier;
+                        var modifier = component.Value;
                         switch (modifier.ComputationType)
                         {
                             case AttributeComputationType.Additive:
@@ -342,6 +342,21 @@ namespace Engine.ComponentSystem.RPG.Components
                 hasher.Put(attribute.Value[0]);
                 hasher.Put(attribute.Value[1]);
             }
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + ", BaseAttributes=[" + string.Join(", ", _baseAttributes) + "], ModifiedAttributes=[" + string.Join(", ", _modifiedAttributes) + "]";
         }
 
         #endregion

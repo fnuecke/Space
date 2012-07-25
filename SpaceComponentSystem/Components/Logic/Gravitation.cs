@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -150,7 +151,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Type = " + GravitationType + ", Mass = " + Mass;
+            return base.ToString() + ", Type=" + GravitationType + ", Mass=" + Mass.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

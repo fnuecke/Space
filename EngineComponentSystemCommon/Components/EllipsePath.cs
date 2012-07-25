@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -303,7 +304,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", CenterEntityId = " + CenterEntityId + ", MajorRadius = " + MajorRadius + ", MinorRadius = " + MinorRadius + ", Angle = " + Angle + ", Period = " + Period + ", PeriodOffset = " + PeriodOffset;
+            return base.ToString() + ", CenterEntityId=" + CenterEntityId + ", MajorRadius=" + MajorRadius.ToString(CultureInfo.InvariantCulture) + ", MinorRadius=" + MinorRadius.ToString(CultureInfo.InvariantCulture) + ", Angle=" + Angle.ToString(CultureInfo.InvariantCulture) + ", Period=" + Period.ToString(CultureInfo.InvariantCulture) + ", PeriodOffset=" + PeriodOffset.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

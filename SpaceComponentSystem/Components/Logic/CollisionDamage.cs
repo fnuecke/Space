@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -176,7 +177,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Cooldown = " + Cooldown + ", Damage = " + Damage;
+            return base.ToString() + ", Cooldown=" + Cooldown + ", Damage=" + Damage.ToString(CultureInfo.InvariantCulture) + "CooldownCount=" + Cooldowns.Count;
         }
 
         #endregion

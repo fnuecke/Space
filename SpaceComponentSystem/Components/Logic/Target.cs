@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -103,7 +104,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value = " + Value;
+            return base.ToString() + ", Value=" + (Value.HasValue ? Value.Value.ToString(CultureInfo.InvariantCulture) : "null");
         }
 
         #endregion

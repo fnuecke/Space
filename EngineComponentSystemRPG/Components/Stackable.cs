@@ -120,7 +120,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Count = " + Count + ", MaxCount = " + MaxCount;
+            return base.ToString() + ", Count=" + Count + ", MaxCount=" + MaxCount;
         }
 
         #endregion

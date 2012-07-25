@@ -108,7 +108,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Remaining = " + Remaining;
+            return base.ToString() + ", Remaining=" + Remaining;
         }
 
         #endregion

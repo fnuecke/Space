@@ -108,7 +108,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value = " + Value;
+            return base.ToString() + ", Value=" + Value;
         }
 
         #endregion

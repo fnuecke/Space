@@ -107,7 +107,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", PlayerNumber = " + PlayerNumber;
+            return base.ToString() + ", PlayerNumber=" + PlayerNumber;
         }
 
         #endregion

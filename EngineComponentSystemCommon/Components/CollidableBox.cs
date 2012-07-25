@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Components;
 using Engine.Physics.Intersection;
 using Engine.Serialization;
 using Engine.Util;
@@ -157,7 +158,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Size = " + Size;
+            return base.ToString() + ", Size=" + Size.X.ToString(CultureInfo.InvariantCulture) + ":" + Size.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

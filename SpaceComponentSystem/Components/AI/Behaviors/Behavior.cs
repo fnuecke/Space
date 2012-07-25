@@ -470,5 +470,20 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         }
 
         #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return GetType().Name + ": TicksToWait=" + _ticksToWait;
+        }
+
+        #endregion
     }
 }

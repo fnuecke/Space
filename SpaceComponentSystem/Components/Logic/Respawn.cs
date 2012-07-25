@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
@@ -217,7 +218,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", TimeToRespawn = " + TimeToRespawn;
+            return base.ToString() + ", Delay=" + Delay + ", Position=" + Position.X.ToString(CultureInfo.InvariantCulture) + ":" + Position.Y.ToString(CultureInfo.InvariantCulture) + ", RelativeHealth=" + RelativeHealth.ToString(CultureInfo.InvariantCulture) + ", RelativeEnergy=" + RelativeEnergy.ToString(CultureInfo.InvariantCulture) + ", TimeToRespawn=" + TimeToRespawn;
         }
 
         #endregion

@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -137,7 +138,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", " + Value + ", " + StopVelocity;
+            return base.ToString() + ", Value=" + Value.ToString(CultureInfo.InvariantCulture) + ", StopVelocity=" + StopVelocity.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

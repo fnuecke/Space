@@ -143,7 +143,7 @@ namespace Engine.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return GetType().Name + ": Id = " + Id + ", Enabled = " + Enabled;
+            return GetType().Name + ": Id=" + Id + ", Enabled=" + Enabled;
         }
 
         #endregion

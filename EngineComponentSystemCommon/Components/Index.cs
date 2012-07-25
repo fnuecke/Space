@@ -228,7 +228,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", IndexGroupsMask = " + IndexGroupsMask + ", Bounds = " + Bounds;
+            return base.ToString() + ", IndexGroupsMask=" + IndexGroupsMask + ", Bounds=" + Bounds;
         }
 
         #endregion

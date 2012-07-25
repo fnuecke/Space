@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -146,7 +147,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", CollisionGroups = " + CollisionGroups + ", PreviousPosition = " + PreviousPosition;
+            return base.ToString() + ", CollisionGroups=" + CollisionGroups + ", PreviousPosition=" + PreviousPosition.X.ToString(CultureInfo.InvariantCulture) + ":" + PreviousPosition.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

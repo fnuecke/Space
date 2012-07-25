@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -126,6 +127,24 @@ namespace Space.ComponentSystem.Components
         /// <param name="hasher"></param>
         public override void Hash(Hasher hasher)
         {
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + ", Radius=" + Radius.ToString(CultureInfo.InvariantCulture) +
+                ", SurfaceRotation=" + SurfaceRotation.X.ToString(CultureInfo.InvariantCulture) + ":" + SurfaceRotation.Y.ToString(CultureInfo.InvariantCulture) +
+                ", PrimaryTurbulenceRotation=" + PrimaryTurbulenceRotation.X.ToString(CultureInfo.InvariantCulture) + ":" + PrimaryTurbulenceRotation.Y.ToString(CultureInfo.InvariantCulture) +
+                ", SecondaryTurbulenceRotation=" + SecondaryTurbulenceRotation.X.ToString(CultureInfo.InvariantCulture) + ":" + SecondaryTurbulenceRotation.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

@@ -90,7 +90,7 @@ namespace Space.ComponentSystem.Components
                 foreach (var component in Manager.GetComponents<Attribute<AttributeType>>(Entity))
                 {
                     // Check if we have a new max value.
-                    var modifier = component.Modifier;
+                    var modifier = component.Value;
                     if (modifier.Type.GetValue(modifier.Value) > maxValue)
                     {
                         maxValue = modifier.Type.GetValue(modifier.Value);
@@ -118,7 +118,7 @@ namespace Space.ComponentSystem.Components
             descripton.Attributes.Clear();
             foreach (var component in Manager.GetComponents<Attribute<AttributeType>>(Entity))
             {
-                descripton.Attributes.Add(component.Modifier);
+                descripton.Attributes.Add(component.Value);
             }
 
             // If it's a weapon, flag that and add info.
@@ -135,6 +135,21 @@ namespace Space.ComponentSystem.Components
             {
                 descripton.IsWeapon = false;
             }
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + ", Name=" + _name + ", IconName=" + _iconName;
         }
 
         #endregion

@@ -17,7 +17,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <summary>
         /// The actual attribute modifier which is applied.
         /// </summary>
-        public AttributeModifier<TAttribute> Modifier;
+        public AttributeModifier<TAttribute> Value;
 
         #endregion
 
@@ -31,7 +31,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Initialize(other);
 
-            Modifier = ((Attribute<TAttribute>)other).Modifier;
+            Value = ((Attribute<TAttribute>)other).Value;
 
             return this;
         }
@@ -42,7 +42,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// <param name="value">The value.</param>
         public Attribute<TAttribute> Initialize(AttributeModifier<TAttribute> value)
         {
-            Modifier = value;
+            Value = value;
 
             return this;
         }
@@ -55,7 +55,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Reset();
 
-            Modifier = null;
+            Value = null;
         }   
           
         #endregion
@@ -72,7 +72,7 @@ namespace Engine.ComponentSystem.RPG.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Modifier);
+                .Write(Value);
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Depacketize(packet);
 
-            Modifier = packet.ReadPacketizable<AttributeModifier<TAttribute>>();
+            Value = packet.ReadPacketizable<AttributeModifier<TAttribute>>();
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Engine.ComponentSystem.RPG.Components
         {
             base.Hash(hasher);
 
-            Modifier.Hash(hasher);
+            Value.Hash(hasher);
         }
 
         #endregion
@@ -110,7 +110,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value = " + Modifier;
+            return base.ToString() + ", Value=" + Value;
         }
 
         #endregion

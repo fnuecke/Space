@@ -129,7 +129,7 @@ namespace Engine.ComponentSystem.RPG.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Name = " + Name + ", IconName = " + IconName;
+            return base.ToString() + ", Name=" + Name + ", IconName=" + IconName;
         }
 
         #endregion

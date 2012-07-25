@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Common.Messages;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Microsoft.Xna.Framework;
@@ -285,7 +286,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Translation = " + Translation + ", Rotation = " + Rotation;
+            return base.ToString() + ", Translation=" + Translation.X.ToString(CultureInfo.InvariantCulture) + ":" + Translation.Y.ToString(CultureInfo.InvariantCulture) + ", Rotation=" + Rotation.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

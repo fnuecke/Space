@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Common.Components;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Common.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -142,6 +143,21 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var copy = (MoveBehavior)into;
 
             copy.Target = Target;
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + ", Target=" + Target.X.ToString(CultureInfo.InvariantCulture) + ":" + Target.Y.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

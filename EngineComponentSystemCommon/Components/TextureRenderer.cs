@@ -1,4 +1,5 @@
-﻿using Engine.ComponentSystem.Components;
+﻿using System.Globalization;
+using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -172,7 +173,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", TextureName = " + _textureName + ", Tint = " + Tint + ", Scale = " + Scale;
+            return base.ToString() + ", TextureName=" + _textureName + ", Tint=" + Tint + ", Scale=" + Scale.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion
