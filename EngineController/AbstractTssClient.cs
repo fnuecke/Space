@@ -171,9 +171,9 @@ namespace Engine.Controller
             sb.AppendFormat("CPU Processors: {0}\n", Environment.ProcessorCount);
             sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
             sb.Append("Controller Type: Client\n");
-            sb.Append("--------------------------------------------------------------------------------");
-            sb.AppendFormat("Gamestate at frame {0}", Tss.TrailingFrame);
-            sb.Append("--------------------------------------------------------------------------------");
+            sb.Append("--------------------------------------------------------------------------------\n");
+            sb.AppendFormat("Gamestate at frame {0}\n", Tss.TrailingFrame);
+            sb.Append("--------------------------------------------------------------------------------\n");
 
             // Dump actual game state.
             foreach (var system in Tss.TrailingSimulation.Manager.Systems)
@@ -406,6 +406,25 @@ namespace Engine.Controller
                             Logger.Error("Hash mismatch after deserialization.");
                             Session.Leave();
                         }
+
+                        // Run to current frame to avoid slow interpolation to current frame.
+                        // Take into account the time we need to get there.
+                        var delta = 0L;
+                        do
+                        {
+                            // Remember when we started, see below.
+                            var started = DateTime.Now;
+
+                            // Do the actual update, run to where we want to be.
+                            Tss.RunToFrame(Tss.CurrentFrame + delta);
+
+                            // See how long we took for this update, and compute the number
+                            // of updates we'd otherwise have made in that time.
+                            delta = (long)((DateTime.Now - started).TotalMilliseconds / TargetElapsedMilliseconds);
+
+                            // Continue until we're close enough with the *actual* current
+                            // frame to what we want to be at.
+                        } while (delta > 10);
                     }
                     break;
                 }

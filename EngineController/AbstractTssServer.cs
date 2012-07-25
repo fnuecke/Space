@@ -146,10 +146,10 @@ namespace Engine.Controller
             sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
             sb.AppendFormat("CPU Processors: {0}\n", Environment.ProcessorCount);
             sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
-            sb.Append("Controller Type: Client\n");
-            sb.Append("--------------------------------------------------------------------------------");
-            sb.AppendFormat("Gamestate at frame {0}", Tss.TrailingFrame);
-            sb.Append("--------------------------------------------------------------------------------");
+            sb.Append("Controller Type: Server\n");
+            sb.Append("--------------------------------------------------------------------------------\n");
+            sb.AppendFormat("Gamestate at frame {0}\n", Tss.TrailingFrame);
+            sb.Append("--------------------------------------------------------------------------------\n");
 
             // Dump actual game state.
             foreach (var system in Tss.TrailingSimulation.Manager.Systems)
