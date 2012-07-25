@@ -361,9 +361,9 @@ namespace Engine.Controller
 
                         if (Math.Abs(frameDelta) > 1 && frameDelta < (int)(median + stdDev))
                         {
-                            Logger.Debug("Correcting for {0} frames.", frameDelta);
+                            Logger.Trace("Correcting for {0} frames.", frameDelta);
+
                             // Adjust the current frame of the simulation.
-                            //Tss.RunToFrame(new GameTime(), Tss.CurrentFrame + frameDelta);
                             ScheduleFrameskip(frameDelta);
                         }
                     }

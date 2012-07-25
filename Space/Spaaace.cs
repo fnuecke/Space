@@ -302,7 +302,7 @@ namespace Space
             _console.Hotkey = Keys.None;
 
             // Add a logging target that'll write to our console.
-            _consoleLoggerTarget = new GameConsoleTarget(this, NLog.LogLevel.Debug);
+            _consoleLoggerTarget = new GameConsoleTarget(this, NLog.LogLevel.Trace);
 
             _console.AddCommand(new[] { "fullscreen", "fs" },
                 args => GraphicsDeviceManager.ToggleFullScreen(),
