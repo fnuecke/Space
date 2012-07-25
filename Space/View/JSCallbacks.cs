@@ -227,7 +227,7 @@ namespace Space.View
         private void HostGame(JSValue[] args)
         {
             _game.RestartServer();
-            /*
+            //*
             _game.RestartClient(true);
             /*/
             _game.RestartClient();
@@ -722,7 +722,7 @@ namespace Space.View
 
                 //, , );
                 // \o\  \o/  /o/ ... /o\
-                return new JSValue(index.NumQueriesLastUpdate);
+                return new JSValue(index.NumQueriesSinceLastUpdate);
             }
             // TODO:
             return JSValue.CreateUndefined();

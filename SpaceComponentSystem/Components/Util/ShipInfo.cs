@@ -351,25 +351,11 @@ namespace Space.ComponentSystem.Components
         /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
-            hasher.Put(IsAlive);
-            hasher.Put(Health);
-            hasher.Put(MaxHealth);
-            hasher.Put(RelativeHealth);
-            hasher.Put(Energy);
-            hasher.Put(MaxEnergy);
-            hasher.Put(RelativeEnergy);
-            hasher.Put(Position);
-            hasher.Put(Rotation);
-            hasher.Put(IsAccelerating);
-            hasher.Put(IsStabilizing);
-            hasher.Put(Speed);
-            hasher.Put(MaxSpeed);
             hasher.Put(MaxAcceleration);
-            hasher.Put(RotationSpeed);
+            hasher.Put(MaxSpeed);
             hasher.Put(Mass);
             hasher.Put(RadarRange);
             hasher.Put(WeaponRange);
-            hasher.Put(InventoryCapacity);
         }
 
         #endregion

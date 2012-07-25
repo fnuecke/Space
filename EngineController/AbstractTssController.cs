@@ -73,11 +73,6 @@ namespace Engine.Controller
         /// </summary>
         private const double LoadBufferFactor = 1.8;
 
-        /// <summary>
-        /// Amount of time allowed for applying frame skips per update.
-        /// </summary>
-        private const double MaxFrameskipAmountPerUpdate = TargetElapsedMilliseconds / 4;
-
         #endregion
 
         #region Properties
@@ -180,16 +175,9 @@ namespace Engine.Controller
             var begin = DateTime.Now;
 
             // Incorporate frame skip.
-            if (_frameskipRemainder > 0)
-            {
-                _lastUpdateRemainder += MaxFrameskipAmountPerUpdate;
-                _frameskipRemainder = Math.Max(0, _frameskipRemainder - MaxFrameskipAmountPerUpdate);
-            }
-            else if (_frameskipRemainder < 0)
-            {
-                _lastUpdateRemainder -= MaxFrameskipAmountPerUpdate;
-                _frameskipRemainder = Math.Min(0, _frameskipRemainder + MaxFrameskipAmountPerUpdate);
-            }
+            var frameSkipRemainderHalf = _frameskipRemainder * 0.5;
+            _lastUpdateRemainder += frameSkipRemainderHalf;
+            _frameskipRemainder -= frameSkipRemainderHalf;
 
             // Time we spent updating. We don't want to take longer than
             // one update should take (i.e. targetTime), to avoid the game

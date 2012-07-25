@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.Collections;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
@@ -47,6 +48,48 @@ namespace Engine.ComponentSystem.Common.Systems
             var result = _nextGroup;
             _nextGroup += range;
             return result;
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Total number of index structures currently in use.
+        /// </summary>
+        public int NumIndexes
+        {
+            get
+            {
+                var count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        ++count;
+                    }
+                }
+                return count;
+            }
+        }
+
+        /// <summary>
+        /// Total number of entries over all index structures.
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                var count = 0;
+                foreach (var index in _trees)
+                {
+                    if (index != null)
+                    {
+                        count += index.Count;
+                    }
+                }
+                return count;
+            }
         }
 
         #endregion
@@ -99,6 +142,17 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #endregion
 
+        #region Logic
+
+        public override void Update(long frame)
+        {
+            base.Update(frame);
+
+            ResetQueryCount();
+        }
+
+        #endregion
+
         #region Entity lookup
 
         /// <summary>
@@ -113,9 +167,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-#if DEBUG
-                ++_numQueriesLastUpdate;
-#endif
+                IncrementQueryCount();
                 tree.Find(query, range, ref list);
             }
         }
@@ -131,9 +183,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-#if DEBUG
-                ++_numQueriesLastUpdate;
-#endif
+                IncrementQueryCount();
                 tree.Find(ref query, ref list);
             }
         }
@@ -487,47 +537,22 @@ namespace Engine.ComponentSystem.Common.Systems
         #endregion
 
         #region Debug stuff
-#if DEBUG
 
-        private int _numQueriesLastUpdate;
+        /// <summary>
+        /// Total number of queries over all index structures since the
+        /// last update. This will always be zero when not running in
+        /// debug mode.
+        /// </summary>
+        public int NumQueriesSinceLastUpdate { get; private set; }
 
-        public int NumQueriesLastUpdate
-        {
-            get { return _numQueriesLastUpdate; }
-        }
-
-        public int NumIndexes
-        {
-            get
-            {
-                int count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        ++count;
-                    }
-                }
-                return count;
-            }
-        }
-
-        public int Count
-        {
-            get
-            {
-                int count = 0;
-                foreach (var index in _trees)
-                {
-                    if (index != null)
-                    {
-                        count += index.Count;
-                    }
-                }
-                return count;
-            }
-        }
-
+        /// <summary>
+        /// Renders all index structures matching the specified index group bit mask
+        /// using the specified shape at the specified translation.
+        /// </summary>
+        /// <param name="groups">Bit mask determining which indexes to draw.</param>
+        /// <param name="shape">Shape to use for drawing.</param>
+        /// <param name="translation">Translation to apply when drawing.</param>
+        [Conditional("DEBUG")]
         public void DrawIndex(ulong groups, Graphics.AbstractShape shape, Vector2 translation)
         {
             foreach (var tree in TreesForGroups(groups))
@@ -540,14 +565,24 @@ namespace Engine.ComponentSystem.Common.Systems
             }
         }
 
-        public override void Update(long frame)
+        /// <summary>
+        /// Increments the number of queries performed.
+        /// </summary>
+        [Conditional("DEBUG")]
+        private void IncrementQueryCount()
         {
-            base.Update(frame);
-
-            _numQueriesLastUpdate = 0;
+            ++NumQueriesSinceLastUpdate;
         }
 
-#endif
+        /// <summary>
+        /// Resets the number of queries performed.
+        /// </summary>
+        [Conditional("DEBUG")]
+        private void ResetQueryCount()
+        {
+            NumQueriesSinceLastUpdate = 0;
+        }
+
         #endregion
     }
 }

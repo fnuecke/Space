@@ -588,9 +588,7 @@ namespace Space
             _radar.Draw();
 
             // Draw some debug info on top of everything.
-#if DEBUG
             DrawDebugInfo(gameTime);
-#endif
 
             // Reset our graphics device (pop our off-screen render target).
             GraphicsDevice.SetRenderTarget(null);
@@ -687,12 +685,14 @@ namespace Space
 
         #endregion
 
-#if DEBUG
+        #region Debug stuff
+
         private readonly DoubleSampling _fps = new DoubleSampling(30);
         private Engine.Graphics.Rectangle _indexRectangle;
         private ulong _indexGroupMask;
         private SpriteFont _debugFont;
 
+        [Conditional("DEBUG")]
         private void DrawDebugInfo(GameTime gameTime)
         {
             if (_indexRectangle == null)
@@ -758,7 +758,7 @@ namespace Space
                                 var translation = new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon;
                                 index.DrawIndex(_indexGroupMask, _indexRectangle, translation);
                             }
-                            sb.AppendFormat("Indexes: {0}, Total entries: {1}, Queries: {2}\n", index.NumIndexes, index.Count, index.NumQueriesLastUpdate);
+                            sb.AppendFormat("Indexes: {0}, Total entries: {1}, Queries: {2}\n", index.NumIndexes, index.Count, index.NumQueriesSinceLastUpdate);
                         }
 
                         sb.AppendFormat("Speed: {0:f}/{1:f}, Maximum acceleration: {2:f}\n", info.Speed, info.MaxSpeed, info.MaxAcceleration);
@@ -783,6 +783,7 @@ namespace Space
                 }
             }
         }
-#endif
+
+        #endregion
     }
 }

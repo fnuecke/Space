@@ -159,7 +159,7 @@ namespace Space.ComponentSystem.Systems
         {
             base.Depacketize(packet);
 
-            _random = packet.ReadPacketizableInto(_random);
+            packet.ReadPacketizableInto(_random);
         }
 
         #endregion

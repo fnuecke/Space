@@ -531,7 +531,8 @@ namespace Engine.ComponentSystem
                     throw new PacketException(string.Format("Invalid component type, not known locally: {0}.", typeName));
                 }
 
-                var component = packet.ReadPacketizableInto(AllocateComponent(type));
+                var component = AllocateComponent(type);
+                packet.ReadPacketizableInto(component);
                 component.Manager = this;
                 _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
                 _componentsById[component.Id] = component;

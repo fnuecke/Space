@@ -68,8 +68,6 @@ namespace Engine.Serialization
                 _stream.Dispose();
                 _stream = null;
             }
-
-            //GC.SuppressFinalize(this);
         }
 
         #endregion
@@ -770,20 +768,16 @@ namespace Engine.Serialization
         /// <returns>The read value.</returns>
         /// <exception cref="PacketException">The packet has not enough
         /// available data for the read operation.</exception>
-        public T ReadPacketizableInto<T>(T existingInstance)
+        public void ReadPacketizableInto<T>(T existingInstance)
             where T : IPacketizable
         {
             using (var packet = ReadPacket())
             {
                 if (packet == null)
                 {
-                    return default(T);
+                    throw new PacketException("Trying to read null value in ReadPacketizableInto.");
                 }
-                else
-                {
-                    existingInstance.Depacketize(packet);
-                    return existingInstance;
-                }
+                existingInstance.Depacketize(packet);
             }
         }
 
@@ -801,7 +795,9 @@ namespace Engine.Serialization
         public T ReadPacketizable<T>()
             where T : IPacketizable, new()
         {
-            return ReadPacketizableInto(new T());
+            var instance = new T();
+            ReadPacketizableInto(instance);
+            return instance;
         }
 
         /// <summary>
@@ -826,7 +822,9 @@ namespace Engine.Serialization
             }
             else
             {
-                return ReadPacketizableInto((T)Activator.CreateInstance(type));
+                var instance = (T)Activator.CreateInstance(type);
+                ReadPacketizableInto(instance);
+                return instance;
             }
         }
 
@@ -895,6 +893,12 @@ namespace Engine.Serialization
 
         #region Peeking
 
+        /// <summary>
+        /// Reads a boolean value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public bool PeekBoolean()
         {
             var position = _stream.Position;
@@ -903,6 +907,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a byte value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public byte PeekByte()
         {
             var position = _stream.Position;
@@ -911,6 +921,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a single value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public float PeekSingle()
         {
             var position = _stream.Position;
@@ -919,6 +935,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a double value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public double PeekDouble()
         {
             var position = _stream.Position;
@@ -927,6 +949,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads an int16 value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public short PeekInt16()
         {
             var position = _stream.Position;
@@ -935,6 +963,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads an int32 value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public int PeekInt32()
         {
             var position = _stream.Position;
@@ -943,6 +977,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads an int64 value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public long PeekInt64()
         {
             var position = _stream.Position;
@@ -951,6 +991,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a uint16 value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public ushort PeekUInt16()
         {
             long position = _stream.Position;
@@ -959,6 +1005,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a uint32 value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public uint PeekUInt32()
         {
             var position = _stream.Position;
@@ -967,6 +1019,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a uint64 value without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public ulong PeekUInt64()
         {
             var position = _stream.Position;
@@ -975,6 +1033,16 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a byte array without moving ahead the read pointer.
+        /// 
+        /// <para>
+        /// May return <c>null</c>.
+        /// </para>
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public byte[] PeekByteArray()
         {
             var position = _stream.Position;
@@ -983,6 +1051,16 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a packet without moving ahead the read pointer.
+        /// 
+        /// <para>
+        /// May return <c>null</c>.
+        /// </para>
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public Packet PeekPacket()
         {
             var position = _stream.Position;
@@ -991,6 +1069,12 @@ namespace Engine.Serialization
             return result;
         }
 
+        /// <summary>
+        /// Reads a string value using UTF8 encoding without moving ahead the read pointer.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
         public string PeekString()
         {
             var position = _stream.Position;
@@ -1003,61 +1087,100 @@ namespace Engine.Serialization
 
         #region Checking
 
+        /// <summary>
+        /// Determines whether enough data is available to read a boolean value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasBoolean()
         {
             return Available >= sizeof(bool);
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read a byte value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasByte()
         {
             return Available >= sizeof(byte);
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read a single value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasSingle()
         {
             return Available >= sizeof(float);
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read a double value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasDouble()
         {
             return Available >= sizeof(double);
         }
 
-        public bool HasFixed()
-        {
-            return Available >= sizeof(long);
-        }
-
+        /// <summary>
+        /// Determines whether enough data is available to read an int16 value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasInt16()
         {
             return Available >= sizeof(short);
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read an in32 value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasInt32()
         {
             return Available >= sizeof(int);
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read an int64 value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasInt64()
         {
             return Available >= sizeof(long);
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read a uint16 value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasUInt16()
         {
             return Available >= sizeof(ushort);
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read a uint32 value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasUInt32()
         {
             return Available >= sizeof(uint);
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read a uint64 value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasUInt64()
         {
             return Available >= sizeof(ulong);
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read a byte array.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasByteArray()
         {
             if (HasInt32())
@@ -1067,11 +1190,19 @@ namespace Engine.Serialization
             return false;
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read a packet.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasPacket()
         {
             return HasByteArray();
         }
 
+        /// <summary>
+        /// Determines whether enough data is available to read a string value.
+        /// </summary>
+        /// <returns><c>true</c> if there is enough data; otherwise, <c>false</c>.</returns>
         public bool HasString()
         {
             return HasByteArray();
@@ -1089,14 +1220,7 @@ namespace Engine.Serialization
         /// or <c>null</c> if the packet itself was <c>null</c>.</returns>
         public static explicit operator byte[](Packet value)
         {
-            if (value == null)
-            {
-                return null;
-            }
-            else
-            {
-                return value.GetBuffer();
-            }
+            return value == null ? null : value.GetBuffer();
         }
 
         /// <summary>

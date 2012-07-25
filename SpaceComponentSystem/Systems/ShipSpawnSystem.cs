@@ -133,7 +133,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
-            _random = packet.ReadPacketizableInto(_random);
+            packet.ReadPacketizableInto(_random);
         }
 
         /// <summary>
