@@ -349,6 +349,7 @@ namespace Space.ComponentSystem.Components
         /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Hasher hasher)
         {
+            /*
             hasher.Put(IsAlive);
             hasher.Put(Health);
             hasher.Put(MaxHealth);
@@ -368,6 +369,7 @@ namespace Space.ComponentSystem.Components
             hasher.Put(RadarRange);
             hasher.Put(WeaponRange);
             hasher.Put(InventoryCapacity);
+            */
         }
 
         #endregion

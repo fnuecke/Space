@@ -18,7 +18,7 @@ namespace Engine.Controller
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
-        private static readonly NLog.Logger GameStateLogger = NLog.LogManager.GetLogger("GameStateDump");
+        private static readonly NLog.Logger GameStateLogger = NLog.LogManager.GetLogger("GameStateServer");
 
         #endregion
 
