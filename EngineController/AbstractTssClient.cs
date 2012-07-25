@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
+using System.Text;
 using Engine.Serialization;
 using Engine.Session;
 using Engine.Simulation.Commands;
@@ -19,8 +21,6 @@ namespace Engine.Controller
         #region Logger
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-
-        private static readonly NLog.Logger GameStateLogger = NLog.LogManager.GetLogger("GameStateClient");
 
         #endregion
 
@@ -140,8 +140,6 @@ namespace Engine.Controller
             // Hash test.
             if (Tss.TrailingFrame > 0 && (Tss.TrailingFrame % HashInterval) == 0)
             {
-                DumpGameState();
-
                 // Generate hash.
                 var hasher = new Hasher();
                 Tss.TrailingSimulation.Hash(hasher);
@@ -153,18 +151,53 @@ namespace Engine.Controller
         /// Dumps the state of all components.
         /// </summary>
         [Conditional("DEBUG")]
-        private void DumpGameState()
+        private void SendGameStateDump()
         {
-            GameStateLogger.Info("--------------------------------------------------------------------------------");
-            GameStateLogger.Info("Gamestate at frame {0}:", Tss.TrailingFrame);
-            GameStateLogger.Info("--------------------------------------------------------------------------------");
+            // String builder we use to concatenate our strings.
+            var sb = new StringBuilder();
+
+            // Get some general system information, for reference.
+            var assembly = Assembly.GetExecutingAssembly().GetName();
+#if DEBUG
+            const string build = "Debug";
+#else
+            const string build = "Release";
+#endif
+            sb.Append("--------------------------------------------------------------------------------");
+            sb.AppendFormat("{0} {1} (Attached debugger: {2}) running under {3}\n",
+                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
+            sb.AppendFormat("Build Version: {0}\n", assembly.Version);
+            sb.AppendFormat("CLR Version: {0}\n", Environment.Version);
+            sb.AppendFormat("CPU Processors: {0}\n", Environment.ProcessorCount);
+            sb.AppendFormat("Assigned RAM: {0:0.0}MB\n", Environment.WorkingSet / 1024.0 / 1024.0);
+            sb.Append("Controller Type: Client\n");
+            sb.Append("--------------------------------------------------------------------------------");
+            sb.AppendFormat("Gamestate at frame {0}", Tss.TrailingFrame);
+            sb.Append("--------------------------------------------------------------------------------");
+
+            // Dump actual game state.
             foreach (var system in Tss.TrailingSimulation.Manager.Systems)
             {
-                GameStateLogger.Trace(system.ToString);
+                sb.Append(system.ToString());
+                sb.AppendLine();
             }
             foreach (var component in Tss.TrailingSimulation.Manager.Components)
             {
-                GameStateLogger.Trace(component.ToString);
+                sb.Append(component.ToString());
+                sb.AppendLine();
+            }
+
+            // Send the dump to the server.
+            using (var packet = new Packet())
+            {
+                packet
+                    // Message type.
+                    .Write((byte)TssControllerMessage.GameStateDump)
+                    // Frame this dump applies to.
+                    .Write(Tss.TrailingFrame)
+                    // Actual dump.
+                    .Write(sb.ToString());
+                Session.Send(packet);
             }
         }
 
@@ -182,6 +215,9 @@ namespace Engine.Controller
                 if (hashValue != _hashes[hashFrame])
                 {
                     Logger.Warn("Hash mismatch!");
+
+                    SendGameStateDump();
+
                     //Tss.Invalidate();
                     Session.Leave();
                 }

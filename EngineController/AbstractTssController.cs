@@ -49,7 +49,12 @@ namespace Engine.Controller
             /// Compare the hash of the leading game state at a given frame. If
             /// the client fails the check, it'll have to request a new snapshot.
             /// </summary>
-            HashCheck
+            HashCheck,
+
+            /// <summary>
+            /// Client sent a dump of his game state because a hash check failed.
+            /// </summary>
+            GameStateDump
         }
 
         #endregion
