@@ -72,7 +72,7 @@ namespace Space.ComponentSystem.Systems
             var faction = Manager.GetComponent<Faction>(component.Entity);
 
             // Check all equipped weapon.
-            for (int i = 0; i < equipment.GetSlotCount<Weapon>(); i++)
+            for (var i = 0; i < equipment.GetSlotCount<Weapon>(); i++)
             {
                 // Get the actual weapon item entity.
                 var weaponEntity = equipment.GetItem<Weapon>(i);
@@ -258,6 +258,21 @@ namespace Space.ComponentSystem.Systems
                 copy._cooldowns.Add(item.Key, item.Value);
             }
             _random.CopyInto(copy._random);
+        }
+
+        #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return base.ToString() + ", Random=" + _random + ", Cooldowns=[" + string.Join(", ", _cooldowns) + "]";
         }
 
         #endregion

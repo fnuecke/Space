@@ -146,7 +146,7 @@ namespace Engine.Controller
             // Hash test.
             if (Tss.TrailingFrame > 0 && (Tss.TrailingFrame % HashInterval) == 0)
             {
-                DumpComponents();
+                DumpGameState();
 
                 // Generate hash.
                 var hasher = new Hasher();
@@ -159,11 +159,15 @@ namespace Engine.Controller
         /// Dumps the state of all components.
         /// </summary>
         [Conditional("DEBUG")]
-        private void DumpComponents()
+        private void DumpGameState()
         {
             GameStateLogger.Info("--------------------------------------------------------------------------------");
-            GameStateLogger.Info("Components at frame {0}:", Tss.TrailingFrame);
+            GameStateLogger.Info("Gamestate at frame {0}:", Tss.TrailingFrame);
             GameStateLogger.Info("--------------------------------------------------------------------------------");
+            foreach (var system in Tss.TrailingSimulation.Manager.Systems)
+            {
+                GameStateLogger.Trace(system.ToString);
+            }
             foreach (var component in Tss.TrailingSimulation.Manager.Components)
             {
                 GameStateLogger.Trace(component.ToString);

@@ -114,7 +114,7 @@ namespace Space.ComponentSystem.Components
         {
             base.Depacketize(packet);
 
-            Radius = packet.ReadInt32();
+            Radius = packet.ReadSingle();
             SurfaceRotation = packet.ReadVector2();
             PrimaryTurbulenceRotation = packet.ReadVector2();
             SecondaryTurbulenceRotation = packet.ReadVector2();

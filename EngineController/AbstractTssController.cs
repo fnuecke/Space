@@ -76,7 +76,7 @@ namespace Engine.Controller
         /// <summary>
         /// Amount of time allowed for applying frame skips per update.
         /// </summary>
-        private const double MaxFrameskipAmountPerUpdate = TargetElapsedMilliseconds / 10;
+        private const double MaxFrameskipAmountPerUpdate = TargetElapsedMilliseconds / 4;
 
         #endregion
 

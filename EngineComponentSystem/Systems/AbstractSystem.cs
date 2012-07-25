@@ -130,5 +130,22 @@ namespace Engine.ComponentSystem.Systems
         }
 
         #endregion
+
+        #region ToString
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            var hasher = new Hasher();
+            Hash(hasher);
+            return GetType().Name + ": Hash=" + hasher.Value;
+        }
+
+        #endregion
     }
 }

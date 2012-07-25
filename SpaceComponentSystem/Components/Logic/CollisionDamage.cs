@@ -177,7 +177,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Cooldown=" + Cooldown + ", Damage=" + Damage.ToString(CultureInfo.InvariantCulture) + "CooldownCount=" + Cooldowns.Count;
+            return base.ToString() + ", Cooldown=" + Cooldown + ", Damage=" + Damage.ToString(CultureInfo.InvariantCulture) + ", CooldownCount=" + Cooldowns.Count;
         }
 
         #endregion
