@@ -20,6 +20,8 @@ namespace Engine.Controller
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private static readonly NLog.Logger GameStateLogger = NLog.LogManager.GetLogger("GameStateDump");
+
         #endregion
 
         #region Constants
@@ -144,10 +146,27 @@ namespace Engine.Controller
             // Hash test.
             if (Tss.TrailingFrame > 0 && (Tss.TrailingFrame % HashInterval) == 0)
             {
+                DumpComponents();
+
                 // Generate hash.
                 var hasher = new Hasher();
                 Tss.TrailingSimulation.Hash(hasher);
                 PerformHashCheck(hasher.Value, Tss.TrailingFrame, Tss.TrailingFrame >= _lastServerHashedFrame, GenerateSingleHashes);
+            }
+        }
+
+        /// <summary>
+        /// Dumps the state of all components.
+        /// </summary>
+        [Conditional("DEBUG")]
+        private void DumpComponents()
+        {
+            GameStateLogger.Info("--------------------------------------------------------------------------------");
+            GameStateLogger.Info("Components at frame {0}:", Tss.TrailingFrame);
+            GameStateLogger.Info("--------------------------------------------------------------------------------");
+            foreach (var component in Tss.TrailingSimulation.Manager.Components)
+            {
+                GameStateLogger.Trace(component.ToString);
             }
         }
 
@@ -166,9 +185,10 @@ namespace Engine.Controller
                 // Got a hash, check it.
                 if (hashValue != _hashes[hashFrame])
                 {
-                    Logger.Warn("Hash mismatch! Resynchronizing...");
+                    Logger.Warn("Hash mismatch!");
                     CompareSingleHashes(hashFrame, generator);
-                    Tss.Invalidate();
+                    //Tss.Invalidate();
+                    Session.Leave();
                 }
                 _individualHashes.Remove(hashFrame);
                 _hashes.Remove(hashFrame);

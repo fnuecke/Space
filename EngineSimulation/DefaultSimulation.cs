@@ -50,7 +50,7 @@ namespace Engine.Simulation
         /// would be handled in the next <c>Update()</c> run.
         /// </summary>
         /// <returns><c>true</c> if any commands were removed.</returns>
-        public bool SkipTentativeCommands()
+        public bool SkipNonAuthoritativeCommands()
         {
             bool hadTentative = false;
             for (int i = Commands.Count - 1; i >= 0; --i)

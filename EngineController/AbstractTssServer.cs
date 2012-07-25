@@ -18,6 +18,8 @@ namespace Engine.Controller
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
+        private static readonly NLog.Logger GameStateLogger = NLog.LogManager.GetLogger("GameStateDump");
+
         #endregion
 
         #region Constants
@@ -108,7 +110,23 @@ namespace Engine.Controller
             // discarded now).
             if (Tss.TrailingFrame > _lastHashedFrame && ((Tss.TrailingFrame % HashInterval) == 0))
             {
+                DumpComponents();
                 PerformHashCheck();
+            }
+        }
+
+        /// <summary>
+        /// Dumps the state of all components.
+        /// </summary>
+        [Conditional("DEBUG")]
+        private void DumpComponents()
+        {
+            GameStateLogger.Info("--------------------------------------------------------------------------------");
+            GameStateLogger.Info("Components at frame {0}:", Tss.TrailingFrame);
+            GameStateLogger.Info("--------------------------------------------------------------------------------");
+            foreach (var component in Tss.TrailingSimulation.Manager.Components)
+            {
+                GameStateLogger.Trace(component.ToString);
             }
         }
 

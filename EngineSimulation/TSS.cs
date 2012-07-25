@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -78,12 +80,15 @@ namespace Engine.Simulation
         /// </summary>
         private readonly uint[] _delays;
 
-#if TSS_THREADING
         /// <summary>
         /// The parameterization for the different threads.
         /// </summary>
         private readonly ThreadData[] _threadData;
-#endif
+
+        /// <summary>
+        /// Tasks used to update different simulations.
+        /// </summary>
+        private readonly Task[] _tasks;
 
         /// <summary>
         /// The list of running simulations. They are ordered in in increasing
@@ -118,12 +123,11 @@ namespace Engine.Simulation
             delays.CopyTo(_delays, 1);
             Array.Sort(_delays);
 
-#if TSS_THREADING
             // Initialize thread data. The trailing simulation will always be
             // updated by the main thread, to check if a rollback is required,
             // so we need one less than we have simulations.
             _threadData = new ThreadData[_delays.Length - 1];
-#endif
+            _tasks = new Task[_delays.Length - 1];
 
             // Generate initial simulations.
             _simulations = new IAuthoritativeSimulation[_delays.Length];
@@ -442,16 +446,11 @@ namespace Engine.Simulation
         /// <param name="frame">The frame up to which to run.</param>
         private void FastForward(long frame)
         {
-            // Start threads for the non-trailing frames.
-#if TSS_THREADING
-            var tasks = new System.Threading.Tasks.Task[_threadData.Length];
-            for (int i = 0; i < _threadData.Length; i++)
-            {
-                _threadData[i].Simulation = _simulations[i];
-                _threadData[i].Frame = frame - _delays[i];
-                tasks[i] = TaskStarter(_threadData[i]);
-            }
-#endif
+            // Start threads for the non-trailing simulations. We run these in
+            // parallel with the trailing simulation update, even though this
+            // might result in us having to redo this (if the trailing sim is
+            // invalid). But the redo is *very* rare, so it's really not an issue.
+            BeginThreadedUpdate(frame);
 
             // Process the trailing state, see if we need a roll-back.
             var needsRewind = false;
@@ -460,19 +459,15 @@ namespace Engine.Simulation
                 // It needs running, so prepare it for that.
                 PrepareForUpdate(TrailingSimulation);
 
-                // Then check if any of the commands were tentative.
-                if (TrailingSimulation.SkipTentativeCommands())
-                {
-                    needsRewind = true;
-                }
+                // Then check if any of the commands were unauthorized.
+                needsRewind = TrailingSimulation.SkipNonAuthoritativeCommands() || needsRewind;
 
                 // Do the actual stepping for the state.
                 TrailingSimulation.Update();
             }
 
-#if TSS_THREADING
             // Wait for our worker threads to finish.
-            System.Threading.Tasks.Task.WaitAll(tasks);
+            EndThreadedUpdate();
 
             // Check if we had trailing tentative commands.
             if (needsRewind)
@@ -480,24 +475,78 @@ namespace Engine.Simulation
                 Logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
                 MirrorSimulation(TrailingSimulation, _simulations.Length - 2);
 
-                // Update the other states once more.
-                FastForward(frame);
-            }
-            else
-            {
-                // Clean up stuff that's too old to keep.
-                PrunePastEvents();
-            }
-#else
-            // Check if we had trailing tentative commands.
-            if (needsRewind)
-            {
-                Logger.Trace("Pruned non-authoritative commands, mirroring trailing state.");
-                MirrorSimulation(TrailingSimulation, _simulations.Length - 2);
+                // Update the other states once more when doing a threaded update.
+                BeginThreadedUpdate(frame);
+                EndThreadedUpdate();
             }
 
-            // Fast-forward the remaining states. Do not log in those, we only
-            // want to log the trailing state.
+            // Fast-forward the remaining states. As opposed to the threaded update
+            // we only do this after the trailing simulation was updated, because
+            // we'd gain nothing from doing it before that.
+            NonThreadedUpdate(frame);
+
+            // Clean up stuff that's too old to keep.
+            PrunePastEvents();
+        }
+
+        /// <summary>
+        /// Begin threaded update for all simulations except the trailing one.
+        /// </summary>
+        /// <param name="frame">The frame to perform the update for.</param>
+        [Conditional("TSS_THREADING")]
+        private void BeginThreadedUpdate(long frame)
+        {
+            for (var i = 0; i < _threadData.Length; i++)
+            {
+                _threadData[i].Simulation = _simulations[i];
+                _threadData[i].Frame = frame - _delays[i];
+                _tasks[i] = Task.Factory.StartNew(ThreadedUpdate, _threadData[i]);
+            }
+        }
+
+        /// <summary>
+        /// Perform a threaded update of a simulation.
+        /// </summary>
+        /// <param name="data">The information about which simulation to update up to which frame.</param>
+        private void ThreadedUpdate(object data)
+        {
+            var info = (ThreadData)data;
+
+            try
+            {
+                while (info.Simulation.CurrentFrame < info.Frame)
+                {
+                    PrepareForUpdate(info.Simulation);
+                    info.Simulation.Update();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.WarnException("Error in threaded update.", ex);
+                throw;
+            }
+        }
+        
+        /// <summary>
+        /// Wait for threaded update to finish for all simulations.
+        /// </summary>
+        [Conditional("TSS_THREADING")]
+        private void EndThreadedUpdate()
+        {
+            Task.WaitAll(_tasks);
+        }
+
+        /// <summary>
+        /// Performs a non-threaded (sequential) update for all non-trailing
+        /// simulations. This is called after the trailing simulation has been
+        /// updated.
+        /// </summary>
+        /// <param name="frame">The frame to run the leading simulation to.</param>
+#if TSS_THREADING // Fugly hack, but ConditionalAttribute does not support !TSS_THREADING.
+        [Conditional("FALSE")]
+#endif
+        private void NonThreadedUpdate(long frame)
+        {
             for (var i = 0; i < _simulations.Length - 1; i++)
             {
                 while (_simulations[i].CurrentFrame < frame - _delays[i])
@@ -506,10 +555,6 @@ namespace Engine.Simulation
                     _simulations[i].Update();
                 }
             }
-
-            // Clean up stuff that's too old to keep.
-            PrunePastEvents();
-#endif
         }
 
         /// <summary>
@@ -541,41 +586,6 @@ namespace Engine.Simulation
                 }
             }
         }
-
-#if TSS_THREADING
-        /// <summary>
-        /// Utility method for argument binding.
-        /// </summary>
-        /// <param name="data">The thread data to bind.</param>
-        /// <returns>A new task for the given thread data.</returns>
-        private System.Threading.Tasks.Task TaskStarter(ThreadData data)
-        {
-            return System.Threading.Tasks.Task.Factory.StartNew(() => ThreadedUpdate(data));
-        }
-
-        /// <summary>
-        /// Perform a threaded update of a simulation.
-        /// </summary>
-        /// <param name="data"></param>
-        private void ThreadedUpdate(object data)
-        {
-            var info = (ThreadData)data;
-
-            try
-            {
-                while (info.Simulation.CurrentFrame < info.Frame)
-                {
-                    PrepareForUpdate(info.Simulation);
-                    info.Simulation.Update();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.WarnException("Error in threaded update.", ex);
-                throw;
-            }
-        }
-#endif
 
         /// <summary>
         /// Rewind the simulation to the "beginning" of the given frame.
@@ -651,7 +661,6 @@ namespace Engine.Simulation
             }
         }
 
-#if TSS_THREADING
         #region Thread parameter wrapper
 
         /// <summary>
@@ -671,7 +680,6 @@ namespace Engine.Simulation
         }
 
         #endregion
-#endif
 
         #endregion
 
@@ -802,7 +810,7 @@ namespace Engine.Simulation
             /// <param name="system">The system to copy.</param>
             public void CopySystem(ICopyable<AbstractSystem> system)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
 
             /// <summary>
@@ -900,7 +908,7 @@ namespace Engine.Simulation
             /// </returns>
             public Component AddComponent(Type type, int entity)
             {
-                throw new NotImplementedException();
+                throw new NotSupportedException();
             }
 
             /// <summary>
