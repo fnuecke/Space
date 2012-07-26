@@ -1,6 +1,6 @@
 ﻿namespace Space.Simulation.Commands
 {
-    public enum SpaceCommandType
+    internal enum SpaceCommandType
     {
         /// <summary>
         /// Restores a player's profile, creating his avatar and restoring

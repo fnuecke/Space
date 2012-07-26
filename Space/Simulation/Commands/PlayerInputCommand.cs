@@ -7,7 +7,7 @@ namespace Space.Simulation.Commands
     /// <summary>
     /// A player input command, issued by a player to control his ship.
     /// </summary>
-    sealed class PlayerInputCommand : FrameCommand
+    internal sealed class PlayerInputCommand : FrameCommand
     {
         #region Types
         

@@ -31,7 +31,7 @@ namespace Space.View
         /// <summary>
         /// The game we work for.
         /// </summary>
-        private readonly Spaaace _game;
+        private readonly Program _game;
 
         #endregion
 
@@ -41,7 +41,7 @@ namespace Space.View
         /// Registers all callbacks for the specified game.
         /// </summary>
         /// <param name="game">The instance of the game to initialize for.</param>
-        private JSCallbacks(Spaaace game)
+        private JSCallbacks(Program game)
         {
             _game = game;
             _game.ClientInitialized += HandleClientInitialized;
@@ -53,7 +53,7 @@ namespace Space.View
         /// Registers all callbacks for the specified game.
         /// </summary>
         /// <param name="game">The instance of the game to initialize for.</param>
-        public static void Initialize(Spaaace game)
+        public static void Initialize(Program game)
         {
             if (_instance == null)
             {

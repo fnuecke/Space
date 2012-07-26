@@ -8,7 +8,7 @@ namespace Space.Simulation.Commands
     /// This command is used to load a player's profile, which is done right
     /// after the player joined a game.
     /// </summary>
-    sealed class RestoreProfileCommand : FrameCommand
+    internal sealed class RestoreProfileCommand : FrameCommand
     {
         #region Fields
         

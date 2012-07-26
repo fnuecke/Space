@@ -3,7 +3,7 @@ using Space.Control;
 
 namespace Space
 {
-    public sealed class ClientInitializedEventArgs : EventArgs
+    internal sealed class ClientInitializedEventArgs : EventArgs
     {
         public GameClient Client { get; private set; }
 

@@ -17,7 +17,7 @@ namespace Space.Control
     /// <summary>
     /// The game server, handling everything client logic related.
     /// </summary>
-    public sealed class GameClient : GameComponent
+    internal sealed class GameClient : GameComponent
     {
         #region Logger
         

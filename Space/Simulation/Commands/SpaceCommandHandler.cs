@@ -19,7 +19,7 @@ namespace Space.Simulation.Commands
     /// <summary>
     /// Used to apply commands to simulations.
     /// </summary>
-    static class SpaceCommandHandler
+    internal static class SpaceCommandHandler
     {
         #region Logger
 

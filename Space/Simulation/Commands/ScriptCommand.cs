@@ -7,7 +7,7 @@
     /// Values must be changed like this from the outside, so as not to mess up
     /// different states in a TSS simulation.
     /// </remarks>
-    sealed class ScriptCommand : Engine.Simulation.Commands.FrameCommand
+    internal sealed class ScriptCommand : Engine.Simulation.Commands.FrameCommand
     {
         #region Fields
 

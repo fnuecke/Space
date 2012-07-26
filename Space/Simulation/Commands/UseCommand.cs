@@ -6,7 +6,7 @@ namespace Space.Simulation.Commands
     /// <summary>
     /// Makes a player use an item from his inventory.
     /// </summary>
-    public sealed class UseCommand : FrameCommand
+    internal sealed class UseCommand : FrameCommand
     {
         #region Fields
 

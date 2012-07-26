@@ -10,7 +10,7 @@ namespace Space.View
     /// Renderer class responsible for drawing the overall in-game background,
     /// i.e. the stars an debris behind ships and planets and stuff.
     /// </summary>
-    public sealed class Background : AbstractShape
+    internal sealed class Background : AbstractShape
     {
         #region Properties
 

@@ -122,20 +122,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fonts\digital.spritefont">
-      <Name>digital</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>FontDescriptionProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Fonts\quartz_ms.png">
-      <Name>quartz_ms</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Fonts\ConsoleFont.spritefont">
       <Name>ConsoleFont</Name>
       <Importer>FontDescriptionImporter</Importer>
@@ -144,31 +130,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Fonts\menufont.spritefont">
-      <Name>menufont</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>FontDescriptionProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Fonts\gamefont.spritefont">
-      <Name>gamefont</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>FontDescriptionProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Audio\SpaceAudio.xap">
       <Name>SpaceAudio</Name>
       <Importer>XactImporter</Importer>
       <Processor>XactProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Fonts\showcard_gothic.png">
-      <Name>showcard_gothic</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>FontTextureProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -2132,20 +2097,6 @@
       <Name>rock_07</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Fonts\strasua_11.spritefont">
-      <Name>strasua_11</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>NuclexSpriteFontDescriptionProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Fonts\strasua_24.spritefont">
-      <Name>strasua_24</Name>
-      <Importer>FontDescriptionImporter</Importer>
-      <Processor>NuclexSpriteFontDescriptionProcessor</Processor>
     </Compile>
   </ItemGroup>
   <ItemGroup>

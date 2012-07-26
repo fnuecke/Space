@@ -137,12 +137,6 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         public override void Draw(long frame)
         {
-            // Check if we're still connected (can disconnect during update).
-            if (_session.ConnectionState != ClientState.Connected)
-            {
-                return;
-            }
-
             // Get local player's avatar.
             var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
             if (!avatar.HasValue)

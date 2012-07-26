@@ -19,7 +19,7 @@ namespace Space.Control
     /// <summary>
     /// Utility class for creating new game server and client instances.
     /// </summary>
-    public static class ControllerFactory
+    internal static class ControllerFactory
     {
         /// <summary>
         /// Creates a new game server.
@@ -176,7 +176,7 @@ namespace Space.Control
         {
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
             var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
-            var graphicsDevice = ((Spaaace)game).GraphicsDeviceManager;
+            var graphicsDevice = ((Program)game).GraphicsDeviceManager;
 
             manager.AddSystems(
                 new AbstractSystem[]

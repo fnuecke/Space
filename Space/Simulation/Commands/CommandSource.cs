@@ -1,7 +1,6 @@
-﻿
-namespace Space.Simulation.Commands
+﻿namespace Space.Simulation.Commands
 {
-    public enum Source
+    internal enum Source
     {
         None,
         Inventory,

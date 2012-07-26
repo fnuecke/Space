@@ -16,7 +16,7 @@ namespace Space.Control
     /// <summary>
     /// Handles player input and converts it to simulation commands.
     /// </summary>
-    public sealed class InputHandler : GameComponent
+    internal sealed class InputHandler : GameComponent
     {
         #region Constants
 
@@ -50,7 +50,7 @@ namespace Space.Control
         /// <summary>
         /// The game we belong to.
         /// </summary>
-        private readonly Spaaace _game;
+        private readonly Program _game;
 
         /// <summary>
         /// The current primary gamepad.
@@ -114,7 +114,7 @@ namespace Space.Control
 
         #region Constructor
 
-        public InputHandler(Spaaace game)
+        public InputHandler(Program game)
             : base(game)
         {
             _game = game;

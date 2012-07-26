@@ -6,7 +6,7 @@ namespace Space.Simulation.Commands
     /// <summary>
     /// Command issued when a player wants to move an item in his inventory.
     /// </summary>
-    public sealed class MoveItemCommand : FrameCommand
+    internal sealed class MoveItemCommand : FrameCommand
     {
         #region Fields
         

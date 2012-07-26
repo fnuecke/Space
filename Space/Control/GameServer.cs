@@ -10,7 +10,7 @@ namespace Space.Control
     /// <summary>
     /// The game server, handling everything server logic related.
     /// </summary>
-    public sealed class GameServer : GameComponent
+    internal sealed class GameServer : GameComponent
     {
         #region Properties
         

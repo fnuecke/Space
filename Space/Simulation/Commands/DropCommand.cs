@@ -3,7 +3,7 @@ using Engine.Simulation.Commands;
 
 namespace Space.Simulation.Commands
 {
-    public sealed class DropCommand : FrameCommand
+    internal sealed class DropCommand : FrameCommand
     {
         #region Fields
 

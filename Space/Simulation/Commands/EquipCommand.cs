@@ -6,7 +6,7 @@ namespace Space.Simulation.Commands
     /// <summary>
     /// Used to signal a player should equip a specific item from his inventory.
     /// </summary>
-    public sealed class EquipCommand : FrameCommand
+    internal sealed class EquipCommand : FrameCommand
     {
         #region Fields
 

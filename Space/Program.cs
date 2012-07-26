@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Net;
-using System.Reflection;
 using Awesomium.ScreenManagement;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.Session;
@@ -12,13 +8,9 @@ using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
-using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Systems;
 using Space.Control;
-using Space.Session;
-using Space.Simulation.Commands;
 using Space.Util;
 using Space.View;
 
@@ -27,42 +19,11 @@ namespace Space
     /// <summary>
     /// Main class, sets up services and basic components.
     /// </summary>
-    public sealed class Spaaace : Game
+    internal sealed partial class Program : Game
     {
         #region Logger
 
         private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-
-        #endregion
-
-        #region Program entry
-
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        static void Main()
-        {
-            using (var game = new Spaaace())
-            {
-                // Get some general system information, for reference.
-                var assembly = Assembly.GetExecutingAssembly().GetName();
-#if DEBUG
-                const string build = "Debug";
-#else
-            const string build = "Release";
-#endif
-                Logger.Info("--------------------------------------------------------------------------------");
-                Logger.Info("{0} {1} (Attached debugger: {2}) running under {3}",
-                            assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
-                Logger.Info("Build Version: {0}", assembly.Version);
-                Logger.Info("CLR Version: {0}", Environment.Version);
-                Logger.Info("CPU Processors: {0}", Environment.ProcessorCount);
-                Logger.Info("Starting up...");
-                game.Run();
-                Logger.Info("Shutting down...");
-            }
-        }
 
         #endregion
 
@@ -78,8 +39,6 @@ namespace Space
         #region Events
 
         public event EventHandler<ClientInitializedEventArgs> ClientInitialized;
-
-        public event EventHandler<EventArgs> ClientDisposed;
 
         #endregion
 
@@ -153,7 +112,7 @@ namespace Space
 
         #region Constructor
 
-        private Spaaace()
+        private Program()
         {
             // Some window settings.
             Window.Title = "Space. The Game. Seriously.";
@@ -227,314 +186,6 @@ namespace Space
             base.Dispose(disposing);
         }
 
-        protected override void Initialize()
-        {
-            // Initialize the console as soon as possible.
-            InitializeConsole();
-
-            // Initialize localization. Anything after this loaded via the content
-            // manager will be localized.
-            InitializeLocalization();
-
-            // Set up input to allow interaction with the game.
-            InitializeInput();
-
-            base.Initialize();
-        }
-
-        /// <summary>
-        /// Initialize the localization by figuring out which to use, either by getting
-        /// it from the settings, or by falling back to the default one instead.
-        /// </summary>
-        private void InitializeLocalization()
-        {
-            // Get locale for localized content.
-            CultureInfo culture;
-            try
-            {
-                culture = CultureInfo.GetCultureInfo(Settings.Instance.Language);
-            }
-            catch (CultureNotFoundException)
-            {
-                culture = CultureInfo.InvariantCulture;
-                Settings.Instance.Language = culture.Name;
-            }
-
-            // Set up resources.
-            GuiStrings.Culture = culture;
-            AttributeNames.Culture = culture;
-            AttributePrefixes.Culture = culture;
-            ItemDescriptions.Culture = culture;
-            ItemNames.Culture = culture;
-            QualityNames.Culture = culture;
-
-            // Set up content loader.
-            ((LocalizedContentManager)Content).Culture = culture;
-        }
-
-        /// <summary>
-        /// Initialize input logic.
-        /// </summary>
-        private void InitializeInput()
-        {
-            // Initialize input.
-            _inputManager = new InputManager(Services, Window.Handle);
-            Components.Add(_inputManager);
-            Services.AddService(typeof(InputManager), _inputManager);
-
-            // Create the input handler that converts input to ingame commands.
-            _input = new InputHandler(this);
-            Components.Add(_input);
-        }
-
-        /// <summary>
-        /// Initialize the console, adding commands and making the logger write to it.
-        /// </summary>
-        private void InitializeConsole()
-        {
-            // Create the console and add it as a component.
-            _console = new GameConsole(this);
-            Components.Add(_console);
-
-            // We do this in the input handler.
-            _console.Hotkey = Keys.None;
-
-            // Add a logging target that'll write to our console.
-            _consoleLoggerTarget = new GameConsoleTarget(this, NLog.LogLevel.Trace);
-
-            _console.AddCommand(new[] { "fullscreen", "fs" },
-                args => GraphicsDeviceManager.ToggleFullScreen(),
-                "Toggles fullscreen mode.");
-
-            _console.AddCommand("search",
-                args => _client.Controller.Session.Search(),
-                "Search for games available on the local subnet.");
-            _console.AddCommand("connect",
-                args => _client.Controller.Session.Join(new IPEndPoint(IPAddress.Parse(args[1]), 7777), Settings.Instance.PlayerName, Settings.Instance.CurrentProfile),
-                "Joins a game at the given host.",
-                "connect <host> - join the host with the given host name or IP.");
-            _console.AddCommand("leave",
-                args => DisposeClient(),
-                "Leave the current game.");
-
-            // Register debug commands.
-            InitializeConsoleForDebug();
-
-            // Say hi.
-            _console.WriteLine("Console initialized. Type 'help' for available commands.");
-        }
-
-        /// <summary>
-        /// Debug commands for the console, that won't be available in release builds.
-        /// </summary>
-        [Conditional("DEBUG")]
-        private void InitializeConsoleForDebug()
-        {
-            // Default handler to interpret everything that is not a command
-            // as a script.
-            _console.SetDefaultCommandHandler(
-                command =>
-                {
-                    if (_client != null)
-                    {
-                        _client.Controller.PushLocalCommand(new ScriptCommand(command));
-                    }
-                    else
-                    {
-                        _console.WriteLine("Unknown command.");
-                    }
-                });
-
-            // Add hints for autocompletion to also complete python methods.
-            _console.AddAutoCompletionLookup(SpaceCommandHandler.GetGlobalNames);
-
-            _console.AddCommand("d_renderindex",
-                args =>
-                {
-                    int index;
-                    if (!int.TryParse(args[1], out index))
-                    {
-                        switch (args[1])
-                        {
-                            case "c":
-                            case "collision":
-                            case "collidable":
-                            case "collidables":
-                                _indexGroupMask = CollisionSystem.IndexGroupMask;
-                                break;
-                            case "d":
-                            case "detector":
-                            case "detectable":
-                            case "detectables":
-                                _indexGroupMask = DetectableSystem.IndexGroupMask;
-                                break;
-                            case "g":
-                            case "grav":
-                            case "gravitation":
-                                _indexGroupMask = GravitationSystem.IndexGroupMask;
-                                break;
-                            case "s":
-                            case "sound":
-                            case "sounds":
-                                _indexGroupMask = SoundSystem.IndexGroupMask;
-                                break;
-                        }
-                    }
-                    else if (index > 64)
-                    {
-                        _console.WriteLine("Invalid index, must be smaller or equal to 64.");
-                    }
-                    else
-                    {
-                        _indexGroupMask = 1ul << index;
-                    }
-                },
-                "Enables rendering of the index with the given index.",
-                "d_renderindex <index> - render the cells of the specified index.");
-
-            _console.AddCommand("d_check_serialization",
-                args =>
-                {
-                    try
-                    {
-                        ((Engine.Controller.AbstractTssController<IServerSession>)_server.Controller).ValidateSerialization();
-                    }
-                    catch (InvalidProgramException ex)
-                    {
-                        _console.WriteLine("Serialization broken, " + ex.Message);
-                    }
-                },
-                "Verifies the simulation's serialization works by creating a",
-                "snapshot and deserializing it again, then compares the hash",
-                "values of the two simulations.");
-
-            _console.AddCommand("d_check_rollback",
-                args =>
-                {
-                    try
-                    {
-                        ((Engine.Controller.AbstractTssController<IServerSession>)_server.Controller).ValidateRollback();
-                    }
-                    catch (InvalidProgramException ex)
-                    {
-                        _console.WriteLine("Serialization broken, " + ex.Message);
-                    }
-                },
-                "Verifies the simulation's serialization works by creating a",
-                "snapshot and deserializing it again, then compares the hash",
-                "values of the two simulations.");
-
-            // Copy everything written to our game console to the actual console,
-            // too, so we can inspect it out of game, copy stuff or read it after
-            // the game has crashed.
-            _console.LineWritten += (sender, e) => Console.WriteLine(((LineWrittenEventArgs)e).Message);
-        }
-
-        /// <summary>
-        /// LoadContent will be called once per game and is the place to load
-        /// all of your content.
-        /// </summary>
-        protected override void LoadContent()
-        {
-            base.LoadContent();
-
-            // Create a new SpriteBatch, which can be used to draw textures.
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-            Services.AddService(typeof(SpriteBatch), _spriteBatch);
-
-            // Tell the console how to render itself.
-            LoadConsole();
-
-            // Initialize scripting environment for debugging.
-            SpaceCommandHandler.InitializeScriptEnvironment(Content);
-
-            // Load generator constraints.
-            FactoryLibrary.Initialize(Content);
-
-            // Create the profile implementation.
-            Settings.Instance.CurrentProfile = new Profile();
-
-            // Load / create profile.
-            if (Settings.Instance.CurrentProfile.Profiles.Contains(Settings.Instance.CurrentProfileName))
-            {
-                Settings.Instance.CurrentProfile.Load(Settings.Instance.CurrentProfileName);
-            }
-            else
-            {
-                // TODO: create profile selection screen, show it if no or an invalid profile is active.
-                Settings.Instance.CurrentProfile.Create("Default", Data.PlayerClassType.Default);
-                Settings.Instance.CurrentProfileName = "Default";
-                Settings.Instance.CurrentProfile.Save();
-            }
-
-            // Set up the render target into which we'll draw everything (to
-            // allow switching to and from it for certain effects).
-            var pp = GraphicsDevice.PresentationParameters;
-            _scene = new RenderTarget2D(GraphicsDevice, pp.BackBufferWidth, pp.BackBufferHeight, false, pp.BackBufferFormat, DepthFormat.None, 0, RenderTargetUsage.PreserveContents);
-
-            // Set up audio data (load wave/sound bank).
-            LoadAudio();
-
-            // Set up graphical user interface.
-            LoadGui();
-        }
-
-        /// <summary>
-        /// Tell our console how to render itself.
-        /// </summary>
-        private void LoadConsole()
-        {
-            _console.SpriteBatch = _spriteBatch;
-            _console.Font = Content.Load<SpriteFont>("Fonts/ConsoleFont");
-        }
-
-        /// <summary>
-        /// Set up audio by loading the XACT generated files.
-        /// </summary>
-        private void LoadAudio()
-        {
-            // Set up audio stuff by loading our XACT project files.
-            try
-            {
-                // Load data.
-                _audioEngine = new AudioEngine("data/Audio/SpaceAudio.xgs");
-                _waveBank = new WaveBank(_audioEngine, "data/Audio/Wave Bank.xwb");
-                _soundBank = new SoundBank(_audioEngine, "data/Audio/Sound Bank.xsb");
-
-                // Do a first update, as recommended in the documentation.
-                _audioEngine.Update();
-
-                // Make the sound and wave bank available as a service.
-                Services.AddService(typeof(SoundBank), _soundBank);
-                Services.AddService(typeof(WaveBank), _waveBank);
-            }
-            catch (Exception ex)
-            {
-                Logger.ErrorException("Failed initializing AudioEngine.", ex);
-            }
-        }
-
-        /// <summary>
-        /// Initialize the gui by creating our screen manager an pushing the main
-        /// menu screen to it.
-        /// </summary>
-        private void LoadGui()
-        {
-            // Create the screen manager.
-            _screenManager = new ScreenManager(this, _spriteBatch, _inputManager);
-            Components.Add(_screenManager);
-
-            // Initialize our scripting API for the GUI.
-            JSCallbacks.Initialize(this);
-
-            // Push the main menu.
-            _screenManager.PushScreen("MainMenu/MainMenu");
-
-            // Create ingame graphics stuff.
-            // TODO make it so this is rendered inside the simulation (e.g. own render systems)
-            _background = new Background(this, _spriteBatch);
-        }
-
         #endregion
 
         #region Logic
@@ -548,8 +199,8 @@ namespace Space
             // Update the rest of the game.
             base.Update(gameTime);
 
-            // Update the audio engine if we have one (setting one up can bug
-            // out on some systems).
+            // Update the audio engine if we have one (setting one up can cause
+            // issues on some systems, so we have to check).
             if (_audioEngine != null)
             {
                 _audioEngine.Update();
@@ -587,7 +238,7 @@ namespace Space
             _background.Draw();
 
             // Draw world elements if we're in a game.
-            if (_client != null && _client.Controller.Session.ConnectionState == ClientState.Connected)
+            if (_client != null)
             {
                 _client.Controller.Draw();
             }
@@ -659,11 +310,6 @@ namespace Space
             _client = null;
 
             _background.Client = null;
-
-            if (ClientDisposed != null)
-            {
-                ClientDisposed(this, EventArgs.Empty);
-            }
         }
 
         /// <summary>

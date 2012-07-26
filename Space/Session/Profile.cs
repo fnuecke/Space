@@ -20,7 +20,7 @@ namespace Space.Session
     /// <summary>
     /// Implements profile save and restore functionality.
     /// </summary>
-    sealed class Profile : IProfile
+    internal sealed class Profile : IProfile
     {
         #region Logger
 
