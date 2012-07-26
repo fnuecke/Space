@@ -1,21 +1,17 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.ComponentSystem.Systems;
 using Engine.Graphics;
 using Engine.Session;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
-using Space.ComponentSystem.Systems;
-using Space.Control;
 
-namespace Space.View
+namespace Space.ComponentSystem.Systems
 {
-    /// <summary>
-    /// Renderer class that's responsible for drawing planet orbits for planets
-    /// that are in range of the player's scanners.
-    /// </summary>
-    public sealed class Orbits
+    public sealed class OrbitRenderSystem : AbstractSystem
     {
         #region Constants
 
@@ -42,16 +38,12 @@ namespace Space.View
 
         #endregion
 
-        #region Properties
+        #region Fields
 
         /// <summary>
-        /// Gets or sets the game client for which to render the orbits.
+        /// The local client session, to allow getting the local player's avatar.
         /// </summary>
-        public GameClient Client { get; set; }
-
-        #endregion
-
-        #region Fields
+        private readonly IClientSession _session;
 
         /// <summary>
         /// The sprite batch to render the orbits into.
@@ -82,11 +74,19 @@ namespace Space.View
         
         #region Constructor
 
-        public Orbits(Game game, SpriteBatch spriteBatch)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OrbitRenderSystem"/> class.
+        /// </summary>
+        /// <param name="content">The content manager to use for loading assets.</param>
+        /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
+        /// <param name="session">The local session to get the local player.</param>
+        public OrbitRenderSystem(ContentManager content, SpriteBatch spriteBatch, IClientSession session)
         {
             _spriteBatch = spriteBatch;
-            _orbitEllipse = new Ellipse(game.Content, game.GraphicsDevice) {Thickness = OrbitThickness};
-            _deadZoneEllipse = new FilledEllipse(game.Content, game.GraphicsDevice) {Gradient = DeadZoneDiffuseWidth, Color = DeadZoneColor};
+            _session = session;
+
+            _orbitEllipse = new Ellipse(content, spriteBatch.GraphicsDevice) { Thickness = OrbitThickness };
+            _deadZoneEllipse = new FilledEllipse(content, spriteBatch.GraphicsDevice) { Gradient = DeadZoneDiffuseWidth, Color = DeadZoneColor };
         }
 
         #endregion
@@ -97,31 +97,35 @@ namespace Space.View
         /// Render our local radar system, with whatever detectables are close
         /// enough.
         /// </summary>
-        public void Draw()
+        public override void Draw(long frame)
         {
-            if (Client == null || Client.Controller.Session.ConnectionState != ClientState.Connected)
+            // Check if we're still connected (can disconnect during update).
+            if (_session.ConnectionState != ClientState.Connected)
             {
                 return;
             }
 
             // Get local player's avatar.
-            var info = Client.GetPlayerShipInfo();
-
-            // Can't do anything without an avatar.
-            if (info == null)
+            var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
+            if (!avatar.HasValue)
             {
                 return;
             }
 
-            // Fetch all the components we need.
-            var position = Client.GetCameraPosition();
-            var index = Client.GetSystem<IndexSystem>();
+            // Get info on the local player's ship.
+            var info = Manager.GetComponent<ShipInfo>(avatar.Value);
 
-            // Bail if we're missing something.
-            if (index == null)
-            {
-                return;
-            }
+            // Get the index we use for looking up nearby objects.
+            var index = Manager.GetSystem<IndexSystem>();
+
+            // Get camera information.
+            var camera = Manager.GetSystem<CameraSystem>();
+
+            // Get camera position.
+            var position = camera.CameraPositon;
+
+            // Get zoom from camera.
+            var zoom = camera.Zoom;
 
             // Figure out the overall range of our radar system.
             var radarRange = info.RadarRange;
@@ -145,23 +149,20 @@ namespace Space.View
             // Get the radius of the minimal bounding sphere of our viewport.
             var radius = (float)System.Math.Sqrt(center.X * center.X + center.Y * center.Y);
 
-            // Get zoom from camera.
-            var zoom = Client.GetCameraZoom();
-
             // Increase radius accordingly, to include stuff possibly further away.
             radius /= zoom;
-
-            // Begin drawing.
-            _spriteBatch.Begin();
 
             // Loop through all our neighbors.
             ICollection<int> neighbors = _reusableNeighborList;
             index.Find(position, radarRange, ref neighbors, DetectableSystem.IndexGroupMask);
+
+            // Begin drawing.
+            _spriteBatch.Begin();
             foreach (var neighbor in neighbors)
             {
                 // Get the components we need.
-                var neighborTransform = Client.GetComponent<Transform>(neighbor);
-                var neighborDetectable = Client.GetComponent<Detectable>(neighbor);
+                var neighborTransform = Manager.GetComponent<Transform>(neighbor);
+                var neighborDetectable = Manager.GetComponent<Detectable>(neighbor);
 
                 // Bail if we're missing something.
                 if (neighborTransform == null || neighborDetectable.Texture == null)
@@ -184,14 +185,14 @@ namespace Space.View
 
                 // If it's an astronomical object, check if its orbit is
                 // potentially in our screen space, if so draw it.
-                var ellipse = Client.GetComponent<EllipsePath>(neighbor);
+                var ellipse = Manager.GetComponent<EllipsePath>(neighbor);
                 if (ellipse != null)
                 {
                     // The entity we're orbiting around is at one of the two
                     // foci of the ellipse. We want the center, though.
 
                     // Get the current position of the entity we're orbiting.
-                    var focusTransform = Client.GetComponent<Transform>(ellipse.CenterEntityId).Translation;
+                    var focusTransform = Manager.GetComponent<Transform>(ellipse.CenterEntityId).Translation;
 
                     // Compute the distance of the ellipse's foci to the center
                     // of the ellipse.
@@ -241,8 +242,8 @@ namespace Space.View
                 // If the neighbor does collision damage and is an attractor,
                 // show the "dead zone" (i.e. the area beyond the point of no
                 // return).
-                var neighborGravitation = Client.GetComponent<Gravitation>(neighbor);
-                var neighborCollisionDamage = Client.GetComponent<CollisionDamage>(neighbor);
+                var neighborGravitation = Manager.GetComponent<Gravitation>(neighbor);
+                var neighborCollisionDamage = Manager.GetComponent<CollisionDamage>(neighbor);
                 if (neighborCollisionDamage == null || neighborGravitation == null ||
                     (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) == 0)
                 {
@@ -266,12 +267,11 @@ namespace Space.View
                 // And draw it!
                 _deadZoneEllipse.Draw();
             }
+            // Done drawing.
+            _spriteBatch.End();
 
             // Clear the list for the next run.
             _reusableNeighborList.Clear();
-
-            // Done drawing.
-            _spriteBatch.End();
         }
 
         #endregion

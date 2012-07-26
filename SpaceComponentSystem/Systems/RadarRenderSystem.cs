@@ -165,7 +165,7 @@ namespace Space.ComponentSystem.Systems
             // amount, however, in relation to the total radar range.
             var position = camera.CameraPositon;
 
-            // Get zoom from camera .
+            // Get zoom from camera.
             var zoom = camera.Zoom;
 
             // Figure out the overall range of our radar system.

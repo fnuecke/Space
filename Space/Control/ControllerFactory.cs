@@ -162,7 +162,7 @@ namespace Space.Control
                     new RegeneratingValueSystem(),
                     
                     // AI should react after everything else had its turn.
-                    new AISystem(),
+                    new AISystem()
                 });
         }
 
@@ -187,7 +187,9 @@ namespace Space.Control
                     // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, session),
                     
-                    // Planets below suns below normal objects below particle effects.
+                    // Mind the order: orbits below planets below suns below normal
+                    // objects below particle effects below radar.
+                    new OrbitRenderSystem(game.Content, spriteBatch, session),
                     new PlanetRenderSystem(game.Content, game.GraphicsDevice),
                     new SunRenderSystem(game.Content, game.GraphicsDevice, spriteBatch),
                     new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),

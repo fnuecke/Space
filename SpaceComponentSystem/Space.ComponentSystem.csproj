@@ -119,6 +119,7 @@
     <Compile Include="Systems\DetectableSystem.cs" />
     <Compile Include="Systems\DropSystem.cs" />
     <Compile Include="Systems\GravitationSystem.cs" />
+    <Compile Include="Systems\OrbitRenderSystem.cs" />
     <Compile Include="Systems\PlanetRenderSystem.cs" />
     <Compile Include="Systems\PlayerMassSystem.cs" />
     <Compile Include="Systems\RadarRenderSystem.cs" />

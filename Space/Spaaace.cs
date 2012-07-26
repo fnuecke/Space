@@ -29,13 +29,19 @@ namespace Space
     /// </summary>
     public sealed class Spaaace : Game
     {
+        #region Logger
+
+        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
+
+        #endregion
+
         #region Program entry
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] args)
+        static void Main()
         {
             using (var game = new Spaaace())
             {
@@ -57,12 +63,6 @@ namespace Space
                 Logger.Info("Shutting down...");
             }
         }
-
-        #endregion
-
-        #region Logger
-
-        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
 
         #endregion
 
@@ -145,7 +145,6 @@ namespace Space
 
         private InputHandler _input;
         private Background _background;
-        private Orbits _orbits;
 
         private GameServer _server;
         private GameClient _client;
@@ -534,7 +533,6 @@ namespace Space
             // Create ingame graphics stuff.
             // TODO make it so this is rendered inside the simulation (e.g. own render systems)
             _background = new Background(this, _spriteBatch);
-            _orbits = new Orbits(this, _spriteBatch);
         }
 
         #endregion
@@ -588,9 +586,6 @@ namespace Space
             }
             _background.Draw();
 
-            // Draw the orbit lines behind ingame objects.
-            _orbits.Draw();
-
             // Draw world elements if we're in a game.
             if (_client != null && _client.Controller.Session.ConnectionState == ClientState.Connected)
             {
@@ -629,7 +624,6 @@ namespace Space
             Components.Add(_client);
 
             _background.Client = _client;
-            _orbits.Client = _client;
 
             if (ClientInitialized != null)
             {
@@ -665,7 +659,6 @@ namespace Space
             _client = null;
 
             _background.Client = null;
-            _orbits.Client = null;
 
             if (ClientDisposed != null)
             {
