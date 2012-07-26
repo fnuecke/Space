@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
@@ -60,13 +61,8 @@ namespace Space.ComponentSystem.Systems
                     // If they have an enabled gravitation component...
                     var otherGravitation = Manager.GetComponent<Gravitation>(neigbor);
 
-#if DEBUG
                     // Validation.
-                    if ((otherGravitation.GravitationType & Gravitation.GravitationTypes.Attractee) == 0)
-                    {
-                        throw new InvalidOperationException("Non-attractees must not be added to the index.");
-                    }
-#endif
+                    Debug.Assert((otherGravitation.GravitationType & Gravitation.GravitationTypes.Attractee) != 0, "Non-attractees must not be added to the index.");
 
                     // Is it enabled?
                     if (!otherGravitation.Enabled)
@@ -85,7 +81,7 @@ namespace Space.ComponentSystem.Systems
                         var delta = otherTransform.Translation - myTransform.Translation;
 
                         // Compute the angle between us and the other entity.
-                        float distanceSquared = delta.LengthSquared();
+                        var distanceSquared = delta.LengthSquared();
 
                         // If we're near the core only pull if  the other
                         // object isn't currently accelerating.
@@ -106,7 +102,7 @@ namespace Space.ComponentSystem.Systems
                                 {
                                     // Adjust velocity.
                                     delta.Normalize();
-                                    float gravitation = component.Mass * otherGravitation.Mass / Math.Max(nearDistanceSquared, distanceSquared);
+                                    var gravitation = component.Mass * otherGravitation.Mass / Math.Max(nearDistanceSquared, distanceSquared);
                                     var directedGravitation = delta * gravitation;
 
                                     otherVelocity.Value.X -= directedGravitation.X;
@@ -118,7 +114,7 @@ namespace Space.ComponentSystem.Systems
                         {
                             // Adjust velocity.
                             delta.Normalize();
-                            float gravitation = component.Mass * otherGravitation.Mass / distanceSquared;
+                            var gravitation = component.Mass * otherGravitation.Mass / distanceSquared;
                             var directedGravitation = delta * gravitation;
 
                             otherVelocity.Value.X -= directedGravitation.X;

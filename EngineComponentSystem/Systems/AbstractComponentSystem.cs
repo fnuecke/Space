@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
-using Engine.Serialization;
 using Engine.Util;
 
 namespace Engine.ComponentSystem.Systems
@@ -109,9 +108,10 @@ namespace Engine.ComponentSystem.Systems
                 if (component is TComponent)
                 {
                     var typedComponent = (TComponent)component;
-
                     Debug.Assert(!Components.Contains(typedComponent));
-                    Components.Add(typedComponent);
+
+                    // Keep components in order, to stay deterministic.
+                    Components.Insert(~Components.BinarySearch(typedComponent, Component.Comparer), typedComponent);
 
                     // Tell subclasses.
                     OnComponentAdded(typedComponent);
@@ -129,33 +129,33 @@ namespace Engine.ComponentSystem.Systems
                 {
                     var typedComponent = (TComponent)component;
 
-                    if (Components.Remove(typedComponent))
+                    var index = Components.BinarySearch(typedComponent, Component.Comparer);
+                    if (index >= 0)
                     {
+                        Components.RemoveAt(index);
                         OnComponentRemoved(typedComponent);
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// This may be used by subclasses that need to manually rebuild
-        /// the component list, because we are a system that might not be
-        /// present on the server (if it is a pure server).
-        /// </summary>
-        protected void RebuildComponentList()
-        {
-            Components.Clear();
-            foreach (var component in Manager.Components)
+            else if (message is Depacketized)
             {
-                if (component is TComponent)
+                // Done depacketizing. Instead of sending all components in
+                // the game state, we just rebuild the list afterwards, which
+                // saves us a lot of bandwidth.
+                Components.Clear();
+                foreach (var component in Manager.Components)
                 {
-                    var typedComponent = (TComponent)component;
+                    if (component is TComponent)
+                    {
+                        var typedComponent = (TComponent)component;
+                        Debug.Assert(!Components.Contains(typedComponent));
 
-                    Debug.Assert(!Components.Contains(typedComponent));
-                    Components.Add(typedComponent);
+                        // Components are in order (we are iterating in order).
+                        Components.Add(typedComponent);
 
-                    // Tell subclasses.
-                    OnComponentAdded(typedComponent);
+                        // Do *NOT* tell our subclasses, as this is semantically
+                        // different to a new component being added.
+                    }
                 }
             }
         }
@@ -183,55 +183,6 @@ namespace Engine.ComponentSystem.Systems
         #endregion
 
         #region Serialization / Hashing
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <remarks>
-        /// Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        /// to true.
-        /// </remarks>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            base.Packetize(packet);
-
-            packet.Write(Components.Count);
-            foreach (var component in Components)
-            {
-                packet.Write(component.Id);
-            }
-
-            return packet;
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <remarks>
-        /// Must be overridden in subclasses setting <c>ShouldSynchronize</c>
-        /// to true.
-        /// </remarks>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            Components.Clear();
-            var numComponents = packet.ReadInt32();
-            for (var i = 0; i < numComponents; ++i)
-            {
-                var componentId = packet.ReadInt32();
-                var component = Manager.GetComponentById(componentId);
-
-                Debug.Assert(component is TComponent);
-
-                Components.Add((TComponent)component);
-            }
-        }
 
         /// <summary>
         /// Push some unique data of the object to the given hasher,

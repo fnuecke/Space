@@ -30,7 +30,7 @@ namespace Space.ComponentSystem.Systems
             var sound = Manager.GetComponent<Sound>(component.Entity);
 
             // Get the mass of the ship.
-            float mass = info.Mass;
+            var mass = info.Mass;
 
             // Get our acceleration direction, based on whether we're
             // currently stabilizing or not.

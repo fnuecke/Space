@@ -310,7 +310,7 @@ namespace Engine.ComponentSystem
             component.Id = _componentIds.GetId();
             component.Entity = entity;
             component.Enabled = true;
-            _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
+            _components.Insert(~_components.BinarySearch(component, Component.Comparer), component);
             _componentsById[component.Id] = component;
 
             // Add to entity index.
@@ -355,7 +355,7 @@ namespace Engine.ComponentSystem
 
             // Remove it from the mapping and release the id for reuse.
             _entities[component.Entity].Remove(component);
-            _components.RemoveAt(_components.BinarySearch(component, ComponentComparer.Instance));
+            _components.RemoveAt(_components.BinarySearch(component, Component.Comparer));
             _componentsById.Remove(component.Id);
             _componentIds.ReleaseId(component.Id);
 
@@ -528,7 +528,7 @@ namespace Engine.ComponentSystem
                 var component = AllocateComponent(type);
                 packet.ReadPacketizableInto(component);
                 component.Manager = this;
-                _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
+                _components.Insert(~_components.BinarySearch(component, Component.Comparer), component);
                 _componentsById[component.Id] = component;
 
                 // Add to entity mapping, create entries as necessary.
@@ -624,7 +624,7 @@ namespace Engine.ComponentSystem
                 component.Id = _componentIds.GetId();
                 component.Entity = entity;
                 component.Manager = this;
-                _components.Insert(~_components.BinarySearch(component, ComponentComparer.Instance), component);
+                _components.Insert(~_components.BinarySearch(component, Component.Comparer), component);
                 _componentsById[component.Id] = component;
 
                 // Add to entity index.
@@ -829,30 +829,6 @@ namespace Engine.ComponentSystem
         #endregion
 
         #region Utility types
-
-        /// <summary>
-        /// Comparer implementation for components, to allow sorted inserting
-        /// in the component list.
-        /// </summary>
-        private sealed class ComponentComparer : IComparer<Component>
-        {
-            /// <summary>
-            /// Reusable static instance of this comparer.
-            /// </summary>
-            public static readonly ComponentComparer Instance = new ComponentComparer();
-
-            /// <summary>
-            /// Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
-            /// </summary>
-            /// <returns>
-            /// A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>, as shown in the following table.Value Meaning Less than zero<paramref name="x"/> is less than <paramref name="y"/>.Zero<paramref name="x"/> equals <paramref name="y"/>.Greater than zero<paramref name="x"/> is greater than <paramref name="y"/>.
-            /// </returns>
-            /// <param name="x">The first object to compare.</param><param name="y">The second object to compare.</param>
-            public int Compare(Component x, Component y)
-            {
-                return x.Id - y.Id;
-            }
-        }
 
         /// <summary>
         /// Represents an entity, for easier internal access. We do not expose

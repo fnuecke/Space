@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -15,6 +16,15 @@ namespace Engine.ComponentSystem.Components
     /// </summary>
     public abstract class Component : IPacketizable, IHashable
     {
+        #region Constants
+
+        /// <summary>
+        /// Reusable static instance of the comparer to be used for components.
+        /// </summary>
+        public static readonly ComponentComparer Comparer = new ComponentComparer();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -144,6 +154,29 @@ namespace Engine.ComponentSystem.Components
         public override string ToString()
         {
             return GetType().Name + ": Id=" + Id + ", Enabled=" + Enabled;
+        }
+
+        #endregion
+
+        #region Comparer
+
+        /// <summary>
+        /// Comparer implementation for components, to allow sorted inserting
+        /// in the component list.
+        /// </summary>
+        public sealed class ComponentComparer : IComparer<Component>
+        {
+            /// <summary>
+            /// Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
+            /// </summary>
+            /// <returns>
+            /// A signed integer that indicates the relative values of <paramref name="x"/> and <paramref name="y"/>, as shown in the following table.Value Meaning Less than zero<paramref name="x"/> is less than <paramref name="y"/>.Zero<paramref name="x"/> equals <paramref name="y"/>.Greater than zero<paramref name="x"/> is greater than <paramref name="y"/>.
+            /// </returns>
+            /// <param name="x">The first object to compare.</param><param name="y">The second object to compare.</param>
+            public int Compare(Component x, Component y)
+            {
+                return x.Id - y.Id;
+            }
         }
 
         #endregion
