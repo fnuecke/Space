@@ -55,7 +55,7 @@ namespace Space.View
         #region Constructor
 
         public Background(Game game, SpriteBatch spriteBatch)
-            : base(game, "Shaders/Space")
+            : base(game.Content, game.GraphicsDevice, "Shaders/Space")
         {
             _spriteBatch = spriteBatch;
 

@@ -188,11 +188,11 @@ namespace Space.Control
                     new CameraCenteredSoundSystem(soundBank, session),
                     
                     // Planets below suns below normal objects below particle effects.
-                    new PlanetRenderSystem(game),
-                    new SunRenderSystem(game, spriteBatch),
+                    new PlanetRenderSystem(game.Content, game.GraphicsDevice),
+                    new SunRenderSystem(game.Content, game.GraphicsDevice, spriteBatch),
                     new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
-                    new CameraCenteredParticleEffectSystem(game, graphicsDevice),
-                    new RadarRenderSystem(game, spriteBatch, session)
+                    new CameraCenteredParticleEffectSystem(game.Content, graphicsDevice),
+                    new RadarRenderSystem(game.Content, spriteBatch, session)
                 });
         }
     }

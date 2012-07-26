@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
 {
@@ -41,9 +42,10 @@ namespace Engine.Graphics
         /// <summary>
         /// Creates a new rectangle renderer for the given game.
         /// </summary>
-        /// <param name="game">The game we will render for.</param>
-        public FilledRectangle(Game game)
-            : base(game, "Shaders/FilledRectangle")
+        /// <param name="content">The content manager to use for loading assets.</param>
+        /// <param name="graphics">The graphics device to render to.</param>
+        public FilledRectangle(ContentManager content, GraphicsDevice graphics)
+            : base(content, graphics, "Shaders/FilledRectangle")
         {
             // Set defaults.
             Gradient = 1f;

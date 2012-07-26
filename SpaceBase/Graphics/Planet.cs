@@ -1,5 +1,6 @@
 ﻿using Engine.Graphics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.Graphics
@@ -100,8 +101,13 @@ namespace Space.Graphics
 
         #region Constructor
 
-        public Planet(Game game)
-            : base(game, "Shaders/Planet")
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Planet"/> class.
+        /// </summary>
+        /// <param name="content">The content manager to use for loading assets.</param>
+        /// <param name="graphics">The graphics device to render to.</param>
+        public Planet(ContentManager content, GraphicsDevice graphics)
+            : base(content, graphics, "Shaders/Planet")
         {
         }
 

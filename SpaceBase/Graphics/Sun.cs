@@ -128,8 +128,13 @@ namespace Space.Graphics
 
         #region Initialization
 
-        public Sun(Game game)
-            : base(game, "Shaders/Sun")
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Sun"/> class.
+        /// </summary>
+        /// <param name="content">The content manager to use for loading assets.</param>
+        /// <param name="graphics">The graphics device to render to.</param>
+        public Sun(ContentManager content, GraphicsDevice graphics)
+            : base(content, graphics, "Shaders/Sun")
         {
         }
 

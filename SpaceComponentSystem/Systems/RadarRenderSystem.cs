@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Data;
@@ -103,21 +104,27 @@ namespace Space.ComponentSystem.Systems
 
         #region Constructor
 
-        public RadarRenderSystem(Game game, SpriteBatch spriteBatch, IClientSession session)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RadarRenderSystem"/> class.
+        /// </summary>
+        /// <param name="content">The content manager to use for loading assets.</param>
+        /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
+        /// <param name="session">The local session to get the local player.</param>
+        public RadarRenderSystem(ContentManager content, SpriteBatch spriteBatch, IClientSession session)
         {
             _spriteBatch = spriteBatch;
             _session = session;
 
-            _radarDirection[(int)RadarDirection.Top] = game.Content.Load<Texture2D>("Textures/Radar/top");
-            _radarDirection[(int)RadarDirection.Left] = game.Content.Load<Texture2D>("Textures/Radar/left");
-            _radarDirection[(int)RadarDirection.Right] = game.Content.Load<Texture2D>("Textures/Radar/right");
-            _radarDirection[(int)RadarDirection.Bottom] = game.Content.Load<Texture2D>("Textures/Radar/bottom");
-            _radarDirection[(int)RadarDirection.TopLeft] = game.Content.Load<Texture2D>("Textures/Radar/top_left");
-            _radarDirection[(int)RadarDirection.TopRight] = game.Content.Load<Texture2D>("Textures/Radar/top_right");
-            _radarDirection[(int)RadarDirection.BottomLeft] = game.Content.Load<Texture2D>("Textures/Radar/bottom_left");
-            _radarDirection[(int)RadarDirection.BottomRight] = game.Content.Load<Texture2D>("Textures/Radar/bottom_right");
-            _radarDistance = game.Content.Load<Texture2D>("Textures/Radar/distance");
-            _distanceFont = game.Content.Load<SpriteFont>("Fonts/visitor");
+            _radarDirection[(int)RadarDirection.Top] = content.Load<Texture2D>("Textures/Radar/top");
+            _radarDirection[(int)RadarDirection.Left] = content.Load<Texture2D>("Textures/Radar/left");
+            _radarDirection[(int)RadarDirection.Right] = content.Load<Texture2D>("Textures/Radar/right");
+            _radarDirection[(int)RadarDirection.Bottom] = content.Load<Texture2D>("Textures/Radar/bottom");
+            _radarDirection[(int)RadarDirection.TopLeft] = content.Load<Texture2D>("Textures/Radar/top_left");
+            _radarDirection[(int)RadarDirection.TopRight] = content.Load<Texture2D>("Textures/Radar/top_right");
+            _radarDirection[(int)RadarDirection.BottomLeft] = content.Load<Texture2D>("Textures/Radar/bottom_left");
+            _radarDirection[(int)RadarDirection.BottomRight] = content.Load<Texture2D>("Textures/Radar/bottom_right");
+            _radarDistance = content.Load<Texture2D>("Textures/Radar/distance");
+            _distanceFont = content.Load<SpriteFont>("Fonts/visitor");
         }
 
         #endregion

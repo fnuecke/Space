@@ -1,5 +1,6 @@
 ﻿using Engine.ComponentSystem.Messages;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Space.ComponentSystem.Systems
@@ -12,8 +13,13 @@ namespace Space.ComponentSystem.Systems
     {
         #region Constructor
 
-        public CameraCenteredParticleEffectSystem(Game game, IGraphicsDeviceService graphics)
-            : base(game, graphics)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CameraCenteredParticleEffectSystem"/> class.
+        /// </summary>
+        /// <param name="content">The content manager to use for loading assets.</param>
+        /// <param name="graphics">The graphics.</param>
+        public CameraCenteredParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics)
+            : base(content, graphics)
         {
         }
 

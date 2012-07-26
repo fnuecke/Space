@@ -46,13 +46,14 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="PlanetRenderSystem"/> class.
         /// </summary>
-        /// <param name="game">The game the system belongs to.</param>
-        public PlanetRenderSystem(Game game)
+        /// <param name="content">The content manager to use for loading assets.</param>
+        /// <param name="graphics">The graphics device to render to.</param>
+        public PlanetRenderSystem(ContentManager content, GraphicsDevice graphics)
         {
-            _content = game.Content;
+            _content = content;
             if (_planet == null)
             {
-                _planet = new Planet(game);
+                _planet = new Planet(content, graphics);
             }
         }
 

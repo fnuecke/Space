@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
@@ -190,15 +191,16 @@ namespace Engine.Graphics
         /// <summary>
         /// Creates a new ellipse renderer for the given game.
         /// </summary>
-        /// <param name="game">The game we will render for.</param>
+        /// <param name="content">The content manager to use for loading assets.</param>
+        /// <param name="graphics">The graphics device to render to.</param>
         /// <param name="effectName">The shader to use for rendering the shape.</param>
-        protected AbstractShape(Game game, string effectName)
+        protected AbstractShape(ContentManager content, GraphicsDevice graphics, string effectName)
         {
             if (Effect == null)
             {
-                Effect = game.Content.Load<Effect>(effectName);
+                Effect = content.Load<Effect>(effectName);
             }
-            Device = game.GraphicsDevice;
+            Device = graphics;
 
             // Set texture coordinates.
             Vertices[0].Tex0.X = -1;

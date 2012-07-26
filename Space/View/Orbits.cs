@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
-using Engine.ComponentSystem.Components;
 using Engine.Graphics;
 using Engine.Session;
 using Microsoft.Xna.Framework;
@@ -86,8 +85,8 @@ namespace Space.View
         public Orbits(Game game, SpriteBatch spriteBatch)
         {
             _spriteBatch = spriteBatch;
-            _orbitEllipse = new Ellipse(game) {Thickness = OrbitThickness};
-            _deadZoneEllipse = new FilledEllipse(game) {Gradient = DeadZoneDiffuseWidth, Color = DeadZoneColor};
+            _orbitEllipse = new Ellipse(game.Content, game.GraphicsDevice) {Thickness = OrbitThickness};
+            _deadZoneEllipse = new FilledEllipse(game.Content, game.GraphicsDevice) {Gradient = DeadZoneDiffuseWidth, Color = DeadZoneColor};
         }
 
         #endregion

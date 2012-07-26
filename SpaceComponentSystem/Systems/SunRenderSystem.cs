@@ -5,6 +5,7 @@ using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Components;
 using Space.Graphics;
@@ -40,14 +41,15 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="SunRenderSystem"/> class.
         /// </summary>
-        /// <param name="game">The game to create the system for.</param>
+        /// <param name="content">The content manager to use for loading assets.</param>
+        /// <param name="graphics">The graphics device to render to.</param>
         /// <param name="spriteBatch">The sprite batch to use for rendering.</param>
-        public SunRenderSystem(Game game, SpriteBatch spriteBatch)
+        public SunRenderSystem(ContentManager content, GraphicsDevice graphics, SpriteBatch spriteBatch)
         {
             if (_sun == null)
             {
-                _sun = new Sun(game);
-                _sun.LoadContent(spriteBatch, game.Content);
+                _sun = new Sun(content, graphics);
+                _sun.LoadContent(spriteBatch, content);
             }
         }
 

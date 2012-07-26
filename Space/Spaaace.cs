@@ -708,7 +708,7 @@ namespace Space
         {
             if (_indexRectangle == null)
             {
-                _indexRectangle = new Engine.Graphics.Rectangle(this) {Color = Color.LightGreen * 0.25f, Thickness = 2f};
+                _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) {Color = Color.LightGreen * 0.25f, Thickness = 2f};
                 _debugFont = Content.Load<SpriteFont>("Fonts/ConsoleFont");
             }
 

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -51,14 +50,14 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Initializes a new instance of the <see cref="ParticleEffectSystem"/> class.
         /// </summary>
-        /// <param name="game">The game.</param>
+        /// <param name="content">The content manager to use for loading assets.</param>
         /// <param name="graphics">The graphics.</param>
-        public ParticleEffectSystem(Game game, IGraphicsDeviceService graphics)
+        public ParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics)
         {
-            _content = game.Content;
+            _content = content;
             _renderer = new SpriteBatchRenderer();
             _renderer.GraphicsDeviceService = graphics;
-            _renderer.LoadContent(game.Content);
+            _renderer.LoadContent(content);
         }
 
         #endregion
