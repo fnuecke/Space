@@ -184,12 +184,14 @@ namespace Space.Control
         private static void AddSpaceClientSystems(IManager manager, Game game, IClientSession session)
         {
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
+            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
 
             manager.AddSystems(
                 new AbstractSystem[]
                 {
                     new CameraSystem(game, session),
-                    new CameraCenteredSoundSystem(soundBank, session)
+                    new CameraCenteredSoundSystem(soundBank, session),
+                    new RadarRenderSystem(game, spriteBatch, session)
                 });
         }
     }

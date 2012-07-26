@@ -95,7 +95,8 @@ namespace Engine.ComponentSystem.Systems
         #region Copying
 
         /// <summary>
-        /// Creates a shallow copy of the object.
+        /// Creates a new copy of the object, that shares no mutable
+        /// references with this instance.
         /// </summary>
         /// <returns>The copy.</returns>
         public virtual AbstractSystem NewInstance()

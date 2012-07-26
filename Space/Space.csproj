@@ -130,7 +130,6 @@
     <Compile Include="View\Background.cs" />
     <Compile Include="View\JSCallbacks.cs" />
     <Compile Include="View\Orbits.cs" />
-    <Compile Include="View\Radar.cs" />
     <Compile Include="Session\Profile.cs" />
     <Compile Include="Simulation\Commands\CommandSource.cs" />
     <Compile Include="Simulation\Commands\DropCommand.cs" />

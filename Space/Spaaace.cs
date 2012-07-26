@@ -145,7 +145,6 @@ namespace Space
 
         private InputHandler _input;
         private Background _background;
-        private Radar _radar;
         private Orbits _orbits;
 
         private GameServer _server;
@@ -536,7 +535,6 @@ namespace Space
             // TODO make it so this is rendered inside the simulation (e.g. own render systems)
             _background = new Background(this, _spriteBatch);
             _orbits = new Orbits(this, _spriteBatch);
-            _radar = new Radar(this, _spriteBatch);
         }
 
         #endregion
@@ -602,9 +600,6 @@ namespace Space
             // Draw other stuff (GUI for example).
             base.Draw(gameTime);
 
-            // Draw radar in foreground.
-            _radar.Draw();
-
             // Draw some debug info on top of everything.
             DrawDebugInfo(gameTime);
 
@@ -634,7 +629,6 @@ namespace Space
             Components.Add(_client);
 
             _background.Client = _client;
-            _radar.Client = _client;
             _orbits.Client = _client;
 
             if (ClientInitialized != null)
@@ -671,7 +665,6 @@ namespace Space
             _client = null;
 
             _background.Client = null;
-            _radar.Client = null;
             _orbits.Client = null;
 
             if (ClientDisposed != null)
