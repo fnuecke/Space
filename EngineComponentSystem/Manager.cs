@@ -479,7 +479,7 @@ namespace Engine.ComponentSystem
             packet.Write(_components.Count);
             foreach (var component in _components)
             {
-                packet.Write(component.GetType().AssemblyQualifiedName);
+                packet.Write(component.GetType());
                 packet.Write(component);
             }
 
@@ -489,7 +489,7 @@ namespace Engine.ComponentSystem
             packet.Write(_systems.Count);
             foreach (var system in _systems)
             {
-                packet.Write(system.GetType().AssemblyQualifiedName);
+                packet.Write(system.GetType());
                 packet.Write(system);
             }
 
@@ -524,13 +524,7 @@ namespace Engine.ComponentSystem
             var numComponents = packet.ReadInt32();
             for (var i = 0; i < numComponents; ++i)
             {
-                var typeName = packet.ReadString();
-                var type = Type.GetType(typeName);
-                if (type == null)
-                {
-                    throw new PacketException(string.Format("Invalid component type, not known locally: {0}.", typeName));
-                }
-
+                var type = packet.ReadType();
                 var component = AllocateComponent(type);
                 packet.ReadPacketizableInto(component);
                 component.Manager = this;
@@ -559,15 +553,8 @@ namespace Engine.ComponentSystem
             var numSystems = packet.ReadInt32();
             for (var i = 0; i < numSystems; ++i)
             {
-                var typeName = packet.ReadString();
-                var type = Type.GetType(typeName);
-                if (type == null)
-                {
-                    throw new PacketException(string.Format("Invalid system type, not known locally: {0}.", typeName));
-                }
-
+                var type = packet.ReadType();
                 Debug.Assert(_systemsByType.ContainsKey(type));
-
                 packet.ReadPacketizableInto(_systemsByType[type]);
             }
 

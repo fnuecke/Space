@@ -173,7 +173,7 @@ namespace Engine.Simulation
         /// <returns>The copy.</returns>
         public virtual void CopyInto(ISimulation into)
         {
-            Debug.Assert(into.GetType() == GetType());
+            Debug.Assert(into.GetType().TypeHandle.Equals(GetType().TypeHandle));
             Debug.Assert(into != this);
 
             var copy = (AbstractSimulation)into;

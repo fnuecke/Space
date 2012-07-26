@@ -122,7 +122,7 @@ namespace Engine.ComponentSystem.Systems
         /// <returns>A deep copy, with a fully cloned state of this one.</returns>
         public virtual void CopyInto(AbstractSystem into)
         {
-            Debug.Assert(into.GetType() == GetType());
+            Debug.Assert(into.GetType().TypeHandle.Equals(GetType().TypeHandle));
             Debug.Assert(into != this);
 
             // Manager must be re-set to new owner before copying.

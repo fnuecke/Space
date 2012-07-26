@@ -157,7 +157,7 @@ namespace Space.ComponentSystem.Components
             packet.Write(ComponentsToDisable.Count);
             foreach (var componentType in ComponentsToDisable)
             {
-                packet.Write(componentType.AssemblyQualifiedName);
+                packet.Write(componentType);
             }
 
             return packet;
@@ -180,13 +180,7 @@ namespace Space.ComponentSystem.Components
             var numComponents = packet.ReadInt32();
             for (var i = 0; i < numComponents; i++)
             {
-                var typeName = packet.ReadString();
-                var type = Type.GetType(typeName);
-                if (type == null)
-                {
-                    throw new InvalidOperationException("Unknown type.");
-                }
-                ComponentsToDisable.Add(type);
+                ComponentsToDisable.Add(packet.ReadType());
             }
         }
 

@@ -358,7 +358,7 @@ namespace Engine.ComponentSystem.RPG.Components
             foreach (var entry in _slotsByType)
             {
                 // Write slot type and number.
-                packet.Write(entry.Key.AssemblyQualifiedName);
+                packet.Write(entry.Key);
                 packet.Write(entry.Value);
             }
 
@@ -390,8 +390,7 @@ namespace Engine.ComponentSystem.RPG.Components
             _slotsByType.Clear();
             for (var i = 0; i < numSlotTypes; i++)
             {
-                var type = Type.GetType(packet.ReadString());
-                Debug.Assert(type != null, "Got an invalid equipment type.");
+                var type = packet.ReadType();
                 _slotsByType.Add(type, packet.ReadInt32());
             }
         }

@@ -381,10 +381,10 @@ namespace Space.Session
             foreach (var itemType in itemTypes)
             {
                 // Number of slots for that item type.
-                int slotCount = equipment.GetSlotCount(itemType);
+                var slotCount = equipment.GetSlotCount(itemType);
 
                 // Get the list of equipped items of that type.
-                for (int i = 0; i < slotCount; i++)
+                for (var i = 0; i < slotCount; i++)
                 {
                     var item = equipment.GetItem(itemType, i);
                     if (item.HasValue)
@@ -395,10 +395,10 @@ namespace Space.Session
                 }
 
                 // Write the type, count and actual items.
-                _data.Write(itemType.AssemblyQualifiedName);
+                _data.Write(itemType);
                 _data.Write(slotCount);
                 _data.Write(items.Count);
-                for (int i = 0; i < items.Count; i++)
+                for (var i = 0; i < items.Count; i++)
                 {
                     _data.Write(itemSlots[i]);
                     manager.PacketizeEntity(items[i], _data);
@@ -410,7 +410,7 @@ namespace Space.Session
 
             // And finally, the inventory. Same as with the inventory, we have
             // to serialize the actual items in it.
-            for (int i = 0; i < inventory.Capacity; i++)
+            for (var i = 0; i < inventory.Capacity; i++)
             {
                 var item = inventory[i];
                 if (item.HasValue)
@@ -422,7 +422,7 @@ namespace Space.Session
 
             // Write the number of items in the inventory and actual items.
             _data.Write(items.Count);
-            for (int i = 0; i < items.Count; i++)
+            for (var i = 0; i < items.Count; i++)
             {
                 _data.Write(itemSlots[i]);
                 manager.PacketizeEntity(items[i], _data);
@@ -485,7 +485,7 @@ namespace Space.Session
         /// </summary>
         private int Restore0(int playerNumber, IManager manager)
         {
-            int avatar = 0;
+            var avatar = 0;
             var items = new List<int>();
             try
             {
@@ -509,17 +509,17 @@ namespace Space.Session
                 character.DepacketizeLocal(_data);
 
                 // Restore equipment.
-                int numItemTypes = _data.ReadInt32();
-                for (int i = 0; i < numItemTypes; i++)
+                var numItemTypes = _data.ReadInt32();
+                for (var i = 0; i < numItemTypes; i++)
                 {
-                    var itemType = Type.GetType(_data.ReadString());
+                    var itemType = _data.ReadType();
                     var slotCount = _data.ReadInt32();
 
                     // Reset equipment, remove entities that were previously
                     // equipped from the game (can't think of an occasion where
                     // this would happen, now, because this should only be done
                     // on game start, but just be on the safe side).
-                    for (int j = 0; j < equipment.GetSlotCount(itemType); j++)
+                    for (var j = 0; j < equipment.GetSlotCount(itemType); j++)
                     {
                         var item = equipment.Unequip(itemType, j);
                         if (item.HasValue)
@@ -532,10 +532,10 @@ namespace Space.Session
                     equipment.SetSlotCount(itemType, slotCount);
 
                     // Read items and equip them.
-                    int numItemsOfType = _data.ReadInt32();
-                    for (int j = 0; j < numItemsOfType; j++)
+                    var numItemsOfType = _data.ReadInt32();
+                    for (var j = 0; j < numItemsOfType; j++)
                     {
-                        int slot = _data.ReadInt32();
+                        var slot = _data.ReadInt32();
                         var item = manager.DepacketizeEntity(_data);
                         items.Add(item);
                         equipment.Equip(slot, item);
@@ -544,7 +544,7 @@ namespace Space.Session
 
                 // Restore inventory, clear it first. As with the equipment, remove
                 // any old items, if there were any.
-                for (int i = inventory.Capacity - 1; i >= 0; --i)
+                for (var i = inventory.Capacity - 1; i >= 0; --i)
                 {
                     var item = inventory[i];
                     if (item.HasValue)
@@ -554,8 +554,8 @@ namespace Space.Session
                 }
 
                 // Then read back the stored items.
-                int numInventoryItems = _data.ReadInt32();
-                for (int i = 0; i < numInventoryItems; i++)
+                var numInventoryItems = _data.ReadInt32();
+                for (var i = 0; i < numInventoryItems; i++)
                 {
                     var slot = _data.ReadInt32();
                     var item = manager.DepacketizeEntity(_data);

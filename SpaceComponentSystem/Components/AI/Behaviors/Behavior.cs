@@ -463,7 +463,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// <returns>The copy.</returns>
         public virtual void CopyInto(Behavior into)
         {
-            Debug.Assert(into.GetType() == GetType());
+            Debug.Assert(into.GetType().TypeHandle.Equals(GetType().TypeHandle));
             Debug.Assert(into != this);
 
             into._ticksToWait = _ticksToWait;

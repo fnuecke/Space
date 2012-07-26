@@ -55,7 +55,7 @@ namespace Engine.ComponentSystem.Components
         public virtual Component Initialize(Component other)
         {
             // Check if the component is of the correct type.
-            if (other.GetType() != GetType())
+            if (!other.GetType().TypeHandle.Equals(GetType().TypeHandle))
             {
                 throw new ArgumentException("Invalid type.", "other");
             }
