@@ -1,8 +1,6 @@
 ﻿using System;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
-using Engine.ComponentSystem.Components;
-using Engine.ComponentSystem.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
@@ -49,6 +47,8 @@ namespace Space.ComponentSystem.Systems
                 var weaponMessage = (WeaponFired)(ValueType)message;
                 Play(weaponMessage.Weapon.Sound, weaponMessage.ShipEntity);
             }
+
+            base.Receive(ref message);
         }
 
         /// <summary>

@@ -88,9 +88,6 @@ namespace Space.Control
         /// <param name="game">The game.</param>
         private static void AddSpaceServerSystems(IManager manager, Game game)
         {
-            var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
-            var graphicsDevice = ((Spaaace)game).GraphicsDeviceManager;
-
             manager.AddSystems(
                 new AbstractSystem[]
                 {
@@ -166,12 +163,6 @@ namespace Space.Control
                     
                     // AI should react after everything else had its turn.
                     new AISystem(),
-                    
-                    // Planets below suns below normal objects below particle effects.
-                    new PlanetRenderSystem(game),
-                    new SunRenderSystem(game, spriteBatch),
-                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
-                    new CameraCenteredParticleEffectSystem(game, graphicsDevice)
                 });
         }
 
@@ -185,12 +176,22 @@ namespace Space.Control
         {
             var soundBank = (SoundBank)game.Services.GetService(typeof(SoundBank));
             var spriteBatch = (SpriteBatch)game.Services.GetService(typeof(SpriteBatch));
+            var graphicsDevice = ((Spaaace)game).GraphicsDeviceManager;
 
             manager.AddSystems(
                 new AbstractSystem[]
                 {
+                    // Update camera first.
                     new CameraSystem(game, session),
+
+                    // Handle sound.
                     new CameraCenteredSoundSystem(soundBank, session),
+                    
+                    // Planets below suns below normal objects below particle effects.
+                    new PlanetRenderSystem(game),
+                    new SunRenderSystem(game, spriteBatch),
+                    new CameraCenteredTextureRenderSystem(game.Content, spriteBatch),
+                    new CameraCenteredParticleEffectSystem(game, graphicsDevice),
                     new RadarRenderSystem(game, spriteBatch, session)
                 });
         }

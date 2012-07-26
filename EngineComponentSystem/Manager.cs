@@ -570,6 +570,10 @@ namespace Engine.ComponentSystem
 
                 packet.ReadPacketizableInto(_systemsByType[type]);
             }
+
+            // All done, send message to allow post-processing.
+            Depacketized message;
+            SendMessage(ref message);
         }
 
         /// <summary>

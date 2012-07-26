@@ -84,6 +84,7 @@
     <Compile Include="Components\Component.cs" />
     <Compile Include="IManager.cs" />
     <Compile Include="Manager.cs" />
+    <Compile Include="Messages\Depacketized.cs" />
     <Compile Include="Messages\EntityRemoved.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\AbstractComponentSystem.cs" />

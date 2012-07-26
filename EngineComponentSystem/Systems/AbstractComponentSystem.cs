@@ -137,6 +137,29 @@ namespace Engine.ComponentSystem.Systems
             }
         }
 
+        /// <summary>
+        /// This may be used by subclasses that need to manually rebuild
+        /// the component list, because we are a system that might not be
+        /// present on the server (if it is a pure server).
+        /// </summary>
+        protected void RebuildComponentList()
+        {
+            Components.Clear();
+            foreach (var component in Manager.Components)
+            {
+                if (component is TComponent)
+                {
+                    var typedComponent = (TComponent)component;
+
+                    Debug.Assert(!Components.Contains(typedComponent));
+                    Components.Add(typedComponent);
+
+                    // Tell subclasses.
+                    OnComponentAdded(typedComponent);
+                }
+            }
+        }
+
         #endregion
 
         #region Overridable
