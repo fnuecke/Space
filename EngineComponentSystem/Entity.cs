@@ -138,7 +138,7 @@ namespace Engine.ComponentSystem
                         if (componentTypeId == typeId)
                         {
                             // Found this type as a parent, add the component.
-                            TypeCache[typeId].Add(Components[i]);
+                            TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(Components[i], Component.Comparer), Components[i]);
 
                             // No need to go further up the hierarchy.
                             break;

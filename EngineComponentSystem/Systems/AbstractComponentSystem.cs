@@ -43,8 +43,9 @@ namespace Engine.ComponentSystem.Systems
         public override void Update(long frame)
         {
             UpdatingComponents.AddRange(Components);
-            foreach (var component in UpdatingComponents)
+            for (int i = 0, j = UpdatingComponents.Count; i < j; ++i)
             {
+                var component = UpdatingComponents[i];
                 if (component.Enabled)
                 {
                     UpdateComponent(frame, component);
@@ -59,8 +60,9 @@ namespace Engine.ComponentSystem.Systems
         /// <param name="frame">The frame in which the update is applied.</param>
         public override void Draw(long frame)
         {
-            foreach (var component in Components)
+            for (int i = 0, j = Components.Count; i < j; ++i)
             {
+                var component = Components[i];
                 if (component.Enabled)
                 {
                     DrawComponent(frame, component);
@@ -130,11 +132,9 @@ namespace Engine.ComponentSystem.Systems
                     var typedComponent = (TComponent)component;
 
                     var index = Components.BinarySearch(typedComponent, Component.Comparer);
-                    if (index >= 0)
-                    {
-                        Components.RemoveAt(index);
-                        OnComponentRemoved(typedComponent);
-                    }
+                    Debug.Assert(index >= 0);
+                    Components.RemoveAt(index);
+                    OnComponentRemoved(typedComponent);
                 }
             }
             else if (message is Depacketized)
