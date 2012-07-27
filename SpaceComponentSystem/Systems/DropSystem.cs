@@ -120,12 +120,12 @@ namespace Space.ComponentSystem.Systems
             {
                 var entity = ((EntityDied)(ValueType)message).Entity;
 
-                var drops = Manager.GetComponent<Drops>(entity);
+                var drops = ((Drops)Manager.GetComponent(entity, Drops.TypeId));
                 if (drops != null)
                 {
                     // Don't drop exactly at the location of the entity that died,
                     // but move it off to the side a bit.
-                    var translation = Manager.GetComponent<Transform>(entity).Translation;
+                    var translation = ((Transform)Manager.GetComponent(entity, Transform.TypeId)).Translation;
                     translation.X += _random.NextInt32(-10, 10);
                     translation.Y += _random.NextInt32(-10, 10);
 

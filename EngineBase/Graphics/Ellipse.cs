@@ -18,11 +18,8 @@ namespace Engine.Graphics
             get { return _thickness; }
             set
             {
-                if (value != _thickness)
-                {
-                    _thickness = value;
-                    InvalidateVertices();
-                }
+                _thickness = value;
+                InvalidateVertices();
             }
         }
 

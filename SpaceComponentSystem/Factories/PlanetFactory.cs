@@ -2,7 +2,6 @@
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
-using Engine.ComponentSystem.Components;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -130,7 +129,7 @@ namespace Space.ComponentSystem.Factories
             var period = circumference / travelSpeed * 60;
 
             // Give it a position and rotation.
-            manager.AddComponent<Transform>(entity).Initialize(manager.GetComponent<Transform>(center).Translation);
+            manager.AddComponent<Transform>(entity).Initialize(((Transform)manager.GetComponent(center, Transform.TypeId)).Translation);
 
             // Make it rotate.
             manager.AddComponent<Spin>(entity).Initialize(MathHelper.ToRadians(rotationSpeed) / 60);

@@ -10,7 +10,7 @@ namespace Engine.ComponentSystem.Common.Systems
     {
         protected override void UpdateComponent(long frame, Velocity component)
         {
-            Manager.GetComponent<Transform>(component.Entity).AddTranslation(ref component.Value);
+            ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId)).AddTranslation(ref component.Value);
         }
     }
 }

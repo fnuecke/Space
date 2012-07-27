@@ -79,7 +79,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         protected override bool UpdateInternal()
         {
             // Get our ship control.
-            var control = AI.Manager.GetComponent<ShipControl>(AI.Entity);
+            var control = ((ShipControl)AI.Manager.GetComponent(AI.Entity, ShipControl.TypeId));
 
             // If our target died, we're done here.
             if (!AI.Manager.HasEntity(Target))
@@ -91,7 +91,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             }
 
             // Get our position.
-            var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
+            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
 
             // Check if we've traveled too far.
             if (_start.HasValue)
@@ -113,10 +113,10 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             }
 
             // Get our ship info.
-            var info = AI.Manager.GetComponent<ShipInfo>(AI.Entity);
+            var info = ((ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId));
 
             // Target still lives, see how far away it is.
-            var targetPosition = AI.Manager.GetComponent<Transform>(Target).Translation;
+            var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
             var toTarget = position - targetPosition;
 
             // If we're close enough, open fire.
@@ -142,8 +142,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             // Don't fly directly towards the enemy, but to a point slightly
             // offset, and at something slightly above the flocking separation.
             // This will lead to a circling effect.
-            var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
-            var targetPosition = AI.Manager.GetComponent<Transform>(Target).Translation;
+            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
             var toTarget = position - targetPosition;
             var separationIntercept = 1 - FlockingSeparation * FlockingSeparation / toTarget.LengthSquared();
             Vector2 separationPosition;
@@ -167,8 +167,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </returns>
         protected override float GetTargetRotation(ref Vector2 direction)
         {
-            var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
-            var targetPosition = AI.Manager.GetComponent<Transform>(Target).Translation;
+            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
             var toTarget = targetPosition - position;
             return (float)Math.Atan2(toTarget.Y, toTarget.X);
         }
@@ -182,14 +182,14 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         protected override float GetThrusterPower()
         {
             // Get our ship info.
-            var info = AI.Manager.GetComponent<ShipInfo>(AI.Entity);
+            var info = ((ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId));
 
             // Decrease output if we're getting closer to our target.
-            var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
-            var targetPosition = AI.Manager.GetComponent<Transform>(Target).Translation;
+            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
+            var targetPosition = ((Transform)AI.Manager.GetComponent(Target, Transform.TypeId)).Translation;
             var toTarget = position - targetPosition;
             var weaponRange = info.WeaponRange;
-            var thrusterPower = (float)Math.Min(1, toTarget.LengthSquared() / weaponRange);
+            var thrusterPower = Math.Min(1, toTarget.LengthSquared() / weaponRange);
 
             // Decrease output based on how much energy we have left,
             // to avoid consuming all our energy for fuel when we could

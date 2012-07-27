@@ -25,10 +25,10 @@ namespace Space.ComponentSystem.Systems
             if (message is CharacterStatsInvalidated)
             {
                 var entity = ((CharacterStatsInvalidated)(ValueType)message).Entity;
-                var shipInfo = Manager.GetComponent<ShipInfo>(entity);
+                var shipInfo = ((ShipInfo)Manager.GetComponent(entity, ShipInfo.TypeId));
 
                 // Get ship modules.
-                var character = Manager.GetComponent<Character<AttributeType>>(entity);
+                var character = ((Character<AttributeType>)Manager.GetComponent(entity, Character<AttributeType>.TypeId));
 
                 // Get the mass of the ship and return it.
                 shipInfo.Mass = character.GetValue(AttributeType.Mass);
@@ -38,7 +38,7 @@ namespace Space.ComponentSystem.Systems
                 shipInfo.MaxSpeed = float.PositiveInfinity;
 
                 // Maximum speed.
-                var friction = Manager.GetComponent<Friction>(entity);
+                var friction = ((Friction)Manager.GetComponent(entity, Friction.TypeId));
                 if (friction != null)
                 {
                     shipInfo.MaxSpeed = shipInfo.MaxAcceleration / friction.Value;

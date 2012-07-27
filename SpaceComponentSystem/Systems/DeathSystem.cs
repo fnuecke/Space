@@ -30,7 +30,7 @@ namespace Space.ComponentSystem.Systems
             // Respawn.
 
             // Try to position.
-            var transform = Manager.GetComponent<Transform>(component.Entity);
+            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
             if (transform != null)
             {
                 transform.SetTranslation(ref component.Position);
@@ -38,19 +38,19 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Kill of remainder velocity.
-            var velocity = Manager.GetComponent<Velocity>(component.Entity);
+            var velocity = ((Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId));
             if (velocity != null)
             {
                 velocity.Value = Vector2.Zero;
             }
 
             // Fill up health / energy.
-            var health = Manager.GetComponent<Health>(component.Entity);
+            var health = ((Health)Manager.GetComponent(component.Entity, Health.TypeId));
             if (health != null)
             {
                 health.SetValue(health.MaxValue * component.RelativeHealth);
             }
-            var energy = Manager.GetComponent<Energy>(component.Entity);
+            var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
             if (energy != null)
             {
                 energy.SetValue(energy.MaxValue * component.RelativeEnergy);
@@ -89,7 +89,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // See if the entity respawns.
-                var respawn = Manager.GetComponent<Respawn>(entity);
+                var respawn = ((Respawn)Manager.GetComponent(entity, Respawn.TypeId));
                 if (respawn != null)
                 {
                     // Entity does respawn, components and wait.
@@ -101,7 +101,7 @@ namespace Space.ComponentSystem.Systems
 
                     // Stop the entity, to avoid zooming off to nowhere when
                     // killed by a sun, e.g.
-                    var velocity = Manager.GetComponent<Velocity>(entity);
+                    var velocity = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
                     if (velocity != null)
                     {
                         velocity.Value = Vector2.Zero;
@@ -118,7 +118,7 @@ namespace Space.ComponentSystem.Systems
                 var changedMessage = ((TranslationChanged)(ValueType)message);
 
                 // Only remove entities marked for removal.
-                if (Manager.GetComponent<CellDeath>(changedMessage.Entity) == null)
+                if (Manager.GetComponent(changedMessage.Entity, CellDeath.TypeId) == null)
                 {
                     return;
                 }

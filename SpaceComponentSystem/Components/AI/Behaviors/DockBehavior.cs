@@ -52,8 +52,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         protected override bool UpdateInternal()
         {
             // See if there are any stations nearby.
-            var faction = AI.Manager.GetComponent<Faction>(AI.Entity).Value;
-            var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
+            var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
+            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
 
             // The closest station we were able to find and how far it is away.
@@ -68,11 +68,11 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                 // TODO...
 
                 // Friend or foe?
-                var neighborFaction = AI.Manager.GetComponent<Faction>(neighbor);
+                var neighborFaction = ((Faction)AI.Manager.GetComponent(neighbor, Faction.TypeId));
                 if (neighborFaction != null && (neighborFaction.Value & faction) != 0)
                 {
                     // Friend. Closer than any other?
-                    var neighborPosition = AI.Manager.GetComponent<Transform>(neighbor).Translation;
+                    var neighborPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
                     var neighborDistanceSquared = (position - neighborPosition).LengthSquared();
                     if (neighborDistanceSquared < distanceSquared)
                     {
@@ -85,7 +85,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             // Do we have a closest station?
             if (closestStation > 0)
             {
-                var neighborPosition = AI.Manager.GetComponent<Transform>(closestStation).Translation;
+                var neighborPosition = ((Transform)AI.Manager.GetComponent(closestStation, Transform.TypeId)).Translation;
                 // Close enough to dock?
                 if ((position - neighborPosition).LengthSquared() < DockingRange * DockingRange)
                 {

@@ -255,12 +255,12 @@ namespace Engine.ComponentSystem.Common.Systems
 
             // Compute the bounds for the indexable as well as possible.
             var bounds = new Rectangle();
-            var collidable = Manager.GetComponent<Collidable>(entity);
+            var collidable = ((Collidable)Manager.GetComponent(entity, Collidable.TypeId));
             if (collidable != null)
             {
                 bounds = collidable.ComputeBounds();
             }
-            var transform = Manager.GetComponent<Transform>(entity);
+            var transform = ((Transform)Manager.GetComponent(entity, Transform.TypeId));
             if (transform != null)
             {
                 bounds.X = (int)transform.Translation.X - bounds.Width / 2;
@@ -340,14 +340,14 @@ namespace Engine.ComponentSystem.Common.Systems
                 var changedMessage = (IndexBoundsChanged)(ValueType)message;
                 
                 // Check if the entity is indexable.
-                var index = Manager.GetComponent<Index>(changedMessage.Entity);
+                var index = ((Index)Manager.GetComponent(changedMessage.Entity, Index.TypeId));
                 if (index == null)
                 {
                     return;
                 }
 
                 var bounds = changedMessage.Bounds;
-                var transform = Manager.GetComponent<Transform>(changedMessage.Entity);
+                var transform = ((Transform)Manager.GetComponent(changedMessage.Entity, Transform.TypeId));
                 if (transform != null)
                 {
                     bounds.X = (int)transform.Translation.X - bounds.Width / 2;
@@ -365,7 +365,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 var changedMessage = (TranslationChanged)(ValueType)message;
 
                 // Check if the entity is indexable.
-                var index = Manager.GetComponent<Index>(changedMessage.Entity);
+                var index = ((Index)Manager.GetComponent(changedMessage.Entity, Index.TypeId));
                 if (index == null)
                 {
                     return;

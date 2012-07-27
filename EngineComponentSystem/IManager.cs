@@ -88,11 +88,11 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Get a system of the specified type.
         /// </summary>
-        /// <param name="type">The type of the system to get.</param>
+        /// <param name="typeId">The type of the system to get.</param>
         /// <returns>
         /// The system with the specified type.
         /// </returns>
-        AbstractSystem GetSystem(int type);
+        AbstractSystem GetSystem(int typeId);
 
         #endregion
 
@@ -134,12 +134,12 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Creates a new component for the specified entity.
         /// </summary>
-        /// <param name="type">The type of component to create.</param>
         /// <param name="entity">The entity to attach the component to.</param>
+        /// <param name="type">The type of component to create.</param>
         /// <returns>
         /// The new component.
         /// </returns>
-        Component AddComponent(Type type, int entity);
+        Component AddComponent(int entity, Type type);
 
         /// <summary>
         /// Test whether the component with the specified id exists.
@@ -157,26 +157,16 @@ namespace Engine.ComponentSystem
         void RemoveComponent(Component component);
 
         /// <summary>
-        /// Gets the component of the specified type for an entity.
-        /// </summary>
-        /// <typeparam name="T">The type of component to get.</typeparam>
-        /// <param name="entity">The entity to get the component of.</param>
-        /// <returns>
-        /// The component.
-        /// </returns>
-        T GetComponent<T>(int entity) where T : Component;
-
-        /// <summary>
         /// Gets a component of the specified type for an entity. If there are
         /// multiple components of the same type attached to the entity, use
         /// the <c>index</c> parameter to select which one to get.
         /// </summary>
         /// <param name="entity">The entity to get the component of.</param>
-        /// <param name="type">The type of the component to get.</param>
+        /// <param name="typeId">The type of the component to get.</param>
         /// <returns>
         /// The component.
         /// </returns>
-        Component GetComponent(int entity, Type type);
+        Component GetComponent(int entity, int typeId);
 
         /// <summary>
         /// Get a component by its id.
@@ -190,12 +180,12 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Allows enumerating over all components of the specified entity.
         /// </summary>
-        /// <typeparam name="T">The type of component to iterate.</typeparam>
         /// <param name="entity">The entity for which to get the components.</param>
+        /// <param name="typeId">The type of components to iterate.</param>
         /// <returns>
         /// An enumerable listing all components of that type of that entity.
         /// </returns>
-        IEnumerable<T> GetComponents<T>(int entity) where T : Component;
+        IEnumerable<Component> GetComponents(int entity, int typeId);
         
         #endregion
 

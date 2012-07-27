@@ -36,8 +36,8 @@ namespace Space.ComponentSystem.Systems
             }
             else
             {
-                var faction = Manager.GetComponent<Faction>(component.Entity);
-                var translation = Manager.GetComponent<Transform>(component.Entity).Translation;
+                var faction = ((Faction)Manager.GetComponent(component.Entity, Faction.TypeId));
+                var translation = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId)).Translation;
                 foreach (var target in component.Targets)
                 {
                     CreateAttackingShip(ref translation, target, faction.Value);
@@ -50,14 +50,14 @@ namespace Space.ComponentSystem.Systems
         public void CreateAttackingShip(ref Vector2 startPosition, int targetEntity, Factions faction)
         {
             var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
-            var ai = Manager.GetComponent<ArtificialIntelligence>(ship);
+            var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
             ai.Attack(targetEntity);
         }
 
         public void CreateAttackingShip(ref Vector2 startPosition, ref Vector2 targetPosition, Factions faction)
         {
             var ship = EntityFactory.CreateAIShip(Manager, "L1_AI_Ship", faction, startPosition, _random);
-            var ai = Manager.GetComponent<ArtificialIntelligence>(ship);
+            var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
             ai.AttackMove(ref targetPosition);
         }
 
@@ -96,7 +96,7 @@ namespace Space.ComponentSystem.Systems
                         spawnPoint.Y = _random.NextInt32(cellArea.Top, cellArea.Bottom);
                         var ship = EntityFactory.CreateAIShip(
                             Manager, "L1_AI_Ship", cellInfo.Faction, spawnPoint, _random);
-                        var ai = Manager.GetComponent<ArtificialIntelligence>(ship);
+                        var ai = ((ArtificialIntelligence)Manager.GetComponent(ship, ArtificialIntelligence.TypeId));
                         ai.Roam(ref cellArea);
                     }
                 }

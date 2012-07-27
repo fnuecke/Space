@@ -94,7 +94,7 @@ namespace Engine.ComponentSystem.Common.Systems
                     // Getting the component is probably more or at least similarly
                     // expensive as the above comparisons, so fetch it only when we
                     // know we actually need it.
-                    var node = Manager.GetComponent<Node>(translationChanged.Entity);
+                    var node = ((Node)Manager.GetComponent(translationChanged.Entity, Node.TypeId));
                     if (node != null)
                     {
                         TransferToNode(node, dx, dy);

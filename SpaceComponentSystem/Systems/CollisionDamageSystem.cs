@@ -63,8 +63,8 @@ namespace Space.ComponentSystem.Systems
                 // Get damage component of involved components, and all
                 // required info for the damage checks first, because one
                 // of the two components may die midway through.
-                var firstDamage = Manager.GetComponent<CollisionDamage>(firstEntity);
-                var secondDamage = Manager.GetComponent<CollisionDamage>(secondEntity);
+                var firstDamage = ((CollisionDamage)Manager.GetComponent(firstEntity, CollisionDamage.TypeId));
+                var secondDamage = ((CollisionDamage)Manager.GetComponent(secondEntity, CollisionDamage.TypeId));
 
                 // Get the actual values, if possible, and only if we're not
                 // on cooldown. If it's zero we simply won't try to do any
@@ -116,7 +116,7 @@ namespace Space.ComponentSystem.Systems
                 if (!secondAlreadyDead && firstDamageValue > 0)
                 {
                     // Apply damage to second entity.
-                    var secondHealth = Manager.GetComponent<Health>(secondEntity);
+                    var secondHealth = ((Health)Manager.GetComponent(secondEntity, Health.TypeId));
                     if (secondHealth != null)
                     {
                         secondHealth.SetValue(secondHealth.Value - firstDamageValue);
@@ -126,7 +126,7 @@ namespace Space.ComponentSystem.Systems
                 if (!firstAlreadyDead && secondDamageValue > 0)
                 {
                     // Apply damage to second entity.
-                    var firstHealth = Manager.GetComponent<Health>(firstEntity);
+                    var firstHealth = ((Health)Manager.GetComponent(firstEntity, Health.TypeId));
                     if (firstHealth != null)
                     {
                         firstHealth.SetValue(firstHealth.Value - secondDamageValue);

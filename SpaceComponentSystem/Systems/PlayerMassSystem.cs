@@ -18,8 +18,8 @@ namespace Space.ComponentSystem.Systems
             {
                 // Module removed or added, recompute mass.
                 var entity = ((CharacterStatsInvalidated)(ValueType)message).Entity;
-                var character = Manager.GetComponent<Character<AttributeType>>(entity);
-                var gravitation = Manager.GetComponent<Gravitation>(entity);
+                var character = ((Character<AttributeType>)Manager.GetComponent(entity, Character<AttributeType>.TypeId));
+                var gravitation = ((Gravitation)Manager.GetComponent(entity, Gravitation.TypeId));
 
                 // Get the mass of the ship and return it.
                 gravitation.Mass = Math.Max(1, character.GetValue(AttributeType.Mass));

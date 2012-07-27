@@ -1,12 +1,9 @@
 ﻿using System;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Constraints;
-using Engine.ComponentSystem.Systems;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -101,7 +98,7 @@ namespace Space.ComponentSystem.Factories
             var entity = CreateShip(manager, faction, position);
 
             // Add our attributes.
-            var character = manager.GetComponent<Character<AttributeType>>(entity);
+            var character = ((Character<AttributeType>)manager.GetComponent(entity, Character<AttributeType>.TypeId));
             foreach (var attribute in Attributes)
             {
                 var modifier = attribute.SampleAttributeModifier(random);
@@ -113,8 +110,8 @@ namespace Space.ComponentSystem.Factories
             }
 
             // Fill up our values.
-            var health = manager.GetComponent<Health>(entity);
-            var energy = manager.GetComponent<Energy>(entity);
+            var health = ((Health)manager.GetComponent(entity, Health.TypeId));
+            var energy = ((Energy)manager.GetComponent(entity, Energy.TypeId));
             health.Value = health.MaxValue;
             energy.Value = energy.MaxValue;
 

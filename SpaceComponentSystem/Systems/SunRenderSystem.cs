@@ -84,7 +84,7 @@ namespace Space.ComponentSystem.Systems
             {
                 foreach (var entity in _drawablesInView)
                 {
-                    var component = Manager.GetComponent<SunRenderer>(entity);
+                    var component = ((SunRenderer)Manager.GetComponent(entity, SunRenderer.TypeId));
 
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
@@ -110,7 +110,7 @@ namespace Space.ComponentSystem.Systems
 
         private void RenderSun(SunRenderer component, ref Vector2 translation)
         {
-            var transform = Manager.GetComponent<Transform>(component.Entity);
+            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
 
             _sun.SetSize(component.Radius * 2);
             _sun.Center = transform.Translation + translation;

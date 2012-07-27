@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
@@ -163,7 +162,7 @@ namespace Space.ComponentSystem.Systems
             var avatarSystem = (AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId);
             foreach (var avatar in avatarSystem.Avatars)
             {
-                var transform = Manager.GetComponent<Transform>(avatar);
+                var transform = ((Transform)Manager.GetComponent(avatar, Transform.TypeId));
                 var x = ((int)transform.Translation.X) >> CellSizeShiftAmount;
                 var y = ((int)transform.Translation.Y) >> CellSizeShiftAmount;
                 AddCellAndNeighbors(x, y, _reusableNewCellIds);

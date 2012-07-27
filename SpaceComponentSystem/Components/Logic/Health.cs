@@ -9,13 +9,30 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Health : AbstractRegeneratingValue
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public new static readonly int TypeId = Engine.ComponentSystem.Manager.GetComponentTypeId(typeof(Health));
+
+        /// <summary>
+        /// The type id unique to the entity/component system in the current program.
+        /// </summary>
+        public override int GetTypeId()
+        {
+            return TypeId;
+        }
+
+        #endregion
+
         #region Accessors
 
         /// <summary>
         /// Sets the value.
         /// </summary>
         /// <param name="value">The value.</param>
-        public sealed override void SetValue(float value)
+        public override void SetValue(float value)
         {
             base.SetValue(value);
             if (Value <= 0)
@@ -36,12 +53,12 @@ namespace Space.ComponentSystem.Components
         internal override void RecomputeValues()
         {
             // Recompute our values.
-            var character = Manager.GetComponent<Character<AttributeType>>(Entity);
+            var character = ((Character<AttributeType>)Manager.GetComponent(Entity, Character<AttributeType>.TypeId));
 
             // Remember current relative value. Set to full if it was zero
             // before, because that means we're initializing for the first
             // time.
-            float relative = (MaxValue > 0) ? (Value / MaxValue) : 1;
+            var relative = (MaxValue > 0) ? (Value / MaxValue) : 1;
 
             // Rebuild base health and regeneration values.
             MaxValue = System.Math.Max(1, character.GetValue(AttributeType.Health));

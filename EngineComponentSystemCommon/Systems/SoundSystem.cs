@@ -115,7 +115,7 @@ namespace Engine.ComponentSystem.Common.Systems
             foreach (var neighbor in neighbors)
             {
                 // Get the sound component of the neighbor.
-                var sound = Manager.GetComponent<Sound>(neighbor);
+                var sound = ((Sound)Manager.GetComponent(neighbor, Sound.TypeId));
 
                 // Skip this neighbor if its sound is not enabled.
                 if (!sound.Enabled)
@@ -124,9 +124,9 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
 
                 // Get sound position and velocity.
-                var emitterPosition = Manager.GetComponent<Transform>(neighbor).Translation;
+                var emitterPosition = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
                 // The velocity is optional, so we must check if it exists.
-                var neighborVelocity = Manager.GetComponent<Velocity>(neighbor);
+                var neighborVelocity = ((Velocity)Manager.GetComponent(neighbor, Velocity.TypeId));
                 var emitterVelocity = neighborVelocity != null ? neighborVelocity.Value : Vector2.Zero;
 
                 // Check whether to update or start playing.
@@ -269,9 +269,9 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="entity">The entity that emits the sound.</param>
         public Cue Play(string soundCue, int entity)
         {
-            var position = Manager.GetComponent<Transform>(entity).Translation;
+            var position = ((Transform)Manager.GetComponent(entity, Transform.TypeId)).Translation;
             var velocity = Vector2.Zero;
-            var velocityComponent = Manager.GetComponent<Velocity>(entity);
+            var velocityComponent = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
             if (velocityComponent != null)
             {
                 velocity = velocityComponent.Value;

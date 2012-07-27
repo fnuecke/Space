@@ -18,11 +18,8 @@ namespace Engine.Graphics
             get { return _gradient; }
             set
             {
-                if (value != _gradient)
-                {
-                    _gradient = System.Math.Max(1, value);
-                    InvalidateVertices();
-                }
+                _gradient = System.Math.Max(1, value);
+                InvalidateVertices();
             }
         }
 

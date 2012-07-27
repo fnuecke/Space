@@ -10,7 +10,7 @@ namespace Engine.ComponentSystem.Common.Systems
     {
         protected override void UpdateComponent(long frame, Spin component)
         {
-            Manager.GetComponent<Transform>(component.Entity).AddRotation(component.Value);
+            ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId)).AddRotation(component.Value);
         }
     }
 }

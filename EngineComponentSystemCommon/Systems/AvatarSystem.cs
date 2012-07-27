@@ -12,9 +12,9 @@ namespace Engine.ComponentSystem.Common.Systems
         #region Type ID
 
         /// <summary>
-        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// The unique type ID for this object, by which it is referred to in the manager.
         /// </summary>
-        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetSystemTypeId(typeof(AvatarSystem));
+        public static readonly int TypeId = ComponentSystem.Manager.GetSystemTypeId(typeof(AvatarSystem));
 
         #endregion
 

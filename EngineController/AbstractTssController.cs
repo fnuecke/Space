@@ -478,7 +478,7 @@ namespace Engine.Controller
             if (hash1 != hash2)
             {
                 // Check components to isolate faulty one.
-                foreach (var c1 in ((Manager)m2).Components)
+                foreach (var c1 in m2.Components)
                 {
                     Debug.Assert(m1.HasComponent(c1.Id));
                     var c2 = m1.GetComponentById(c1.Id);
@@ -493,7 +493,7 @@ namespace Engine.Controller
                 }
 
                 // Check systems to isolate faulty one.
-                foreach (var system in ((Manager)m2).Systems)
+                foreach (var system in m2.Systems)
                 {
                     var s1 = m1.GetSystem(Manager.GetSystemTypeId(system.GetType()));
                     var s2 = system;
@@ -546,7 +546,7 @@ namespace Engine.Controller
                 if (hash1 != hash2)
                 {
                     // Check components to isolate faulty one.
-                    foreach (var c1 in ((Manager)m2).Components)
+                    foreach (var c1 in m2.Components)
                     {
                         Debug.Assert(m1.HasComponent(c1.Id));
                         var c2 = m1.GetComponentById(c1.Id);
@@ -561,7 +561,7 @@ namespace Engine.Controller
                     }
 
                     // Check systems to isolate faulty one.
-                    foreach (var system in ((Manager)m2).Systems)
+                    foreach (var system in m2.Systems)
                     {
                         var s1 = m1.GetSystem(Manager.GetSystemTypeId(system.GetType()));
                         var s2 = system;

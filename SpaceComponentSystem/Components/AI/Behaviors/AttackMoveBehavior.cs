@@ -48,15 +48,15 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         protected override bool UpdateInternal()
         {
             // See if there are any enemies nearby, if so attack them.
-            var faction = AI.Manager.GetComponent<Faction>(AI.Entity).Value;
-            var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
+            var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
+            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
             ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
             index.Find(position, AggroRange, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)
             {
                 // See if it has health. Otherwise don't bother attacking.
-                var health = AI.Manager.GetComponent<Health>(neighbor);
+                var health = ((Health)AI.Manager.GetComponent(neighbor, Health.TypeId));
                 if (health == null || !health.Enabled || health.Value <= 0)
                 {
                     continue;
@@ -64,7 +64,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
 
                 // Friend or foe? Don't care if it's a friend.
                 // TODO: unless it's in a fight, then we might want to support our allies?
-                var neighborFaction = AI.Manager.GetComponent<Faction>(neighbor);
+                var neighborFaction = ((Faction)AI.Manager.GetComponent(neighbor, Faction.TypeId));
                 if (neighborFaction != null && (neighborFaction.Value & faction) == 0)
                 {
                     // It's an enemy. Attack it.

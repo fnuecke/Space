@@ -147,7 +147,7 @@ namespace Space.ComponentSystem.Systems
         {
             // Get viewport, to center objects around the camera position.
             var viewport = _game.GraphicsDevice.Viewport;
-            var cameraPosition = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).CameraPositon;
+            var cameraPosition = CameraPositon;
 
             // Return the *negative* camera position, because that's the
             // actual amount we need to translate game objects to be drawn
@@ -170,9 +170,8 @@ namespace Space.ComponentSystem.Systems
         /// <param name="view">The viewport to compute the visible bounds for.</param>
         public Rectangle ComputeVisibleBounds(Viewport view)
         {
-            var camera = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId));
-            var center = camera.CameraPositon;
-            var zoom = camera.Zoom;
+            var center = CameraPositon;
+            var zoom = Zoom;
             var width = (int)(view.Width / zoom);
             var height = (int)(view.Height / zoom);
             // Return scaled viewport bounds, translated to camera position
@@ -244,7 +243,7 @@ namespace Space.ComponentSystem.Systems
                         // Non-fixed camera, update our offset based on the game pad
                         // or mouse position, relative to the ship.
                         var targetOffset = GetInputInducedOffset();
-                        var avatarPosition = Manager.GetComponent<Transform>(avatar.Value).Translation;
+                        var avatarPosition = ((Transform)Manager.GetComponent(avatar.Value, Transform.TypeId)).Translation;
 
                         // The interpolate to our new offset, slowly to make the
                         // effect less brain-melting.

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Engine.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -14,6 +16,8 @@ namespace Engine.ComponentSystem.Components
     /// must invalidate these references when cloning.
     /// </para>
     /// </summary>
+    [DebuggerDisplay("Type = {GetType().Name}, Id = {Id}, Entity = {Entity}")]
+    [DebuggerTypeProxy(typeof(FlattenHierarchyProxy))]
     public abstract class Component : IPacketizable, IHashable
     {
         #region Constants
@@ -22,6 +26,15 @@ namespace Engine.ComponentSystem.Components
         /// Reusable static instance of the comparer to be used for components.
         /// </summary>
         public static readonly ComponentComparer Comparer = new ComponentComparer();
+
+        #endregion
+
+        #region Type ID
+
+        /// <summary>
+        /// The type id unique to the entity/component system in the current program.
+        /// </summary>
+        public abstract int GetTypeId();
 
         #endregion
 

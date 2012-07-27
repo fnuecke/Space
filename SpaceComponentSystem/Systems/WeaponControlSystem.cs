@@ -66,10 +66,10 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get components.
-            var character = Manager.GetComponent<Character<AttributeType>>(component.Entity);
-            var equipment = Manager.GetComponent<Equipment>(component.Entity);
-            var energy = Manager.GetComponent<Energy>(component.Entity);
-            var faction = Manager.GetComponent<Faction>(component.Entity);
+            var character = ((Character<AttributeType>)Manager.GetComponent(component.Entity, Character<AttributeType>.TypeId));
+            var equipment = ((Equipment)Manager.GetComponent(component.Entity, Equipment.TypeId));
+            var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
+            var faction = ((Faction)Manager.GetComponent(component.Entity, Faction.TypeId));
 
             // Check all equipped weapon.
             for (var i = 0; i < equipment.GetSlotCount<Weapon>(); i++)
@@ -88,7 +88,7 @@ namespace Space.ComponentSystem.Systems
                 }
 
                 // Get the weapon component.
-                var weapon = Manager.GetComponent<Weapon>(weaponEntity.Value);
+                var weapon = ((Weapon)Manager.GetComponent(weaponEntity.Value, Weapon.TypeId));
 
                 // Get the energy consumption, skip if we don't have enough.
                 var energyConsumption = character.GetValue(AttributeType.WeaponEnergyConsumption, weapon.EnergyConsumption);
@@ -129,7 +129,7 @@ namespace Space.ComponentSystem.Systems
             if (message is ItemEquipped)
             {
                 var added = (ItemEquipped)(ValueType)message;
-                if (Manager.GetComponent<Item>(added.Item) is Weapon)
+                if (Manager.GetComponent(added.Item, Weapon.TypeId) != null)
                 {
                     // Weapon was equipped, track a cooldown for it.
                     _cooldowns.Add(added.Item, 0);
@@ -138,7 +138,7 @@ namespace Space.ComponentSystem.Systems
             else if (message is ItemUnequipped)
             {
                 var removed = (ItemUnequipped)(ValueType)message;
-                if (Manager.GetComponent<Item>(removed.Item) is Weapon)
+                if (Manager.GetComponent(removed.Item, Weapon.TypeId) != null)
                 {
                     // Weapon was unequipped, stop tracking.
                     _cooldowns.Remove(removed.Item);

@@ -65,7 +65,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         /// </returns>
         protected override bool UpdateInternal()
         {
-            var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
+            var position = ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
             if ((Target - position).LengthSquared() < ReachedEpsilon * ReachedEpsilon)
             {
                 // We have reached our target, pop self.

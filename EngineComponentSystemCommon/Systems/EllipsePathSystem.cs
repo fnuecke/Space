@@ -15,7 +15,7 @@ namespace Engine.ComponentSystem.Common.Systems
         protected override void UpdateComponent(long frame, EllipsePath component)
         {
             // Get the center, the position of the entity we're rotating around.
-            var center = Manager.GetComponent<Transform>(component.CenterEntityId).Translation;
+            var center = ((Transform)Manager.GetComponent(component.CenterEntityId, Transform.TypeId)).Translation;
 
             // Get the angle based on the time passed.
             var t = component.PeriodOffset + MathHelper.Pi * frame / component.Period;
@@ -23,7 +23,7 @@ namespace Engine.ComponentSystem.Common.Systems
             var cosT = (float)Math.Cos(t);
 
             // Compute the current position and set it.
-            var transform = Manager.GetComponent<Transform>(component.Entity);
+            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
             transform.SetTranslation(
                 center.X + component.PrecomputedA + component.PrecomputedB * cosT - component.PrecomputedC * sinT,
                 center.Y + component.PrecomputedD + component.PrecomputedE * cosT + component.PrecomputedF * sinT

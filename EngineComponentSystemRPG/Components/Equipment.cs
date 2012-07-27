@@ -14,6 +14,23 @@ namespace Engine.ComponentSystem.RPG.Components
     /// </summary>
     public sealed class Equipment : Component
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = ComponentSystem.Manager.GetComponentTypeId(typeof(Equipment));
+
+        /// <summary>
+        /// The type id unique to the entity/component system in the current program.
+        /// </summary>
+        public override int GetTypeId()
+        {
+            return TypeId;
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -194,7 +211,7 @@ namespace Engine.ComponentSystem.RPG.Components
         public int? Equip(int slot, int item)
         {
             // Check if its really an item.
-            var itemComponent = Manager.GetComponent<Item>(item);
+            var itemComponent = ((Item)Manager.GetComponent(item, Item.TypeId));
             if (itemComponent == null)
             {
                 throw new ArgumentException("Entity does not have an Item component.", "item");

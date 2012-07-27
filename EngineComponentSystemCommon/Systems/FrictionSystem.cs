@@ -15,7 +15,7 @@ namespace Engine.ComponentSystem.Common.Systems
             if (component.Value > 0)
             {
                 // Get velocity.
-                var velocity = Manager.GetComponent<Velocity>(component.Entity);
+                var velocity = ((Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId));
 
                 // Save previous velocity for stop check (due to MinVelocity).
                 var previousVelocity = velocity.Value.LengthSquared();

@@ -1,9 +1,7 @@
 ﻿using System;
 using Engine.ComponentSystem;
-using Engine.ComponentSystem.Common;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
-using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -108,8 +106,8 @@ namespace Space.ComponentSystem.Factories
         {
             var entity = manager.AddEntity();
 
-            var emitterTransform = manager.GetComponent<Transform>(emitter);
-            var emitterVelocity = manager.GetComponent<Velocity>(emitter);
+            var emitterTransform = ((Transform)manager.GetComponent(emitter, Transform.TypeId));
+            var emitterVelocity = ((Velocity)manager.GetComponent(emitter, Velocity.TypeId));
 
             var initialRotation = emitterTransform.Rotation + SampleInitialRotation(random);
 

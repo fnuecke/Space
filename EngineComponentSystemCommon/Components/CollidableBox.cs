@@ -17,6 +17,23 @@ namespace Engine.ComponentSystem.Common.Components
     /// </summary>
     public sealed class CollidableBox : Collidable
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public new static readonly int TypeId = ComponentSystem.Manager.GetComponentTypeId(typeof(CollidableBox));
+
+        /// <summary>
+        /// The type id unique to the entity/component system in the current program.
+        /// </summary>
+        public override int GetTypeId()
+        {
+            return TypeId;
+        }
+
+        #endregion
+
         #region Fields
         
         /// <summary>
@@ -86,13 +103,13 @@ namespace Engine.ComponentSystem.Common.Components
         /// <returns>Whether the two collide or not.</returns>
         public override bool Intersects(Collidable collidable)
         {
-            var currentPosition = Manager.GetComponent<Transform>(Entity).Translation;
+            var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
             return collidable.Intersects(ref Size, ref PreviousPosition, ref currentPosition);
         }
 
         internal override bool Intersects(ref Vector2 extents, ref Vector2 previousPosition, ref Vector2 position)
         {
-            var currentPosition = Manager.GetComponent<Transform>(Entity).Translation;
+            var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
             return AABBSweep.Test(
                 ref Size, ref PreviousPosition, ref currentPosition,
                 ref extents, ref previousPosition, ref position);
@@ -100,7 +117,7 @@ namespace Engine.ComponentSystem.Common.Components
 
         internal override bool Intersects(float radius, ref Vector2 previousPosition, ref Vector2 position)
         {
-            var currentPosition = Manager.GetComponent<Transform>(Entity).Translation;
+            var currentPosition = ((Transform)Manager.GetComponent(Entity, Transform.TypeId)).Translation;
             return SphereAABBSweep.Test(
                 radius, ref previousPosition, ref position,
                 ref Size, ref PreviousPosition, ref currentPosition);

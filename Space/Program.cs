@@ -288,9 +288,8 @@ namespace Space
         public void RestartServer()
         {
             DisposeServer();
-            _server = new GameServer(this);
             // Update after screen manager and client to get input commands.
-            _server.UpdateOrder = 50;
+            _server = new GameServer(this) {UpdateOrder = 50};
             Components.Add(_server);
         }
 

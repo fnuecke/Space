@@ -209,7 +209,7 @@ from Space.Data import *
             }
 
             // Get the ship control.
-            var control = manager.GetComponent<ShipControl>(avatar.Value);
+            var control = ((ShipControl)manager.GetComponent(avatar.Value, ShipControl.TypeId));
 
             // What type of player input should we process?
             switch (command.Input)
@@ -255,8 +255,8 @@ from Space.Data import *
             }
 
             // Get the player's inventory and equipment.
-            var inventory = manager.GetComponent<Inventory>(avatar.Value);
-            var equipment = manager.GetComponent<Equipment>(avatar.Value);
+            var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
+            var equipment = ((Equipment)manager.GetComponent(avatar.Value, Equipment.TypeId));
 
             // Make sure the inventory index is valid.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -276,7 +276,7 @@ from Space.Data import *
             }
 
             // Make sure the equipment index is valid.
-            var itemType = manager.GetComponent<Item>(item.Value).GetType();
+            var itemType = manager.GetComponent(item.Value, Item.TypeId).GetType();
             if (command.Slot < 0 || command.Slot >= equipment.GetSlotCount(itemType))
             {
                 Logger.Warn("Invalid equip command, equipment slot out of bounds.");
@@ -307,7 +307,7 @@ from Space.Data import *
             }
 
             // The the player's inventory.
-            var inventory = manager.GetComponent<Inventory>(avatar.Value);
+            var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
 
             // Validate the indexes.
             if (command.FirstIndex < 0 || command.SecondIndex < 0 ||
@@ -334,9 +334,9 @@ from Space.Data import *
             }
 
             // Get the inventory of the player and the index system.
-            var inventory = manager.GetComponent<Inventory>(avatar.Value);
+            var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
             var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
-            var transform = manager.GetComponent<Transform>(avatar.Value);
+            var transform = ((Transform)manager.GetComponent(avatar.Value, Transform.TypeId));
 
             // We may be called from a multi threaded environment (TSS), so
             // lock this shared list.
@@ -371,7 +371,7 @@ from Space.Data import *
                 case Source.Inventory:
                     {
                         // From our inventory, so get it.
-                        var inventory = manager.GetComponent<Inventory>(avatar.Value);
+                        var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
 
                         // Validate the index.
                         if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -390,22 +390,22 @@ from Space.Data import *
 
                             // Position the item to be at the position of the
                             // player that dropped it.
-                            var transform = manager.GetComponent<Transform>(item.Value);
-                            transform.SetTranslation(manager.GetComponent<Transform>(avatar.Value).Translation);
+                            var transform = ((Transform)manager.GetComponent(item.Value, Transform.TypeId));
+                            transform.SetTranslation(((Transform)manager.GetComponent(avatar.Value, Transform.TypeId)).Translation);
                         }
                     }
                     break;
                 case Source.Equipment:
                     {
-                        //var equipment = avatar.GetComponent<Equipment>();
+                        //var equipment = ((Equipment)avatar.GetComponent(, Equipment.TypeId));
                         //var item = equipment[dropCommand.InventoryIndex];
                         //equipment.RemoveAt(dropCommand.InventoryIndex);
 
-                        //var transform = item.GetComponent<Transform>();
+                        //var transform = ((Transform)item.GetComponent(, Transform.TypeId));
                         //if (transform != null)
                         //{
-                        //    transform.Translation = avatar.GetComponent<Transform>().Translation;
-                        //    var renderer = item.GetComponent<TransformedRenderer>();
+                        //    transform.Translation = ((Transform)avatar.GetComponent(, Transform.TypeId)).Translation;
+                        //    var renderer = ((TransformedRenderer)item.GetComponent(, TransformedRenderer.TypeId));
                         //    if (renderer != null)
                         //    {
                         //        renderer.Enabled = true;
@@ -428,7 +428,7 @@ from Space.Data import *
             }
 
             // Get the inventory of the player, containing the item to use.
-            var inventory = manager.GetComponent<Inventory>(avatar.Value);
+            var inventory = ((Inventory)manager.GetComponent(avatar.Value, Inventory.TypeId));
 
             // Validate inventory index.
             if (command.InventoryIndex < 0 || command.InventoryIndex >= inventory.Capacity)
@@ -447,7 +447,7 @@ from Space.Data import *
 
             // Is it a usable item, if so use it. Otherwise see if we can
             // equip the item.
-            var usable = manager.GetComponent<Usable<UsableResponse>>(item.Value);
+            var usable = ((Usable<UsableResponse>)manager.GetComponent(item.Value, Usable<UsableResponse>.TypeId));
             if (usable != null)
             {
                 // Usable item, use it.
@@ -456,12 +456,12 @@ from Space.Data import *
             else
             {
                 // Not a usable item, see if we can equip it.
-                var itemType = manager.GetComponent<SpaceItem>(item.Value);
+                var itemType = ((SpaceItem)manager.GetComponent(item.Value, SpaceItem.TypeId));
                 if (itemType != null)
                 {
                     // If we have a free slot for that item type equip it there,
                     // otherwise swap with the first item.
-                    var equipment = manager.GetComponent<Equipment>(avatar.Value);
+                    var equipment = ((Equipment)manager.GetComponent(avatar.Value, Equipment.TypeId));
 
                     // Number of slots for that type.
                     var numSlots = equipment.GetSlotCount(itemType.GetType());
@@ -541,9 +541,9 @@ from Space.Data import *
                 // Some more utility variables used frequently.
                 scope.SetVariable("manager", manager);
                 scope.SetVariable("avatar", avatar);
-                scope.SetVariable("character", manager.GetComponent<Character<AttributeType>>(avatar.Value));
-                scope.SetVariable("inventory", manager.GetComponent<Inventory>(avatar.Value));
-                scope.SetVariable("equipment", manager.GetComponent<Equipment>(avatar.Value));
+                scope.SetVariable("character", manager.GetComponent(avatar.Value, Character<AttributeType>.TypeId));
+                scope.SetVariable("inventory", manager.GetComponent(avatar.Value, Inventory.TypeId));
+                scope.SetVariable("equipment", manager.GetComponent(avatar.Value, Equipment.TypeId));
 
                 // Try executing our script.
                 try

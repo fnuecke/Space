@@ -321,11 +321,11 @@ namespace Space.Session
             }
 
             // Get the elements we need to save.
-            var playerClass = manager.GetComponent<PlayerClass>(avatar);
-            var respawn = manager.GetComponent<Respawn>(avatar);
-            var character = manager.GetComponent<Character<AttributeType>>(avatar);
-            var equipment = manager.GetComponent<Equipment>(avatar);
-            var inventory = manager.GetComponent<Inventory>(avatar);
+            var playerClass = ((PlayerClass)manager.GetComponent(avatar, ComponentSystem.Components.PlayerClass.TypeId));
+            var respawn = ((Respawn)manager.GetComponent(avatar, Respawn.TypeId));
+            var character = ((Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId));
+            var equipment = ((Equipment)manager.GetComponent(avatar, Equipment.TypeId));
+            var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
 
             // Check if we have everything we need.
             if (playerClass == null ||
@@ -500,9 +500,9 @@ namespace Space.Session
                 avatar = EntityFactory.CreatePlayerShip(manager, playerClass, playerNumber, position);
 
                 // Get the elements we need to save.
-                var character = manager.GetComponent<Character<AttributeType>>(avatar);
-                var equipment = manager.GetComponent<Equipment>(avatar);
-                var inventory = manager.GetComponent<Inventory>(avatar);
+                var character = ((Character<AttributeType>)manager.GetComponent(avatar, Character<AttributeType>.TypeId));
+                var equipment = ((Equipment)manager.GetComponent(avatar, Equipment.TypeId));
+                var inventory = ((Inventory)manager.GetComponent(avatar, Inventory.TypeId));
 
                 // Restore character. Use special packetizer implementation only
                 // adjusting the actual character data, not the base data.
@@ -627,7 +627,7 @@ namespace Space.Session
             // Store the character's base values. This is a little roundabout,
             // but this way it'll always be up-to-date.
             var ship = EntityFactory.CreatePlayerShip(manager, PlayerClass, playerNumber, new Vector2(50000, 50000));
-            var equipment = manager.GetComponent<Equipment>(ship);
+            var equipment = ((Equipment)manager.GetComponent(ship, Equipment.TypeId));
 
             // Basic starter outfit for that class.
             InitializeEquipment<Armor>(equipment, manager);

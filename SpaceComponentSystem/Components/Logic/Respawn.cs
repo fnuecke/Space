@@ -13,12 +13,29 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class Respawn : Component
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetComponentTypeId(typeof(Respawn));
+
+        /// <summary>
+        /// The type id unique to the entity/component system in the current program.
+        /// </summary>
+        public override int GetTypeId()
+        {
+            return TypeId;
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
         /// A list of components which should be disabled while dead.
         /// </summary>
-        public readonly HashSet<Type> ComponentsToDisable = new HashSet<Type>();
+        public readonly List<int> ComponentsToDisable = new List<int>();
 
         /// <summary>
         /// Returns whether the component is currently in respawn mode, i.e.
@@ -100,7 +117,7 @@ namespace Space.ComponentSystem.Components
             {
                 foreach (var type in disableComponents)
                 {
-                    ComponentsToDisable.Add(type);
+                    ComponentsToDisable.Add(Engine.ComponentSystem.Manager.GetComponentTypeId(type));
                 }
             }
             RelativeHealth = relativeHealth;
@@ -180,7 +197,7 @@ namespace Space.ComponentSystem.Components
             var numComponents = packet.ReadInt32();
             for (var i = 0; i < numComponents; i++)
             {
-                ComponentsToDisable.Add(packet.ReadType());
+                ComponentsToDisable.Add(packet.ReadInt32());
             }
         }
 

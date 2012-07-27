@@ -57,11 +57,8 @@ namespace Engine.Graphics
             get { return _scale; }
             set
             {
-                if (value != _scale)
-                {
-                    _scale = value;
-                    InvalidateVertices();
-                }
+                _scale = value;
+                InvalidateVertices();
             }
         }
 
@@ -73,11 +70,8 @@ namespace Engine.Graphics
             get { return _width; }
             set
             {
-                if (value != _width)
-                {
-                    _width = value;
-                    InvalidateVertices();
-                }
+                _width = value;
+                InvalidateVertices();
             }
         }
 
@@ -89,11 +83,8 @@ namespace Engine.Graphics
             get { return _height; }
             set
             {
-                if (value != _height)
-                {
-                    _height = value;
-                    InvalidateVertices();
-                }
+                _height = value;
+                InvalidateVertices();
             }
         }
 
@@ -105,11 +96,8 @@ namespace Engine.Graphics
             get { return _rotation; }
             set
             {
-                if (value != _rotation)
-                {
-                    _rotation = value;
-                    InvalidateVertices();
-                }
+                _rotation = value;
+                InvalidateVertices();
             }
         }
 
@@ -121,11 +109,8 @@ namespace Engine.Graphics
             get { return _color; }
             set
             {
-                if (value != _color)
-                {
-                    _color = value;
-                    InvalidateVertices();
-                }
+                _color = value;
+                InvalidateVertices();
             }
         }
 
@@ -224,12 +209,9 @@ namespace Engine.Graphics
         /// <param name="y">The y coordinate of the new center.</param>
         public void SetCenter(float x, float y)
         {
-            if (x != _center.X || y != _center.Y)
-            {
-                _center.X = x;
-                _center.Y = y;
-                _verticesAreValid = false;
-            }
+            _center.X = x;
+            _center.Y = y;
+            InvalidateVertices();
         }
 
         /// <summary>
@@ -317,7 +299,7 @@ namespace Engine.Graphics
             AdjustBounds();
 
             // Build transforms.
-            Matrix transform =
+            var transform =
                 // Rotate as specified, around the origin.
                 Matrix.CreateRotationZ(-_rotation)
                 // Position to the specified center. Make our coordinate system

@@ -91,16 +91,16 @@ namespace Engine.Tests.ComponentSystem
             Assert.AreEqual(component1, manager.GetComponentById(component1Id));
             Assert.AreEqual(component2, manager.GetComponentById(component2Id));
 
-            Assert.AreEqual(component1, manager.GetComponent<TestComponent>(entity));
+            Assert.AreEqual(component1, manager.GetComponent(entity, TestComponent.TypeId));
             
-            Assert.Contains(component1, manager.GetComponents<TestComponent>(entity).ToArray());
-            Assert.Contains(component2, manager.GetComponents<TestComponent>(entity).ToArray());
+            Assert.Contains(component1, manager.GetComponents(entity, TestComponent.TypeId).ToArray());
+            Assert.Contains(component2, manager.GetComponents(entity, TestComponent.TypeId).ToArray());
 
             manager.RemoveComponent(component1);
 
             Assert.False(manager.HasComponent(component1Id));
 
-            Assert.AreEqual(component2, manager.GetComponent<TestComponent>(entity));
+            Assert.AreEqual(component2, manager.GetComponent(entity, TestComponent.TypeId));
 
             manager.RemoveEntity(entity);
 
@@ -143,6 +143,11 @@ namespace Engine.Tests.ComponentSystem
 
         private sealed class TestComponent : Component
         {
+            public static readonly int TypeId = Engine.ComponentSystem.Manager.GetComponentTypeId(typeof(TestComponent));
+            public override int GetTypeId()
+            {
+                return TypeId;
+            }
         }
     }
 }

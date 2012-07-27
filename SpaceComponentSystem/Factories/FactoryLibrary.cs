@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Components;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -130,12 +129,12 @@ namespace Space.ComponentSystem.Factories
                 return 0;
             }
             var item = factory.Sample(manager, random);
-            var transform = manager.GetComponent<Transform>(item);
+            var transform = ((Transform)manager.GetComponent(item, Transform.TypeId));
             if (transform != null)
             {
                 transform.SetTranslation(position);
             }
-            var renderer = manager.GetComponent<TextureRenderer>(item);
+            var renderer = ((TextureRenderer)manager.GetComponent(item, TextureRenderer.TypeId));
             if (renderer != null)
             {
                 renderer.Enabled = true;

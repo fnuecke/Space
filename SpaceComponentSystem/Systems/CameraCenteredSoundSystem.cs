@@ -70,7 +70,7 @@ namespace Space.ComponentSystem.Systems
                 var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
                 if (avatar.HasValue)
                 {
-                    return Manager.GetComponent<Transform>(avatar.Value).Translation;
+                    return ((Transform)Manager.GetComponent(avatar.Value, Transform.TypeId)).Translation;
                 }
             }
             return Vector2.Zero;
@@ -86,7 +86,7 @@ namespace Space.ComponentSystem.Systems
                 var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
                 if (avatar.HasValue)
                 {
-                    return Manager.GetComponent<Velocity>(avatar.Value).Value;
+                    return ((Velocity)Manager.GetComponent(avatar.Value, Velocity.TypeId)).Value;
                 }
             }
             return Vector2.Zero;

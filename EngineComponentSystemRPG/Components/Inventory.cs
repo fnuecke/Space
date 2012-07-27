@@ -11,6 +11,23 @@ namespace Engine.ComponentSystem.RPG.Components
     /// </summary>
     public sealed class Inventory : Component, IList<int?>
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = ComponentSystem.Manager.GetComponentTypeId(typeof(Inventory));
+
+        /// <summary>
+        /// The type id unique to the entity/component system in the current program.
+        /// </summary>
+        public override int GetTypeId()
+        {
+            return TypeId;
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -200,7 +217,7 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             // Check if its really an item.
-            var itemType = Manager.GetComponent<Item>(item.Value);
+            var itemType = ((Item)Manager.GetComponent(item.Value, Item.TypeId));
             if (itemType == null)
             {
                 throw new ArgumentException("Entity does not have an Item component.", "item");
@@ -208,7 +225,7 @@ namespace Engine.ComponentSystem.RPG.Components
 
             // If the item is stackable, see if we already have a stack we can
             // add it on top of.
-            var stackable = Manager.GetComponent<Stackable>(item.Value);
+            var stackable = ((Stackable)Manager.GetComponent(item.Value, Stackable.TypeId));
             if (stackable != null)
             {
                 for (var i = 0; i < _items.Count; i++)
@@ -219,8 +236,8 @@ namespace Engine.ComponentSystem.RPG.Components
                         continue;
                     }
 
-                    var otherItemType = Manager.GetComponent<Item>(itemEntry.Value);
-                    var otherStackable = Manager.GetComponent<Stackable>(itemEntry.Value);
+                    var otherItemType = ((Item)Manager.GetComponent(itemEntry.Value, Item.TypeId));
+                    var otherStackable = ((Stackable)Manager.GetComponent(itemEntry.Value, Stackable.TypeId));
                     if (otherStackable != null &&
                         otherItemType.Name.Equals(itemType.Name) &&
                         otherStackable.Count < otherStackable.MaxCount)
@@ -260,7 +277,7 @@ namespace Engine.ComponentSystem.RPG.Components
                     _items[i] = item;
 
                     // Disable rendering, if available.
-                    var renderer = Manager.GetComponent<TextureRenderer>(item.Value);
+                    var renderer = ((TextureRenderer)Manager.GetComponent(item.Value, TextureRenderer.TypeId));
                     if (renderer != null)
                     {
                         renderer.Enabled = false;
@@ -277,7 +294,7 @@ namespace Engine.ComponentSystem.RPG.Components
                 _items.Add(item);
 
                 // Disable rendering, if available.
-                var renderer = Manager.GetComponent<TextureRenderer>(item.Value);
+                var renderer = ((TextureRenderer)Manager.GetComponent(item.Value, TextureRenderer.TypeId));
                 if (renderer != null)
                 {
                     renderer.Enabled = false;

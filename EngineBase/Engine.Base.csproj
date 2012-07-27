@@ -85,6 +85,7 @@
     <Compile Include="Collections\QuadTree.cs" />
     <Compile Include="Collections\RTree.cs" />
     <Compile Include="Collections\SparseArray.cs" />
+    <Compile Include="Diagnostics\FlattenHierarchyProxy.cs" />
     <Compile Include="Graphics\AbstractEllipse.cs" />
     <Compile Include="Graphics\AbstractShape.cs" />
     <Compile Include="Graphics\FilledEllipse.cs" />

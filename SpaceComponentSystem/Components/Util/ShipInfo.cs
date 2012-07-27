@@ -15,6 +15,23 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class ShipInfo : Component
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetComponentTypeId(typeof(ShipInfo));
+
+        /// <summary>
+        /// The type id unique to the entity/component system in the current program.
+        /// </summary>
+        public override int GetTypeId()
+        {
+            return TypeId;
+        }
+
+        #endregion
+
         #region Initialization
 
         /// <summary>
@@ -66,7 +83,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var respawn = Manager.GetComponent<Respawn>(Entity);
+                var respawn = ((Respawn)Manager.GetComponent(Entity, Respawn.TypeId));
                 return respawn == null || !respawn.IsRespawning;
             }
         }
@@ -78,7 +95,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var health = Manager.GetComponent<Health>(Entity);
+                var health = ((Health)Manager.GetComponent(Entity, Components.Health.TypeId));
                 return health != null ? health.Value : 0;
             }
         }
@@ -90,7 +107,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var health = Manager.GetComponent<Health>(Entity);
+                var health = ((Health)Manager.GetComponent(Entity, Components.Health.TypeId));
                 return health != null ? health.MaxValue : 0;
             }
         }
@@ -102,7 +119,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var health = Manager.GetComponent<Health>(Entity);
+                var health = ((Health)Manager.GetComponent(Entity, Components.Health.TypeId));
                 return health != null ? health.Value / health.MaxValue : 0;
             }
         }
@@ -114,7 +131,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var energy = Manager.GetComponent<Energy>(Entity);
+                var energy = ((Energy)Manager.GetComponent(Entity, Components.Energy.TypeId));
                 return energy != null ? energy.Value : 0;
             }
         }
@@ -126,7 +143,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var energy = Manager.GetComponent<Energy>(Entity);
+                var energy = ((Energy)Manager.GetComponent(Entity, Components.Energy.TypeId));
                 return energy != null ? energy.MaxValue : 0;
             }
         }
@@ -138,7 +155,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var energy = Manager.GetComponent<Energy>(Entity);
+                var energy = ((Energy)Manager.GetComponent(Entity, Components.Energy.TypeId));
                 return energy != null ? energy.Value / energy.MaxValue : 0;
             }
         }
@@ -154,7 +171,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var transform = Manager.GetComponent<Transform>(Entity);
+                var transform = ((Transform)Manager.GetComponent(Entity, Transform.TypeId));
                 return transform != null ? transform.Translation : Vector2.Zero;
             }
         }
@@ -166,7 +183,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var transform = Manager.GetComponent<Transform>(Entity);
+                var transform = ((Transform)Manager.GetComponent(Entity, Transform.TypeId));
                 return transform != null ? transform.Rotation : 0;
             }
         }
@@ -178,7 +195,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var acceleration = Manager.GetComponent<Acceleration>(Entity);
+                var acceleration = ((Acceleration)Manager.GetComponent(Entity, Acceleration.TypeId));
                 return acceleration != null && acceleration.Value != Vector2.Zero;
             }
         }
@@ -190,7 +207,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var control = Manager.GetComponent<ShipControl>(Entity);
+                var control = ((ShipControl)Manager.GetComponent(Entity, ShipControl.TypeId));
                 return control != null && control.Stabilizing;
             }
         }
@@ -210,7 +227,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var velocity = Manager.GetComponent<Velocity>(Entity);
+                var velocity = ((Velocity)Manager.GetComponent(Entity, Velocity.TypeId));
                 return velocity != null ? velocity.Value.Length() : 0;
             }
         }
@@ -232,7 +249,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var spin = Manager.GetComponent<Spin>(Entity);
+                var spin = ((Spin)Manager.GetComponent(Entity, Spin.TypeId));
                 return spin != null ? spin.Value : 0;
             }
         }
@@ -267,7 +284,7 @@ namespace Space.ComponentSystem.Components
         {
             get
             {
-                var inventory = Manager.GetComponent<Inventory>(Entity);
+                var inventory = ((Inventory)Manager.GetComponent(Entity, Inventory.TypeId));
                 return inventory != null ? inventory.Capacity : 0;
             }
         }
@@ -279,7 +296,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>The item at that index.</returns>
         public int? InventoryItemAt(int index)
         {
-            var inventory = Manager.GetComponent<Inventory>(Entity);
+            var inventory = ((Inventory)Manager.GetComponent(Entity, Inventory.TypeId));
             return inventory != null ? inventory[index] : null;
         }
 
@@ -291,7 +308,7 @@ namespace Space.ComponentSystem.Components
         public int EquipmentSlotCount<TItem>()
             where TItem : Item
         {
-            var equipment = Manager.GetComponent<Equipment>(Entity);
+            var equipment = ((Equipment)Manager.GetComponent(Entity, Equipment.TypeId));
             return equipment != null ? equipment.GetSlotCount<TItem>() : 0;
         }
 
@@ -304,7 +321,7 @@ namespace Space.ComponentSystem.Components
         public int? EquipmentItemAt<TItem>(int index)
             where TItem : Item
         {
-            var equipment = Manager.GetComponent<Equipment>(Entity);
+            var equipment = ((Equipment)Manager.GetComponent(Entity, Equipment.TypeId));
             return equipment != null ? equipment.GetItem<TItem>(index) : null;
         }
 

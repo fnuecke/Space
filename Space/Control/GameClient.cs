@@ -234,7 +234,7 @@ namespace Space.Control
         {
             if (IsRunning())
             {
-                return Controller.Simulation.Manager.GetComponent<T>(entity);
+                return ((T)Controller.Simulation.Manager.GetComponent(entity, Manager.GetComponentTypeId<T>()));
             }
             else
             {

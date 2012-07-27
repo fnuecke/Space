@@ -145,7 +145,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get info on the local player's ship.
-            var info = Manager.GetComponent<ShipInfo>(avatar.Value);
+            var info = ((ShipInfo)Manager.GetComponent(avatar.Value, ShipInfo.TypeId));
 
             // Get the index we use for looking up nearby objects.
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
@@ -205,9 +205,9 @@ namespace Space.ComponentSystem.Systems
             foreach (var neighbor in neighbors)
             {
                 // Get the components we need.
-                var neighborTransform = Manager.GetComponent<Transform>(neighbor);
-                var neighborDetectable = Manager.GetComponent<Detectable>(neighbor);
-                var faction = Manager.GetComponent<Faction>(neighbor);
+                var neighborTransform = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId));
+                var neighborDetectable = ((Detectable)Manager.GetComponent(neighbor, Detectable.TypeId));
+                var faction = ((Faction)Manager.GetComponent(neighbor, Faction.TypeId));
 
                 // Bail if we're missing something.
                 if (neighborTransform == null || neighborDetectable.Texture == null)

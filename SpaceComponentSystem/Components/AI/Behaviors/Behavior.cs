@@ -208,7 +208,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var targetPosition = GetTargetPosition();
 
             // And accordingly, which way to accelerate to get there.
-            var direction = targetPosition - AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
+            var direction = targetPosition - ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
 
             // Normalize if it's not zero.
             var norm = direction.LengthSquared();
@@ -228,7 +228,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             direction += GetVegetativeDirection() * VegetativeWeight;
 
             // Set our new acceleration direction and target rotation.
-            var shipControl = AI.Manager.GetComponent<ShipControl>(AI.Entity);
+            var shipControl = ((ShipControl)AI.Manager.GetComponent(AI.Entity, ShipControl.TypeId));
             shipControl.SetAcceleration(direction);
             shipControl.SetTargetRotation(GetTargetRotation(ref direction));
         }
@@ -254,7 +254,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
         protected virtual Vector2 GetTargetPosition()
         {
             // Per default we just stand still.
-            return AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
+            return ((Transform)AI.Manager.GetComponent(AI.Entity, Transform.TypeId)).Translation;
         }
 
         /// <summary>
@@ -301,8 +301,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var direction = Vector2.Zero;
 
             // Get some info about ourself.
-            var faction = AI.Manager.GetComponent<Faction>(AI.Entity).Value;
-            var info = AI.Manager.GetComponent<ShipInfo>(AI.Entity);
+            var faction = ((Faction)AI.Manager.GetComponent(AI.Entity, Faction.TypeId)).Value;
+            var info = ((ShipInfo)AI.Manager.GetComponent(AI.Entity, ShipInfo.TypeId));
             var position = info.Position;
             var mass = info.Mass;
 
@@ -313,8 +313,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             foreach (var neighbor in neighbors)
             {
                 // If it does damage we want to keep our distance.
-                var neighborFaction = AI.Manager.GetComponent<Faction>(neighbor);
-                var neighborCollisionDamage = AI.Manager.GetComponent<CollisionDamage>(neighbor);
+                var neighborFaction = ((Faction)AI.Manager.GetComponent(neighbor, Faction.TypeId));
+                var neighborCollisionDamage = ((CollisionDamage)AI.Manager.GetComponent(neighbor, CollisionDamage.TypeId));
                 if (neighborCollisionDamage == null ||
                     (neighborFaction != null && (neighborFaction.Value & faction) != 0))
                 {
@@ -323,8 +323,8 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                 }
 
                 // Does it pull?
-                var neighborGravitation = AI.Manager.GetComponent<Gravitation>(neighbor);
-                var neighborPosition = AI.Manager.GetComponent<Transform>(neighbor).Translation;
+                var neighborGravitation = ((Gravitation)AI.Manager.GetComponent(neighbor, Gravitation.TypeId));
+                var neighborPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
                 var toNeighbor = position - neighborPosition;
 
                 if (neighborGravitation != null &&
@@ -355,13 +355,13 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             foreach (var neighbor in neighbors)
             {
                 // Ignore non-ships.
-                if (AI.Manager.GetComponent<ShipControl>(neighbor) == null)
+                if (AI.Manager.GetComponent(neighbor, ShipControl.TypeId) == null)
                 {
                     continue;
                 }
 
                 // Get the position, needed for everything that follows.
-                var neighborPosition = AI.Manager.GetComponent<Transform>(neighbor).Translation;
+                var neighborPosition = ((Transform)AI.Manager.GetComponent(neighbor, Transform.TypeId)).Translation;
                 var toNeighbor = position - neighborPosition;
 
                 // See if separation kicks in.
@@ -381,14 +381,14 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
                 else
                 {
                     // No, check if it's a friend, because if it is, we want to flock!
-                    var neighborFaction = AI.Manager.GetComponent<Faction>(neighbor);
+                    var neighborFaction = ((Faction)AI.Manager.GetComponent(neighbor, Faction.TypeId));
                     if ((faction & neighborFaction.Value) != 0)
                     {
                         // Friend, add to cohesion and alignment.
                         direction.X += toNeighbor.X;
                         direction.Y += toNeighbor.Y;
 
-                        var neighborVelocity = AI.Manager.GetComponent<Velocity>(neighbor);
+                        var neighborVelocity = ((Velocity)AI.Manager.GetComponent(neighbor, Velocity.TypeId));
                         direction.X += neighborVelocity.Value.X;
                         direction.Y += neighborVelocity.Value.Y;
                     }

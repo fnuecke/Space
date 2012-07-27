@@ -82,7 +82,7 @@ namespace Engine.ComponentSystem.Common.Systems
 
                 // Get the components' bounds and look for nearby elements.
                 var bounds = component1.ComputeBounds();
-                var translation = Manager.GetComponent<Transform>(component1.Entity).Translation;
+                var translation = ((Transform)Manager.GetComponent(component1.Entity, Transform.TypeId)).Translation;
                 bounds.X = (int)translation.X - bounds.Width / 2;
                 bounds.Y = (int)translation.Y - bounds.Height / 2;
                 bounds.Inflate(_bufferArea, _bufferArea);
@@ -136,7 +136,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="component">The added component.</param>
         protected override void OnComponentAdded(Collidable component)
         {
-            var transform = Manager.GetComponent<Transform>(component.Entity);
+            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
             if (transform != null)
             {
                 component.PreviousPosition = transform.Translation;
@@ -155,7 +155,7 @@ namespace Engine.ComponentSystem.Common.Systems
             {
                 var changedMessage = (TranslationChanged)(ValueType)message;
 
-                var collidable = Manager.GetComponent<Collidable>(changedMessage.Entity);
+                var collidable = ((Collidable)Manager.GetComponent(changedMessage.Entity, Collidable.TypeId));
                 if (collidable == null)
                 {
                     return;

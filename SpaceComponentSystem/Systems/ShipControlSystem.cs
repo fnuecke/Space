@@ -20,14 +20,14 @@ namespace Space.ComponentSystem.Systems
         protected override void UpdateComponent(long frame, ShipControl component)
         {
             // Get components we depend upon / modify.
-            var transform = Manager.GetComponent<Transform>(component.Entity);
-            var spin = Manager.GetComponent<Spin>(component.Entity);
-            var character = Manager.GetComponent<Character<AttributeType>>(component.Entity);
-            var info = Manager.GetComponent<ShipInfo>(component.Entity);
-            var weaponControl = Manager.GetComponent<WeaponControl>(component.Entity);
-            var acceleration = Manager.GetComponent<Acceleration>(component.Entity);
-            var effects = Manager.GetComponent<ParticleEffects>(component.Entity);
-            var sound = Manager.GetComponent<Sound>(component.Entity);
+            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+            var spin = ((Spin)Manager.GetComponent(component.Entity, Spin.TypeId));
+            var character = ((Character<AttributeType>)Manager.GetComponent(component.Entity, Character<AttributeType>.TypeId));
+            var info = ((ShipInfo)Manager.GetComponent(component.Entity, ShipInfo.TypeId));
+            var weaponControl = ((WeaponControl)Manager.GetComponent(component.Entity, WeaponControl.TypeId));
+            var acceleration = ((Acceleration)Manager.GetComponent(component.Entity, Acceleration.TypeId));
+            var effects = ((ParticleEffects)Manager.GetComponent(component.Entity, ParticleEffects.TypeId));
+            var sound = ((Sound)Manager.GetComponent(component.Entity, Sound.TypeId));
 
             // Get the mass of the ship.
             var mass = info.Mass;
@@ -39,7 +39,7 @@ namespace Space.ComponentSystem.Systems
             if (component.DirectedAcceleration == Vector2.Zero && component.Stabilizing)
             {
                 // We want to stabilize.
-                accelerationDirection = -Manager.GetComponent<Velocity>(component.Entity).Value;
+                accelerationDirection = -((Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId)).Value;
                 desiredAcceleration = accelerationDirection.Length();
 
                 // If it's zero, normalize will make it {NaN, NaN}. Avoid that.
@@ -70,7 +70,7 @@ namespace Space.ComponentSystem.Systems
                 accelerationForce *= load;
 
                 // Make sure we have enough energy.
-                var energy = Manager.GetComponent<Energy>(component.Entity);
+                var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
                 if (energy.Value <= energyConsumption)
                 {
                     // Not enough energy, adjust our output.

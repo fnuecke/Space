@@ -11,6 +11,23 @@ namespace Space.ComponentSystem.Components
     /// </summary>
     public sealed class ItemInfo : Component
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetComponentTypeId(typeof(ItemInfo));
+
+        /// <summary>
+        /// The type id unique to the entity/component system in the current program.
+        /// </summary>
+        public override int GetTypeId()
+        {
+            return TypeId;
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -28,7 +45,7 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public string IconName
         {
-            get { return _iconName ?? (_iconName = Manager.GetComponent<Item>(Entity).IconName); }
+            get { return _iconName ?? (_iconName = ((Item)Manager.GetComponent(Entity, Item.TypeId)).IconName); }
         }
 
         #endregion
@@ -77,7 +94,7 @@ namespace Space.ComponentSystem.Components
         /// <returns>The localized complete item name.</returns>
         private string ComputeName()
         {
-            var item = Manager.GetComponent<Item>(Entity);
+            var item = ((Item)Manager.GetComponent(Entity, Item.TypeId));
             var displayName = ItemNames.ResourceManager.GetString(item.Name) ?? ("!!ItemNames:" + item.Name + "!!");
 
             // Non-space and unique items don't need prefix.
@@ -87,8 +104,9 @@ namespace Space.ComponentSystem.Components
                 var type = AttributeType.None;
 
                 // Go through all attributes and calculate highest ranking.
-                foreach (var component in Manager.GetComponents<Attribute<AttributeType>>(Entity))
+                foreach (var c in Manager.GetComponents(Entity, Attribute<AttributeType>.TypeId))
                 {
+                    var component = (Attribute<AttributeType>)c;
                     // Check if we have a new max value.
                     var modifier = component.Value;
                     if (modifier.Type.GetValue(modifier.Value) > maxValue)
@@ -116,13 +134,13 @@ namespace Space.ComponentSystem.Components
             // Add attributes.
             descripton.Attributes = descripton.Attributes ?? new List<AttributeModifier<AttributeType>>();
             descripton.Attributes.Clear();
-            foreach (var component in Manager.GetComponents<Attribute<AttributeType>>(Entity))
+            foreach (var component in Manager.GetComponents(Entity, Attribute<AttributeType>.TypeId))
             {
-                descripton.Attributes.Add(component.Value);
+                descripton.Attributes.Add(((Attribute<AttributeType>)component).Value);
             }
 
             // If it's a weapon, flag that and add info.
-            var weapon = Manager.GetComponent<Weapon>(Entity);
+            var weapon = ((Weapon)Manager.GetComponent(Entity, Weapon.TypeId));
             if (weapon != null)
             {
                 descripton.IsWeapon = true;

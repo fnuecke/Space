@@ -55,7 +55,7 @@ namespace Space.ComponentSystem.Systems
             var translation = GetTranslation();
 
             // Draw the texture based on its position.
-            var transform = Manager.GetComponent<Transform>(component.Entity);
+            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
 
             // Get the rectangle at which we'll draw.
             //Vector2 origin;

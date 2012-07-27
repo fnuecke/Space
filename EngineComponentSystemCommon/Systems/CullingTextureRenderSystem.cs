@@ -60,7 +60,7 @@ namespace Engine.ComponentSystem.Common.Systems
             {
                 foreach (var entity in _drawablesInView)
                 {
-                    var component = Manager.GetComponent<TextureRenderer>(entity);
+                    var component = ((TextureRenderer)Manager.GetComponent(entity, TextureRenderer.TypeId));
 
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)

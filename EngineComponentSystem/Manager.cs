@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
@@ -15,90 +14,9 @@ namespace Engine.ComponentSystem
     /// Manager for a complete component system. Tracks live entities and
     /// components, and allows lookup of components for entities.
     /// </summary>
-    public sealed class Manager : IManager
+    [DebuggerDisplay("#Systems = {NumSystems}, #Components = {NumComponents}")]
+    public sealed partial class Manager : IManager
     {
-        #region Type mapping
-
-        /// <summary>
-        /// Manages unique IDs for system types.
-        /// </summary>
-        private static readonly IdManager SystemTypeIds = new IdManager();
-
-        /// <summary>
-        /// Maps actual system types to their IDs.
-        /// </summary>
-        private static readonly Dictionary<Type, int> SystemTypes = new Dictionary<Type, int>();
-
-        /// <summary>
-        /// Manages unique IDs for component types.
-        /// </summary>
-        private static readonly IdManager ComponentTypeIds = new IdManager();
-
-        /// <summary>
-        /// Maps actual component types to their IDs.
-        /// </summary>
-        private static readonly Dictionary<Type, int> ComponentTypes = new Dictionary<Type, int>();
-
-        #endregion
-
-        #region Type Resolving
-
-        /// <summary>
-        /// Gets the system type id for the specified system type. This will
-        /// create a new ID if necessary.
-        /// </summary>
-        /// <typeparam name="T">The system type to look up the id for.</typeparam>
-        /// <returns>The type id for that system.</returns>
-        public static int GetSystemTypeId<T>() where T : AbstractSystem
-        {
-            return GetSystemTypeId(typeof(T));
-        }
-
-        /// <summary>
-        /// Gets the system type id for the specified system type. This will
-        /// create a new ID if necessary.
-        /// </summary>
-        /// <param name="type">The system type to look up the id for.</param>
-        /// <returns>The type id for that system.</returns>
-        public static int GetSystemTypeId(Type type)
-        {
-            int typeId;
-            if (!SystemTypes.TryGetValue(type, out typeId))
-            {
-                SystemTypes[type] = typeId = SystemTypeIds.GetId();
-            }
-            return typeId;
-        }
-
-        /// <summary>
-        /// Gets the component type id for the specified component type. This will
-        /// create a new ID if necessary.
-        /// </summary>
-        /// <typeparam name="T">The component type to look up the id for.</typeparam>
-        /// <returns>The type id for that component.</returns>
-        public static int GetComponentTypeId<T>() where T : Component
-        {
-            return GetComponentTypeId(typeof(T));
-        }
-
-        /// <summary>
-        /// Gets the component type id for the specified component type. This will
-        /// create a new ID if necessary.
-        /// </summary>
-        /// <param name="type">The component type to look up the id for.</param>
-        /// <returns>The type id for that component.</returns>
-        public static int GetComponentTypeId(Type type)
-        {
-            int typeId;
-            if (!ComponentTypes.TryGetValue(type, out typeId))
-            {
-                ComponentTypes[type] = typeId = ComponentTypeIds.GetId();
-            }
-            return typeId;
-        }
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -149,21 +67,6 @@ namespace Engine.ComponentSystem
         private readonly IdManager _componentIds = new IdManager();
 
         /// <summary>
-        /// Keeps track of entity->component relationships.
-        /// </summary>
-        private readonly Dictionary<int, Entity> _entities = new Dictionary<int, Entity>();
-
-        /// <summary>
-        /// List of all components in this system, sorted by id.
-        /// </summary>
-        private readonly List<Component> _components = new List<Component>();
-
-        /// <summary>
-        /// For faster lookup (than binary search).
-        /// </summary>
-        private readonly Dictionary<int, Component> _componentsById = new Dictionary<int, Component>();
-
-        /// <summary>
         /// List of systems registered with this manager.
         /// </summary>
         private readonly List<AbstractSystem> _systems = new List<AbstractSystem>(); 
@@ -172,6 +75,21 @@ namespace Engine.ComponentSystem
         /// Lookup table for quick access to systems by their type id.
         /// </summary>
         private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
+
+        /// <summary>
+        /// Keeps track of entity->component relationships.
+        /// </summary>
+        private readonly SparseArray<Entity> _entities = new SparseArray<Entity>();
+
+        /// <summary>
+        /// List of all components in this system, sorted by id.
+        /// </summary>
+        private readonly List<Component> _components = new List<Component>();
+
+        /// <summary>
+        /// Lookup table for quick access to components by their id.
+        /// </summary>
+        private readonly SparseArray<Component> _componentsById = new SparseArray<Component>();
 
         #endregion
 
@@ -183,9 +101,9 @@ namespace Engine.ComponentSystem
         /// <param name="frame">The frame in which the update is applied.</param>
         public void Update(long frame)
         {
-            foreach (var system in _systems)
+            for (int i = 0, j = _systems.Count; i < j; ++i)
             {
-                system.Update(frame);
+                _systems[i].Update(frame);
             }
 
             // Make released component instances from the last update available
@@ -200,9 +118,9 @@ namespace Engine.ComponentSystem
         /// <param name="frame">The frame to render.</param>
         public void Draw(long frame)
         {
-            foreach (var system in _systems)
+            for (int i = 0, j = _systems.Count; i < j; ++i)
             {
-                system.Draw(frame);
+                _systems[i].Draw(frame);
             }
         }
 
@@ -281,18 +199,6 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Get a system of the specified type.
         /// </summary>
-        /// <typeparam name="T">The type of the system to get.</typeparam>
-        /// <returns>
-        /// The system with the specified type.
-        /// </returns>
-        public T GetSystem<T>() where T : AbstractSystem
-        {
-            return (T)GetSystem(GetSystemTypeId<T>());
-        }
-
-        /// <summary>
-        /// Get a system of the specified type.
-        /// </summary>
         /// <param name="type">The type of the system to get.</param>
         /// <returns>
         /// The system with the specified type.
@@ -352,7 +258,7 @@ namespace Engine.ComponentSystem
                 RemoveComponent(components[components.Count - 1]);
             }
             var instance = _entities[entity];
-            _entities.Remove(entity);
+            _entities[entity] = null;
             _entityIds.ReleaseId(entity);
             ReleaseEntity(instance);
 
@@ -372,19 +278,21 @@ namespace Engine.ComponentSystem
         /// </returns>
         public T AddComponent<T>(int entity) where T : Component, new()
         {
-            return (T)AddComponent(typeof(T), entity);
+            return (T)AddComponent(entity, typeof(T));
         }
 
         /// <summary>
         /// Creates a new component for the specified entity.
         /// </summary>
-        /// <param name="type">The type of component to create.</param>
         /// <param name="entity">The entity to attach the component to.</param>
+        /// <param name="type">The type of component to create.</param>
         /// <returns>
         /// The new component.
         /// </returns>
-        public Component AddComponent(Type type, int entity)
+        public Component AddComponent(int entity, Type type)
         {
+            Debug.Assert(type.IsSubclassOf(typeof(Component)));
+
             // Make sure that entity exists.
             if (!HasEntity(entity))
             {
@@ -431,19 +339,13 @@ namespace Engine.ComponentSystem
         public void RemoveComponent(Component component)
         {
             // Validate the component.
-            if (component == null)
-            {
-                throw new ArgumentNullException("component");
-            }
-            if (!HasComponent(component.Id))
-            {
-                throw new ArgumentException("No such component in the system.", "component");
-            }
+            Debug.Assert(component != null);
+            Debug.Assert(HasComponent(component.Id), "No such component in the system.");
 
             // Remove it from the mapping and release the id for reuse.
             _entities[component.Entity].Remove(component);
             _components.RemoveAt(_components.BinarySearch(component, Component.Comparer));
-            _componentsById.Remove(component.Id);
+            _componentsById[component.Id] = null;
             _componentIds.ReleaseId(component.Id);
 
             // Send a message to all interested systems.
@@ -458,37 +360,19 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Gets the component of the specified type for an entity.
-        /// </summary>
-        /// <typeparam name="T">The type of component to get.</typeparam>
-        /// <param name="entity">The entity to get the component of.</param>
-        /// <returns>
-        /// The component.
-        /// </returns>
-        public T GetComponent<T>(int entity) where T : Component
-        {
-            return (T)GetComponent(entity, typeof(T));
-        }
-
-        /// <summary>
         /// Gets a component of the specified type for an entity. If there are
         /// multiple components of the same type attached to the entity, use
         /// the <c>index</c> parameter to select which one to get.
         /// </summary>
         /// <param name="entity">The entity to get the component of.</param>
-        /// <param name="type">The type of the component to get.</param>
+        /// <param name="typeId">The type of the component to get.</param>
         /// <returns>
         /// The component.
         /// </returns>
-        public Component GetComponent(int entity, Type type)
+        public Component GetComponent(int entity, int typeId)
         {
-            // Make sure that entity exists.
-            if (!HasEntity(entity))
-            {
-                throw new ArgumentException("No such entity in the system.", "entity");
-            }
-
-            return _entities[entity].GetComponent(type);
+            Debug.Assert(HasEntity(entity), "No such entity in the system.");
+            return _entities[entity].GetComponent(typeId);
         }
 
         /// <summary>
@@ -498,32 +382,22 @@ namespace Engine.ComponentSystem
         /// <returns>The component with the specified id.</returns>
         public Component GetComponentById(int componentId)
         {
-            // Make sure that component exists.
-            if (!HasComponent(componentId))
-            {
-                throw new ArgumentException("No such component in the system.", "componentId");
-            }
-
+            Debug.Assert(HasComponent(componentId), "No such component in the system.");
             return _componentsById[componentId];
         }
 
         /// <summary>
         /// Allows enumerating over all components of the specified entity.
         /// </summary>
-        /// <typeparam name="T">The type of component to iterate.</typeparam>
         /// <param name="entity">The entity for which to get the components.</param>
+        /// <param name="typeId">The type of components to get.</param>
         /// <returns>
         /// An enumerable listing all components of that entity.
         /// </returns>
-        public IEnumerable<T> GetComponents<T>(int entity) where T : Component
+        public IEnumerable<Component> GetComponents(int entity, int typeId)
         {
-            // Make sure that entity exists.
-            if (!HasEntity(entity))
-            {
-                throw new ArgumentException("No such entity in the system.", "entity");
-            }
-
-            return _entities[entity].GetComponents<T>();
+            Debug.Assert(HasEntity(entity), "No such entity in the system.");
+            return _entities[entity].GetComponents(typeId);
         }
 
         #endregion
@@ -537,9 +411,9 @@ namespace Engine.ComponentSystem
         /// <param name="message">The sent message.</param>
         public void SendMessage<T>(ref T message) where T : struct
         {
-            foreach (var system in _systems)
+            for (int i = 0, j = _systems.Count; i < j; ++i)
             {
-                system.Receive(ref message);
+                _systems[i].Receive(ref message);
             }
         }
 
@@ -590,9 +464,9 @@ namespace Engine.ComponentSystem
         public void Depacketize(Packet packet)
         {
             // Release all current objects.
-            foreach (var entity in _entities.Values)
+            foreach (var entity in _entityIds)
             {
-                ReleaseEntity(entity);
+                ReleaseEntity(_entities[entity]);
             }
             _entities.Clear();
             foreach (var component in _components)
@@ -619,9 +493,9 @@ namespace Engine.ComponentSystem
                 _componentsById[component.Id] = component;
 
                 // Add to entity mapping, create entries as necessary.
-                if (!_entities.ContainsKey(component.Entity))
+                if (_entities[component.Entity] == null)
                 {
-                    _entities.Add(component.Entity, AllocateEntity());
+                    _entities[component.Entity] = AllocateEntity();
                 }
                 _entities[component.Entity].Add(component);
             }
@@ -629,9 +503,9 @@ namespace Engine.ComponentSystem
             // entities with no components.
             foreach (var entityId in _entityIds)
             {
-                if (!_entities.ContainsKey(entityId))
+                if (_entities[entityId] == null)
                 {
-                    _entities.Add(entityId, AllocateEntity());
+                    _entities[entityId] = AllocateEntity();
                 }
             }
 
@@ -641,7 +515,10 @@ namespace Engine.ComponentSystem
             for (var i = 0; i < numSystems; ++i)
             {
                 var type = packet.ReadType();
-                Debug.Assert(SystemTypes.ContainsKey(type));
+                if (!SystemTypes.ContainsKey(type))
+                {
+                    throw new PacketException("Could not depacketize system of unknown type " + type.FullName);
+                }
                 packet.ReadPacketizableInto(_systemsByTypeId[GetSystemTypeId(type)]);
             }
 
@@ -776,14 +653,14 @@ namespace Engine.ComponentSystem
             }
 
             copy._entities.Clear();
-            foreach (var entity in _entities)
+            foreach (var entity in _entityIds)
             {
                 // Create copy.
                 var entityCopy = AllocateEntity();
-                copy._entities.Add(entity.Key, entityCopy);
+                copy._entities[entity] = entityCopy;
 
                 // Assign copied components.
-                foreach (var component in entity.Value.Components)
+                foreach (var component in _entities[entity].Components)
                 {
                     entityCopy.Add(copy.GetComponentById(component.Id));
                 }
@@ -795,258 +672,6 @@ namespace Engine.ComponentSystem
             {
                 copy.CopySystem(item);
             }
-        }
-
-        #endregion
-
-        #region Pooling
-
-        /// <summary>
-        /// Objects that were released this very update run, so we don't want
-        /// to reuse them until we enter the next update, to avoid reuse of
-        /// components that might still be referenced in running system update
-        /// loops.
-        /// </summary>
-        private readonly Dictionary<Type, Stack<Component>> _dirtyPool = new Dictionary<Type, Stack<Component>>();
-
-        /// <summary>
-        /// Object pool for reusable instances.
-        /// </summary>
-        private static readonly Dictionary<Type, Stack<Component>> ComponentPool = new Dictionary<Type, Stack<Component>>();
-
-        /// <summary>
-        /// Pool for entities (index structure only, used for faster component queries).
-        /// </summary>
-        private static readonly Stack<Entity> EntityPool = new Stack<Entity>();
-
-        /// <summary>
-        /// Try fetching an instance from the pool, if that fails, create a new one.
-        /// </summary>
-        /// <param name="type">The type of component to get.</param>
-        /// <returns>
-        /// A new component of the specified type.
-        /// </returns>
-        private static Component AllocateComponent(Type type)
-        {
-            lock (ComponentPool)
-            {
-                if (ComponentPool.ContainsKey(type) && ComponentPool[type].Count > 0)
-                {
-                    return ComponentPool[type].Pop();
-                }
-            }
-            return (Component)Activator.CreateInstance(type);
-        }
-
-        /// <summary>
-        /// Releases a component for later reuse.
-        /// </summary>
-        /// <param name="component">The component to release.</param>
-        private void ReleaseComponent(Component component)
-        {
-            component.Reset();
-            var type = component.GetType();
-            if (!_dirtyPool.ContainsKey(type))
-            {
-                _dirtyPool.Add(type, new Stack<Component>());
-            }
-            Debug.Assert(!_dirtyPool[type].Contains(component));
-            _dirtyPool[type].Push(component);
-        }
-
-        /// <summary>
-        /// Releases all instances that were possibly still referenced when
-        /// they were removed from the manager in running system update
-        /// loops.
-        /// </summary>
-        private void ReleaseDirty()
-        {
-            lock (ComponentPool)
-            {
-                foreach (var type in _dirtyPool)
-                {
-                    if (!ComponentPool.ContainsKey(type.Key))
-                    {
-                        ComponentPool.Add(type.Key, new Stack<Component>());
-                    }
-                    foreach (var instance in type.Value)
-                    {
-                        Debug.Assert(!ComponentPool[type.Key].Contains(instance));  
-                        ComponentPool[type.Key].Push(instance);
-                    }
-                    _dirtyPool[type.Key].Clear();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Allocates an entity for indexing.
-        /// </summary>
-        /// <returns>A new entity.</returns>
-        private static Entity AllocateEntity()
-        {
-            lock (EntityPool)
-            {
-                if (EntityPool.Count > 0)
-                {
-                    return EntityPool.Pop();
-                }
-            }
-            return new Entity();
-        }
-
-        /// <summary>
-        /// Releases the entity for later reuse.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        private static void ReleaseEntity(Entity entity)
-        {
-            entity.Components.Clear();
-            foreach (var cache in entity.TypeCache.Values)
-            {
-                cache.Clear();
-            }
-            entity.TypeCache.Clear();
-            lock (EntityPool)
-            {
-                EntityPool.Push(entity);
-            }
-        }
-
-        #endregion
-
-        #region Utility types
-
-        /// <summary>
-        /// Represents an entity, for easier internal access. We do not expose
-        /// this class, to keep the whole component system's representation to
-        /// the outside world 'flatter', which also means it's easier to copy
-        /// and serialize, and to guarantee that everything in the system is in
-        /// a valid state.
-        /// </summary>
-        private sealed class Entity
-        {
-            #region Fields
-
-            /// <summary>
-            /// List of all components attached to this entity.
-            /// </summary>
-            public readonly List<Component> Components = new List<Component>();
-
-            /// <summary>
-            /// Cache used for faster look-up of components of a specific type.
-            /// </summary>
-            public readonly Dictionary<Type, List<Component>> TypeCache = new Dictionary<Type, List<Component>>();
-
-            #endregion
-
-            #region Accessors
-
-            /// <summary>
-            /// Adds the specified component.
-            /// </summary>
-            /// <param name="component">The component.</param>
-            public void Add(Component component)
-            {
-                Components.Add(component);
-
-                // Add to all relevant caches.
-                foreach (var entry in TypeCache)
-                {
-                    if (!entry.Key.IsInstanceOfType(component))
-                    {
-                        continue;
-                    }
-
-                    entry.Value.Add(component);
-                    // Keep components in type caches sorted, to keep looping
-                    // over them deterministic (otherwise recently deserialized
-                    // instances may behave differently).
-                    if (entry.Value.Count > 1)
-                    {
-                        entry.Value.Sort((a, b) => a.Id - b.Id);
-                    }
-                }
-            }
-
-            /// <summary>
-            /// Removes the specified component.
-            /// </summary>
-            /// <param name="component">The component.</param>
-            public void Remove(Component component)
-            {
-                Components.Remove(component);
-
-                // Remove from all relevant caches.
-                foreach (var entry in TypeCache.Values)
-                {
-                    entry.Remove(component);
-                }
-            }
-
-            /// <summary>
-            /// Gets the first component of the specified type.
-            /// </summary>
-            /// <param name="type">The type.</param>
-            /// <returns>The first component of that type.</returns>
-            public Component GetComponent(Type type)
-            {
-                BuildCache(type);
-                if (TypeCache[type].Count > 0)
-                {
-                    return TypeCache[type][0];
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            /// <summary>
-            /// Gets the components of the specified type.
-            /// </summary>
-            /// <typeparam name="T">The type of the components to get.</typeparam>
-            /// <returns>The components of that type.</returns>
-            public IEnumerable<T> GetComponents<T>() where T : Component
-            {
-                var type = typeof(T);
-                BuildCache(type);
-                return TypeCache[type].Cast<T>();
-            }
-
-            #endregion
-
-            #region Utility methods
-
-            /// <summary>
-            /// Builds the cache for the specified type, if it doesn't exist, yet.
-            /// </summary>
-            /// <param name="type">The type.</param>
-            private void BuildCache(Type type)
-            {
-                if (TypeCache.ContainsKey(type))
-                {
-                    return;
-                }
-
-                var cache = new List<Component>();
-                foreach (var component in Components)
-                {
-                    if (type.IsInstanceOfType(component))
-                    {
-                        cache.Add(component);
-                    }
-                }
-                // Keep components in type caches sorted, to keep looping
-                // over them deterministic (otherwise recently deserialized
-                // instances may behave differently).
-                if (cache.Count > 1)
-                {
-                    cache.Sort((a, b) => a.Id - b.Id);
-                }
-                TypeCache.Add(type, cache);
-            }
-
-            #endregion
         }
 
         #endregion

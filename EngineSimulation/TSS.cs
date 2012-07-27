@@ -889,12 +889,12 @@ namespace Engine.Simulation
             /// <summary>
             /// Creates a new component for the specified entity.
             /// </summary>
-            /// <param name="type">The type of component to create.</param>
             /// <param name="entity">The entity to attach the component to.</param>
+            /// <param name="type">The type of component to create.</param>
             /// <returns>
             /// The new component.
             /// </returns>
-            public Component AddComponent(Type type, int entity)
+            public Component AddComponent(int entity, Type type)
             {
                 throw new NotSupportedException();
             }
@@ -923,23 +923,12 @@ namespace Engine.Simulation
             /// <summary>
             /// Gets the component of the specified type for an entity.
             /// </summary>
-            /// <typeparam name="T">The type of component to get.</typeparam>
             /// <param name="entity">The entity to get the component of.</param>
+            /// <param name="typeId"> </param>
             /// <returns>The component.</returns>
-            public T GetComponent<T>(int entity) where T : Component
+            public Component GetComponent(int entity, int typeId)
             {
-                return _tss.LeadingSimulation.Manager.GetComponent<T>(entity);
-            }
-
-            /// <summary>
-            /// Gets the component of the specified type for an entity.
-            /// </summary>
-            /// <param name="entity">The entity to get the component of.</param>
-            /// <param name="type">The type of the component to get.</param>
-            /// <returns>The component.</returns>
-            public Component GetComponent(int entity, Type type)
-            {
-                return _tss.LeadingSimulation.Manager.GetComponent(entity, type);
+                return _tss.LeadingSimulation.Manager.GetComponent(entity, typeId);
             }
 
             /// <summary>
@@ -958,12 +947,13 @@ namespace Engine.Simulation
             /// Allows enumerating over all components of the specified entity.
             /// </summary>
             /// <param name="entity">The entity for which to get the components.</param>
+            /// <param name="typeId">The type of the components to get.</param>
             /// <returns>
             /// An enumerable listing all components of that entity.
             /// </returns>
-            public IEnumerable<T> GetComponents<T>(int entity) where T : Component
+            public IEnumerable<Component> GetComponents(int entity, int typeId)
             {
-                return _tss.LeadingSimulation.Manager.GetComponents<T>(entity);
+                return _tss.LeadingSimulation.Manager.GetComponents(entity, typeId);
             }
 
             #endregion

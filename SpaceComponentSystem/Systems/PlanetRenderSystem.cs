@@ -102,7 +102,7 @@ namespace Space.ComponentSystem.Systems
             {
                 foreach (var entity in _drawablesInView)
                 {
-                    var component = Manager.GetComponent<PlanetRenderer>(entity);
+                    var component = ((PlanetRenderer)Manager.GetComponent(entity, PlanetRenderer.TypeId));
 
                     // Skip invalid or disabled entities.
                     if (component != null && component.Enabled)
@@ -129,14 +129,14 @@ namespace Space.ComponentSystem.Systems
         private void RenderPlanet(PlanetRenderer component, ref Vector2 translation)
         {
             // The position and orientation we're rendering at and in.
-            var transform = Manager.GetComponent<Transform>(component.Entity);
+            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
 
             // Get position relative to our sun, to rotate atmosphere and shadow.
             var toSun = Vector2.Zero;
             var sun = GetSun(component.Entity);
             if (sun > 0)
             {
-                var sunTransform = Manager.GetComponent<Transform>(sun);
+                var sunTransform = ((Transform)Manager.GetComponent(sun, Transform.TypeId));
                 if (sunTransform != null)
                 {
                     toSun = sunTransform.Translation - transform.Translation;
@@ -165,11 +165,11 @@ namespace Space.ComponentSystem.Systems
         private int GetSun(int entity)
         {
             var sun = 0;
-            var ellipse = Manager.GetComponent<EllipsePath>(entity);
+            var ellipse = ((EllipsePath)Manager.GetComponent(entity, EllipsePath.TypeId));
             while (ellipse != null)
             {
                 sun = ellipse.CenterEntityId;
-                ellipse = Manager.GetComponent<EllipsePath>(sun);
+                ellipse = ((EllipsePath)Manager.GetComponent(sun, EllipsePath.TypeId));
             }
             return sun;
         }

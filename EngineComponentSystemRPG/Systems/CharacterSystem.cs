@@ -36,9 +36,9 @@ namespace Engine.ComponentSystem.RPG.Systems
             {
                 // Recompute if an item with attribute modifiers was added.
                 var added = (ItemEquipped)(ValueType)message;
-                if (Manager.GetComponent<Attribute<TAttribute>>(added.Item) != null)
+                if (Manager.GetComponent(added.Item, Attribute<TAttribute>.TypeId) != null)
                 {
-                    var character = Manager.GetComponent<Character<TAttribute>>(added.Entity);
+                    var character = ((Character<TAttribute>)Manager.GetComponent(added.Entity, Character<TAttribute>.TypeId));
                     if (character != null)
                     {
                         character.RecomputeAttributes();
@@ -49,9 +49,9 @@ namespace Engine.ComponentSystem.RPG.Systems
             {
                 // Recompute if an item with attribute modifiers was removed.
                 var removed = (ItemUnequipped)(ValueType)message;
-                if (Manager.GetComponent<Attribute<TAttribute>>(removed.Item) != null)
+                if (Manager.GetComponent(removed.Item, Attribute<TAttribute>.TypeId) != null)
                 {
-                    var character = Manager.GetComponent<Character<TAttribute>>(removed.Entity);
+                    var character = ((Character<TAttribute>)Manager.GetComponent(removed.Entity, Character<TAttribute>.TypeId));
                     if (character != null)
                     {
                         character.RecomputeAttributes();   

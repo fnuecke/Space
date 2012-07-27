@@ -40,7 +40,7 @@ namespace Space.ComponentSystem.Systems
             if ((component.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)
             {
                 // Get our position.
-                var myTransform = Manager.GetComponent<Transform>(component.Entity);
+                var myTransform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
                 Debug.Assert(myTransform != null);
 
                 // And the index.
@@ -53,7 +53,7 @@ namespace Space.ComponentSystem.Systems
                 foreach (var neighbor in neighbors)
                 {
                     // If they have an enabled gravitation component...
-                    var otherGravitation = Manager.GetComponent<Gravitation>(neighbor);
+                    var otherGravitation = ((Gravitation)Manager.GetComponent(neighbor, Gravitation.TypeId));
 
                     // Validation.
                     Debug.Assert((otherGravitation.GravitationType & Gravitation.GravitationTypes.Attractee) != 0, "Non-attractees must not be added to the index.");
@@ -65,8 +65,8 @@ namespace Space.ComponentSystem.Systems
                     }
 
                     // Get their velocity (which is what we'll change) and position.
-                    var otherVelocity = Manager.GetComponent<Velocity>(neighbor);
-                    var otherTransform = Manager.GetComponent<Transform>(neighbor);
+                    var otherVelocity = ((Velocity)Manager.GetComponent(neighbor, Velocity.TypeId));
+                    var otherTransform = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId));
 
                     // We need both.
                     Debug.Assert(otherVelocity != null);
@@ -83,7 +83,7 @@ namespace Space.ComponentSystem.Systems
                     const int nearDistanceSquared = 512 * 512; // We allow overriding gravity at radius 512.
                     if (distanceSquared < nearDistanceSquared)
                     {
-                        var accleration = Manager.GetComponent<Acceleration>(neighbor);
+                        var accleration = ((Acceleration)Manager.GetComponent(neighbor, Acceleration.TypeId));
                         if (accleration == null || accleration.Value == Vector2.Zero)
                         {
                             if (otherVelocity.Value.LengthSquared() < 16 && distanceSquared < 4)

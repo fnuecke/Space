@@ -15,7 +15,7 @@ namespace Space.ComponentSystem.Systems
     /// Controls the particle components in a game, passing them some
     /// information about how to render themselves.
     /// </summary>
-    public class ParticleEffectSystem : AbstractComponentSystem<Components.ParticleEffects>
+    public class ParticleEffectSystem : AbstractComponentSystem<ParticleEffects>
     {
         #region Fields
 
@@ -55,8 +55,7 @@ namespace Space.ComponentSystem.Systems
         public ParticleEffectSystem(ContentManager content, IGraphicsDeviceService graphics)
         {
             _content = content;
-            _renderer = new SpriteBatchRenderer();
-            _renderer.GraphicsDeviceService = graphics;
+            _renderer = new SpriteBatchRenderer {GraphicsDeviceService = graphics};
             _renderer.LoadContent(content);
         }
 
@@ -177,7 +176,7 @@ namespace Space.ComponentSystem.Systems
         /// </remarks>
         public void Play(string effect, int entity, ref Vector2 offset, float scale = 1.0f)
         {
-            var transform = Manager.GetComponent<Transform>(entity);
+            var transform = ((Transform)Manager.GetComponent(entity, Transform.TypeId));
             var position = Vector2.Zero;
             var rotation = 0.0f;
             if (transform != null)
@@ -185,7 +184,7 @@ namespace Space.ComponentSystem.Systems
                 position = transform.Translation + offset;
                 rotation = transform.Rotation + MathHelper.Pi;
             }
-            var velocity = Manager.GetComponent<Velocity>(entity);
+            var velocity = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
             var impulse = Vector2.Zero;
             if (velocity != null)
             {

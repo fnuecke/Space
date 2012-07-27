@@ -1,4 +1,5 @@
-﻿namespace Engine.Collections
+﻿
+namespace Engine.Collections
 {
     /// <summary>
     /// Represents a sparse array, i.e. an allows indexing arbitrary positions in an
@@ -54,7 +55,12 @@
             {
                 if (_data.Length <= index)
                 {
-                    var data = new T[_data.Length * 3 / 2 + 1];
+                    var newCapacity = _data.Length * 3 / 2 + 1;
+                    if (newCapacity <= index)
+                    {
+                        newCapacity = index + 1;
+                    }
+                    var data = new T[newCapacity];
                     _data.CopyTo(data, 0);
                     _data = data;
                 }
@@ -71,15 +77,6 @@
             {
                 _data[i] = default(T);
             }
-        }
-
-        /// <summary>
-        /// Copies the elements of the array to another <see cref="T:System.Array"/>, starting at a particular index.
-        /// </summary>
-        /// <param name="array">The one-dimensional <see cref="T:System.Array"/> that is the destination of the elements copied from <see cref="T:System.Collections.Generic.ICollection`1"/>. The <see cref="T:System.Array"/> must have zero-based indexing.</param><param name="arrayIndex">The zero-based index in <paramref name="array"/> at which copying begins.</param><exception cref="T:System.ArgumentNullException"><paramref name="array"/> is null.</exception><exception cref="T:System.ArgumentOutOfRangeException"><paramref name="arrayIndex"/> is less than 0.</exception><exception cref="T:System.ArgumentException"><paramref name="array"/> is multidimensional.-or-The number of elements in the source <see cref="T:System.Collections.Generic.ICollection`1"/> is greater than the available space from <paramref name="arrayIndex"/> to the end of the destination <paramref name="array"/>.-or-Type <paramref name="T"/> cannot be cast automatically to the type of the destination <paramref name="array"/>.</exception>
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            _data.CopyTo(array, arrayIndex);
         }
 
         #endregion

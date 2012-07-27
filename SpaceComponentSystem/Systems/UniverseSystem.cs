@@ -168,7 +168,7 @@ namespace Space.ComponentSystem.Systems
                                     // Tell the other stations.
                                     foreach (var stationId in _cellInfo[id].Stations)
                                     {
-                                        var spawn = Manager.GetComponent<ShipSpawner>(stationId);
+                                        var spawn = ((ShipSpawner)Manager.GetComponent(stationId, ShipSpawner.TypeId));
                                         foreach (var otherStationId in stations)
                                         {
                                             spawn.Targets.Add(otherStationId);
@@ -177,7 +177,7 @@ namespace Space.ComponentSystem.Systems
                                     // Tell our own stations.
                                     foreach (var stationId in stations)
                                     {
-                                        var spawner = Manager.GetComponent<ShipSpawner>(stationId);
+                                        var spawner = ((ShipSpawner)Manager.GetComponent(stationId, ShipSpawner.TypeId));
                                         foreach (var otherStationId in _cellInfo[id].Stations)
                                         {
                                             spawner.Targets.Add(otherStationId);

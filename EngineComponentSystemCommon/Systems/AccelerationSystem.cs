@@ -11,7 +11,7 @@ namespace Engine.ComponentSystem.Common.Systems
         protected override void UpdateComponent(long frame, Acceleration component)
         {
             // Apply acceleration if velocity is available.
-            Manager.GetComponent<Velocity>(component.Entity).Value += component.Value;
+            ((Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId)).Value += component.Value;
         }
     }
 }

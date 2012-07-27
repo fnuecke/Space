@@ -107,7 +107,7 @@ namespace Space.ComponentSystem.Systems
             }
 
             // Get info on the local player's ship.
-            var info = Manager.GetComponent<ShipInfo>(avatar.Value);
+            var info = ((ShipInfo)Manager.GetComponent(avatar.Value, ShipInfo.TypeId));
 
             // Get the index we use for looking up nearby objects.
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
@@ -155,8 +155,8 @@ namespace Space.ComponentSystem.Systems
             foreach (var neighbor in neighbors)
             {
                 // Get the components we need.
-                var neighborTransform = Manager.GetComponent<Transform>(neighbor);
-                var neighborDetectable = Manager.GetComponent<Detectable>(neighbor);
+                var neighborTransform = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId));
+                var neighborDetectable = ((Detectable)Manager.GetComponent(neighbor, Detectable.TypeId));
 
                 // Bail if we're missing something.
                 if (neighborTransform == null || neighborDetectable.Texture == null)
@@ -179,14 +179,14 @@ namespace Space.ComponentSystem.Systems
 
                 // If it's an astronomical object, check if its orbit is
                 // potentially in our screen space, if so draw it.
-                var ellipse = Manager.GetComponent<EllipsePath>(neighbor);
+                var ellipse = ((EllipsePath)Manager.GetComponent(neighbor, EllipsePath.TypeId));
                 if (ellipse != null)
                 {
                     // The entity we're orbiting around is at one of the two
                     // foci of the ellipse. We want the center, though.
 
                     // Get the current position of the entity we're orbiting.
-                    var focusTransform = Manager.GetComponent<Transform>(ellipse.CenterEntityId).Translation;
+                    var focusTransform = ((Transform)Manager.GetComponent(ellipse.CenterEntityId, Transform.TypeId)).Translation;
 
                     // Compute the distance of the ellipse's foci to the center
                     // of the ellipse.
@@ -236,8 +236,8 @@ namespace Space.ComponentSystem.Systems
                 // If the neighbor does collision damage and is an attractor,
                 // show the "dead zone" (i.e. the area beyond the point of no
                 // return).
-                var neighborGravitation = Manager.GetComponent<Gravitation>(neighbor);
-                var neighborCollisionDamage = Manager.GetComponent<CollisionDamage>(neighbor);
+                var neighborGravitation = ((Gravitation)Manager.GetComponent(neighbor, Gravitation.TypeId));
+                var neighborCollisionDamage = ((CollisionDamage)Manager.GetComponent(neighbor, CollisionDamage.TypeId));
                 if (neighborCollisionDamage == null || neighborGravitation == null ||
                     (neighborGravitation.GravitationType & Gravitation.GravitationTypes.Attractor) == 0)
                 {

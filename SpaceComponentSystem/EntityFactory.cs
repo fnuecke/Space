@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Components;
-using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -76,15 +75,15 @@ namespace Space.ComponentSystem
 
             // Add to the index from which entities will automatically removed
             // on cell death and mark it (for translation checks into empty space).
-            var index = manager.GetComponent<Index>(entity);
+            var index = ((Index)manager.GetComponent(entity, Index.TypeId));
             index.SetIndexGroupsMask(index.IndexGroupsMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);
             manager.AddComponent<CellDeath>(entity);
 
-            var input = manager.GetComponent<ShipControl>(entity);
+            var input = ((ShipControl)manager.GetComponent(entity, ShipControl.TypeId));
             input.Stabilizing = true;
             manager.AddComponent<ArtificialIntelligence>(entity).Initialize(random.NextUInt32());
 
-            var equipment = manager.GetComponent<Equipment>(entity);
+            var equipment = ((Equipment)manager.GetComponent(entity, Equipment.TypeId));
 
             var item = FactoryLibrary.SampleItem(manager, "L1_AI_Thruster", random);
             equipment.Equip(0, item);
@@ -116,7 +115,7 @@ namespace Space.ComponentSystem
             var entity = manager.AddEntity();
 
             manager.AddComponent<Faction>(entity).Initialize(faction);
-            manager.AddComponent<Transform>(entity).Initialize(manager.GetComponent<Transform>(center).Translation);
+            manager.AddComponent<Transform>(entity).Initialize(((Transform)manager.GetComponent(center, Transform.TypeId)).Translation);
             manager.AddComponent<Spin>(entity).Initialize(((float)Math.PI) / period);
             manager.AddComponent<EllipsePath>(entity).Initialize(center, orbitRadius, orbitRadius, 0, period, 0);
             manager.AddComponent<Index>(entity).Initialize(DetectableSystem.IndexGroupMask | CellSystem.CellDeathAutoRemoveIndexGroupMask);

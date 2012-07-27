@@ -17,6 +17,23 @@ namespace Engine.ComponentSystem.RPG.Components
     public sealed class Character<TAttribute> : Component
         where TAttribute : struct
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this object, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = ComponentSystem.Manager.GetComponentTypeId(typeof(Character<TAttribute>));
+
+        /// <summary>
+        /// The type id unique to the entity/component system in the current program.
+        /// </summary>
+        public override int GetTypeId()
+        {
+            return TypeId;
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -172,14 +189,14 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             // Parse all items.
-            var equipment = Manager.GetComponent<Equipment>(Entity);
+            var equipment = ((Equipment)Manager.GetComponent(Entity, Equipment.TypeId));
             if (equipment != null)
             {
                 foreach (var item in equipment.AllItems)
                 {
-                    foreach (var component in Manager.GetComponents<Attribute<TAttribute>>(item))
+                    foreach (var component in Manager.GetComponents(item, Attribute<TAttribute>.TypeId))
                     {
-                        var modifier = component.Value;
+                        var modifier = ((Attribute<TAttribute>)component).Value;
                         switch (modifier.ComputationType)
                         {
                             case AttributeComputationType.Additive:
@@ -195,9 +212,9 @@ namespace Engine.ComponentSystem.RPG.Components
             }
 
             // Parse all status effects.
-            foreach (var component in Manager.GetComponents<AttributeStatusEffect<TAttribute>>(Entity))
+            foreach (var component in Manager.GetComponents(Entity, AttributeStatusEffect<TAttribute>.TypeId))
             {
-                foreach (var modifier in component.Modifiers)
+                foreach (var modifier in ((AttributeStatusEffect<TAttribute>)component).Modifiers)
                 {
                     switch (modifier.ComputationType)
                     {
