@@ -50,7 +50,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             // See if there are any enemies nearby, if so attack them.
             var faction = AI.Manager.GetComponent<Faction>(AI.Entity).Value;
             var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
-            var index = AI.Manager.GetSystem<IndexSystem>();
+            var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
             ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
             index.Find(position, AggroRange, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)

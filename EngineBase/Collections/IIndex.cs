@@ -99,7 +99,6 @@ namespace Engine.Collections
         /// from the query point to be returned.</param>
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
-        /// <returns>All objects in the neighborhood of the query point.</returns>
         void Find(Vector2 point, float range, ref ICollection<T> list);
 
         /// <summary>
@@ -109,7 +108,6 @@ namespace Engine.Collections
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
-        /// <returns>All objects in the query rectangle.</returns>
         void Find(ref Rectangle rectangle, ref ICollection<T> list);
 
         #endregion

@@ -24,6 +24,15 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class CellSystem : AbstractSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetSystemTypeId(typeof(CellSystem));
+
+        #endregion
+
         #region Constants
 
         /// <summary>
@@ -151,7 +160,7 @@ namespace Space.ComponentSystem.Systems
         {
             // Check the positions of all avatars to check which cells
             // should live, and which should die / stay dead.
-            var avatarSystem = Manager.GetSystem<AvatarSystem>();
+            var avatarSystem = (AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId);
             foreach (var avatar in avatarSystem.Avatars)
             {
                 var transform = Manager.GetComponent<Transform>(avatar);
@@ -209,7 +218,7 @@ namespace Space.ComponentSystem.Systems
                 cellBounds.Width = CellSize;
                 cellBounds.Height = CellSize;
                 ICollection<int> neighbors = _reusableEntityList;
-                Manager.GetSystem<IndexSystem>().Find(ref cellBounds, ref neighbors, CellDeathAutoRemoveIndexGroupMask);
+                ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref cellBounds, ref neighbors, CellDeathAutoRemoveIndexGroupMask);
                 foreach (var neighbor in neighbors)
                 {
                     Manager.RemoveEntity(neighbor);

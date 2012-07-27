@@ -41,25 +41,19 @@ namespace Space.ComponentSystem.Systems
             {
                 // Get our position.
                 var myTransform = Manager.GetComponent<Transform>(component.Entity);
-                if (myTransform == null)
-                {
-                    return;
-                }
+                Debug.Assert(myTransform != null);
 
                 // And the index.
-                var index = Manager.GetSystem<IndexSystem>();
-                if (index == null)
-                {
-                    return;
-                }
+                var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+                Debug.Assert(index != null);
 
                 // Then check all our neighbors.
                 ICollection<int> neighbors = _reusableNeighborList;
                 index.Find(myTransform.Translation, 2 << 13, ref neighbors, IndexGroupMask);
-                foreach (var neigbor in neighbors)
+                foreach (var neighbor in neighbors)
                 {
                     // If they have an enabled gravitation component...
-                    var otherGravitation = Manager.GetComponent<Gravitation>(neigbor);
+                    var otherGravitation = Manager.GetComponent<Gravitation>(neighbor);
 
                     // Validation.
                     Debug.Assert((otherGravitation.GravitationType & Gravitation.GravitationTypes.Attractee) != 0, "Non-attractees must not be added to the index.");
@@ -71,55 +65,55 @@ namespace Space.ComponentSystem.Systems
                     }
 
                     // Get their velocity (which is what we'll change) and position.
-                    var otherVelocity = Manager.GetComponent<Velocity>(neigbor);
-                    var otherTransform = Manager.GetComponent<Transform>(neigbor);
+                    var otherVelocity = Manager.GetComponent<Velocity>(neighbor);
+                    var otherTransform = Manager.GetComponent<Transform>(neighbor);
 
                     // We need both.
-                    if (otherVelocity != null && otherTransform != null)
+                    Debug.Assert(otherVelocity != null);
+                    Debug.Assert(otherTransform != null);
+
+                    // Get the delta vector between the two positions.
+                    var delta = otherTransform.Translation - myTransform.Translation;
+
+                    // Compute the angle between us and the other entity.
+                    var distanceSquared = delta.LengthSquared();
+
+                    // If we're near the core only pull if  the other
+                    // object isn't currently accelerating.
+                    const int nearDistanceSquared = 512 * 512; // We allow overriding gravity at radius 512.
+                    if (distanceSquared < nearDistanceSquared)
                     {
-                        // Get the delta vector between the two positions.
-                        var delta = otherTransform.Translation - myTransform.Translation;
-
-                        // Compute the angle between us and the other entity.
-                        var distanceSquared = delta.LengthSquared();
-
-                        // If we're near the core only pull if  the other
-                        // object isn't currently accelerating.
-                        const int nearDistanceSquared = 512 * 512; // We allow overriding gravity at radius 512.
-                        if (distanceSquared < nearDistanceSquared)
+                        var accleration = Manager.GetComponent<Acceleration>(neighbor);
+                        if (accleration == null || accleration.Value == Vector2.Zero)
                         {
-                            var accleration = Manager.GetComponent<Acceleration>(neigbor);
-                            if (accleration == null || accleration.Value == Vector2.Zero)
+                            if (otherVelocity.Value.LengthSquared() < 16 && distanceSquared < 4)
                             {
-                                if (otherVelocity.Value.LengthSquared() < 16 && distanceSquared < 4)
-                                {
-                                    // Dock.
-                                    var translation = myTransform.Translation;
-                                    otherTransform.SetTranslation(ref translation);
-                                    otherVelocity.Value = Vector2.Zero;
-                                }
-                                else
-                                {
-                                    // Adjust velocity.
-                                    delta.Normalize();
-                                    var gravitation = component.Mass * otherGravitation.Mass / Math.Max(nearDistanceSquared, distanceSquared);
-                                    var directedGravitation = delta * gravitation;
+                                // Dock.
+                                var translation = myTransform.Translation;
+                                otherTransform.SetTranslation(ref translation);
+                                otherVelocity.Value = Vector2.Zero;
+                            }
+                            else
+                            {
+                                // Adjust velocity.
+                                delta.Normalize();
+                                var gravitation = component.Mass * otherGravitation.Mass / Math.Max(nearDistanceSquared, distanceSquared);
+                                var directedGravitation = delta * gravitation;
 
-                                    otherVelocity.Value.X -= directedGravitation.X;
-                                    otherVelocity.Value.Y -= directedGravitation.Y;
-                                }
+                                otherVelocity.Value.X -= directedGravitation.X;
+                                otherVelocity.Value.Y -= directedGravitation.Y;
                             }
                         }
-                        else
-                        {
-                            // Adjust velocity.
-                            delta.Normalize();
-                            var gravitation = component.Mass * otherGravitation.Mass / distanceSquared;
-                            var directedGravitation = delta * gravitation;
+                    }
+                    else
+                    {
+                        // Adjust velocity.
+                        delta.Normalize();
+                        var gravitation = component.Mass * otherGravitation.Mass / distanceSquared;
+                        var directedGravitation = delta * gravitation;
 
-                            otherVelocity.Value.X -= directedGravitation.X;
-                            otherVelocity.Value.Y -= directedGravitation.Y;
-                        }
+                        otherVelocity.Value.X -= directedGravitation.X;
+                        otherVelocity.Value.Y -= directedGravitation.Y;
                     }
                 }
 

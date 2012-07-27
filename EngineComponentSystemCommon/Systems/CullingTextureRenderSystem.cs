@@ -47,7 +47,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             // Get all renderable entities in the viewport.
             var view = ComputeViewport();
-            Manager.GetSystem<IndexSystem>().Find(ref view, ref _drawablesInView, IndexGroupMask);
+            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
 
             // Skip there rest if nothing is visible.
             if (_drawablesInView.Count == 0)

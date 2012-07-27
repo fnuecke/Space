@@ -1,32 +1,20 @@
-﻿using System.Globalization;
-using Engine.ComponentSystem.Components;
+﻿using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
 
 namespace Engine.ComponentSystem.Common.Components
 {
     /// <summary>
-    /// Represents friction for an object.
-    /// 
-    /// <para>
-    /// Requires: <c>Velocity</c>.
-    /// </para>
+    /// Tracks which node an entity is in.
     /// </summary>
-    public sealed class Friction : Component
+    public sealed class Node : Component
     {
         #region Fields
 
         /// <summary>
-        /// The damping to apply to this objects movement (simulates friction).
+        /// The current node the entity is in.
         /// </summary>
-        public float Value;
-
-        /// <summary>
-        /// Minimum velocity of an object before it is stopped (avoids jitter
-        /// for very low velocity, due to which objects with damping never
-        /// stop, even though they should).
-        /// </summary>
-        public float StopVelocity;
+        public ulong Value;
 
         #endregion
 
@@ -40,35 +28,30 @@ namespace Engine.ComponentSystem.Common.Components
         {
             base.Initialize(other);
 
-            var otherFriction = (Friction)other;
-            Value = otherFriction.Value;
-            StopVelocity = otherFriction.StopVelocity;
+            Value = ((Node)other).Value;
 
             return this;
         }
 
         /// <summary>
-        /// Initialize with the specified friction and stop velocity.
+        /// Initialize with the specified value.
         /// </summary>
-        /// <param name="value">The friction.</param>
-        /// <param name="stopVelocity">The stop velocity.</param>
-        public Friction Initialize(float value, float stopVelocity)
+        /// <param name="value">The value.</param>
+        public Node Initialize(ulong value)
         {
             Value = value;
-            StopVelocity = stopVelocity;
 
             return this;
         }
 
         /// <summary>
-        /// Initialize with the specified friction.
+        /// Initialize with the specified value.
         /// </summary>
-        /// <param name="value">The friction.</param>
-        public Friction Initialize(float value)
+        /// <param name="x">The x coordinate.</param>
+        /// <param name="y">The y coordinate.</param>
+        public Node Initialize(int x, int y)
         {
-            Initialize(value, 0);
-
-            return this;
+            return Initialize(BitwiseMagic.Pack(x, y));
         }
 
         /// <summary>
@@ -80,12 +63,11 @@ namespace Engine.ComponentSystem.Common.Components
             base.Reset();
 
             Value = 0;
-            StopVelocity = 0;
         }
 
         #endregion
 
-        #region Serialization / Hashing
+        #region Serialization
 
         /// <summary>
         /// Write the object's state to the given packet.
@@ -97,8 +79,7 @@ namespace Engine.ComponentSystem.Common.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Value)
-                .Write(StopVelocity);
+                .Write(Value);
         }
 
         /// <summary>
@@ -109,8 +90,7 @@ namespace Engine.ComponentSystem.Common.Components
         {
             base.Depacketize(packet);
 
-            Value = packet.ReadSingle();
-            StopVelocity = packet.ReadSingle();
+            Value = packet.ReadUInt64();
         }
 
         /// <summary>
@@ -121,9 +101,8 @@ namespace Engine.ComponentSystem.Common.Components
         public override void Hash(Hasher hasher)
         {
             base.Hash(hasher);
-            
+
             hasher.Put(Value);
-            hasher.Put(StopVelocity);
         }
 
         #endregion
@@ -138,7 +117,9 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Value=" + Value.ToString(CultureInfo.InvariantCulture) + ", StopVelocity=" + StopVelocity.ToString(CultureInfo.InvariantCulture);
+            int x, y;
+            BitwiseMagic.Unpack(Value, out x, out y);
+            return base.ToString() + ", Value=" + Value + " (" + x + ":" + y + ")";
         }
 
         #endregion

@@ -70,7 +70,7 @@ namespace Space.Control
 
             // Check if the server has all the services we need (enough to
             // check for one, because we only add all at once -- here).
-            if (server.Simulation.Manager.GetSystem<CameraSystem>() == null)
+            if (server.Simulation.Manager.GetSystem(CameraSystem.TypeId) == null)
             {
                 // Needed by some systems. Add all systems we need in
                 // *addition* to the ones the server already has.

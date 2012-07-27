@@ -62,7 +62,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="frame">The frame.</param>
         public override void Update(long frame)
         {
-            var index = Manager.GetSystem<IndexSystem>();
+            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
             ICollection<int> neighbors = _reusableNeighborList;
 
             UpdatingComponents.AddRange(Components);

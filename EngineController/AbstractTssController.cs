@@ -495,7 +495,7 @@ namespace Engine.Controller
                 // Check systems to isolate faulty one.
                 foreach (var system in ((Manager)m2).Systems)
                 {
-                    var s1 = m1.GetSystem(system.GetType());
+                    var s1 = m1.GetSystem(Manager.GetSystemTypeId(system.GetType()));
                     var s2 = system;
 
                     var h1 = new Hasher();
@@ -563,7 +563,7 @@ namespace Engine.Controller
                     // Check systems to isolate faulty one.
                     foreach (var system in ((Manager)m2).Systems)
                     {
-                        var s1 = m1.GetSystem(system.GetType());
+                        var s1 = m1.GetSystem(Manager.GetSystemTypeId(system.GetType()));
                         var s2 = system;
 
                         var h1 = new Hasher();

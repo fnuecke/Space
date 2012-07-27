@@ -5,6 +5,15 @@ namespace Space.ComponentSystem.Systems
 {
     public sealed class SpaceUsablesSystem : UsablesSystem<UsableResponse>
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetSystemTypeId(typeof(SpaceUsablesSystem));
+
+        #endregion
+
         protected override void Activate(UsableResponse action, int entity)
         {
         }

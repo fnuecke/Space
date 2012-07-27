@@ -227,7 +227,7 @@ namespace Space.View
         private void HostGame(JSValue[] args)
         {
             _game.RestartServer();
-            //*
+            /*
             _game.RestartClient(true);
             /*/
             _game.RestartClient();
@@ -687,7 +687,7 @@ namespace Space.View
         private JSValue GetIndexes(JSValue[] args)
         {
             var manager = _game.Client.Controller.Simulation.Manager;
-            var index = manager.GetSystem<IndexSystem>();
+            var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
             if (index != null)
             {
                 
@@ -702,7 +702,7 @@ namespace Space.View
         private JSValue GetTotalEntries(JSValue[] args)
         {
             var manager = _game.Client.Controller.Simulation.Manager;
-            var index = manager.GetSystem<IndexSystem>();
+            var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
             if (index != null)
             {
 
@@ -716,7 +716,7 @@ namespace Space.View
         private JSValue GetQueries(JSValue[] args)
         {
             var manager = _game.Client.Controller.Simulation.Manager;
-            var index = manager.GetSystem<IndexSystem>();
+            var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
             if (index != null)
             {
 

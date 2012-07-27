@@ -9,6 +9,15 @@ namespace Engine.ComponentSystem.Common.Systems
     /// </summary>
     public sealed class AvatarSystem : AbstractComponentSystem<Avatar>
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetSystemTypeId(typeof(AvatarSystem));
+
+        #endregion
+
         #region Properties
 
         /// <summary>

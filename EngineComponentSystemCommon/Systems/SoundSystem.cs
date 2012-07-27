@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
@@ -96,11 +97,8 @@ namespace Engine.ComponentSystem.Common.Systems
                 return;
             }
 
-            var index = Manager.GetSystem<IndexSystem>();
-            if (index == null)
-            {
-                return;
-            }
+            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+            Debug.Assert(index != null);
 
             // Update listener information.
             var position = GetListenerPosition();

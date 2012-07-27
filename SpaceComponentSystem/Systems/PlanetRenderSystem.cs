@@ -79,11 +79,11 @@ namespace Space.ComponentSystem.Systems
         /// <param name="frame">The frame in which the update is applied.</param>
         public override void Draw(long frame)
         {
-            var camera = Manager.GetSystem<CameraSystem>();
+            var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
             // Get all renderable entities in the viewport.
             var view = camera.ComputeVisibleBounds(_planet.GraphicsDevice.Viewport);
-            Manager.GetSystem<IndexSystem>().Find(ref view, ref _drawablesInView, CullingTextureRenderSystem.IndexGroupMask);
+            ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, CullingTextureRenderSystem.IndexGroupMask);
 
             // Skip there rest if nothing is visible.
             if (_drawablesInView.Count == 0)

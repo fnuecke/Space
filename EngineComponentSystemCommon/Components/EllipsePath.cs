@@ -20,17 +20,11 @@ namespace Engine.ComponentSystem.Common.Components
         /// </summary>
         public float Angle
         {
-            get
-            {
-                return _angle;
-            }
+            get { return _angle; }
             set
             {
-                if (value != _angle)
-                {
-                    _angle = value;
-                    Precompute();
-                }
+                _angle = value;
+                Precompute();
             }
         }
 
@@ -39,17 +33,11 @@ namespace Engine.ComponentSystem.Common.Components
         /// </summary>
         public float MajorRadius
         {
-            get
-            {
-                return _majorRadius;
-            }
+            get { return _majorRadius; }
             set
             {
-                if (value != _majorRadius)
-                {
-                    _majorRadius = value;
-                    Precompute();
-                }
+                _majorRadius = value;
+                Precompute();
             }
         }
 
@@ -58,17 +46,11 @@ namespace Engine.ComponentSystem.Common.Components
         /// </summary>
         public float MinorRadius
         {
-            get
-            {
-                return _minorRadius;
-            }
+            get { return _minorRadius; }
             set
             {
-                if (value != _minorRadius)
-                {
-                    _minorRadius = value;
-                    Precompute();
-                }
+                _minorRadius = value;
+                Precompute();
             }
         }
 
@@ -180,20 +162,20 @@ namespace Engine.ComponentSystem.Common.Components
         public EllipsePath Initialize(int centerEntityId, float majorRadius, float minorRadius,
             float angle, float period, float periodOffset)
         {
-            this.CenterEntityId = centerEntityId;
+            CenterEntityId = centerEntityId;
             if (majorRadius < minorRadius)
             {
-                this.MajorRadius = minorRadius;
-                this.MinorRadius = majorRadius;
+                MajorRadius = minorRadius;
+                MinorRadius = majorRadius;
             }
             else
             {
-                this.MajorRadius = majorRadius;
-                this.MinorRadius = minorRadius;
+                MajorRadius = majorRadius;
+                MinorRadius = minorRadius;
             }
-            this.Angle = angle;
-            this.Period = period;
-            this.PeriodOffset = periodOffset;
+            Angle = angle;
+            Period = period;
+            PeriodOffset = periodOffset;
 
             return this;
         }
@@ -226,8 +208,7 @@ namespace Engine.ComponentSystem.Common.Components
             // If our angle changed, recompute our sine and cosine.
             var sinPhi = (float)Math.Sin(_angle);
             var cosPhi = (float)Math.Cos(_angle);
-            var f = (float)Math.Sqrt(Math.Abs(
-                _minorRadius * _minorRadius - _majorRadius * _majorRadius));
+            var f = (float)Math.Sqrt(Math.Abs(_minorRadius * _minorRadius - _majorRadius * _majorRadius));
             
             PrecomputedA = f * cosPhi;
             PrecomputedB = MajorRadius * cosPhi;

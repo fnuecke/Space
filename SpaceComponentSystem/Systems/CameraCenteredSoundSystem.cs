@@ -14,6 +14,15 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class CameraCenteredSoundSystem : SoundSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetSystemTypeId(typeof(CameraCenteredSoundSystem));
+
+        #endregion
+
         #region Fields
 
         /// <summary>
@@ -58,7 +67,7 @@ namespace Space.ComponentSystem.Systems
         {
             if (_session.ConnectionState == ClientState.Connected)
             {
-                var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
+                var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
                 if (avatar.HasValue)
                 {
                     return Manager.GetComponent<Transform>(avatar.Value).Translation;
@@ -74,7 +83,7 @@ namespace Space.ComponentSystem.Systems
         {
             if (_session.ConnectionState == ClientState.Connected)
             {
-                var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
+                var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
                 if (avatar.HasValue)
                 {
                     return Manager.GetComponent<Velocity>(avatar.Value).Value;

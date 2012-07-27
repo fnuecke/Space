@@ -74,7 +74,7 @@ namespace Engine.ComponentSystem
         /// Adds a copy of the specified system.
         /// </summary>
         /// <param name="system">The system to copy.</param>
-        void CopySystem(ICopyable<AbstractSystem> system);
+        void CopySystem(AbstractSystem system);
 
         /// <summary>
         /// Removes the specified system from this manager.
@@ -88,20 +88,11 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Get a system of the specified type.
         /// </summary>
-        /// <typeparam name="T">The type of the system to get.</typeparam>
-        /// <returns>
-        /// The system with the specified type.
-        /// </returns>
-        T GetSystem<T>() where T : AbstractSystem;
-
-        /// <summary>
-        /// Get a system of the specified type.
-        /// </summary>
         /// <param name="type">The type of the system to get.</param>
         /// <returns>
         /// The system with the specified type.
         /// </returns>
-        AbstractSystem GetSystem(Type type);
+        AbstractSystem GetSystem(int type);
 
         #endregion
 

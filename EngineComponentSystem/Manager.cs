@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Engine.Collections;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.Systems;
@@ -16,6 +17,88 @@ namespace Engine.ComponentSystem
     /// </summary>
     public sealed class Manager : IManager
     {
+        #region Type mapping
+
+        /// <summary>
+        /// Manages unique IDs for system types.
+        /// </summary>
+        private static readonly IdManager SystemTypeIds = new IdManager();
+
+        /// <summary>
+        /// Maps actual system types to their IDs.
+        /// </summary>
+        private static readonly Dictionary<Type, int> SystemTypes = new Dictionary<Type, int>();
+
+        /// <summary>
+        /// Manages unique IDs for component types.
+        /// </summary>
+        private static readonly IdManager ComponentTypeIds = new IdManager();
+
+        /// <summary>
+        /// Maps actual component types to their IDs.
+        /// </summary>
+        private static readonly Dictionary<Type, int> ComponentTypes = new Dictionary<Type, int>();
+
+        #endregion
+
+        #region Type Resolving
+
+        /// <summary>
+        /// Gets the system type id for the specified system type. This will
+        /// create a new ID if necessary.
+        /// </summary>
+        /// <typeparam name="T">The system type to look up the id for.</typeparam>
+        /// <returns>The type id for that system.</returns>
+        public static int GetSystemTypeId<T>() where T : AbstractSystem
+        {
+            return GetSystemTypeId(typeof(T));
+        }
+
+        /// <summary>
+        /// Gets the system type id for the specified system type. This will
+        /// create a new ID if necessary.
+        /// </summary>
+        /// <param name="type">The system type to look up the id for.</param>
+        /// <returns>The type id for that system.</returns>
+        public static int GetSystemTypeId(Type type)
+        {
+            int typeId;
+            if (!SystemTypes.TryGetValue(type, out typeId))
+            {
+                SystemTypes[type] = typeId = SystemTypeIds.GetId();
+            }
+            return typeId;
+        }
+
+        /// <summary>
+        /// Gets the component type id for the specified component type. This will
+        /// create a new ID if necessary.
+        /// </summary>
+        /// <typeparam name="T">The component type to look up the id for.</typeparam>
+        /// <returns>The type id for that component.</returns>
+        public static int GetComponentTypeId<T>() where T : Component
+        {
+            return GetComponentTypeId(typeof(T));
+        }
+
+        /// <summary>
+        /// Gets the component type id for the specified component type. This will
+        /// create a new ID if necessary.
+        /// </summary>
+        /// <param name="type">The component type to look up the id for.</param>
+        /// <returns>The type id for that component.</returns>
+        public static int GetComponentTypeId(Type type)
+        {
+            int typeId;
+            if (!ComponentTypes.TryGetValue(type, out typeId))
+            {
+                ComponentTypes[type] = typeId = ComponentTypeIds.GetId();
+            }
+            return typeId;
+        }
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -86,9 +169,9 @@ namespace Engine.ComponentSystem
         private readonly List<AbstractSystem> _systems = new List<AbstractSystem>(); 
 
         /// <summary>
-        /// Lookup table for quick access to component by type.
+        /// Lookup table for quick access to systems by their type id.
         /// </summary>
-        private readonly Dictionary<Type, AbstractSystem> _systemsByType = new Dictionary<Type, AbstractSystem>();
+        private readonly SparseArray<AbstractSystem> _systemsByTypeId = new SparseArray<AbstractSystem>();
 
         #endregion
 
@@ -136,9 +219,16 @@ namespace Engine.ComponentSystem
         /// </returns>
         public IManager AddSystem(AbstractSystem system)
         {
-            _systemsByType.Add(system.GetType(), system);
+            // Get type ID for that system.
+            var systemTypeId = GetSystemTypeId(system.GetType());
+
+            Debug.Assert(_systemsByTypeId[systemTypeId] == null, "Must not add the same system twice.");
+
+            _systemsByTypeId[systemTypeId] = system;
             _systems.Add(system);
+
             system.Manager = this;
+
             return this;
         }
 
@@ -158,17 +248,17 @@ namespace Engine.ComponentSystem
         /// Adds a copy of the specified system.
         /// </summary>
         /// <param name="system">The system to copy.</param>
-        public void CopySystem(ICopyable<AbstractSystem> system)
+        public void CopySystem(AbstractSystem system)
         {
-            var type = system.GetType();
-            if (!_systemsByType.ContainsKey(type))
+            var systemTypeId = GetSystemTypeId(system.GetType());
+            if (_systemsByTypeId[systemTypeId] == null)
             {
                 var systemCopy = system.NewInstance();
                 systemCopy.Manager = this;
-                _systemsByType.Add(type, systemCopy);
+                _systemsByTypeId[systemTypeId] = systemCopy;
                 _systems.Add(systemCopy);
             }
-            system.CopyInto(_systemsByType[type]);
+            system.CopyInto(_systemsByTypeId[systemTypeId]);
         }
 
         /// <summary>
@@ -180,12 +270,11 @@ namespace Engine.ComponentSystem
         /// </returns>
         public bool RemoveSystem(AbstractSystem system)
         {
-            if (!_systemsByType.Remove(system.GetType()))
-            {
-                return false;
-            }
+            _systemsByTypeId[GetSystemTypeId(system.GetType())] = null;
             _systems.Remove(system);
+
             system.Manager = null;
+
             return true;
         }
 
@@ -198,7 +287,7 @@ namespace Engine.ComponentSystem
         /// </returns>
         public T GetSystem<T>() where T : AbstractSystem
         {
-            return (T)GetSystem(typeof(T));
+            return (T)GetSystem(GetSystemTypeId<T>());
         }
 
         /// <summary>
@@ -208,11 +297,9 @@ namespace Engine.ComponentSystem
         /// <returns>
         /// The system with the specified type.
         /// </returns>
-        public AbstractSystem GetSystem(Type type)
+        public AbstractSystem GetSystem(int type)
         {
-            AbstractSystem result;
-            _systemsByType.TryGetValue(type, out result);
-            return result;
+            return _systemsByTypeId[type];
         }
 
         #endregion
@@ -554,8 +641,8 @@ namespace Engine.ComponentSystem
             for (var i = 0; i < numSystems; ++i)
             {
                 var type = packet.ReadType();
-                Debug.Assert(_systemsByType.ContainsKey(type));
-                packet.ReadPacketizableInto(_systemsByType[type]);
+                Debug.Assert(SystemTypes.ContainsKey(type));
+                packet.ReadPacketizableInto(_systemsByTypeId[GetSystemTypeId(type)]);
             }
 
             // All done, send message to allow post-processing.

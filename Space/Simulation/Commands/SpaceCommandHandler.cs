@@ -181,7 +181,7 @@ from Space.Data import *
         private static void RestoreProfile(RestoreProfileCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(~command.PlayerNumber);
+            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(~command.PlayerNumber);
 
             // Only allow loading once a session, so skip if he already has an avatar.
             if (avatar.HasValue)
@@ -200,7 +200,7 @@ from Space.Data import *
         private static void PlayerInput(PlayerInputCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (!avatar.HasValue)
@@ -246,7 +246,7 @@ from Space.Data import *
         private static void Equip(EquipCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (!avatar.HasValue)
@@ -298,7 +298,7 @@ from Space.Data import *
         private static void MoveItem(MoveItemCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (!avatar.HasValue)
@@ -325,7 +325,7 @@ from Space.Data import *
         private static void PickUp(PickUpCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (!avatar.HasValue)
@@ -335,7 +335,7 @@ from Space.Data import *
 
             // Get the inventory of the player and the index system.
             var inventory = manager.GetComponent<Inventory>(avatar.Value);
-            var index = manager.GetSystem<IndexSystem>();
+            var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
             var transform = manager.GetComponent<Transform>(avatar.Value);
 
             // We may be called from a multi threaded environment (TSS), so
@@ -357,7 +357,7 @@ from Space.Data import *
         private static void DropItem(DropCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (!avatar.HasValue)
@@ -419,7 +419,7 @@ from Space.Data import *
         private static void UseItem(UseCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (!avatar.HasValue)
@@ -451,7 +451,7 @@ from Space.Data import *
             if (usable != null)
             {
                 // Usable item, use it.
-                manager.GetSystem<SpaceUsablesSystem>().Use(usable);
+                ((SpaceUsablesSystem)manager.GetSystem(SpaceUsablesSystem.TypeId)).Use(usable);
             }
             else
             {
@@ -508,7 +508,7 @@ from Space.Data import *
         private static void ScriptCommand(ScriptCommand command, IManager manager)
         {
             // Get the avatar of the related player.
-            var avatar = manager.GetSystem<AvatarSystem>().GetAvatar(command.PlayerNumber);
+            var avatar = ((AvatarSystem)manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(command.PlayerNumber);
 
             // Make sure we have the player's avatar.
             if (!avatar.HasValue)

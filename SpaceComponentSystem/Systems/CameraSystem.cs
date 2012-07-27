@@ -17,6 +17,15 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class CameraSystem : AbstractSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetSystemTypeId(typeof(CameraSystem));
+
+        #endregion
+
         #region Constants
         
         /// <summary>
@@ -138,7 +147,7 @@ namespace Space.ComponentSystem.Systems
         {
             // Get viewport, to center objects around the camera position.
             var viewport = _game.GraphicsDevice.Viewport;
-            var cameraPosition = Manager.GetSystem<CameraSystem>().CameraPositon;
+            var cameraPosition = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).CameraPositon;
 
             // Return the *negative* camera position, because that's the
             // actual amount we need to translate game objects to be drawn
@@ -161,7 +170,7 @@ namespace Space.ComponentSystem.Systems
         /// <param name="view">The viewport to compute the visible bounds for.</param>
         public Rectangle ComputeVisibleBounds(Viewport view)
         {
-            var camera = Manager.GetSystem<CameraSystem>();
+            var camera = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId));
             var center = camera.CameraPositon;
             var zoom = camera.Zoom;
             var width = (int)(view.Width / zoom);
@@ -229,7 +238,7 @@ namespace Space.ComponentSystem.Systems
                 if (!_customCameraPosition.HasValue &&
                     _session.ConnectionState == ClientState.Connected)
                 {
-                    var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
+                    var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
                     if (avatar.HasValue)
                     {
                         // Non-fixed camera, update our offset based on the game pad

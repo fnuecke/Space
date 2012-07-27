@@ -79,7 +79,7 @@ namespace Space.ComponentSystem.Systems
                 if (info.State)
                 {
                     // Get the cell info to know what faction we're spawning for.
-                    var cellInfo = Manager.GetSystem<UniverseSystem>().GetCellInfo(info.Id);
+                    var cellInfo = ((UniverseSystem)Manager.GetSystem(UniverseSystem.TypeId)).GetCellInfo(info.Id);
                     
                     // The area covered by the cell.
                     Rectangle cellArea;

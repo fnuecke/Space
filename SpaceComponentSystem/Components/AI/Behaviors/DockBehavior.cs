@@ -54,7 +54,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             // See if there are any stations nearby.
             var faction = AI.Manager.GetComponent<Faction>(AI.Entity).Value;
             var position = AI.Manager.GetComponent<Transform>(AI.Entity).Translation;
-            var index = AI.Manager.GetSystem<IndexSystem>();
+            var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
 
             // The closest station we were able to find and how far it is away.
             var closestStation = 0;

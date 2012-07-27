@@ -398,8 +398,8 @@ namespace Space
 
                         sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
 
-                        var index = manager.GetSystem<IndexSystem>();
-                        var camera = manager.GetSystem<CameraSystem>();
+                        var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
+                        var camera = (CameraSystem)manager.GetSystem(CameraSystem.TypeId);
                         if (index != null)
                         {
                             if (_indexGroupMask >= 0)

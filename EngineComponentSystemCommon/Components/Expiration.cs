@@ -39,7 +39,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="ttl">The time the object has to live.</param>
         public Expiration Initialize(int ttl)
         {
-            this.TimeToLive = ttl;
+            TimeToLive = ttl;
 
             return this;
         }

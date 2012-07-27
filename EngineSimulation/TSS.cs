@@ -808,7 +808,7 @@ namespace Engine.Simulation
             /// Adds a copy of the specified system.
             /// </summary>
             /// <param name="system">The system to copy.</param>
-            public void CopySystem(ICopyable<AbstractSystem> system)
+            public void CopySystem(AbstractSystem system)
             {
                 throw new NotSupportedException();
             }
@@ -828,23 +828,11 @@ namespace Engine.Simulation
             /// <summary>
             /// Get a system of the specified type.
             /// </summary>
-            /// <typeparam name="T">The type of the system to get.</typeparam>
-            /// <returns>
-            /// The system with the specified type.
-            /// </returns>
-            public T GetSystem<T>() where T : AbstractSystem
-            {
-                return _tss.LeadingSimulation.Manager.GetSystem<T>();
-            }
-
-            /// <summary>
-            /// Get a system of the specified type.
-            /// </summary>
             /// <param name="type">The type of the system to get.</param>
             /// <returns>
             /// The system with the specified type.
             /// </returns>
-            public AbstractSystem GetSystem(Type type)
+            public AbstractSystem GetSystem(int type)
             {
                 return _tss.LeadingSimulation.Manager.GetSystem(type);
             }

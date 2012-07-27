@@ -28,7 +28,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns>The transformation.</returns>
         protected override Matrix GetTransform()
         {
-            return Manager.GetSystem<CameraSystem>().GetTransformation();
+            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).GetTransformation();
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         protected override Rectangle ComputeViewport()
         {
-            return Manager.GetSystem<CameraSystem>().ComputeVisibleBounds(SpriteBatch.GraphicsDevice.Viewport);
+            return ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).ComputeVisibleBounds(SpriteBatch.GraphicsDevice.Viewport);
         }
 
         #endregion

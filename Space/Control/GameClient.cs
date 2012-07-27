@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
@@ -213,7 +214,7 @@ namespace Space.Control
         {
             if (IsRunning())
             {
-                return Controller.Simulation.Manager.GetSystem<T>();
+                return (T)Controller.Simulation.Manager.GetSystem(Manager.GetSystemTypeId<T>());
             }
             else
             {

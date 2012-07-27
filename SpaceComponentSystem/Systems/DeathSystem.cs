@@ -77,12 +77,12 @@ namespace Space.ComponentSystem.Systems
                 var entity = ((EntityDied)(ValueType)message).Entity;
 
                 // Play explosion effect at point of death.
-                var particleSystem = Manager.GetSystem<CameraCenteredParticleEffectSystem>();
+                var particleSystem = (CameraCenteredParticleEffectSystem)Manager.GetSystem(CameraCenteredParticleEffectSystem.TypeId);
                 if (particleSystem != null)
                 {
                     particleSystem.Play("Effects/BasicExplosion", entity);
                 }
-                var soundSystem = Manager.GetSystem<CameraCenteredSoundSystem>();
+                var soundSystem = (CameraCenteredSoundSystem)Manager.GetSystem(CameraCenteredSoundSystem.TypeId);
                 if (soundSystem != null)
                 {
                     soundSystem.Play("Explosion", entity);
@@ -130,7 +130,7 @@ namespace Space.ComponentSystem.Systems
                     (int)position.Y >> CellSystem.CellSizeShiftAmount);
 
                 // If the cell changed, check if we're out of bounds.
-                if (!Manager.GetSystem<CellSystem>().IsCellActive(cellId))
+                if (!((CellSystem)Manager.GetSystem(CellSystem.TypeId)).IsCellActive(cellId))
                 {
                     // Dead space, kill it.
                     Manager.RemoveEntity(changedMessage.Entity);

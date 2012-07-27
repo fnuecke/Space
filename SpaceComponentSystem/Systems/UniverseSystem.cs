@@ -24,6 +24,15 @@ namespace Space.ComponentSystem.Systems
     /// </summary>
     public sealed class UniverseSystem : AbstractSystem
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetSystemTypeId(typeof(UniverseSystem));
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -123,7 +132,7 @@ namespace Space.ComponentSystem.Systems
                     // Find nearby active cells and the stations in them, mark
                     // them as possible targets for all station sin this cell,
                     // and let them know about our existence, as well.
-                    var cellSystem = Manager.GetSystem<CellSystem>();
+                    var cellSystem = (CellSystem)Manager.GetSystem(CellSystem.TypeId);
                     var stations = _cellInfo[info.Id].Stations;
                     for (var ny = info.Y - 1; ny <= info.Y + 1; ny++)
                     {

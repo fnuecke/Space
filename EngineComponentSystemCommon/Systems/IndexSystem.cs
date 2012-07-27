@@ -18,6 +18,15 @@ namespace Engine.ComponentSystem.Common.Systems
     /// </summary>
     public sealed class IndexSystem : AbstractComponentSystem<Index>
     {
+        #region Type ID
+
+        /// <summary>
+        /// The unique type ID for this system, by which it is referred to in the manager.
+        /// </summary>
+        public static readonly int TypeId = ComponentSystem.Manager.GetSystemTypeId(typeof(IndexSystem));
+
+        #endregion
+
         #region Group number distribution
 
         /// <summary>

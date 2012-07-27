@@ -87,12 +87,12 @@ namespace Space.ComponentSystem.Components
         {
             Initialize(name, iconName, quality);
 
-            this.ModelName = modelName;
-            this.Sound = sound;
-            this.Cooldown = cooldown;
-            this.EnergyConsumption = energyConsumption;
-            this.Damage = damage;
-            this.Projectiles = projectiles;
+            ModelName = modelName;
+            Sound = sound;
+            Cooldown = cooldown;
+            EnergyConsumption = energyConsumption;
+            Damage = damage;
+            Projectiles = projectiles;
 
             return this;
         }

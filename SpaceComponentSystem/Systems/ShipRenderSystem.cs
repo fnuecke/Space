@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         private Vector2 GetTranslation()
         {
-            var translation = Manager.GetSystem<CameraSystem>().GetTranslation();
+            var translation = ((CameraSystem)Manager.GetSystem(CameraSystem.TypeId)).GetTranslation();
 
             Vector2 result;
             result.X = translation.X;

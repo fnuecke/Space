@@ -138,7 +138,7 @@ namespace Space.ComponentSystem.Systems
         public override void Draw(long frame)
         {
             // Get local player's avatar.
-            var avatar = Manager.GetSystem<AvatarSystem>().GetAvatar(_session.LocalPlayer.Number);
+            var avatar = ((AvatarSystem)Manager.GetSystem(AvatarSystem.TypeId)).GetAvatar(_session.LocalPlayer.Number);
             if (!avatar.HasValue)
             {
                 return;
@@ -148,10 +148,10 @@ namespace Space.ComponentSystem.Systems
             var info = Manager.GetComponent<ShipInfo>(avatar.Value);
 
             // Get the index we use for looking up nearby objects.
-            var index = Manager.GetSystem<IndexSystem>();
+            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
 
             // Get camera information.
-            var camera = Manager.GetSystem<CameraSystem>();
+            var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
             // Get the actual position we're rendering at. Note that this will
             // actually allow the player to "extend" his radar by the maximum

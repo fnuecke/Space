@@ -307,7 +307,7 @@ namespace Space.ComponentSystem.Components.AI.Behaviors
             var mass = info.Mass;
 
             // Look for evil neighbors, in particular suns and the like.
-            var index = AI.Manager.GetSystem<IndexSystem>();
+            var index = (IndexSystem)AI.Manager.GetSystem(IndexSystem.TypeId);
             ICollection<int> neighbors = new List<int>(); // TODO use reusable list to avoid reallocation each update
             index.Find(position, MaxEscapeCheckDistance, ref neighbors, DetectableSystem.IndexGroupMask);
             foreach (var neighbor in neighbors)

@@ -13,15 +13,6 @@ namespace Engine.ComponentSystem.Common.Components
     /// </summary>
     public sealed class TextureRenderer : Component
     {
-        #region Properties
-        
-        /// <summary>
-        /// The name of the texture to use for rendering the physics object.
-        /// </summary>
-        public string TextureName { get { return _textureName; } set { _textureName = value; Texture = null; } }
-
-        #endregion
-
         #region Fields
 
         /// <summary>
@@ -35,15 +26,14 @@ namespace Engine.ComponentSystem.Common.Components
         public float Scale;
 
         /// <summary>
+        /// The name of the texture to use for rendering the physics object.
+        /// </summary>
+        public string TextureName;
+
+        /// <summary>
         /// The actual texture with the set name.
         /// </summary>
         public Texture2D Texture;
-
-        /// <summary>
-        /// Actual texture name. Setter is used to invalidate the actual texture reference,
-        /// so we need to store this ourselves.
-        /// </summary>
-        private string _textureName;
 
         #endregion
 
@@ -60,8 +50,8 @@ namespace Engine.ComponentSystem.Common.Components
             var otherTexture = (TextureRenderer)other;
             Tint = otherTexture.Tint;
             Scale = otherTexture.Scale;
+            TextureName = otherTexture.TextureName;
             Texture = otherTexture.Texture;
-            _textureName = otherTexture._textureName;
 
             return this;
         }
@@ -74,9 +64,10 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="scale">The scale.</param>
         public TextureRenderer Initialize(string textureName, Color tint, float scale = 1)
         {
-            this.TextureName = textureName;
-            this.Tint = tint;
-            this.Scale = scale;
+            Tint = tint;
+            Scale = scale;
+            TextureName = textureName;
+            Texture = null;
 
             return this;
         }
@@ -112,9 +103,9 @@ namespace Engine.ComponentSystem.Common.Components
         {
             base.Reset();
 
-            _textureName = string.Empty;
             Tint = Color.White;
             Scale = 1;
+            TextureName = string.Empty;
             Texture = null;
         }
 
@@ -132,9 +123,9 @@ namespace Engine.ComponentSystem.Common.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(TextureName)
                 .Write(Tint.PackedValue)
-                .Write(Scale);
+                .Write(Scale)
+                .Write(TextureName);
         }
 
         /// <summary>
@@ -145,11 +136,10 @@ namespace Engine.ComponentSystem.Common.Components
         {
             base.Depacketize(packet);
 
-            // Use setter to null the texture.
-            TextureName = packet.ReadString();
             Tint.PackedValue = packet.ReadUInt32();
-
             Scale = packet.ReadSingle();
+            TextureName = packet.ReadString();
+            Texture = null;
         }
 
         /// <summary>
@@ -173,7 +163,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", TextureName=" + _textureName + ", Tint=" + Tint + ", Scale=" + Scale.ToString(CultureInfo.InvariantCulture);
+            return base.ToString() + ", TextureName=" + TextureName + ", Tint=" + Tint + ", Scale=" + Scale.ToString(CultureInfo.InvariantCulture);
         }
 
         #endregion

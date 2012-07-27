@@ -84,6 +84,7 @@
     <Compile Include="Collections\IIndex.cs" />
     <Compile Include="Collections\QuadTree.cs" />
     <Compile Include="Collections\RTree.cs" />
+    <Compile Include="Collections\SparseArray.cs" />
     <Compile Include="Graphics\AbstractEllipse.cs" />
     <Compile Include="Graphics\AbstractShape.cs" />
     <Compile Include="Graphics\FilledEllipse.cs" />
@@ -95,6 +96,7 @@
     <Compile Include="IO\EncryptedPacketStream.cs" />
     <Compile Include="IO\IPacketStream.cs" />
     <Compile Include="Network\AbstractProtocol.cs" />
+    <Compile Include="Util\BitwiseMagic.cs" />
     <Compile Include="Util\CoordinateIds.cs" />
     <Compile Include="Util\ICopyable.cs" />
     <Compile Include="Util\IdManager.cs" />
