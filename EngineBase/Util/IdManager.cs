@@ -12,6 +12,17 @@ namespace Engine.Util
     /// </summary>
     public sealed class IdManager : IPacketizable, ICopyable<IdManager>, IEnumerable<int>
     {
+        #region Properties
+
+        /// <summary>
+        /// The number of IDs currently in use.
+        /// </summary>
+        public int Count
+        {
+            get { return _nextId - 1 - _reusableIds.Count; }
+        }
+
+        #endregion
         #region Fields
 
         /// <summary>
@@ -25,6 +36,8 @@ namespace Engine.Util
         private int _nextId = 1;
 
         #endregion
+
+        #region Accessors
 
         /// <summary>
         /// Check if a given id is currently in use, i.e. given out by this
@@ -47,7 +60,7 @@ namespace Engine.Util
             if (_reusableIds.Count > 0)
             {
                 // Get it and remove it from our list.
-                int result = _reusableIds.Min;
+                var result = _reusableIds.Min;
                 _reusableIds.Remove(result);
                 return result;
             }
@@ -93,6 +106,8 @@ namespace Engine.Util
             }
         }
 
+        #endregion
+        
         #region Serialization / Cloning
 
         /// <summary>

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Engine.Diagnostics;
 using Engine.Serialization;
 using Engine.Util;
 
@@ -7,6 +8,7 @@ namespace Engine.ComponentSystem.Systems
     /// <summary>
     /// Base class for systems, implementing default basic functionality.
     /// </summary>
+    [DebuggerTypeProxy(typeof(FlattenHierarchyProxy))]
     public abstract class AbstractSystem : ICopyable<AbstractSystem>, IPacketizable, IHashable
     {
         #region Properties

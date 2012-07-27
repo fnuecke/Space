@@ -24,18 +24,6 @@ namespace Engine.Tests.ComponentSystem
         }
 
         [Test]
-        [ExpectedException(typeof(System.ArgumentException))]
-        public void AddDupliateSystem()
-        {
-            var manager = new Manager();
-            var system1 = Substitute.For<AbstractSystem>();
-            var system2 = Substitute.For<AbstractSystem>();
-
-            manager.AddSystem(system1);
-            manager.AddSystem(system2);
-        }
-
-        [Test]
         public void UpdateAndDraw()
         {
             var manager = new Manager();

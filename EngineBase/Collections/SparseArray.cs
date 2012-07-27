@@ -1,4 +1,6 @@
 ﻿
+using System.Diagnostics;
+
 namespace Engine.Collections
 {
     /// <summary>
@@ -13,6 +15,7 @@ namespace Engine.Collections
         /// <summary>
         /// The actual array holding our data.
         /// </summary>
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
         private T[] _data;
 
         #endregion

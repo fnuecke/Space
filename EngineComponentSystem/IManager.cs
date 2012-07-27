@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Components;
 using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
@@ -21,19 +20,9 @@ namespace Engine.ComponentSystem
         IEnumerable<Component> Components { get; }
 
         /// <summary>
-        /// The number of components registered with this manager.
-        /// </summary>
-        int NumComponents { get; }
-
-        /// <summary>
         /// A list of all systems registered with this manager.
         /// </summary>
         IEnumerable<AbstractSystem> Systems { get; }
-
-        /// <summary>
-        /// The number of systems registered with this manager.
-        /// </summary>
-        int NumSystems { get; }
 
         #endregion
 
@@ -107,6 +96,12 @@ namespace Engine.ComponentSystem
         int AddEntity();
 
         /// <summary>
+        /// Removes an entity and all its components from the system.
+        /// </summary>
+        /// <param name="entity">The entity to remove.</param>
+        void RemoveEntity(int entity);
+
+        /// <summary>
         /// Test whether the specified entity exists.
         /// </summary>
         /// <param name="entity">The entity to check for.</param>
@@ -114,12 +109,6 @@ namespace Engine.ComponentSystem
         /// Whether the manager contains the entity or not.
         /// </returns>
         bool HasEntity(int entity);
-
-        /// <summary>
-        /// Removes an entity and all its components from the system.
-        /// </summary>
-        /// <param name="entity">The entity to remove.</param>
-        void RemoveEntity(int entity);
 
         /// <summary>
         /// Creates a new component for the specified entity.
@@ -132,14 +121,10 @@ namespace Engine.ComponentSystem
         T AddComponent<T>(int entity) where T : Component, new();
 
         /// <summary>
-        /// Creates a new component for the specified entity.
+        /// Removes the specified component from the system.
         /// </summary>
-        /// <param name="entity">The entity to attach the component to.</param>
-        /// <param name="type">The type of component to create.</param>
-        /// <returns>
-        /// The new component.
-        /// </returns>
-        Component AddComponent(int entity, Type type);
+        /// <param name="component">The component to remove.</param>
+        void RemoveComponent(Component component);
 
         /// <summary>
         /// Test whether the component with the specified id exists.
@@ -151,10 +136,13 @@ namespace Engine.ComponentSystem
         bool HasComponent(int componentId);
 
         /// <summary>
-        /// Removes the specified component from the system.
+        /// Get a component by its id.
         /// </summary>
-        /// <param name="component">The component to remove.</param>
-        void RemoveComponent(Component component);
+        /// <param name="componentId">The if of the component to retrieve.</param>
+        /// <returns>
+        /// The component with the specified id.
+        /// </returns>
+        Component GetComponentById(int componentId);
 
         /// <summary>
         /// Gets a component of the specified type for an entity. If there are
@@ -167,15 +155,6 @@ namespace Engine.ComponentSystem
         /// The component.
         /// </returns>
         Component GetComponent(int entity, int typeId);
-
-        /// <summary>
-        /// Get a component by its id.
-        /// </summary>
-        /// <param name="componentId">The if of the component to retrieve.</param>
-        /// <returns>
-        /// The component with the specified id.
-        /// </returns>
-        Component GetComponentById(int componentId);
 
         /// <summary>
         /// Allows enumerating over all components of the specified entity.

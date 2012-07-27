@@ -16,7 +16,6 @@ namespace Engine.ComponentSystem.Components
     /// must invalidate these references when cloning.
     /// </para>
     /// </summary>
-    [DebuggerDisplay("Type = {GetType().Name}, Id = {Id}, Entity = {Entity}")]
     [DebuggerTypeProxy(typeof(FlattenHierarchyProxy))]
     public abstract class Component : IPacketizable, IHashable
     {

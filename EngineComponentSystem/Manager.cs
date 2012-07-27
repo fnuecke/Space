@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Collections;
 using Engine.ComponentSystem.Components;
@@ -14,7 +13,7 @@ namespace Engine.ComponentSystem
     /// Manager for a complete component system. Tracks live entities and
     /// components, and allows lookup of components for entities.
     /// </summary>
-    [DebuggerDisplay("#Systems = {NumSystems}, #Components = {NumComponents}")]
+    [DebuggerDisplay("Systems = {_systems.Count}, Components = {_componentIds.Count}")]
     public sealed partial class Manager : IManager
     {
         #region Properties
@@ -25,15 +24,13 @@ namespace Engine.ComponentSystem
         /// </summary>
         public IEnumerable<Component> Components
         {
-            get { return _components; }
-        }
-
-        /// <summary>
-        /// The number of components registered with this manager.
-        /// </summary>
-        public int NumComponents
-        {
-            get { return _components.Count; }
+            get
+            {
+                foreach (var id in _componentIds)
+                {
+                    yield return _components[id];
+                }
+            }
         }
 
         /// <summary>
@@ -42,14 +39,6 @@ namespace Engine.ComponentSystem
         public IEnumerable<AbstractSystem> Systems
         {
             get { return _systems; }
-        }
-
-        /// <summary>
-        /// The number of systems registered with this manager.
-        /// </summary>
-        public int NumSystems
-        {
-            get { return _systems.Count; }
         }
 
         #endregion
@@ -82,14 +71,9 @@ namespace Engine.ComponentSystem
         private readonly SparseArray<Entity> _entities = new SparseArray<Entity>();
 
         /// <summary>
-        /// List of all components in this system, sorted by id.
-        /// </summary>
-        private readonly List<Component> _components = new List<Component>();
-
-        /// <summary>
         /// Lookup table for quick access to components by their id.
         /// </summary>
-        private readonly SparseArray<Component> _componentsById = new SparseArray<Component>();
+        private readonly SparseArray<Component> _components = new SparseArray<Component>();
 
         #endregion
 
@@ -137,14 +121,18 @@ namespace Engine.ComponentSystem
         /// </returns>
         public IManager AddSystem(AbstractSystem system)
         {
+            // Make sure we have a valid system.
+            Debug.Assert(system != null);
+
             // Get type ID for that system.
             var systemTypeId = GetSystemTypeId(system.GetType());
 
+            // Don't allow adding the same system twice.
             Debug.Assert(_systemsByTypeId[systemTypeId] == null, "Must not add the same system twice.");
 
+            // Register the system
             _systemsByTypeId[systemTypeId] = system;
             _systems.Add(system);
-
             system.Manager = this;
 
             return this;
@@ -188,9 +176,21 @@ namespace Engine.ComponentSystem
         /// </returns>
         public bool RemoveSystem(AbstractSystem system)
         {
-            _systemsByTypeId[GetSystemTypeId(system.GetType())] = null;
-            _systems.Remove(system);
+            // Make sure we have a valid system.
+            Debug.Assert(system != null);
 
+            // Get type ID for that system.
+            var systemTypeId = GetSystemTypeId(system.GetType());
+
+            // Check if we even have that system.
+            if (_systemsByTypeId[systemTypeId] == null)
+            {
+                return false;
+            }
+
+            // Unregister the system.
+            _systemsByTypeId[systemTypeId] = null;
+            _systems.Remove(system);
             system.Manager = null;
 
             return true;
@@ -199,13 +199,13 @@ namespace Engine.ComponentSystem
         /// <summary>
         /// Get a system of the specified type.
         /// </summary>
-        /// <param name="type">The type of the system to get.</param>
+        /// <param name="typeId">The type of the system to get.</param>
         /// <returns>
         /// The system with the specified type.
         /// </returns>
-        public AbstractSystem GetSystem(int type)
+        public AbstractSystem GetSystem(int typeId)
         {
-            return _systemsByTypeId[type];
+            return _systemsByTypeId[typeId];
         }
 
         #endregion
@@ -227,28 +227,13 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Test whether the specified entity exists.
-        /// </summary>
-        /// <param name="entity">The entity to check for.</param>
-        /// <returns>
-        /// Whether the manager contains the entity or not.
-        /// </returns>
-        public bool HasEntity(int entity)
-        {
-            return _entityIds.InUse(entity);
-        }
-
-        /// <summary>
         /// Removes an entity and all its components from the system.
         /// </summary>
         /// <param name="entity">The entity to remove.</param>
         public void RemoveEntity(int entity)
         {
             // Make sure that entity exists.
-            if (!HasEntity(entity))
-            {
-                throw new ArgumentException("No such entity in the system.", "entity");
-            }
+            Debug.Assert(HasEntity(entity), "No such entity in the system.");
 
             // Remove all of the components attached to that entity and free up
             // the entity object itself, and release the id.
@@ -269,6 +254,18 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
+        /// Test whether the specified entity exists.
+        /// </summary>
+        /// <param name="entity">The entity to check for.</param>
+        /// <returns>
+        /// Whether the manager contains the entity or not.
+        /// </returns>
+        public bool HasEntity(int entity)
+        {
+            return _entityIds.InUse(entity);
+        }
+
+        /// <summary>
         /// Creates a new component for the specified entity.
         /// </summary>
         /// <typeparam name="T">The type of component to create.</typeparam>
@@ -278,35 +275,16 @@ namespace Engine.ComponentSystem
         /// </returns>
         public T AddComponent<T>(int entity) where T : Component, new()
         {
-            return (T)AddComponent(entity, typeof(T));
-        }
-
-        /// <summary>
-        /// Creates a new component for the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to attach the component to.</param>
-        /// <param name="type">The type of component to create.</param>
-        /// <returns>
-        /// The new component.
-        /// </returns>
-        public Component AddComponent(int entity, Type type)
-        {
-            Debug.Assert(type.IsSubclassOf(typeof(Component)));
-
             // Make sure that entity exists.
-            if (!HasEntity(entity))
-            {
-                throw new ArgumentException("No such entity in the system.", "entity");
-            }
+            Debug.Assert(HasEntity(entity), "No such entity in the system.");
 
             // The create the component and set it up.
-            var component = AllocateComponent(type);
+            var component = (T)AllocateComponent(typeof(T));
             component.Manager = this;
             component.Id = _componentIds.GetId();
             component.Entity = entity;
             component.Enabled = true;
-            _components.Insert(~_components.BinarySearch(component, Component.Comparer), component);
-            _componentsById[component.Id] = component;
+            _components[component.Id] = component;
 
             // Add to entity index.
             _entities[entity].Add(component);
@@ -321,18 +299,6 @@ namespace Engine.ComponentSystem
         }
 
         /// <summary>
-        /// Test whether the component with the specified id exists.
-        /// </summary>
-        /// <param name="componentId">The id of the component to check for.</param>
-        /// <returns>
-        /// Whether the manager contains the component or not.
-        /// </returns>
-        public bool HasComponent(int componentId)
-        {
-            return _componentIds.InUse(componentId);
-        }
-
-        /// <summary>
         /// Removes the specified component from the system.
         /// </summary>
         /// <param name="component">The component to remove.</param>
@@ -344,8 +310,7 @@ namespace Engine.ComponentSystem
 
             // Remove it from the mapping and release the id for reuse.
             _entities[component.Entity].Remove(component);
-            _components.RemoveAt(_components.BinarySearch(component, Component.Comparer));
-            _componentsById[component.Id] = null;
+            _components[component.Id] = null;
             _componentIds.ReleaseId(component.Id);
 
             // Send a message to all interested systems.
@@ -357,6 +322,18 @@ namespace Engine.ComponentSystem
             // event, to allow listeners to do something sensible with the
             // component before that.
             ReleaseComponent(component);
+        }
+
+        /// <summary>
+        /// Test whether the component with the specified id exists.
+        /// </summary>
+        /// <param name="componentId">The id of the component to check for.</param>
+        /// <returns>
+        /// Whether the manager contains the component or not.
+        /// </returns>
+        public bool HasComponent(int componentId)
+        {
+            return _componentIds.InUse(componentId);
         }
 
         /// <summary>
@@ -383,7 +360,7 @@ namespace Engine.ComponentSystem
         public Component GetComponentById(int componentId)
         {
             Debug.Assert(HasComponent(componentId), "No such component in the system.");
-            return _componentsById[componentId];
+            return _components[componentId];
         }
 
         /// <summary>
@@ -437,8 +414,8 @@ namespace Engine.ComponentSystem
             // Write the components, which are enough to implicitly restore the
             // entity to component mapping as well, so we don't need to write
             // the entity mapping.
-            packet.Write(_components.Count);
-            foreach (var component in _components)
+            packet.Write(_componentIds.Count);
+            foreach (var component in Components)
             {
                 packet.Write(component.GetType());
                 packet.Write(component);
@@ -448,10 +425,10 @@ namespace Engine.ComponentSystem
             // via <c>ReadPacketizableInto()</c> to keep some variables that
             // can only passed in the constructor.
             packet.Write(_systems.Count);
-            foreach (var system in _systems)
+            for (int i = 0, j = _systems.Count; i < j; ++i)
             {
-                packet.Write(system.GetType());
-                packet.Write(system);
+                packet.Write(_systems[i].GetType());
+                packet.Write(_systems[i]);
             }
 
             return packet;
@@ -469,12 +446,11 @@ namespace Engine.ComponentSystem
                 ReleaseEntity(_entities[entity]);
             }
             _entities.Clear();
-            foreach (var component in _components)
+            foreach (var component in Components)
             {
                 ReleaseComponent(component);
             }
             _components.Clear();
-            _componentsById.Clear();
 
             // Get the managers for ids (restores "known" ids before restoring components).
             packet.ReadPacketizableInto(_entityIds);
@@ -489,8 +465,7 @@ namespace Engine.ComponentSystem
                 var component = AllocateComponent(type);
                 packet.ReadPacketizableInto(component);
                 component.Manager = this;
-                _components.Insert(~_components.BinarySearch(component, Component.Comparer), component);
-                _componentsById[component.Id] = component;
+                _components[component.Id] = component;
 
                 // Add to entity mapping, create entries as necessary.
                 if (_entities[component.Entity] == null)
@@ -538,7 +513,7 @@ namespace Engine.ComponentSystem
             {
                 system.Hash(hasher);
             }
-            foreach (var component in _components)
+            foreach (var component in Components)
             {
                 component.Hash(hasher);
             }
@@ -588,8 +563,7 @@ namespace Engine.ComponentSystem
                 component.Id = _componentIds.GetId();
                 component.Entity = entity;
                 component.Manager = this;
-                _components.Insert(~_components.BinarySearch(component, Component.Comparer), component);
-                _componentsById[component.Id] = component;
+                _components[component.Id] = component;
 
                 // Add to entity index.
                 _entities[entity].Add(component);
@@ -640,16 +614,14 @@ namespace Engine.ComponentSystem
 
             // Copy components and entities.
             copy._components.Clear();
-            copy._componentsById.Clear();
-            foreach (var component in _components)
+            foreach (var component in Components)
             {
                 // The create the component and set it up.
                 var componentCopy = AllocateComponent(component.GetType()).Initialize(component);
                 componentCopy.Id = component.Id;
                 componentCopy.Entity = component.Entity;
                 componentCopy.Manager = copy;
-                copy._components.Add(componentCopy);
-                copy._componentsById[componentCopy.Id] = componentCopy;
+                copy._components[componentCopy.Id] = componentCopy;
             }
 
             copy._entities.Clear();

@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using Engine.ComponentSystem.Common.Systems;
-using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework.Input;
 using Nuclex.Input;
@@ -140,7 +139,7 @@ namespace Space
                     }
                 });
 
-            // Add hints for autocompletion to also complete python methods.
+            // Add hints for auto completion to also complete python methods.
             _console.AddAutoCompletionLookup(SpaceCommandHandler.GetGlobalNames);
 
             _console.AddCommand("d_renderindex",
@@ -186,38 +185,6 @@ namespace Space
                 },
                 "Enables rendering of the index with the given index.",
                 "d_renderindex <index> - render the cells of the specified index.");
-
-            _console.AddCommand("d_check_serialization",
-                args =>
-                {
-                    try
-                    {
-                        ((Engine.Controller.AbstractTssController<IServerSession>)_server.Controller).ValidateSerialization();
-                    }
-                    catch (InvalidProgramException ex)
-                    {
-                        _console.WriteLine("Serialization broken, " + ex.Message);
-                    }
-                },
-                "Verifies the simulation's serialization works by creating a",
-                "snapshot and deserializing it again, then compares the hash",
-                "values of the two simulations.");
-
-            _console.AddCommand("d_check_rollback",
-                args =>
-                {
-                    try
-                    {
-                        ((Engine.Controller.AbstractTssController<IServerSession>)_server.Controller).ValidateRollback();
-                    }
-                    catch (InvalidProgramException ex)
-                    {
-                        _console.WriteLine("Serialization broken, " + ex.Message);
-                    }
-                },
-                "Verifies the simulation's serialization works by creating a",
-                "snapshot and deserializing it again, then compares the hash",
-                "values of the two simulations.");
 
             // Copy everything written to our game console to the actual console,
             // too, so we can inspect it out of game, copy stuff or read it after

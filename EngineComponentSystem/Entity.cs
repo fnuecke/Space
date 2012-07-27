@@ -17,7 +17,7 @@ namespace Engine.ComponentSystem
         /// and serialize, and to guarantee that everything in the system is in
         /// a valid state.
         /// </summary>
-        [DebuggerDisplay("#Components = {Components.Count}")]
+        [DebuggerDisplay("Components = {Components.Count}")]
         private sealed class Entity
         {
             #region Fields
@@ -25,6 +25,7 @@ namespace Engine.ComponentSystem
             /// <summary>
             /// List of all components attached to this entity.
             /// </summary>
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
             public readonly List<Component> Components = new List<Component>();
 
             /// <summary>
@@ -52,15 +53,15 @@ namespace Engine.ComponentSystem
                 while (typeId != 0)
                 {
                     // Register for type, create list if necessary.
-                    if (TypeCache[typeId - 1] == null)
+                    if (TypeCache[typeId] == null)
                     {
-                        TypeCache[typeId - 1] = new List<Component>();
+                        TypeCache[typeId] = new List<Component>();
                     }
 
                     // Keep components in type caches sorted, to keep looping
                     // over them deterministic (otherwise recently deserialized
                     // instances may behave differently).
-                    TypeCache[typeId - 1].Insert(~TypeCache[typeId - 1].BinarySearch(component, Component.Comparer), component);
+                    TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(component, Component.Comparer), component);
 
                     // Move on to parent type.
                     typeId = GetParentComponentType(typeId);
@@ -81,7 +82,7 @@ namespace Engine.ComponentSystem
                 while (typeId != 0)
                 {
                     // Remove for this type.
-                    TypeCache[typeId - 1].RemoveAt(TypeCache[typeId - 1].BinarySearch(component, Component.Comparer));
+                    TypeCache[typeId].RemoveAt(TypeCache[typeId].BinarySearch(component, Component.Comparer));
 
                     // Move on to parent type.
                     typeId = GetParentComponentType(typeId);
@@ -95,11 +96,11 @@ namespace Engine.ComponentSystem
             /// <returns>The first component of that type.</returns>
             public Component GetComponent(int typeId)
             {
-                if (TypeCache[typeId - 1] == null)
+                if (TypeCache[typeId] == null)
                 {
                     BuildTypeCache(typeId);
                 }
-                return TypeCache[typeId - 1].Count > 0 ? TypeCache[typeId - 1][0] : null;
+                return TypeCache[typeId].Count > 0 ? TypeCache[typeId][0] : null;
             }
 
             /// <summary>
@@ -109,11 +110,11 @@ namespace Engine.ComponentSystem
             /// <returns>The components of that type.</returns>
             public IEnumerable<Component> GetComponents(int typeId)
             {
-                if (TypeCache[typeId - 1] == null)
+                if (TypeCache[typeId] == null)
                 {
                     BuildTypeCache(typeId);
                 }
-                return TypeCache[typeId - 1];
+                return TypeCache[typeId];
             }
 
             /// <summary>
@@ -124,7 +125,7 @@ namespace Engine.ComponentSystem
             private void BuildTypeCache(int typeId)
             {
                 // No cache for this type yet, create it.
-                TypeCache[typeId - 1] = new List<Component>();
+                TypeCache[typeId] = new List<Component>();
 
                 // Iterate over all known components.
                 for (int i = 0, j = Components.Count; i < j; i++)
@@ -137,7 +138,7 @@ namespace Engine.ComponentSystem
                         if (componentTypeId == typeId)
                         {
                             // Found this type as a parent, add the component.
-                            TypeCache[typeId - 1].Add(Components[i]);
+                            TypeCache[typeId].Add(Components[i]);
 
                             // No need to go further up the hierarchy.
                             break;

@@ -697,15 +697,7 @@ namespace Engine.Simulation
             /// A list of all components currently registered with this manager,
             /// in order of their ID.
             /// </summary>
-            public IEnumerable<Component> Components
-            {
-                get { throw new NotSupportedException(); }
-            }
-
-            /// <summary>
-            /// The number of components registered with this manager.
-            /// </summary>
-            public int NumComponents
+            IEnumerable<Component> IManager.Components
             {
                 get { throw new NotSupportedException(); }
             }
@@ -713,15 +705,7 @@ namespace Engine.Simulation
             /// <summary>
             /// A list of all systems registered with this manager.
             /// </summary>
-            public IEnumerable<AbstractSystem> Systems
-            {
-                get { throw new NotSupportedException(); }
-            }
-
-            /// <summary>
-            /// The number of systems registered with this manager.
-            /// </summary>
-            public int NumSystems
+            IEnumerable<AbstractSystem> IManager.Systems
             {
                 get { throw new NotSupportedException(); }
             }
@@ -752,7 +736,7 @@ namespace Engine.Simulation
             /// Update all registered systems.
             /// </summary>
             /// <param name="frame">The frame in which the update is applied.</param>
-            public void Update(long frame)
+            void IManager.Update(long frame)
             {
                 throw new NotSupportedException();
             }
@@ -808,7 +792,7 @@ namespace Engine.Simulation
             /// Adds a copy of the specified system.
             /// </summary>
             /// <param name="system">The system to copy.</param>
-            public void CopySystem(AbstractSystem system)
+            void IManager.CopySystem(AbstractSystem system)
             {
                 throw new NotSupportedException();
             }
@@ -820,7 +804,7 @@ namespace Engine.Simulation
             /// <returns>
             /// Whether the system was successfully removed.
             /// </returns>
-            public bool RemoveSystem(AbstractSystem system)
+            bool IManager.RemoveSystem(AbstractSystem system)
             {
                 throw new NotSupportedException();
             }
@@ -828,13 +812,13 @@ namespace Engine.Simulation
             /// <summary>
             /// Get a system of the specified type.
             /// </summary>
-            /// <param name="type">The type of the system to get.</param>
+            /// <param name="typeId">The type of the system to get.</param>
             /// <returns>
             /// The system with the specified type.
             /// </returns>
-            public AbstractSystem GetSystem(int type)
+            public AbstractSystem GetSystem(int typeId)
             {
-                return _tss.LeadingSimulation.Manager.GetSystem(type);
+                return _tss.LeadingSimulation.Manager.GetSystem(typeId);
             }
 
             #endregion
@@ -847,7 +831,7 @@ namespace Engine.Simulation
             /// <returns>
             /// The id of the new entity.
             /// </returns>
-            public int AddEntity()
+            int IManager.AddEntity()
             {
                 throw new NotSupportedException();
             }
@@ -887,14 +871,10 @@ namespace Engine.Simulation
             }
 
             /// <summary>
-            /// Creates a new component for the specified entity.
+            /// Removes the specified component from the system.
             /// </summary>
-            /// <param name="entity">The entity to attach the component to.</param>
-            /// <param name="type">The type of component to create.</param>
-            /// <returns>
-            /// The new component.
-            /// </returns>
-            public Component AddComponent(int entity, Type type)
+            /// <param name="component">The component to remove.</param>
+            void IManager.RemoveComponent(Component component)
             {
                 throw new NotSupportedException();
             }
@@ -912,12 +892,15 @@ namespace Engine.Simulation
             }
 
             /// <summary>
-            /// Removes the specified component from the system.
+            /// Get a component by its id.
             /// </summary>
-            /// <param name="component">The component to remove.</param>
-            public void RemoveComponent(Component component)
+            /// <param name="componentId">The if of the component to retrieve.</param>
+            /// <returns>
+            /// The component with the specified id.
+            /// </returns>
+            public Component GetComponentById(int componentId)
             {
-                throw new NotSupportedException();
+                return _tss.LeadingSimulation.Manager.GetComponentById(componentId);
             }
 
             /// <summary>
@@ -929,18 +912,6 @@ namespace Engine.Simulation
             public Component GetComponent(int entity, int typeId)
             {
                 return _tss.LeadingSimulation.Manager.GetComponent(entity, typeId);
-            }
-
-            /// <summary>
-            /// Get a component by its id.
-            /// </summary>
-            /// <param name="componentId">The if of the component to retrieve.</param>
-            /// <returns>
-            /// The component with the specified id.
-            /// </returns>
-            public Component GetComponentById(int componentId)
-            {
-                return _tss.LeadingSimulation.Manager.GetComponentById(componentId);
             }
 
             /// <summary>
@@ -965,7 +936,32 @@ namespace Engine.Simulation
             /// </summary>
             /// <typeparam name="T">The type of the message.</typeparam>
             /// <param name="message">The sent message.</param>
-            public void SendMessage<T>(ref T message) where T : struct
+            void IManager.SendMessage<T>(ref T message)
+            {
+                throw new NotSupportedException();
+            }
+
+            #endregion
+
+            #region Serialization / Hashing
+
+            /// <summary>
+            /// Write the object's state to the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to write the data to.</param>
+            /// <returns>
+            /// The packet after writing.
+            /// </returns>
+            Packet IPacketizable.Packetize(Packet packet)
+            {
+                throw new NotSupportedException();
+            }
+
+            /// <summary>
+            /// Bring the object to the state in the given packet.
+            /// </summary>
+            /// <param name="packet">The packet to read from.</param>
+            void IPacketizable.Depacketize(Packet packet)
             {
                 throw new NotSupportedException();
             }
@@ -1003,33 +999,9 @@ namespace Engine.Simulation
             /// <returns>
             /// The id of the read entity.
             /// </returns>
-            public int DepacketizeEntity(Packet packet)
+            int IManager.DepacketizeEntity(Packet packet)
             {
-                return _tss.LeadingSimulation.Manager.DepacketizeEntity(packet);
-            }
-
-            #endregion
-
-            #region Serialization / Hashing
-
-            /// <summary>
-            /// Write the object's state to the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to write the data to.</param>
-            /// <returns>
-            /// The packet after writing.
-            /// </returns>
-            public Packet Packetize(Packet packet)
-            {
-                return _tss.LeadingSimulation.Manager.Packetize(packet);
-            }
-
-            /// <summary>
-            /// Bring the object to the state in the given packet.
-            /// </summary>
-            /// <param name="packet">The packet to read from.</param>
-            public void Depacketize(Packet packet)
-            {
+                throw new NotSupportedException();
             }
 
             /// <summary>
@@ -1037,9 +1009,9 @@ namespace Engine.Simulation
             /// to contribute to the generated hash.
             /// </summary>
             /// <param name="hasher">The hasher to push data to.</param>
-            public void Hash(Hasher hasher)
+            void IHashable.Hash(Hasher hasher)
             {
-                _tss.LeadingSimulation.Manager.Hash(hasher);
+                throw new NotSupportedException();
             }
 
             #endregion
@@ -1050,9 +1022,9 @@ namespace Engine.Simulation
             /// Creates a shallow copy of the object.
             /// </summary>
             /// <returns>The copy.</returns>
-            public IManager NewInstance()
+            IManager ICopyable<IManager>.NewInstance()
             {
-                return _tss.LeadingSimulation.Manager.NewInstance();
+                throw new NotSupportedException();
             }
 
             /// <summary>
@@ -1060,9 +1032,9 @@ namespace Engine.Simulation
             /// </summary>
             /// <param name="into">The object to copy into.</param>
             /// <returns>The copy.</returns>
-            public void CopyInto(IManager into)
+            void ICopyable<IManager>.CopyInto(IManager into)
             {
-                _tss.LeadingSimulation.Manager.CopyInto(into);
+                throw new NotSupportedException();
             }
 
             #endregion
