@@ -81,6 +81,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\Bag.cs" />
     <Compile Include="Collections\IIndex.cs" />
     <Compile Include="Collections\QuadTree.cs" />
     <Compile Include="Collections\RTree.cs" />
