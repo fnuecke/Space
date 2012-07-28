@@ -99,6 +99,22 @@ namespace Tests
             Console.WriteLine("Press any key to begin measurement.");
             Console.ReadKey(true);
 
+            // Test SpatialHash.
+            {
+                Console.WriteLine("Running SpatialHash test.");
+                var tree = new SpatialHash<int>(MinimumNodeSize * 64);
+                try
+                {
+                    Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error!");
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
+                }
+            }
+
             // Test QuadTree.
             foreach (var maxEntriesPerNode in QuadTreeMaxNodeEntries)
             {

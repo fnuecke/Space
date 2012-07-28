@@ -85,6 +85,7 @@
     <Compile Include="Collections\QuadTree.cs" />
     <Compile Include="Collections\RTree.cs" />
     <Compile Include="Collections\SparseArray.cs" />
+    <Compile Include="Collections\SpatialHash.cs" />
     <Compile Include="Diagnostics\FlattenHierarchyProxy.cs" />
     <Compile Include="Graphics\AbstractEllipse.cs" />
     <Compile Include="Graphics\AbstractShape.cs" />
@@ -97,6 +98,7 @@
     <Compile Include="IO\EncryptedPacketStream.cs" />
     <Compile Include="IO\IPacketStream.cs" />
     <Compile Include="Network\AbstractProtocol.cs" />
+    <Compile Include="Serialization\PacketXnaExtensions.cs" />
     <Compile Include="Util\BitwiseMagic.cs" />
     <Compile Include="Util\CoordinateIds.cs" />
     <Compile Include="Util\ICopyable.cs" />

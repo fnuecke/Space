@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.Xna.Framework;
 
 namespace Engine.Serialization
 {
@@ -128,36 +127,6 @@ namespace Engine.Serialization
             var bytes = BitConverter.GetBytes(data);
             _stream.Write(bytes, 0, bytes.Length);
             return this;
-        }
-
-        /// <summary>
-        /// Writes the specified vector value.
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(Vector2 data)
-        {
-            return Write(data.X).Write(data.Y);
-        }
-
-        /// <summary>
-        /// Writes the specified vector value.
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(Vector3 data)
-        {
-            return Write(data.X).Write(data.Y).Write(data.Z);
-        }
-
-        /// <summary>
-        /// Writes the specified rectangle value.
-        /// </summary>
-        /// <param name="data">The value to write.</param>
-        /// <returns>This packet, for call chaining.</returns>
-        public Packet Write(Rectangle data)
-        {
-            return Write(data.X).Write(data.Y).Write(data.Width).Write(data.Height);
         }
 
         /// <summary>
@@ -516,51 +485,6 @@ namespace Engine.Serialization
             var bytes = new byte[sizeof(double)];
             _stream.Read(bytes, 0, bytes.Length);
             return BitConverter.ToDouble(bytes, 0);
-        }
-
-        /// <summary>
-        /// Reads a vector value.
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public Vector2 ReadVector2()
-        {
-            Vector2 result;
-            result.X = ReadSingle();
-            result.Y = ReadSingle();
-            return result;
-        }
-
-        /// <summary>
-        /// Reads a vector value.
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public Vector3 ReadVector3()
-        {
-            Vector3 result;
-            result.X = ReadSingle();
-            result.Y = ReadSingle();
-            result.Z = ReadSingle();
-            return result;
-        }
-
-        /// <summary>
-        /// Reads a rectangle value.
-        /// </summary>
-        /// <returns>The read value.</returns>
-        /// <exception cref="PacketException">The packet has not enough
-        /// available data for the read operation.</exception>
-        public Rectangle ReadRectangle()
-        {
-            Rectangle result;
-            result.X = ReadInt32();
-            result.Y = ReadInt32();
-            result.Width = ReadInt32();
-            result.Height = ReadInt32();
-            return result;
         }
 
         /// <summary>

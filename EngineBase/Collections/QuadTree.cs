@@ -71,7 +71,7 @@ namespace Engine.Collections
         /// <summary>
         /// Reused list when splitting nodes.
         /// </summary>
-        private readonly List<Entry> _reusableEntryList;
+        private List<Entry> _reusableEntryList;
 
         #endregion
 
@@ -296,7 +296,7 @@ namespace Engine.Collections
             // Skip if the tree is empty.
             if (Count > 0)
             {
-                // Recurse through the tree, starting at the root node, to find
+                // Recurse through the tree, starting at the containing node, to find
                 // nodes intersecting with the range query.
                 Accumulate(_root, ref _bounds, ref point, range, ref list);
             }
@@ -314,7 +314,7 @@ namespace Engine.Collections
             // Skip if the tree is empty.
             if (Count > 0)
             {
-                // Recurse through the tree, starting at the root node, to find
+                // Recurse through the tree, starting at the containing node, to find
                 // nodes intersecting with the range query.
                 Accumulate(_root, ref _bounds, ref rectangle, ref list);
             }
@@ -376,9 +376,9 @@ namespace Engine.Collections
             // reattach all of the root node's child nodes to the appropriate new
             // child nodes.
             while (_bounds.X >= bounds.X ||
-                _bounds.Y >= bounds.Y ||
-                _bounds.X + _bounds.Width <= bounds.X + bounds.Width ||
-                _bounds.Y + _bounds.Height <= bounds.Y + bounds.Height)
+                   _bounds.Y >= bounds.Y ||
+                   _bounds.X + _bounds.Width <= bounds.X + bounds.Width ||
+                   _bounds.Y + _bounds.Height <= bounds.Y + bounds.Height)
             {
                 // Check sectors for relocations. For existing child nodes
                 // of root (0, 1, 2, null)
@@ -416,12 +416,12 @@ namespace Engine.Collections
 
                     // Allocate new node.
                     var wrapper = new Node
-                    {
-                        Parent = _root,
-                        EntryCount = child.EntryCount,
-                        FirstChildEntry = child.FirstChildEntry ?? child.FirstEntry,
-                        LastChildEntry = child.LastEntry ?? child.LastChildEntry
-                    };
+                                  {
+                                      Parent = _root,
+                                      FirstChildEntry = child.FirstChildEntry ?? child.FirstEntry,
+                                      LastChildEntry = child.LastEntry ?? child.LastChildEntry,
+                                      EntryCount = child.EntryCount
+                                  };
 
                     // Set opposing corner inside that node to old node in that corner.
                     // The (3 - x) will always yield the diagonally opposite cell to x.
@@ -514,6 +514,9 @@ namespace Engine.Collections
             // Remember we have one more entry.
             ++node.EntryCount;
 
+            // Invalidate cache.
+            node.LocalCache = null;
+
             // Add the entry to the existing list if possible. If the insertion point
             // is null it means the tree is yet empty, so it will simply the the
             // complete linked list for now.
@@ -544,6 +547,9 @@ namespace Engine.Collections
 
                 // Remember we have one more entry.
                 ++parent.EntryCount;
+
+                // Invalidate cache.
+                node.ChildCache = null;
 
                 // Continue checking in our parent.
                 parent = parent.Parent;
@@ -577,6 +583,9 @@ namespace Engine.Collections
             // Create a copy of the list of entries in this node. Because we
             // will reattach them at different locations in the linked list
             // we cannot directly iterate them.
+            // We don't want to use the cache here, because it's just been
+            // invalidated, and we might invalidate it again, so that would
+            // just be unnecessary overhead.
             var end = node.LastEntry.Next;
             for (var entry = node.FirstEntry; entry != end; entry = entry.Next)
             {
@@ -590,7 +599,7 @@ namespace Engine.Collections
             // moved to the front (or rather: to behind another child node entry).
             // We don't want to use a foreach loop here, because in that case the order
             // would not be guaranteed.
-            for (var i = 0; i < _reusableEntryList.Count; ++i)
+            for (int i = 0, j = _reusableEntryList.Count; i < j; ++i)
             {
                 var entry = _reusableEntryList[i];
 
@@ -672,6 +681,9 @@ namespace Engine.Collections
             {
                 return;
             }
+
+            // Invalidate cache, only if something changed.
+            node.LocalCache = node.ChildCache = null;
 
             // At this point the entries in in the segment that is delimited by the
             // node's first and last references is sorted into child node entries and
@@ -793,6 +805,9 @@ namespace Engine.Collections
                 // Adjust entry count.
                 --parent.EntryCount;
 
+                // Invalidate cache.
+                parent.ChildCache = null;
+
                 // Continue checking in our parent.
                 parent = parent.Parent;
             }
@@ -821,6 +836,9 @@ namespace Engine.Collections
 
             // Adjust entry count.
             --node.EntryCount;
+
+            // Invalidate cache.
+            node.LocalCache = null;
 
             // Remove the entry from the list of entries.
             entry.Remove();
@@ -861,6 +879,9 @@ namespace Engine.Collections
                     node.Children[3] = null;
                     node.FirstChildEntry = null;
                     node.LastChildEntry = null;
+
+                    // Invalidate cache.
+                    node.LocalCache = node.ChildCache = null;
                 }
                 else
                 {
@@ -913,8 +934,7 @@ namespace Engine.Collections
                 nodeBounds.Y + nodeBounds.Height <= newBounds.Y + newBounds.Height ||
                 (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1))
             {
-                // Did not fit in node anymore or can be inserted into child node,
-                // remove from that node.
+                // Did not fit in node anymore, remove from that node.
                 RemoveFromNode(node, entry);
 
                 // Remove the entry from the value lookup.
@@ -925,8 +945,23 @@ namespace Engine.Collections
             }
             else
             {
-                // Stays in the same node. Update the position in the entry.
+                // Either we push the entry into a child node, or it stays where it is,
+                // whichever it is, we'll want to update the entry's bounds.
                 entry.Bounds = newBounds;
+
+                //// Check if we can push the entry down.
+                //if (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1)
+                //{
+                //    // Can be inserted into child node, remove from this node.
+                //    RemoveFromNode(node, entry);
+
+                //    // Find child node to insert in (or reinsert in the same node to
+                //    // trigger creation of appropriate child node).
+                //    node = FindNode(ref newBounds, node, ref nodeBounds);
+
+                //    // Reinsert into the child node.
+                //    AddToNode(node, ref nodeBounds, entry);
+                //}
             }
         }
 
@@ -1013,31 +1048,15 @@ namespace Engine.Collections
                 {
                     // Box completely contained in query, return all points in it,
                     // no need to recurse further.
-                    var begin = node.FirstChildEntry ?? node.FirstEntry;
-                    var end = (node.LastEntry ?? node.LastChildEntry).Next;
-                    for (var entry = begin; entry != end; entry = entry.Next)
-                    {
-                        // No need for a range check at this point.
-                        list.Add(entry.Value);
-                    }
+                    node.AddOwnEntries(ref list);
+                    node.AddChildEntries(ref list);
                     break;
                 }
                 case IntersectionType.Intersects:
                 {
                     // Add all local entries in this node that are in range, regardless of
                     // whether this is an inner or a leaf node.
-                    if (node.FirstEntry != null)
-                    {
-                        var begin = node.FirstEntry;
-                        var end = node.LastEntry.Next;
-                        for (var entry = begin; entry != end; entry = entry.Next)
-                        {
-                            if (ComputeIntersection(ref point, range, ref entry.Bounds) != IntersectionType.Disjoint)
-                            {
-                                list.Add(entry.Value);
-                            }
-                        }
-                    }
+                    node.AddOwnEntries(ref point, range, ref list);
 
                     if (!node.IsLeaf)
                     {
@@ -1094,31 +1113,16 @@ namespace Engine.Collections
                 {
                     // Box completely contained in query, return all points in it,
                     // no need to recurse further.
-                    var begin = node.FirstChildEntry ?? node.FirstEntry;
-                    var end = (node.LastEntry ?? node.LastChildEntry).Next;
-                    for (var entry = begin; entry != end; entry = entry.Next)
-                    {
-                        // No need for a range check at this point.
-                        list.Add(entry.Value);
-                    }
+                    node.AddOwnEntries(ref list);
+                    node.AddChildEntries(ref list);
                     break;
                 }
                 case IntersectionType.Intersects:
                 {
                     // Add all local entries in this node that are in range, regardless of
                     // whether this is an inner or a leaf node.
-                    if (node.FirstEntry != null)
-                    {
-                        var begin = node.FirstEntry;
-                        var end = node.LastEntry.Next;
-                        for (var entry = begin; entry != end; entry = entry.Next)
-                        {
-                            if (ComputeIntersection(ref rectangle, ref entry.Bounds) != IntersectionType.Disjoint)
-                            {
-                                list.Add(entry.Value);
-                            }
-                        }
-                    }
+                    node.AddOwnEntries(ref rectangle, ref list);
+
                     if (!node.IsLeaf)
                     {
                         // Recurse into child nodes.
@@ -1314,6 +1318,11 @@ namespace Engine.Collections
             public Node Parent;
 
             /// <summary>
+            /// The children this node points to.
+            /// </summary>
+            public readonly Node[] Children = new Node[4];
+
+            /// <summary>
             /// The first entry in the child entity list.
             /// </summary>
             public Entry FirstChildEntry;
@@ -1339,9 +1348,111 @@ namespace Engine.Collections
             public int EntryCount;
 
             /// <summary>
-            /// The children this node points to.
+            /// Cache of entries contained in this node by itself (leaf node
+            /// or internal node with entries on split).
             /// </summary>
-            public readonly Node[] Children = new Node[4];
+            public Entry[] LocalCache;
+            
+            /// <summary>
+            /// Cache of entries in child nodes.
+            /// </summary>
+            public Entry[] ChildCache;
+
+            #endregion
+
+            #region Entry Accumulator
+
+            private void RebuildLocalCache()
+            {
+                if (LocalCache == null)
+                {
+                    var cache = new List<Entry>();
+                    if (FirstEntry != null)
+                    {
+                        var begin = FirstEntry;
+                        var end = LastEntry.Next;
+                        for (var entry = begin; entry != end; entry = entry.Next)
+                        {
+                            // No need for a range check at this point.
+                            cache.Add(entry);
+                        }
+                    }
+                    LocalCache = cache.ToArray();
+                }
+            }
+
+            private void RebuildChildCache()
+            {
+                if (ChildCache == null)
+                {
+                    var cache = new List<Entry>();
+                    if (FirstChildEntry != null)
+                    {
+                        var begin = FirstChildEntry;
+                        var end = LastChildEntry.Next;
+                        for (var entry = begin; entry != end; entry = entry.Next)
+                        {
+                            // No need for a range check at this point.
+                            cache.Add(entry);
+                        }
+                    }
+                    ChildCache = cache.ToArray();
+                }
+            }
+
+            public void AddOwnEntries(ref ICollection<T> list)
+            {
+                // Rebuild entry cache if necessary.
+                RebuildLocalCache();
+
+                // Add all entries to the collection.
+                for (int i = 0, j = LocalCache.Length; i < j; i++)
+                {
+                    list.Add(LocalCache[i].Value);
+                }
+            }
+
+            public void AddOwnEntries(ref Vector2 point, float range, ref ICollection<T> list)
+            {
+                // Rebuild entry cache if necessary.
+                RebuildLocalCache();
+
+                // Add all entries to the collection.
+                for (int i = 0, j = LocalCache.Length; i < j; i++)
+                {
+                    if (ComputeIntersection(ref point, range, ref LocalCache[i].Bounds) != IntersectionType.Disjoint)
+                    {
+                        list.Add(LocalCache[i].Value);
+                    }
+                }
+            }
+
+            public void AddOwnEntries(ref Rectangle rectangle, ref ICollection<T> list)
+            {
+                // Rebuild entry cache if necessary.
+                RebuildLocalCache();
+
+                // Add all entries to the collection.
+                for (int i = 0, j = LocalCache.Length; i < j; i++)
+                {
+                    if (ComputeIntersection(ref rectangle, ref LocalCache[i].Bounds) != IntersectionType.Disjoint)
+                    {
+                        list.Add(LocalCache[i].Value);
+                    }
+                }
+            }
+
+            public void AddChildEntries(ref ICollection<T> list)
+            {
+                // Rebuild entry cache if necessary.
+                RebuildChildCache();
+
+                // Add all entries to the collection.
+                for (int i = 0, j = ChildCache.Length; i < j; i++)
+                {
+                    list.Add(ChildCache[i].Value);
+                }
+            }
 
             #endregion
         }
