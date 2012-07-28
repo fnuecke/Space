@@ -16,15 +16,14 @@ namespace Engine.Collections
     /// </para>
     /// 
     /// <para>
-    /// All nodes can quickly iterate over all entries stored in all of their
-    /// child nodes. The actual entries are stored in a linked list, which is
-    /// sorted in a way that allows unambiguous mapping of a section of that
-    /// linked list to a subtree.
+    /// This implementation uses one Bag collection per node to store the
+    /// node's entires. It appears to be slower than the linked list based
+    /// implementation, though.
     /// </para>
     /// </summary>
     /// <typeparam name="T">The type of the values stored in this tree.</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class QuadTree<T> : IIndex<T>
+    public sealed class BagBasedQuadTree<T> : IIndex<T>
     {
         #region Properties
 
@@ -68,12 +67,6 @@ namespace Engine.Collections
         /// </summary>
         private readonly Dictionary<T, Entry> _values = new Dictionary<T, Entry>();
 
-        /// <summary>
-        /// Reused list when splitting nodes.
-        /// </summary>
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly List<Entry> _reusableEntryList;
-
         #endregion
 
         #region Constructor
@@ -86,7 +79,7 @@ namespace Engine.Collections
         /// <param name="minNodeBounds">The minimum bounds size of a node, i.e.
         /// nodes of this size or smaller won't be split regardless of the
         /// number of entries in them.</param>
-        public QuadTree(int maxEntriesPerNode, int minNodeBounds)
+        public BagBasedQuadTree(int maxEntriesPerNode, int minNodeBounds)
         {
             if (maxEntriesPerNode < 1)
             {
@@ -98,7 +91,6 @@ namespace Engine.Collections
             }
             _maxEntriesPerNode = maxEntriesPerNode;
             _minNodeBounds = minNodeBounds;
-            _reusableEntryList = new List<Entry>(_maxEntriesPerNode + 1);
 
             Clear();
         }
@@ -276,7 +268,7 @@ namespace Engine.Collections
         /// </summary>
         public void Clear()
         {
-            _root = new Node();
+            _root = new Node(_maxEntriesPerNode);
             _bounds.X = _bounds.Y = -_minNodeBounds;
             _bounds.Width = _bounds.Height = _minNodeBounds << 1;
             _values.Clear();
@@ -416,12 +408,10 @@ namespace Engine.Collections
                     }
 
                     // Allocate new node.
-                    var wrapper = new Node
+                    var wrapper = new Node(_maxEntriesPerNode)
                                   {
                                       Parent = _root,
-                                      FirstChildEntry = child.FirstChildEntry ?? child.FirstEntry,
-                                      LastChildEntry = child.LastEntry ?? child.LastChildEntry,
-                                      EntryCount = child.EntryCount
+                                      ChildEntryCount = child.Entries.Count + child.ChildEntryCount
                                   };
 
                     // Set opposing corner inside that node to old node in that corner.
@@ -450,44 +440,18 @@ namespace Engine.Collections
         /// <param name="entry">The node to insert.</param>
         private void AddToNode(Node node, ref Rectangle nodeBounds, Entry entry)
         {
-            // In the following we'll get the node in the linked list to insert after.
-            Entry insertAfter;
-
             // Check what type of node we have.
-            if (node.IsLeaf)
-            {
-                // Got a leaf, insert in it. We're guaranteed to already have
-                // at least one entry in this leaf if we come here, because
-                // the first entry comes directly with the creation of the node.
-                // And if it were to become empty due to removal, it would be
-                // trimmed from the tree.
-                insertAfter = node.FirstEntry;
-            }
-            else
+            if (!node.IsLeaf)
             {
                 // Inner node, see if we can create a child node for that entry (there
                 // is none yet, because otherwise we would have received that as the
                 // parameter).
                 var cell = ComputeCell(ref nodeBounds, ref entry.Bounds);
-                if (cell < 0)
-                {
-                    // No, we must insert into this node. We're in an internal node,
-                    // so we're guaranteed to have a list of child entries. So we add
-                    // this entry either after the first entry of local nodes, if we
-                    // have any, or after the last child entry. This guarantees us to
-                    // get a non-null reference.
-                    insertAfter = node.FirstEntry ?? node.LastChildEntry;
-                }
-                else
+                if (cell >= 0)
                 {
                     // Yes we can. Allocate the new child node.
-                    node.Children[cell] = new Node {Parent = node};
-
-                    // Insert at the end of the child entry segment of the parent node,
-                    // to begin a new segment for this node (as to not interfere with
-                    // segments of other child nodes, if they exist). This must be not
-                    // null unless the entire tree is empty.
-                    insertAfter = node.LastChildEntry;
+                    Debug.Assert(node.Children[cell] == null);
+                    node.Children[cell] = new Node(_maxEntriesPerNode) { Parent = node };
 
                     // Mark the new node as the current one (the one we're adding to).
                     node = node.Children[cell];
@@ -500,59 +464,14 @@ namespace Engine.Collections
                 }
             }
 
-            // Update the references in the node we inserted into.
-            if (node.FirstEntry == node.LastEntry)
-            {
-                // The node either had no local entries yet (null == null, empty tree or
-                // empty inner node), or it had only one. In the first case we can set
-                // both to the same, in the second we only need to set the last entry.
-                // We do this by just updating the first node if it's null. The last one
-                // has to be updated either way.
-                node.FirstEntry = node.FirstEntry ?? entry;
-                node.LastEntry = entry;
-            }
+            // Insert in whatever node we have to.
+            node.Entries.Add(entry);
 
-            // Remember we have one more entry.
-            ++node.EntryCount;
-
-            // Invalidate cache.
-            node.LocalCache = null;
-
-            // Add the entry to the existing list if possible. If the insertion point
-            // is null it means the tree is yet empty, so it will simply the the
-            // complete linked list for now.
-            if (insertAfter != null)
-            {
-                // Insert into the existing list.
-                entry.InsertAfter(insertAfter);
-            }
-
-            // Update all parent nodes.
+            // Update child node count in parents.
             var parent = node.Parent;
             while (parent != null)
             {
-                if (parent.FirstChildEntry == parent.LastChildEntry)
-                {
-                    // Same logic as for the local segment, just for the reference
-                    // to child nodes.
-                    parent.FirstChildEntry = parent.FirstChildEntry ?? entry;
-                    parent.LastChildEntry = entry;
-                }
-                else if (parent.LastChildEntry == insertAfter)
-                {
-                    // In case it already had other entries, and we have altered the
-                    // last entry (to create a new segment), adjust that reference
-                    // accordingly.
-                    parent.LastChildEntry = entry;
-                }
-
-                // Remember we have one more entry.
-                ++parent.EntryCount;
-
-                // Invalidate cache.
-                node.ChildCache = null;
-
-                // Continue checking in our parent.
+                ++parent.ChildEntryCount;
                 parent = parent.Parent;
             }
 
@@ -569,172 +488,41 @@ namespace Engine.Collections
         {
             // Should we split?
             if (!node.IsLeaf || // Already is split.
-                node.EntryCount <= _maxEntriesPerNode || // No reason to.
+                node.Entries.Count <= _maxEntriesPerNode || // No reason to.
                 nodeBounds.Width <= _minNodeBounds) // We can't (too small already).
             {
                 return;
             }
 
-            // Remember the previous start and end of the interval in this node, so that
-            // we may afterwards check if we need to update the references in parent nodes
-            // due to reshuffling some of the entries.
-            var prevFirstEntry = node.FirstEntry;
-            var prevLastEntry = node.LastEntry;
-
-            // Create a copy of the list of entries in this node. Because we
-            // will reattach them at different locations in the linked list
-            // we cannot directly iterate them.
-            // We don't want to use the cache here, because it's just been
-            // invalidated, and we might invalidate it again, so that would
-            // just be unnecessary overhead.
-            var end = node.LastEntry.Next;
-            for (var entry = node.FirstEntry; entry != end; entry = entry.Next)
+            // Check each entry to which new cell it'll belong.
+            for (var i = node.Entries.Count; i > 0; --i)
             {
-                _reusableEntryList.Add(entry);
-            }
-
-            // Check each entry to which new cell it'll belong. While doing this, we also
-            // separate the entries into two main segments, that of entries moved into the
-            // child nodes, and that of entries that had to remain in this node. The
-            // remaining entries will be in the back, because the other will have been
-            // moved to the front (or rather: to behind another child node entry).
-            // We don't want to use a foreach loop here, because in that case the order
-            // would not be guaranteed.
-            for (int i = 0, j = _reusableEntryList.Count; i < j; ++i)
-            {
-                var entry = _reusableEntryList[i];
+                var entry = node.Entries[i - 1];
 
                 // In which child node would we insert?
                 var cell = ComputeCell(ref nodeBounds, ref entry.Bounds);
                 if (cell < 0)
                 {
-                    // We must keep that entry in the current node. Move it to the back
-                    // of the local segment, if it's not the last one already.
-                    if (entry != node.LastEntry)
-                    {
-                        entry.Remove();
-                        entry.InsertAfter(node.LastEntry);
-                        node.LastEntry = entry;
-                    }
+                    // Stays in this node, skip it.
+                    continue;
                 }
-                else
+
+                // Do we have to create that child? (It might already exist because
+                // we created it in a previous iteration for another entry)
+                if (node.Children[cell] == null)
                 {
-                    // Do we have to create that child? (It might already exist because
-                    // we created it in a previous iteration for another entry)
-                    if (node.Children[cell] == null)
-                    {
-                        // Yes. This makes things simple, just create the node and set the
-                        // entry as the first child, and mark it as the last as well.
-                        node.Children[cell] = new Node { Parent = node, FirstEntry = entry };
-
-                        // No shuffling at this point, as this marks the creation of a
-                        // new segment, too. Mark this as the last entry.
-                        node.LastChildEntry = entry;
-
-                        // Also, if it's the first entry moved to a child node, mark it as
-                        // the first child node.
-                        node.FirstChildEntry = node.FirstChildEntry ?? entry;
-                    }
-                    else
-                    {
-                        // The node exists, check if the next linked node is this one,
-                        // because if it is we don't need to shuffle.
-                        if (entry != node.Children[cell].LastEntry.Next)
-                        {
-                            // This means we have to sort the sublist by moving this entry
-                            // to the correct position.
-
-                            // In case this is the last node we must update the reference
-                            // to the last local node.
-                            if (entry == node.LastEntry)
-                            {
-                                // Just point to the one before us.
-                                node.LastEntry = entry.Previous;
-                            }
-
-                            // Then move the entry.
-                            entry.Remove();
-                            entry.InsertAfter(node.Children[cell].LastEntry);
-                        }
-
-                        // If the last entry in the node we inserted into was the last one in the
-                        // child entry segment of our parent, update that pointer.
-                        if (node.Children[cell].LastEntry == node.LastChildEntry)
-                        {
-                            node.LastChildEntry = entry;
-                        }
-                    }
-
-                    // List is now in order, so we set the end of the segment to this entry.
-                    node.Children[cell].LastEntry = entry;
-
-                    // Either way, one more entry in the child node.
-                    ++node.Children[cell].EntryCount;
-                }
-            }
-
-            // Clear this list for future reuse.
-            _reusableEntryList.Clear();
-
-            // If the node is a leaf, still, this means not a single entry could be
-            // moved to a child node, which means nothing changed, so we can stop.
-            if (node.IsLeaf)
-            {
-                return;
-            }
-
-            // Invalidate cache, only if something changed.
-            node.LocalCache = node.ChildCache = null;
-
-            // At this point the entries in in the segment that is delimited by the
-            // node's first and last references is sorted into child node entries and
-            // local entries. The reference to the last local entry cannot have
-            // changed, as it was the last entry being checked, whereas we'll have to
-            // adjust the first reference now -- which is just the entry after the last
-            // child entry. This allows us to test if any local entries remained: there
-            // are none if the last child entry equals the last local entry.
-            if (node.LastChildEntry == node.LastEntry)
-            {
-                // No more local entries.
-                node.FirstEntry = null;
-                node.LastEntry = null;
-            }
-            else
-            {
-                // Some local entries remain, adjust reference to first one.
-                node.FirstEntry = node.LastChildEntry.Next;
-            }
-
-            // Adjust parent nodes if references to the ends of the segment for this
-            // node changed.
-            var parent = node.Parent;
-            while (parent != null)
-            {
-                // See if we need to update a reference to one of the segment bounds.
-                var changed = false;
-                if (parent.FirstChildEntry == prevFirstEntry)
-                {
-                    // Head reference changed.
-                    parent.FirstChildEntry = node.FirstChildEntry;
-                    changed = true;
-                }
-                if (parent.LastChildEntry == prevLastEntry)
-                {
-                    // Tail reference changed.
-                    parent.LastChildEntry = node.LastEntry ?? node.LastChildEntry;
-                    changed = true;
+                    // Yes, create the node.
+                    node.Children[cell] = new Node(_maxEntriesPerNode) { Parent = node };
                 }
 
-                if (changed)
-                {
-                    // Continue with the next parent node.
-                    parent = parent.Parent;
-                }
-                else
-                {
-                    // Stop if there were no more updates.
-                    break;
-                }
+                // Add to the node.
+                node.Children[cell].Entries.Add(entry);
+
+                // Update parent's child counter.
+                ++node.ChildEntryCount;
+
+                // Remove from old node.
+                node.Entries.RemoveAt(i - 1);
             }
 
             // Do this recursively if the split resulted in another node that
@@ -775,74 +563,16 @@ namespace Engine.Collections
         /// <param name="entry">The entry to remove.</param>
         private void RemoveFromNode(Node node, Entry entry)
         {
-            // Adjust parent nodes if necessary. If we remove from somewhere in the
-            // middle we don't really care, as the parents won't reference that entry,
-            // but we update the entry counts in this run, too.
+            // Remove from the node.
+            node.Entries.Remove(entry);
+
+            // Update child node count in parents.
             var parent = node.Parent;
             while (parent != null)
             {
-                // Adjust the node itself. Based on where we
-                if (parent.FirstChildEntry == parent.LastChildEntry)
-                {
-                    // Only one entry in this node, clear it out.
-                    parent.FirstChildEntry = null;
-                    parent.LastChildEntry = null;
-                }
-                else if (parent.FirstChildEntry == entry)
-                {
-                    // It's the low node, and we have more than one entry
-                    // (otherwise we would be in the first case), so adjust
-                    // the head reference accordingly.
-                    parent.FirstChildEntry = parent.FirstChildEntry.Next;
-                }
-                else if (parent.LastChildEntry == entry)
-                {
-                    // It's the high node, and we have more than one entry
-                    // (otherwise we would be in the first case), so adjust
-                    // the tail reference accordingly.
-                    parent.LastChildEntry = parent.LastChildEntry.Previous;
-                }
-
-                // Adjust entry count.
-                --parent.EntryCount;
-
-                // Invalidate cache.
-                parent.ChildCache = null;
-
-                // Continue checking in our parent.
+                --parent.ChildEntryCount;
                 parent = parent.Parent;
             }
-
-            // Adjust the node itself.
-            if (node.FirstEntry == node.LastEntry)
-            {
-                // Only one entry in this node, clear it out.
-                node.FirstEntry = null;
-                node.LastEntry = null;
-            }
-            else if (node.FirstEntry == entry)
-            {
-                // It's the low node, and we have more than one entry
-                // (otherwise we would be in the first case), so adjust
-                // the head reference accordingly.
-                node.FirstEntry = node.FirstEntry.Next;
-            }
-            else if (node.LastEntry == entry)
-            {
-                // It's the high node, and we have more than one entry
-                // (otherwise we would be in the first case), so adjust
-                // the tail reference accordingly.
-                node.LastEntry = node.LastEntry.Previous;
-            }
-
-            // Adjust entry count.
-            --node.EntryCount;
-
-            // Invalidate cache.
-            node.LocalCache = null;
-
-            // Remove the entry from the list of entries.
-            entry.Remove();
 
             // See if we can collapse the branch.
             CollapseBranch(node);
@@ -855,73 +585,97 @@ namespace Engine.Collections
         /// <param name="node">The node to start cleaning at.</param>
         private void CollapseBranch(Node node)
         {
-            // Skip leaf nodes.
-            if (!node.IsLeaf)
+            // Walk up the tree.
+            while (node != null)
             {
-                // Check if child nodes are unnecessary for this node.
-                if (node.EntryCount > 0 && node.EntryCount <= _maxEntriesPerNode)
+                // Skip leaf nodes.
+                if (!node.IsLeaf)
                 {
-                    // We can prune the child nodes.
+                    // Check if child nodes are unnecessary for the parent's node.
+                    var count = node.Entries.Count + node.ChildEntryCount;
+                    if (count > 0 && count <= _maxEntriesPerNode)
+                    {
+                        // We can prune the child nodes. Add all entries from children
+                        // to our own list. We can be sure that all child nodes are
+                        // leaf nodes, because otherwise there would be too many entries.
+                        if (node.Children[0] != null)
+                        {
+                            for (var j = node.Children[0].Entries.Count; j > 0; --j)
+                            {
+                                node.Entries.Add(node.Children[0].Entries[j - 1]);
+                            }
+                            node.Children[0] = null;
+                        }
+                        if (node.Children[1] != null)
+                        {
+                            for (var j = node.Children[1].Entries.Count; j > 0; --j)
+                            {
+                                node.Entries.Add(node.Children[1].Entries[j - 1]);
+                            }
+                            node.Children[1] = null;
+                        }
+                        if (node.Children[2] != null)
+                        {
+                            for (var j = node.Children[2].Entries.Count; j > 0; --j)
+                            {
+                                node.Entries.Add(node.Children[2].Entries[j - 1]);
+                            }
+                            node.Children[2] = null;
+                        }
+                        if (node.Children[3] != null)
+                        {
+                            for (var j = node.Children[3].Entries.Count; j > 0; --j)
+                            {
+                                node.Entries.Add(node.Children[3].Entries[j - 1]);
+                            }
+                            node.Children[3] = null;
+                        }
 
-                    // Make the first child node our first local node, thus adding the
-                    // segments of child nodes to our local nodes. If no high node was
-                    // set this means we had no local entries, so we want to set that
-                    // if it was null. In case the last entry from our only child node
-                    // was removed, the child entry pointer may be null even though
-                    // we have local nodes, so make sure to keep that if we have no
-                    // child entry referenced.
-                    node.FirstEntry = node.FirstChildEntry ?? node.FirstEntry;
-                    node.LastEntry = node.LastEntry ?? node.LastChildEntry;
+                        // Reset child entry counter.
+                        node.ChildEntryCount = 0;
+                    }
+                    else
+                    {
+                        // The node needs to stay split. Check if we have empty child nodes.
+                        // If so, remove them.
+                        if (node.Children[0] != null && (node.Children[0].Entries.Count + node.Children[0].ChildEntryCount) == 0)
+                        {
+                            node.Children[0] = null;
+                        }
+                        if (node.Children[1] != null && (node.Children[1].Entries.Count + node.Children[1].ChildEntryCount) == 0)
+                        {
+                            node.Children[1] = null;
+                        }
+                        if (node.Children[2] != null && (node.Children[2].Entries.Count + node.Children[2].ChildEntryCount) == 0)
+                        {
+                            node.Children[2] = null;
+                        }
+                        if (node.Children[3] != null && (node.Children[3].Entries.Count + node.Children[3].ChildEntryCount) == 0)
+                        {
+                            node.Children[3] = null;
+                        }
 
-                    // Remove references to child nodes.
-                    node.Children[0] = null;
-                    node.Children[1] = null;
-                    node.Children[2] = null;
-                    node.Children[3] = null;
-                    node.FirstChildEntry = null;
-                    node.LastChildEntry = null;
-
-                    // Invalidate cache.
-                    node.LocalCache = node.ChildCache = null;
+                        // If we still have children at this point, we could not merge nor
+                        // completely empty this node, meaning there's nothing left for us
+                        // to do further up the tree.
+                        if (!node.IsLeaf)
+                        {
+                            return;
+                        }
+                    }
                 }
-                else
-                {
-                    // The node needs to stay split. Check if we have empty child nodes.
-                    // If so, remove them.
-                    if (node.Children[0] != null && node.Children[0].EntryCount == 0)
-                    {
-                        node.Children[0] = null;
-                    }
-                    if (node.Children[1] != null && node.Children[1].EntryCount == 0)
-                    {
-                        node.Children[1] = null;
-                    }
-                    if (node.Children[2] != null && node.Children[2].EntryCount == 0)
-                    {
-                        node.Children[2] = null;
-                    }
-                    if (node.Children[3] != null && node.Children[3].EntryCount == 0)
-                    {
-                        node.Children[3] = null;
-                    }
 
-                    // If we still have children at this point, we could not merge nor
-                    // completely empty this node, meaning there's nothing left for us
-                    // to do further up the tree.
-                    if (!node.IsLeaf)
-                    {
-                        return;
-                    }
-                }
-            }
-
-            // Check parent.
-            if (node.Parent != null)
-            {
-                CollapseBranch(node.Parent);
+                // Check parent.
+                node = node.Parent;
             }
         }
 
+        /// <summary>
+        /// Updates the bounds for the specified entry, moving it to another tree
+        /// node if necessary.
+        /// </summary>
+        /// <param name="newBounds">The new bounds.</param>
+        /// <param name="entry">The entry.</param>
         private void UpdateBounds(ref Rectangle newBounds, Entry entry)
         {
             // Node may have changed. Get the node the entry is currently stored in.
@@ -933,7 +687,7 @@ namespace Engine.Collections
                 nodeBounds.Y >= newBounds.Y ||
                 nodeBounds.X + nodeBounds.Width <= newBounds.X + newBounds.Width ||
                 nodeBounds.Y + nodeBounds.Height <= newBounds.Y + newBounds.Height ||
-                (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1))
+                ((node.Entries.Count + node.ChildEntryCount) > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1))
             {
                 // Did not fit in node anymore, remove from that node.
                 RemoveFromNode(node, entry);
@@ -949,20 +703,6 @@ namespace Engine.Collections
                 // Either we push the entry into a child node, or it stays where it is,
                 // whichever it is, we'll want to update the entry's bounds.
                 entry.Bounds = newBounds;
-
-                //// Check if we can push the entry down.
-                //if (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1)
-                //{
-                //    // Can be inserted into child node, remove from this node.
-                //    RemoveFromNode(node, entry);
-
-                //    // Find child node to insert in (or reinsert in the same node to
-                //    // trigger creation of appropriate child node).
-                //    node = FindNode(ref newBounds, node, ref nodeBounds);
-
-                //    // Reinsert into the child node.
-                //    AddToNode(node, ref nodeBounds, entry);
-                //}
             }
         }
 
@@ -1300,13 +1040,8 @@ namespace Engine.Collections
             /// </summary>
             public bool IsLeaf
             {
-                get
-                {
-                    return (Children[0] == null) &&
-                           (Children[1] == null) &&
-                           (Children[2] == null) &&
-                           (Children[3] == null);
-                }
+                get { return Children[0] == null && Children[1] == null
+                     && Children[2] == null && Children[3] == null; }
             }
 
             #endregion
@@ -1324,136 +1059,88 @@ namespace Engine.Collections
             public readonly Node[] Children = new Node[4];
 
             /// <summary>
-            /// The first entry in the child entity list.
+            /// All entries stored in this node and its children.
             /// </summary>
-            public Entry FirstChildEntry;
+            public readonly Bag<Entry> Entries;
 
             /// <summary>
-            /// The last entry in the child entity list.
+            /// Number of entries in all descendant nodes of this node.
             /// </summary>
-            public Entry LastChildEntry;
+            public int ChildEntryCount;
+
+            #endregion
+
+            #region Constructor
 
             /// <summary>
-            /// The first entry in the local entity list.
+            /// Initializes a new instance of the <see cref="QuadTree&lt;T&gt;.Node"/> class
+            /// with the specified entity capacity.
             /// </summary>
-            public Entry FirstEntry;
-
-            /// <summary>
-            /// The last entry in the local entity list.
-            /// </summary>
-            public Entry LastEntry;
-
-            /// <summary>
-            /// Number of entries in this node and all its children combined.
-            /// </summary>
-            public int EntryCount;
-
-            /// <summary>
-            /// Cache of entries contained in this node by itself (leaf node
-            /// or internal node with entries on split).
-            /// </summary>
-            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-            public Entry[] LocalCache;
-            
-            /// <summary>
-            /// Cache of entries in child nodes.
-            /// </summary>
-            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-            public Entry[] ChildCache;
+            /// <param name="capacity">The initial capacity.</param>
+            public Node(int capacity)
+            {
+                Entries = new Bag<Entry>(capacity);
+            }
 
             #endregion
 
             #region Entry Accumulator
 
-            private void RebuildLocalCache()
-            {
-                if (LocalCache == null)
-                {
-                    var cache = new List<Entry>();
-                    if (FirstEntry != null)
-                    {
-                        var begin = FirstEntry;
-                        var end = LastEntry.Next;
-                        for (var entry = begin; entry != end; entry = entry.Next)
-                        {
-                            // No need for a range check at this point.
-                            cache.Add(entry);
-                        }
-                    }
-                    LocalCache = cache.ToArray();
-                }
-            }
-
-            private void RebuildChildCache()
-            {
-                if (ChildCache == null)
-                {
-                    var cache = new List<Entry>();
-                    if (FirstChildEntry != null)
-                    {
-                        var begin = FirstChildEntry;
-                        var end = LastChildEntry.Next;
-                        for (var entry = begin; entry != end; entry = entry.Next)
-                        {
-                            // No need for a range check at this point.
-                            cache.Add(entry);
-                        }
-                    }
-                    ChildCache = cache.ToArray();
-                }
-            }
-
             public void AddOwnEntries(ref ICollection<T> list)
             {
-                // Rebuild entry cache if necessary.
-                RebuildLocalCache();
-
                 // Add all entries to the collection.
-                for (int i = 0, j = LocalCache.Length; i < j; i++)
+                foreach (var entry in Entries)
                 {
-                    list.Add(LocalCache[i].Value);
+                    list.Add(entry.Value);
                 }
             }
 
             public void AddOwnEntries(ref Vector2 point, float range, ref ICollection<T> list)
             {
-                // Rebuild entry cache if necessary.
-                RebuildLocalCache();
-
                 // Add all entries to the collection.
-                for (int i = 0, j = LocalCache.Length; i < j; i++)
+                foreach (var entry in Entries)
                 {
-                    if (ComputeIntersection(ref point, range, ref LocalCache[i].Bounds) != IntersectionType.Disjoint)
+                    if (ComputeIntersection(ref point, range, ref entry.Bounds) != IntersectionType.Disjoint)
                     {
-                        list.Add(LocalCache[i].Value);
+                        list.Add(entry.Value);
                     }
                 }
             }
 
             public void AddOwnEntries(ref Rectangle rectangle, ref ICollection<T> list)
             {
-                // Rebuild entry cache if necessary.
-                RebuildLocalCache();
-
                 // Add all entries to the collection.
-                for (int i = 0, j = LocalCache.Length; i < j; i++)
+                foreach (var entry in Entries)
                 {
-                    if (ComputeIntersection(ref rectangle, ref LocalCache[i].Bounds) != IntersectionType.Disjoint)
+                    if (ComputeIntersection(ref rectangle, ref entry.Bounds) != IntersectionType.Disjoint)
                     {
-                        list.Add(LocalCache[i].Value);
+                        list.Add(entry.Value);
                     }
                 }
             }
 
             public void AddChildEntries(ref ICollection<T> list)
             {
-                // Rebuild entry cache if necessary.
-                RebuildChildCache();
-
                 // Add all entries to the collection.
-                for (int i = 0, j = ChildCache.Length; i < j; i++)
+                if (Children[0] != null)
                 {
-                    list.Add(ChildCache[i].Value);
+                    Children[0].AddOwnEntries(ref list);
+                    Children[0].AddChildEntries(ref list);
+                }
+                if (Children[1] != null)
+                {
+                    Children[1].AddOwnEntries(ref list);
+                    Children[1].AddChildEntries(ref list);
+                }
+                if (Children[2] != null)
+                {
+                    Children[2].AddOwnEntries(ref list);
+                    Children[2].AddChildEntries(ref list);
+                }
+                if (Children[3] != null)
+                {
+                    Children[3].AddOwnEntries(ref list);
+                    Children[3].AddChildEntries(ref list);
                 }
             }
 
@@ -1469,16 +1156,6 @@ namespace Engine.Collections
             #region Fields
 
             /// <summary>
-            /// Next entry in the linked list.
-            /// </summary>
-            public Entry Next;
-
-            /// <summary>
-            /// Previous entry in the linked list.
-            /// </summary>
-            public Entry Previous;
-
-            /// <summary>
             /// The point at which the entry is stored.
             /// </summary>
             public Rectangle Bounds;
@@ -1487,47 +1164,6 @@ namespace Engine.Collections
             /// The value stored in this entry.
             /// </summary>
             public T Value;
-
-            #endregion
-
-            #region Methods
-
-            /// <summary>
-            /// Remove this entry from the linked list.
-            /// </summary>
-            public void Remove()
-            {
-                if (Previous != null)
-                {
-                    Previous.Next = Next;
-                }
-                if (Next != null)
-                {
-                    Next.Previous = Previous;
-                }
-
-                Next = null;
-                Previous = null;
-            }
-
-            /// <summary>
-            /// Insert this node into the linked list, after the specified entry.
-            /// </summary>
-            /// <param name="entry">The entry to insert after.</param>
-            public void InsertAfter(Entry entry)
-            {
-                var insertAfter = entry;
-                var insertBefore = insertAfter.Next;
-
-                insertAfter.Next = this;
-                if (insertBefore != null)
-                {
-                    insertBefore.Previous = this;
-                }
-
-                Previous = insertAfter;
-                Next = insertBefore;
-            }
 
             #endregion
         }
@@ -1590,16 +1226,13 @@ namespace Engine.Collections
             shape.SetSize(nodeSize - 1);
             shape.Draw();
 
-            if (node.FirstEntry != null)
+            for (var i = node.Entries.Count; i > 0; --i)
             {
-                var end = node.LastEntry.Next;
-                for (var entry = node.FirstEntry; entry != end; entry = entry.Next)
-                {
-                    var bounds = entry.Bounds;
-                    shape.SetCenter(translation.X + bounds.X + bounds.Width / 2f, translation.Y + bounds.Y + bounds.Height / 2f);
-                    shape.SetSize(bounds.Width, bounds.Height);
-                    shape.Draw();
-                }
+                var entry = node.Entries[i - 1];
+                var bounds = entry.Bounds;
+                shape.SetCenter(translation.X + bounds.X + bounds.Width / 2f, translation.Y + bounds.Y + bounds.Height / 2f);
+                shape.SetSize(bounds.Width, bounds.Height);
+                shape.Draw();
             }
 
             // Check for child nodes.

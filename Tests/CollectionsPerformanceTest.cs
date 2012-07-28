@@ -99,6 +99,14 @@ namespace Tests
             Console.WriteLine("Press any key to begin measurement.");
             Console.ReadKey(true);
 
+            // Test QuadTree.
+            foreach (var maxEntriesPerNode in QuadTreeMaxNodeEntries)
+            {
+                Console.WriteLine("Running QuadTree test with maximum entries per node = {0}.", maxEntriesPerNode);
+                var tree = new QuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
+                Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
+            }
+
             // Test SpatialHash.
             {
                 Console.WriteLine("Running SpatialHash test.");
@@ -113,14 +121,6 @@ namespace Tests
                     Console.WriteLine(ex.Message);
                     Console.WriteLine(ex.StackTrace);
                 }
-            }
-
-            // Test QuadTree.
-            foreach (var maxEntriesPerNode in QuadTreeMaxNodeEntries)
-            {
-                Console.WriteLine("Running QuadTree test with maximum entries per node = {0}.", maxEntriesPerNode);
-                var tree = new QuadTree<int>(maxEntriesPerNode, MinimumNodeSize);
-                Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
             }
 
             // Test R-Tree.

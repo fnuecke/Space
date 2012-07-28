@@ -11,7 +11,7 @@ namespace Engine.Collections
     /// </summary>
     /// <typeparam name="T">The type stored in the collection.</typeparam>
     [DebuggerDisplay("Count = {Count}")]
-    public sealed class Bag<T> : ICollection<T>
+    public sealed class Bag<T> : IList<T>
     {
         #region Properties
 
@@ -73,7 +73,7 @@ namespace Engine.Collections
         /// <param name="capacity">The initial capacity.</param>
         public Bag(int capacity)
         {
-            _data = new T[capacity];
+            _data = new T[capacity + 1];
         }
 
         #endregion
@@ -86,8 +86,8 @@ namespace Engine.Collections
         /// <param name="item">The object to add to the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param><exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.</exception>
         public void Add(T item)
         {
-            EnsureCapacity(_count + 1);
-            _data[++_count] = item;
+            EnsureCapacity(_count);
+            _data[_count++] = item;
         }
 
         /// <summary>
@@ -96,7 +96,10 @@ namespace Engine.Collections
         /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only. </exception>
         public void Clear()
         {
+            // Use new array to not keep references in case the type we
+            // store is an object. Otherwise we might block the GC.
             _data = new T[16];
+            _count = 0;
         }
 
         /// <summary>
@@ -108,7 +111,7 @@ namespace Engine.Collections
         /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
         public bool Contains(T item)
         {
-            return Array.IndexOf(_data, item) >= 0;
+            return IndexOf(item) >= 0;
         }
 
         /// <summary>
@@ -137,13 +140,100 @@ namespace Engine.Collections
         /// <param name="item">The object to remove from the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param>
         public bool Remove(T item)
         {
-            var index = Array.IndexOf(_data, item);
+            var index = IndexOf(item);
             if (index < 0)
             {
                 return false;
             }
-            _data[index] = _data[--_count];
+            RemoveAt(index);
             return true;
+        }
+
+        #endregion
+
+        #region Implementation of IList<T>
+
+        /// <summary>
+        /// Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1"/>.
+        /// </summary>
+        /// <returns>
+        /// The index of <paramref name="item"/> if found in the list; otherwise, -1.
+        /// </returns>
+        /// <param name="item">The object to locate in the <see cref="T:System.Collections.Generic.IList`1"/>.</param>
+        public int IndexOf(T item)
+        {
+            return Array.IndexOf(_data, item);
+        }
+
+        /// <summary>
+        /// Inserts an item to the <see cref="T:System.Collections.Generic.IList`1"/> at the specified index.
+        /// This will move the item at the specified position to the back and place the specified item in its stead.
+        /// </summary>
+        /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param>
+        /// <param name="item">The object to insert into the <see cref="T:System.Collections.Generic.IList`1"/>.</param>
+        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.</exception>
+        /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IList`1"/> is read-only.</exception>
+        public void Insert(int index, T item)
+        {
+            if (index > _count)
+            {
+                throw new ArgumentOutOfRangeException("index");
+            }
+
+            // Push element at that index to the back.
+            Add(_data[index]);
+
+            // Overwrite the element at that index.
+            _data[index] = item;
+        }
+
+        /// <summary>
+        /// Removes the <see cref="T:System.Collections.Generic.IList`1"/> item at the specified index.
+        /// This will move the last item to the specified index to replace it.
+        /// </summary>
+        /// <param name="index">The zero-based index of the item to remove.</param>
+        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.</exception>
+        /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IList`1"/> is read-only.</exception>
+        public void RemoveAt(int index)
+        {
+            if (index < 0 || index >= _count)
+            {
+                throw new ArgumentOutOfRangeException("index");
+            }
+            --_count;
+            _data[index] = _data[_count];
+            _data[_count] = default(T); // In case we have references.
+        }
+
+        /// <summary>
+        /// Gets or sets the element at the specified index.
+        /// </summary>
+        /// <returns>
+        /// The element at the specified index.
+        /// </returns>
+        /// <param name="index">The zero-based index of the element to get or set.</param>
+        /// <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.</exception>
+        /// <exception cref="T:System.NotSupportedException">The property is set and the <see cref="T:System.Collections.Generic.IList`1"/> is read-only.</exception>
+        public T this[int index]
+        {
+            get
+            {
+                if (index < 0 || index >= _count)
+                {
+                    throw new ArgumentOutOfRangeException("index");
+                }
+
+                return _data[index];
+            }
+            set
+            {
+                if (index < 0 || index >= _count)
+                {
+                    throw new ArgumentOutOfRangeException("index");
+                }
+
+                _data[index] = value;
+            }
         }
 
         #endregion
@@ -187,7 +277,7 @@ namespace Engine.Collections
             {
                 return;
             }
-            var newCapacity = _data.Length * 2 / 3 + 1;
+            var newCapacity = _data.Length * 3 / 2 + 1;
             if (newCapacity < capacity)
             {
                 newCapacity = capacity + 1;
