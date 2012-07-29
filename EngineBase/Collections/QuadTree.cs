@@ -343,7 +343,7 @@ namespace Engine.Collections
         /// <summary>
         /// A utility enumerator allowing the iteration over all nodes in the
         /// tree. This yields the bounds for each node and an enumerator over
-        /// all entries in it, with their current bounds.
+        /// all entries in it.
         /// </summary>
         /// <returns>
         /// An enumerator over all nodes in the tree.
@@ -352,7 +352,7 @@ namespace Engine.Collections
         /// This is mainly intended for debugging purposes, to allow rendering
         /// the node bounds.
         /// </remarks>
-        public IEnumerable<Tuple<TRectangle, IEnumerable<Tuple<TRectangle, T>>>> GetNodeEnumerable()
+        public IEnumerable<Tuple<TRectangle, IEnumerable<T>>> GetNodeEnumerable()
         {
             // Keep local stack of nodes so we don't create a load of enumerators.
             var nodes = new Stack<Tuple<Node, TRectangle>>(32);
@@ -1596,7 +1596,7 @@ namespace Engine.Collections
             /// <returns>
             /// An enumerator for all entries in this node.
             /// </returns>
-            public IEnumerable<Tuple<TRectangle, T>> GetEntryEnumerable()
+            public IEnumerable<T> GetEntryEnumerable()
             {
                 // Rebuild entry cache if necessary.
                 RebuildLocalCache();
@@ -1604,7 +1604,7 @@ namespace Engine.Collections
                 // Yield all entries to the collection.
                 for (int i = 0, j = LocalCache.Length; i < j; i++)
                 {
-                    yield return Tuple.Create(LocalCache[i].Bounds, LocalCache[i].Value);
+                    yield return LocalCache[i].Value;
                 }
             }
 

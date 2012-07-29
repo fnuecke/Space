@@ -29,7 +29,7 @@ namespace Engine.Collections
 
                 foreach (var entry in node.Item2)
                 {
-                    var entryBounds = entry.Item1;
+                    var entryBounds = quadTree[entry];
                     shape.SetCenter(translation.X + entryBounds.X + (entryBounds.Width >> 1),
                                     translation.Y + entryBounds.Y + (entryBounds.Height >> 1));
                     shape.SetSize(entryBounds.Width, entryBounds.Height);
