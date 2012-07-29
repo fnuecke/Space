@@ -6,7 +6,7 @@ namespace Engine.Util
     /// Represents an interval of the specified type.
     /// </summary>
     /// <typeparam name="T">The interval type.</typeparam>
-    public class Interval<T> where T : IComparable<T>, IEquatable<T>
+    public sealed class Interval<T> where T : IComparable<T>, IEquatable<T>
     {
         /// <summary>
         /// Default 'zero' value for an interval.
@@ -56,8 +56,8 @@ namespace Engine.Util
             {
                 throw new ArgumentException("Invalid interval, the lower endpoint must be less or equal to the higher endpoint.", "low");
             }
-            this.Low = low;
-            this.High = high;
+            Low = low;
+            High = high;
         }
     }
 }

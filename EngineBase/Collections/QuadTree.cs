@@ -1003,6 +1003,9 @@ namespace Engine.Collections
             var nodeBounds = _bounds;
             var node = FindNode(ref entry.Bounds, _root, ref nodeBounds);
 
+            // Update bounds of entry.
+            entry.Bounds = newBounds;
+
             // Check if the entry should go to a different node now.
             if (nodeBounds.X >= newBounds.X ||
                 nodeBounds.Y >= newBounds.Y ||
@@ -1014,16 +1017,15 @@ namespace Engine.Collections
                 // a child node, remove from that node.
                 RemoveFromNode(node, entry);
 
-                // Remove the entry from the value lookup.
-                _values.Remove(entry.Value);
+                // Handle dynamic growth.
+                EnsureCapacity(ref newBounds);
 
-                // And add again.
-                Add(newBounds, entry.Value);
-            }
-            else
-            {
-                // It stays where it is, just update the entry's bounds.
-                entry.Bounds = newBounds;
+                // Get the node to re-insert in.
+                nodeBounds = _bounds;
+                node = FindNode(ref newBounds, _root, ref nodeBounds);
+
+                // Add the entry to that node.
+                AddToNode(node, ref nodeBounds, entry);
             }
         }
 
@@ -1501,7 +1503,9 @@ namespace Engine.Collections
                     var cache = new List<Entry>();
                     if (FirstChildEntry != null)
                     {
-                        for (Entry entry = FirstChildEntry, end = LastChildEntry.Next; entry != end; entry = entry.Next)
+                        for (Entry entry = FirstChildEntry, end = LastChildEntry.Next;
+                             entry != end;
+                             entry = entry.Next)
                         {
                             cache.Add(entry);
                         }

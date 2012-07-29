@@ -23,11 +23,6 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private Dictionary<int, int> _cooldowns = new Dictionary<int, int>();
 
-        /// <summary>
-        /// Randomizer used for sampling projectiles.
-        /// </summary>
-        private MersenneTwister _random = new MersenneTwister(0);
-
         #endregion
 
         #region Single allocation
@@ -106,7 +101,7 @@ namespace Space.ComponentSystem.Systems
                 // Generate projectiles.
                 foreach (var projectile in weapon.Projectiles)
                 {
-                    projectile.SampleProjectile(Manager, component.Entity, weapon, faction.Value, _random);
+                    projectile.SampleProjectile(Manager, component.Entity, weapon, faction.Value, component.Random);
                 }
 
                 // Generate message.
@@ -168,8 +163,6 @@ namespace Space.ComponentSystem.Systems
                 packet.Write(kv.Value);
             }
 
-            packet.Write(_random);
-
             return packet;
         }
 
@@ -189,8 +182,6 @@ namespace Space.ComponentSystem.Systems
                 var value = packet.ReadInt32();
                 _cooldowns.Add(key, value);
             }
-
-            packet.ReadPacketizableInto(_random);
         }
 
         /// <summary>
@@ -202,7 +193,6 @@ namespace Space.ComponentSystem.Systems
         {
             base.Hash(hasher);
 
-            hasher.Put(_random);
             foreach (var cooldown in _cooldowns.Values)
             {
                 hasher.Put(cooldown);
@@ -228,7 +218,6 @@ namespace Space.ComponentSystem.Systems
             var copy = (WeaponControlSystem)base.NewInstance();
 
             copy._cooldowns = new Dictionary<int, int>();
-            copy._random = new MersenneTwister(0);
             copy._reusableEntities = new List<int>();
 
             return copy;
@@ -257,7 +246,6 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._cooldowns.Add(item.Key, item.Value);
             }
-            _random.CopyInto(copy._random);
         }
 
         #endregion
@@ -272,7 +260,7 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Random=" + _random + ", Cooldowns=[" + string.Join(", ", _cooldowns) + "]";
+            return base.ToString() + ", Cooldowns=[" + string.Join(", ", _cooldowns) + "]";
         }
 
         #endregion

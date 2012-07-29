@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
-using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -23,11 +22,6 @@ namespace Space.ComponentSystem.Systems
         /// A List of all item pools mapped by their ID.
         /// </summary>
         private Dictionary<string, ItemPool> _itemPools = new Dictionary<string, ItemPool>();
-
-        /// <summary>
-        /// Randomizer used for sampling of items.
-        /// </summary>
-        private MersenneTwister _random = new MersenneTwister(0);
 
         #endregion
 
@@ -70,29 +64,39 @@ namespace Space.ComponentSystem.Systems
 
             // Get the list of possible drops.
             _reusableDropInfo.AddRange(pool.Items);
+            
+            // Randomizer used for sampling of items. Seed it based on the item
+            // pool and the drop position, to get a deterministic result for
+            // each drop, regardless in which order they happen.
+            var hasher = new Hasher();
+            hasher.Put(poolName);
+            hasher.Put(position);
+            var random = new MersenneTwister((ulong)hasher.Value);
 
             // And shuffle it. This is important, to give each entry an equal
             // chance to be picked. Otherwise the first few entries have a much
             // better chance, because we stop after reaching a certain number
             // of items.
-            for (int i = _reusableDropInfo.Count; i > 1; i--)
+            for (var i = _reusableDropInfo.Count; i > 1; i--)
             {
                 // Pick random element to swap.
-                int j = _random.NextInt32(i); // 0 <= j <= i - 1
+                var j = random.NextInt32(i); // 0 <= j <= i - 1
                 // Swap.
                 var tmp = _reusableDropInfo[j];
                 _reusableDropInfo[j] = _reusableDropInfo[i - 1];
                 _reusableDropInfo[i - 1] = tmp;
             }
 
-            int dropCount = 0;
-            foreach (var item in _reusableDropInfo)
+            var dropCount = 0;
+            for (int i = 0, j = _reusableDropInfo.Count; i < j; i++)
             {
+                var item = _reusableDropInfo[i];
+
                 // Give the item a chance to be dropped.
-                if (item.Probability > _random.NextDouble())
+                if (item.Probability > random.NextDouble())
                 {
                     // Random roll succeeded, drop the item.
-                    FactoryLibrary.SampleItem(Manager, item.ItemName, position, _random);
+                    FactoryLibrary.SampleItem(Manager, item.ItemName, position, random);
 
                     // Did a drop, check if we're done.
                     dropCount++;
@@ -123,43 +127,10 @@ namespace Space.ComponentSystem.Systems
                 var drops = ((Drops)Manager.GetComponent(entity, Drops.TypeId));
                 if (drops != null)
                 {
-                    // Don't drop exactly at the location of the entity that died,
-                    // but move it off to the side a bit.
                     var translation = ((Transform)Manager.GetComponent(entity, Transform.TypeId)).Translation;
-                    translation.X += _random.NextInt32(-10, 10);
-                    translation.Y += _random.NextInt32(-10, 10);
-
                     Drop(drops.ItemPool, ref translation);
                 }
             }
-        }
-
-        #endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Write the object's state to the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to write the data to.</param>
-        /// <returns>
-        /// The packet after writing.
-        /// </returns>
-        public override Packet Packetize(Packet packet)
-        {
-            return base.Packetize(packet)
-                .Write(_random);
-        }
-
-        /// <summary>
-        /// Bring the object to the state in the given packet.
-        /// </summary>
-        /// <param name="packet">The packet to read from.</param>
-        public override void Depacketize(Packet packet)
-        {
-            base.Depacketize(packet);
-
-            packet.ReadPacketizableInto(_random);
         }
 
         #endregion
@@ -181,7 +152,6 @@ namespace Space.ComponentSystem.Systems
             var copy = (DropSystem)base.NewInstance();
 
             copy._itemPools = new Dictionary<string, ItemPool>();
-            copy._random = new MersenneTwister(0);
             copy._reusableDropInfo = new List<ItemPool.DropInfo>();
 
             return copy;
@@ -211,22 +181,6 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._itemPools.Add(item.Key, item.Value);
             }
-            _random.CopyInto(copy._random);
-        }
-
-        #endregion
-
-        #region ToString
-
-        /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return base.ToString() + ", Random=" + _random;
         }
 
         #endregion

@@ -317,126 +317,126 @@ namespace Tests
                 }
 
                 // Test time to add.
-                watch.Reset();
                 try
                 {
+                    watch.Reset();
                     watch.Start();
                     addEntries(index, data);
+                    watch.Stop();
+                    addTime.Put(watch.ElapsedMilliseconds / (double)NumberOfObjects);
                 }
                 catch (NotSupportedException)
                 {
                 }
-                watch.Stop();
-                addTime.Put(watch.ElapsedMilliseconds / (double)NumberOfObjects);
 
                 // Test update time.
-                watch.Reset();
                 try
                 {
+                    watch.Reset();
                     watch.Start();
                     foreach (var update in smallUpdates)
                     {
                         doUpdate(index, update);
                     }
+                    watch.Stop();
+                    smallUpdateTime.Put(watch.ElapsedMilliseconds / (double)smallUpdates.Count);
                 }
                 catch (NotSupportedException)
                 {
                 }
-                watch.Stop();
-                smallUpdateTime.Put(watch.ElapsedMilliseconds / (double)smallUpdates.Count);
 
-                watch.Reset();
                 try
                 {
+                    watch.Reset();
                     watch.Start();
                     foreach (var update in largeUpdates)
                     {
                         doUpdate(index, update);
                     }
+                    watch.Stop();
+                    largeUpdateTime.Put(watch.ElapsedMilliseconds / (double)largeUpdates.Count);
                 }
                 catch (NotSupportedException)
                 {
                 }
-                watch.Stop();
-                largeUpdateTime.Put(watch.ElapsedMilliseconds / (double)largeUpdates.Count);
 
                 // Test look up time.
-                watch.Reset();
                 try
                 {
+                    watch.Reset();
                     watch.Start();
                     for (var j = 0; j < Operations; j++)
                     {
                         index.Find(rangeQueries[j].Item1, rangeQueries[j].Item2, ref DummyCollection<int>.Instance);
                     }
+                    watch.Stop();
+                    rangeQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
                 }
                 catch (NotSupportedException)
                 {
                 }
-                watch.Stop();
-                rangeQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
 
-                watch.Reset();
                 try
                 {
+                    watch.Reset();
                     watch.Start();
                     for (var j = 0; j < Operations; j++)
                     {
                         var rect = areaQueries[j];
                         index.Find(ref rect, ref DummyCollection<int>.Instance);
                     }
+                    watch.Stop();
+                    areaQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
                 }
                 catch (NotSupportedException)
                 {
                 }
-                watch.Stop();
-                areaQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
 
                 // Test removal time.
-                watch.Reset();
                 try
                 {
+                    watch.Reset();
                     watch.Start();
                     for (var j = 0; j < NumberOfObjects / 3; j++)
                     {
                         index.Remove(data[j].Item1);
                     }
+                    watch.Stop();
+                    highLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
                 }
                 catch (NotSupportedException)
                 {
                 }
-                watch.Stop();
-                highLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
 
-                watch.Reset();
                 try
                 {
+                    watch.Reset();
                     watch.Start();
                     for (var j = NumberOfObjects / 3; j < NumberOfObjects * 2 / 3; j++)
                     {
                         index.Remove(data[j].Item1);
                     }
+                    watch.Stop();
+                    mediumLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
                 }
                 catch (NotSupportedException)
                 {
                 }
-                watch.Stop();
-                mediumLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
 
-                watch.Reset();
                 try
                 {
+                    watch.Reset();
                     watch.Start();
                     for (var j = NumberOfObjects * 2 / 3; j < NumberOfObjects; j++)
                     {
                         index.Remove(data[j].Item1);
                     }
+                    watch.Stop();
+                    lowLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
                 }
                 catch (NotSupportedException)
                 {
                 }
-                watch.Stop();
-                lowLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
             }
 
             Console.WriteLine("Done!");
