@@ -2,7 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Microsoft.Xna.Framework;
+
+// Adjust these as necessary, they just have to share a compatible
+// interface with the XNA types.
+using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TVector = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Collections
 {
@@ -11,7 +15,7 @@ namespace Engine.Collections
     /// 
     /// <para>
     /// A special restriction is that all nodes will be sized at some power of
-    /// two, where every level that power increases:<br/>
+    /// two, where every level that power increases:
     /// <c>node size := minBucketSize &lt;&lt; level</c>.
     /// </para>
     /// 
@@ -22,7 +26,22 @@ namespace Engine.Collections
     /// linked list to a subtree.
     /// </para>
     /// </summary>
-    /// <typeparam name="T">The type of the values stored in this tree.</typeparam>
+    /// <remarks>
+    /// When querying the tree, a cache is generated per node, for the entries
+    /// fetched from that node. The cache gets invalidated when the subtree
+    /// the node is root of changes. This allows for faster iteration when
+    /// repeatedly querying the same area of the tree (as it'll just be an
+    /// iteration over an array, instead of a walk through the linked list,
+    /// dereferencing the pointer to the next entry for each entry).
+    /// 
+    /// <para>
+    /// The minimum node size can be specified as an arbitrary value larger
+    /// than zero, but as node bounds will always be a power of two, the
+    /// actual stop level will be the closest smaller power of two (including
+    /// the value).
+    /// </para>
+    /// </remarks>
+    /// <typeparam name="T">The type of the values stored in the index.</typeparam>
     [DebuggerDisplay("Count = {Count}")]
     public sealed class QuadTree<T> : IIndex<T>
     {
@@ -53,9 +72,9 @@ namespace Engine.Collections
 
         /// <summary>
         /// The current bounds of the tree. This is a dynamic value, adjusted
-        /// based on elements added to the tree.
+        /// based on elements added and removed to the tree (it shrinks, too).
         /// </summary>
-        private Rectangle _bounds;
+        private TRectangle _bounds;
 
         /// <summary>
         /// The root node of the tree.
@@ -63,13 +82,14 @@ namespace Engine.Collections
         private Node _root;
 
         /// <summary>
-        /// Mapping back from value to entry, for faster value to entry lookup,
-        /// when removing items or updating items.
+        /// Mapping back from value to entry, for faster value to entry lookup
+        /// when removing or updating items.
         /// </summary>
         private readonly Dictionary<T, Entry> _values = new Dictionary<T, Entry>();
 
         /// <summary>
-        /// Reused list when splitting nodes.
+        /// Reused list when splitting nodes, so we don't have to re-allocate it
+        /// each time.
         /// </summary>
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private readonly List<Entry> _reusableEntryList;
@@ -79,13 +99,18 @@ namespace Engine.Collections
         #region Constructor
 
         /// <summary>
-        /// Creates a new, empty quad tree, with the specified parameters.
+        /// Creates a new, empty quad tree, with the specified split and
+        /// stop criteria.
         /// </summary>
         /// <param name="maxEntriesPerNode">The maximum number of entries per
         /// node before the node will be split.</param>
         /// <param name="minNodeBounds">The minimum bounds size of a node, i.e.
         /// nodes of this size or smaller won't be split regardless of the
-        /// number of entries in them.</param>
+        /// number of entries in them. See class remarks.</param>
+        /// <exception cref="T:System.ArgumentException">
+        /// One or both of the specified parameters are invalid (must be larger
+        /// than zero).
+        /// </exception>
         public QuadTree(int maxEntriesPerNode, int minNodeBounds)
         {
             if (maxEntriesPerNode < 1)
@@ -108,22 +133,22 @@ namespace Engine.Collections
         #region Accessors
 
         /// <summary>
-        /// Add a new entry to the tree, with the specified bounds, with the
-        /// specified associated value.
+        /// Add a new item to the index, with the specified bounds.
         /// </summary>
-        /// <param name="bounds">The bounds of the entry.</param>
-        /// <param name="value">The value associated with the point.</param>
-        /// <exception cref="ArgumentException">This value is already stored
-        /// in the tree.</exception>
-        public void Add(ref Rectangle bounds, T value)
+        /// <param name="bounds">The bounds of the item.</param>
+        /// <param name="item">The item.</param>
+        /// <exception cref="T:System.ArgumentException">
+        /// The item is already stored in the index.
+        /// </exception>
+        public void Add(ref TRectangle bounds, T item)
         {
-            if (Contains(value))
+            if (Contains(item))
             {
-                throw new ArgumentException("Entry is already in the tree.", "value");
+                throw new ArgumentException("Item is already in the index.", "item");
             }
 
             // Create the entry to add.
-            var entry = new Entry {Bounds = bounds, Value = value};
+            var entry = new Entry {Bounds = bounds, Value = item};
 
             // Handle dynamic growth.
             EnsureCapacity(ref bounds);
@@ -131,6 +156,8 @@ namespace Engine.Collections
             // Get the node to insert in.
             var nodeBounds = _bounds;
             var node = FindNode(ref bounds, _root, ref nodeBounds);
+
+            // Add the entry to that node.
             AddToNode(node, ref nodeBounds, entry);
 
             // Store the entry in the value lookup.
@@ -138,85 +165,95 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Add a new entry to the tree, at the specified position, with the
-        /// specified associated value.
+        /// Add a new item to the index, with the specified position.
         /// </summary>
         /// <remarks>
-        /// This will generate a bounding rectangle with zero extent to use
-        /// as the bounds for the value.
+        /// This will lead to the point being converted to an empty rectangle
+        /// at the point's position, which will then be inserted, instead.
         /// </remarks>
-        /// <param name="point">The point at which to store the entry.</param>
-        /// <param name="value">The value associated with the point.</param>
-        /// <exception cref="ArgumentException">This value is already stored
-        /// in the tree.</exception>
-        public void Add(Vector2 point, T value)
+        /// <param name="point">The position of the item.</param>
+        /// <param name="item">The item.</param>
+        /// <exception cref="T:System.ArgumentException">
+        /// The item is already stored in the index.
+        /// </exception>
+        public void Add(TVector point, T item)
         {
-            var bounds = new Rectangle {X = (int)point.X, Y = (int)point.Y};
-            Add(ref bounds, value);
+            // Convert to rectangle, then add that.
+            var bounds = new TRectangle {X = (int)point.X, Y = (int)point.Y};
+            Add(ref bounds, item);
         }
 
         /// <summary>
-        /// Update a single entry by changing its bounds. If the entry is not
-        /// already in the tree, this will return <code>false</code>.
+        /// Update an entry by changing its bounds. If the item is not
+        /// stored in the index, this will return <code>false</code>.
         /// </summary>
-        /// <param name="newBounds">The new bounds of the entry.</param>
-        /// <param name="value">The value of the entry.</param>
-        /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(ref Rectangle newBounds, T value)
+        /// <param name="newBounds">The new bounds of the item.</param>
+        /// <param name="item">The item for which to update the bounds.</param>
+        /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
+        public bool Update(ref TRectangle newBounds, T item)
         {
-            // Check if we have that entry, if not add it.
-            if (!Contains(value))
+            // Check if we have that item.
+            if (!Contains(item))
             {
+                // No, nothing to do, then.
                 return false;
             }
 
-            // Get the old position.
-            var entry = _values[value];
+            // Get the old bounds.
+            var entry = _values[item];
 
             // Update tree.
             UpdateBounds(ref newBounds, entry);
 
+            // We had the entry, so return true.
             return true;
         }
 
         /// <summary>
-        /// Update a single entry by changing its position. If the entry is not
-        /// already in the tree, this will return <code>false</code>.
+        /// Update an entry by changing its position. If the item is not
+        /// stored in the index, this will return <code>false</code>.
         /// </summary>
         /// <remarks>
-        /// This will generate a bounding rectangle with zero extent to use
-        /// as the bounds for the value.
+        /// This will lead to the point being converted to an empty rectangle
+        /// at the point's position, which will then be used, instead.
         /// </remarks>
-        /// <param name="newPoint">The new position of the entry.</param>
-        /// <param name="value">The value of the entry.</param>
-        /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(Vector2 newPoint, T value)
+        /// <param name="newPoint">The new position of the item.</param>
+        /// <param name="item">The item for which to update the bounds.</param>
+        /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
+        public bool Update(TVector newPoint, T item)
         {
-            var bounds = new Rectangle {X = (int)newPoint.X, Y = (int)newPoint.Y};
-            return Update(ref bounds, value);
+            // Convert to rectangle, then update with that.
+            var bounds = new TRectangle {X = (int)newPoint.X, Y = (int)newPoint.Y};
+            return Update(ref bounds, item);
         }
 
         /// <summary>
-        /// Similar to <code>Update</code> this changes an entry's bounds. Unlike
-        /// <code>Update</code>, however, this just moves the bounds to the
-        /// specified location. The specified position is used as the new center
-        /// for the bounds.
+        /// Similar to <see cref="Update(TVector, T)"/> this changes an
+        /// entry's bounds. Unlike <see cref="Update(TVector, T)"/>, however,
+        /// this just moves the bounds to the specified location without the
+        /// option to change their size. The specified position is used as the
+        /// new center for the bounds.
         /// </summary>
+        /// <remarks>
+        /// This is purely a helper method, it will compute the new bounds and
+        /// then call <see cref="Update(TVector, T)"/> internally.
+        /// </remarks>
         /// <param name="position">The new position of the bounds.</param>
-        /// <param name="value">The entry for which to update the bounds.</param>
+        /// <param name="item">The entry for which to update the bounds.</param>
         /// <returns></returns>
-        public bool Move(Vector2 position, T value)
+        public bool Move(TVector position, T item)
         {
-            // Check if we have that entry, if not add it.
-            if (!Contains(value))
+            // Check if we have that item.
+            if (!Contains(item))
             {
+                // No, nothing to do, then.
                 return false;
             }
 
-            // Get the old position.
-            var entry = _values[value];
+            // Get the old bounds.
+            var entry = _values[item];
 
-            // Update bounds.
+            // Compute the new bounds.
             var newBounds = entry.Bounds;
             newBounds.X = (int)position.X - newBounds.Width / 2;
             newBounds.Y = (int)position.Y - newBounds.Height / 2;
@@ -224,27 +261,34 @@ namespace Engine.Collections
             // Update tree.
             UpdateBounds(ref newBounds, entry);
 
+            // We had the entry, so return true.
             return true;
         }
 
         /// <summary>
-        /// Remove the specified value from the tree.
+        /// Remove the specified item from the index. If the item is not
+        /// stored in the index, this will return <code>false</code>.
         /// </summary>
-        /// <param name="value">The value to remove.</param>
-        public bool Remove(T value)
+        /// <param name="item">The item to remove.</param>
+        /// <returns><c>true</c> if the item was removed; <c>false</c> otherwise.</returns>
+        public bool Remove(T item)
         {
             // See if we have that entry.
-            if (!Contains(value))
+            if (!Contains(item))
             {
+                // No, nothing to do, then.
                 return false;
             }
 
-            // Yes, get the instance.
-            var entry = _values[value];
+            // Get the existing entry.
+            var entry = _values[item];
 
-            // Get the node the entry would be in.
+            // Get the node the entry should be in (if it isn't something
+            // went terribly, terribly wrong).
             var nodeBounds = _bounds;
             var node = FindNode(ref entry.Bounds, _root, ref nodeBounds);
+
+            // Remove the entry from that node.
             RemoveFromNode(node, entry);
 
             // Remove the entry from the value lookup.
@@ -257,125 +301,131 @@ namespace Engine.Collections
                 _bounds.Width = _bounds.Height = _minNodeBounds << 1;
             }
 
+            // We had the entry, so return true.
             return true;
         }
 
         /// <summary>
-        /// Test whether this tree contains the specified value.
+        /// Test whether this index contains the specified item.
         /// </summary>
-        /// <param name="value">The value to look for.</param>
-        /// <returns><c>true</c> if the tree contains the value at the
-        /// specified point.</returns>
-        public bool Contains(T value)
+        /// <param name="item">The item to check.</param>
+        /// <returns><c>true</c> if the index contains the item; <c>false</c> otherwise.</returns>
+        public bool Contains(T item)
         {
-            return _values.ContainsKey(value);
+            // Use the reverse look up for faster checking.
+            return _values.ContainsKey(item);
         }
 
         /// <summary>
-        /// Removes all entries from this tree.
+        /// Removes all items from the index.
         /// </summary>
         public void Clear()
         {
+            // Reset the root node.
             _root = new Node();
+
+            // And the bounds.
             _bounds.X = _bounds.Y = -_minNodeBounds;
             _bounds.Width = _bounds.Height = _minNodeBounds << 1;
+
+            // And clear the reverse look up.
             _values.Clear();
         }
 
         /// <summary>
-        /// Perform a circular query on this tree. This will return all entries
-        /// in the tree that are in the specified range to the specified point,
-        /// using a euclidean distance.
+        /// Perform a circular query on this index. This will return all entries
+        /// in the index that are in the specified range of the specified point,
+        /// using the euclidean distance function (i.e. <c>sqrt(x*x+y*y)</c>).
         /// </summary>
+        /// <remarks>
+        /// This checks for intersections of the query circle and the bounds of
+        /// the entries in the index. Intersections (i.e. bounds not fully contained
+        /// in the circle) will be returned, too.
+        /// </remarks>
         /// <param name="point">The query point near which to get entries.</param>
         /// <param name="range">The maximum distance an entry may be away
         /// from the query point to be returned.</param>
-        /// <param name="list">The list to put the results into, or null in
-        /// which case a new list will be created and returned.</param>
-        public void Find(Vector2 point, float range, ref ICollection<T> list)
+        /// <param name="list">The list to put the results into. It is guaranteed
+        /// that there will be no duplicate entries.</param>
+        public void Find(TVector point, float range, ref ICollection<T> list)
         {
             // Skip if the tree is empty.
             if (Count > 0)
             {
-                // Recurse through the tree, starting at the containing node, to find
+                // Build the minimal bounding rectangle around the circle query
+                // so that we can use it to check against nodes, which is way
+                // faster than doing circle/box checks all the time.
+                TRectangle bounds;
+                bounds.X = (int)(point.X - range);
+                bounds.Y = (int)(point.Y - range);
+                bounds.Width = bounds.Height = (int)(range + range);
+
+                // Recurse through the tree, starting at the root node, to find
                 // nodes intersecting with the range query.
-                Accumulate(_root, ref _bounds, ref point, range, ref list);
+                Accumulate(_root, ref _bounds, ref bounds, ref point, range, ref list);
             }
         }
 
         /// <summary>
-        /// Perform an area query on this tree. This will return all entries
-        /// in the tree that are in contained the specified rectangle.
+        /// Perform an area query on this index. This will return all entries
+        /// in the tree that are contained in or intersecting with the specified
+        /// query rectangle.
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="list">The list to put the results into, or null in
-        /// which case a new list will be created and returned.</param>
-        public void Find(ref Rectangle rectangle, ref ICollection<T> list)
+        /// <param name="list">The list to put the results into. It is guaranteed
+        /// that there will be no duplicate entries.</param>
+        public void Find(ref TRectangle rectangle, ref ICollection<T> list)
         {
             // Skip if the tree is empty.
             if (Count > 0)
             {
-                // Recurse through the tree, starting at the containing node, to find
-                // nodes intersecting with the range query.
+                // Recurse through the tree, starting at the root node, to find
+                // nodes intersecting with the area query.
                 Accumulate(_root, ref _bounds, ref rectangle, ref list);
             }
         }
 
         #endregion
 
-        #region Internal functionality
+        #region Enumerable
 
         /// <summary>
-        /// Find a node at the given query point. If possible, this will return
-        /// a leaf node. If there is no leaf node at the query point, it will
-        /// return the inner node that would contain the leaf node that would
-        /// hold that point, or in which the splits intersect the bounds.
+        /// Get an enumerator over the items in this tree, together with the
+        /// bounds they ares stored at.
         /// </summary>
-        /// <param name="bounds">The bounds to get the node for.</param>
-        /// <param name="node">The node to start searching in.</param>
-        /// <param name="nodeBounds">Will be the bounds of the node.</param>
-        /// <returns>The node for the specified query point.</returns>
-        private static Node FindNode(ref Rectangle bounds, Node node, ref Rectangle nodeBounds)
+        /// <returns>An enumerator of all items in this index, with their bounds.</returns>
+        public IEnumerator<Tuple<TRectangle, T>> GetEnumerator()
         {
-            // We're definitely done when we hit a leaf.
-            while (!node.IsLeaf)
+            foreach (var entry in _values)
             {
-                // Get current child size.
-                var childSize = nodeBounds.Width >> 1;
-
-                // Into which child node would we descend?
-                var cell = ComputeCell(ref nodeBounds, ref bounds);
-
-                // Can we descend and do we have to create that child?
-                if (cell < 0 || node.Children[cell] == null)
-                {
-                    // No, return the current node.
-                    return node;
-                }
-
-                // Yes, descend into that node.
-                node = node.Children[cell];
-                nodeBounds.X += (((cell & 1) == 0) ? 0 : childSize);
-                nodeBounds.Y += (((cell & 2) == 0) ? 0 : childSize);
-                nodeBounds.Width = childSize;
-                nodeBounds.Height = childSize;
+                yield return Tuple.Create(entry.Value.Bounds, entry.Key);
             }
-
-            return node;
         }
+
+        /// <summary>
+        /// Get a non-generic enumerator over the entries in this tree.
+        /// </summary>
+        /// <returns>An enumerator of all items in this index, with their bounds.</returns>
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        #endregion
 
         #region Restructuring
 
         /// <summary>
-        /// Ensures the tree can contain the given point.
+        /// Ensures the tree can contain the specified bounds.
         /// </summary>
-        /// <param name="bounds">The bounds to ensure tree size for.</param>
-        private void EnsureCapacity(ref Rectangle bounds)
+        /// <param name="bounds">The bounds to ensure the tree size for.</param>
+        private void EnsureCapacity(ref TRectangle bounds)
         {
-            // Inserts a new level on top of the root node, making it the new root
-            // node, until the tree bounds completely contain the entry bounds. Will
-            // reattach all of the root node's child nodes to the appropriate new
-            // child nodes.
+            // Inserts a new level below the root node, making it the new children
+            // of root the node (which in turn have the old root's children as
+            // their own children).
+            // This is repeated until the tree bounds completely contain the
+            // specified entry bounds.
             while (_bounds.X >= bounds.X ||
                    _bounds.Y >= bounds.Y ||
                    _bounds.X + _bounds.Width <= bounds.X + bounds.Width ||
@@ -418,7 +468,11 @@ namespace Engine.Collections
                     // Allocate new node.
                     var wrapper = new Node
                                   {
+                                      // Its parent is the root node.
                                       Parent = _root,
+                                      // Its child entries are the child entries of the
+                                      // previous child at this position, including that
+                                      // child own entries.
                                       FirstChildEntry = child.FirstChildEntry ?? child.FirstEntry,
                                       LastChildEntry = child.LastEntry ?? child.LastChildEntry,
                                       EntryCount = child.EntryCount
@@ -447,20 +501,20 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="node">The node to insert in.</param>
         /// <param name="nodeBounds">The bounds of the node.</param>
-        /// <param name="entry">The node to insert.</param>
-        private void AddToNode(Node node, ref Rectangle nodeBounds, Entry entry)
+        /// <param name="entry">The entry to insert.</param>
+        private void AddToNode(Node node, ref TRectangle nodeBounds, Entry entry)
         {
             // In the following we'll get the node in the linked list to insert after.
             Entry insertAfter;
 
-            // Check what type of node we have.
+            // Check what type of tree node we have.
             if (node.IsLeaf)
             {
                 // Got a leaf, insert in it. We're guaranteed to already have
                 // at least one entry in this leaf if we come here, because
                 // the first entry comes directly with the creation of the node.
                 // And if it were to become empty due to removal, it would be
-                // trimmed from the tree.
+                // trimmed from the tree. Meaning FirstEntry cannot be null.
                 insertAfter = node.FirstEntry;
             }
             else
@@ -480,23 +534,23 @@ namespace Engine.Collections
                 }
                 else
                 {
-                    // Yes we can. Allocate the new child node.
+                    // Yes, we can push it to a non-existent child node. Allocate it.
                     node.Children[cell] = new Node {Parent = node};
 
                     // Insert at the end of the child entry segment of the parent node,
                     // to begin a new segment for this node (as to not interfere with
                     // segments of other child nodes, if they exist). This must be not
-                    // null unless the entire tree is empty.
+                    // null unless the entire tree is empty, which will be handled
+                    // below, exactly by checking whether insertAfter is null or not.
                     insertAfter = node.LastChildEntry;
 
                     // Mark the new node as the current one (the one we're adding to).
+                    // This is necessary to allow proper propagation of possible
+                    // linked list segment end changes up to the root node. This will
+                    // make the following split do nothing, too, as we'll have too few
+                    // entries to split (one). That is also why we don't have to update
+                    // the node bounds -- they won't be used.
                     node = node.Children[cell];
-
-                    // Also adjust the current bounds, for the following split operation.
-                    nodeBounds.Width >>= 1;
-                    nodeBounds.Height >>= 1;
-                    nodeBounds.X += (((cell & 1) == 0) ? 0 : nodeBounds.Width);
-                    nodeBounds.Y += (((cell & 2) == 0) ? 0 : nodeBounds.Height);
                 }
             }
 
@@ -512,14 +566,8 @@ namespace Engine.Collections
                 node.LastEntry = entry;
             }
 
-            // Remember we have one more entry.
-            ++node.EntryCount;
-
-            // Invalidate cache.
-            node.LocalCache = null;
-
             // Add the entry to the existing list if possible. If the insertion point
-            // is null it means the tree is yet empty, so it will simply the the
+            // is null it means the tree is yet empty, so it will simply be the the
             // complete linked list for now.
             if (insertAfter != null)
             {
@@ -527,14 +575,22 @@ namespace Engine.Collections
                 entry.InsertAfter(insertAfter);
             }
 
-            // Update all parent nodes.
+            // Remember we have one more entry in this node.
+            ++node.EntryCount;
+
+            // Invalidate cache.
+            node.LocalCache = null;
+
+            // Update all parent nodes. We might have changed the ends of some segments
+            // so we need to adjust those in the parent nodes.
             var parent = node.Parent;
             while (parent != null)
             {
                 if (parent.FirstChildEntry == parent.LastChildEntry)
                 {
                     // Same logic as for the local segment, just for the reference
-                    // to child nodes.
+                    // to child nodes. Can be null if we created the first child
+                    // node for that parent, and can be one for obvious reasons.
                     parent.FirstChildEntry = parent.FirstChildEntry ?? entry;
                     parent.LastChildEntry = entry;
                 }
@@ -546,7 +602,7 @@ namespace Engine.Collections
                     parent.LastChildEntry = entry;
                 }
 
-                // Remember we have one more entry.
+                // Remember we have one more entry in this subtree.
                 ++parent.EntryCount;
 
                 // Invalidate cache.
@@ -565,7 +621,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="node">The actual node to split.</param>
         /// <param name="nodeBounds">The bounds of the node.</param>
-        private void TrySplitNode(Node node, ref Rectangle nodeBounds)
+        private void TrySplitNode(Node node, ref TRectangle nodeBounds)
         {
             // Should we split?
             if (!node.IsLeaf || // Already is split.
@@ -583,12 +639,11 @@ namespace Engine.Collections
 
             // Create a copy of the list of entries in this node. Because we
             // will reattach them at different locations in the linked list
-            // we cannot directly iterate them.
-            // We don't want to use the cache here, because it's just been
+            // we cannot directly iterate them (iteration would jump).
+            // We don't want to use the cache here, because it has just been
             // invalidated, and we might invalidate it again, so that would
             // just be unnecessary overhead.
-            var end = node.LastEntry.Next;
-            for (var entry = node.FirstEntry; entry != end; entry = entry.Next)
+            for (Entry entry = node.FirstEntry, end = node.LastEntry.Next; entry != end; entry = entry.Next)
             {
                 _reusableEntryList.Add(entry);
             }
@@ -598,8 +653,15 @@ namespace Engine.Collections
             // child nodes, and that of entries that had to remain in this node. The
             // remaining entries will be in the back, because the other will have been
             // moved to the front (or rather: to behind another child node entry).
+
+            // We null the first local entry to set it to the first remaining node. We
+            // don't need to null the last local entry, because it'll be overwritten when
+            // the first local entry is found, and from then on it's used to track the
+            // last known remaining local node.
+            node.FirstEntry = null;
+
             // We don't want to use a foreach loop here, because in that case the order
-            // would not be guaranteed.
+            // might not be guaranteed.
             for (int i = 0, j = _reusableEntryList.Count; i < j; ++i)
             {
                 var entry = _reusableEntryList[i];
@@ -608,13 +670,13 @@ namespace Engine.Collections
                 var cell = ComputeCell(ref nodeBounds, ref entry.Bounds);
                 if (cell < 0)
                 {
-                    // We must keep that entry in the current node. Move it to the back
-                    // of the local segment, if it's not the last one already.
-                    if (entry != node.LastEntry)
+                    // We must keep that entry in the current node. See if it's the
+                    // first one, because then we use it as a reference as to where
+                    // to put entries that can be pushed to children that follow.
+                    if (node.FirstEntry == null)
                     {
-                        entry.Remove();
-                        entry.InsertAfter(node.LastEntry);
-                        node.LastEntry = entry;
+                        // This is the first remaining entry we found, track it.
+                        node.FirstEntry = entry;
                     }
                 }
                 else
@@ -623,17 +685,34 @@ namespace Engine.Collections
                     // we created it in a previous iteration for another entry)
                     if (node.Children[cell] == null)
                     {
-                        // Yes. This makes things simple, just create the node and set the
-                        // entry as the first child, and mark it as the last as well.
-                        node.Children[cell] = new Node { Parent = node, FirstEntry = entry };
+                        // Yes. If we already have nodes we need to keep, move this in
+                        // front of that segment. Otherwise this position is fine.
+                        if (node.FirstEntry != null)
+                        {
+                            // If this was the last local node, update that reference.
+                            if (entry == node.LastEntry)
+                            {
+                                // Just point to the one before us. This won't go out
+                                // of bounds (our local segment) because we already
+                                // have at least one remaining local node.
+                                node.LastEntry = entry.Previous;
+                            }
 
-                        // No shuffling at this point, as this marks the creation of a
-                        // new segment, too. Mark this as the last entry.
-                        node.LastChildEntry = entry;
+                            // Move the entry to before the remaining local segment.
+                            entry.Remove();
+                            entry.InsertBefore(node.FirstEntry);
+                        }
 
-                        // Also, if it's the first entry moved to a child node, mark it as
-                        // the first child node.
+                        // Create the node and set the entry as the first child, and
+                        // mark it as the last as well.
+                        node.Children[cell] = new Node {Parent = node, FirstEntry = entry, LastEntry = entry};
+
+                        // If it's the first entry moved to a child node (first new segment),
+                        // mark it as the first child node.
                         node.FirstChildEntry = node.FirstChildEntry ?? entry;
+
+                        // Mark this as the last child entry either way.
+                        node.LastChildEntry = entry;
                     }
                     else
                     {
@@ -641,32 +720,36 @@ namespace Engine.Collections
                         // because if it is we don't need to shuffle.
                         if (entry != node.Children[cell].LastEntry.Next)
                         {
-                            // This means we have to sort the sublist by moving this entry
-                            // to the correct position.
+                            // This means we have to sort the sublist by moving this
+                            // entry to the correct position.
 
                             // In case this is the last node we must update the reference
                             // to the last local node.
                             if (entry == node.LastEntry)
                             {
-                                // Just point to the one before us.
+                                // Just point to the one before us. This won't go out of
+                                // bounds (our local segment) because we already have a
+                                // child node, meaning we're not the first.
                                 node.LastEntry = entry.Previous;
                             }
 
-                            // Then move the entry.
+                            // ThenMove the entry to the end of the segment of the node
+                            // it goes into.
                             entry.Remove();
                             entry.InsertAfter(node.Children[cell].LastEntry);
                         }
 
-                        // If the last entry in the node we inserted into was the last one in the
-                        // child entry segment of our parent, update that pointer.
+                        // If the last entry in the node we inserted into was the last one
+                        // in the child entry segment of our parent, update that pointer.
+                        // (This means the node we insert into has the last segment).
                         if (node.Children[cell].LastEntry == node.LastChildEntry)
                         {
                             node.LastChildEntry = entry;
                         }
-                    }
 
-                    // List is now in order, so we set the end of the segment to this entry.
-                    node.Children[cell].LastEntry = entry;
+                        // We replaced the last entry, so set that in the node.
+                        node.Children[cell].LastEntry = entry;
+                    }
 
                     // Either way, one more entry in the child node.
                     ++node.Children[cell].EntryCount;
@@ -683,26 +766,18 @@ namespace Engine.Collections
                 return;
             }
 
-            // Invalidate cache, only if something changed.
+            // Invalidate cache, but only if something changed.
             node.LocalCache = node.ChildCache = null;
 
             // At this point the entries in in the segment that is delimited by the
             // node's first and last references is sorted into child node entries and
-            // local entries. The reference to the last local entry cannot have
-            // changed, as it was the last entry being checked, whereas we'll have to
-            // adjust the first reference now -- which is just the entry after the last
-            // child entry. This allows us to test if any local entries remained: there
-            // are none if the last child entry equals the last local entry.
+            // local entries. This allows us to test if any local entries remained:
+            // there are none if the last child entry equals the last local entry.
             if (node.LastChildEntry == node.LastEntry)
             {
                 // No more local entries.
                 node.FirstEntry = null;
                 node.LastEntry = null;
-            }
-            else
-            {
-                // Some local entries remain, adjust reference to first one.
-                node.FirstEntry = node.LastChildEntry.Next;
             }
 
             // Adjust parent nodes if references to the ends of the segment for this
@@ -714,7 +789,8 @@ namespace Engine.Collections
                 var changed = false;
                 if (parent.FirstChildEntry == prevFirstEntry)
                 {
-                    // Head reference changed.
+                    // Head reference changed. We're guaranteed to have some child
+                    // entries at this point (else we'd have returned earlier).
                     parent.FirstChildEntry = node.FirstChildEntry;
                     changed = true;
                 }
@@ -732,14 +808,14 @@ namespace Engine.Collections
                 }
                 else
                 {
-                    // Stop if there were no more updates.
+                    // Stop if there were no more updates (all inner segments).
                     break;
                 }
             }
 
             // Do this recursively if the split resulted in another node that
             // has too many entries.
-            var childBounds = new Rectangle {Width = nodeBounds.Width >> 1, Height = nodeBounds.Height >> 1};
+            var childBounds = new TRectangle {Width = nodeBounds.Width >> 1, Height = nodeBounds.Height >> 1};
 
             if (node.Children[0] != null)
             {
@@ -777,7 +853,7 @@ namespace Engine.Collections
         {
             // Adjust parent nodes if necessary. If we remove from somewhere in the
             // middle we don't really care, as the parents won't reference that entry,
-            // but we update the entry counts in this run, too.
+            // but we update the entry counts in this run, and invalidate caches, too.
             var parent = node.Parent;
             while (parent != null)
             {
@@ -841,7 +917,7 @@ namespace Engine.Collections
             // Invalidate cache.
             node.LocalCache = null;
 
-            // Remove the entry from the list of entries.
+            // Remove the entry from the linked list of entries.
             entry.Remove();
 
             // See if we can collapse the branch.
@@ -849,8 +925,9 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Try to collapse up a branch starting with the specified child node.
-        /// This walks the tree towards the root, removing child nodes while possible.
+        /// Try to collapse a branch starting with the specified child node.
+        /// This walks the tree towards the root, removing child nodes while
+        /// possible.
         /// </summary>
         /// <param name="node">The node to start cleaning at.</param>
         private void CollapseBranch(Node node)
@@ -858,31 +935,38 @@ namespace Engine.Collections
             // Skip leaf nodes.
             if (!node.IsLeaf)
             {
-                // Check if child nodes are unnecessary for this node.
-                if (node.EntryCount > 0 && node.EntryCount <= _maxEntriesPerNode)
+                // Check if child nodes are unnecessary for this node. This is the
+                // case if there is a smaller number than the split count, of course.
+                if (node.EntryCount <= _maxEntriesPerNode)
                 {
-                    // We can prune the child nodes.
+                    // If we're empty we could use the else branch (null children), but
+                    // that's kind of superfluous, because we'll get nulled ourselves
+                    // in our parent, in that case, so just skip that.
+                    if (node.EntryCount > 0)
+                    {
+                        // We can prune the child nodes.
 
-                    // Make the first child node our first local node, thus adding the
-                    // segments of child nodes to our local nodes. If no high node was
-                    // set this means we had no local entries, so we want to set that
-                    // if it was null. In case the last entry from our only child node
-                    // was removed, the child entry pointer may be null even though
-                    // we have local nodes, so make sure to keep that if we have no
-                    // child entry referenced.
-                    node.FirstEntry = node.FirstChildEntry ?? node.FirstEntry;
-                    node.LastEntry = node.LastEntry ?? node.LastChildEntry;
+                        // Make the first child node our first local node, thus adding the
+                        // segments of child nodes to our local nodes. If no high node was
+                        // set this means we had no local entries, so we want to set that
+                        // if it was null. In case the last entry from our only child node
+                        // was removed, the child entry pointer may be null even though
+                        // we have local nodes, so make sure to keep that if we have no
+                        // child entry referenced.
+                        node.FirstEntry = node.FirstChildEntry ?? node.FirstEntry;
+                        node.LastEntry = node.LastEntry ?? node.LastChildEntry;
 
-                    // Remove references to child nodes.
-                    node.Children[0] = null;
-                    node.Children[1] = null;
-                    node.Children[2] = null;
-                    node.Children[3] = null;
-                    node.FirstChildEntry = null;
-                    node.LastChildEntry = null;
+                        // Remove references to child nodes.
+                        node.Children[0] = null;
+                        node.Children[1] = null;
+                        node.Children[2] = null;
+                        node.Children[3] = null;
+                        node.FirstChildEntry = null;
+                        node.LastChildEntry = null;
 
-                    // Invalidate cache.
-                    node.LocalCache = node.ChildCache = null;
+                        // Invalidate caches.
+                        node.LocalCache = node.ChildCache = null;
+                    }
                 }
                 else
                 {
@@ -922,7 +1006,13 @@ namespace Engine.Collections
             }
         }
 
-        private void UpdateBounds(ref Rectangle newBounds, Entry entry)
+        /// <summary>
+        /// Updates the bounds for the specified entry, moving it to another tree
+        /// node if necessary.
+        /// </summary>
+        /// <param name="newBounds">The new bounds.</param>
+        /// <param name="entry">The entry.</param>
+        private void UpdateBounds(ref TRectangle newBounds, Entry entry)
         {
             // Node may have changed. Get the node the entry is currently stored in.
             var nodeBounds = _bounds;
@@ -935,7 +1025,8 @@ namespace Engine.Collections
                 nodeBounds.Y + nodeBounds.Height <= newBounds.Y + newBounds.Height ||
                 (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1))
             {
-                // Did not fit in node anymore, remove from that node.
+                // Did not fit in node anymore, or we can push the entry into
+                // a child node, remove from that node.
                 RemoveFromNode(node, entry);
 
                 // Remove the entry from the value lookup.
@@ -946,31 +1037,12 @@ namespace Engine.Collections
             }
             else
             {
-                // Either we push the entry into a child node, or it stays where it is,
-                // whichever it is, we'll want to update the entry's bounds.
+                // It stays where it is, just update the entry's bounds.
                 entry.Bounds = newBounds;
-
-                //// Check if we can push the entry down.
-                //if (node.EntryCount > _maxEntriesPerNode && ComputeCell(ref nodeBounds, ref newBounds) > -1)
-                //{
-                //    // Can be inserted into child node, remove from this node.
-                //    RemoveFromNode(node, entry);
-
-                //    // Find child node to insert in (or reinsert in the same node to
-                //    // trigger creation of appropriate child node).
-                //    node = FindNode(ref newBounds, node, ref nodeBounds);
-
-                //    // Reinsert into the child node.
-                //    AddToNode(node, ref nodeBounds, entry);
-                //}
             }
         }
 
         #endregion
-
-        #endregion
-
-        #region Utility methods
 
         #region Tree traversal
 
@@ -984,19 +1056,19 @@ namespace Engine.Collections
         /// <param name="nodeBounds">The node bounds to check for.</param>
         /// <param name="entryBounds">The entry bounds to check for.</param>
         /// <returns>The cell number the bounds fall into.</returns>
-        private static int ComputeCell(ref Rectangle nodeBounds, ref Rectangle entryBounds)
+        private static int ComputeCell(ref TRectangle nodeBounds, ref TRectangle entryBounds)
         {
             var halfNodeSize = nodeBounds.Width >> 1;
 
             // Check if the bounds are on the splits.
             var midX = nodeBounds.X + halfNodeSize;
-            if (IsInInterval(entryBounds.Left, entryBounds.X + entryBounds.Width, midX))
+            if (midX >= entryBounds.X && midX <= entryBounds.X + entryBounds.Width)
             {
                 // Y split runs through the bounds.
                 return -1;
             }
             var midY = nodeBounds.Y + halfNodeSize;
-            if (IsInInterval(entryBounds.Top, entryBounds.Y + entryBounds.Height, midY))
+            if (midY >= entryBounds.Y && midY <= entryBounds.Y + entryBounds.Height)
             {
                 // X split runs through the bounds.
                 return -1;
@@ -1018,36 +1090,67 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Tests if the specified value lies in the specified interval.
+        /// Find the minimal node that can contain the specified bounds. If
+        /// possible, this will return a leaf node. If there is no leaf node
+        /// that can contain the rectangle, it will return the smallest inner
+        /// node that can contain the bounds.
         /// </summary>
-        /// <param name="low">The low end of the interval (inclusive).</param>
-        /// <param name="high">The high end of the interval (inclusive).</param>
-        /// <param name="value">The value to test for.</param>
-        /// <returns><code>true</code> if the value lies in the interval.</returns>
-        private static bool IsInInterval(int low, int high, int value)
+        /// <param name="bounds">The bounds to get the node for.</param>
+        /// <param name="node">The node to start searching in.</param>
+        /// <param name="nodeBounds">The bounds of the node we start in. Will
+        /// hold the bounds of the resulting node.</param>
+        /// <returns>The node containing the specified bounds.</returns>
+        private static Node FindNode(ref TRectangle bounds, Node node, ref TRectangle nodeBounds)
         {
-            return value >= low && value <= high;
+            // We're definitely done when we hit a leaf.
+            while (!node.IsLeaf)
+            {
+                // Get current child size.
+                var childSize = nodeBounds.Width >> 1;
+
+                // Into which child node would we descend?
+                var cell = ComputeCell(ref nodeBounds, ref bounds);
+
+                // Can we descend and do we have to create that child?
+                if (cell < 0 || node.Children[cell] == null)
+                {
+                    // No, return the current node.
+                    return node;
+                }
+
+                // Yes, descend into that node.
+                node = node.Children[cell];
+                nodeBounds.X += (((cell & 1) == 0) ? 0 : childSize);
+                nodeBounds.Y += (((cell & 2) == 0) ? 0 : childSize);
+                nodeBounds.Width = childSize;
+                nodeBounds.Height = childSize;
+            }
+
+            // Return the best match for the bounds.
+            return node;
         }
 
         /// <summary>
-        /// Accumulate all entries in range of a circular range query to the
-        /// given list. This recurses the tree down inner nodes that intersect
-        /// the query, until it finds a leaf node. Then adds all entries in the
-        /// leaf that are in range.
+        /// Accumulate all entries in the specified circle into the specified list.
+        /// This recurses the tree down inner nodes that intersect the query, until
+        /// it finds a leaf node. Then adds all entries in the leaf that are in range.
+        /// On the way, it adds all entries kept in inner nodes that intersect the
+        /// query.
         /// </summary>
         /// <param name="node">The current node.</param>
         /// <param name="nodeBounds">The bounds of the current node.</param>
+        /// <param name="rectangle">The minimal bounding box around the circle query.</param>
         /// <param name="point">The query point.</param>
         /// <param name="range">The query range.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(Node node, ref Rectangle nodeBounds, ref Vector2 point, float range, ref ICollection<T> list)
+        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref TVector point, float range, ref ICollection<T> list)
         {
             // Check how to proceed.
-            switch (ComputeIntersection(ref point, range, ref nodeBounds))
+            switch (ComputeIntersection(ref rectangle, ref nodeBounds))
             {
                 case IntersectionType.Contains:
                 {
-                    // Box completely contained in query, return all points in it,
+                    // Node completely contained in query, return all entries in it,
                     // no need to recurse further.
                     node.AddOwnEntries(ref list);
                     node.AddChildEntries(ref list);
@@ -1055,39 +1158,44 @@ namespace Engine.Collections
                 }
                 case IntersectionType.Intersects:
                 {
-                    // Add all local entries in this node that are in range, regardless of
-                    // whether this is an inner or a leaf node.
+                    // Add all local entries in this node that are in range, regardless
+                    // of whether this is an inner or a leaf node.
                     node.AddOwnEntries(ref point, range, ref list);
 
+                    // If it's not a leaf recurse into child nodes.
                     if (!node.IsLeaf)
                     {
-                        // Recurse into child nodes.
-                        var childBounds = new Rectangle {Width = nodeBounds.Width >> 1, Height = nodeBounds.Height >> 1};
+                        // Build the bounds for each child in the following.
+                        var childBounds = new TRectangle
+                                          {
+                                              Width = nodeBounds.Width >> 1,
+                                              Height = nodeBounds.Height >> 1
+                                          };
 
                         // Unrolled loop.
                         if (node.Children[0] != null)
                         {
                             childBounds.X = nodeBounds.X;
                             childBounds.Y = nodeBounds.Y;
-                            Accumulate(node.Children[0], ref childBounds, ref point, range, ref list);
+                            Accumulate(node.Children[0], ref childBounds, ref rectangle, ref point, range, ref list);
                         }
                         if (node.Children[1] != null)
                         {
                             childBounds.X = nodeBounds.X + childBounds.Width;
                             childBounds.Y = nodeBounds.Y;
-                            Accumulate(node.Children[1], ref childBounds, ref point, range, ref list);
+                            Accumulate(node.Children[1], ref childBounds, ref rectangle, ref point, range, ref list);
                         }
                         if (node.Children[2] != null)
                         {
                             childBounds.X = nodeBounds.X;
                             childBounds.Y = nodeBounds.Y + childBounds.Height;
-                            Accumulate(node.Children[2], ref childBounds, ref point, range, ref list);
+                            Accumulate(node.Children[2], ref childBounds, ref rectangle, ref point, range, ref list);
                         }
                         if (node.Children[3] != null)
                         {
                             childBounds.X = nodeBounds.X + childBounds.Width;
                             childBounds.Y = nodeBounds.Y + childBounds.Height;
-                            Accumulate(node.Children[3], ref childBounds, ref point, range, ref list);
+                            Accumulate(node.Children[3], ref childBounds, ref rectangle, ref point, range, ref list);
                         }
                     }
                     break;
@@ -1105,14 +1213,14 @@ namespace Engine.Collections
         /// <param name="nodeBounds">The bounds of the current node.</param>
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="list">The result list.</param>
-        private static void Accumulate(Node node, ref Rectangle nodeBounds, ref Rectangle rectangle, ref ICollection<T> list)
+        private static void Accumulate(Node node, ref TRectangle nodeBounds, ref TRectangle rectangle, ref ICollection<T> list)
         {
             // Check how to proceed.
             switch (ComputeIntersection(ref rectangle, ref nodeBounds))
             {
                 case IntersectionType.Contains:
                 {
-                    // Box completely contained in query, return all points in it,
+                    // Node completely contained in query, return all entries in it,
                     // no need to recurse further.
                     node.AddOwnEntries(ref list);
                     node.AddChildEntries(ref list);
@@ -1127,7 +1235,11 @@ namespace Engine.Collections
                     if (!node.IsLeaf)
                     {
                         // Recurse into child nodes.
-                        var childBounds = new Rectangle {Width = nodeBounds.Width >> 1, Height = nodeBounds.Height >> 1};
+                        var childBounds = new TRectangle
+                                          {
+                                              Width = nodeBounds.Width >> 1,
+                                              Height = nodeBounds.Height >> 1
+                                          };
 
                         // Unrolled loop.
                         if (node.Children[0] != null)
@@ -1173,7 +1285,7 @@ namespace Engine.Collections
             /// The shapes are cleanly separated from each other.
             /// </summary>
             Disjoint,
-            
+
             /// <summary>
             /// The two shapes are overlapping each other.
             /// </summary>
@@ -1192,7 +1304,7 @@ namespace Engine.Collections
         /// <param name="radius">The radius of the circle.</param>
         /// <param name="bounds">The box.</param>
         /// <returns>How the two intersect.</returns>
-        private static IntersectionType ComputeIntersection(ref Vector2 center, float radius, ref Rectangle bounds)
+        private static IntersectionType ComputeIntersection(ref TVector center, float radius, ref TRectangle bounds)
         {
             // Check for axis aligned separation.
             if (bounds.X + bounds.Width < center.X - radius ||
@@ -1251,7 +1363,7 @@ namespace Engine.Collections
         /// <param name="rectangle">The first box.</param>
         /// <param name="bounds">The second box.</param>
         /// <returns>How the two intersect.</returns>
-        private static IntersectionType ComputeIntersection(ref Rectangle rectangle, ref Rectangle bounds)
+        private static IntersectionType ComputeIntersection(ref TRectangle rectangle, ref TRectangle bounds)
         {
             var rr = rectangle.X + rectangle.Width;
             var rb = rectangle.Y + rectangle.Height;
@@ -1278,16 +1390,16 @@ namespace Engine.Collections
 
         #endregion
 
-        #endregion
-
         #region Types
 
         /// <summary>
         /// A node in the tree, which can either be a leaf or an inner node.
         /// 
         /// <para>
-        /// Leaf nodes only hold a list of entities, whereas inner nodes also
-        /// reference to more specific child nodes.
+        /// Leaf nodes only hold a list of entries, whereas inner nodes also
+        /// reference to more specific child nodes (in addition to local entries
+        /// in case they cannot be put in a child node because they lie on a
+        /// split).
         /// </para>
         /// </summary>
         [DebuggerDisplay("Count = {EntryCount}, Leaf = {IsLeaf}")]
@@ -1296,8 +1408,11 @@ namespace Engine.Collections
             #region Properties
 
             /// <summary>
-            /// Whether this node is a leaf node.
+            /// Whether this node is a leaf node or not.
             /// </summary>
+            /// <value>
+            ///   <c>true</c> if this instance is leaf node; otherwise, <c>false</c>.
+            /// </value>
             public bool IsLeaf
             {
                 get
@@ -1354,7 +1469,7 @@ namespace Engine.Collections
             /// </summary>
             [DebuggerBrowsable(DebuggerBrowsableState.Never)]
             public Entry[] LocalCache;
-            
+
             /// <summary>
             /// Cache of entries in child nodes.
             /// </summary>
@@ -1365,6 +1480,9 @@ namespace Engine.Collections
 
             #region Entry Accumulator
 
+            /// <summary>
+            /// Rebuilds the local cache.
+            /// </summary>
             private void RebuildLocalCache()
             {
                 if (LocalCache == null)
@@ -1372,11 +1490,8 @@ namespace Engine.Collections
                     var cache = new List<Entry>();
                     if (FirstEntry != null)
                     {
-                        var begin = FirstEntry;
-                        var end = LastEntry.Next;
-                        for (var entry = begin; entry != end; entry = entry.Next)
+                        for (Entry entry = FirstEntry, end = LastEntry.Next; entry != end; entry = entry.Next)
                         {
-                            // No need for a range check at this point.
                             cache.Add(entry);
                         }
                     }
@@ -1384,6 +1499,9 @@ namespace Engine.Collections
                 }
             }
 
+            /// <summary>
+            /// Rebuilds the child cache.
+            /// </summary>
             private void RebuildChildCache()
             {
                 if (ChildCache == null)
@@ -1391,11 +1509,8 @@ namespace Engine.Collections
                     var cache = new List<Entry>();
                     if (FirstChildEntry != null)
                     {
-                        var begin = FirstChildEntry;
-                        var end = LastChildEntry.Next;
-                        for (var entry = begin; entry != end; entry = entry.Next)
+                        for (Entry entry = FirstChildEntry, end = LastChildEntry.Next; entry != end; entry = entry.Next)
                         {
-                            // No need for a range check at this point.
                             cache.Add(entry);
                         }
                     }
@@ -1403,6 +1518,10 @@ namespace Engine.Collections
                 }
             }
 
+            /// <summary>
+            /// Adds all entries stored in this node to the specified list.
+            /// </summary>
+            /// <param name="list">The list.</param>
             public void AddOwnEntries(ref ICollection<T> list)
             {
                 // Rebuild entry cache if necessary.
@@ -1415,7 +1534,14 @@ namespace Engine.Collections
                 }
             }
 
-            public void AddOwnEntries(ref Vector2 point, float range, ref ICollection<T> list)
+            /// <summary>
+            /// Adds all entries stored in this node to the specified list if
+            /// they intersect with the specified circle.
+            /// </summary>
+            /// <param name="point">The center of the circle.</param>
+            /// <param name="range">The radius of the circle.</param>
+            /// <param name="list">The list.</param>
+            public void AddOwnEntries(ref TVector point, float range, ref ICollection<T> list)
             {
                 // Rebuild entry cache if necessary.
                 RebuildLocalCache();
@@ -1430,7 +1556,13 @@ namespace Engine.Collections
                 }
             }
 
-            public void AddOwnEntries(ref Rectangle rectangle, ref ICollection<T> list)
+            /// <summary>
+            /// Adds all entries stored in this node to the specified list if
+            /// they intersect with the specified rectangle.
+            /// </summary>
+            /// <param name="rectangle">The rectangle.</param>
+            /// <param name="list">The list.</param>
+            public void AddOwnEntries(ref TRectangle rectangle, ref ICollection<T> list)
             {
                 // Rebuild entry cache if necessary.
                 RebuildLocalCache();
@@ -1445,6 +1577,10 @@ namespace Engine.Collections
                 }
             }
 
+            /// <summary>
+            /// Adds all child entries to the specified list.
+            /// </summary>
+            /// <param name="list">The list.</param>
             public void AddChildEntries(ref ICollection<T> list)
             {
                 // Rebuild entry cache if necessary.
@@ -1481,7 +1617,7 @@ namespace Engine.Collections
             /// <summary>
             /// The point at which the entry is stored.
             /// </summary>
-            public Rectangle Bounds;
+            public TRectangle Bounds;
 
             /// <summary>
             /// The value stored in this entry.
@@ -1516,45 +1652,39 @@ namespace Engine.Collections
             /// <param name="entry">The entry to insert after.</param>
             public void InsertAfter(Entry entry)
             {
-                var insertAfter = entry;
-                var insertBefore = insertAfter.Next;
-
-                insertAfter.Next = this;
+                // Adjust other nodes' values.
+                var insertBefore = entry.Next;
+                entry.Next = this;
                 if (insertBefore != null)
                 {
                     insertBefore.Previous = this;
                 }
 
-                Previous = insertAfter;
+                // Adjust own values.
+                Previous = entry;
                 Next = insertBefore;
             }
 
-            #endregion
-        }
-
-        #endregion
-
-        #region Enumerable
-
-        /// <summary>
-        /// Get an enumerator over the values in this tree.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<Tuple<Rectangle, T>> GetEnumerator()
-        {
-            foreach (var entry in _values)
+            /// <summary>
+            /// Insert this node into the linked list, before the specified entry.
+            /// </summary>
+            /// <param name="entry">The entry to insert before.</param>
+            public void InsertBefore(Entry entry)
             {
-                yield return Tuple.Create(entry.Value.Bounds, entry.Key);
-            }
-        }
+                // Adjust other nodes' values.
+                var insertAfter = entry.Previous;
+                entry.Previous = this;
+                if (insertAfter != null)
+                {
+                    insertAfter.Next = this;
+                }
 
-        /// <summary>
-        /// Get a non-generic enumerator over the values in this tree.
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+                // Adjust own values.
+                Previous = insertAfter;
+                Next = entry;
+            }
+
+            #endregion
         }
 
         #endregion
@@ -1568,7 +1698,7 @@ namespace Engine.Collections
         /// <param name="shape">The shape renderer to paint with.</param>
         /// <param name="translation">The translation to apply to all draw
         ///   operation.</param>
-        public void Draw(Graphics.AbstractShape shape, Vector2 translation)
+        public void Draw(Graphics.AbstractShape shape, TVector translation)
         {
             DrawNode(_root, 0, 0, _bounds.Width, translation, shape);
         }
@@ -1577,7 +1707,7 @@ namespace Engine.Collections
         /// Renders a single note into a sprite batch, and recursively render
         /// its children.
         /// </summary>
-        private static void DrawNode(Node node, float centerX, float centerY, int nodeSize, Vector2 translation,
+        private static void DrawNode(Node node, float centerX, float centerY, int nodeSize, TVector translation,
                                      Graphics.AbstractShape shape)
         {
             // Abort if there is no node here.
@@ -1596,7 +1726,8 @@ namespace Engine.Collections
                 for (var entry = node.FirstEntry; entry != end; entry = entry.Next)
                 {
                     var bounds = entry.Bounds;
-                    shape.SetCenter(translation.X + bounds.X + bounds.Width / 2f, translation.Y + bounds.Y + bounds.Height / 2f);
+                    shape.SetCenter(translation.X + bounds.X + bounds.Width / 2f,
+                                    translation.Y + bounds.Y + bounds.Height / 2f);
                     shape.SetSize(bounds.Width, bounds.Height);
                     shape.Draw();
                 }

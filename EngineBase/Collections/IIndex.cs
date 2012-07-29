@@ -1,14 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.Xna.Framework;
+
+// Adjust these as necessary, they just have to share a compatible
+// interface with the XNA types.
+using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TVector = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine.Collections
 {
     /// <summary>
-    /// Interface for index structures.
+    /// Interface for index structures providing options for faster neighbor
+    /// search.
     /// </summary>
-    /// <typeparam name="T">The type of the values stored in this index.</typeparam>
-    public interface IIndex<T> : IEnumerable<Tuple<Rectangle, T>>
+    /// <typeparam name="T">The type of the values stored in the index.</typeparam>
+    public interface IIndex<T> : IEnumerable<Tuple<TRectangle, T>>
     {
         #region Properties
 
@@ -22,93 +27,116 @@ namespace Engine.Collections
         #region Accessors
 
         /// <summary>
-        /// Add a new entry to the tree, with the specified bounds, with the
-        /// specified associated value.
+        /// Add a new item to the index, with the specified bounds.
         /// </summary>
-        /// <param name="bounds">The bounds of the entry.</param>
-        /// <param name="value">The value associated with the point.</param>
-        /// <exception cref="ArgumentException">This value is already stored
-        /// in the tree.</exception>
-        void Add(ref Rectangle bounds, T value);
+        /// <param name="bounds">The bounds of the item.</param>
+        /// <param name="item">The item.</param>
+        /// <exception cref="T:System.ArgumentException">
+        /// The item is already stored in the index.
+        /// </exception>
+        void Add(ref TRectangle bounds, T item);
 
         /// <summary>
-        /// Add a new entry to the tree, at the specified position, with the
-        /// specified associated value.
+        /// Add a new item to the index, with the specified position.
         /// </summary>
-        /// <param name="point">The point at which to store the entry.</param>
-        /// <param name="value">The value associated with the point.</param>
-        /// <exception cref="ArgumentException">This value is already stored
-        /// in the tree.</exception>
-        void Add(Vector2 point, T value);
+        /// <remarks>
+        /// In most implementations this will lead to the point being
+        /// converted to an empty rectangle at the point's position,
+        /// which will then be inserted, instead.
+        /// </remarks>
+        /// <param name="point">The position of the item.</param>
+        /// <param name="item">The item.</param>
+        /// <exception cref="T:System.ArgumentException">
+        /// The item is already stored in the index.
+        /// </exception>
+        void Add(TVector point, T item);
 
         /// <summary>
-        /// Update a single entry by changing its bounds. If the entry is not
-        /// already in the tree, this will return <code>false</code>.
+        /// Update an entry by changing its bounds. If the item is not
+        /// stored in the index, this will return <code>false</code>.
         /// </summary>
-        /// <param name="newBounds">The new bounds of the entry.</param>
-        /// <param name="value">The value of the entry.</param>
-        /// <returns><code>true</code> if the update was successful.</returns>
-        bool Update(ref Rectangle newBounds, T value);
+        /// <param name="newBounds">The new bounds of the item.</param>
+        /// <param name="item">The item for which to update the bounds.</param>
+        /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
+        bool Update(ref TRectangle newBounds, T item);
 
         /// <summary>
-        /// Update a single entry by changing its position. If the entry is not
-        /// already in the tree, this will return <code>false</code>.
+        /// Update an entry by changing its position. If the item is not
+        /// stored in the index, this will return <code>false</code>.
         /// </summary>
-        /// <param name="newPoint">The new position of the entry.</param>
-        /// <param name="value">The value of the entry.</param>
-        /// <returns><code>true</code> if the update was successful.</returns>
-        bool Update(Vector2 newPoint, T value);
+        /// <remarks>
+        /// In most implementations this will lead to the point being
+        /// converted to an empty rectangle at the point's position,
+        /// which will then be used, instead.
+        /// </remarks>
+        /// <param name="newPoint">The new position of the item.</param>
+        /// <param name="item">The item for which to update the bounds.</param>
+        /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
+        bool Update(TVector newPoint, T item);
 
         /// <summary>
-        /// Similar to <code>Update</code> this changes an entry's bounds. Unlike
-        /// <code>Update</code>, however, this just moves the bounds to the
-        /// specified location. The specified position is used as the new center
-        /// for the bounds.
+        /// Similar to <see cref="Update(TVector, T)"/> this changes an
+        /// entry's bounds. Unlike <see cref="Update(TVector, T)"/>, however,
+        /// this just moves the bounds to the specified location without the
+        /// option to change their size. The specified position is used as the
+        /// new center for the bounds.
         /// </summary>
-        /// <param name="position">The new position of the bounds.</param>
-        /// <param name="value">The entry for which to update the bounds.</param>
-        /// <returns></returns>
-        bool Move(Vector2 position, T value);
+        /// <remarks>
+        /// This is purely a helper method, it will compute the new bounds and
+        /// then call <see cref="Update(TVector, T)"/> internally, in most
+        /// implementations.
+        /// </remarks>
+        /// <param name="position">The new position of the item.</param>
+        /// <param name="item">The item for which to update the bounds.</param>
+        /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
+        bool Move(TVector position, T item);
 
         /// <summary>
-        /// Remove the specified value from the tree.
+        /// Remove the specified item from the index. If the item is not
+        /// stored in the index, this will return <code>false</code>.
         /// </summary>
-        /// <param name="value">The value to remove.</param>
-        bool Remove(T value);
+        /// <param name="item">The item to remove.</param>
+        /// <returns><c>true</c> if the item was removed; <c>false</c> otherwise.</returns>
+        bool Remove(T item);
 
         /// <summary>
-        /// Test whether this tree contains the specified value.
+        /// Test whether this index contains the specified item.
         /// </summary>
-        /// <param name="value">The value to look for.</param>
-        /// <returns><c>true</c> if the tree contains the value at the
-        /// specified point.</returns>
-        bool Contains(T value);
+        /// <param name="item">The item to check.</param>
+        /// <returns><c>true</c> if the index contains the item; <c>false</c> otherwise.</returns>
+        bool Contains(T item);
 
         /// <summary>
-        /// Removes all entries from this tree.
+        /// Removes all items from the index.
         /// </summary>
         void Clear();
 
         /// <summary>
-        /// Perform a circular query on this tree. This will return all entries
-        /// in the tree that are in the specified range to the specified point,
-        /// using a euclidean distance.
+        /// Perform a circular query on this index. This will return all entries
+        /// in the index that are in the specified range of the specified point,
+        /// using the euclidean distance function (i.e. <c>sqrt(x*x+y*y)</c>).
         /// </summary>
+        /// <remarks>
+        /// This checks for intersections of the query circle and the bounds of
+        /// the entries in the index. Intersections (i.e. bounds not fully contained
+        /// in the circle) will be returned, too.
+        /// </remarks>
         /// <param name="point">The query point near which to get entries.</param>
         /// <param name="range">The maximum distance an entry may be away
         /// from the query point to be returned.</param>
-        /// <param name="list">The list to put the results into, or null in
-        /// which case a new list will be created and returned.</param>
-        void Find(Vector2 point, float range, ref ICollection<T> list);
+        /// <param name="list">The list to put the results into. It is guaranteed
+        /// that there will be no duplicate entries.</param>
+        void Find(TVector point, float range, ref ICollection<T> list);
 
         /// <summary>
-        /// Perform an area query on this tree. This will return all entries
-        /// in the tree that are in contained the specified rectangle.
+        /// Perform an area query on this index. This will return all entries
+        /// in the tree that are contained in or intersecting with the specified
+        /// query rectangle.
         /// </summary>
         /// <param name="rectangle">The query rectangle.</param>
-        /// <param name="list">The list to put the results into, or null in
-        /// which case a new list will be created and returned.</param>
-        void Find(ref Rectangle rectangle, ref ICollection<T> list);
+        /// <param name="list">The list to put the results into. It is guaranteed
+        /// that there will be no duplicate entries.</param>
+        void Find(ref TRectangle rectangle, ref ICollection<T> list);
 
         #endregion
     }

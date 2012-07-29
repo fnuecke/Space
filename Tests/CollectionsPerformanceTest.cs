@@ -59,7 +59,7 @@ namespace Tests
         // List of values for max entry count to test.
         private static readonly int[] QuadTreeMaxNodeEntries = new[] {30};
 
-        private static void Main(string[] args)
+        private static void Main()
         {
             // Generate data beforehand.
             var random = new MersenneTwister(Seed);

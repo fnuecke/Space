@@ -81,21 +81,21 @@ namespace Engine.Collections
         /// specified associated value.
         /// </summary>
         /// <param name="bounds">The bounds of the entry.</param>
-        /// <param name="value">The value associated with the point.</param>
+        /// <param name="item">The value associated with the point.</param>
         /// <exception cref="ArgumentException">This value is already stored
         /// in the tree.</exception>
-        public void Add(ref Rectangle bounds, T value)
+        public void Add(ref Rectangle bounds, T item)
         {
             throw new NotImplementedException();
         }
 
-        public void Add(Vector2 point, T value)
+        public void Add(Vector2 point, T item)
         {
             //the entry to be stored
-            var entry = new Entry() { Point = point, Value = value };
-            if (_pointDict.ContainsKey(value))
+            var entry = new Entry() { Point = point, Value = item };
+            if (_pointDict.ContainsKey(item))
             {
-                throw new ArgumentException("Entry is already in the tree at the specified point.", "value");
+                throw new ArgumentException("Entry is already in the tree at the specified point.", "item");
             }
             Insert(entry);
         }
@@ -105,9 +105,9 @@ namespace Engine.Collections
         /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newBounds">The new bounds of the entry.</param>
-        /// <param name="value">The value of the entry.</param>
+        /// <param name="item">The value of the entry.</param>
         /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(ref Rectangle newBounds, T value)
+        public bool Update(ref Rectangle newBounds, T item)
         {
             throw new NotImplementedException();
         }
@@ -164,18 +164,18 @@ namespace Engine.Collections
             AdjustTree(node, createdNode);
         }
 
-        public bool Update(Vector2 newPoint, T value)
+        public bool Update(Vector2 newPoint, T item)
         {
             LeafNode node = null;
             //check if node exists
-            var found = _pointDict.TryGetValue(value,out node);
+            var found = _pointDict.TryGetValue(item,out node);
             if (!found)
                 throw new ArgumentException("Value not in Tree");
             
             //still in old parent
             if (node.Boundingbox.Contains((int)newPoint.X, (int)newPoint.Y))
             {
-                var entry = node.getEntry(value);
+                var entry = node.getEntry(item);
                 entry.Point = newPoint;
                 AdjustTree(node);
                 return true;
@@ -192,25 +192,25 @@ namespace Engine.Collections
         /// for the bounds.
         /// </summary>
         /// <param name="position">The new position of the bounds.</param>
-        /// <param name="value">The entry for which to update the bounds.</param>
+        /// <param name="item">The entry for which to update the bounds.</param>
         /// <returns></returns>
-        public bool Move(Vector2 position, T value)
+        public bool Move(Vector2 position, T item)
         {
             throw new NotImplementedException();
         }
 
-        public bool Remove(T value)
+        public bool Remove(T item)
         {
-            if (!_pointDict.ContainsKey(value))
+            if (!_pointDict.ContainsKey(item))
             {
                 return false;
             }
-            var node = _pointDict[value];
-            _pointDict.Remove(value);
+            var node = _pointDict[item];
+            _pointDict.Remove(item);
             foreach (var entry in node.Entrys)
             {
                 //find entry in node
-                if(entry.Value.Equals(value))
+                if(entry.Value.Equals(item))
                 {
                     node.Entrys.Remove(entry);
                     CondenseTree(node);
@@ -220,9 +220,9 @@ namespace Engine.Collections
             return false;
         }
 
-        public bool Contains(T value)
+        public bool Contains(T item)
         {
-            return _pointDict.ContainsKey(value);
+            return _pointDict.ContainsKey(item);
         }
 
         public void Clear()

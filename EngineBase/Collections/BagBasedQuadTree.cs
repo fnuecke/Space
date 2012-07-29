@@ -104,18 +104,18 @@ namespace Engine.Collections
         /// specified associated value.
         /// </summary>
         /// <param name="bounds">The bounds of the entry.</param>
-        /// <param name="value">The value associated with the point.</param>
+        /// <param name="item">The value associated with the point.</param>
         /// <exception cref="ArgumentException">This value is already stored
         /// in the tree.</exception>
-        public void Add(ref Rectangle bounds, T value)
+        public void Add(ref Rectangle bounds, T item)
         {
-            if (Contains(value))
+            if (Contains(item))
             {
-                throw new ArgumentException("Entry is already in the tree.", "value");
+                throw new ArgumentException("Entry is already in the tree.", "item");
             }
 
             // Create the entry to add.
-            var entry = new Entry {Bounds = bounds, Value = value};
+            var entry = new Entry {Bounds = bounds, Value = item};
 
             // Handle dynamic growth.
             EnsureCapacity(ref bounds);
@@ -138,13 +138,13 @@ namespace Engine.Collections
         /// as the bounds for the value.
         /// </remarks>
         /// <param name="point">The point at which to store the entry.</param>
-        /// <param name="value">The value associated with the point.</param>
+        /// <param name="item">The value associated with the point.</param>
         /// <exception cref="ArgumentException">This value is already stored
         /// in the tree.</exception>
-        public void Add(Vector2 point, T value)
+        public void Add(Vector2 point, T item)
         {
             var bounds = new Rectangle {X = (int)point.X, Y = (int)point.Y};
-            Add(ref bounds, value);
+            Add(ref bounds, item);
         }
 
         /// <summary>
@@ -152,18 +152,18 @@ namespace Engine.Collections
         /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newBounds">The new bounds of the entry.</param>
-        /// <param name="value">The value of the entry.</param>
+        /// <param name="item">The value of the entry.</param>
         /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(ref Rectangle newBounds, T value)
+        public bool Update(ref Rectangle newBounds, T item)
         {
             // Check if we have that entry, if not add it.
-            if (!Contains(value))
+            if (!Contains(item))
             {
                 return false;
             }
 
             // Get the old position.
-            var entry = _values[value];
+            var entry = _values[item];
 
             // Update tree.
             UpdateBounds(ref newBounds, entry);
@@ -180,12 +180,12 @@ namespace Engine.Collections
         /// as the bounds for the value.
         /// </remarks>
         /// <param name="newPoint">The new position of the entry.</param>
-        /// <param name="value">The value of the entry.</param>
+        /// <param name="item">The value of the entry.</param>
         /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(Vector2 newPoint, T value)
+        public bool Update(Vector2 newPoint, T item)
         {
             var bounds = new Rectangle {X = (int)newPoint.X, Y = (int)newPoint.Y};
-            return Update(ref bounds, value);
+            return Update(ref bounds, item);
         }
 
         /// <summary>
@@ -195,18 +195,18 @@ namespace Engine.Collections
         /// for the bounds.
         /// </summary>
         /// <param name="position">The new position of the bounds.</param>
-        /// <param name="value">The entry for which to update the bounds.</param>
+        /// <param name="item">The entry for which to update the bounds.</param>
         /// <returns></returns>
-        public bool Move(Vector2 position, T value)
+        public bool Move(Vector2 position, T item)
         {
             // Check if we have that entry, if not add it.
-            if (!Contains(value))
+            if (!Contains(item))
             {
                 return false;
             }
 
             // Get the old position.
-            var entry = _values[value];
+            var entry = _values[item];
 
             // Update bounds.
             var newBounds = entry.Bounds;
@@ -222,17 +222,17 @@ namespace Engine.Collections
         /// <summary>
         /// Remove the specified value from the tree.
         /// </summary>
-        /// <param name="value">The value to remove.</param>
-        public bool Remove(T value)
+        /// <param name="item">The value to remove.</param>
+        public bool Remove(T item)
         {
             // See if we have that entry.
-            if (!Contains(value))
+            if (!Contains(item))
             {
                 return false;
             }
 
             // Yes, get the instance.
-            var entry = _values[value];
+            var entry = _values[item];
 
             // Get the node the entry would be in.
             var nodeBounds = _bounds;
@@ -255,12 +255,12 @@ namespace Engine.Collections
         /// <summary>
         /// Test whether this tree contains the specified value.
         /// </summary>
-        /// <param name="value">The value to look for.</param>
+        /// <param name="item">The value to look for.</param>
         /// <returns><c>true</c> if the tree contains the value at the
         /// specified point.</returns>
-        public bool Contains(T value)
+        public bool Contains(T item)
         {
-            return _values.ContainsKey(value);
+            return _values.ContainsKey(item);
         }
 
         /// <summary>
