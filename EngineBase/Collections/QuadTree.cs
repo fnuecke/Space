@@ -917,9 +917,15 @@ namespace Engine.Collections
         /// <param name="node">The node to start cleaning at.</param>
         private void CollapseBranch(Node node)
         {
-            // Skip leaf nodes.
-            if (!node.IsLeaf)
+            // Move up the tree while there are nodes.
+            do
             {
+                // Skip leaf nodes.
+                if (node.IsLeaf)
+                {
+                    continue;
+                }
+
                 // Check if child nodes are unnecessary for this node. This is the
                 // case if there is a smaller number than the split count, of course.
                 if (node.EntryCount <= _maxEntriesPerNode)
@@ -927,7 +933,7 @@ namespace Engine.Collections
                     // If we're empty we could use the else branch (null children), but
                     // that's kind of superfluous, because we'll get nulled ourselves
                     // in our parent, in that case, so just skip that.
-                    if (node.EntryCount > 0)
+                    if (node.EntryCount > 0 || node == _root)
                     {
                         // We can prune the child nodes.
 
@@ -982,13 +988,9 @@ namespace Engine.Collections
                         return;
                     }
                 }
-            }
 
-            // Check parent.
-            if (node.Parent != null)
-            {
-                CollapseBranch(node.Parent);
-            }
+                // Check parent.
+            } while ((node = node.Parent) != null);
         }
 
         /// <summary>
