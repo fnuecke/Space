@@ -87,13 +87,6 @@ namespace Engine.Collections
         /// </summary>
         private readonly Dictionary<T, Entry> _values = new Dictionary<T, Entry>();
 
-        /// <summary>
-        /// Reused list when splitting nodes, so we don't have to re-allocate it
-        /// each time.
-        /// </summary>
-        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
-        private readonly List<Entry> _reusableEntryList;
-
         #endregion
 
         #region Constructor
@@ -123,7 +116,6 @@ namespace Engine.Collections
             }
             _maxEntriesPerNode = maxEntriesPerNode;
             _minNodeBounds = minNodeBounds;
-            _reusableEntryList = new List<Entry>(_maxEntriesPerNode + 1);
 
             Clear();
         }
@@ -637,35 +629,21 @@ namespace Engine.Collections
             var prevFirstEntry = node.FirstEntry;
             var prevLastEntry = node.LastEntry;
 
-            // Create a copy of the list of entries in this node. Because we
-            // will reattach them at different locations in the linked list
-            // we cannot directly iterate them (iteration would jump).
-            // We don't want to use the cache here, because it has just been
-            // invalidated, and we might invalidate it again, so that would
-            // just be unnecessary overhead.
-            for (Entry entry = node.FirstEntry, end = node.LastEntry.Next; entry != end; entry = entry.Next)
-            {
-                _reusableEntryList.Add(entry);
-            }
-
             // Check each entry to which new cell it'll belong. While doing this, we also
             // separate the entries into two main segments, that of entries moved into the
             // child nodes, and that of entries that had to remain in this node. The
             // remaining entries will be in the back, because the other will have been
             // moved to the front (or rather: to behind another child node entry).
 
-            // We null the first local entry to set it to the first remaining node. We
-            // don't need to null the last local entry, because it'll be overwritten when
-            // the first local entry is found, and from then on it's used to track the
-            // last known remaining local node.
-            node.FirstEntry = null;
-
-            // We don't want to use a foreach loop here, because in that case the order
-            // might not be guaranteed.
-            for (int i = 0, j = _reusableEntryList.Count; i < j; ++i)
+            // We must keep track of the next node manually because the position of the
+            // current entry might change due to shuffling (moving child entries to the
+            // segment they belong to). But we only move entries "to the left" (i.e.
+            // before other entries), so as long as we remember the next entry that's
+            // not a problem.
+            for (Entry entry = node.FirstEntry, next = entry.Next, end = node.LastEntry.Next;
+                entry != end;
+                entry = next, next = (next != end ? next.Next : end)) // This is essentially a test for null.
             {
-                var entry = _reusableEntryList[i];
-
                 // In which child node would we insert?
                 var cell = ComputeCell(ref nodeBounds, ref entry.Bounds);
                 if (cell < 0)
@@ -681,6 +659,13 @@ namespace Engine.Collections
                 }
                 else
                 {
+                    // If this was the first entry we null the first local entry, to set
+                    // it to the first remaining node as soon as we find it.
+                    if (entry == node.FirstEntry)
+                    {
+                        node.FirstEntry = null;
+                    }
+
                     // Do we have to create that child? (It might already exist because
                     // we created it in a previous iteration for another entry)
                     if (node.Children[cell] == null)
@@ -757,7 +742,7 @@ namespace Engine.Collections
             }
 
             // Clear this list for future reuse.
-            _reusableEntryList.Clear();
+            //_reusableEntryList.Clear();
 
             // If the node is a leaf, still, this means not a single entry could be
             // moved to a child node, which means nothing changed, so we can stop.
