@@ -741,9 +741,6 @@ namespace Engine.Collections
                 }
             }
 
-            // Clear this list for future reuse.
-            //_reusableEntryList.Clear();
-
             // If the node is a leaf, still, this means not a single entry could be
             // moved to a child node, which means nothing changed, so we can stop.
             if (node.IsLeaf)
