@@ -99,6 +99,27 @@ namespace Tests
             Console.WriteLine("Press any key to begin measurement.");
             Console.ReadKey(true);
 
+            // Test Michael Coyle's QuadTree.
+            {
+                //Console.WriteLine("Running Michael Coyle's QuadTree test.");
+                //var tree = new MCQuadTree<int>(new Rectangle(-Area / 2, -Area / 2, Area, Area));
+                //Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
+            }
+
+            // Test John McDonald's QuadTree.
+            {
+                //Console.WriteLine("Running John McDonald's QuadTree test.");
+                //var tree = new JMDQuadTree<int>(-Area / 2, -Area / 2, Area, Area);
+                //Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
+            }
+
+            // Test MicroSoft's QuadTree.
+            {
+                //Console.WriteLine("Running MicroSoft's QuadTree test.");
+                //var tree = new MSQuadTree<int> {Bounds = new Rectangle(-Area / 2, -Area / 2, Area, Area)};
+                //Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
+            }
+
             // Test QuadTree.
             foreach (var maxEntriesPerNode in QuadTreeMaxNodeEntries)
             {
@@ -108,19 +129,20 @@ namespace Tests
             }
 
             // Test SpatialHash.
+            // -- Disabled because it's so bloody slow.
             {
-                Console.WriteLine("Running SpatialHash test.");
-                var tree = new SpatialHash<int>(MinimumNodeSize * 64);
-                try
-                {
-                    Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error!");
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine(ex.StackTrace);
-                }
+                //Console.WriteLine("Running SpatialHash test.");
+                //var tree = new SpatialHash<int>(MinimumNodeSize * 64);
+                //try
+                //{
+                //    Test(tree, points, smallRectangles, mediumRectangles, largeRectangles);
+                //}
+                //catch (Exception ex)
+                //{
+                //    Console.WriteLine("Error!");
+                //    Console.WriteLine(ex.Message);
+                //    Console.WriteLine(ex.StackTrace);
+                //}
             }
 
             // Test R-Tree.
@@ -159,7 +181,14 @@ namespace Tests
         {
             Console.WriteLine("Testing with point data...");
             {
-                RunPoints(index, points);
+                try
+                {
+                    RunPoints(index, points);
+                }
+                catch (ArgumentException)
+                {
+                    Console.WriteLine("Points not supported.");
+                }
             }
 
             Console.WriteLine("Testing with small rectangle data...");
@@ -212,13 +241,13 @@ namespace Tests
                     foreach (var item in data)
                     {
                         var rect = item.Item2;
-                        index.Add(ref rect, item.Item1);
+                        index.Add(rect, item.Item1);
                     }
                 },
                 (ints, update) =>
                 {
                     var rect = update.Item2;
-                    index.Update(ref rect, update.Item1);
+                    index.Update(rect, update.Item1);
                 }
                 );
         }
@@ -289,74 +318,122 @@ namespace Tests
 
                 // Test time to add.
                 watch.Reset();
-                watch.Start();
-                addEntries(index, data);
+                try
+                {
+                    watch.Start();
+                    addEntries(index, data);
+                }
+                catch (NotSupportedException)
+                {
+                }
                 watch.Stop();
                 addTime.Put(watch.ElapsedMilliseconds / (double)NumberOfObjects);
 
                 // Test update time.
                 watch.Reset();
-                watch.Start();
-                foreach (var update in smallUpdates)
+                try
                 {
-                    doUpdate(index, update);
+                    watch.Start();
+                    foreach (var update in smallUpdates)
+                    {
+                        doUpdate(index, update);
+                    }
+                }
+                catch (NotSupportedException)
+                {
                 }
                 watch.Stop();
                 smallUpdateTime.Put(watch.ElapsedMilliseconds / (double)smallUpdates.Count);
 
                 watch.Reset();
-                watch.Start();
-                foreach (var update in largeUpdates)
+                try
                 {
-                    doUpdate(index, update);
+                    watch.Start();
+                    foreach (var update in largeUpdates)
+                    {
+                        doUpdate(index, update);
+                    }
+                }
+                catch (NotSupportedException)
+                {
                 }
                 watch.Stop();
                 largeUpdateTime.Put(watch.ElapsedMilliseconds / (double)largeUpdates.Count);
 
                 // Test look up time.
                 watch.Reset();
-                watch.Start();
-                for (var j = 0; j < Operations; j++)
+                try
                 {
-                    index.Find(rangeQueries[j].Item1, rangeQueries[j].Item2, ref DummyCollection<int>.Instance);
+                    watch.Start();
+                    for (var j = 0; j < Operations; j++)
+                    {
+                        index.Find(rangeQueries[j].Item1, rangeQueries[j].Item2, ref DummyCollection<int>.Instance);
+                    }
+                }
+                catch (NotSupportedException)
+                {
                 }
                 watch.Stop();
                 rangeQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
 
                 watch.Reset();
-                watch.Start();
-                for (var j = 0; j < Operations; j++)
+                try
                 {
-                    var rect = areaQueries[j];
-                    index.Find(ref rect, ref DummyCollection<int>.Instance);
+                    watch.Start();
+                    for (var j = 0; j < Operations; j++)
+                    {
+                        var rect = areaQueries[j];
+                        index.Find(ref rect, ref DummyCollection<int>.Instance);
+                    }
+                }
+                catch (NotSupportedException)
+                {
                 }
                 watch.Stop();
                 areaQueryTime.Put(watch.ElapsedMilliseconds / (double)Operations);
 
                 // Test removal time.
                 watch.Reset();
-                watch.Start();
-                for (var j = 0; j < NumberOfObjects / 3; j++)
+                try
                 {
-                    index.Remove(data[j].Item1);
+                    watch.Start();
+                    for (var j = 0; j < NumberOfObjects / 3; j++)
+                    {
+                        index.Remove(data[j].Item1);
+                    }
+                }
+                catch (NotSupportedException)
+                {
                 }
                 watch.Stop();
                 highLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
 
                 watch.Reset();
-                watch.Start();
-                for (var j = NumberOfObjects / 3; j < NumberOfObjects * 2 / 3; j++)
+                try
                 {
-                    index.Remove(data[j].Item1);
+                    watch.Start();
+                    for (var j = NumberOfObjects / 3; j < NumberOfObjects * 2 / 3; j++)
+                    {
+                        index.Remove(data[j].Item1);
+                    }
+                }
+                catch (NotSupportedException)
+                {
                 }
                 watch.Stop();
                 mediumLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));
 
                 watch.Reset();
-                watch.Start();
-                for (var j = NumberOfObjects * 2 / 3; j < NumberOfObjects; j++)
+                try
                 {
-                    index.Remove(data[j].Item1);
+                    watch.Start();
+                    for (var j = NumberOfObjects * 2 / 3; j < NumberOfObjects; j++)
+                    {
+                        index.Remove(data[j].Item1);
+                    }
+                }
+                catch (NotSupportedException)
+                {
                 }
                 watch.Stop();
                 lowLoadRemoveTime.Put(watch.ElapsedMilliseconds / (double)(NumberOfObjects / 3));

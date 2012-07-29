@@ -45,6 +45,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CollectionsPerformanceTest.cs" />
+    <Compile Include="JohnMcDonald\QuadTree.cs" />
+    <Compile Include="MichaelCoyle\IHasRect.cs" />
+    <Compile Include="MichaelCoyle\QuadTree.cs" />
+    <Compile Include="MichaelCoyle\QuadTreeNode.cs" />
+    <Compile Include="Microsoft\QuadTree.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

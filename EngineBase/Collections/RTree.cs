@@ -15,19 +15,19 @@ namespace Engine.Collections
             Console.WriteLine(rect.Y);
             Console.WriteLine(rect.Center);
             Console.WriteLine(rect.Location);
-            Add(new Vector2(0, 0), list[0]);
-            Add(new Vector2(0, 2), list[1]);
-            Add(new Vector2(2, 0), list[2]);
-            Add(new Vector2(2, 2), list[3]);
-            Add(new Vector2(1, 2), list[4]);
-            Add(new Vector2(1, 3), list[4]);
-            Add(new Vector2(1, 4), list[4]);
-            Add(new Vector2(1, 5), list[4]);
-            Add(new Vector2(1, 6), list[4]);
-            Add(new Vector2(2, 3), list[4]);
-            Add(new Vector2(3, 4), list[4]);
-            Add(new Vector2(4, 5), list[4]);
-            Add(new Vector2(5, 6), list[4]);
+            Add(new Point(0, 0), list[0]);
+            Add(new Point(0, 2), list[1]);
+            Add(new Point(2, 0), list[2]);
+            Add(new Point(2, 2), list[3]);
+            Add(new Point(1, 2), list[4]);
+            Add(new Point(1, 3), list[4]);
+            Add(new Point(1, 4), list[4]);
+            Add(new Point(1, 5), list[4]);
+            Add(new Point(1, 6), list[4]);
+            Add(new Point(2, 3), list[4]);
+            Add(new Point(3, 4), list[4]);
+            Add(new Point(4, 5), list[4]);
+            Add(new Point(5, 6), list[4]);
 
             //foreach(var asd in RangeQuery(new Rectangle(0,0,1,1)))
             //{
@@ -84,12 +84,24 @@ namespace Engine.Collections
         /// <param name="item">The value associated with the point.</param>
         /// <exception cref="ArgumentException">This value is already stored
         /// in the tree.</exception>
-        public void Add(ref Rectangle bounds, T item)
+        public void Add(Rectangle bounds, T item)
         {
             throw new NotImplementedException();
         }
 
-        public void Add(Vector2 point, T item)
+        /// <summary>
+        /// Update an entry by changing its bounds. If the item is not
+        /// stored in the index, this will return <code>false</code>.
+        /// </summary>
+        /// <param name="newBounds">The new bounds of the item.</param>
+        /// <param name="item">The item for which to update the bounds.</param>
+        /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
+        public bool Update(Rectangle newBounds, T item)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Add(Point point, T item)
         {
             //the entry to be stored
             var entry = new Entry() { Point = point, Value = item };
@@ -100,20 +112,7 @@ namespace Engine.Collections
             Insert(entry);
         }
 
-        /// <summary>
-        /// Update a single entry by changing its bounds. If the entry is not
-        /// already in the tree, this will return <code>false</code>.
-        /// </summary>
-        /// <param name="newBounds">The new bounds of the entry.</param>
-        /// <param name="item">The value of the entry.</param>
-        /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(ref Rectangle newBounds, T item)
-        {
-            throw new NotImplementedException();
-        }
-
-        private void 
-            Insert(Entry entry)
+        private void Insert(Entry entry)
         {
             //coose the leaf in which the value shall be stored
             var node = ChooseLeaf(ref entry.Point);
@@ -164,7 +163,7 @@ namespace Engine.Collections
             AdjustTree(node, createdNode);
         }
 
-        public bool Update(Vector2 newPoint, T item)
+        public bool Update(Point newPoint, T item)
         {
             LeafNode node = null;
             //check if node exists
@@ -183,20 +182,6 @@ namespace Engine.Collections
             // TODO implement!
             //throw new NotImplementedException();
             return false;
-        }
-
-        /// <summary>
-        /// Similar to <code>Update</code> this changes an entry's bounds. Unlike
-        /// <code>Update</code>, however, this just moves the bounds to the
-        /// specified location. The specified position is used as the new center
-        /// for the bounds.
-        /// </summary>
-        /// <param name="position">The new position of the bounds.</param>
-        /// <param name="item">The entry for which to update the bounds.</param>
-        /// <returns></returns>
-        public bool Move(Vector2 position, T item)
-        {
-            throw new NotImplementedException();
         }
 
         public bool Remove(T item)
@@ -231,7 +216,12 @@ namespace Engine.Collections
             root = new LeafNode();
         }
 
-        public void Find(Vector2 point, float range, ref ICollection<T> list)
+        /// <summary>
+        /// Get the bounds at which the specified item is currently stored.
+        /// </summary>
+        public Rectangle this[T item] { get { return _pointDict[item].Boundingbox; } }
+
+        public void Find(Point point, float range, ref ICollection<T> list)
         {
             Accumulate(root, ref point, range, list);
         }
@@ -280,7 +270,7 @@ namespace Engine.Collections
         /// <param name="currentNode"></param>
         /// <param name="rectangle"></param>
         /// <param name="list"></param>
-        private void Accumulate(Node currentNode, ref Vector2 point, float range, ICollection<T> list)
+        private void Accumulate(Node currentNode, ref Point point, float range, ICollection<T> list)
         {
             if (currentNode is LeafNode)
             {
@@ -312,7 +302,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private LeafNode ChooseLeaf(ref Vector2 point)
+        private LeafNode ChooseLeaf(ref Point point)
         {
             Node node = root;
             while (!(node is LeafNode))
@@ -356,7 +346,7 @@ namespace Engine.Collections
         /// <param name="node"></param>
         /// <param name="point"> </param>
         /// <returns></returns>
-        private Node MMBMinNode(InnerNode node, ref Vector2 point)
+        private Node MMBMinNode(InnerNode node, ref Point point)
         {
             var minExpanision = int.MaxValue;
             var minArea = int.MaxValue;
@@ -884,7 +874,7 @@ namespace Engine.Collections
         /// <param name="y">The y position of the box.</param>
         /// <param name="size">The size of the box.</param>
         /// <returns>How the two intersect.</returns>
-        private static bool ComputeIntersection(ref Vector2 center, float radius,ref Rectangle rect)
+        private static bool ComputeIntersection(ref Point center, float radius,ref Rectangle rect)
         {
             // Check for axis aligned separation.
             if (rect.Right < center.X - radius ||
@@ -896,7 +886,7 @@ namespace Engine.Collections
             }
 
             // Check for unaligned separation.
-            Vector2 closest = center;
+            var closest = center;
             if (center.X < rect.Left)
             {
                 closest.X = rect.Left;
@@ -921,7 +911,7 @@ namespace Engine.Collections
             }
             return true;
         }
-        private bool ComputeIntersection(ref Vector2 center, float radius, ref Vector2 vector2)
+        private bool ComputeIntersection(ref Point center, float radius, ref Point vector2)
         {
             // Check for axis aligned separation.
             if (vector2.X < center.X - radius ||
@@ -933,7 +923,7 @@ namespace Engine.Collections
             }
 
             // Check for unaligned separation.
-            Vector2 closest = center;
+            var closest = center;
             if (center.X < vector2.X)
             {
                 closest.X = vector2.X;
@@ -958,7 +948,7 @@ namespace Engine.Collections
             }
             return true;
         }
-        private bool RectangleContainsPoint(ref Rectangle rect,ref Vector2 point)
+        private bool RectangleContainsPoint(ref Rectangle rect, ref Point point)
         {
             return (rect.Top <= point.Y && rect.Bottom >= point.Y
                 && rect.Left <= point.X && rect.Right >= point.X);
@@ -1047,7 +1037,7 @@ namespace Engine.Collections
             /// <summary>
             /// The point at which the entry is stored.
             /// </summary>
-            public Vector2 Point;
+            public Point Point;
 
             /// <summary>
             /// The value stored in this entry.

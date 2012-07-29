@@ -271,7 +271,7 @@ namespace Engine.ComponentSystem.Common.Systems
             foreach (var tree in TreesForGroups(groups))
             {
                 // Add to each group.
-                tree.Add(ref bounds, entity);
+                tree.Add(bounds, entity);
             }
         }
 
@@ -357,7 +357,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 // Update all indexes the entity is part of.
                 foreach (var tree in TreesForGroups(index.IndexGroupsMask))
                 {
-                    tree.Update(ref bounds, changedMessage.Entity);
+                    tree.Update(bounds, changedMessage.Entity);
                 }
             }
             else if (message is TranslationChanged)
@@ -449,7 +449,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 {
                     var bounds = packet.ReadRectangle();
                     var entity = packet.ReadInt32();
-                    _trees[i].Add(ref bounds, entity);
+                    _trees[i].Add(bounds, entity);
                 }
             }
         }
@@ -538,7 +538,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 foreach (var entry in _trees[i])
                 {
                     var bounds = entry.Item1;
-                    copy._trees[i].Add(ref bounds, entry.Item2);
+                    copy._trees[i].Add(bounds, entry.Item2);
                 }
             }
         }

@@ -84,7 +84,9 @@
     <Compile Include="Collections\Bag.cs" />
     <Compile Include="Collections\BagBasedQuadTree.cs" />
     <Compile Include="Collections\IIndex.cs" />
+    <Compile Include="Collections\IndexPointExtensions.cs" />
     <Compile Include="Collections\QuadTree.cs" />
+    <Compile Include="Collections\QuadTreeRenderExtensions.cs" />
     <Compile Include="Collections\RTree.cs" />
     <Compile Include="Collections\SparseArray.cs" />
     <Compile Include="Collections\SpatialHash.cs" />

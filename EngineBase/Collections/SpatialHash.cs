@@ -3,7 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Util;
-using Microsoft.Xna.Framework;
+
+// Adjust these as necessary, they just have to share a compatible
+// interface with the XNA types.
+using TPoint = Microsoft.Xna.Framework.Point;
+using TRectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace Engine.Collections
 {
@@ -22,7 +26,10 @@ namespace Engine.Collections
         /// <summary>
         /// The number of values stored in this tree.
         /// </summary>
-        public int Count { get { return _entryBounds.Count; } }
+        public int Count
+        {
+            get { return _entryBounds.Count; }
+        }
 
         #endregion
 
@@ -41,7 +48,7 @@ namespace Engine.Collections
         /// <summary>
         /// Maps entries back to their bounds, for removal.
         /// </summary>
-        private readonly Dictionary<T, Rectangle> _entryBounds = new Dictionary<T, Rectangle>();
+        private readonly Dictionary<T, TRectangle> _entryBounds = new Dictionary<T, TRectangle>();
 
         #endregion
 
@@ -55,7 +62,7 @@ namespace Engine.Collections
         {
             Debug.Assert(cellSize > 0);
             _cellSize = cellSize;
-        } 
+        }
 
         #endregion
 
@@ -69,7 +76,7 @@ namespace Engine.Collections
         /// <param name="item">The value associated with the point.</param>
         /// <exception cref="ArgumentException">This value is already stored
         /// in the tree.</exception>
-        public void Add(ref Rectangle bounds, T item)
+        public void Add(TRectangle bounds, T item)
         {
             if (Contains(item))
             {
@@ -88,27 +95,13 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Add a new entry to the tree, at the specified position, with the
-        /// specified associated value.
-        /// </summary>
-        /// <param name="point">The point at which to store the entry.</param>
-        /// <param name="item">The value associated with the point.</param>
-        /// <exception cref="ArgumentException">This value is already stored
-        /// in the tree.</exception>
-        public void Add(Vector2 point, T item)
-        {
-            var bounds = new Rectangle {X = (int)point.X, Y = (int)point.Y};
-            Add(ref bounds, item);
-        }
-
-        /// <summary>
         /// Update a single entry by changing its bounds. If the entry is not
         /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newBounds">The new bounds of the entry.</param>
         /// <param name="item">The value of the entry.</param>
         /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(ref Rectangle newBounds, T item)
+        public bool Update(TRectangle newBounds, T item)
         {
             // Check if we have that entry, if not add it.
             if (!Contains(item))
@@ -146,47 +139,6 @@ namespace Engine.Collections
             _entryBounds[item] = newBounds;
 
             return true;
-        }
-
-        /// <summary>
-        /// Update a single entry by changing its position. If the entry is not
-        /// already in the tree, this will return <code>false</code>.
-        /// </summary>
-        /// <param name="newPoint">The new position of the entry.</param>
-        /// <param name="item">The value of the entry.</param>
-        /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(Vector2 newPoint, T item)
-        {
-            var bounds = new Rectangle { X = (int)newPoint.X, Y = (int)newPoint.Y };
-            return Update(ref bounds, item);
-        }
-
-        /// <summary>
-        /// Similar to <code>Update</code> this changes an entry's bounds. Unlike
-        /// <code>Update</code>, however, this just moves the bounds to the
-        /// specified location. The specified position is used as the new center
-        /// for the bounds.
-        /// </summary>
-        /// <param name="position">The new position of the bounds.</param>
-        /// <param name="item">The entry for which to update the bounds.</param>
-        /// <returns></returns>
-        public bool Move(Vector2 position, T item)
-        {
-            // Check if we have that entry, if not add it.
-            if (!Contains(item))
-            {
-                return false;
-            }
-
-            // Get the old position.
-            var bounds = _entryBounds[item];
-
-            // Update bounds.
-            bounds.X = (int)position.X - bounds.Width / 2;
-            bounds.Y = (int)position.Y - bounds.Height / 2;
-
-            // Update index.
-            return Update(ref bounds, item);
         }
 
         /// <summary>
@@ -235,6 +187,14 @@ namespace Engine.Collections
         }
 
         /// <summary>
+        /// Get the bounds at which the specified item is currently stored.
+        /// </summary>
+        public TRectangle this[T item]
+        {
+            get { return _entryBounds[item]; }
+        }
+
+        /// <summary>
         /// Perform a circular query on this tree. This will return all entries
         /// in the tree that are in the specified range to the specified point,
         /// using a euclidean distance.
@@ -244,9 +204,9 @@ namespace Engine.Collections
         /// from the query point to be returned.</param>
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
-        public void Find(Vector2 point, float range, ref ICollection<T> list)
+        public void Find(TPoint point, float range, ref ICollection<T> list)
         {
-            var bounds = new Rectangle
+            var bounds = new TRectangle
                          {
                              X = (int)(point.X - range),
                              Y = (int)(point.Y - range),
@@ -263,7 +223,7 @@ namespace Engine.Collections
         /// <param name="rectangle">The query rectangle.</param>
         /// <param name="list">The list to put the results into, or null in
         /// which case a new list will be created and returned.</param>
-        public void Find(ref Rectangle rectangle, ref ICollection<T> list)
+        public void Find(ref TRectangle rectangle, ref ICollection<T> list)
         {
             var added = new HashSet<T>();
             foreach (var cell in ComputeCells(rectangle))
@@ -291,7 +251,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rectangle">The rectangle.</param>
         /// <returns>The cells the rectangle intersects with.</returns>
-        private IEnumerable<ulong> ComputeCells(Rectangle rectangle)
+        private IEnumerable<ulong> ComputeCells(TRectangle rectangle)
         {
             var left = rectangle.X / _cellSize;
             var right = rectangle.Right / _cellSize;
@@ -318,7 +278,7 @@ namespace Engine.Collections
         /// A <see cref="T:System.Collections.Generic.IEnumerator`1"/> that can be used to iterate through the collection.
         /// </returns>
         /// <filterpriority>1</filterpriority>
-        public IEnumerator<Tuple<Rectangle, T>> GetEnumerator()
+        public IEnumerator<Tuple<TRectangle, T>> GetEnumerator()
         {
             foreach (var entry in _entryBounds)
             {
