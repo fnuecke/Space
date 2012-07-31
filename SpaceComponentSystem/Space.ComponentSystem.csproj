@@ -124,6 +124,7 @@
     <Compile Include="Systems\PlayerMassSystem.cs" />
     <Compile Include="Systems\RadarRenderSystem.cs" />
     <Compile Include="Systems\RegeneratingValueSystem.cs" />
+    <Compile Include="Systems\RespawnSystem.cs" />
     <Compile Include="Systems\ShipControlSystem.cs" />
     <Compile Include="Systems\ShipInfoSystem.cs" />
     <Compile Include="Systems\ShipRenderSystem.cs" />

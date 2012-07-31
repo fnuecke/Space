@@ -7,7 +7,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// Handles expiring components by removing them from the simulation when
     /// they expire.
     /// </summary>
-    public sealed class ExpirationSystem : AbstractComponentSystem<Expiration>
+    public sealed class ExpirationSystem : AbstractUpdatingComponentSystem<Expiration>
     {
         protected override void UpdateComponent(long frame, Expiration component)
         {

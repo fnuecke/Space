@@ -124,24 +124,36 @@ namespace Engine.ComponentSystem
             /// <param name="typeId">The type id.</param>
             private void BuildTypeCache(int typeId)
             {
-                // No cache for this type yet, create it.
-                TypeCache[typeId] = new List<Component>();
-
-                // Iterate over all known components.
-                for (int i = 0, j = Components.Count; i < j; i++)
+                lock (this)
                 {
-                    // And check their parents, to see if this type appears
-                    // in the hierarchy.
-                    var componentTypeId = Components[i].GetTypeId();
-                    while ((componentTypeId = GetParentComponentType(componentTypeId)) != 0)
+                    // Test again after locking, because the cache might have
+                    // actually already been built by another thread between the
+                    // outer check and getting here.
+                    if (TypeCache[typeId] != null)
                     {
-                        if (componentTypeId == typeId)
-                        {
-                            // Found this type as a parent, add the component.
-                            TypeCache[typeId].Insert(~TypeCache[typeId].BinarySearch(Components[i], Component.Comparer), Components[i]);
+                        return;
+                    }
 
-                            // No need to go further up the hierarchy.
-                            break;
+                    // No cache for this type yet, create it.
+                    TypeCache[typeId] = new List<Component>();
+
+                    // Iterate over all known components.
+                    for (int i = 0, j = Components.Count; i < j; i++)
+                    {
+                        // And check their parents, to see if this type appears
+                        // in the hierarchy.
+                        var componentTypeId = Components[i].GetTypeId();
+                        while ((componentTypeId = GetParentComponentType(componentTypeId)) != 0)
+                        {
+                            if (componentTypeId == typeId)
+                            {
+                                // Found this type as a parent, add the component.
+                                TypeCache[typeId].Insert(
+                                    ~TypeCache[typeId].BinarySearch(Components[i], Component.Comparer), Components[i]);
+
+                                // No need to go further up the hierarchy.
+                                break;
+                            }
                         }
                     }
                 }

@@ -13,6 +13,20 @@ namespace Engine.ComponentSystem
     /// Manager for a complete component system. Tracks live entities and
     /// components, and allows lookup of components for entities.
     /// </summary>
+    /// <remarks>
+    /// All reading operations on the manager are thread safe. These are:
+    /// <see cref="GetSystem(int)"/>, <see cref="HasEntity(int"/>, <see cref="HasComponent(int)"/>,
+    /// <see cref="GetComponent(int, int)"/>, <see cref="GetComponentById(int)"/> and
+    /// <see cref="GetComponents(int, int)"/>.
+    /// 
+    /// <para>
+    /// It is <em>not</em> thread safe for all writing operations (adding, removing).
+    /// </para>
+    /// 
+    /// <para>
+    /// Note that this does <em>not</em> guarantee the thread safety of the individual components.
+    /// </para>
+    /// </remarks>
     [DebuggerDisplay("Systems = {_systems.Count}, Components = {_componentIds.Count}")]
     public sealed partial class Manager : IManager
     {

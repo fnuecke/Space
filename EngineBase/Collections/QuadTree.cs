@@ -5,8 +5,8 @@ using System.Diagnostics;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Point;
-using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TRectangle = Engine.Math.RectangleF;
 
 namespace Engine.Collections
 {
@@ -46,6 +46,22 @@ namespace Engine.Collections
     [DebuggerDisplay("Count = {Count}")]
     public sealed class QuadTree<T> : IIndex<T>
     {
+        #region Constants
+
+        /// <summary>
+        /// Amount by which to oversize entry bounds to allow for small movement
+        /// the item without having to update the tree. Idea taken from Box2D.
+        /// </summary>
+        private const int BoundExtension = 4;
+
+        /// <summary>
+        /// Amount by which to oversize entry bounds in the direction they moved
+        /// during an update, to predict future movement. Idea taken from Box2D.
+        /// </summary>
+        private const int MovingBoundMultiplier = 2;
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -140,6 +156,9 @@ namespace Engine.Collections
                 throw new ArgumentException("Item is already in the index.", "item");
             }
 
+            // Extend bounds.
+            bounds.Inflate(BoundExtension, BoundExtension);
+
             // Create the entry to add.
             var entry = new Entry {Bounds = bounds, Value = item};
 
@@ -162,9 +181,12 @@ namespace Engine.Collections
         /// stored in the index, this will return <code>false</code>.
         /// </summary>
         /// <param name="newBounds">The new bounds of the item.</param>
+        /// <param name="delta">The amount by which the object moved.</param>
         /// <param name="item">The item for which to update the bounds.</param>
-        /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
-        public bool Update(TRectangle newBounds, T item)
+        /// <returns>
+        ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
+        /// </returns>
+        public bool Update(TRectangle newBounds, TPoint delta, T item)
         {
             // Check if we have that item.
             if (!Contains(item))
@@ -175,6 +197,30 @@ namespace Engine.Collections
 
             // Get the old bounds.
             var entry = _values[item];
+
+            // Nothing to do if our approximation in the tree still contains the item.
+            if (entry.Bounds.Contains(newBounds))
+            {
+                return true;
+            }
+
+            // Estimate movement by bounds delta to predict position and
+            // extend the bounds accordingly, to avoid tree updates.
+            delta.X *= MovingBoundMultiplier;
+            delta.Y *= MovingBoundMultiplier;
+            newBounds.Width += System.Math.Abs(delta.X);
+            if (delta.X < 0)
+            {
+                newBounds.X += delta.X;
+            }
+            newBounds.Height += System.Math.Abs(delta.Y);
+            if (delta.Y < 0)
+            {
+                newBounds.Y += delta.Y;
+            }
+
+            // Extend bounds.
+            newBounds.Inflate(BoundExtension, BoundExtension);
 
             // Update tree.
             UpdateBounds(ref newBounds, entry);
@@ -283,7 +329,7 @@ namespace Engine.Collections
                 TRectangle bounds;
                 bounds.X = (int)(point.X - range);
                 bounds.Y = (int)(point.Y - range);
-                bounds.Width = bounds.Height = (int)Math.Ceiling(range + range);
+                bounds.Width = bounds.Height = (int)System.Math.Ceiling(range + range);
 
                 // Recurse through the tree, starting at the root node, to find
                 // nodes intersecting with the range query.
@@ -372,7 +418,7 @@ namespace Engine.Collections
                 var bounds = entry.Item2;
 
                 // Push child nodes for next iteration.
-                var childBounds = new TRectangle {Width = bounds.Width >> 1, Height = bounds.Height >> 1};
+                var childBounds = new TRectangle {Width = bounds.Width / 2, Height = bounds.Height / 2};
                 if (node.Children[0] != null)
                 {
                     childBounds.X = bounds.X;
@@ -481,10 +527,10 @@ namespace Engine.Collections
                 }
 
                 // Adjust the overall tree bounds.
-                _bounds.X = _bounds.X << 1;
-                _bounds.Y = _bounds.Y << 1;
-                _bounds.Width = _bounds.Width << 1;
-                _bounds.Height = _bounds.Height << 1;
+                _bounds.X += _bounds.X;
+                _bounds.Y += _bounds.Y;
+                _bounds.Width += _bounds.Width;
+                _bounds.Height += _bounds.Height;
             }
         }
 
@@ -797,7 +843,7 @@ namespace Engine.Collections
 
             // Do this recursively if the split resulted in another node that
             // has too many entries.
-            var childBounds = new TRectangle {Width = nodeBounds.Width >> 1, Height = nodeBounds.Height >> 1};
+            var childBounds = new TRectangle {Width = nodeBounds.Width / 2, Height = nodeBounds.Height / 2};
 
             if (node.Children[0] != null)
             {
@@ -1046,7 +1092,7 @@ namespace Engine.Collections
         /// </returns>
         private static int ComputeCell(ref TRectangle nodeBounds, ref TRectangle entryBounds)
         {
-            var halfNodeSize = nodeBounds.Width >> 1;
+            var halfNodeSize = nodeBounds.Width / 2;
 
             // Check if the bounds are on the splits.
             var midX = nodeBounds.X + halfNodeSize;
@@ -1096,7 +1142,7 @@ namespace Engine.Collections
             while (!node.IsLeaf)
             {
                 // Get current child size.
-                var childSize = nodeBounds.Width >> 1;
+                var childSize = nodeBounds.Width / 2;
 
                 // Into which child node would we descend?
                 var cell = ComputeCell(ref nodeBounds, ref bounds);
@@ -1158,8 +1204,8 @@ namespace Engine.Collections
                         // Build the bounds for each child in the following.
                         var childBounds = new TRectangle
                                           {
-                                              Width = nodeBounds.Width >> 1,
-                                              Height = nodeBounds.Height >> 1
+                                              Width = nodeBounds.Width / 2,
+                                              Height = nodeBounds.Height / 2
                                           };
 
                         // Unrolled loop.
@@ -1227,8 +1273,8 @@ namespace Engine.Collections
                         // Recurse into child nodes.
                         var childBounds = new TRectangle
                                           {
-                                              Width = nodeBounds.Width >> 1,
-                                              Height = nodeBounds.Height >> 1
+                                              Width = nodeBounds.Width / 2,
+                                              Height = nodeBounds.Height / 2
                                           };
 
                         // Unrolled loop.
@@ -1343,8 +1389,8 @@ namespace Engine.Collections
 
             // At least intersection, check furthest point to check if the
             // box is contained within the circle.
-            distanceX = Math.Max(Math.Abs(center.X - bounds.X), Math.Abs(center.X - right));
-            distanceY = Math.Max(Math.Abs(center.Y - bounds.Y), Math.Abs(center.Y - bottom));
+            distanceX = System.Math.Max(System.Math.Abs(center.X - bounds.X), System.Math.Abs(center.X - right));
+            distanceY = System.Math.Max(System.Math.Abs(center.Y - bounds.Y), System.Math.Abs(center.Y - bottom));
             var outside = (distanceX * distanceX + distanceY * distanceY) > radiusSquared;
             return outside ? IntersectionType.Intersects : IntersectionType.Contains;
         }
@@ -1464,10 +1510,22 @@ namespace Engine.Collections
             public Entry[] LocalCache;
 
             /// <summary>
+            /// Used to synchronize access to the local cache.
+            /// </summary>
+            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+            private readonly object _localCacheLock = new object();
+
+            /// <summary>
             /// Cache of entries in child nodes.
             /// </summary>
             [DebuggerBrowsable(DebuggerBrowsableState.Never)]
             public Entry[] ChildCache;
+
+            /// <summary>
+            /// Used to synchronize access to the child cache.
+            /// </summary>
+            [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+            private readonly object _childCacheLock = new object();
 
             #endregion
 
@@ -1478,17 +1536,42 @@ namespace Engine.Collections
             /// </summary>
             private void RebuildLocalCache()
             {
-                if (LocalCache == null)
+                lock (_localCacheLock)
                 {
-                    var cache = new List<Entry>();
+                    // Test again after locking, because the cache might have
+                    // actually already been built by another thread between the
+                    // outer check and getting here.
+                    if (LocalCache != null)
+                    {
+                        return;
+                    }
+
                     if (FirstEntry != null)
                     {
-                        for (Entry entry = FirstEntry, end = LastEntry.Next; entry != end; entry = entry.Next)
+                        // Keep in local variable until fully built, otherwise
+                        // other threads might see the not fully initialized array.
+                        var cache = new Entry[EntryCount -
+                            (Children[0] == null ? 0 : Children[0].EntryCount) -
+                            (Children[1] == null ? 0 : Children[1].EntryCount) -
+                            (Children[2] == null ? 0 : Children[2].EntryCount) -
+                            (Children[3] == null ? 0 : Children[3].EntryCount)];
+                        var i = 0;
+                        for (Entry entry = FirstEntry, end = LastEntry.Next;
+                            entry != end;
+                            entry = entry.Next)
                         {
-                            cache.Add(entry);
+                            cache[i++] = entry;
                         }
+
+                        // Done, set the new cache.
+                        LocalCache = cache;
                     }
-                    LocalCache = cache.ToArray();
+                    else
+                    {
+                        // Nothing here, just set it to an empty array so we don't
+                        // try to rebuild it over and over.
+                        LocalCache = new Entry[0];
+                    }
                 }
             }
 
@@ -1497,19 +1580,42 @@ namespace Engine.Collections
             /// </summary>
             private void RebuildChildCache()
             {
-                if (ChildCache == null)
+                lock (_childCacheLock)
                 {
-                    var cache = new List<Entry>();
+                    // Test again after locking, because the cache might have
+                    // actually already been built by another thread between the
+                    // outer check and getting here.
+                    if (ChildCache != null)
+                    {
+                        return;
+                    }
+
                     if (FirstChildEntry != null)
                     {
+                        // Keep in local variable until fully built, otherwise
+                        // other threads might see the not fully initialized array.
+                        var cache = new Entry[
+                            (Children[0] == null ? 0 : Children[0].EntryCount) +
+                            (Children[1] == null ? 0 : Children[1].EntryCount) +
+                            (Children[2] == null ? 0 : Children[2].EntryCount) +
+                            (Children[3] == null ? 0 : Children[3].EntryCount)];
+                        var i = 0;
                         for (Entry entry = FirstChildEntry, end = LastChildEntry.Next;
                              entry != end;
                              entry = entry.Next)
                         {
-                            cache.Add(entry);
+                            cache[i++] = entry;
                         }
+
+                        // Done, set the new cache.
+                        ChildCache = cache;
                     }
-                    ChildCache = cache.ToArray();
+                    else
+                    {
+                        // Nothing here, just set it to an empty array so we don't
+                        // try to rebuild it over and over.
+                        ChildCache = new Entry[0];
+                    }
                 }
             }
 
@@ -1520,7 +1626,11 @@ namespace Engine.Collections
             public void AddOwnEntries(ref ICollection<T> list)
             {
                 // Rebuild entry cache if necessary.
-                RebuildLocalCache();
+                if (LocalCache == null)
+                {
+                    RebuildLocalCache();
+                    Debug.Assert(LocalCache != null);
+                }
 
                 // Add all entries to the collection.
                 for (int i = 0, j = LocalCache.Length; i < j; i++)
@@ -1539,14 +1649,19 @@ namespace Engine.Collections
             public void AddOwnEntries(ref TPoint point, float range, ref ICollection<T> list)
             {
                 // Rebuild entry cache if necessary.
-                RebuildLocalCache();
+                if (LocalCache == null)
+                {
+                    RebuildLocalCache();
+                    Debug.Assert(LocalCache != null);
+                }
 
                 // Add all entries to the collection.
                 for (int i = 0, j = LocalCache.Length; i < j; i++)
                 {
-                    if (ComputeIntersection(ref point, range, ref LocalCache[i].Bounds) != IntersectionType.Disjoint)
+                    var entry = LocalCache[i];
+                    if (ComputeIntersection(ref point, range, ref entry.Bounds) != IntersectionType.Disjoint)
                     {
-                        list.Add(LocalCache[i].Value);
+                        list.Add(entry.Value);
                     }
                 }
             }
@@ -1560,14 +1675,19 @@ namespace Engine.Collections
             public void AddOwnEntries(ref TRectangle rectangle, ref ICollection<T> list)
             {
                 // Rebuild entry cache if necessary.
-                RebuildLocalCache();
+                if (LocalCache == null)
+                {
+                    RebuildLocalCache();
+                    Debug.Assert(LocalCache != null);
+                }
 
                 // Add all entries to the collection.
                 for (int i = 0, j = LocalCache.Length; i < j; i++)
                 {
-                    if (ComputeIntersection(ref rectangle, ref LocalCache[i].Bounds) != IntersectionType.Disjoint)
+                    var entry = LocalCache[i];
+                    if (ComputeIntersection(ref rectangle, ref entry.Bounds) != IntersectionType.Disjoint)
                     {
-                        list.Add(LocalCache[i].Value);
+                        list.Add(entry.Value);
                     }
                 }
             }
@@ -1579,7 +1699,11 @@ namespace Engine.Collections
             public void AddChildEntries(ref ICollection<T> list)
             {
                 // Rebuild entry cache if necessary.
-                RebuildChildCache();
+                if (ChildCache == null)
+                {
+                    RebuildChildCache();
+                    Debug.Assert(ChildCache != null);
+                }
 
                 // Add all entries to the collection.
                 for (int i = 0, j = ChildCache.Length; i < j; i++)

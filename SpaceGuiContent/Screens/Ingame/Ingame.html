@@ -71,9 +71,10 @@
 		<script type="text/javascript">
 		    var Space = {};
 		    (function ($) {
-		        Space.onDisconnect = function () {
+		        Space.onDisconnected = function () {
 		            $("#log").append("Connection lost<br/>");
-		            Screens.pop();
+                    // We must not call back directly (cannot synchronously call back in synchronous call).
+		            setTimeout(Screens.pop, 100);
 		        };
 
 		        Space.onPlayerJoined = function (e) {

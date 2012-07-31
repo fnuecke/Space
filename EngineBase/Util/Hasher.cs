@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Engine.Math;
 using Microsoft.Xna.Framework;
 
 namespace Engine.Util
@@ -173,6 +174,17 @@ namespace Engine.Util
         /// <param name="value">the data to add.</param>
         /// <returns>a reference to the hasher, for chaining.</returns>
         public Hasher Put(Rectangle value)
+        {
+            return Put(value.X).Put(value.Y).Put(value.Width).Put(value.Height);
+        }
+
+        /// <summary>
+        /// Put the specified value to the data of which the hash
+        /// gets computed.
+        /// </summary>
+        /// <param name="value">the data to add.</param>
+        /// <returns>a reference to the hasher, for chaining.</returns>
+        public Hasher Put(RectangleF value)
         {
             return Put(value.X).Put(value.Y).Put(value.Width).Put(value.Height);
         }

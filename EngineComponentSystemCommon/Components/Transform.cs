@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
@@ -41,11 +42,9 @@ namespace Engine.ComponentSystem.Common.Components
         /// this value changes.
         /// </remarks>
         public Vector2 Translation
-#if DEBUG // Don't allow directly changing from outside.
-        {
-            get { return _translation; }
-        }
-        private Vector2 _translation;
+#if DEBUG
+        // Don't allow directly changing from outside.
+        { get; private set; }
 #else
             ;
 #endif
@@ -54,14 +53,22 @@ namespace Engine.ComponentSystem.Common.Components
         /// The angle of the current orientation.
         /// </summary>
         public float Rotation
-#if DEBUG // Don't allow directly changing from outside.
-        {
-            get { return _rotation; }
-        }
-        private float _rotation;
+#if DEBUG
+        // Don't allow directly changing from outside.
+        { get; private set; }
 #else
         ;
 #endif
+
+        /// <summary>
+        /// The translation to move to when performing the position update.
+        /// </summary>
+        private Vector2 _nextTranslation;
+
+        /// <summary>
+        /// Don't rely on float equality checks.
+        /// </summary>
+        private bool _translationChanged;
 
         #endregion
 
@@ -75,9 +82,14 @@ namespace Engine.ComponentSystem.Common.Components
         {
             base.Initialize(other);
 
+            // We do not want to trigger an update here, as it's the copy-
+            // constructor, which must only be used when copying the whole
+            // environment the component belongs to.
             var otherTransform = (Transform)other;
-            SetTranslation(otherTransform.Translation);
-            SetRotation(otherTransform.Rotation);
+            Translation = otherTransform.Translation;
+            _nextTranslation = Translation;
+            _translationChanged = false;
+            Rotation = otherTransform.Rotation;
 
             return this;
         }
@@ -89,10 +101,13 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="rotation">The rotation.</param>
         public Transform Initialize(Vector2 translation, float rotation)
         {
-            // Don't use setters because we don't want to trigger messages in
-            // initialization.
             SetTranslation(ref translation);
             SetRotation(MathHelper.WrapAngle(rotation));
+
+            // Initialization must be called from a synchronous context (as
+            // it must only be used when constructing the component). Thus
+            // we want to trigger the update right now.
+            ApplyTranslation();
 
             return this;
         }
@@ -127,8 +142,10 @@ namespace Engine.ComponentSystem.Common.Components
         {
             base.Reset();
 
-            SetTranslation(Vector2.Zero);
-            SetRotation(0);
+            Translation = Vector2.Zero;
+            _nextTranslation = Vector2.Zero;
+            _translationChanged = false;
+            Rotation = 0;
         }
 
         #endregion
@@ -174,30 +191,13 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="y">The new y coordinate.</param>
         public void SetTranslation(float x, float y)
         {
-            System.Diagnostics.Debug.Assert(!float.IsNaN(x));
-            System.Diagnostics.Debug.Assert(!float.IsNaN(y));
+            Debug.Assert(!float.IsNaN(x));
+            Debug.Assert(!float.IsNaN(y));
 
-            if (Translation.X != x || Translation.Y != y)
-            {
-                TranslationChanged message;
-                message.Entity = Entity;
-                message.PreviousPosition = Translation;
+            _nextTranslation.X = x;
+            _nextTranslation.Y = y;
 
-#if DEBUG
-                _translation.X = x;
-                _translation.Y = y;
-#else
-                Translation.X = x;
-                Translation.Y = y;
-#endif
-
-                message.CurrentPosition = Translation;
-
-                if (Manager != null)
-                {
-                    Manager.SendMessage(ref message);
-                }
-            }
+            _translationChanged = true;
         }
 
         /// <summary>
@@ -216,6 +216,30 @@ namespace Engine.ComponentSystem.Common.Components
         public void SetTranslation(Vector2 value)
         {
             SetTranslation(ref value);
+        }
+
+        /// <summary>
+        /// Applies the translation set to be used next. Called from system,
+        /// because we want to keep the setter in debug private to make sure
+        /// no one actually writes directly to the translation variable.
+        /// </summary>
+        internal void ApplyTranslation()
+        {
+            // Only update if we have to.
+            if (!_translationChanged)
+            {
+                return;
+            }
+
+            TranslationChanged message;
+            message.Entity = Entity;
+            message.PreviousPosition = Translation;
+            message.CurrentPosition = _nextTranslation;
+
+            Translation = _nextTranslation;
+            _translationChanged = false;
+
+            Manager.SendMessage(ref message);
         }
 
         /// <summary>
@@ -239,13 +263,8 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="value">The value.</param>
         public void SetRotation(float value)
         {
-            System.Diagnostics.Debug.Assert(!float.IsNaN(value));
-
-#if DEBUG
-            _rotation = MathHelper.WrapAngle(value);
-#else
+            Debug.Assert(!float.IsNaN(value));
             Rotation = MathHelper.WrapAngle(value);
-#endif
         }
 
         #endregion
@@ -261,6 +280,8 @@ namespace Engine.ComponentSystem.Common.Components
         /// </returns>
         public override Packet Packetize(Packet packet)
         {
+            Debug.Assert(!_translationChanged);
+
             return base.Packetize(packet)
                 .Write(Translation)
                 .Write(Rotation);
@@ -272,10 +293,13 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="packet">The packet to read from.</param>
         public override void Depacketize(Packet packet)
         {
+            Debug.Assert(!_translationChanged);
+
             base.Depacketize(packet);
 
-            SetTranslation(packet.ReadVector2());
-            SetRotation(packet.ReadSingle());
+            Translation = packet.ReadVector2();
+            _nextTranslation = Translation;
+            Rotation = packet.ReadSingle();
         }
 
         /// <summary>
@@ -285,8 +309,10 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="hasher">The hasher to push data to.</param>
         public override void Hash(Util.Hasher hasher)
         {
+            Debug.Assert(!_translationChanged);
+
             base.Hash(hasher);
-            
+
             hasher.Put(Translation);
             hasher.Put(Rotation);
         }

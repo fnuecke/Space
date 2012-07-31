@@ -14,7 +14,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Manages spawning dynamic objects for cells, such as random ships.
     /// </summary>
-    public sealed class ShipSpawnSystem : AbstractComponentSystem<ShipSpawner>
+    public sealed class ShipSpawnSystem : AbstractUpdatingComponentSystem<ShipSpawner>
     {
         #region Fields
 

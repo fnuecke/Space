@@ -5,8 +5,8 @@ using System.Diagnostics;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Point;
-using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TRectangle = Engine.Math.RectangleF;
 
 namespace Engine.Collections
 {
@@ -138,11 +138,12 @@ namespace Engine.Collections
         /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newBounds">The new bounds of the entry.</param>
+        /// <param name="delta">Unused.</param>
         /// <param name="item">The value of the entry.</param>
         /// <returns>
         ///   <code>true</code> if the update was successful.
         /// </returns>
-        public bool Update(TRectangle newBounds, T item)
+        public bool Update(TRectangle newBounds, TPoint delta, T item)
         {
             // Check if we have that entry, if not add it.
             if (!Contains(item))
@@ -281,7 +282,7 @@ namespace Engine.Collections
             while (!node.IsLeaf)
             {
                 // Get current child size.
-                var childSize = nodeBounds.Width >> 1;
+                var childSize = nodeBounds.Width / 2;
 
                 // Into which child node would we descend?
                 var cell = ComputeCell(ref nodeBounds, ref bounds);
@@ -373,10 +374,10 @@ namespace Engine.Collections
                 }
 
                 // Adjust the overall tree bounds.
-                _bounds.X = _bounds.X << 1;
-                _bounds.Y = _bounds.Y << 1;
-                _bounds.Width = _bounds.Width << 1;
-                _bounds.Height = _bounds.Height << 1;
+                _bounds.X += _bounds.X;
+                _bounds.Y += _bounds.Y;
+                _bounds.Width += _bounds.Width;
+                _bounds.Height += _bounds.Height;
             }
         }
 
@@ -405,8 +406,8 @@ namespace Engine.Collections
                     node = node.Children[cell];
 
                     // Also adjust the current bounds, for the following split operation.
-                    nodeBounds.Width >>= 1;
-                    nodeBounds.Height >>= 1;
+                    nodeBounds.Width /= 2;
+                    nodeBounds.Height /= 2;
                     nodeBounds.X += (((cell & 1) == 0) ? 0 : nodeBounds.Width);
                     nodeBounds.Y += (((cell & 2) == 0) ? 0 : nodeBounds.Height);
                 }
@@ -475,7 +476,7 @@ namespace Engine.Collections
 
             // Do this recursively if the split resulted in another node that
             // has too many entries.
-            var childBounds = new TRectangle {Width = nodeBounds.Width >> 1, Height = nodeBounds.Height >> 1};
+            var childBounds = new TRectangle {Width = nodeBounds.Width / 2, Height = nodeBounds.Height / 2};
 
             if (node.Children[0] != null)
             {
@@ -674,7 +675,7 @@ namespace Engine.Collections
         /// <returns>The cell number the bounds fall into.</returns>
         private static int ComputeCell(ref TRectangle nodeBounds, ref TRectangle entryBounds)
         {
-            var halfNodeSize = nodeBounds.Width >> 1;
+            var halfNodeSize = nodeBounds.Width / 2;
 
             // Check if the bounds are on the splits.
             var midX = nodeBounds.X + halfNodeSize;
@@ -718,6 +719,18 @@ namespace Engine.Collections
         }
 
         /// <summary>
+        /// Tests if the specified value lies in the specified interval.
+        /// </summary>
+        /// <param name="low">The low end of the interval (inclusive).</param>
+        /// <param name="high">The high end of the interval (inclusive).</param>
+        /// <param name="value">The value to test for.</param>
+        /// <returns><code>true</code> if the value lies in the interval.</returns>
+        private static bool IsInInterval(float low, float high, float value)
+        {
+            return value >= low && value <= high;
+        }
+
+        /// <summary>
         /// Accumulate all entries in range of a circular range query to the
         /// given list. This recurses the tree down inner nodes that intersect
         /// the query, until it finds a leaf node. Then adds all entries in the
@@ -750,7 +763,7 @@ namespace Engine.Collections
                     if (!node.IsLeaf)
                     {
                         // Recurse into child nodes.
-                        var childBounds = new TRectangle {Width = nodeBounds.Width >> 1, Height = nodeBounds.Height >> 1};
+                        var childBounds = new TRectangle {Width = nodeBounds.Width / 2, Height = nodeBounds.Height / 2};
 
                         // Unrolled loop.
                         if (node.Children[0] != null)
@@ -815,7 +828,7 @@ namespace Engine.Collections
                     if (!node.IsLeaf)
                     {
                         // Recurse into child nodes.
-                        var childBounds = new TRectangle {Width = nodeBounds.Width >> 1, Height = nodeBounds.Height >> 1};
+                        var childBounds = new TRectangle {Width = nodeBounds.Width / 2, Height = nodeBounds.Height / 2};
 
                         // Unrolled loop.
                         if (node.Children[0] != null)
@@ -927,8 +940,8 @@ namespace Engine.Collections
 
             // At least intersection, check furthest point to check if the
             // box is contained within the circle.
-            distanceX = Math.Max(Math.Abs(center.X - bounds.X), Math.Abs(center.X - right));
-            distanceY = Math.Max(Math.Abs(center.Y - bounds.Y), Math.Abs(center.Y - bottom));
+            distanceX = System.Math.Max(System.Math.Abs(center.X - bounds.X), System.Math.Abs(center.X - right));
+            distanceY = System.Math.Max(System.Math.Abs(center.Y - bounds.Y), System.Math.Abs(center.Y - bottom));
             var outside = (distanceX * distanceX + distanceY * distanceY) > radiusSquared;
             return outside ? IntersectionType.Intersects : IntersectionType.Contains;
         }

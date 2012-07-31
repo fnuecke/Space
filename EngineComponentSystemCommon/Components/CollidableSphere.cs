@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
+using Engine.Math;
 using Engine.Physics.Intersection;
 using Engine.Serialization;
 using Engine.Util;
@@ -91,9 +92,9 @@ namespace Engine.ComponentSystem.Common.Components
         /// Computes the current minimal bounding box for this collidable.
         /// </summary>
         /// <returns>The minimal boundsing box for this object.</returns>
-        public override Rectangle ComputeBounds()
+        public override RectangleF ComputeBounds()
         {
-            return new Rectangle {Height = (int)(Radius * 2), Width = (int)(Radius * 2)};
+            return new RectangleF {Height = Radius * 2, Width = Radius * 2};
         }
 
         /// <summary>

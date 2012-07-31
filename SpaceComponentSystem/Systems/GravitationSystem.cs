@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
@@ -12,7 +11,14 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Applies gravitational force.
     /// </summary>
-    public sealed class GravitationSystem : AbstractComponentSystem<Gravitation>
+    /// <remarks>
+    /// This is hard to parallelize because multiple attractors might affect one
+    /// attractee. And locking the attractee's acceleration is not sufficient,
+    /// because floating point addition leads to different results when performed
+    /// in a different order. So, the additional overhead to sort the changes is
+    /// too large to justify parallelizing it.
+    /// </remarks>
+    public sealed class GravitationSystem : AbstractUpdatingComponentSystem<Gravitation>
     {
         #region Constants
 
@@ -21,129 +27,125 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         public static readonly ulong IndexGroupMask = 1ul << IndexSystem.GetGroup();
 
-        #endregion
-
-        #region Single-Allocation
+        /// <summary>
+        /// The maximum distance at which an attractor may look for attractees.
+        /// </summary>
+        private const float MaxGravitationDistance = 30000f;
 
         /// <summary>
-        /// Reused for iterating components.
+        /// The squared velocity below which an object should be before it's docked.
         /// </summary>
-        private HashSet<int> _reusableNeighborList = new HashSet<int>();
+        private const float DockVelocity = 16f;
+
+        /// <summary>
+        /// Squared distance to the center an object should be before it's docked.
+        /// </summary>
+        private const float DockDistance = 4;
 
         #endregion
 
         #region Logic
 
+        /// <summary>
+        /// Updates the component by checking if it attracts other entities, and
+        /// if yes fetching all nearby ones and applying it's acceleration to them.
+        /// </summary>
+        /// <param name="frame">The frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, Gravitation component)
         {
             // Only do something if we're attracting stuff.
-            if ((component.GravitationType & Gravitation.GravitationTypes.Attractor) != 0)
+            if ((component.GravitationType & Gravitation.GravitationTypes.Attractor) == 0)
             {
-                // Get our position.
-                var myTransform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
-                Debug.Assert(myTransform != null);
+                return;
+            }
 
-                // And the index.
-                var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
-                Debug.Assert(index != null);
+            // Get our position.
+            var myTransform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
+            Debug.Assert(myTransform != null);
 
-                // Then check all our neighbors.
-                ICollection<int> neighbors = _reusableNeighborList;
-                index.Find(myTransform.Translation, 2 << 13, ref neighbors, IndexGroupMask);
-                foreach (var neighbor in neighbors)
+            // And the index.
+            var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
+            Debug.Assert(index != null);
+
+            // Then check all our neighbors. Use new list each time because we're running
+            // in parallel, so we can't really keep one on a global level.
+            ICollection<int> neighbors = new List<int>();
+            index.Find(myTransform.Translation, MaxGravitationDistance, ref neighbors, IndexGroupMask);
+            foreach (var neighbor in neighbors)
+            {
+                // If they have an enabled gravitation component...
+                var otherGravitation = ((Gravitation)Manager.GetComponent(neighbor, Gravitation.TypeId));
+
+                // Validation.
+                Debug.Assert((otherGravitation.GravitationType & Gravitation.GravitationTypes.Attractee) != 0, "Non-attractees must not be added to the index.");
+
+                // Is it enabled?
+                if (!otherGravitation.Enabled)
                 {
-                    // If they have an enabled gravitation component...
-                    var otherGravitation = ((Gravitation)Manager.GetComponent(neighbor, Gravitation.TypeId));
-
-                    // Validation.
-                    Debug.Assert((otherGravitation.GravitationType & Gravitation.GravitationTypes.Attractee) != 0, "Non-attractees must not be added to the index.");
-
-                    // Is it enabled?
-                    if (!otherGravitation.Enabled)
-                    {
-                        continue;
-                    }
-
-                    // Get their velocity (which is what we'll change) and position.
-                    var otherVelocity = ((Velocity)Manager.GetComponent(neighbor, Velocity.TypeId));
-                    var otherTransform = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId));
-
-                    // We need both.
-                    Debug.Assert(otherVelocity != null);
-                    Debug.Assert(otherTransform != null);
-
-                    // Get the delta vector between the two positions.
-                    var delta = otherTransform.Translation - myTransform.Translation;
-
-                    // Compute the angle between us and the other entity.
-                    var distanceSquared = delta.LengthSquared();
-
-                    // If we're near the core only pull if  the other
-                    // object isn't currently accelerating.
-                    const int nearDistanceSquared = 512 * 512; // We allow overriding gravity at radius 512.
-                    if (distanceSquared < nearDistanceSquared)
-                    {
-                        var accleration = ((Acceleration)Manager.GetComponent(neighbor, Acceleration.TypeId));
-                        if (accleration == null || accleration.Value == Vector2.Zero)
-                        {
-                            if (otherVelocity.Value.LengthSquared() < 16 && distanceSquared < 4)
-                            {
-                                // Dock.
-                                var translation = myTransform.Translation;
-                                otherTransform.SetTranslation(ref translation);
-                                otherVelocity.Value = Vector2.Zero;
-                            }
-                            else
-                            {
-                                // Adjust velocity.
-                                delta.Normalize();
-                                var gravitation = component.Mass * otherGravitation.Mass / Math.Max(nearDistanceSquared, distanceSquared);
-                                var directedGravitation = delta * gravitation;
-
-                                otherVelocity.Value.X -= directedGravitation.X;
-                                otherVelocity.Value.Y -= directedGravitation.Y;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Adjust velocity.
-                        delta.Normalize();
-                        var gravitation = component.Mass * otherGravitation.Mass / distanceSquared;
-                        var directedGravitation = delta * gravitation;
-
-                        otherVelocity.Value.X -= directedGravitation.X;
-                        otherVelocity.Value.Y -= directedGravitation.Y;
-                    }
+                    continue;
                 }
 
-                // Clear the list for the next iteration (and after the
-                // iteration so we don't keep references to stuff).
-                _reusableNeighborList.Clear();
+                // Get their velocity and position.
+                var otherVelocity = ((Velocity)Manager.GetComponent(neighbor, Velocity.TypeId));
+                var otherTransform = ((Transform)Manager.GetComponent(neighbor, Transform.TypeId));
+
+                // We need both.
+                Debug.Assert(otherVelocity != null);
+                Debug.Assert(otherTransform != null);
+
+                // Get the delta vector between the two positions.
+                var delta = otherTransform.Translation - myTransform.Translation;
+
+                // Compute the angle between us and the other entity.
+                var distanceSquared = delta.LengthSquared();
+
+                // If we're near the core only pull if  the other
+                // object isn't currently accelerating.
+                const int nearDistanceSquared = 512 * 512; // We allow overriding gravity at radius 512.
+                if (distanceSquared < nearDistanceSquared)
+                {
+                    // If it's a ship it might accelerate itself, but acceleration doesn't
+                    // carry over frames, and it has to come after gravitation for stabilization,
+                    // so we must check manually if the ship is accelerating.
+                    var otherShipInfo = (ShipInfo)Manager.GetComponent(neighbor, ShipInfo.TypeId);
+                    if (otherShipInfo != null && !otherShipInfo.IsAccelerating &&
+                        otherVelocity.Value.LengthSquared() < DockVelocity && distanceSquared < DockDistance)
+                    {
+                        // It's a ship that's not accelerating, and in range for docking.
+                        otherTransform.SetTranslation(myTransform.Translation);
+                        otherVelocity.Value = Vector2.Zero;
+                    }
+                    else if ((otherShipInfo == null || !otherShipInfo.IsAccelerating) && distanceSquared > 0.001f) // epsilon to avoid delta.Normalize() generating NaNs
+                    {
+                        // Adjust acceleration with a fixed value when we're getting
+                        // close. This is to avoid objects jittering around an attractor
+                        // at high speeds.
+                        delta.Normalize();
+                        var gravitation = component.Mass * otherGravitation.Mass / nearDistanceSquared;
+                        var directedGravitation = delta * gravitation;
+
+                        Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
+
+                        var acceleration = (Acceleration)Manager.GetComponent(neighbor, Acceleration.TypeId);
+                        acceleration.Value.X -= directedGravitation.X;
+                        acceleration.Value.Y -= directedGravitation.Y;
+                    }
+                }
+                else if (distanceSquared > 0.001f) // epsilon to avoid delta.Normalize() generating NaNs
+                {
+                    // Adjust acceleration.
+                    delta.Normalize();
+                    var gravitation = component.Mass * otherGravitation.Mass / distanceSquared;
+                    var directedGravitation = delta * gravitation;
+
+                    Debug.Assert(!float.IsNaN(directedGravitation.X) && !float.IsNaN(directedGravitation.Y));
+
+                    var acceleration = (Acceleration)Manager.GetComponent(neighbor, Acceleration.TypeId);
+                    acceleration.Value.X -= directedGravitation.X;
+                    acceleration.Value.Y -= directedGravitation.Y;
+                }
             }
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
-        /// </summary>
-        /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem NewInstance()
-        {
-            var copy = (GravitationSystem)base.NewInstance();
-
-            copy._reusableNeighborList = new HashSet<int>();
-
-            return copy;
         }
 
         #endregion

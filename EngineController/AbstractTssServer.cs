@@ -52,7 +52,7 @@ namespace Engine.Controller
         /// Some game state dumps from the past we keep to compare them to any
         /// we receive from clients due to hash check failure.
         /// </summary>
-        private Dictionary<long, string> _gameStateDumps = new Dictionary<long, string>();
+        private readonly Dictionary<long, string> _gameStateDumps = new Dictionary<long, string>();
 
         #endregion
 
@@ -64,10 +64,10 @@ namespace Engine.Controller
         /// </summary>
         /// <param name="session">The session.</param>
         protected AbstractTssServer(IServerSession session)
-            : base(session, new[] {
-                (uint)Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
-                (uint)Math.Ceiling(250 / TargetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
-            })
+            : base(session, session.MaxPlayers > 1 ? new[] {
+                (uint)System.Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
+                (uint)System.Math.Ceiling(250 / TargetElapsedMilliseconds) //< To avoid discrimination of laggy connections.
+            } : new uint[0]) //< If it's single player only we don't need trailing states.
         {
             _clientLoads = new float[Session.MaxPlayers];
 
@@ -133,13 +133,13 @@ namespace Engine.Controller
             var sb = new StringBuilder();
 
             // Get some general system information, for reference.
-            var assembly = Assembly.GetExecutingAssembly().GetName();
+            var assembly = Assembly.GetEntryAssembly().GetName();
 #if DEBUG
             const string build = "Debug";
 #else
             const string build = "Release";
 #endif
-            sb.Append("--------------------------------------------------------------------------------");
+            sb.Append("--------------------------------------------------------------------------------\n");
             sb.AppendFormat("{0} {1} (Attached debugger: {2}) running under {3}\n",
                             assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
             sb.AppendFormat("Build Version: {0}\n", assembly.Version);

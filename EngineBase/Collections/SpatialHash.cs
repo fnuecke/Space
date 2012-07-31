@@ -6,8 +6,8 @@ using Engine.Util;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Point;
-using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TRectangle = Engine.Math.RectangleF;
 
 namespace Engine.Collections
 {
@@ -99,9 +99,10 @@ namespace Engine.Collections
         /// already in the tree, this will return <code>false</code>.
         /// </summary>
         /// <param name="newBounds">The new bounds of the entry.</param>
+        /// <param name="delta"> </param>
         /// <param name="item">The value of the entry.</param>
         /// <returns><code>true</code> if the update was successful.</returns>
-        public bool Update(TRectangle newBounds, T item)
+        public bool Update(TRectangle newBounds, TPoint delta, T item)
         {
             // Check if we have that entry, if not add it.
             if (!Contains(item))
@@ -262,7 +263,7 @@ namespace Engine.Collections
             {
                 for (var y = top; y <= bottom; y++)
                 {
-                    yield return BitwiseMagic.Pack(x, y);
+                    yield return BitwiseMagic.Pack(x.GetHashCode(), y.GetHashCode());
                 }
             }
         }

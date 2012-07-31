@@ -2,10 +2,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using Engine.Collections;
+
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Point;
-using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TRectangle = Engine.Math.RectangleF;
 
 namespace Tests.MichaelCoyle
 {
@@ -80,9 +81,10 @@ namespace Tests.MichaelCoyle
         /// stored in the index, this will return <code>false</code>.
         /// </summary>
         /// <param name="newBounds">The new bounds of the item.</param>
+        /// <param name="delta"> </param>
         /// <param name="item">The item for which to update the bounds.</param>
         /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
-        public bool Update(TRectangle newBounds, T item)
+        public bool Update(TRectangle newBounds, TPoint delta, T item)
         {
             throw new NotSupportedException();
         }

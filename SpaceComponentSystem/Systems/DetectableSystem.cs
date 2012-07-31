@@ -9,7 +9,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Loads icons for detectable components.
     /// </summary>
-    public sealed class DetectableSystem : AbstractComponentSystem<Detectable>
+    public sealed class DetectableSystem : AbstractUpdatingComponentSystem<Detectable>
     {
         #region Constants
 

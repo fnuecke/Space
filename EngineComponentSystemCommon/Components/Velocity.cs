@@ -62,7 +62,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="velocity">The velocity.</param>
         public Velocity Initialize(Vector2 velocity)
         {
-            this.Value = velocity;
+            Value = velocity;
 
             return this;
         }

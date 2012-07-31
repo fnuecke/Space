@@ -12,34 +12,26 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
-    /// Manages Item Drops
+    /// Manages item drops by reacting to death events.
     /// </summary>
     public sealed class DropSystem : AbstractComponentSystem<Drops>
     {
         #region Fields
 
         /// <summary>
-        /// A List of all item pools mapped by their ID.
+        /// A list of all item pools mapped by their ID. This should be treated
+        /// as read-only after construction.
         /// </summary>
         private Dictionary<string, ItemPool> _itemPools = new Dictionary<string, ItemPool>();
-
-        #endregion
-
-        #region Single allocation
-
-        /// <summary>
-        /// Reusable list for sampling items to drop.
-        /// </summary>
-        private List<ItemPool.DropInfo> _reusableDropInfo = new List<ItemPool.DropInfo>();
 
         #endregion
 
         #region Constructor
 
         /// <summary>
-        /// Create a new Drop System with the given ContentManager
+        /// Initializes a new instance of the <see cref="DropSystem"/> class.
         /// </summary>
-        /// <param name="content"></param>
+        /// <param name="content">The content manager used to load drop tables.</param>
         public DropSystem(ContentManager content)
         {
             foreach (var itemPool in content.Load<ItemPool[]>("Data/Items"))
@@ -63,7 +55,7 @@ namespace Space.ComponentSystem.Systems
             var pool = _itemPools[poolName];
 
             // Get the list of possible drops.
-            _reusableDropInfo.AddRange(pool.Items);
+            var dropInfo = new List<ItemPool.DropInfo>(pool.Items);
             
             // Randomizer used for sampling of items. Seed it based on the item
             // pool and the drop position, to get a deterministic result for
@@ -77,20 +69,20 @@ namespace Space.ComponentSystem.Systems
             // chance to be picked. Otherwise the first few entries have a much
             // better chance, because we stop after reaching a certain number
             // of items.
-            for (var i = _reusableDropInfo.Count; i > 1; i--)
+            for (var i = dropInfo.Count; i > 1; i--)
             {
                 // Pick random element to swap.
                 var j = random.NextInt32(i); // 0 <= j <= i - 1
                 // Swap.
-                var tmp = _reusableDropInfo[j];
-                _reusableDropInfo[j] = _reusableDropInfo[i - 1];
-                _reusableDropInfo[i - 1] = tmp;
+                var tmp = dropInfo[j];
+                dropInfo[j] = dropInfo[i - 1];
+                dropInfo[i - 1] = tmp;
             }
 
             var dropCount = 0;
-            for (int i = 0, j = _reusableDropInfo.Count; i < j; i++)
+            for (int i = 0, j = dropInfo.Count; i < j; i++)
             {
-                var item = _reusableDropInfo[i];
+                var item = dropInfo[i];
 
                 // Give the item a chance to be dropped.
                 if (item.Probability > random.NextDouble())
@@ -106,9 +98,6 @@ namespace Space.ComponentSystem.Systems
                     }
                 }
             }
-
-            // Clear up for next run.
-            _reusableDropInfo.Clear();
         }
 
         /// <summary>
@@ -152,7 +141,6 @@ namespace Space.ComponentSystem.Systems
             var copy = (DropSystem)base.NewInstance();
 
             copy._itemPools = new Dictionary<string, ItemPool>();
-            copy._reusableDropInfo = new List<ItemPool.DropInfo>();
 
             return copy;
         }

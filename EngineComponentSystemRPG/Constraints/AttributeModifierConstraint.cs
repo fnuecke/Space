@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.RPG.Components;
+﻿using Engine.ComponentSystem.RPG.Components;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 
@@ -52,7 +51,7 @@ namespace Engine.ComponentSystem.RPG.Constraints
                 : MathHelper.Lerp(Value.Low, Value.High, (float)random.NextDouble());
             if (Round)
             {
-                value = (float)Math.Round(value);
+                value = (float)System.Math.Round(value);
             }
             return new AttributeModifier<TAttribute>(Type, value, ComputationType);
         }

@@ -24,72 +24,6 @@ namespace Engine.ComponentSystem.Systems
 
         #endregion
 
-        #region Single-Allocation
-
-        /// <summary>
-        /// Reused for iterating components when updating, to avoid
-        /// modifications to the list of components breaking the update.
-        /// </summary>
-        protected List<TComponent> UpdatingComponents = new List<TComponent>();
-
-        #endregion
-
-        #region Logic
-
-        /// <summary>
-        /// Loops over all components and calls <c>UpdateComponent()</c>.
-        /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Update(long frame)
-        {
-            UpdatingComponents.AddRange(Components);
-            for (int i = 0, j = UpdatingComponents.Count; i < j; ++i)
-            {
-                var component = UpdatingComponents[i];
-                if (component.Enabled)
-                {
-                    UpdateComponent(frame, component);
-                }
-            }
-            UpdatingComponents.Clear();
-        }
-
-        /// <summary>
-        /// Loops over all components and calls <c>DrawComponent()</c>.
-        /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        public override void Draw(long frame)
-        {
-            for (int i = 0, j = Components.Count; i < j; ++i)
-            {
-                var component = Components[i];
-                if (component.Enabled)
-                {
-                    DrawComponent(frame, component);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Applies the system's logic to the specified component.
-        /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        /// <param name="component">The component to update.</param>
-        protected virtual void UpdateComponent(long frame, TComponent component)
-        {
-        }
-
-        /// <summary>
-        /// Applies the system's rendering to the specified component.
-        /// </summary>
-        /// <param name="frame">The frame in which the update is applied.</param>
-        /// <param name="component">The component to draw.</param>
-        protected virtual void DrawComponent(long frame, TComponent component)
-        {
-        }
-
-        #endregion
-
         #region Messaging
 
         /// <summary>
@@ -215,7 +149,6 @@ namespace Engine.ComponentSystem.Systems
             var copy = (AbstractComponentSystem<TComponent>)base.NewInstance();
 
             copy.Components = new List<TComponent>();
-            copy.UpdatingComponents = new List<TComponent>();
 
             return copy;
         }

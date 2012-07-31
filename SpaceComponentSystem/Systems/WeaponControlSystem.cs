@@ -6,6 +6,7 @@ using Engine.ComponentSystem.Systems;
 using Engine.Serialization;
 using Engine.Util;
 using Space.ComponentSystem.Components;
+using Space.ComponentSystem.Factories;
 using Space.ComponentSystem.Messages;
 using Space.Data;
 
@@ -14,7 +15,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Handles firing of equipped weapons.
     /// </summary>
-    public sealed class WeaponControlSystem : AbstractComponentSystem<WeaponControl>
+    public sealed class WeaponControlSystem : AbstractParallelComponentSystem<WeaponControl>
     {
         #region Fields
 
@@ -23,12 +24,25 @@ namespace Space.ComponentSystem.Systems
         /// </summary>
         private Dictionary<int, int> _cooldowns = new Dictionary<int, int>();
 
+        /// <summary>
+        /// Randomizer used for sampling projectiles.
+        /// </summary>
+        private MersenneTwister _random = new MersenneTwister(0);
+
+        /// <summary>
+        /// List of projectiles we want to create. We iterate in parallel, but
+        /// the creation has do be done synchronously because the manager is
+        /// not thread safe.
+        /// </summary>
+        private List<Tuple<ProjectileFactory, int, Weapon, Factions>> _projectilesToCreate = new List<Tuple<ProjectileFactory, int, Weapon, Factions>>(16);
+
         #endregion
 
         #region Single allocation
 
         /// <summary>
-        /// Used to iterate the cooldown mapping.
+        /// Used to iterate the cooldown mapping. We change it (by changing single fields,
+        /// which seems to suffice) so we can't directly iterate over the key collection.
         /// </summary>
         private List<int> _reusableEntities = new List<int>();
 
@@ -49,7 +63,15 @@ namespace Space.ComponentSystem.Systems
             }
             _reusableEntities.Clear();
 
+            // Update components (in parallel) to see if someone's shooting.
             base.Update(frame);
+
+            // Create projectiles that were requested.
+            foreach (var projectile in _projectilesToCreate)
+            {
+                projectile.Item1.SampleProjectile(Manager, projectile.Item2, projectile.Item3, projectile.Item4, _random);
+            }
+            _projectilesToCreate.Clear();
         }
 
         protected override void UpdateComponent(long frame, WeaponControl component)
@@ -101,7 +123,7 @@ namespace Space.ComponentSystem.Systems
                 // Generate projectiles.
                 foreach (var projectile in weapon.Projectiles)
                 {
-                    projectile.SampleProjectile(Manager, component.Entity, weapon, faction.Value, component.Random);
+                    _projectilesToCreate.Add(Tuple.Create(projectile, component.Entity, weapon, faction.Value));
                 }
 
                 // Generate message.
@@ -163,6 +185,8 @@ namespace Space.ComponentSystem.Systems
                 packet.Write(kv.Value);
             }
 
+            packet.Write(_random);
+
             return packet;
         }
 
@@ -182,6 +206,8 @@ namespace Space.ComponentSystem.Systems
                 var value = packet.ReadInt32();
                 _cooldowns.Add(key, value);
             }
+
+            packet.ReadPacketizableInto(_random);
         }
 
         /// <summary>
@@ -197,6 +223,7 @@ namespace Space.ComponentSystem.Systems
             {
                 hasher.Put(cooldown);
             }
+            _random.Hash(hasher);
         }
 
         #endregion
@@ -218,6 +245,8 @@ namespace Space.ComponentSystem.Systems
             var copy = (WeaponControlSystem)base.NewInstance();
 
             copy._cooldowns = new Dictionary<int, int>();
+            copy._random = new MersenneTwister(0);
+            copy._projectilesToCreate = new List<Tuple<ProjectileFactory, int, Weapon, Factions>>(16);
             copy._reusableEntities = new List<int>();
 
             return copy;
@@ -246,6 +275,8 @@ namespace Space.ComponentSystem.Systems
             {
                 copy._cooldowns.Add(item.Key, item.Value);
             }
+
+            _random.CopyInto(copy._random);
         }
 
         #endregion
@@ -260,7 +291,7 @@ namespace Space.ComponentSystem.Systems
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Cooldowns=[" + string.Join(", ", _cooldowns) + "]";
+            return base.ToString() + ", Cooldowns=[" + string.Join(", ", _cooldowns) + "], Random=" + _random;
         }
 
         #endregion

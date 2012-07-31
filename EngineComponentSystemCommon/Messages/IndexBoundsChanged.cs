@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Engine.Math;
 
 namespace Engine.ComponentSystem.Common.Messages
 {
@@ -15,6 +15,6 @@ namespace Engine.ComponentSystem.Common.Messages
         /// <summary>
         /// The new bounds of the indexable.
         /// </summary>
-        public Rectangle Bounds;
+        public RectangleF Bounds;
     }
 }

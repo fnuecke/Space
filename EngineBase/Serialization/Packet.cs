@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using Engine.Math;
 
 namespace Engine.Serialization
 {
@@ -250,6 +251,16 @@ namespace Engine.Serialization
                 _stream.Write(data, 0, length);
                 return this;
             }
+        }
+
+        /// <summary>
+        /// Writes the specified rectangle value.
+        /// </summary>
+        /// <param name="data">The value to write.</param>
+        /// <returns>This packet, for call chaining.</returns>
+        public Packet Write(RectangleF data)
+        {
+            return Write(data.X).Write(data.Y).Write(data.Width).Write(data.Height);
         }
 
         /// <summary>
@@ -616,6 +627,22 @@ namespace Engine.Serialization
                 _stream.Read(bytes, 0, bytes.Length);
                 return bytes;
             }
+        }
+
+        /// <summary>
+        /// Reads a rectangle value.
+        /// </summary>
+        /// <returns>The read value.</returns>
+        /// <exception cref="PacketException">The packet has not enough
+        /// available data for the read operation.</exception>
+        public RectangleF ReadRectangleF()
+        {
+            RectangleF result;
+            result.X = ReadSingle();
+            result.Y = ReadSingle();
+            result.Width = ReadSingle();
+            result.Height = ReadSingle();
+            return result;
         }
 
         /// <summary>
@@ -1109,7 +1136,7 @@ namespace Engine.Serialization
         {
             if (HasInt32())
             {
-                return Available >= sizeof(int) + Math.Max(0, PeekInt32());
+                return Available >= sizeof(int) + System.Math.Max(0, PeekInt32());
             }
             return false;
         }

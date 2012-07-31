@@ -98,6 +98,7 @@
     <Compile Include="Systems\TextureRenderSystem.cs" />
     <Compile Include="Systems\SoundSystem.cs" />
     <Compile Include="Systems\SpinSystem.cs" />
+    <Compile Include="Systems\TranslationSystem.cs" />
     <Compile Include="Systems\VelocitySystem.cs" />
   </ItemGroup>
   <ItemGroup>

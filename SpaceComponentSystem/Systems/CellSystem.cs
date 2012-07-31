@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -55,9 +55,9 @@ namespace Space.ComponentSystem.Systems
         /// The time to wait before actually killing of a cell after it has
         /// gotten out of reach. This is to avoid reallocating cells over
         /// and over again, if a player flies along a cell border or keeps
-        /// flying back and forth over it.
+        /// flying back and forth over it. Unit is in game frames.
         /// </summary>
-        private const int CellDeathDelay = 5;
+        private const int CellDeathDelay = 312; // ~5 seconds
 
         #endregion
 
@@ -80,7 +80,7 @@ namespace Space.ComponentSystem.Systems
         /// <summary>
         /// Cells awaiting cleanup, with the time when they became invalid.
         /// </summary>
-        private Dictionary<ulong, DateTime> _pendingCells = new Dictionary<ulong, DateTime>();
+        private Dictionary<ulong, long> _pendingCells = new Dictionary<ulong, long>();
 
         #endregion
 
@@ -193,7 +193,7 @@ namespace Space.ComponentSystem.Systems
             foreach (var cellId in _reusablePendingList)
             {
                 // Are we still delaying?
-                if ((DateTime.Now - _pendingCells[cellId]).TotalSeconds <= CellDeathDelay)
+                if (frame - _pendingCells[cellId] <= CellDeathDelay)
                 {
                     continue;
                 }
@@ -211,7 +211,7 @@ namespace Space.ComponentSystem.Systems
 
                 // Kill any remaining entities in the area covered by the
                 // cell that just died.
-                Rectangle cellBounds;
+                RectangleF cellBounds;
                 cellBounds.X = xy.Item1 * CellSize;
                 cellBounds.Y = xy.Item2 * CellSize;
                 cellBounds.Width = CellSize;
@@ -229,11 +229,10 @@ namespace Space.ComponentSystem.Systems
             // Get the cells that died, put to pending list.
             _reusableDeceasedCellsIds.UnionWith(_livingCells);
             _reusableDeceasedCellsIds.ExceptWith(_reusableNewCellIds);
-            var now = DateTime.Now;
             foreach (var cellId in _reusableDeceasedCellsIds)
             {
                 // Add it to the pending list.
-                _pendingCells.Add(cellId, now);
+                _pendingCells.Add(cellId, frame);
             }
             _reusableDeceasedCellsIds.Clear();
 
@@ -256,9 +255,9 @@ namespace Space.ComponentSystem.Systems
         /// <param name="cells">The set of cells to add to.</param>
         private static void AddCellAndNeighbors(int x, int y, ISet<ulong> cells)
         {
-            for (int ny = y - 1; ny <= y + 1; ny++)
+            for (var ny = y - 1; ny <= y + 1; ny++)
             {
-                for (int nx = x - 1; nx <= x + 1; nx++)
+                for (var nx = x - 1; nx <= x + 1; nx++)
                 {
                     cells.Add(CoordinateIds.Combine(nx, ny));
                 }
@@ -287,7 +286,7 @@ namespace Space.ComponentSystem.Systems
             foreach (var pending in _pendingCells)
             {
                 packet.Write(pending.Key);
-                packet.Write(pending.Value.Ticks);
+                packet.Write(pending.Value);
             }
 
             return packet;
@@ -310,8 +309,8 @@ namespace Space.ComponentSystem.Systems
             for (var i = 0; i < numPending; i++)
             {
                 var cell = packet.ReadUInt64();
-                var time = new DateTime(packet.ReadInt64());
-                _pendingCells.Add(cell, time);
+                var frame = packet.ReadInt64();
+                _pendingCells.Add(cell, frame);
             }
         }
 
@@ -353,7 +352,7 @@ namespace Space.ComponentSystem.Systems
             var copy = (CellSystem)base.NewInstance();
 
             copy._livingCells = new HashSet<ulong>();
-            copy._pendingCells = new Dictionary<ulong, DateTime>();
+            copy._pendingCells = new Dictionary<ulong, long>();
             copy._reusableNewCellIds = new HashSet<ulong>();
             copy._reusableBornCellsIds = new HashSet<ulong>();
             copy._reusableDeceasedCellsIds = new HashSet<ulong>();

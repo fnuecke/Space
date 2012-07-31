@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Engine.Util
 {
@@ -123,7 +122,7 @@ namespace Engine.Util
             // Sanity check. Test that the top edge of the topmost rectangle is at y=1.0.
             // Note. We expect there to be a tiny drift away from 1.0 due to the inexactness of floating
             // point arithmetic.
-            Debug.Assert(Math.Abs(1.0 - _y[BlockCount-1]) < 1e-10);
+            Debug.Assert(System.Math.Abs(1.0 - _y[BlockCount - 1]) < 1e-10);
         }
 
         #endregion
@@ -216,8 +215,8 @@ namespace Engine.Util
             double x, y;
             do
             {
-                x = -Math.Log(_rng.NextDouble()) / R;
-                y = -Math.Log(_rng.NextDouble());
+                x = -System.Math.Log(_rng.NextDouble()) / R;
+                y = -System.Math.Log(_rng.NextDouble());
             }
             while(y+y < x*x);
             return R + x;
@@ -228,7 +227,7 @@ namespace Engine.Util
         /// </summary>
         private static double GaussianPdfDenorm(double x)
         {
-            return Math.Exp(-(x*x / 2.0));
+            return System.Math.Exp(-(x * x / 2.0));
         }
 
         /// <summary>
@@ -241,7 +240,7 @@ namespace Engine.Util
             // y=0 so it doesn't matter. Remember that a Gaussian effectively has a tail going
             // off into x == infinity, hence asking what is x when y=0 is an invalid question
             // in the context of this class.
-            return Math.Sqrt(-2.0 * Math.Log(y));
+            return System.Math.Sqrt(-2.0 * System.Math.Log(y));
         }
 
         #endregion

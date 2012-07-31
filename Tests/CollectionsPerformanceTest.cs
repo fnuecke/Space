@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Engine.Collections;
+using Engine.Math;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
@@ -79,20 +80,20 @@ namespace Tests
                 MinimumNodeSize >> 1, MinimumNodeSize, MinimumNodeSize << 1,
                 MinimumNodeSize << 2, MinimumNodeSize << 3);
 
-            var smallRectangles = new List<Tuple<int, Rectangle>>();
+            var smallRectangles = new List<Tuple<int, RectangleF>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                smallRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, MinimumNodeSize >> 2, MinimumNodeSize >> 1)));
+                smallRectangles.Add(Tuple.Create(i, random.NextRectangleF(Area, MinimumNodeSize >> 2, MinimumNodeSize >> 1)));
             }
-            var mediumRectangles = new List<Tuple<int, Rectangle>>();
+            var mediumRectangles = new List<Tuple<int, RectangleF>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                mediumRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, MinimumNodeSize, MinimumNodeSize << 1)));
+                mediumRectangles.Add(Tuple.Create(i, random.NextRectangleF(Area, MinimumNodeSize, MinimumNodeSize << 1)));
             }
-            var largeRectangles = new List<Tuple<int, Rectangle>>();
+            var largeRectangles = new List<Tuple<int, RectangleF>>();
             for (var i = 0; i < NumberOfObjects; i++)
             {
-                largeRectangles.Add(Tuple.Create(i, random.NextRectangle(Area, MinimumNodeSize << 2, MinimumNodeSize << 3)));
+                largeRectangles.Add(Tuple.Create(i, random.NextRectangleF(Area, MinimumNodeSize << 2, MinimumNodeSize << 3)));
             }
 
             // Wait for application to settle in.
@@ -175,9 +176,9 @@ namespace Tests
         private delegate void DoUpdate<T>(IIndex<int> index, Tuple<int, T> update);
 
         private static void Test(IIndex<int> index, IList<Tuple<int, Vector2>> points,
-            IList<Tuple<int, Rectangle>> smallRectangles,
-            IList<Tuple<int, Rectangle>> mediumRectangles,
-            IList<Tuple<int, Rectangle>> largeRectangles)
+            IList<Tuple<int, RectangleF>> smallRectangles,
+            IList<Tuple<int, RectangleF>> mediumRectangles,
+            IList<Tuple<int, RectangleF>> largeRectangles)
         {
             Console.WriteLine("Testing with point data...");
             {
@@ -224,7 +225,7 @@ namespace Tests
                 );
         }
 
-        private static void RunRectangles(IIndex<int> index, IList<Tuple<int, Rectangle>> rectangles)
+        private static void RunRectangles(IIndex<int> index, IList<Tuple<int, RectangleF>> rectangles)
         {
             Run(index,
                 rectangles,
@@ -235,7 +236,7 @@ namespace Tests
                     rect.Y += random.NextInt32(-2, 2);
                     list.Add(Tuple.Create(i, rect));
                 },
-                (list, data, random, i) => list.Add(Tuple.Create(i, random.NextRectangle(Area, 16, 1024))),
+                (list, data, random, i) => list.Add(Tuple.Create(i, random.NextRectangleF(Area, 16, 1024))),
                 (ints, data) =>
                 {
                     foreach (var item in data)
@@ -247,7 +248,7 @@ namespace Tests
                 (ints, update) =>
                 {
                     var rect = update.Item2;
-                    index.Update(rect, update.Item1);
+                    index.Update(rect, Vector2.Zero, update.Item1);
                 }
                 );
         }
@@ -266,7 +267,7 @@ namespace Tests
 
             // Also allocate the ids to look up in advance.
             var rangeQueries = new List<Tuple<Vector2, float>>(Operations);
-            var areaQueries = new List<Rectangle>(Operations);
+            var areaQueries = new List<RectangleF>(Operations);
 
             // And updates.
             var smallUpdates = new List<Tuple<int, T>>(Operations);
@@ -299,7 +300,7 @@ namespace Tests
                 areaQueries.Clear();
                 for (var j = 0; j < Operations; j++)
                 {
-                    areaQueries.Add(random.NextRectangle(Area, MinQueryRange * 2, MaxQueryRange * 2));
+                    areaQueries.Add(random.NextRectangleF(Area, MinQueryRange * 2, MaxQueryRange * 2));
                 }
 
                 // Generate position updates.
@@ -534,6 +535,18 @@ namespace Tests
                        };
             rect.X = random.NextInt32(-area / 2, area / 2 - rect.Width);
             rect.Y = random.NextInt32(-area / 2, area / 2 - rect.Height);
+            return rect;
+        }
+
+        public static RectangleF NextRectangleF(this IUniformRandom random, float area, float minSize, float maxSize)
+        {
+            var rect = new RectangleF
+            {
+                Width = (float)random.NextDouble(minSize, maxSize),
+                Height = (float)random.NextDouble(minSize, maxSize)
+            };
+            rect.X = (float)random.NextDouble(-area / 2, area / 2 - rect.Width);
+            rect.Y = (float)random.NextDouble(-area / 2, area / 2 - rect.Height);
             return rect;
         }
     }

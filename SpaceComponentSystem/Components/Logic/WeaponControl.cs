@@ -33,11 +33,6 @@ namespace Space.ComponentSystem.Components
         /// </summary>
         public bool Shooting;
 
-        /// <summary>
-        /// Randomizer used for sampling projectiles.
-        /// </summary>
-        public MersenneTwister Random = new MersenneTwister(0);
-
         #endregion
 
         #region Initialization
@@ -52,7 +47,6 @@ namespace Space.ComponentSystem.Components
 
             var otherWeaponControl = (WeaponControl)other;
             Shooting = otherWeaponControl.Shooting;
-            otherWeaponControl.Random.CopyInto(Random);
 
             return this;
         }
@@ -66,7 +60,6 @@ namespace Space.ComponentSystem.Components
             base.Reset();
 
             Shooting = false;
-            Random.Seed(0);
         }
 
         #endregion
@@ -83,8 +76,7 @@ namespace Space.ComponentSystem.Components
         public override Packet Packetize(Packet packet)
         {
             return base.Packetize(packet)
-                .Write(Shooting)
-                .Write(Random);
+                .Write(Shooting);
         }
 
         /// <summary>
@@ -96,7 +88,6 @@ namespace Space.ComponentSystem.Components
             base.Depacketize(packet);
 
             Shooting = packet.ReadBoolean();
-            packet.ReadPacketizableInto(Random);
         }
 
         /// <summary>
@@ -109,7 +100,6 @@ namespace Space.ComponentSystem.Components
             base.Hash(hasher);
 
             hasher.Put(Shooting);
-            Random.Hash(hasher);
         }
 
         #endregion
@@ -124,7 +114,7 @@ namespace Space.ComponentSystem.Components
         /// </returns>
         public override string ToString()
         {
-            return base.ToString() + ", Shooting=" + Shooting + ", Random=" + Random;
+            return base.ToString() + ", Shooting=" + Shooting;
         }
 
         #endregion

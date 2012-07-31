@@ -3,7 +3,7 @@
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
 using System.Diagnostics;
-using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TRectangle = Engine.Math.RectangleF;
 
 namespace Tests.MichaelCoyle
 {

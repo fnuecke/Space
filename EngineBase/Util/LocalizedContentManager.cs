@@ -134,7 +134,7 @@ namespace Engine.Util
         {
             var startIndex = path.LastIndexOf('\\', position - 1) + 1;
             path = path.Remove(startIndex, (position - startIndex) + removeLength);
-            return Math.Max(startIndex - 1, 1);
+            return System.Math.Max(startIndex - 1, 1);
         }
 
         #endregion

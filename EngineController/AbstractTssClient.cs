@@ -82,8 +82,8 @@ namespace Engine.Controller
         /// <param name="session">The session used.</param>
         protected AbstractTssClient(IClientSession session)
             : base(session, new[] {
-                (uint)Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
-                (uint)Math.Ceiling(500 / TargetElapsedMilliseconds) //< High, to avoid full resyncs.
+                (uint)System.Math.Ceiling(50 / TargetElapsedMilliseconds), //< Expected case.
+                (uint)System.Math.Ceiling(500 / TargetElapsedMilliseconds) //< High, to avoid full resyncs.
             })
         {
             Session.JoinResponse += HandleJoinResponse;
@@ -124,6 +124,12 @@ namespace Engine.Controller
             // Drive game logic.
             UpdateSimulation(AdjustedSpeed);
 
+            // We might have disconnected due to a desync.
+            if (Session.ConnectionState != ClientState.Connected)
+            {
+                return;
+            }
+
             // Send sync command every now and then, to keep game clock synchronized.
             // No need to sync for a server that runs in the same program, though.
             if (!Tss.WaitingForSynchronization && (DateTime.Now - _lastSyncTime).TotalMilliseconds > SyncInterval)
@@ -157,13 +163,13 @@ namespace Engine.Controller
             var sb = new StringBuilder();
 
             // Get some general system information, for reference.
-            var assembly = Assembly.GetExecutingAssembly().GetName();
+            var assembly = Assembly.GetEntryAssembly().GetName();
 #if DEBUG
             const string build = "Debug";
 #else
             const string build = "Release";
 #endif
-            sb.Append("--------------------------------------------------------------------------------");
+            sb.Append("--------------------------------------------------------------------------------\n");
             sb.AppendFormat("{0} {1} (Attached debugger: {2}) running under {3}\n",
                             assembly.Name, build, Debugger.IsAttached, Environment.OSVersion.VersionString);
             sb.AppendFormat("Build Version: {0}\n", assembly.Version);
@@ -218,7 +224,6 @@ namespace Engine.Controller
 
                     SendGameStateDump();
 
-                    //Tss.Invalidate();
                     Session.Leave();
                 }
                 _hashes.Remove(hashFrame);
@@ -359,7 +364,7 @@ namespace Engine.Controller
                         var median = _frameDiff.Median();
                         var stdDev = _frameDiff.StandardDeviation();
 
-                        if (Math.Abs(frameDelta) > 1 && frameDelta < (int)(median + stdDev))
+                        if (System.Math.Abs(frameDelta) > 1 && frameDelta < (int)(median + stdDev))
                         {
                             Logger.Trace("Correcting for {0} frames.", frameDelta);
 

@@ -12,7 +12,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// neighbors and checks their collision groups, keeping the number of
     /// actual collision checks that have to be performed low.
     /// </summary>
-    public sealed class CollisionSystem : AbstractComponentSystem<Collidable>
+    public sealed class CollisionSystem : AbstractParallelComponentSystem<Collidable>
     {
         #region Constants
 
@@ -33,15 +33,6 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #endregion
 
-        #region Single-Allocation
-
-        /// <summary>
-        /// Reused for iterating components.
-        /// </summary>
-        private List<int> _reusableNeighborList = new List<int>();
-
-        #endregion
-
         #region Constructor
 
         public CollisionSystem(int bufferArea)
@@ -55,79 +46,57 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Logic
 
-        /// <summary>
-        /// Does a normal update but clears the list of performed checks
-        /// afterwards..
-        /// </summary>
-        /// <param name="frame">The frame.</param>
-        public override void Update(long frame)
+        protected override void UpdateComponent(long frame, Collidable component)
         {
+            // Get index and allocate neighbor result list.
             var index = (IndexSystem)Manager.GetSystem(IndexSystem.TypeId);
-            ICollection<int> neighbors = _reusableNeighborList;
+            ICollection<int> neighbors = new List<int>();
 
-            UpdatingComponents.AddRange(Components);
-            for (var i = 0; i < UpdatingComponents.Count; ++i)
+            // Get the component's bounds and look for nearby elements.
+            var bounds = component.ComputeBounds();
+            var translation = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId)).Translation;
+            bounds.X = (int)translation.X - bounds.Width / 2;
+            bounds.Y = (int)translation.Y - bounds.Height / 2;
+            bounds.Inflate(_bufferArea, _bufferArea);
+            index.Find(ref bounds, ref neighbors, IndexGroupMask);
+
+            // If there are no neighbors, skip the rest.
+            if (neighbors.Count <= 0)
             {
-                var component1 = UpdatingComponents[i];
+                return;
+            }
+
+            // Prepare the collision message.
+            Collision message;
+            message.FirstEntity = component.Entity;
+
+            // Check each neighbor.
+            foreach (var neighbor in neighbors)
+            {
+                var otherComponent = (Collidable)Manager.GetComponent(neighbor, Collidable.TypeId);
 
                 // Skip disabled components.
-                if (!component1.Enabled)
+                if (!otherComponent.Enabled)
                 {
                     continue;
                 }
 
-                // Prepare the collision message.
-                Collision message;
-                message.FirstEntity = component1.Entity;
-
-                // Get the components' bounds and look for nearby elements.
-                var bounds = component1.ComputeBounds();
-                var translation = ((Transform)Manager.GetComponent(component1.Entity, Transform.TypeId)).Translation;
-                bounds.X = (int)translation.X - bounds.Width / 2;
-                bounds.Y = (int)translation.Y - bounds.Height / 2;
-                bounds.Inflate(_bufferArea, _bufferArea);
-                index.Find(ref bounds, ref neighbors, IndexGroupMask);
-
-                // Iterate over the remaining collidables.
-                for (var j = i + 1; j < UpdatingComponents.Count && component1.Enabled; ++j)
+                // Only test if its from a different collision group.
+                if ((component.CollisionGroups & otherComponent.CollisionGroups) != 0)
                 {
-                    var component2 = UpdatingComponents[j];
-
-                    // Skip disabled components.
-                    if (!component2.Enabled)
-                    {
-                        continue;
-                    }
-
-                    // Only test if its from a different collision group.
-                    if ((component1.CollisionGroups & component2.CollisionGroups) != 0)
-                    {
-                        continue;
-                    }
-
-                    // Don't bother testing unless the component is nearby.
-                    if (!neighbors.Contains(component2.Entity))
-                    {
-                        continue;
-                    }
-
-                    // Test for collision.
-                    if (!component1.Intersects(component2))
-                    {
-                        continue;
-                    }
-
-                    // If there is one, let both parties know.
-                    message.SecondEntity = component2.Entity;
-                    Manager.SendMessage(ref message);
+                    continue;
                 }
 
-                // Clear list for the next run.
-                _reusableNeighborList.Clear();
-            }
+                // Test for collision.
+                if (!component.Intersects(otherComponent))
+                {
+                    continue;
+                }
 
-            // Clear list for the next update.
-            UpdatingComponents.Clear();
+                // If there is one, let both parties know.
+                message.SecondEntity = otherComponent.Entity;
+                Manager.SendMessage(ref message);
+            }
         }
 
         /// <summary>
@@ -168,25 +137,6 @@ namespace Engine.ComponentSystem.Common.Systems
         #endregion
 
         #region Copying
-
-        /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
-        /// </summary>
-        /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem NewInstance()
-        {
-            var copy = (CollisionSystem)base.NewInstance();
-
-            copy._reusableNeighborList = new List<int>();
-
-            return copy;
-        }
 
         /// <summary>
         /// Creates a deep copy of the system. The passed system must be of the

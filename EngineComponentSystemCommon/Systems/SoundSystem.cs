@@ -230,20 +230,23 @@ namespace Engine.ComponentSystem.Common.Systems
                 return null;
             }
 
-            _listener.Position = ToV3(ref listenerPosition);
-            _listener.Velocity = ToV3(ref listenerVelocity);
+            lock (this)
+            {
+                _listener.Position = ToV3(ref listenerPosition);
+                _listener.Velocity = ToV3(ref listenerVelocity);
 
-            // Get position and velocity of emitter.
-            _emitter.Position = ToV3(ref position);
-            _emitter.Velocity = ToV3(ref velocity);
+                // Get position and velocity of emitter.
+                _emitter.Position = ToV3(ref position);
+                _emitter.Velocity = ToV3(ref velocity);
 
-            // Let there be sound!
-            var cue = _soundBank.GetCue(soundCue);
-            cue.Apply3D(_listener, _emitter);
-            cue.Play();
+                // Let there be sound!
+                var cue = _soundBank.GetCue(soundCue);
+                cue.Apply3D(_listener, _emitter);
+                cue.Play();
 
-            // Return cue for further usage.
-            return cue;
+                // Return cue for further usage.
+                return cue;
+            }
         }
 
         /// <summary>

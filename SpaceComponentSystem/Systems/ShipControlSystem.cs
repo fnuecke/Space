@@ -13,12 +13,19 @@ namespace Space.ComponentSystem.Systems
     /// Handles input to control how a ship flies, i.e. its acceleration and
     /// rotation, as well as whether it's shooting or not.
     /// </summary>
-    public sealed class ShipControlSystem : AbstractComponentSystem<ShipControl>
+    public sealed class ShipControlSystem : AbstractParallelComponentSystem<ShipControl>
     {
         #region Logic
-        
+
+        /// <summary>
+        /// Updates the component.
+        /// </summary>
+        /// <param name="frame">The current simulation frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, ShipControl component)
         {
+            //TODO: Add flag to component to check if we actually need to recompute anything?
+
             // Get components we depend upon / modify.
             var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
             var spin = ((Spin)Manager.GetComponent(component.Entity, Spin.TypeId));
@@ -39,7 +46,8 @@ namespace Space.ComponentSystem.Systems
             if (component.DirectedAcceleration == Vector2.Zero && component.Stabilizing)
             {
                 // We want to stabilize.
-                accelerationDirection = -((Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId)).Value;
+                var velocity = (Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId);
+                accelerationDirection = -(velocity.Value + acceleration.Value);
                 desiredAcceleration = accelerationDirection.Length();
 
                 // If it's zero, normalize will make it {NaN, NaN}. Avoid that.
@@ -85,17 +93,14 @@ namespace Space.ComponentSystem.Systems
                 accelerationForce /= mass;
 
                 // Adjust thruster PFX based on acceleration, if it just started.
-                if (acceleration.Value == Vector2.Zero)
+                var numThrusters = info.EquipmentSlotCount<Thruster>();
+                for (var i = 0; i < numThrusters; i++)
                 {
-                    var numThrusters = info.EquipmentSlotCount<Thruster>();
-                    for (int i = 0; i < numThrusters; i++)
+                    var thrusterId = info.EquipmentItemAt<Thruster>(i);
+                    if (thrusterId.HasValue)
                     {
-                        var thrusterId = info.EquipmentItemAt<Thruster>(i);
-                        if (thrusterId.HasValue)
-                        {
-                            // TODO: get offset for that item slot and use it
-                            effects.TryAdd("Effects/thruster", Vector2.Zero);
-                        }
+                        // TODO: get offset for that item slot and use it
+                        effects.TryAdd("Effects/thruster", Vector2.Zero);
                     }
                 }
 
@@ -104,21 +109,15 @@ namespace Space.ComponentSystem.Systems
 
                 // Apply our acceleration. Use the min to our desired
                 // acceleration so we don't exceed our target.
-                acceleration.Value = accelerationDirection * Math.Min(desiredAcceleration, accelerationForce);
+                acceleration.Value += accelerationDirection * Math.Min(desiredAcceleration, accelerationForce);
             }
             else
             {
                 // Not accelerating. Disable thruster effects if we were accelerating before.
-                if (acceleration.Value != Vector2.Zero)
-                {
-                    effects.Remove("Effects/thruster");
-                }
+                effects.Remove("Effects/thruster");
 
                 // Disable thruster sound for this ship.
                 sound.Enabled = false;
-
-                // Adjust acceleration value.
-                acceleration.Value = Vector2.Zero;
             }
 
             // Compute rotation speed. Yes, this is actually the rotation acceleration,

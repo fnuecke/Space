@@ -7,7 +7,7 @@ using Space.ComponentSystem.Components;
 
 namespace Space.ComponentSystem.Systems
 {
-    public sealed class ShipRenderSystem : AbstractComponentSystem<ShipInfo>
+    public sealed class ShipRenderSystem : AbstractUpdatingComponentSystem<ShipInfo>
     {
         #region Fields
 

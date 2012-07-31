@@ -140,6 +140,11 @@ namespace Engine.Session
             {
                 var client = _tcp.AcceptTcpClient();
                 client.NoDelay = true;
+#if DEBUG
+                // This is for local loopback connections so they don't block when sending,
+                // the game state dump. Meaning for local testing, only.
+                client.ReceiveBufferSize = 50000000;
+#endif
 
                 // Do not allow connections from the same IP twice, to avoid
                 // ambivalence when getting UDP data packets.

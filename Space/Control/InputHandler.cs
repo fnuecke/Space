@@ -84,9 +84,14 @@ namespace Space.Control
         private DateTime _accelerationChanged;
 
         /// <summary>
-        /// Whether we're currently stabilizing our position or not.
+        /// Whether we're currently stabilizing our position or not (avoid resends).
         /// </summary>
         private bool _stabilizing;
+
+        /// <summary>
+        /// Whether we're currently shooting (avoid resends).
+        /// </summary>
+        private bool _shooting;
 
         /// <summary>
         /// The target rotation based on the current mouse position.
@@ -413,9 +418,10 @@ namespace Space.Control
 
                 case GameCommand.Stabilize:
                     // Enable stabilizers if not toggling.
-                    if (!Settings.Instance.StabilizeToggles)
+                    if (!Settings.Instance.StabilizeToggles && !_stabilizing)
                     {
                         command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginStabilizing);
+                        _stabilizing = true;
                     }
                     break;
 
@@ -437,7 +443,11 @@ namespace Space.Control
 
                 case GameCommand.Shoot:
                     // Shoot.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting);
+                    if (!_shooting)
+                    {
+                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.BeginShooting);
+                        _shooting = true;
+                    }
                     break;
 
                 case GameCommand.Use:
@@ -509,19 +519,24 @@ namespace Space.Control
                     if (Settings.Instance.StabilizeToggles)
                     {
                         // Toggle stabilizers.
-                        _stabilizing = !_stabilizing;
                         command = new PlayerInputCommand(_stabilizing ? PlayerInputCommand.PlayerInputCommandType.BeginStabilizing : PlayerInputCommand.PlayerInputCommandType.StopStabilizing);
+                        _stabilizing = !_stabilizing;
                     }
                     else
                     {
                         // Disable stabilizers if not toggling.
                         command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopStabilizing);
+                        _stabilizing = false;
                     }
                     break;
 
                 case GameCommand.Shoot:
                     // Stop shooting.
-                    command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting);
+                    if (_shooting)
+                    {
+                        command = new PlayerInputCommand(PlayerInputCommand.PlayerInputCommandType.StopShooting);
+                        _shooting = false;
+                    }
                     break;
             }
 

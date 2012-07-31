@@ -87,6 +87,8 @@
     <Compile Include="Systems\AbstractSystem.cs" />
     <Compile Include="Messages\ComponentAdded.cs" />
     <Compile Include="Messages\ComponentRemoved.cs" />
+    <Compile Include="Systems\AbstractParallelComponentSystem.cs" />
+    <Compile Include="Systems\AbstractUpdatingComponentSystem.cs" />
     <Compile Include="TypeManager.cs" />
   </ItemGroup>
   <ItemGroup>

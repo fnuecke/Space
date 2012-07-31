@@ -4,32 +4,37 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
+// Adjust these as necessary, they just have to share a compatible
+// interface with the XNA types.
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TRectangle = Engine.Math.RectangleF;
+
 namespace Engine.Collections
 {
     public sealed class RTree<T> : IIndex<T>
     {
         public void Test(List<T> list)
         {
-            var rect = new Rectangle(0, 0, 2, 2);
+            var rect = new TRectangle(0, 0, 2, 2);
             Console.WriteLine(rect.X);
             Console.WriteLine(rect.Y);
             Console.WriteLine(rect.Center);
             Console.WriteLine(rect.Location);
-            Add(new Point(0, 0), list[0]);
-            Add(new Point(0, 2), list[1]);
-            Add(new Point(2, 0), list[2]);
-            Add(new Point(2, 2), list[3]);
-            Add(new Point(1, 2), list[4]);
-            Add(new Point(1, 3), list[4]);
-            Add(new Point(1, 4), list[4]);
-            Add(new Point(1, 5), list[4]);
-            Add(new Point(1, 6), list[4]);
-            Add(new Point(2, 3), list[4]);
-            Add(new Point(3, 4), list[4]);
-            Add(new Point(4, 5), list[4]);
-            Add(new Point(5, 6), list[4]);
+            Add(new TPoint(0, 0), list[0]);
+            Add(new TPoint(0, 2), list[1]);
+            Add(new TPoint(2, 0), list[2]);
+            Add(new TPoint(2, 2), list[3]);
+            Add(new TPoint(1, 2), list[4]);
+            Add(new TPoint(1, 3), list[4]);
+            Add(new TPoint(1, 4), list[4]);
+            Add(new TPoint(1, 5), list[4]);
+            Add(new TPoint(1, 6), list[4]);
+            Add(new TPoint(2, 3), list[4]);
+            Add(new TPoint(3, 4), list[4]);
+            Add(new TPoint(4, 5), list[4]);
+            Add(new TPoint(5, 6), list[4]);
 
-            //foreach(var asd in RangeQuery(new Rectangle(0,0,1,1)))
+            //foreach(var asd in RangeQuery(new TRectangle(0,0,1,1)))
             //{
             //    Console.WriteLine(asd);
             //}
@@ -54,11 +59,11 @@ namespace Engine.Collections
 
         #region Implementation of IEnumerable
 
-        public IEnumerator<Tuple<Rectangle, T>> GetEnumerator()
+        public IEnumerator<Tuple<TRectangle, T>> GetEnumerator()
         {
             foreach (var entry in _pointDict)
             {
-                yield return Tuple.Create(Rectangle.Empty, entry.Key);
+                yield return Tuple.Create(TRectangle.Empty, entry.Key);
             }
         }
 
@@ -84,7 +89,7 @@ namespace Engine.Collections
         /// <param name="item">The value associated with the point.</param>
         /// <exception cref="ArgumentException">This value is already stored
         /// in the tree.</exception>
-        public void Add(Rectangle bounds, T item)
+        public void Add(TRectangle bounds, T item)
         {
             throw new NotImplementedException();
         }
@@ -94,14 +99,15 @@ namespace Engine.Collections
         /// stored in the index, this will return <code>false</code>.
         /// </summary>
         /// <param name="newBounds">The new bounds of the item.</param>
+        /// <param name="delta"> </param>
         /// <param name="item">The item for which to update the bounds.</param>
         /// <returns><c>true</c> if the update was successful; <c>false</c> otherwise.</returns>
-        public bool Update(Rectangle newBounds, T item)
+        public bool Update(TRectangle newBounds, TPoint delta, T item)
         {
             throw new NotImplementedException();
         }
 
-        public void Add(Point point, T item)
+        public void Add(TPoint point, T item)
         {
             //the entry to be stored
             var entry = new Entry() { Point = point, Value = item };
@@ -163,7 +169,7 @@ namespace Engine.Collections
             AdjustTree(node, createdNode);
         }
 
-        public bool Update(Point newPoint, T item)
+        public bool Update(TPoint newPoint, T item)
         {
             LeafNode node = null;
             //check if node exists
@@ -219,14 +225,14 @@ namespace Engine.Collections
         /// <summary>
         /// Get the bounds at which the specified item is currently stored.
         /// </summary>
-        public Rectangle this[T item] { get { return _pointDict[item].Boundingbox; } }
+        public TRectangle this[T item] { get { return _pointDict[item].Boundingbox; } }
 
-        public void Find(Point point, float range, ref ICollection<T> list)
+        public void Find(TPoint point, float range, ref ICollection<T> list)
         {
             Accumulate(root, ref point, range, list);
         }
 
-        public void Find(ref Rectangle rectangle, ref ICollection<T> list)
+        public void Find(ref TRectangle rectangle, ref ICollection<T> list)
         {
             Accumulate(root, ref rectangle, list);
         }
@@ -239,7 +245,7 @@ namespace Engine.Collections
         /// <param name="currentNode"></param>
         /// <param name="rectangle"></param>
         /// <param name="list"></param>
-        private void Accumulate(Node currentNode,ref Rectangle rectangle,ICollection<T> list)
+        private void Accumulate(Node currentNode,ref TRectangle rectangle,ICollection<T> list)
         {
             if (currentNode is LeafNode)
             {
@@ -270,7 +276,7 @@ namespace Engine.Collections
         /// <param name="currentNode"></param>
         /// <param name="rectangle"></param>
         /// <param name="list"></param>
-        private void Accumulate(Node currentNode, ref Point point, float range, ICollection<T> list)
+        private void Accumulate(Node currentNode, ref TPoint point, float range, ICollection<T> list)
         {
             if (currentNode is LeafNode)
             {
@@ -302,7 +308,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="point"></param>
         /// <returns></returns>
-        private LeafNode ChooseLeaf(ref Point point)
+        private LeafNode ChooseLeaf(ref TPoint point)
         {
             Node node = root;
             while (!(node is LeafNode))
@@ -323,14 +329,14 @@ namespace Engine.Collections
             return testnode;
         }
 
-        private InnerNode MMBMinNode(InnerNode testnode, Rectangle boundingbox)
+        private InnerNode MMBMinNode(InnerNode testnode, TRectangle boundingbox)
         {
-            int minexpansion = int.MaxValue;
+            float minexpansion = float.PositiveInfinity;
             Node returnNode= null;
             foreach (var childnode in testnode.Nodes)
             {
                 var mbb = childnode.Boundingbox;
-                var area = Rectangle.Union(boundingbox, mbb);
+                var area = TRectangle.Union(boundingbox, mbb);
                 var size = area.Height * area.Width;
                 if (size < minexpansion)
                 {
@@ -346,10 +352,10 @@ namespace Engine.Collections
         /// <param name="node"></param>
         /// <param name="point"> </param>
         /// <returns></returns>
-        private Node MMBMinNode(InnerNode node, ref Point point)
+        private Node MMBMinNode(InnerNode node, ref TPoint point)
         {
-            var minExpanision = int.MaxValue;
-            var minArea = int.MaxValue;
+            var minExpanision = float.PositiveInfinity;
+            var minArea = float.PositiveInfinity;
             Node returnNode = null;
             foreach (var childNode in node.Nodes)
             {
@@ -372,10 +378,10 @@ namespace Engine.Collections
                 //no node would contain the point
                 else if (minExpanision > 0)
                 {
-                    var x = (int)point.X;
-                    var y = (int)point.Y;
-                    var distX = 0;
-                    var distY = 0;
+                    var x = point.X;
+                    var y = point.Y;
+                    var distX = 0f;
+                    var distY = 0f;
                     var boxWidht = box.Width;
                     var boxheigth = box.Height;
                     if (box.Left > x)
@@ -394,8 +400,8 @@ namespace Engine.Collections
                     {
                         distY = y - box.Bottom;
                     }
-                    distX = Math.Abs(distX);
-                    distY = Math.Abs(distY);
+                    distX = System.Math.Abs(distX);
+                    distY = System.Math.Abs(distY);
                     var increase = distX * boxheigth + distX * distY + distY * boxWidht;
                     if (increase == minExpanision)
                     {
@@ -424,7 +430,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="rect"></param>
         /// <returns></returns>
-        private int RectangleArea(Rectangle rect)
+        private float RectangleArea(TRectangle rect)
         {
             return rect.Width * rect.Height;
         }
@@ -435,11 +441,10 @@ namespace Engine.Collections
         /// <param name="tuple1"></param>
         /// <param name="tuple2"></param>
         /// <returns></returns>
-        private int SortTupleListByOverlapValue(Tuple<Rectangle, Rectangle,int> tuple1, Tuple<Rectangle, Rectangle,int> tuple2)
+        private int SortTupleListByOverlapValue(Tuple<TRectangle, TRectangle,int> tuple1, Tuple<TRectangle, TRectangle,int> tuple2)
         {
-            return RectangleArea(Rectangle.Intersect(tuple1.Item1, tuple1.Item2)) -
-                   RectangleArea(Rectangle.Intersect(tuple2.Item1, tuple2.Item2));
-
+            return (int)System.Math.Round(RectangleArea(TRectangle.Intersect(tuple1.Item1, tuple1.Item2)) -
+                   RectangleArea(TRectangle.Intersect(tuple2.Item1, tuple2.Item2)), MidpointRounding.AwayFromZero);
         }
         /// <summary>
         /// Splits the given Node
@@ -544,9 +549,9 @@ namespace Engine.Collections
 
             if (xLeft == yLeft)
             {
-                return xRight - yRight;
+                return (int)System.Math.Round(xRight - yRight, MidpointRounding.AwayFromZero);
             }
-            return xLeft - yLeft;
+            return (int)System.Math.Round(xLeft - yLeft, MidpointRounding.AwayFromZero);
         }
 
 
@@ -565,22 +570,22 @@ namespace Engine.Collections
 
             if (xTop == yTop)
             {
-                return xBottom - yBottom;
+                return (int)System.Math.Round(xBottom - yBottom, MidpointRounding.AwayFromZero);
             }
-            return xTop - yTop;
+            return (int)System.Math.Round(xTop - yTop, MidpointRounding.AwayFromZero);
         }
         /// <summary>
         /// Chooses the Split Axis of the Given Node
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        private List<Tuple<Rectangle, Rectangle, int>> ChosseSplitAxis(LeafNode node)
+        private List<Tuple<TRectangle, TRectangle, int>> ChosseSplitAxis(LeafNode node)
         {
 
 
             node.Entrys.Sort(CompareEntrysByXAxis);
-            var sumX = 0;
-            var listx = new List<Tuple<Rectangle, Rectangle, int>>();
+            var sumX = 0f;
+            var listx = new List<Tuple<TRectangle, TRectangle, int>>();
             for (var i = 1; i < maxEntrys - 1; i++)
             {
                 var list = new List<Entry>();
@@ -597,12 +602,12 @@ namespace Engine.Collections
                     list.Add(node.Entrys[j]);
                 }
                 var box2 = CreateEntryBox(list);
-                listx.Add(new Tuple<Rectangle, Rectangle, int>(box, box2, i));
+                listx.Add(new Tuple<TRectangle, TRectangle, int>(box, box2, i));
                 sumX += box2.Height * 2 + box2.Width * 2;
             }
             node.Entrys.Sort(CompareEntrysByYAxis);
-            var sumY = 0;
-            var listy = new List<Tuple<Rectangle, Rectangle, int>>();
+            var sumY = 0f;
+            var listy = new List<Tuple<TRectangle, TRectangle, int>>();
             for (var i = 1; i < maxEntrys - 1; i++)
             {
                 var list = new List<Entry>();
@@ -618,7 +623,7 @@ namespace Engine.Collections
                     list.Add(node.Entrys[j]);
                 }
                 var box2 = CreateEntryBox(list);
-                listy.Add(new Tuple<Rectangle, Rectangle, int>(box, box2, i));
+                listy.Add(new Tuple<TRectangle, TRectangle, int>(box, box2, i));
                 sumY += box2.Height * 2 + box2.Width * 2;
             }
             if(sumX < sumY)
@@ -637,12 +642,12 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        private List<Tuple<Rectangle, Rectangle,int>> ChosseSplitAxis(InnerNode node)
+        private List<Tuple<TRectangle, TRectangle,int>> ChosseSplitAxis(InnerNode node)
         {
 
             node.Nodes.Sort(CompareNodesByXAxis);
-            var sumX = 0;
-            var listx = new List<Tuple<Rectangle, Rectangle,int>>();
+            var sumX = 0f;
+            var listx = new List<Tuple<TRectangle, TRectangle,int>>();
             for (var i = 1; i < maxEntrys - 1; i++)
             {
                 var list = new List<Node>();
@@ -659,12 +664,12 @@ namespace Engine.Collections
                     list.Add(node.Nodes[j]);
                 }
                 var box2 = CreateNodeBox(list);
-                listx.Add(new Tuple<Rectangle, Rectangle,int>(box, box2,i));
+                listx.Add(new Tuple<TRectangle, TRectangle,int>(box, box2,i));
                 sumX += box2.Height * 2 + box2.Width * 2;
             }
             node.Nodes.Sort(CompareNodesByYAxis);
-            var sumY = 0;
-            var listy = new List<Tuple<Rectangle, Rectangle,int>>();
+            var sumY = 0f;
+            var listy = new List<Tuple<TRectangle, TRectangle,int>>();
             for (var i = 1; i < maxEntrys - 1; i++)
             {
                 var list = new List<Node>();
@@ -680,7 +685,7 @@ namespace Engine.Collections
                     list.Add(node.Nodes[j]);
                 }
                 var box2 = CreateNodeBox(list);
-                listy.Add(new Tuple<Rectangle, Rectangle, int>(box, box2,i));
+                listy.Add(new Tuple<TRectangle, TRectangle, int>(box, box2,i));
                 sumY += box2.Height * 2 + box2.Width * 2;
             }
             if (sumX < sumY)
@@ -730,7 +735,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        private Rectangle CreateLeafNodeBox(LeafNode node)
+        private TRectangle CreateLeafNodeBox(LeafNode node)
         {
             return CreateEntryBox(node.Entrys);
         }
@@ -740,7 +745,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="entrys"></param>
         /// <returns></returns>
-        private Rectangle CreateEntryBox(List<Entry> entrys)
+        private TRectangle CreateEntryBox(List<Entry> entrys)
         {
 
             var xmin = int.MaxValue;
@@ -750,12 +755,12 @@ namespace Engine.Collections
             foreach (var entry in entrys)
             {
                 var point = entry.Point;
-                xmin = Math.Min(xmin, (int) point.X);
-                xmax = Math.Max(xmax, (int)point.X);
-                ymin = Math.Min(ymin, (int)point.Y);
-                ymax = Math.Max(ymax, (int)point.Y);
+                xmin = System.Math.Min(xmin, (int)point.X);
+                xmax = System.Math.Max(xmax, (int)point.X);
+                ymin = System.Math.Min(ymin, (int)point.Y);
+                ymax = System.Math.Max(ymax, (int)point.Y);
             }
-            var rectangle = new Rectangle(xmin,ymin,xmax-xmin,ymax-ymin);
+            var rectangle = new TRectangle(xmin,ymin,xmax-xmin,ymax-ymin);
             return rectangle;
         }
 
@@ -764,7 +769,7 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="node"></param>
         /// <returns></returns>
-        private Rectangle CreateInnerNodeBox(InnerNode node)
+        private TRectangle CreateInnerNodeBox(InnerNode node)
         {
             return CreateNodeBox(node.Nodes);
         }
@@ -774,14 +779,14 @@ namespace Engine.Collections
         /// </summary>
         /// <param name="nodes"></param>
         /// <returns></returns>
-        private Rectangle CreateNodeBox(List<Node> nodes)
+        private TRectangle CreateNodeBox(List<Node> nodes)
         {
             if (nodes.Count == 0)
-                return Rectangle.Empty;
+                return TRectangle.Empty;
             var rect = nodes[0].Boundingbox;
             foreach (var child in nodes)
             {
-                rect = Rectangle.Union(rect, child.Boundingbox);
+                rect = TRectangle.Union(rect, child.Boundingbox);
             }
             return rect;
         }
@@ -874,7 +879,7 @@ namespace Engine.Collections
         /// <param name="y">The y position of the box.</param>
         /// <param name="size">The size of the box.</param>
         /// <returns>How the two intersect.</returns>
-        private static bool ComputeIntersection(ref Point center, float radius,ref Rectangle rect)
+        private static bool ComputeIntersection(ref TPoint center, float radius,ref TRectangle rect)
         {
             // Check for axis aligned separation.
             if (rect.Right < center.X - radius ||
@@ -911,7 +916,7 @@ namespace Engine.Collections
             }
             return true;
         }
-        private bool ComputeIntersection(ref Point center, float radius, ref Point vector2)
+        private bool ComputeIntersection(ref TPoint center, float radius, ref TPoint vector2)
         {
             // Check for axis aligned separation.
             if (vector2.X < center.X - radius ||
@@ -948,7 +953,7 @@ namespace Engine.Collections
             }
             return true;
         }
-        private bool RectangleContainsPoint(ref Rectangle rect, ref Point point)
+        private bool RectangleContainsPoint(ref TRectangle rect, ref TPoint point)
         {
             return (rect.Top <= point.Y && rect.Bottom >= point.Y
                 && rect.Left <= point.X && rect.Right >= point.X);
@@ -962,7 +967,7 @@ namespace Engine.Collections
             /// <summary>
             /// The Minimum Bounding Box 
             /// </summary>
-            public Rectangle Boundingbox;
+            public TRectangle Boundingbox;
 
             /// <summary>
             /// The Parent Node
@@ -1037,7 +1042,7 @@ namespace Engine.Collections
             /// <summary>
             /// The point at which the entry is stored.
             /// </summary>
-            public Point Point;
+            public TPoint Point;
 
             /// <summary>
             /// The value stored in this entry.

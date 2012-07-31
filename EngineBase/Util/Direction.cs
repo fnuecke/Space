@@ -141,7 +141,7 @@ namespace Engine.Util
     /// </summary>
     public static class DirectionConversion
     {
-        private static readonly float SqrtOneHalf = (float)Math.Sqrt(0.5);
+        private static readonly float SqrtOneHalf = (float)System.Math.Sqrt(0.5);
 
         /// <summary>
         /// Lookup table for Vector2 conversion.

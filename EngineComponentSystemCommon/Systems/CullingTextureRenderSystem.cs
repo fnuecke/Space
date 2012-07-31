@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
+using Engine.Math;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -46,7 +47,7 @@ namespace Engine.ComponentSystem.Common.Systems
         public override void Draw(long frame)
         {
             // Get all renderable entities in the viewport.
-            var view = ComputeViewport();
+            var view = (RectangleF)ComputeViewport();
             ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, IndexGroupMask);
 
             // Skip there rest if nothing is visible.

@@ -27,11 +27,12 @@ namespace Space.Control
         /// Creates a new game server for the specified game.
         /// </summary>
         /// <param name="game">The game to create the server for.</param>
-        public GameServer(Game game)
+        /// <param name="purelyLocal">Whether to create a purely local game (single player).</param>
+        public GameServer(Game game, bool purelyLocal = false)
             : base(game)
         {
             // Get the controller.
-            Controller = ControllerFactory.CreateServer(game);
+            Controller = ControllerFactory.CreateServer(game, purelyLocal);
 
             // Add listeners.
             Controller.Session.GameInfoRequested += HandleGameInfoRequested;

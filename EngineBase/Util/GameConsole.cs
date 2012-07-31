@@ -106,7 +106,7 @@ namespace Engine.Util
             }
             set
             {
-                _bufferSize = Math.Max(1, value);
+                _bufferSize = System.Math.Max(1, value);
                 if (_buffer.Count > _bufferSize)
                 {
                     _buffer.RemoveRange(BufferSize, _buffer.Count - BufferSize);
@@ -720,25 +720,25 @@ namespace Engine.Util
                     case Keys.Left:
                         if (IsControlPressed())
                         {
-                            int startIndex = Math.Max(0, _cursor - 1);
+                            int startIndex = System.Math.Max(0, _cursor - 1);
                             while (startIndex > 0 && startIndex < _input.Length && _input[startIndex] == ' ')
                             {
                                 --startIndex;
                             }
                             var index = _input.ToString().LastIndexOf(' ', startIndex);
-                            _cursor = index == -1 ? 0 : Math.Min(_input.Length, index + 1);
+                            _cursor = index == -1 ? 0 : System.Math.Min(_input.Length, index + 1);
                         }
                         else
                         {
-                            _cursor = Math.Max(0, _cursor - 1);
+                            _cursor = System.Math.Max(0, _cursor - 1);
                         }
                         ResetTabCompletion();
                         break;
                     case Keys.PageDown:
-                        _scroll = IsShiftPressed() ? 0 : Math.Max(0, _scroll - EntriesToScroll);
+                        _scroll = IsShiftPressed() ? 0 : System.Math.Max(0, _scroll - EntriesToScroll);
                         break;
                     case Keys.PageUp:
-                        _scroll = IsShiftPressed() ? Math.Max(0, _buffer.Count - 1) : Math.Max(0, Math.Min(_buffer.Count - 1, _scroll + EntriesToScroll));
+                        _scroll = IsShiftPressed() ? System.Math.Max(0, _buffer.Count - 1) : System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll + EntriesToScroll));
                         break;
                     case Keys.Right:
                         if (IsControlPressed())
@@ -750,7 +750,7 @@ namespace Engine.Util
                             }
                             else
                             {
-                                _cursor = Math.Min(_input.Length, index + 1);
+                                _cursor = System.Math.Min(_input.Length, index + 1);
                                 while (_cursor < _input.Length && _input[_cursor] == ' ')
                                 {
                                     ++_cursor;
@@ -759,7 +759,7 @@ namespace Engine.Util
                         }
                         else
                         {
-                            _cursor = Math.Min(_input.Length, _cursor + 1);
+                            _cursor = System.Math.Min(_input.Length, _cursor + 1);
                         }
                         ResetTabCompletion();
                         break;
@@ -936,7 +936,7 @@ namespace Engine.Util
         {
             if (IsOpen)
             {
-                _scroll = Math.Max(0, Math.Min(_buffer.Count - 1, _scroll + Math.Sign(ticks) * EntriesToScroll));
+                _scroll = System.Math.Max(0, System.Math.Min(_buffer.Count - 1, _scroll + System.Math.Sign(ticks) * EntriesToScroll));
             }
         }
 

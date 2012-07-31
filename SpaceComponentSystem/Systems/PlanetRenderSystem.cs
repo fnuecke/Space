@@ -2,6 +2,7 @@
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Systems;
 using Engine.ComponentSystem.Systems;
+using Engine.Math;
 using Engine.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -14,7 +15,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Renders planets.
     /// </summary>
-    public sealed class PlanetRenderSystem : AbstractComponentSystem<PlanetRenderer>
+    public sealed class PlanetRenderSystem : AbstractUpdatingComponentSystem<PlanetRenderer>
     {
         #region Fields
 
@@ -82,7 +83,7 @@ namespace Space.ComponentSystem.Systems
             var camera = (CameraSystem)Manager.GetSystem(CameraSystem.TypeId);
 
             // Get all renderable entities in the viewport.
-            var view = camera.ComputeVisibleBounds(_planet.GraphicsDevice.Viewport);
+            var view = (RectangleF)camera.ComputeVisibleBounds(_planet.GraphicsDevice.Viewport);
             ((IndexSystem)Manager.GetSystem(IndexSystem.TypeId)).Find(ref view, ref _drawablesInView, CullingTextureRenderSystem.IndexGroupMask);
 
             // Skip there rest if nothing is visible.

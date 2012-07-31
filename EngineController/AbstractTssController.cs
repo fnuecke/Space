@@ -231,7 +231,7 @@ namespace Engine.Controller
                 // Keep a carry for the next update. But never try to catch up
                 // on frames while we took too long, as this'll lead to the
                 // simulation running too fast when catching up.
-                _lastUpdateRemainder = Math.Min(remainingTime, targetFrequency);
+                _lastUpdateRemainder = System.Math.Min(remainingTime, targetFrequency);
             }
 
             // Track our load, but ignore idle rounds (this is for unlocked
@@ -260,7 +260,7 @@ namespace Engine.Controller
         {
             // Try to interpolate smoothly when the gap is not too large, otherwise
             // force it to the specified frame immediately.
-            if (Math.Abs(frames) > 10)
+            if (System.Math.Abs(frames) > 10)
             {
                 Tss.RunToFrame(Tss.CurrentFrame + frames);
                 _frameskipRemainder = 0;

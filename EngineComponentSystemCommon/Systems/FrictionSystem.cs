@@ -7,7 +7,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// <summary>
     /// Applies a component's friction to its velocity.
     /// </summary>
-    public sealed class FrictionSystem : AbstractComponentSystem<Friction>
+    public sealed class FrictionSystem : AbstractParallelComponentSystem<Friction>
     {
         protected override void UpdateComponent(long frame, Friction component)
         {
@@ -24,9 +24,8 @@ namespace Engine.ComponentSystem.Common.Systems
             var previousVelocity = velocity.Value.LengthSquared();
 
             // Apply friction.
-            //velocity.Value = velocity.Value * (1 - Value);
-            velocity.Value.X *= (1 - component.Value);
-            velocity.Value.Y *= (1 - component.Value);
+            velocity.Value.X *= (1.0f - component.Value);
+            velocity.Value.Y *= (1.0f - component.Value);
 
             // If we're below a certain minimum speed, just stop, otherwise
             // it'd be hard to. We only stop if we were faster than the minimum,

@@ -1,5 +1,4 @@
-﻿using System;
-using Engine.ComponentSystem.Common.Components;
+﻿using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Systems;
 using Microsoft.Xna.Framework;
 
@@ -8,7 +7,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// <summary>
     /// Makes an entity move along an ellipsoid path.
     /// </summary>
-    public sealed class EllipsePathSystem : AbstractComponentSystem<EllipsePath>
+    public sealed class EllipsePathSystem : AbstractParallelComponentSystem<EllipsePath>
     {
         #region Logic
 
@@ -19,8 +18,8 @@ namespace Engine.ComponentSystem.Common.Systems
 
             // Get the angle based on the time passed.
             var t = component.PeriodOffset + MathHelper.Pi * frame / component.Period;
-            var sinT = (float)Math.Sin(t);
-            var cosT = (float)Math.Cos(t);
+            var sinT = (float)System.Math.Sin(t);
+            var cosT = (float)System.Math.Cos(t);
 
             // Compute the current position and set it.
             var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));

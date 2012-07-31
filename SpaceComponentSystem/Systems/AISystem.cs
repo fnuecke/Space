@@ -6,7 +6,7 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Handles AI logic updates.
     /// </summary>
-    public sealed class AISystem : AbstractComponentSystem<ArtificialIntelligence>
+    public sealed class AISystem : AbstractParallelComponentSystem<ArtificialIntelligence>
     {
         #region Logic
 

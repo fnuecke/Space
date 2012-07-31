@@ -5,6 +5,7 @@ using Engine.Collections;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
+using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -124,15 +125,6 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #endregion
 
-        #region Single-Allocation
-
-        /// <summary>
-        /// Reused for iteration.
-        /// </summary>
-        private List<IIndex<int>> _reusableTreeList = new List<IIndex<int>>();
-
-        #endregion
-
         #region Constructor
 
         /// <summary>
@@ -153,10 +145,13 @@ namespace Engine.ComponentSystem.Common.Systems
 
         #region Logic
 
+        /// <summary>
+        /// Updates the index based on translations that happened this frame.
+        /// </summary>
+        /// <param name="frame">The current simulation frame.</param>
         public override void Update(long frame)
         {
-            base.Update(frame);
-
+            // Reset query count until next run.
             ResetQueryCount();
         }
 
@@ -188,7 +183,7 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <param name="list">The list to use for storing the results.</param>
         /// <param name="groups">The bitmask representing the groups to check in.</param>
         /// <returns>All entities in range.</returns>
-        public void Find(ref Rectangle query, ref ICollection<int> list, ulong groups)
+        public void Find(ref RectangleF query, ref ICollection<int> list, ulong groups)
         {
             foreach (var tree in TreesForGroups(groups))
             {
@@ -229,18 +224,16 @@ namespace Engine.ComponentSystem.Common.Systems
         /// <returns>A list of the specified indexes.</returns>
         private IEnumerable<IIndex<int>> TreesForGroups(ulong groups)
         {
-            _reusableTreeList.Clear();
             byte index = 0;
             while (groups > 0)
             {
                 if ((groups & 1) == 1 && _trees[index] != null)
                 {
-                    _reusableTreeList.Add(_trees[index]);
+                    yield return _trees[index];
                 }
                 groups = groups >> 1;
                 ++index;
             }
-            return _reusableTreeList;
         }
 
         /// <summary>
@@ -254,7 +247,7 @@ namespace Engine.ComponentSystem.Common.Systems
             EnsureIndexesExist(groups);
 
             // Compute the bounds for the indexable as well as possible.
-            var bounds = new Rectangle();
+            var bounds = new RectangleF();
             var collidable = ((Collidable)Manager.GetComponent(entity, Collidable.TypeId));
             if (collidable != null)
             {
@@ -357,7 +350,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 // Update all indexes the entity is part of.
                 foreach (var tree in TreesForGroups(index.IndexGroupsMask))
                 {
-                    tree.Update(bounds, changedMessage.Entity);
+                    tree.Update(bounds, Vector2.Zero, changedMessage.Entity);
                 }
             }
             else if (message is TranslationChanged)
@@ -371,10 +364,16 @@ namespace Engine.ComponentSystem.Common.Systems
                     return;
                 }
 
-                // Update all indexes the component is part of.
+                var bounds = index.Bounds;
+                bounds.X = (int)changedMessage.CurrentPosition.X - bounds.Width / 2;
+                bounds.Y = (int)changedMessage.CurrentPosition.Y - bounds.Height / 2;
+
+                var velocity = ((Velocity)Manager.GetComponent(changedMessage.Entity, Velocity.TypeId));
+                var delta = velocity != null ? velocity.Value : Vector2.Zero;
+                
                 foreach (var tree in TreesForGroups(index.IndexGroupsMask))
                 {
-                    tree.Move(changedMessage.CurrentPosition, changedMessage.Entity);
+                    tree.Update(bounds, delta, changedMessage.Entity);
                 }
             }
         }
@@ -447,7 +446,7 @@ namespace Engine.ComponentSystem.Common.Systems
                 }
                 for (var j = 0; j < count; ++j)
                 {
-                    var bounds = packet.ReadRectangle();
+                    var bounds = packet.ReadRectangleF();
                     var entity = packet.ReadInt32();
                     _trees[i].Add(bounds, entity);
                 }
@@ -491,7 +490,6 @@ namespace Engine.ComponentSystem.Common.Systems
             var copy = (IndexSystem)base.NewInstance();
 
             copy._trees = new IIndex<int>[sizeof(ulong) * 8];
-            copy._reusableTreeList = new List<IIndex<int>>();
 
             return copy;
         }

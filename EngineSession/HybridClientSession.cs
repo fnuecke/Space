@@ -223,6 +223,11 @@ namespace Engine.Session
             _playerData = (TPlayerData)playerData;
             ConnectionState = ClientState.Connecting;
             _tcp = new TcpClient {NoDelay = true};
+#if DEBUG
+            // This is for local loopback connections so they don't block when sending,
+            // the game state dump. Meaning for local testing only.
+            _tcp.SendBufferSize = 50000000;
+#endif
             _tcp.BeginConnect(remote.Address, remote.Port, HandleConnected, _tcp);
         }
 
@@ -657,6 +662,14 @@ namespace Engine.Session
 
                     if (_stream != null)
                     {
+                        try
+                        {
+                            _stream.Flush();
+                        }
+                        catch (IOException ex)
+                        {
+                            Logger.WarnException("Failed flushing stream while closing connection.", ex);
+                        }
                         _stream.Dispose();
                     }
                     if (_tcp != null)

@@ -1,8 +1,8 @@
 ﻿using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Components;
+using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 
 namespace Engine.ComponentSystem.Common.Components
 {
@@ -46,7 +46,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <summary>
         /// The bounds used to store the indexable in indexes.
         /// </summary>
-        public Rectangle Bounds
+        public RectangleF Bounds
 #if DEBUG // Don't allow directly changing from outside.
         { get; private set; }
 #else
@@ -78,7 +78,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// </summary>
         /// <param name="groups">The index groups.</param>
         /// <param name="bounds">The bounds for this indexable.</param>
-        public Index Initialize(ulong groups, Rectangle bounds)
+        public Index Initialize(ulong groups, RectangleF bounds)
         {
             SetIndexGroupsMask(groups);
             SetBounds(bounds);
@@ -94,7 +94,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// <param name="size">The size for this indexable.</param>
         public Index Initialize(ulong groups, int size)
         {
-            return Initialize(groups, new Rectangle {Width = size, Height = size});
+            return Initialize(groups, new RectangleF {Width = size, Height = size});
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Engine.ComponentSystem.Common.Components
             base.Reset();
 
             SetIndexGroupsMask(0);
-            SetBounds(Rectangle.Empty);
+            SetBounds(RectangleF.Empty);
         }
 
         #endregion
@@ -159,7 +159,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// message, if possible.
         /// </summary>
         /// <param name="bounds">The new bounds for the indexable.</param>
-        private void SetBounds(ref Rectangle bounds)
+        private void SetBounds(ref RectangleF bounds)
         {
             if (Bounds.Equals(bounds))
             {
@@ -185,7 +185,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// message, if possible.
         /// </summary>
         /// <param name="bounds">The new bounds for the indexable.</param>
-        private void SetBounds(Rectangle bounds)
+        private void SetBounds(RectangleF bounds)
         {
             SetBounds(ref bounds);
         }
@@ -217,7 +217,7 @@ namespace Engine.ComponentSystem.Common.Components
             base.Depacketize(packet);
 
             SetIndexGroupsMask(packet.ReadUInt64());
-            SetBounds(packet.ReadRectangle());
+            SetBounds(packet.ReadRectangleF());
         }
 
         /// <summary>

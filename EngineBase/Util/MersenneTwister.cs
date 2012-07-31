@@ -148,6 +148,30 @@ namespace Engine.Util
         }
 
         /// <summary>
+        /// Returns a random number within a specified range.
+        /// </summary>
+        /// <param name="minValue">The inclusive lower bound of the random
+        /// number returned.</param>
+        /// <param name="maxValue">The exclusive upper bound of the random
+        /// number returned. <em>maxValue</em> must be greater than or equal
+        /// to <em>minValue</em>.</param>
+        /// <returns>
+        /// A double-precision floating point number greater than or
+        /// equal to <em>minValue</em>, and less than <em>maxValue</em>; that
+        /// is, the range of return values includes <em>minValue</em> but not
+        /// <em>maxValue</em>. If <em>minValue</em> equals <em>maxValue</em>,
+        /// <em>minValue</em> is returned.
+        /// </returns>
+        public double NextDouble(double minValue, double maxValue)
+        {
+            if (minValue > maxValue)
+            {
+                throw new ArgumentOutOfRangeException("minValue");
+            }
+            return minValue + NextDouble() * (maxValue - minValue);
+        }
+
+        /// <summary>
         /// Returns a nonnegative random number.
         /// </summary>
         /// <returns>A 32-bit signed integer greater than or equal to zero and

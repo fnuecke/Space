@@ -1,9 +1,8 @@
 ﻿using System;
-using Engine.ComponentSystem.Common.Components;
+using System.Collections.Generic;
 using Engine.ComponentSystem.Common.Messages;
 using Engine.ComponentSystem.Systems;
 using Engine.Util;
-using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Components;
 using Space.ComponentSystem.Components.Logic;
 using Space.ComponentSystem.Messages;
@@ -11,55 +10,55 @@ using Space.ComponentSystem.Messages;
 namespace Space.ComponentSystem.Systems
 {
     /// <summary>
-    /// Handles the death of entities.
+    /// Handles the death of entities due to leaving the valid area or being
+    /// killed an not respawning.
     /// </summary>
-    public sealed class DeathSystem : AbstractComponentSystem<Respawn>
+    public sealed class DeathSystem : AbstractSystem
     {
+        #region Type ID
+
         /// <summary>
-        /// Checks for entities to respawn.
+        /// The unique type ID for this object, by which it is referred to in the manager.
         /// </summary>
-        /// <param name="frame">The frame.</param>
-        /// <param name="component">The component.</param>
-        protected override void UpdateComponent(long frame, Respawn component)
+        public static readonly int TypeId = Engine.ComponentSystem.Manager.GetSystemTypeId(typeof(DeathSystem));
+
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// List of entities to kill when we update. This is accumulated from
+        /// translation events, to allow thread safe removal in one go.
+        /// </summary>
+        private HashSet<int> _entitiesToKill = new HashSet<int>();
+
+        #endregion
+
+        #region Logic
+
+        /// <summary>
+        /// Removes entities that died this frame from the manager.
+        /// </summary>
+        /// <param name="frame">The current simulation frame.</param>
+        public override void Update(long frame)
         {
-            if (component.TimeToRespawn <= 0 || --component.TimeToRespawn != 0)
+            // Remove dead entities (getting out of bounds).
+            foreach (var entity in _entitiesToKill)
             {
-                return;
+                Manager.RemoveEntity(entity);
             }
+            _entitiesToKill.Clear();
+        }
 
-            // Respawn.
-
-            // Try to position.
-            var transform = ((Transform)Manager.GetComponent(component.Entity, Transform.TypeId));
-            if (transform != null)
+        /// <summary>
+        /// Kill of an entity, marking it for removal.
+        /// </summary>
+        /// <param name="entity">The entity to kill.</param>
+        public void Kill(int entity)
+        {
+            lock (_entitiesToKill)
             {
-                transform.SetTranslation(ref component.Position);
-                transform.SetRotation(0);
-            }
-
-            // Kill of remainder velocity.
-            var velocity = ((Velocity)Manager.GetComponent(component.Entity, Velocity.TypeId));
-            if (velocity != null)
-            {
-                velocity.Value = Vector2.Zero;
-            }
-
-            // Fill up health / energy.
-            var health = ((Health)Manager.GetComponent(component.Entity, Health.TypeId));
-            if (health != null)
-            {
-                health.SetValue(health.MaxValue * component.RelativeHealth);
-            }
-            var energy = ((Energy)Manager.GetComponent(component.Entity, Energy.TypeId));
-            if (energy != null)
-            {
-                energy.SetValue(energy.MaxValue * component.RelativeEnergy);
-            }
-
-            // Enable components.
-            foreach (var componentType in component.ComponentsToDisable)
-            {
-                Manager.GetComponent(component.Entity, componentType).Enabled = true;
+                _entitiesToKill.Add(entity);
             }
         }
 
@@ -90,27 +89,14 @@ namespace Space.ComponentSystem.Systems
 
                 // See if the entity respawns.
                 var respawn = ((Respawn)Manager.GetComponent(entity, Respawn.TypeId));
-                if (respawn != null)
+                if (respawn == null)
                 {
-                    // Entity does respawn, components and wait.
-                    foreach (var componentType in respawn.ComponentsToDisable)
+                    // Entity does not respawn, remove it. This can be triggered from
+                    // a parallel system (e.g. collisions), so we remember to remove it.
+                    lock (_entitiesToKill)
                     {
-                        Manager.GetComponent(entity, componentType).Enabled = false;
+                        _entitiesToKill.Add(entity);
                     }
-                    respawn.TimeToRespawn = respawn.Delay;
-
-                    // Stop the entity, to avoid zooming off to nowhere when
-                    // killed by a sun, e.g.
-                    var velocity = ((Velocity)Manager.GetComponent(entity, Velocity.TypeId));
-                    if (velocity != null)
-                    {
-                        velocity.Value = Vector2.Zero;
-                    }
-                }
-                else
-                {
-                    // Entity does not respawn, remove it.
-                    Manager.RemoveEntity(entity);   
                 }
             }
             else if (message is TranslationChanged)
@@ -137,5 +123,30 @@ namespace Space.ComponentSystem.Systems
                 }
             }
         }
+
+        #endregion
+        
+        #region Copying
+
+        /// <summary>
+        /// Servers as a copy constructor that returns a new instance of the same
+        /// type that is freshly initialized.
+        /// 
+        /// <para>
+        /// This takes care of duplicating reference types to a new copy of that
+        /// type (e.g. collections).
+        /// </para>
+        /// </summary>
+        /// <returns>A cleared copy of this system.</returns>
+        public override AbstractSystem NewInstance()
+        {
+            var copy = (DeathSystem)base.NewInstance();
+
+            copy._entitiesToKill = new HashSet<int>();
+
+            return copy;
+        }
+
+        #endregion
     }
 }

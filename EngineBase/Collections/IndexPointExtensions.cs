@@ -2,8 +2,8 @@
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Point;
-using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TRectangle = Engine.Math.RectangleF;
 
 namespace Engine.Collections
 {
@@ -38,27 +38,30 @@ namespace Engine.Collections
         }
 
         /// <summary>
-        /// Add a new item to the index, with the specified position.
+        /// Update an entry by changing its position. If the item is not
+        /// stored in the index, this will return <code>false</code>.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="index">The index to add to.</param>
-        /// <param name="point">The position of the item.</param>
-        /// <param name="item">The item.</param>
-        /// <exception cref="T:System.ArgumentException">
-        /// The item is already stored in the index.
-        ///   </exception>
+        /// <param name="index">The index to update.</param>
+        /// <param name="newBounds">The new bounds of the item.</param>
+        /// <param name="delta">The amount by which the object moved.</param>
+        /// <param name="item">The item for which to update the bounds.</param>
+        /// <returns>
+        ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
+        /// </returns>
         /// <remarks>
-        /// In most implementations this will lead to the point being
-        /// converted to an empty rectangle at the point's position,
-        /// which will then be inserted, instead.
+        /// This will lead to the point being converted to an empty rectangle
+        /// at the point's position, which will then be used, instead.
         /// </remarks>
-        public static void Add<T>(this IIndex<T> index, Microsoft.Xna.Framework.Vector2 point, T item)
+        public static bool Update<T>(this IIndex<T> index, TRectangle newBounds, Microsoft.Xna.Framework.Vector2 delta, T item)
         {
-            // Convert to integer point type, then add that.
-            TPoint p;
-            p.X = (int)point.X;
-            p.Y = (int)point.Y;
-            index.Add(p, item);
+            // Convert to integer point type.
+            TPoint d;
+            d.X = (int)delta.X;
+            d.Y = (int)delta.Y;
+
+            // Perform actual update.
+            return index.Update(newBounds, d, item);
         }
 
         /// <summary>
@@ -83,103 +86,7 @@ namespace Engine.Collections
             bounds.X = newPoint.X;
             bounds.Y = newPoint.Y;
             bounds.Width = bounds.Height = 0;
-            return index.Update(bounds, item);
-        }
-
-        /// <summary>
-        /// Update an entry by changing its position. If the item is not
-        /// stored in the index, this will return <code>false</code>.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="index">The index to update.</param>
-        /// <param name="newPoint">The new position of the item.</param>
-        /// <param name="item">The item for which to update the bounds.</param>
-        /// <returns>
-        ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
-        /// </returns>
-        /// <remarks>
-        /// This will lead to the point being converted to an empty rectangle
-        /// at the point's position, which will then be used, instead.
-        /// </remarks>
-        public static bool Update<T>(this IIndex<T> index, Microsoft.Xna.Framework.Vector2 newPoint, T item)
-        {
-            // Convert to integer point type.
-            TPoint p;
-            p.X = (int)newPoint.X;
-            p.Y = (int)newPoint.Y;
-
-            // Perform actual update.
-            return index.Update(p, item);
-        }
-
-        /// <summary>
-        /// Similar to <see cref="Update{T}(IIndex{T}, TPoint, T)"/> this changes an
-        /// entry's bounds. Unlike <see cref="Update{T}(IIndex{T}, TPoint, T)"/>, however,
-        /// this just moves the bounds to the specified location without the
-        /// option to change their size. The specified position is used as the
-        /// new center for the bounds.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="index">The index to update.</param>
-        /// <param name="position">The new position of the item.</param>
-        /// <param name="item">The item for which to update the bounds.</param>
-        /// <returns>
-        ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
-        /// </returns>
-        /// <remarks>
-        /// This is purely a helper method, it will compute the new bounds and
-        /// then call <see cref="Update{T}(IIndex{T}, TPoint, T)"/> internally.
-        /// </remarks>
-        public static bool Move<T>(this IIndex<T> index, TPoint position, T item)
-        {
-            // Check if we have that item.
-            if (!index.Contains(item))
-            {
-                // No, nothing to do, then.
-                return false;
-            }
-
-            // Get the old bounds.
-            var bounds = index[item];
-
-            // Compute the new bounds.
-            bounds.X = position.X - bounds.Width / 2;
-            bounds.Y = position.Y - bounds.Height / 2;
-
-            // Update tree.
-            index.Update(bounds, item);
-
-            // We had the entry, so return true.
-            return true;
-        }
-
-        /// <summary>
-        /// Similar to <see cref="Update{T}(IIndex{T}, TPoint, T)"/> this changes an
-        /// entry's bounds. Unlike <see cref="Update{T}(IIndex{T}, TPoint, T)"/>, however,
-        /// this just moves the bounds to the specified location without the
-        /// option to change their size. The specified position is used as the
-        /// new center for the bounds.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="index">The index to update.</param>
-        /// <param name="position">The new position of the item.</param>
-        /// <param name="item">The item for which to update the bounds.</param>
-        /// <returns>
-        ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
-        /// </returns>
-        /// <remarks>
-        /// This is purely a helper method, it will compute the new bounds and
-        /// then call <see cref="Update{T}(IIndex{T}, TPoint, T)"/> internally.
-        /// </remarks>
-        public static bool Move<T>(this IIndex<T> index, Microsoft.Xna.Framework.Vector2 position, T item)
-        {
-            // Convert to integer point type.
-            TPoint p;
-            p.X = (int)position.X;
-            p.Y = (int)position.Y;
-
-            // Perform actual move.
-            return index.Move(p, item);
+            return index.Update(bounds, TPoint.Zero, item);
         }
 
         /// <summary>

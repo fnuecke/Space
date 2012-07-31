@@ -70,7 +70,7 @@ namespace Engine.IO
                 _pendingSegments.RemoveFirst();
 
                 // Copy from it as much as we need or as much as we can.
-                var toCopy = Math.Min(segment.Count, count - currentCount);
+                var toCopy = System.Math.Min(segment.Count, count - currentCount);
                 Array.Copy(segment.Array, segment.Offset, buffer, offset + currentCount, toCopy);
                 currentCount += toCopy;
 
@@ -96,14 +96,14 @@ namespace Engine.IO
             _pendingSegments.AddLast(new ArraySegment<byte>(copy));
         }
 
+        public override void Flush()
+        {
+            // Nothing to do.
+        }
+
         #endregion
 
         #region Not supported
-
-        public override void Flush()
-        {
-            throw new NotSupportedException();
-        }
 
         public override long Seek(long offset, SeekOrigin origin)
         {

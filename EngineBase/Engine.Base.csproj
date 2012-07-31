@@ -101,6 +101,7 @@
     <Compile Include="IO\CompressedPacketStream.cs" />
     <Compile Include="IO\EncryptedPacketStream.cs" />
     <Compile Include="IO\IPacketStream.cs" />
+    <Compile Include="Math\RectangleF.cs" />
     <Compile Include="Network\AbstractProtocol.cs" />
     <Compile Include="Serialization\PacketXnaExtensions.cs" />
     <Compile Include="Util\BitwiseMagic.cs" />

@@ -285,11 +285,12 @@ namespace Space
         /// <summary>
         /// Starts or restarts the game server.
         /// </summary>
-        public void RestartServer()
+        /// <param name="purelyLocal">Whether to create a purely local game (single player).</param>
+        public void RestartServer(bool purelyLocal = false)
         {
             DisposeServer();
             // Update after screen manager and client to get input commands.
-            _server = new GameServer(this) {UpdateOrder = 50};
+            _server = new GameServer(this, purelyLocal) {UpdateOrder = 50};
             Components.Add(_server);
         }
 

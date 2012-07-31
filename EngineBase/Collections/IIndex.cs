@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 // Adjust these as necessary, they just have to share a compatible
 // interface with the XNA types.
-using TPoint = Microsoft.Xna.Framework.Point;
-using TRectangle = Microsoft.Xna.Framework.Rectangle;
+using TPoint = Microsoft.Xna.Framework.Vector2;
+using TRectangle = Engine.Math.RectangleF;
 
 namespace Engine.Collections
 {
@@ -41,11 +41,12 @@ namespace Engine.Collections
         /// stored in the index, this will return <code>false</code>.
         /// </summary>
         /// <param name="newBounds">The new bounds of the item.</param>
+        /// <param name="delta">The amount by which the object moved.</param>
         /// <param name="item">The item for which to update the bounds.</param>
         /// <returns>
         ///   <c>true</c> if the update was successful; <c>false</c> otherwise.
         /// </returns>
-        bool Update(TRectangle newBounds, T item);
+        bool Update(TRectangle newBounds, TPoint delta, T item);
 
         /// <summary>
         /// Remove the specified item from the index. If the item is not

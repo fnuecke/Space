@@ -6,6 +6,10 @@ namespace Engine.ComponentSystem.Common.Messages
     /// Sent by the <c>Transform</c> component, to notify others that the
     /// translation has changed.
     /// </summary>
+    /// <remarks>
+    /// This message is sent by some systems with parallel execution, meaning
+    /// receivers should take of locking as necessary.
+    /// </remarks>
     public struct TranslationChanged
     {
         /// <summary>

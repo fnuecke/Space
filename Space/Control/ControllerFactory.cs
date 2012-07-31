@@ -25,11 +25,12 @@ namespace Space.Control
         /// Creates a new game server.
         /// </summary>
         /// <param name="game">The game to create the game for.</param>
+        /// <param name="purelyLocal">Whether to create a purely local game (single player).</param>
         /// <returns>A new server.</returns>
-        public static ISimulationController<IServerSession> CreateServer(Game game)
+        public static ISimulationController<IServerSession> CreateServer(Game game, bool purelyLocal = false)
         {
             // Create actual controller.
-            var controller = new SimpleServerController<Profile>(7777, 12, SpaceCommandHandler.HandleCommand);
+            var controller = new SimpleServerController<Profile>(7777, purelyLocal ? 1 : 8, SpaceCommandHandler.HandleCommand);
 
             // Add all systems we need in our game as a server.
             AddSpaceServerSystems(controller.Simulation.Manager, game);
@@ -91,48 +92,35 @@ namespace Space.Control
             manager.AddSystems(
                 new AbstractSystem[]
                 {
-                    // These systems have to be updated in a specific order to
-                    // function as intended.
+                    // IMPORTANT: Systems have to be updated in a specific order
+                    // to function as intended. Mess this up, and you can cause
+                    // terrible, terrible damage!
 
-                    // Get rid of expired components as soon as we can.
-                    new ExpirationSystem(),
-                    
-                    // Damager should react first when a collision happened.
-                    new CollisionDamageSystem(),
-
-                    // Purely reactive systems (only do stuff when receiving
-                    // messages), but make sure we run them relatively early,
-                    // because other systems may need their updates.
+                    // Purely reactive/informational systems (only do stuff when
+                    // receiving messages, if at all).
                     new AvatarSystem(),
-                    new IndexSystem(30, 64),
-                    new CharacterSystem<AttributeType>(),
-                    new InventorySystem(), 
-                    new StatusEffectSystem(),
-                    new PlayerMassSystem(),
                     new ShipInfoSystem(),
                     new DetectableSystem(game.Content),
-                    new DropSystem(game.Content),
+
+                    // These may be manipulated/triggered via player commands.
+                    new CharacterSystem<AttributeType>(),
+                    new InventorySystem(),
+                    new PlayerMassSystem(),
                     new SpaceUsablesSystem(),
                     
-                    // Update our universe before our spawn system, to give
-                    // it a chance to generate cell information.
-                    new UniverseSystem(),
-                    new ShipSpawnSystem(),
-
                     // Friction has to be updated before acceleration is, to allow
-                    // maximum speed to be reached.
+                    // maximum speed to be reached at the end of one cycle.
                     new FrictionSystem(),
 
                     // Apply gravitation before ship control, to allow it to
                     // compensate for the gravitation.
                     new GravitationSystem(),
-
                     // Ship control must come first, but after stuff like gravitation,
                     // to be able to compute the stabilizer acceleration.
                     new ShipControlSystem(),
 
-                    // Acceleration must come after ship control, due to it setting
-                    // its value.
+                    // Acceleration must come after ship control and gravitation, because
+                    // those use the system as the accumulator.
                     new AccelerationSystem(),
 
                     // Velocity must come after acceleration, so that all other forces
@@ -140,18 +128,55 @@ namespace Space.Control
                     new VelocitySystem(),
                     new SpinSystem(),
                     new EllipsePathSystem(),
+                    
+                    // Update position after everything that might want to update it
+                    // has run. This will apply those changes.
+                    new TranslationSystem(),
+
+                    // The index system will update its indexes when the translation
+                    // of an object changes, so we keep it here for context.
+                    new IndexSystem(16, 64),
 
                     // Check for collisions after positions have been updated.
-                    new CollisionSystem(10),
+                    new CollisionSystem(4),
+                    // Collision damage is mainly reactive to collisions, but let's keep
+                    // it here for context. Note that it also has it's own update, in
+                    // which it updates damager cooldowns.
+                    new CollisionDamageSystem(),
                     
-                    // Check which cells are active after updating positions.
-                    new CellSystem(),
+                    // Apply any status effects at this point, such as damagers, as the
+                    // collision damage is handled as a (very short lived) debuff, too.
+                    new StatusEffectSystem(),
+                    // This system is purely reactive, and will trigger on entity death
+                    // from whatever cause (debuffs, normally).
+                    new DropSystem(game.Content),
                     
                     // Update this system after updating the cell system, to
                     // make sure we give cells a chance to 'activate' before
                     // checking if there are entities inside them.
                     new DeathSystem(),
+                    // Get rid of expired components. This is similar to our death system
+                    // as it's one of the few systems that actually remove stuff, so we
+                    // keep it here, for context.
+                    new ExpirationSystem(),
+                    // Handle player respawns before the cell system update, as this
+                    // might move the player somewhere out of the current live cells.
+                    new RespawnSystem(),
 
+                    // Check which cells are active after updating positions. This system
+                    // may also remove entities if they are now out of bounds. But it'll
+                    // also trigger new stuff via the spawn systems below.
+                    new CellSystem(),
+                    
+                    // These two are purely reactive, and trigger on on cells becoming
+                    // active. The first one is responsible for spawning "static" stuff
+                    // in a cell. This includes stardust, but also moving elements such
+                    // as planets. Update our universe before our spawn system, to give
+                    // it a chance to generate cell information.
+                    new UniverseSystem(),
+                    // This one spawns ships in and stuff in a now populated new cell.
+                    new ShipSpawnSystem(),
+                    
                     // Run weapon control after velocity, to spawn projectiles at the
                     // correct position.
                     new WeaponControlSystem(),

@@ -8,8 +8,13 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Triggers refilling regenerating values.
     /// </summary>
-    public sealed class RegeneratingValueSystem : AbstractComponentSystem<AbstractRegeneratingValue>
+    public sealed class RegeneratingValueSystem : AbstractParallelComponentSystem<AbstractRegeneratingValue>
     {
+        /// <summary>
+        /// Updates the component's current value or timeout.
+        /// </summary>
+        /// <param name="frame">The current simulation frame.</param>
+        /// <param name="component">The component.</param>
         protected override void UpdateComponent(long frame, AbstractRegeneratingValue component)
         {
             if (component.TimeToWait > 0)

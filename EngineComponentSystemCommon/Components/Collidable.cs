@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
+using Engine.Math;
 using Engine.Serialization;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -96,7 +97,7 @@ namespace Engine.ComponentSystem.Common.Components
         /// Computes the current minimal bounding box for this collidable.
         /// </summary>
         /// <returns>The minimal boundsing box for this object.</returns>
-        public abstract Rectangle ComputeBounds();
+        public abstract RectangleF ComputeBounds();
 
         /// <summary>
         /// Test if this collidable collides with the specified one.

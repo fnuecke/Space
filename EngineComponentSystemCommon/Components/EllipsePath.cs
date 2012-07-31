@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using Engine.ComponentSystem.Components;
 using Engine.Serialization;
 using Engine.Util;
@@ -223,9 +222,9 @@ namespace Engine.ComponentSystem.Common.Components
         private void Precompute()
         {
             // If our angle changed, recompute our sine and cosine.
-            var sinPhi = (float)Math.Sin(_angle);
-            var cosPhi = (float)Math.Cos(_angle);
-            var f = (float)Math.Sqrt(Math.Abs(_minorRadius * _minorRadius - _majorRadius * _majorRadius));
+            var sinPhi = (float)System.Math.Sin(_angle);
+            var cosPhi = (float)System.Math.Cos(_angle);
+            var f = (float)System.Math.Sqrt(System.Math.Abs(_minorRadius * _minorRadius - _majorRadius * _majorRadius));
             
             PrecomputedA = f * cosPhi;
             PrecomputedB = MajorRadius * cosPhi;

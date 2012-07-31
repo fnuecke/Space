@@ -26,5 +26,11 @@ namespace Engine.IO
         /// wrapper streams (encryption, compression, ...)</returns>
         /// <exception cref="System.IO.IOException">If the underlying stream fails.</exception>
         int Write(Packet packet);
+
+        /// <summary>
+        /// Flushes the underlying stream.
+        /// </summary>
+        /// <exception cref="System.IO.IOException">The underlying stream's Flush implementation caused an error.</exception>
+        void Flush();
     }
 }

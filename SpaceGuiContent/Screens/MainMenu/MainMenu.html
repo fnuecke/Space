@@ -8,6 +8,7 @@
 	<body style="background:url(asset://xna/Images/background.png)">
 		<h1>Welcome to Space</h1>
 		<div id="info">info</div>
+		<button id="singleplayer">Singleplayer</button><br/>
 		<button id="host">Host game</button><br/>
 		<input type="text" id="ip" value="10.74.254.220"/>
 		<button id="join">Join game</button><br/>
@@ -38,6 +39,10 @@
 				};
 				
 				// Add button event listeners.
+				$("#singleplayer").click(function() {
+					Space.startLocalGame();
+					$("#info").empty();
+				});
 				$("#host").click(function() {
 					Space.hostGame();
 					$("#info").empty();

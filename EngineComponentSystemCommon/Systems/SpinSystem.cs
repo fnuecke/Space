@@ -6,7 +6,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// <summary>
     /// Applies a component's spin to its transform.
     /// </summary>
-    public sealed class SpinSystem : AbstractComponentSystem<Spin>
+    public sealed class SpinSystem : AbstractParallelComponentSystem<Spin>
     {
         protected override void UpdateComponent(long frame, Spin component)
         {

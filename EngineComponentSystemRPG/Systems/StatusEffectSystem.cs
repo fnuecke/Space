@@ -7,7 +7,7 @@ namespace Engine.ComponentSystem.RPG.Systems
     /// Handles updating status effects to make them expire, by removing the
     /// status effect component once it has run out.
     /// </summary>
-    public sealed class StatusEffectSystem : AbstractComponentSystem<StatusEffect>
+    public sealed class StatusEffectSystem : AbstractUpdatingComponentSystem<StatusEffect>
     {
         protected override void UpdateComponent(long frame, StatusEffect component)
         {

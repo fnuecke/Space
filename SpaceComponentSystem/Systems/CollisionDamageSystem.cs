@@ -9,17 +9,8 @@ namespace Space.ComponentSystem.Systems
     /// <summary>
     /// Handles applying damage when two entities collide.
     /// </summary>
-    public sealed class CollisionDamageSystem : AbstractComponentSystem<CollisionDamage>
+    public sealed class CollisionDamageSystem : AbstractParallelComponentSystem<CollisionDamage>
     {
-        #region Single allocation
-        
-        /// <summary>
-        /// Reused for iterating cooldown entries.
-        /// </summary>
-        private List<int> _reusableCooldownList = new List<int>();
-
-        #endregion
-
         #region Logic
 
         /// <summary>
@@ -30,8 +21,7 @@ namespace Space.ComponentSystem.Systems
         protected override void UpdateComponent(long frame, CollisionDamage component)
         {
             // Decrement, remove if run out.
-            _reusableCooldownList.AddRange(component.Cooldowns.Keys);
-            foreach (var entityId in _reusableCooldownList)
+            foreach (var entityId in new List<int>(component.Cooldowns.Keys))
             {
                 if (component.Cooldowns[entityId] > 0)
                 {
@@ -42,7 +32,6 @@ namespace Space.ComponentSystem.Systems
                     component.Cooldowns.Remove(entityId);
                 }
             }
-            _reusableCooldownList.Clear();
         }
 
         /// <summary>
@@ -56,106 +45,44 @@ namespace Space.ComponentSystem.Systems
 
             if (message is Collision)
             {
+                // We only explicitly handle the first entity here, because we'll get the
+                // same message in reverse for the other entity anyway. We still need it
+                // for reference, though (collision damage).
                 var damageMessage = (Collision)(ValueType)message;
                 var firstEntity = damageMessage.FirstEntity;
                 var secondEntity = damageMessage.SecondEntity;
 
-                // Get damage component of involved components, and all
-                // required info for the damage checks first, because one
-                // of the two components may die midway through.
-                var firstDamage = ((CollisionDamage)Manager.GetComponent(firstEntity, CollisionDamage.TypeId));
+                // Get damage we might take.
                 var secondDamage = ((CollisionDamage)Manager.GetComponent(secondEntity, CollisionDamage.TypeId));
 
-                // Get the actual values, if possible, and only if we're not
-                // on cooldown. If it's zero we simply won't try to do any
-                // damage.
-                var firstDamageValue = 0f;
-                // This is used to keep track of whether we already removed the
-                // entity because it self-destructs on impact.
-                var firstAlreadyDead = false;
-                if (firstDamage != null && !firstDamage.Cooldowns.ContainsKey(secondEntity))
-                {
-                    firstDamageValue = firstDamage.Damage;
-                    // One-shot?
-                    if (firstDamage.Cooldown == 0)
-                    {
-                        // Yes, remove from system.
-                        Manager.RemoveEntity(firstEntity);
-                        // Remember we don't need to apply damage to it.
-                        firstAlreadyDead = true;
-                    }
-                    else
-                    {
-                        // No, keep cooldown for this one, if it is still alive.
-                        firstDamage.Cooldowns.Add(secondEntity, firstDamage.Cooldown);
-                    }   
-                }
-
-                // Same as for first entity.
-                var secondDamageValue = 0f;
-                var secondAlreadyDead = false;
+                // Checking if the cooldowns contain this entry can be done without
+                // locking, because we're the only thread that would set the entry for
+                // that value.
                 if (secondDamage != null && !secondDamage.Cooldowns.ContainsKey(firstEntity))
-                {
-                    secondDamageValue = secondDamage.Damage;
-                    // One-shot?
-                    if (secondDamage.Cooldown == 0)
-                    {
-                        // Yes, remove from system.
-                        Manager.RemoveEntity(secondEntity);
-                        // Remember we don't need to apply damage to it.
-                        secondAlreadyDead = true;
-                    }
-                    else
-                    {
-                        // No, keep cooldown for this one, if it is still alive.
-                        secondDamage.Cooldowns.Add(firstEntity, secondDamage.Cooldown);
-                    }   
-                }
-
-                // Apply damage where necessary.
-                if (!secondAlreadyDead && firstDamageValue > 0)
-                {
-                    // Apply damage to second entity.
-                    var secondHealth = ((Health)Manager.GetComponent(secondEntity, Health.TypeId));
-                    if (secondHealth != null)
-                    {
-                        secondHealth.SetValue(secondHealth.Value - firstDamageValue);
-                    }
-                }
-                
-                if (!firstAlreadyDead && secondDamageValue > 0)
                 {
                     // Apply damage to second entity.
                     var firstHealth = ((Health)Manager.GetComponent(firstEntity, Health.TypeId));
                     if (firstHealth != null)
                     {
-                        firstHealth.SetValue(firstHealth.Value - secondDamageValue);
+                        firstHealth.SetValue(firstHealth.Value - secondDamage.Damage);
                     }
+
+                    // One-shot?
+                    if (secondDamage.Cooldown == 0)
+                    {
+                        // Yes, kill it.
+                        ((DeathSystem)Manager.GetSystem(DeathSystem.TypeId)).Kill(secondEntity);
+                    }
+                    else
+                    {
+                        // No, keep cooldown for this one, if it is still alive.
+                        lock (secondDamage.Cooldowns)
+                        {
+                            secondDamage.Cooldowns.Add(firstEntity, secondDamage.Cooldown);
+                        }
+                    }   
                 }
             }
-        }
-
-        #endregion
-
-        #region Copying
-
-        /// <summary>
-        /// Servers as a copy constructor that returns a new instance of the same
-        /// type that is freshly initialized.
-        /// 
-        /// <para>
-        /// This takes care of duplicating reference types to a new copy of that
-        /// type (e.g. collections).
-        /// </para>
-        /// </summary>
-        /// <returns>A cleared copy of this system.</returns>
-        public override AbstractSystem NewInstance()
-        {
-            var copy = (CollisionDamageSystem)base.NewInstance();
-
-            copy._reusableCooldownList = new List<int>();
-
-            return copy;
         }
 
         #endregion

@@ -98,6 +98,15 @@ namespace Engine.IO
             }
         }
 
+        /// <summary>
+        /// Flushes the underlying stream.
+        /// </summary>
+        /// <exception cref="System.IO.IOException">The underlying stream's Flush implementation caused an error.</exception>
+        public void Flush()
+        {
+            _stream.Flush();
+        }
+
         #endregion
     }
 }

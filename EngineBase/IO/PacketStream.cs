@@ -191,6 +191,15 @@ namespace Engine.IO
             return sizeof(int) + packet.Length;
         }
 
+        /// <summary>
+        /// Flushes the underlying stream.
+        /// </summary>
+        /// <exception cref="System.IO.IOException">The underlying stream's Flush implementation caused an error.</exception>
+        public void Flush()
+        {
+            _sink.Flush();
+        }
+
         #endregion
 
         #region Parsing
@@ -205,7 +214,7 @@ namespace Engine.IO
                 // Message size unknown. Figure out how much more we need to read, and
                 // read at most that much.
                 var remainingSizeBytes = sizeof(int) - (int)_messageStream.Position;
-                var sizeBytesToRead = Math.Min(Available, remainingSizeBytes);
+                var sizeBytesToRead = System.Math.Min(Available, remainingSizeBytes);
                 _messageStream.Write(_buffer, _bufferReadPosition, sizeBytesToRead);
                 _bufferReadPosition += sizeBytesToRead;
 
@@ -234,7 +243,7 @@ namespace Engine.IO
                 // We already know our current message size. See if we can complete the
                 // message.
                 var remainingBodyBytes = _messageLength - (int)_messageStream.Position;
-                var bodyBytesToRead = Math.Min(Available, remainingBodyBytes);
+                var bodyBytesToRead = System.Math.Min(Available, remainingBodyBytes);
                 _messageStream.Write(_buffer, _bufferReadPosition, bodyBytesToRead);
                 _bufferReadPosition += bodyBytesToRead;
 

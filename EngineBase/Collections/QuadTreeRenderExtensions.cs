@@ -22,16 +22,16 @@ namespace Engine.Collections
             foreach (var node in quadTree.GetNodeEnumerable())
             {
                 var nodeBounds = node.Item1;
-                shape.SetCenter(translation.X + nodeBounds.X + (nodeBounds.Width >> 1),
-                                translation.Y + nodeBounds.Y + (nodeBounds.Height >> 1));
+                shape.SetCenter(translation.X + nodeBounds.X + (nodeBounds.Width / 2),
+                                translation.Y + nodeBounds.Y + (nodeBounds.Height / 2));
                 shape.SetSize(nodeBounds.Width - 1, nodeBounds.Height - 1);
                 shape.Draw();
 
                 foreach (var entry in node.Item2)
                 {
                     var entryBounds = quadTree[entry];
-                    shape.SetCenter(translation.X + entryBounds.X + (entryBounds.Width >> 1),
-                                    translation.Y + entryBounds.Y + (entryBounds.Height >> 1));
+                    shape.SetCenter(translation.X + entryBounds.X + (entryBounds.Width / 2),
+                                    translation.Y + entryBounds.Y + (entryBounds.Height / 2));
                     shape.SetSize(entryBounds.Width, entryBounds.Height);
                     shape.Draw();
                 }

@@ -244,7 +244,7 @@ namespace Engine.ComponentSystem.RPG.Components
                     {
                         // Found a non-full stack of matching type, add as many
                         // as possible.
-                        var toAdd = Math.Min(otherStackable.MaxCount - otherStackable.Count, stackable.Count);
+                        var toAdd = System.Math.Min(otherStackable.MaxCount - otherStackable.Count, stackable.Count);
                         otherStackable.Count += toAdd;
                         stackable.Count -= toAdd;
 

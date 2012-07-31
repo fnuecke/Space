@@ -11,7 +11,7 @@ namespace Engine.ComponentSystem.Common.Systems
     /// Basic implementation of a render system. Subclasses may override the
     /// GetTranslation() method to implement camera positioning.
     /// </summary>
-    public class TextureRenderSystem : AbstractComponentSystem<TextureRenderer>
+    public class TextureRenderSystem : AbstractUpdatingComponentSystem<TextureRenderer>
     {
         #region Fields
 
