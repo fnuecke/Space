@@ -158,6 +158,7 @@ namespace Space.View
             s.AddCallbackWithReturnValue("window", "L", GetGuiString);
 
             // Global menu options.
+            s.AddCallback("Space", "startLocalGame", StartLocalGame);
             s.AddCallback("Space", "hostGame", HostGame);
             s.AddCallback("Space", "joinGame", JoinGame);
             s.AddCallback("Space", "leaveGame", LeaveGame);
@@ -219,6 +220,16 @@ namespace Space.View
         #endregion
 
         #region Main Menu
+
+        /// <summary>
+        /// Hosts a new game, launching a local server and connecting to it.
+        /// </summary>
+        /// <param name="args">The args.</param>
+        private void StartLocalGame(JSValue[] args)
+        {
+            _game.RestartServer(true);
+            _game.RestartClient(true);
+        }
 
         /// <summary>
         /// Hosts a new game, launching a local server and connecting to it.

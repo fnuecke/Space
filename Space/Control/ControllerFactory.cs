@@ -104,7 +104,6 @@ namespace Space.Control
 
                     // These may be manipulated/triggered via player commands.
                     new CharacterSystem<AttributeType>(),
-                    new InventorySystem(),
                     new PlayerMassSystem(),
                     new SpaceUsablesSystem(),
                     
@@ -162,6 +161,12 @@ namespace Space.Control
                     // Handle player respawns before the cell system update, as this
                     // might move the player somewhere out of the current live cells.
                     new RespawnSystem(),
+                    
+                    // These are also purely reactive, but they handle chained removals
+                    // so they're here for context (i.e. they remove items if the owner
+                    // is removed, or the item from the owner if the item is removed).
+                    new InventorySystem(),
+                    new EquipmentSystem(),
 
                     // Check which cells are active after updating positions. This system
                     // may also remove entities if they are now out of bounds. But it'll

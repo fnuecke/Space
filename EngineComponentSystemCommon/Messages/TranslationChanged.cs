@@ -7,8 +7,8 @@ namespace Engine.ComponentSystem.Common.Messages
     /// translation has changed.
     /// </summary>
     /// <remarks>
-    /// This message is sent by some systems with parallel execution, meaning
-    /// receivers should take of locking as necessary.
+    /// This message is sent by the TranslationSystem, which executes synchronously,
+    /// meaning it's safe to manipulate the system in handlers for this message.
     /// </remarks>
     public struct TranslationChanged
     {

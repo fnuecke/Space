@@ -74,8 +74,8 @@ namespace Engine.Graphics
             {
                 throw new ArgumentException("Maximum number of points exceeded.", "colors");
             }
-            float lowest = points[0];
-            for (int i = 1; i < points.Length; i++)
+            var lowest = points[0];
+            for (var i = 1; i < points.Length; i++)
             {
                 if (points[i] >= lowest)
                 {
@@ -117,7 +117,7 @@ namespace Engine.Graphics
             {
                 throw new ArgumentException("Maximum number of points exceeded.", "colors");
             }
-            
+
             _numPoints = colors.Length;
 
             for (var i = 0; i < colors.Length; i++)
@@ -138,11 +138,30 @@ namespace Engine.Graphics
         {
             base.AdjustParameters();
 
-            Effect.Parameters["Colors"].SetValue(_colors);
-            Effect.Parameters["Points"].SetValue(_points);
-            Effect.Parameters["NumValues"].SetValue(_numPoints);
+            var colors = Effect.Parameters["Colors"];
+            if (colors != null)
+            {
+                colors.SetValue(_colors);
+            }
+            var points = Effect.Parameters["Points"];
+            if (points != null)
+            {
+                points.SetValue(_points);
+            }
+            var numValues = Effect.Parameters["NumValues"];
+            if (numValues != null)
+            {
+                numValues.SetValue(_numPoints);
+            }
 
-            Effect.Parameters["Gradient"].SetValue(2f / Width);
+            var gradient = Effect.Parameters["Gradient"];
+            if (gradient != null)
+            {
+                Vector2 g;
+                g.X = 2f / Width;
+                g.Y = 2f / Height;
+                gradient.SetValue(g);
+            }
         }
 
         #endregion

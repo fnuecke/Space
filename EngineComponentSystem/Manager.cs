@@ -15,7 +15,7 @@ namespace Engine.ComponentSystem
     /// </summary>
     /// <remarks>
     /// All reading operations on the manager are thread safe. These are:
-    /// <see cref="GetSystem(int)"/>, <see cref="HasEntity(int"/>, <see cref="HasComponent(int)"/>,
+    /// <see cref="GetSystem(int)"/>, <see cref="HasEntity(int)"/>, <see cref="HasComponent(int)"/>,
     /// <see cref="GetComponent(int, int)"/>, <see cref="GetComponentById(int)"/> and
     /// <see cref="GetComponents(int, int)"/>.
     /// 
@@ -53,6 +53,14 @@ namespace Engine.ComponentSystem
         public IEnumerable<AbstractSystem> Systems
         {
             get { return _systems; }
+        }
+
+        /// <summary>
+        /// Number of components currently registered in this system.
+        /// </summary>
+        public int ComponentCount
+        {
+            get { return _componentIds.Count; }
         }
 
         #endregion

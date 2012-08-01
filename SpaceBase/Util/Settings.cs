@@ -222,6 +222,8 @@ namespace Space.Util
             GameBindings.Add(GameCommand.Menu, Keys.F10);
             GameBindings.Add(GameCommand.Inventory, Keys.I);
             GameBindings.Add(GameCommand.Character, Keys.C);
+
+            GameBindings.Add(GameCommand.ToggleGraphs, Keys.F1);
             GameBindings.Add(GameCommand.Console, Keys.OemTilde);
         }
 

@@ -97,6 +97,7 @@
     <Compile Include="Graphics\Ellipse.cs" />
     <Compile Include="Graphics\FilledRectangle.cs" />
     <Compile Include="Graphics\GradientRectangle.cs" />
+    <Compile Include="Graphics\Graph.cs" />
     <Compile Include="Graphics\Rectangle.cs" />
     <Compile Include="IO\CompressedPacketStream.cs" />
     <Compile Include="IO\EncryptedPacketStream.cs" />

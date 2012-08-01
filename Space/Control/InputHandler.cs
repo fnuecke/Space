@@ -475,6 +475,10 @@ namespace Space.Control
                     // TODO
                     break;
 
+                case GameCommand.ToggleGraphs:
+                    _game.GraphsVisible = !_game.GraphsVisible;
+                    break;
+
                 case GameCommand.Console:
                     // Toggle console.
                     _game.GameConsole.IsOpen = !_game.GameConsole.IsOpen;

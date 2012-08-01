@@ -31,6 +31,7 @@ namespace Space.ComponentSystem.Systems
             if (transform != null)
             {
                 transform.SetTranslation(ref component.Position);
+                transform.ApplyTranslation();
                 transform.SetRotation(0);
             }
 

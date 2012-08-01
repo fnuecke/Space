@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Awesomium.ScreenManagement;
+using Engine.ComponentSystem;
 using Engine.ComponentSystem.Common.Systems;
+using Engine.Graphics;
 using Engine.Session;
 using Engine.Util;
 using Microsoft.Xna.Framework;
@@ -81,6 +83,11 @@ namespace Space
             get { return _screenManager; }
         }
 
+        /// <summary>
+        /// Whether to draw graphs with debug / game information.
+        /// </summary>
+        public bool GraphsVisible { get; set; }
+
         #endregion
 
         #region Fields
@@ -107,6 +114,24 @@ namespace Space
 
         private GameServer _server;
         private GameClient _client;
+
+        private readonly FloatSampling _fpsHistory = new FloatSampling(600);
+        private Graph _fpsGraph;
+
+        private readonly FloatSampling _updateHistory = new FloatSampling(600);
+        private Graph _updateGraph;
+
+        private readonly FloatSampling _memoryHistory = new FloatSampling(600);
+        private Graph _memoryGraph;
+
+        private readonly FloatSampling _componentsHistory = new FloatSampling(600);
+        private Graph _componentGraph;
+
+        private readonly FloatSampling _indexQueryHistory = new FloatSampling(600);
+        private Graph _indexQueryGraph;
+
+        private readonly FloatSampling _gameSpeedHistory = new FloatSampling(600);
+        private Graph _gameSpeedGraph;
 
         #endregion
 
@@ -196,8 +221,35 @@ namespace Space
         /// <param name="gameTime">Time passed since the last call to Update.</param>
         protected override void Update(GameTime gameTime)
         {
+            // For graph data.
+            var watch = new Stopwatch();
+            watch.Start();
+
             // Update the rest of the game.
             base.Update(gameTime);
+
+            // Grab actual graph data.
+            watch.Stop();
+            _updateHistory.Put(watch.ElapsedMilliseconds);
+
+            // Get ingame stats, if a game is running.
+            IManager manager = null;
+            if (_server != null)
+            {
+                manager = _server.Controller.Simulation.Manager;
+                _gameSpeedHistory.Put((float)_server.Controller.ActualSpeed);
+            }
+            else if (_client != null && _client.Controller.Session.ConnectionState == ClientState.Connected)
+            {
+                manager = _client.Controller.Simulation.Manager;
+                _gameSpeedHistory.Put((float)_client.Controller.ActualSpeed);
+            }
+            if (manager != null)
+            {
+                _componentsHistory.Put(manager.ComponentCount);
+                var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
+                _indexQueryHistory.Put(index.NumQueriesSinceLastUpdate);
+            }
 
             // Update the audio engine if we have one (setting one up can cause
             // issues on some systems, so we have to check).
@@ -246,6 +298,10 @@ namespace Space
             // Draw other stuff (GUI for example).
             base.Draw(gameTime);
 
+            // Collect graph data.
+            _fpsHistory.Put(1 / (float)gameTime.ElapsedGameTime.TotalSeconds);
+            _memoryHistory.Put(GC.GetTotalMemory(false));
+
             // Draw some debug info on top of everything.
             DrawDebugInfo(gameTime);
 
@@ -256,6 +312,18 @@ namespace Space
             _spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Opaque);
             _spriteBatch.Draw(_scene, GraphicsDevice.PresentationParameters.Bounds, Color.White);
             _spriteBatch.End();
+
+            // Draw graphs after everything else, to avoid filters on the
+            // other screen data to affect us.
+            if (GraphsVisible)
+            {
+                _fpsGraph.Draw();
+                _updateGraph.Draw();
+                _memoryGraph.Draw();
+                _componentGraph.Draw();
+                _indexQueryGraph.Draw();
+                _gameSpeedGraph.Draw();
+            }
         }
 
         #endregion
@@ -337,7 +405,6 @@ namespace Space
 
         #region Debug stuff
 
-        private readonly DoubleSampling _fps = new DoubleSampling(30);
         private Engine.Graphics.Rectangle _indexRectangle;
         private ulong _indexGroupMask;
         private SpriteFont _debugFont;
@@ -350,17 +417,6 @@ namespace Space
                 _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) {Color = Color.LightGreen * 0.25f, Thickness = 2f};
                 _debugFont = Content.Load<SpriteFont>("Fonts/ConsoleFont");
             }
-
-            _fps.Put(1 / gameTime.ElapsedGameTime.TotalSeconds);
-
-            _spriteBatch.Begin();
-
-            var fps = String.Format("FPS: {0:f}", Math.Ceiling(_fps.Mean()));
-            var infoPosition = new Vector2(GraphicsDevice.Viewport.Width - 10 - _debugFont.MeasureString(fps).X, 10);
-
-            _spriteBatch.DrawString(_debugFont, fps, infoPosition, Color.White);
-
-            _spriteBatch.End();
 
             foreach (var component in Components)
             {
@@ -391,11 +447,6 @@ namespace Space
                     {
                         _spriteBatch.Begin();
 
-                        var position = info.Position;
-                        var cellX = ((int)position.X) >> CellSystem.CellSizeShiftAmount;
-                        var cellY = ((int)position.Y) >> CellSystem.CellSizeShiftAmount;
-                        sb.AppendFormat("Position: ({0:f}, {1:f}), Cell: ({2}, {3})\n", position.X, position.Y, cellX, cellY);
-
                         sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
 
                         var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
@@ -410,9 +461,6 @@ namespace Space
                             }
                             sb.AppendFormat("Indexes: {0}, Total entries: {1}, Queries: {2}\n", index.NumIndexes, index.Count, index.NumQueriesSinceLastUpdate);
                         }
-
-                        sb.AppendFormat("Speed: {0:f}/{1:f}, Maximum acceleration: {2:f}\n", info.Speed, info.MaxSpeed, info.MaxAcceleration);
-                        sb.AppendFormat("Mass: {0:f}", info.Mass);
 
                         _spriteBatch.DrawString(_debugFont, sb.ToString(), new Vector2(60, 60), Color.White);
 

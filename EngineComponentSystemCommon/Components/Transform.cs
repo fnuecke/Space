@@ -223,7 +223,11 @@ namespace Engine.ComponentSystem.Common.Components
         /// because we want to keep the setter in debug private to make sure
         /// no one actually writes directly to the translation variable.
         /// </summary>
-        internal void ApplyTranslation()
+        /// <remarks>
+        /// This must be called from a synchronous context (i.e. not from a
+        /// parallel system).
+        /// </remarks>
+        public void ApplyTranslation()
         {
             // Only update if we have to.
             if (!_translationChanged)

@@ -74,6 +74,7 @@
     <Compile Include="Messages\ItemUnequipped.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Systems\CharacterSystem.cs" />
+    <Compile Include="Systems\EquipmentSystem.cs" />
     <Compile Include="Systems\InventorySystem.cs" />
     <Compile Include="Systems\StatusEffectSystem.cs" />
     <Compile Include="Systems\UsablesSystem.cs" />

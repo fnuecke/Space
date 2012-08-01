@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading;
 using Engine.Collections;
 using Engine.ComponentSystem.Common.Components;
 using Engine.ComponentSystem.Common.Messages;
@@ -152,7 +153,7 @@ namespace Engine.ComponentSystem.Common.Systems
         public override void Update(long frame)
         {
             // Reset query count until next run.
-            ResetQueryCount();
+            _numQueriesSinceLastUpdate = 0;
         }
 
         #endregion
@@ -171,7 +172,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-                IncrementQueryCount();
+                Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
                 tree.Find(query, range, ref list);
             }
         }
@@ -187,7 +188,7 @@ namespace Engine.ComponentSystem.Common.Systems
         {
             foreach (var tree in TreesForGroups(groups))
             {
-                IncrementQueryCount();
+                Interlocked.Add(ref _numQueriesSinceLastUpdate, 1);
                 tree.Find(ref query, ref list);
             }
         }
@@ -550,7 +551,15 @@ namespace Engine.ComponentSystem.Common.Systems
         /// last update. This will always be zero when not running in
         /// debug mode.
         /// </summary>
-        public int NumQueriesSinceLastUpdate { get; private set; }
+        public int NumQueriesSinceLastUpdate
+        {
+            get { return _numQueriesSinceLastUpdate; }
+        }
+
+        /// <summary>
+        /// For ref usage in interlocked update.
+        /// </summary>
+        private int _numQueriesSinceLastUpdate;
 
         /// <summary>
         /// Renders all index structures matching the specified index group bit mask
@@ -570,24 +579,6 @@ namespace Engine.ComponentSystem.Common.Systems
                     quadTree.Draw(shape, translation);
                 }
             }
-        }
-
-        /// <summary>
-        /// Increments the number of queries performed.
-        /// </summary>
-        [Conditional("DEBUG")]
-        private void IncrementQueryCount()
-        {
-            ++NumQueriesSinceLastUpdate;
-        }
-
-        /// <summary>
-        /// Resets the number of queries performed.
-        /// </summary>
-        [Conditional("DEBUG")]
-        private void ResetQueryCount()
-        {
-            NumQueriesSinceLastUpdate = 0;
         }
 
         #endregion

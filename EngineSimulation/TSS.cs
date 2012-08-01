@@ -710,6 +710,14 @@ namespace Engine.Simulation
                 get { throw new NotSupportedException(); }
             }
 
+            /// <summary>
+            /// Number of components currently registered in this system.
+            /// </summary>
+            public int ComponentCount
+            {
+                get { return _tss.LeadingSimulation.Manager.ComponentCount; }
+            }
+
             #endregion
 
             #region Fields

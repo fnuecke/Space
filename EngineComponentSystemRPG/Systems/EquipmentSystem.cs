@@ -6,11 +6,11 @@ using Engine.ComponentSystem.Systems;
 namespace Engine.ComponentSystem.RPG.Systems
 {
     /// <summary>
-    /// Handles removing entities from inventories when they are removed from
-    /// the system, as well as removing items from the system in inventory slots
-    /// when an inventory component is removed.
+    /// Handles removing entities from equipment slots when they are removed from
+    /// the system, as well as removing items from the system in equipment slots
+    /// when an equipment component is removed.
     /// </summary>
-    public sealed class InventorySystem : AbstractComponentSystem<Inventory>
+    public sealed class EquipmentSystem : AbstractComponentSystem<Equipment>
     {
         /// <summary>
         /// Check for removed entities to remove them from inventories.
@@ -28,17 +28,14 @@ namespace Engine.ComponentSystem.RPG.Systems
                 {
                     foreach (var component in Components)
                     {
-                        component.Remove(removed.Component.Entity);
+                        component.TryUnequip(removed.Component.Entity);
                     }
                 }
-                else if (removed.Component is Inventory)
+                else if (removed.Component is Equipment)
                 {
-                    foreach (var item in (Inventory)removed.Component)
+                    foreach (var item in ((Equipment)removed.Component).AllItems)
                     {
-                        if (item.HasValue)
-                        {
-                            Manager.RemoveEntity(item.Value);
-                        }
+                        Manager.RemoveEntity(item);
                     }
                 }
             }

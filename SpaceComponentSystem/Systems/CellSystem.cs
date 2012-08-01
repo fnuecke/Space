@@ -122,7 +122,7 @@ namespace Space.ComponentSystem.Systems
         /// <returns>Whether the cell is active or not.</returns>
         public bool IsCellActive(ulong cellId)
         {
-            return _livingCells.Contains(cellId);
+            return _livingCells.Contains(cellId) || _pendingCells.ContainsKey(cellId);
         }
 
         /// <summary>

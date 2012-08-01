@@ -392,6 +392,7 @@ from Space.Data import *
                             // player that dropped it.
                             var transform = ((Transform)manager.GetComponent(item.Value, Transform.TypeId));
                             transform.SetTranslation(((Transform)manager.GetComponent(avatar.Value, Transform.TypeId)).Translation);
+                            transform.ApplyTranslation();
                         }
                     }
                     break;

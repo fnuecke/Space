@@ -1,5 +1,5 @@
 uniform extern float4 Color = float4(1, 0, 1, 1);
-uniform extern float Gradient = 1;
+uniform extern float2 Gradient = float2(1, 1);
 
 struct VertexShaderData
 {
@@ -14,8 +14,8 @@ VertexShaderData VertexShaderFunction(VertexShaderData input)
 
 float4 PixelShaderFunction(VertexShaderData input) : COLOR0
 {
-    float a = clamp((1 - (input.TextureCoordinate.x * input.TextureCoordinate.x +
-                          input.TextureCoordinate.y * input.TextureCoordinate.y)) / Gradient, 0, 1);
+    float a = clamp((0.5 - input.TextureCoordinate.x * input.TextureCoordinate.x) / Gradient.x +
+                    (0.5 - input.TextureCoordinate.y * input.TextureCoordinate.y) / Gradient.y, 0, 1);
     return Color * a;
 }
 

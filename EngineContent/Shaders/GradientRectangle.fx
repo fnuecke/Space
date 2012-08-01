@@ -5,7 +5,7 @@ uniform extern int NumValues;
 uniform extern float4 Colors[MAX_POINTS];
 uniform extern float Points[MAX_POINTS];
 
-uniform extern float Gradient;
+uniform extern float2 Gradient = float2(1, 1);
 
 struct VertexShaderData
 {
@@ -27,8 +27,9 @@ float4 PixelShaderFunction(VertexShaderData input) : COLOR0
     }
 
     // Get the general alpha at this point.
-    float a = clamp((1 - max(abs(input.TextureCoordinate.x), abs(input.TextureCoordinate.y))) / Gradient, 0, 1);
-
+    float a = clamp(max((1 - abs(input.TextureCoordinate.x)) / Gradient.x,
+                        (1 - abs(input.TextureCoordinate.y)) / Gradient.x), 0, 1);
+    
     // Get our x texture coordianate in an interval of [0, 1].
     float u = (input.TextureCoordinate.y + 1) * 0.5;
 

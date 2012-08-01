@@ -277,6 +277,11 @@ namespace Engine.Graphics
             {
                 color.SetValue(_color.ToVector4());
             }
+            var aspectRatio = Effect.Parameters["AspectRatio"];
+            if (aspectRatio != null)
+            {
+                aspectRatio.SetValue(Width / Height);
+            }
         }
 
         #endregion

@@ -96,6 +96,11 @@
         Character,
 
         /// <summary>
+        /// Toggle graph with debug info rendering.
+        /// </summary>
+        ToggleGraphs,
+
+        /// <summary>
         /// Open up the console.
         /// </summary>
         Console,

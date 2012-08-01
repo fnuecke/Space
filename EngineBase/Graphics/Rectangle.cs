@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Content;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
@@ -59,7 +60,15 @@ namespace Engine.Graphics
         {
             base.AdjustParameters();
 
-            Effect.Parameters["Thickness"].SetValue((_thickness + _thickness) / Width);
+            var thickness = Effect.Parameters["Thickness"];
+            if (thickness != null)
+            {
+                var t2 = _thickness + _thickness;
+                Vector2 t;
+                t.X = t2 / Width;
+                t.Y = t2 / Height;
+                thickness.SetValue(t);
+            }
         }
 
         #endregion

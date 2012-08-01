@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Awesomium.ScreenManagement;
+using Engine.Graphics;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Space.ComponentSystem.Factories;
@@ -63,6 +64,9 @@ namespace Space
 
             // Set up graphical user interface.
             LoadGui();
+
+            // Set up graphs.
+            LoadGraphs();
         }
 
         /// <summary>
@@ -119,6 +123,66 @@ namespace Space
             // Create ingame graphics stuff.
             // TODO make it so this is rendered inside the simulation (e.g. own render systems)
             _background = new Background(this, _spriteBatch);
+        }
+
+        /// <summary>
+        /// Load graphs we use to render some game statistics (debug stuff).
+        /// </summary>
+        private void LoadGraphs()
+        {
+            _fpsGraph = new Graph(Content, GraphicsDevice)
+            {
+                Bounds = new Microsoft.Xna.Framework.Rectangle(10, 10, 250, 150),
+                FixedMaximum = 60,
+                Smoothing = 30,
+                Unit = "Hz",
+                Title = "FPS",
+                Data = new[] { _fpsHistory }
+            };
+
+            _updateGraph = new Graph(Content, GraphicsDevice)
+            {
+                Bounds = new Microsoft.Xna.Framework.Rectangle(300, 10, 250, 150),
+                Smoothing = 30,
+                FixedMaximum = 30,
+                Unit = "ms",
+                Title = "Update time",
+                Data = new[] { _updateHistory }
+            };
+
+            _memoryGraph = new Graph(Content, GraphicsDevice)
+            {
+                Bounds = new Microsoft.Xna.Framework.Rectangle(600, 10, 250, 150),
+                Smoothing = 10,
+                Unit = "B",
+                Title = "RAM",
+                UnitPrefix = Graph.UnitPrefixes.IEC,
+                Data = new[] { _memoryHistory }
+            };
+
+            _componentGraph = new Graph(Content, GraphicsDevice)
+            {
+                Bounds = new Microsoft.Xna.Framework.Rectangle(10, 200, 250, 150),
+                Title = "Components",
+                Smoothing = 10,
+                Data = new[] { _componentsHistory }
+            };
+
+            _indexQueryGraph = new Graph(Content, GraphicsDevice)
+            {
+                Bounds = new Microsoft.Xna.Framework.Rectangle(300, 200, 250, 150),
+                Title = "Index queries",
+                Smoothing = 10,
+                Data = new[] { _indexQueryHistory }
+            };
+
+            _gameSpeedGraph = new Graph(Content, GraphicsDevice)
+            {
+                Bounds = new Microsoft.Xna.Framework.Rectangle(600, 200, 250, 150),
+                Title = "Game speed",
+                Smoothing = 10,
+                Data = new[] { _gameSpeedHistory }
+            };
         }
     }
 }

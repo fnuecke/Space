@@ -307,6 +307,29 @@ namespace Engine.ComponentSystem.RPG.Components
         }
 
         /// <summary>
+        /// Unequip the item with the specified id, if it is equipped in any slot.
+        /// </summary>
+        /// <param name="item">The item to remove.</param>
+        public void TryUnequip(int item)
+        {
+            foreach (var type in _slotsByType)
+            {
+                for (var slotsOfTypeIndex = 0; slotsOfTypeIndex < type.Value; slotsOfTypeIndex++)
+                {
+                    var slots = _allSlots[slotsOfTypeIndex];
+                    for (var slotIndex = 0; slotIndex < slots.Length; slotIndex++)
+                    {
+                        var slotItem = slots[slotIndex];
+                        if (slotItem.HasValue && slotItem.Value == item)
+                        {
+                            Unequip(type.Key, slotIndex);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Validation helper for equipment parameters.
         /// </summary>
         /// <param name="type">The item type to check.</param>

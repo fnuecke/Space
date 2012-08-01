@@ -24,6 +24,11 @@ namespace Engine.ComponentSystem
         /// </summary>
         IEnumerable<AbstractSystem> Systems { get; }
 
+        /// <summary>
+        /// Number of components currently registered in this system.
+        /// </summary>
+        int ComponentCount { get; }
+
         #endregion
 
         #region Logic

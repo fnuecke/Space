@@ -1,5 +1,5 @@
 uniform extern float4 Color = float4(1, 0, 1, 1);
-uniform extern float Thickness = 1;
+uniform extern float2 Thickness = float2(1, 1);
 
 struct VertexShaderData
 {
@@ -14,7 +14,8 @@ VertexShaderData VertexShaderFunction(VertexShaderData input)
 
 float4 PixelShaderFunction(VertexShaderData input) : COLOR0
 {
-    float a = (max(abs(input.TextureCoordinate.x), abs(input.TextureCoordinate.y)) - 1) / Thickness + 1;
+    float a = max((abs(input.TextureCoordinate.x) - 1) / Thickness.x,
+                  (abs(input.TextureCoordinate.y) - 1) / Thickness.y) + 1;
     return Color * (1 - a * a);
 }
 

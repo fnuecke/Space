@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Content;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine.Graphics
@@ -59,7 +60,15 @@ namespace Engine.Graphics
         {
             base.AdjustParameters();
 
-            Effect.Parameters["Gradient"].SetValue((_gradient + _gradient) / Width);
+            var gradient = Effect.Parameters["Gradient"];
+            if (gradient != null)
+            {
+                var g2 = _gradient + _gradient;
+                Vector2 g;
+                g.X = g2 / Width;
+                g.Y = g2 / Height;
+                gradient.SetValue(g);
+            }
         }
 
         #endregion

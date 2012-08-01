@@ -171,7 +171,7 @@ namespace Space.ComponentSystem.Systems
 
                 // We'll make stuff far away a little less opaque. First get
                 // the linear relative distance.
-                float ld = direction.LengthSquared() / radarRangeSquared;
+                var ld = direction.LengthSquared() / radarRangeSquared;
                 // Then apply a exponential fall-off, and make it cap a little
                 // early to get the 100% alpha when nearby, not only when
                 // exactly on top of the object ;)
@@ -194,7 +194,7 @@ namespace Space.ComponentSystem.Systems
                     Vector2 ellipseCenter;
                     ellipseCenter.X = ellipseFocusDistance;
                     ellipseCenter.Y = 0;
-                    Matrix rotation = Matrix.CreateRotationZ(ellipse.Angle);
+                    var rotation = Matrix.CreateRotationZ(ellipse.Angle);
                     Vector2.Transform(ref ellipseCenter, ref rotation, out ellipseCenter);
                     ellipseCenter += focusTransform;
 

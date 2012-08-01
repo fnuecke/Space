@@ -133,6 +133,7 @@ namespace Space.ComponentSystem.Factories
             if (transform != null)
             {
                 transform.SetTranslation(position);
+                transform.ApplyTranslation();
             }
             var renderer = ((TextureRenderer)manager.GetComponent(item, TextureRenderer.TypeId));
             if (renderer != null)

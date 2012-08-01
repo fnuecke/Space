@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Engine.ComponentSystem.Messages;
 using Engine.ComponentSystem.RPG.Components;
 using Engine.ComponentSystem.RPG.Messages;
 using Engine.ComponentSystem.Systems;
@@ -159,6 +160,15 @@ namespace Space.ComponentSystem.Systems
                 {
                     // Weapon was unequipped, stop tracking.
                     _cooldowns.Remove(removed.Item);
+                }
+            }
+            else if (message is ComponentRemoved)
+            {
+                // Item removed from simulation.
+                var removed = (ComponentRemoved)(ValueType)message;
+                if (removed.Component is Item)
+                {
+                    _cooldowns.Remove(removed.Component.Entity);
                 }
             }
         }
