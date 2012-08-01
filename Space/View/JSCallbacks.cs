@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using Awesomium.Core;
-using Engine.ComponentSystem.Common.Systems;
 using Engine.Session;
 using Microsoft.Xna.Framework;
 using Space.ComponentSystem.Systems;
@@ -179,16 +178,10 @@ namespace Space.View
             s.AddCallbackWithReturnValue("Space", "getEnergy", GetEnergy);
             s.AddCallbackWithReturnValue("Space", "getMaxEnergy", GetMaxEnergy);
 
-            s.AddCallbackWithReturnValue("Space", "getFps", GetFps);
             s.AddCallbackWithReturnValue("Space", "getXCoordinate", GetXCoordinate);
             s.AddCallbackWithReturnValue("Space", "getYCoordinate", GetYCoordinate);
             s.AddCallbackWithReturnValue("Space", "getXCell", GetXCell);
             s.AddCallbackWithReturnValue("Space", "getYCell", GetYCell);
-            s.AddCallbackWithReturnValue("Space", "getUpdateLoad", GetUpdateLoad);
-            s.AddCallbackWithReturnValue("Space", "getUpdateSpeed", GetUpdateSpeed);
-            s.AddCallbackWithReturnValue("Space", "getIndexes", GetIndexes);
-            s.AddCallbackWithReturnValue("Space", "getTotalEntries", GetTotalEntries);
-            s.AddCallbackWithReturnValue("Space", "getQueries", GetQueries);
             s.AddCallbackWithReturnValue("Space", "getSpeed", GetSpeed);
             s.AddCallbackWithReturnValue("Space", "getMaxSpeed", GetMaxSpeed);
             s.AddCallbackWithReturnValue("Space", "getMaxAcceleration", GetMaxAcceleration);
@@ -630,12 +623,6 @@ namespace Space.View
             return new JSValue(info.MaxEnergy);
         }
 
-        private JSValue GetFps(JSValue[] args)
-        {
-            // TODO:
-            return new JSValue("XX.XX");
-        }
-
         private JSValue GetXCoordinate(JSValue[] args)
         {
             
@@ -682,61 +669,6 @@ namespace Space.View
             var pos = info.Position.Y;
             var cell = ((int)pos) >> CellSystem.CellSizeShiftAmount;
             return new JSValue(cell);
-        }
-
-        private JSValue GetUpdateLoad(JSValue[] args)
-        {
-            
-            return new JSValue(Math.Round(_game.Client.Controller.CurrentLoad,2));
-        }
-
-        private JSValue GetUpdateSpeed(JSValue[] args)
-        {
-            return new JSValue(_game.Client.Controller.ActualSpeed);
-        }
-
-        private JSValue GetIndexes(JSValue[] args)
-        {
-            var manager = _game.Client.Controller.Simulation.Manager;
-            var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
-            if (index != null)
-            {
-                
-               
-                return new JSValue(index.NumIndexes);
-            }
-            // TODO: Flo schau mal ob das so past da oben und unten mit den indexen usw da ich was rausgenommen hab aber irgendwie das selbe angezeigt wird
-            //FN: i don't care :P abgesehen davon dass ich das ned fuer sinnvoll halt das ueber awe anzuzeigen
-            return JSValue.CreateUndefined();
-        }
-
-        private JSValue GetTotalEntries(JSValue[] args)
-        {
-            var manager = _game.Client.Controller.Simulation.Manager;
-            var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
-            if (index != null)
-            {
-
-                
-                return new JSValue(index.Count);
-            }
-            // TODO:
-            return JSValue.CreateUndefined();
-        }
-
-        private JSValue GetQueries(JSValue[] args)
-        {
-            var manager = _game.Client.Controller.Simulation.Manager;
-            var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
-            if (index != null)
-            {
-
-                //, , );
-                // \o\  \o/  /o/ ... /o\
-                return new JSValue(index.NumQueriesSinceLastUpdate);
-            }
-            // TODO:
-            return JSValue.CreateUndefined();
         }
 
         private JSValue GetSpeed(JSValue[] args)

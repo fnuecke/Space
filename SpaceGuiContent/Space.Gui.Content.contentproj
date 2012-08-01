@@ -399,20 +399,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Screens\Ingame\Elements\DebugFPSStyle.css">
-      <Name>DebugFPSStyle</Name>
-      <Importer>AwesomiumImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Screens\Ingame\Elements\DebugFPS.html">
-      <Name>DebugFPS</Name>
-      <Importer>AwesomiumImporter</Importer>
-      <Processor>PassThroughProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Screens\Ingame\Helper\Basics.css">
       <Name>Basics</Name>
       <Importer>AwesomiumImporter</Importer>

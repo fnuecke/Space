@@ -131,58 +131,85 @@ namespace Space
         private void LoadGraphs()
         {
             _fpsGraph = new Graph(Content, GraphicsDevice)
-            {
-                Bounds = new Microsoft.Xna.Framework.Rectangle(10, 10, 250, 150),
-                FixedMaximum = 60,
-                Smoothing = 30,
-                Unit = "Hz",
-                Title = "FPS",
-                Data = new[] { _fpsHistory }
-            };
+                        {
+                            FixedMaximum = 70,
+                            Smoothing = 30,
+                            Unit = "Hz",
+                            Title = "FPS",
+                            Data = new[] {_fpsHistory}
+                        };
 
             _updateGraph = new Graph(Content, GraphicsDevice)
-            {
-                Bounds = new Microsoft.Xna.Framework.Rectangle(300, 10, 250, 150),
-                Smoothing = 30,
-                FixedMaximum = 30,
-                Unit = "ms",
-                Title = "Update time",
-                Data = new[] { _updateHistory }
-            };
+                           {
+                               Smoothing = 30,
+                               FixedMaximum = 30,
+                               Unit = "ms",
+                               Title = "Update time",
+                               Data = new[] {_updateHistory}
+                           };
 
             _memoryGraph = new Graph(Content, GraphicsDevice)
-            {
-                Bounds = new Microsoft.Xna.Framework.Rectangle(600, 10, 250, 150),
-                Smoothing = 10,
-                Unit = "B",
-                Title = "RAM",
-                UnitPrefix = Graph.UnitPrefixes.IEC,
-                Data = new[] { _memoryHistory }
-            };
+                           {
+                               Smoothing = 10,
+                               Unit = "B",
+                               Title = "RAM",
+                               UnitPrefix = Graph.UnitPrefixes.IEC,
+                               Data = new[] {_memoryHistory}
+                           };
 
             _componentGraph = new Graph(Content, GraphicsDevice)
-            {
-                Bounds = new Microsoft.Xna.Framework.Rectangle(10, 200, 250, 150),
-                Title = "Components",
-                Smoothing = 10,
-                Data = new[] { _componentsHistory }
-            };
+                              {
+                                  Title = "Components",
+                                  Smoothing = 10,
+                                  Data = new[] {_componentsHistory}
+                              };
 
             _indexQueryGraph = new Graph(Content, GraphicsDevice)
-            {
-                Bounds = new Microsoft.Xna.Framework.Rectangle(300, 200, 250, 150),
-                Title = "Index queries",
-                Smoothing = 10,
-                Data = new[] { _indexQueryHistory }
-            };
+                               {
+                                   Title = "Index queries",
+                                   Smoothing = 10,
+                                   Data = new[] {_indexQueryHistory}
+                               };
 
             _gameSpeedGraph = new Graph(Content, GraphicsDevice)
+                              {
+                                  Title = "Game speed",
+                                  Smoothing = 10,
+                                  Data = new[] {_gameSpeedHistory}
+                              };
+
+            _gameLoadGraph = new Graph(Content, GraphicsDevice)
+                             {
+                                 Title = "Game load",
+                                 Smoothing = 10,
+                                 Data = new[] {_gameLoadHistory}
+                             };
+
+            // Distribute them over the screen.
+            Microsoft.Xna.Framework.Rectangle bounds;
+            bounds.X = 50;
+            bounds.Y = 50;
+            bounds.Width = 250;
+            bounds.Height = 150;
+            foreach (var graph in new[]
+                                  {
+                                      _fpsGraph,
+                                      _updateGraph,
+                                      _memoryGraph,
+                                      _componentGraph,
+                                      _indexQueryGraph,
+                                      _gameSpeedGraph,
+                                      _gameLoadGraph
+                                  })
             {
-                Bounds = new Microsoft.Xna.Framework.Rectangle(600, 200, 250, 150),
-                Title = "Game speed",
-                Smoothing = 10,
-                Data = new[] { _gameSpeedHistory }
-            };
+                if (bounds.X + bounds.Width >= GraphicsDevice.Viewport.Width)
+                {
+                    bounds.Y += bounds.Height + 10;
+                    bounds.X = 50;
+                }
+                graph.Bounds = bounds;
+                bounds.X += bounds.Width + 10;
+            }
         }
     }
 }

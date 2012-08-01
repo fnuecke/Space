@@ -2,7 +2,7 @@
 {
     position:absolute; 
     width: 350px;
-    top: 300px;
+    top: 500px;
     left: 0px;
     
     -webkit-transition:
@@ -13,7 +13,7 @@
 
 .debug_textfield_hidden
 {
-    top: 300px;
+    top: 500px;
     left: -350px;
 }
 

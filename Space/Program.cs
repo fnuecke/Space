@@ -133,6 +133,9 @@ namespace Space
         private readonly FloatSampling _gameSpeedHistory = new FloatSampling(600);
         private Graph _gameSpeedGraph;
 
+        private readonly FloatSampling _gameLoadHistory = new FloatSampling(600);
+        private Graph _gameLoadGraph;
+
         #endregion
 
         #region Constructor
@@ -238,11 +241,13 @@ namespace Space
             {
                 manager = _server.Controller.Simulation.Manager;
                 _gameSpeedHistory.Put((float)_server.Controller.ActualSpeed);
+                _gameLoadHistory.Put((float)_server.Controller.CurrentLoad);
             }
             else if (_client != null && _client.Controller.Session.ConnectionState == ClientState.Connected)
             {
                 manager = _client.Controller.Simulation.Manager;
                 _gameSpeedHistory.Put((float)_client.Controller.ActualSpeed);
+                _gameLoadHistory.Put((float)_client.Controller.CurrentLoad);
             }
             if (manager != null)
             {
@@ -303,7 +308,7 @@ namespace Space
             _memoryHistory.Put(GC.GetTotalMemory(false));
 
             // Draw some debug info on top of everything.
-            DrawDebugInfo(gameTime);
+            DrawDebugInfo();
 
             // Reset our graphics device (pop our off-screen render target).
             GraphicsDevice.SetRenderTarget(null);
@@ -323,6 +328,7 @@ namespace Space
                 _componentGraph.Draw();
                 _indexQueryGraph.Draw();
                 _gameSpeedGraph.Draw();
+                _gameLoadGraph.Draw();
             }
         }
 
@@ -410,30 +416,20 @@ namespace Space
         private SpriteFont _debugFont;
 
         [Conditional("DEBUG")]
-        private void DrawDebugInfo(GameTime gameTime)
+        private void DrawDebugInfo()
         {
-            if (_indexRectangle == null)
+            if (_debugFont == null)
             {
-                _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) {Color = Color.LightGreen * 0.25f, Thickness = 2f};
                 _debugFont = Content.Load<SpriteFont>("Fonts/ConsoleFont");
             }
 
-            foreach (var component in Components)
+            if (_client != null)
             {
-                if (component is GameClient)
+                var client = _client;
+                var session = client.Controller.Session;
+
+                if (GraphsVisible)
                 {
-                    var client = (GameClient)component;
-                    var info = client.GetPlayerShipInfo();
-                    if (info == null)
-                    {
-                        continue;
-                    }
-
-                    var session = client.Controller.Session;
-                    var manager = client.Controller.Simulation.Manager;
-
-                    var sb = new System.Text.StringBuilder();
-
                     // Draw session info and netgraph.
                     var ngOffset = new Vector2(GraphicsDevice.Viewport.Width - 240, GraphicsDevice.Viewport.Height - 180);
                     var sessionOffset = new Vector2(GraphicsDevice.Viewport.Width - 370,
@@ -441,37 +437,35 @@ namespace Space
 
                     SessionInfo.Draw("Client", session, sessionOffset, _debugFont, _spriteBatch);
                     NetGraph.Draw(session.Information, ngOffset, _debugFont, _spriteBatch);
+                }
 
-                    // Draw planet arrows and stuff.
-                    if (session.ConnectionState == ClientState.Connected)
+                // Render index.
+                if (session.ConnectionState == ClientState.Connected)
+                {
+                    var manager = client.Controller.Simulation.Manager;
+                    var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
+                    var camera = (CameraSystem)manager.GetSystem(CameraSystem.TypeId);
+                    if (_indexGroupMask >= 0)
                     {
-                        _spriteBatch.Begin();
-
-                        sb.AppendFormat("Update load: {0:f}, Speed: {1:f}\n", client.Controller.CurrentLoad, client.Controller.ActualSpeed);
-
-                        var index = (IndexSystem)manager.GetSystem(IndexSystem.TypeId);
-                        var camera = (CameraSystem)manager.GetSystem(CameraSystem.TypeId);
-                        if (index != null)
+                        if (_indexRectangle == null)
                         {
-                            if (_indexGroupMask >= 0)
-                            {
-                                _indexRectangle.Scale = camera.Zoom;
-                                var translation = new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon;
-                                index.DrawIndex(_indexGroupMask, _indexRectangle, translation);
-                            }
-                            sb.AppendFormat("Indexes: {0}, Total entries: {1}, Queries: {2}\n", index.NumIndexes, index.Count, index.NumQueriesSinceLastUpdate);
+                            _indexRectangle = new Engine.Graphics.Rectangle(Content, GraphicsDevice) { Color = Color.LightGreen * 0.25f, Thickness = 2f };
                         }
 
-                        _spriteBatch.DrawString(_debugFont, sb.ToString(), new Vector2(60, 60), Color.White);
-
-                        _spriteBatch.End();
+                        _indexRectangle.Scale = camera.Zoom;
+                        var translation = new Vector2(GraphicsDevice.Viewport.Width / 2f, GraphicsDevice.Viewport.Height / 2f) - camera.CameraPositon;
+                        index.DrawIndex(_indexGroupMask, _indexRectangle, translation);
                     }
                 }
-                else if (component is GameServer)
-                {
-                    var server = (GameServer)component;
-                    var session = server.Controller.Session;
+            }
 
+            if (_server != null)
+            {
+                var server = _server;
+                var session = server.Controller.Session;
+
+                if (GraphsVisible)
+                {
                     // Draw session info and netgraph.
                     var ngOffset = new Vector2(180, GraphicsDevice.Viewport.Height - 180);
                     var sessionOffset = new Vector2(60, GraphicsDevice.Viewport.Height - 180);

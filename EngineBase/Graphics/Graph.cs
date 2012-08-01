@@ -492,33 +492,31 @@ namespace Engine.Graphics
 
                 // Otherwise start walking over our data source.
                 var movingAverage = new FloatSampling(Smoothing + 1);
+                var processed = 0;
                 foreach (var data in Data[i])
                 {
                     // Build average based on smoothing parameter.
                     movingAverage.Put(data);
+                    var value = (float)movingAverage.Mean();
 
-                    // Store value in our data point list.
-                    _points.Add((float)movingAverage.Mean());
-
-                    // Update our extrema.
-                    if (data < min)
+                    if (++processed > Smoothing)
                     {
-                        min = data;
-                    }
-                    if (data > max)
-                    {
-                        max = data;
-                    }
+                        // Store value in our data point list.
+                        _points.Add(value);
 
-                    average += data;
-                    ++count;
-                }
+                        // Update our extrema.
+                        if (value < min)
+                        {
+                            min = value;
+                        }
+                        if (value > max)
+                        {
+                            max = value;
+                        }
 
-                // Strip as many items as we have to based on smoothing (to
-                // get rid of starting entries which cannot be smoothed).
-                for (var k = 0; k < Smoothing - 1 && _points.Count > 0; k++)
-                {
-                    _points.RemoveAt(0);
+                        average += value;
+                        ++count;
+                    }
                 }
 
                 // Convert list to array and store it.

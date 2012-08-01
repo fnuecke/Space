@@ -21,8 +21,6 @@
         setInterval(function () {
             $(".debug_textfield-value").html(
                 "Position:  (" + Space.getXCoordinate() + ", " + Space.getYCoordinate() + "), Cell: (" + Space.getXCell() + ", " + Space.getYCell() + ")<br />" +
-                "Update Load: " + Space.getUpdateLoad() + ", Speed: " + Space.getUpdateSpeed() + "<br />" +
-                "Indexes: " + Space.getIndexes() + ", Total entries: " + Space.getTotalEntries() + ", Queries: " + Space.getQueries() + "<br />" +
                 "Speed: " + Space.getSpeed() + "/" + Space.getMaxSpeed() + ", Maximum acceleration: " + Space.getMaxAcceleration() + "<br />" +
                 "Mass: " + Space.getMass() + "<br />" +
                 "Health: " + Math.round(Space.getHealth()) + "/" + Math.round(Space.getMaxHealth()) + "<br />" +
